@@ -14,7 +14,7 @@ export class InventoryAreaCount{
     /**
      * The physical are the inventory count occurs.
      */
-    @ManyToOne(() => InventoryArea, { cascade: true, nullable: false })
+    @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
     inventoryArea: InventoryArea;
 
     /**

@@ -15,10 +15,10 @@ export class InventoryAreaItemCount {
     /**
      * Reference to the inventory count when this item is counted.
      */
-    @ManyToOne(() => InventoryAreaCount, { nullable: false })
+    @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE' })
     areaCount: InventoryAreaCount;
 
-    @ManyToOne(() => InventoryItem, { nullable: false })
+    @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
     inventoryItem: InventoryItem;
 
     @Column({ nullable: false })
@@ -29,6 +29,6 @@ export class InventoryAreaItemCount {
      * A size consists of a package type ("box", "bag")
      * and a unity of measurement ("lbs", "oz", "liters")
      */
-    @Column({ nullable: false })
+    @ManyToOne(() => InventoryItemSize, { nullable: false, onDelete: 'CASCADE' })
     itemSize: InventoryItemSize;
 }
