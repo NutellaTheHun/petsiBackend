@@ -6,7 +6,7 @@ export class Label {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @OneToOne(type => MenuItem, { onDelete: 'CASCADE', nullable: false })
+    @OneToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
     menuItem: MenuItem;
 
     @Column('json', { nullable: false })
