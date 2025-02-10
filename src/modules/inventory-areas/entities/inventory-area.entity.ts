@@ -4,10 +4,11 @@ import { InventoryAreaCount } from "./inventory-area-count.entity";
 /**
  * A declared area that holds inventory. "Walk-in", "Back Room"
  * Is the context of when a inventory count occurs.
- * @class
+ * - When created, inventoryCounts is always empty.
  */
 @Entity()
 export class InventoryArea{
+
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -20,8 +21,7 @@ export class InventoryArea{
 
     /**
     * The record of all inventory counts performed for the inventory area.
-    * Contains the time it was performed, and a list of items counted
-    * 
+    * Contains the time it was performed, and a list of items counted and their size/quantities
     */
     @OneToMany(() => InventoryAreaCount, (areaCount) => areaCount.inventoryArea, { nullable: false })
     inventoryCounts: InventoryAreaCount[] = [];

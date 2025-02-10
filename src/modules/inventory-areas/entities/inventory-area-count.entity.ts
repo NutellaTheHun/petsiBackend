@@ -13,6 +13,7 @@ export class InventoryAreaCount{
 
     /**
      * The physical are the inventory count occurs.
+     * - When an inventory area is deleted, its associated inventory counts will also be deleted
      */
     @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
     inventoryArea: InventoryArea;
@@ -25,7 +26,9 @@ export class InventoryAreaCount{
 
     /**
      * The record of items and their quantites resulting from the inventory count.
-     * Cannot be null, always initialized to empty array
+     * - Cannot be null, always initialized to empty array
+     * - countedItems will be populated when an Inventory Count is inserted.
+     * - handled with cascade: true
      */
     @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: false})
     countedItems: InventoryAreaItemCount[] = [];

@@ -6,6 +6,7 @@ import { InventoryAreaCount } from "./inventory-area-count.entity";
 /**
  * A single item within the process of an inventory count,
  * representing an inventory item, its quantity, and the size of the item (its package type and unit of measure ment)
+ * - Is created along with the creation of an Inventory Count, (Saving Inventory Count automatically saves this entity)
  */
 @Entity()
 export class InventoryAreaItemCount {
@@ -14,11 +15,17 @@ export class InventoryAreaItemCount {
 
     /**
      * Reference to the inventory count when this item is counted.
+     * - If the referenced inventory count is deleted, its associated counted items will be deleted 
      */
     @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE' })
     areaCount: InventoryAreaCount;
 
-    @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
+    /**
+     * The item from the inventory catalog being referenced.
+     * - If the inventory item is deleted from the catalog, all inventory counts referencing the item will remove that specific reference.
+     * - Must reference a pre-existing inventory item. (No creation while performing an inventory count)
+     */
+    @OneToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
     inventoryItem: InventoryItem;
 
     @Column({ nullable: false })
@@ -27,8 +34,11 @@ export class InventoryAreaItemCount {
     /**
      * The size of the item counted. 
      * A size consists of a package type ("box", "bag")
-     * and a unity of measurement ("lbs", "oz", "liters")
+     * and a unit of measurement ("lbs", "oz", "liters")
+     * - Creating new InventoryItemSizes is permitted during an inventory count (selects package and unit type on the fly)
+     * - If an inventory item size is deleted, all referencing items will also be removed. 
+     * (inventory item sizes are a set of sizes per item, meaning only all counts referencing that item/itemsize combination will be removed)
      */
-    @ManyToOne(() => InventoryItemSize, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     itemSize: InventoryItemSize;
 }
