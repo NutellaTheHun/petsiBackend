@@ -14,8 +14,9 @@ export class MenuItem {
     @Column({ nullable:true })
     squareCategoryId?: string;
 
-    @ManyToOne(() => MenuCategory, { nullable: false })
-    Category: MenuCategory;
+    // Get category a reference of its items (like inventory item/category)
+    @ManyToOne(() => MenuCategory, { nullable: true, onDelete: 'SET NULL'})
+    Category?: MenuCategory;
 
     @Column({ nullable: false })
     name: string;
@@ -32,7 +33,7 @@ export class MenuItem {
     @OneToOne(() => MenuItem, { nullable:true })
     veganTakeNBakeOption?: MenuItem;
 
-    @ManyToMany(() => MenuItemSize, { nullable: false })
+    @ManyToOne(() => MenuItemSize, { nullable: false })
     validSizes: MenuItemSize[] = [];
 
     @Column({ default: false })

@@ -24,7 +24,7 @@ export class InventoryItem{
         cascade: ['update'], 
         onDelete: 'SET NULL' 
     })
-    category: InventoryItemCategory;
+    category?: InventoryItemCategory;
 
     /** When an item is created, its reference is given to it's categories list of items. */
     @BeforeInsert()

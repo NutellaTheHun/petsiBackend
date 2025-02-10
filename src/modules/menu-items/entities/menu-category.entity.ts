@@ -8,4 +8,7 @@ export class MenuCategory {
 
     @OneToMany(() => MenuItem, (item) => item.Category, { nullable: false })
     name: string;
+
+    @OneToMany(() => MenuItem, (item) => item.Category, {nullable: false})
+    items: MenuItem[] = []
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItem } from "src/modules/inventory-items/entities/inventory-item.entity";
 import { InventoryItemSize } from "src/modules/inventory-items/entities/inventory-item-size.entity";
 import { InventoryAreaCount } from "./inventory-area-count.entity";
@@ -22,7 +22,7 @@ export class InventoryAreaItemCount {
 
     /**
      * The item from the inventory catalog being referenced.
-     * - If the inventory item is deleted from the catalog, all inventory counts referencing the item will remove that specific reference.
+     * - If the inventory item is deleted from the catalog, it's references in all inventory counts will be removed.
      * - Must reference a pre-existing inventory item. (No creation while performing an inventory count)
      */
     @OneToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
@@ -39,6 +39,6 @@ export class InventoryAreaItemCount {
      * - If an inventory item size is deleted, all referencing items will also be removed. 
      * (inventory item sizes are a set of sizes per item, meaning only all counts referencing that item/itemsize combination will be removed)
      */
-    @ManyToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+    @OneToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     itemSize: InventoryItemSize;
 }
