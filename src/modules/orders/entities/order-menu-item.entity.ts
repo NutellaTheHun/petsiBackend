@@ -3,6 +3,9 @@ import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
 import { Order } from "src/modules/orders/entities/order.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
+/**
+ * A MenuItem specified with quantity and size on an Order.
+ */
 @Entity()
 export class OrderMenuItem {
     @PrimaryGeneratedColumn()
