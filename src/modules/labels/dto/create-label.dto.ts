@@ -6,7 +6,6 @@ export class CreateLabelDto {
     @IsPositive()
     readonly menuItemId: number;
 
-    @IsOptional()
     @IsObject() // might need further validation of its URLs
     readonly labelUrls: Record<string, string> = {};
 }

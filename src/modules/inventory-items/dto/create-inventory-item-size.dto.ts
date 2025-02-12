@@ -1,11 +1,18 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
 export class CreateInventoryItemSizeDto {
-    @IsString()
+    @IsNumber()
+    @IsPositive()
     @IsNotEmpty()
-    readonly measureUnit: string;
+    readonly unitOfMeasureId: number;
 
-    @IsString()
+    @IsNumber()
+    @IsPositive()
     @IsNotEmpty()
-    readonly packageType: string;
+    readonly inventoryPackageTypeId: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly inventoryItemId: number;
 }

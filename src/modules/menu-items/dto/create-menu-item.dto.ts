@@ -10,15 +10,16 @@ export class CreateMenuItemDto {
     @IsOptional()
     readonly squareCategoryId?: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly categoryId: number;
+    readonly categoryId?: number;
 
     @IsString()
     @IsNotEmpty()
     readonly name: string;
 
+    @IsOptional()
     @IsArray()
     @IsString({ each: true })
     readonly searchNames?: string[] = [];

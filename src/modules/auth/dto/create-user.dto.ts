@@ -1,9 +1,10 @@
 import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
 export class CreateUserDto {
+
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly username: string;
 
     @IsString()
     @IsNotEmpty()
@@ -12,7 +13,6 @@ export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
     readonly passwordHash: string;
-
     
     @IsArray()
     @IsNumber({}, { each: true })

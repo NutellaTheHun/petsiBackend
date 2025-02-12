@@ -3,6 +3,7 @@ import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn 
 import { RecipeIngredient } from "./recipe-ingredient.entity";
 import { RecipeCategory } from "./recipe-category.entity";
 import { RecipeSubCategory } from "./recipe-sub-category.entity";
+import { UnitOfMeasure } from "src/modules/unit-of-measure/entities/unit-of-measure.entity";
 
 @Entity()
 export class Recipe{
@@ -14,7 +15,7 @@ export class Recipe{
      * - If the MenuItem is deleted, the recipe is also deleted "onDelete: CASCADE" 
      */
     @OneToOne(() => MenuItem, {nullable: true, onDelete: 'CASCADE'})
-    product?: MenuItem;
+    menuItem?: MenuItem;
 
     /*
     * A recipe with isIngredient set to true doesn't directly make a MenuItem,
@@ -27,10 +28,21 @@ export class Recipe{
     @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: false, cascade: true })
     ingredients: RecipeIngredient[] = [];
 
-    // needs entity?
-    // yield?, serving size?, cost per serving?, sales price per serving?
     @Column({ nullable: false })
-    batchSize: string;
+    batchResultQuantity: number;
+
+    @Column({ nullable: false })
+    batchResultUnitOfMeasure: UnitOfMeasure;
+
+    @Column({ nullable: false })
+    servingSizeQuantity: number;
+
+    @Column({ nullable: false })
+    servingSizeUnitOfMeasure: UnitOfMeasure;
+
+    // cost per serving calculated
+
+    // sales price per serving calculated
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
     salesPrice: number = 0;

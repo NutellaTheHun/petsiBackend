@@ -5,9 +5,9 @@ export class CreateInventoryItemDto {
     @IsNotEmpty()
     readonly name: string;
 
-    @IsString()
-    @IsNotEmpty()
-    readonly category: string;
+    @IsNumber()
+    @IsPositive()
+    readonly inventoryItemCategoryId: number;
 
     @IsArray()
     @IsNumber({},{ each: true })
