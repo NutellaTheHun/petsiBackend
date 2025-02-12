@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UnitOfMeasure } from "./unit-of-measure.entity";
 
 /**
@@ -14,4 +14,12 @@ export class UnitCategory{
 
     @OneToMany(() => UnitOfMeasure, (unit) => unit.category, { nullable: false})
     units: UnitOfMeasure[] = []
+
+    /**
+     * The type of unit that all units in the category convert to for conversions.
+     * - Relevant to UnitOfMeasure.conversionFactorToBase
+     */
+    @OneToOne(() => UnitOfMeasure, { nullable: false })
+    @JoinColumn()
+    baseUnit: UnitOfMeasure
 }

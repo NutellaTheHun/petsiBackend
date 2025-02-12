@@ -15,7 +15,9 @@ export class UnitOfMeasure {
     @ManyToOne(() => UnitCategory)
     category: UnitCategory;
 
-    // figure out a good way of enforcing the base unit
+    /**
+     * Conversion factor to category.baseUnit
+     */
     @Column({ nullable: true })
     conversionFactorToBase?: number; 
 }
