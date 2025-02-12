@@ -1,9 +1,18 @@
-import { Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { RecipeCategory } from "./recipe-category.entity";
+import { Recipe } from "./recipe.entity";
 
 @Entity()
 export class RecipeSubCategory{
     @PrimaryGeneratedColumn()
     id: number;
 
-    
+    @Column({ nullable: false })
+    name: string;
+
+    @ManyToOne(() => RecipeCategory, { nullable: false })
+    parentCategory: RecipeCategory;
+
+    @OneToMany(() => Recipe, (recipe) => recipe.category, { nullable: false })
+    recipes: Recipe[] = [];
 }
