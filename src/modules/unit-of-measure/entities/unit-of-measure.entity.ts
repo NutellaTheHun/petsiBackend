@@ -12,12 +12,12 @@ export class UnitOfMeasure {
     @Column({ nullable: false })
     abbreviation: string;
 
-    @ManyToOne(() => UnitCategory)
+    @ManyToOne(() => UnitCategory, { nullable: false})
     category: UnitCategory;
 
     /**
      * Conversion factor to category.baseUnit
      */
-    @Column({ nullable: true })
-    conversionFactorToBase?: number; 
+    @Column({ type: "decimal", precision: 18, scale: 10, nullable: true })
+    conversionFactorToBase?: string;
 }

@@ -19,7 +19,7 @@ export class UnitCategory{
      * The type of unit that all units in the category convert to for conversions.
      * - Relevant to UnitOfMeasure.conversionFactorToBase
      */
-    @OneToOne(() => UnitOfMeasure, { nullable: false })
+    @OneToOne(() => UnitOfMeasure, { nullable: true })
     @JoinColumn()
-    baseUnit: UnitOfMeasure
+    baseUnit?: UnitOfMeasure
 }
