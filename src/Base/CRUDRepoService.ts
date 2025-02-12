@@ -1,4 +1,4 @@
-import { DataSource, ObjectLiteral, Repository } from "typeorm";
+import { ObjectLiteral, Repository } from "typeorm";
 
 export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral, UDto extends ObjectLiteral> {
 

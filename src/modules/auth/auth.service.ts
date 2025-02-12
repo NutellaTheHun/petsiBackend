@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Role } from './entities/role.entities';
 import { CrudRepoService } from 'src/Base/CRUDRepoService';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,7 +21,7 @@ export class AuthService {
         @InjectRepository(Role)
         private rolesRepo: Repository<Role>,    
     ){
-        this.users = new CrudRepoService(this.usersRepo, CreateUserDto, UpdateUserDto);
-        this.roles = new CrudRepoService(this.rolesRepo, CreateRoleDto, UpdateRoleDto);
+        this.users = new CrudRepoService<User, CreateUserDto, UpdateUserDto>(this.usersRepo, CreateUserDto, UpdateUserDto);
+        this.roles = new CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>(this.rolesRepo, CreateRoleDto, UpdateRoleDto);
     }
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -9,12 +10,13 @@ import { DataSource } from 'typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
-import { TypeORMPostgresModule } from './typeorm-modules/TypeORMPostgresProd';
+import { TypeORMPostgresModule } from './typeorm-configs/TypeORMPostgresProd';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 
 @Module({
   imports: [ 
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeORMPostgresModule([]),
     OrdersModule, MenuItemsModule, TemplatesModule, 
     LabelsModule, AuthModule, InventoryAreasModule, 
