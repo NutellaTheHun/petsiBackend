@@ -15,6 +15,7 @@ export class AuthController {
     // Roles
     @Get('roles')
     findAllRoles(): Promise<Role[]> {
+        // handle if null
         return this.authService.roles.findAll();
     }
 
@@ -26,11 +27,13 @@ export class AuthController {
 
     @Post()
     createRole(@Body() createRoleDto: CreateRoleDto){
+        // validate: role doesn't already exist (will currently update if so save())
         return this.authService.roles.create(createRoleDto);
     }
 
     @Patch('roles/:id')
     updateRole(@Param('id', ParseIntPipe) id: number, updateRoleDto: UpdateRoleDto){
+        // if id not found? (currently using save() so will insert)
         return this.authService.roles.update(id, updateRoleDto);
     }
 
@@ -39,6 +42,7 @@ export class AuthController {
     
     @Get('users')
     findAllUsers(): Promise<User[]> {
+        // handle if null
         return this.authService.users.findAll();
     }
 
@@ -50,16 +54,22 @@ export class AuthController {
 
     @Post()
     createUser(@Body() createUserDto: CreateUserDto){
+        // validate: role doesn't already exist (will currently update if so save())
+        // handle pHashing where?
+        //      - has to be before hitting CRUDRepoService,
+        //      - maybe middleware?
         return this.authService.users.create(createUserDto);
     }
 
     @Patch(':id')
     updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto){
+        // if id not found? (currently using save() so will insert)
         return this.authService.users.update(id, updateUserDto);
     }
 
     @Delete('users/:id')
     removeUser(@Param('id', ParseIntPipe) id: number){
+        // handle if id not found
         return this.authService.users.removeById(id);
     }
 
@@ -68,6 +78,7 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @Post('login')
     signIn(@Body() signInDto: SignInDto) {
+        //validate signInDto fields are populated?
         return this.authService.signIn(signInDto.username, signInDto.password)
     }
 }
