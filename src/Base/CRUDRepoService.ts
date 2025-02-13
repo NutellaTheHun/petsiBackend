@@ -1,4 +1,4 @@
-import { ObjectLiteral, Repository } from "typeorm";
+import { FindOneOptions, ObjectLiteral, Repository } from "typeorm";
 
 export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral, UDto extends ObjectLiteral> {
 
@@ -12,11 +12,11 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         return this.repo.find();
     }
 
-    findOne(id: number): Promise<T | null> {
-        return this.repo.findOne({ id } as any);
+    findOne(findOptions: FindOneOptions<T>): Promise<T | null> {
+        return this.repo.findOne(findOptions);
     }
 
-    async remove(id: number): Promise<void> {
+    async removeById(id: number): Promise<void> {
         await this.repo.delete(id);
     }
 
@@ -24,7 +24,12 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         await this.repo.save(this.mapToEntity(createDto));
     }
 
-    async update(id: number, updateDto: UDto) : Promise<any> {
+    /**
+     * 
+     * @param id Currently not using ID, Repository.save is currently being used. Required if was using update()
+     * @param updateDto 
+     */
+    async update(id: number, updateDto : UDto) : Promise<any> {
         await this.repo.save(this.mapToEntity(updateDto));
     }
 
@@ -33,4 +38,5 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         Object.assign(entity, dto);
         return entity;
     }
+    
 }

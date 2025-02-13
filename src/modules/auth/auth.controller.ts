@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from './entities/role.entities';
 import { User } from './entities/user.entities';
@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -20,7 +21,7 @@ export class AuthController {
     @Get('roles/:id')
     fineOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
         // handle if null
-        return this.authService.roles.findOne(id);
+        return this.authService.roles.findOne({where: {id: id,},});
     }
 
     @Post()
@@ -44,7 +45,7 @@ export class AuthController {
     @Get('users/:id')
     fineOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
         // handle if null
-        return this.authService.users.findOne(id);
+        return this.authService.users.findOne({where: {id: id,},});
     }
 
     @Post()
@@ -59,6 +60,14 @@ export class AuthController {
 
     @Delete('users/:id')
     removeUser(@Param('id', ParseIntPipe) id: number){
-        return this.authService.users.remove(id);
+        return this.authService.users.removeById(id);
+    }
+
+    // Authentication
+
+    @HttpCode(HttpStatus.OK)
+    @Post('login')
+    signIn(@Body() signInDto: SignInDto) {
+        return this.authService.signIn(signInDto.username, signInDto.password)
     }
 }
