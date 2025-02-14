@@ -28,13 +28,19 @@ export class AuthController {
     @Post()
     createRole(@Body() createRoleDto: CreateRoleDto){
         // validate: role doesn't already exist (will currently update if so save())
-        return this.authService.roles.create(createRoleDto);
+        return this.authService.createRole(createRoleDto);
     }
 
     @Patch('roles/:id')
     updateRole(@Param('id', ParseIntPipe) id: number, updateRoleDto: UpdateRoleDto){
         // if id not found? (currently using save() so will insert)
-        return this.authService.roles.update(id, updateRoleDto);
+        return this.authService.updateRole(id, updateRoleDto);
+    }
+
+    @Delete('roles/:id')
+    removeRole(@Param('id', ParseIntPipe) id: number){
+        // handle if id not found
+        return this.authService.roles.removeById(id);
     }
 
 
@@ -54,17 +60,13 @@ export class AuthController {
 
     @Post()
     createUser(@Body() createUserDto: CreateUserDto){
-        // validate: role doesn't already exist (will currently update if so save())
-        // handle pHashing where?
-        //      - has to be before hitting CRUDRepoService,
-        //      - maybe middleware?
-        return this.authService.users.create(createUserDto);
+        return this.authService.createUser(createUserDto);
     }
 
     @Patch(':id')
     updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto){
         // if id not found? (currently using save() so will insert)
-        return this.authService.users.update(id, updateUserDto);
+        return this.authService.updateUser(id, updateUserDto);
     }
 
     @Delete('users/:id')

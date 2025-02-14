@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Role } from './entities/role.entities';
 import { CrudRepoService } from 'src/Base/CRUDRepoService';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -12,12 +12,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { hashPassword, isPassHashMatch } from './hash';
 import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
-import { createUserInstance } from './entities/user.factory';
+import { createUserInstance, UserFactory } from './factories/user.factory';
+import { RoleFactory } from './factories/role.factory';
 
 @Injectable()
 export class AuthService {
     readonly users: CrudRepoService<User, CreateUserDto, UpdateUserDto>;
     readonly roles: CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>;
+    readonly userFactory: UserFactory;
+    readonly roleFactory: RoleFactory;
 
     constructor(
         @InjectRepository(User)
@@ -50,17 +53,45 @@ export class AuthService {
         };
     }
 
-    async createUser(username: string, password: string, email:string, roles: Role[]): Promise<void>{
-        const alreadyExists = await this.users.findOne({ where: { username: username,},});
+    getJwtSecret(): string | undefined { return this.configSerivce.get<string>('JWT_SECRET');}
+
+    async createUser(userDto: CreateUserDto): Promise<void>{
+        const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
         if(alreadyExists){
             // needs more refined error
             throw new ExceptionsHandler();
         }
 
-        const pHash = await hashPassword(password);
-        const user = createUserInstance(username, pHash, email, roles);
-        this.usersRepo.create(user);
+        const user = await this.userFactory.createDtoToEntity(userDto);
+        this.users.create(user);
     }
 
-    getJwtSecret(): string | undefined { return this.configSerivce.get<string>('JWT_SECRET');}
+    async updateUser(id: number, userDto: UpdateUserDto) {
+        const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
+        if(!alreadyExists){
+            // needs more refined error
+            throw new ExceptionsHandler();
+        }
+
+        const user = await this.userFactory.updateDtoToEntity(userDto);
+        this.users.update(id, user);
+    }
+
+    async createRole(roleDto: CreateRoleDto): Promise<void> {
+        const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
+        if(alreadyExists){
+            throw new ExceptionsHandler();
+        }
+        const role = await this.roleFactory.createDtoToEntity(roleDto);
+        this.roles.create(role);
+    }
+
+    async updateRole(id: number, roleDto: UpdateRoleDto) {
+        const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
+        if(!alreadyExists){
+            throw new ExceptionsHandler();
+        }
+        const role = await this.roleFactory.updateDtoToEntity(roleDto);
+        this.roles.update(id, role);
+    }
 }

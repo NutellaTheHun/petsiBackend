@@ -12,7 +12,7 @@ export class CreateUserDto {
 
     @IsString()
     @IsNotEmpty()
-    readonly passwordHash: string;
+    readonly password: string;
     
     @IsArray()
     @IsNumber({}, { each: true })
