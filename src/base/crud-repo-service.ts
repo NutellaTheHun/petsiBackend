@@ -1,4 +1,4 @@
-import { FindOneOptions, ObjectLiteral, Repository } from "typeorm";
+import { DeleteResult, FindOneOptions, FindOptionsWhere, ObjectLiteral, Repository } from "typeorm";
 
 export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral, UDto extends ObjectLiteral> {
 
@@ -8,21 +8,31 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         private updateDto: new () => UDto,
     ){}
 
-    findAll(): Promise<T[]> {
-        return this.repo.find();
+    async findAll(): Promise<T[]> {
+        return await this.repo.find();
     }
 
-    findOne(findOptions: FindOneOptions<T>): Promise<T | null> {
-        return this.repo.findOne(findOptions);
+    async findOne(findOptions: FindOneOptions<T>): Promise<T | null> {
+        return await this.repo.findOne(findOptions);
     }
 
-    find(findOptions: FindOneOptions<T>): Promise<T[] | null> {
-        return this.repo.find(findOptions);
+    async find(findOptions: FindOneOptions<T>): Promise<T[] | null> {
+        return await this.repo.find(findOptions);
     }
 
-    async removeById(id: number) {
-        return await this.repo.delete(id);
+    async remove(findOptions: FindOptionsWhere<T>): Promise<DeleteResult> {
+        return await this.repo.delete(findOptions);
     }
+    
+    //Cant access id within type T without id being type any, with idField: string = 'id'
+    async removeById(id: any, idField: string = 'id'): Promise<DeleteResult> {
+        const entity = await this.repo.findOne({ where: { id } });
+        if(!entity){
+            throw new Error('entity with id:${id} not found')
+        }
+        return await this.remove(entity);
+    }
+    
 
     async create(entity : T) : Promise<T> {
         return await this.repo.save(entity);

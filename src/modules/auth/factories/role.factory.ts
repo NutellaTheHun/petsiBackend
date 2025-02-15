@@ -8,27 +8,33 @@ export class RoleFactory {
     constructor() { }
 
     createDtoToEntity(roleDto: CreateRoleDto): Role{
-        const role = plainToInstance(Role, { ...roleDto });
-        return role;
+        return plainToInstance(Role, { ...roleDto });
     }
 
     updateDtoToEntity(roleDto: UpdateRoleDto): Role {
-        const role = plainToInstance(Role, { ...roleDto });
+        return plainToInstance(Role, { ...roleDto });
+    }
+
+    entityToCreateDto(role: Role): CreateRoleDto {
+        return plainToInstance(CreateRoleDto, { ...role });
+    }
+
+    getDefaultRoles(): Role[] {
+        return [
+            this.createRoleInstance("admin", []),
+            this.createRoleInstance("manager", []),
+            this.createRoleInstance("staff", [])
+        ];
+    }
+
+    getTestingRoles(): Role[]{
+        return this.getDefaultRoles();
+    }
+
+    createRoleInstance(name:string, users: User[]): Role {
+        const role = new Role();
+        role.name = name;
+        role.users = users;
         return role;
     }
-}
-
-export function getDefaultRoles(): Role[] {
-    return [
-        createRoleInstance("admin", []),
-        createRoleInstance("manager", []),
-        createRoleInstance("staff", [])
-    ];
-}
-
-export function createRoleInstance(name:string, users: User[]): Role {
-    const role = new Role();
-    role.name = name;
-    role.users = users;
-    return role;
 }

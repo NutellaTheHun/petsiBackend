@@ -39,7 +39,7 @@ export class AuthController {
     @Delete('roles/:id')
     removeRole(@Param('id', ParseIntPipe) id: number){
         // handle if id not found
-        return this.authService.roles.removeById(id);
+        return this.authService.roles.removeById(id);  //returns Promise<DeleteResult>
     }
 
     @Get('users')
@@ -68,7 +68,7 @@ export class AuthController {
     @Delete('users/:id')
     removeUser(@Param('id', ParseIntPipe) id: number){
         // handle if id not found
-        return this.authService.users.removeById(id);
+        return this.authService.users.removeById(id); //returns Promise<DeleteResult>
     }
 
     // Authentication
