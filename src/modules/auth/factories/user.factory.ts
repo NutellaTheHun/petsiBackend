@@ -23,26 +23,32 @@ export class UserFactory{
    
             return plainToInstance(User, {...userDto, roles});
     }
+
+    async defaultUsers() : Promise<User[]> {
+        const pHash = await hashPassword("test");
+        // figure out nice way of getting roles.
+        const roles = []
+        return [
+            await this.createUserInstance("admin", pHash, "email@email.com", roles),
+        ];
+    }
+    
+    async getTestUsers() : Promise<User[]> {
+        return await this.defaultUsers();
+    }
+    
+    async createUserInstance(username: string, rawPassword: string, email: string, roles: Role[] | null): Promise<User> {
+            const user = new User();
+            user.username = username;
+            user.email = email;
+            user.passwordHash = await hashPassword(rawPassword);
+            user.roles = []
+            if(roles){
+                user.roles = roles;
+            }
+            return user;
+    }
 }
 
-export async function defaultUsers() : Promise<User[]> {
-    const pHash = await hashPassword("test");
-    // figure out nice way of getting roles.
-    const roles = []
-    return [
-        await createUserInstance("admin", pHash, "email@email.com", roles),
-    ];
-}
 
-export async function createUserInstance(username: string, rawPassword: string, email: string, roles: Role[] | null): Promise<User> {
-        const user = new User();
-        user.username = username;
-        user.email = email;
-        user.passwordHash = await hashPassword(rawPassword);
-        user.roles = []
-        if(roles){
-            user.roles = roles;
-        }
-        return user;
-}
 
