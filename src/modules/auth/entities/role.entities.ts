@@ -9,7 +9,7 @@ export class Role{
     @Column({ nullable: false, unique: true})
     name: string;
 
-    @ManyToMany(() => User, (user) => user.roles, { nullable: false })
+    @ManyToMany(() => User, (user) => user.roles, { nullable: true })
     @JoinTable()
-    users: User[] = [];
+    users: User[];
 }

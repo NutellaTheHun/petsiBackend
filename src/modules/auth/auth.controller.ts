@@ -12,7 +12,6 @@ import { SignInDto } from './dto/sign-in.dto';
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
-    // Roles
     @Get('roles')
     findAllRoles(): Promise<Role[]> {
         // handle if null
@@ -25,7 +24,7 @@ export class AuthController {
         return this.authService.roles.findOne({where: {id: id,},});
     }
 
-    @Post()
+    @Post('roles')
     createRole(@Body() createRoleDto: CreateRoleDto){
         // validate: role doesn't already exist (will currently update if so save())
         return this.authService.createRole(createRoleDto);
@@ -43,9 +42,6 @@ export class AuthController {
         return this.authService.roles.removeById(id);
     }
 
-
-    // Users
-    
     @Get('users')
     findAllUsers(): Promise<User[]> {
         // handle if null
@@ -53,12 +49,12 @@ export class AuthController {
     }
 
     @Get('users/:id')
-    fineOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
+    findOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
         // handle if null
         return this.authService.users.findOne({where: {id: id,},});
     }
 
-    @Post()
+    @Post('users')
     createUser(@Body() createUserDto: CreateUserDto){
         return this.authService.createUser(createUserDto);
     }
@@ -76,7 +72,6 @@ export class AuthController {
     }
 
     // Authentication
-
     @HttpCode(HttpStatus.OK)
     @Post('login')
     signIn(@Body() signInDto: SignInDto) {

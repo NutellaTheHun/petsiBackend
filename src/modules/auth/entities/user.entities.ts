@@ -21,6 +21,6 @@ export class User{
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToMany(() => Role, (role) => role.users, { nullable: false })
-    roles: Role[] = [];
+    @ManyToMany(() => Role, (role) => role.users, { nullable: true })
+    roles: Role[];
 }
