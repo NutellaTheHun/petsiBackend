@@ -1,6 +1,6 @@
 import { triggerAsyncId } from "async_hooks";
 import { Result } from "postcss";
-import { DeleteResult, FindOneOptions, FindOptionsWhere, ObjectLiteral, Repository } from "typeorm";
+import { DeleteResult, FindOneOptions, FindOptionsWhere, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
 
 /**
  * A generic Repository service that essentially wraps around typeORM Repositories to provide basic database access methods.
@@ -56,5 +56,9 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
      */
     async update(id: number, entity : T) : Promise<T> {
         return await this.repo.save(entity);
+    }
+
+    createQueryBuilder(): QueryBuilder<T> {
+        return this.repo.createQueryBuilder();
     }
 }

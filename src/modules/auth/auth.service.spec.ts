@@ -4,9 +4,7 @@ import { getAuthTestingModule } from './utils/authTestingModule';
 import { RoleFactory } from './factories/role.factory';
 import { Role } from './entities/role.entities';
 import { UserFactory } from './factories/user.factory';
-import { User } from './entities/user.entities';
-import { errorMonitor } from 'events';
-import { getManager, getRepository } from 'typeorm';
+import { error } from 'console';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -29,6 +27,7 @@ describe('AuthService', () => {
 
   
   afterAll(async() => {
+    /*
     const roles = roleFactory.getTestingRoles();
 
     const dbRoles = await Promise.all(
@@ -41,6 +40,11 @@ describe('AuthService', () => {
       dbRoles.filter((role): role is Role => role !== null)
         .map(async (roleEntity) => await service.roles.remove(roleEntity))
     );
+    */
+    const roleQueryBuilder = service.roles.createQueryBuilder();
+    await roleQueryBuilder.delete().execute();
+    const userQueryBuilder = service.users.createQueryBuilder();
+    await userQueryBuilder.delete().execute();
   })
   
 
@@ -168,10 +172,22 @@ describe('AuthService', () => {
     expect(affectedRole?.users).toBeUndefined();
   });
 
-  //updateUser()
-    //check roles.user reference
-  //removeUserById()
-    //check roles.user reference
+  it("should insert and remove by id" , async () => {
+    const user = await userFactory.createUserInstance("testIdUser", "testIdPass", "email@email.com", [])
+    const dto = userFactory.entityToCreateDto(user, "testIdPass");
+    const creation = await service.createUser(dto);
+    if(!creation){
+      throw new error("insert user failed");
+    }
+
+    const result = await service.users.removeById(creation.id);
+    if(!result){
+      throw new error("removal by id failed");
+    }
+    const shouldBeEmpty = await service.users.findOne({ where: { id: creation.id }});
+
+    expect(shouldBeEmpty).not.toBeNull();
+  })
  
   // crud
     //findOne
@@ -182,5 +198,4 @@ describe('AuthService', () => {
     //create
     //update
   
-
 });
