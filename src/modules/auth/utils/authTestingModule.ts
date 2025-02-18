@@ -1,12 +1,14 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
-import { TypeORMPostgresTestingModule } from "../../../typeorm-configs/TypeORMPostgresTesting";
+import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { User } from "../entities/user.entities";
 import { Role } from "../entities/role.entities";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthController } from "../auth.controller";
 import { AuthService } from "../auth.service";
+import { RoleFactory } from "../factories/role.factory";
+import { UserFactory } from "../factories/user.factory";
 
 export async function getAuthTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -25,5 +27,5 @@ export async function getAuthTestingModule(): Promise<TestingModule> {
                   })
             ],
             controllers: [AuthController],
-            providers: [AuthService, ConfigService],
+            providers: [AuthService, ConfigService, RoleFactory, UserFactory],
 }).compile()};

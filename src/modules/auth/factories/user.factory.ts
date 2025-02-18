@@ -5,23 +5,50 @@ import { User } from "../entities/user.entities";
 import { plainToInstance } from "class-transformer";
 import { In, Repository } from "typeorm";
 import { UpdateUserDto } from "../dto/update-user.dto";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class UserFactory{
-    constructor(private rolesService: Repository<Role>){}
+    
+    constructor(
+        @InjectRepository(Role)
+        private rolesRepo: Repository<Role>,
+    ){}
 
     async createDtoToEntity(userDto: CreateUserDto) : Promise<User>{
-        const pHash = hashPassword(userDto.password)
-        const roles = await this.rolesService.find({ where: { id: In(userDto.roleIds) }});
+        const pHash = await hashPassword(userDto.rawPassword)
+        const roles = await this.rolesRepo.find({ where: { id: In(userDto.roleIds) }});
 
-        return plainToInstance(User, {...userDto, passwordHash: pHash, roles});
+        return plainToInstance(User, {
+            username: userDto.username,
+            email: userDto.email,
+            passwordHash: pHash, 
+            roles: roles
+        });
     }
 
     async updateDtoToEntity(userDto: UpdateUserDto) : Promise<User> {
         const roles = userDto.roleIds?.length
-            ? await this.rolesService.find({ where: { id: In(userDto.roleIds) }})
+            ? await this.rolesRepo.find({ where: { id: In(userDto.roleIds) }})
             : [];
    
-            return plainToInstance(User, {...userDto, roles});
+            return plainToInstance(User, {
+                username: userDto.username,
+                email: userDto.email,
+                roles: roles
+            });
+    }
+
+    /** Atleast use for testing purposes, needs to pass raw password 
+     * to properly hash at the correct time. 
+     * */
+    entityToCreateDto(user: User, rawPassword: string): CreateUserDto {
+        return plainToInstance(CreateUserDto, { 
+            ...user, 
+            rawPassword, 
+            roleIds: user.roles.map(role => role.id) 
+        });
     }
 
     async defaultUsers() : Promise<User[]> {

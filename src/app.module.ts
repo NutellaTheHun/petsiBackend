@@ -10,7 +10,7 @@ import { DataSource } from 'typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
-import { TypeORMPostgresModule } from './typeorm-configs/TypeORMPostgresProd';
+import { TypeORMPostgresModule } from './typeorm/configs/TypeORMPostgresProd';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 

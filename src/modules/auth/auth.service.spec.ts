@@ -3,16 +3,28 @@ import { AuthService } from './auth.service';
 import { getAuthTestingModule } from './utils/authTestingModule';
 import { RoleFactory } from './factories/role.factory';
 import { Role } from './entities/role.entities';
+import { UserFactory } from './factories/user.factory';
+import { User } from './entities/user.entities';
+import { errorMonitor } from 'events';
+import { getManager, getRepository } from 'typeorm';
 
 describe('AuthService', () => {
   let service: AuthService;
   let roleFactory: RoleFactory;
+  let userFactory: UserFactory;
+
+  const ADMIN = "admin";
+  const MANAGER = "manager";
+  const STAFF = "staff";
+  
+  const testUserName = "testUser";
 
   beforeAll(async () => {
     const module: TestingModule = (await getAuthTestingModule());
 
-    roleFactory = new RoleFactory();
+    roleFactory = module.get<RoleFactory>(RoleFactory);
     service = module.get<AuthService>(AuthService);
+    userFactory = module.get<UserFactory>(UserFactory);
   });
 
   
@@ -21,11 +33,11 @@ describe('AuthService', () => {
 
     const dbRoles = await Promise.all(
       roles.map(role => 
-        service.roles.findOne({where: {name: role.name}} )
+        service.roles.findOne({where: { name: role.name } })
       )
     );
 
-    await Promise.all(
+    const removalResults = await Promise.all(
       dbRoles.filter((role): role is Role => role !== null)
         .map(async (roleEntity) => await service.roles.remove(roleEntity))
     );
@@ -42,7 +54,7 @@ describe('AuthService', () => {
       
       const op = await service.roles.create(role);
 
-      const saved = await service.roles.findOne({where: {id: op.id}})
+      const saved = await service.roles.findOne({ where: { id: op.id } })
       
       expect(saved).not.toBeNull();
   });
@@ -50,12 +62,12 @@ describe('AuthService', () => {
   it('should delete a role', async () => {
     const roleName = "test";
 
-    const saved = await service.roles.findOne({where: {name: roleName}})
+    const saved = await service.roles.findOne({ where: { name: roleName } })
     if(saved){
       await service.roles.remove(saved);
     }
 
-    const exists = await service.roles.findOne({where: {name: roleName}})
+    const exists = await service.roles.findOne({ where: { name: roleName } })
     expect(exists).toBeFalsy();
   });
 
@@ -77,18 +89,18 @@ describe('AuthService', () => {
   });
 
   it("should equal default role ADMIN", async () => {
-    const result = await service.roles.findOne({ where: { name: "admin" }})
-    expect(result?.name).toBe("admin");
+    const result = await service.roles.findOne({ where: { name: ADMIN } })
+    expect(result?.name).toBe(ADMIN);
   });
 
   it("should equal default role MANAGER", async () => {
-    const result = await service.roles.findOne({ where: { name: "manager" }})
-    expect(result?.name).toBe("manager");
+    const result = await service.roles.findOne({ where: { name: MANAGER } })
+    expect(result?.name).toBe(MANAGER);
   });
 
   it("should equal default role STAFF", async () => {
-    const result = await service.roles.findOne({ where: { name: "staff" }})
-    expect(result?.name).toBe("staff");
+    const result = await service.roles.findOne({ where: { name: STAFF } })
+    expect(result?.name).toBe(STAFF);
   });
 
   it("should insert test role and update to UPDATETEST", async () => {
@@ -102,15 +114,73 @@ describe('AuthService', () => {
   });
 
   it("should remove role UPDATETEST", async () => {
-    const role = await service.roles.findOne({ where: { name: "updatetest" }});
+    const role = await service.roles.findOne({ where: { name: "updatetest" } });
     if(!role){
       throw new Error("updatetest role to remove not found.")
     }
     
-    await service.roles.removeById(role.id);
+    const results = await service.roles.removeById(role.id);
 
-    const checkRole = await service.roles.findOne({ where: { id: role.id }});
+    const checkRole = await service.roles.findOne({ where: { id: role.id } });
     expect(checkRole).toBeNull();
   });
+
+  it("should insert a user", async () => {
+
+    const role = await service.roles.findOne({ where: { name: STAFF } })
+    if (!role) {
+      throw new Error("Role 'staff' not found");
+    }
+    const roles = [role];
+    const user = await userFactory.createUserInstance(testUserName, "testPass", "email@email.com", roles)
+    const dto = userFactory.entityToCreateDto(user, "testPass");
+    const result = await service.createUser(dto);
+    expect(result).not.toBeNull()
+    expect(result.roles[0].name).toBe(STAFF);
+  });
+
+  it("should update the roles user reference", async () => {
+
+    const updatedRole = await service.roles.findOne({ where: { name: STAFF }, relations: ["users"], });
+    expect(updatedRole).not.toBeNull();
+    expect(updatedRole?.users[0].username).toBe(testUserName);
+  });
+
+  it("should remove a user", async () => {
+    const user = await service.users.findOne({ where: { username: testUserName } });
+    if(!user){
+      throw new Error("testUser not found")
+    }
+    console.log(`user to removes id ${user?.id}`);  // Check the id value
+
+    const removal = await service.users.remove(user);
+    if(!removal){
+      throw new Error("user removal failed");
+    }
+
+    const shouldBeEmpty = await service.users.findOne({ where: { username: testUserName } });
+
+    expect(shouldBeEmpty).toBeNull();
+  });
+
+  it("should remove user reference from role", async () => {
+    const affectedRole = await service.roles.findOne({ where: { name: STAFF } });
+    expect(affectedRole?.users).toBeUndefined();
+  });
+
+  //updateUser()
+    //check roles.user reference
+  //removeUserById()
+    //check roles.user reference
+ 
+  // crud
+    //findOne
+    //findAll
+    //find
+    //remove
+    //removeById
+    //create
+    //update
+  
 
 });

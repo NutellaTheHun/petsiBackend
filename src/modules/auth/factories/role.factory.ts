@@ -3,7 +3,9 @@ import { User } from "../entities/user.entities";
 import { CreateRoleDto } from "../dto/create-role.dto";
 import { plainToInstance } from "class-transformer";
 import { UpdateRoleDto } from "../dto/update-role.dto";
+import { Injectable } from "@nestjs/common";
 
+@Injectable()
 export class RoleFactory {
     constructor() { }
 

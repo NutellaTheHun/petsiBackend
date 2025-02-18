@@ -1,5 +1,10 @@
+import { triggerAsyncId } from "async_hooks";
+import { Result } from "postcss";
 import { DeleteResult, FindOneOptions, FindOptionsWhere, ObjectLiteral, Repository } from "typeorm";
 
+/**
+ * A generic Repository service that essentially wraps around typeORM Repositories to provide basic database access methods.
+ */
 export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral, UDto extends ObjectLiteral> {
 
     constructor(
@@ -19,10 +24,15 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
     async find(findOptions: FindOneOptions<T>): Promise<T[] | null> {
         return await this.repo.find(findOptions);
     }
-
-    async remove(findOptions: FindOptionsWhere<T>): Promise<DeleteResult> {
-        return await this.repo.delete(findOptions);
+    
+    async remove(entity: T): Promise<T> {
+        const result = await this.repo.remove(entity);
+        return result;
     }
+    /*
+    async remove(entity : T): Promise<DeleteResult> {
+        return await this.repo.delete(entity);
+    }*/
     
     //Cant access id within type T without id being type any, with idField: string = 'id'
     async removeById(id: any, idField: string = 'id'): Promise<DeleteResult> {
@@ -30,7 +40,8 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         if(!entity){
             throw new Error('entity with id:${id} not found')
         }
-        return await this.remove(entity);
+        return await this.repo.delete(entity);
+        //return await this.remove(entity);
     }
     
 
