@@ -5,7 +5,6 @@ import { RoleFactory } from './factories/role.factory';
 import { Role } from './entities/role.entities';
 import { UserFactory } from './factories/user.factory';
 import { error } from 'console';
-import e from 'express';
 import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthService', () => {
