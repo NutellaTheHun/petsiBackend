@@ -12,3 +12,10 @@ test('compare hash function should equal the hashed password', async () => {
     const result = await isPassHashMatch(passInput, hash);
     expect(result).toBeTruthy();
 });
+
+test('compare hash function should NOT equal the hashed password', async () => {
+    const passInput = "test";
+    const hash = await hashPassword(passInput);
+    const result = await isPassHashMatch("NOTTEST", hash);
+    expect(result).toBeFalsy();
+});

@@ -5,6 +5,8 @@ import { RoleFactory } from './factories/role.factory';
 import { Role } from './entities/role.entities';
 import { UserFactory } from './factories/user.factory';
 import { error } from 'console';
+import e from 'express';
+import { UnauthorizedException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -188,14 +190,42 @@ describe('AuthService', () => {
 
     expect(shouldBeEmpty).not.toBeNull();
   })
+
+  it("should update a user", async () =>{
+    const user = await userFactory.createUserInstance("testUpdateUser", "testUpdatePass", "toUpdateEmail@email.com", [])
+    const dto = userFactory.entityToCreateDto(user, "testUpdatePass");
+    const creation = await service.createUser(dto);
+    if(!creation){
+      throw new error("insert user failed");
+    }
+    const toUpdate = await service.users.findOne({ where: {id: creation.id } });
+    if(toUpdate){
+      toUpdate.email = "newEmail@email.com";
+    } else{
+      throw new error("failed to retrieve user to update.")
+    }
+
+    const result = await service.users.update(toUpdate.id, toUpdate);
+    const updatedEmail = await service.users.findOne({ where: {id: result.id } });
+    expect(updatedEmail?.email).toBe("newEmail@email.com");
+  })
  
-  // crud
-    //findOne
-    //findAll
-    //find
-    //remove
-    //removeById
-    //create
-    //update
-  
+  it("should sign in", async () => {
+    const user = await userFactory.createUserInstance("loginUser", "loginPassword", "loginUser@email.com", [])
+    const dto = userFactory.entityToCreateDto(user, "loginPassword");
+    const creation = await service.createUser(dto);
+    if(!creation){
+      throw new error("insert user failed");
+    }
+    const result = await service.signIn(user.username, "loginPassword");
+    expect(result.access_token).not.toBeNull();
+  })
+
+  it("should fail sign in (incorrect password)", async() => {
+    await expect(service.signIn("loginUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);
+  })
+
+  it("should fail sign in (no user)", async() => {
+    await expect(service.signIn("nonExistingUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);
+  })
 });

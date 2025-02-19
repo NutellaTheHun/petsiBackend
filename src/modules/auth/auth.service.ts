@@ -40,10 +40,10 @@ export class AuthService {
     async signIn(username: string, pass: string): Promise<{ access_token: string }> {
         const user = await this.users.findOne({ where: { username: username,},});
         if(!user){
-            throw new UnauthorizedException();// check if this wil suffice
+            throw new UnauthorizedException('Invalid username or password');// check if this wil suffice
         }
-        if (await !isPassHashMatch(pass, user.passwordHash)){
-            throw new UnauthorizedException();
+        if (!(await isPassHashMatch(pass, user.passwordHash))){
+            throw new UnauthorizedException('Invalid username or password');
         }
         const payload = { sub: user.id, username: user.username}
         return {
