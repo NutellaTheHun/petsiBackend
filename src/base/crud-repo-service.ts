@@ -1,6 +1,4 @@
-import { triggerAsyncId } from "async_hooks";
-import { Result } from "postcss";
-import { DeleteResult, FindManyOptions, FindOneOptions, FindOptionsWhere, ObjectLiteral, QueryBuilder, QueryFailedError, Repository } from "typeorm";
+import { FindManyOptions, FindOneOptions, ObjectLiteral, QueryBuilder, QueryFailedError, Repository } from "typeorm";
 
 /**
  * A generic Repository service that essentially wraps around typeORM Repositories to provide basic database access methods.
