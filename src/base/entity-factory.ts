@@ -6,25 +6,28 @@ export class EntityFactory<T extends ObjectLiteral, CDto extends ObjectLiteral, 
             private entityClass: new () => T,
             private createDto: new () => CDto,
             private updateDto: new () => UDto,
+            private defaultVals
         ){}
 
-        createDtoToEntity(createDto: CDto, propertyOverrides: Record<string, any> = {}) : T {
-            if(propertyOverrides){
-                const dtoWithExtras = { ...createDto, ...propertyOverrides }
-                return plainToInstance(this.entityClass , dtoWithExtras);
-            }
-            return plainToInstance(this.entityClass, { ...createDto });
+        createDtoToEntity(createDto: CDto) : T {
+            return plainToInstance(this.entityClass, createDto);
         }
 
-        updateDtoToEntity(updateDto: UDto, propertyOverrides: Record<string, any> = {}) : T {
-            if(propertyOverrides){
-                const dtoWithExtras = { ...updateDto, ...propertyOverrides }
-                return plainToInstance(this.entityClass , dtoWithExtras);
-            }
-            return plainToInstance(this.entityClass, { ...updateDto });
+        updateDtoToEntity(updateDto: UDto) : T {
+            return plainToInstance(this.entityClass , updateDto);
         }
 
-        createEntityInstance(createDto: any, propertyOverrides: Record<string, any> = {}) : T {
-            return this.createDtoToEntity(createDto as CDto, propertyOverrides);
+        createEntityInstance(createDto: any, propertyOverrides: Record<string, any> = {}): T {
+            const dtoWithExtras = { ...this.defaultVals, ...createDto, ...propertyOverrides } as CDto;
+            return this.createDtoToEntity(dtoWithExtras);
+        }
+
+        updateEntityInstance(updateDto: any, propertyOverrides: Record<string, any> = {}): T {
+            const dtoWithExtras = { ...this.defaultVals, ...updateDto, ...propertyOverrides } as CDto;
+            return this.createDtoToEntity(dtoWithExtras);
+        }
+
+        createDtoInstance(vals: any) : CDto{
+            return plainToInstance(this.createDto, {...this.defaultVals, ...vals }) as CDto;
         }
 }

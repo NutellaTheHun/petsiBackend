@@ -9,7 +9,7 @@ export class User{
     @Column({ nullable: false, unique: true })
     username: string;
 
-    @Column({ nullable: false, unique: true })
+    @Column({ nullable: true })
     email: string;
 
     //exclude() ?? messes with the dto -> entity / entity -> dto in authService/userFactory

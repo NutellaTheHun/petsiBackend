@@ -16,16 +16,12 @@ export class AuthController {
 
     @Get('roles')
     async findAllRoles(): Promise<Role[]> {
-        return await this.authService.roles.findAll();
+        return await this.authService.getAllRoles();
     }
 
     @Get('roles/:id')
     async findOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
-        const result = await this.authService.roles.findOne({where: {id: id,} });
-        if(!result){
-            throw new NotFoundException('Role with id ${id} not found');
-        }
-        return result;
+        return await this.authService.getRole(id);
     }
 
     @Post('roles')
@@ -59,21 +55,18 @@ export class AuthController {
     @Delete('roles/:id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeRole(@Param('id', ParseIntPipe) id: number){
-        return await this.authService.roles.removeById(id); 
+        return await this.authService.deleteRole(id); 
     }
 
     @Get('users')
     async findAllUsers(): Promise<User[]> {
-        return await this.authService.users.findAll();
+        return await this.authService.getAllUsers();
     }
 
     @Get('users/:id')
     async findOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
-        const result = await this.authService.users.findOne({where: {id: id,},});
-        if(!result){
-            throw new NotFoundException(`User with id ${id} not found.`);
-        }
-        return result;
+        //error handling?
+        return await this.authService.getUser(id);
     }
 
     @Post('users')
@@ -107,7 +100,7 @@ export class AuthController {
     @Delete('users/:id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeUser(@Param('id', ParseIntPipe) id: number){
-        return await this.authService.users.removeById(id);
+        return await this.authService.deleteUser(id);
     }
 
     // Authentication

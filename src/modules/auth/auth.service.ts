@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
-import { In, QueryFailedError, Repository } from 'typeorm';
+import { In, QueryBuilder, QueryFailedError, Repository } from 'typeorm';
 import { Role } from './entities/role.entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -13,33 +13,43 @@ import { isPassHashMatch } from './utils/hash';
 import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 import { UserFactory } from './factories/user.factory';
 import { RoleFactory } from './factories/role.factory';
-import { CrudRepoService } from '../../base/crud-repo-service';``
+import { CrudRepoService } from '../../base/crud-repo-service';import { CrudRepository } from '../../base/crud-repository';
+``
 
 @Injectable()
 export class AuthService {
-    readonly users: CrudRepoService<User, CreateUserDto, UpdateUserDto>;
-    readonly roles: CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>;
+    //readonly users: CrudRepoService<User, CreateUserDto, UpdateUserDto>;
+    //readonly roles: CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>;
     readonly userFactory: UserFactory;
     readonly roleFactory: RoleFactory;
+    //readonly usersRepo: CrudRepository<User>;
+    //readonly rolesRepo: CrudRepository<Role>;
 
     constructor(
         @InjectRepository(User)
-        private usersRepo: Repository<User>,
+        private readonly userRepo: Repository<User>,
 
         @InjectRepository(Role)
-        private rolesRepo: Repository<Role>,    
+        private readonly roleRepo: Repository<Role>,    
+        
+        //@InjectRepository(Role)
+        //private readonly roleRepo: CrudRepository<Role>,
+
+        //@InjectRepository(User)
+        //private readonly userRepo: CrudRepository<User>,
 
         private jwtService: JwtService,
         private configSerivce: ConfigService,
     ){ 
-        this.users = new CrudRepoService<User, CreateUserDto, UpdateUserDto>(this.usersRepo, CreateUserDto, UpdateUserDto);
-        this.roles = new CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>(this.rolesRepo, CreateRoleDto, UpdateRoleDto);
+        //this.users = new CrudRepoService<User, CreateUserDto, UpdateUserDto>(this.usersRepo, CreateUserDto, UpdateUserDto);
+        //this.roles = new CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>(this.rolesRepo, CreateRoleDto, UpdateRoleDto);
         this.userFactory = new UserFactory(this);
         this.roleFactory = new RoleFactory(this);
     }
 
     async signIn(username: string, pass: string): Promise<{ access_token: string }> {
-        const user = await this.users.findOne({ where: { username: username,},});
+        //const user = await this.users.findOne({ where: { username: username,},});
+        const user = await this.userRepo.findOne({ where: { username: username } });
         if(!user){
             throw new UnauthorizedException('Invalid username or password');// check if this wil suffice
         }
@@ -57,46 +67,101 @@ export class AuthService {
     }
 
     async createUser(userDto: CreateUserDto): Promise<User | null | QueryFailedError>{
-        const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
+        //const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
+        const alreadyExists = await this.userRepo.findOne({ where: { username: userDto.username,},});
         if(alreadyExists){
             return null;
         }
-        const user = await this.userFactory.createDtoToEntity(userDto);
-        return this.users.create(user);
+
+        const roleIds = userDto.roleIds || []
+        const user = await this.userFactory.createEntityInstance(userDto, { roles: this.getRolesById(roleIds)});
+        return this.userRepo.create(user);
     }
 
-    async updateUser(id: number, userDto: UpdateUserDto): Promise<User | QueryFailedError> {
-        const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
+    /**
+     * Id currently not used, using Repository.save for lifecycle hooks
+     * @param id currently not used, using Repository.save for lifecycle hooks
+     * @param userDto 
+     * @returns 
+     */
+    async updateUser(id: number, userDto: UpdateUserDto): Promise<User | null | QueryFailedError> {
+        const alreadyExists = await this.userRepo.findOne({ where: { username: userDto.username,},});
         if(!alreadyExists){
-            throw new ExceptionsHandler(); // needs more refined error
+            return null;
         }
-        const user = await this.userFactory.updateDtoToEntity(userDto);
-        return this.users.update(id, user);
+
+        const roleIds = userDto.roleIds || []
+        const user = await this.userFactory.updateEntityInstance(userDto, { roles: this.getRolesById(roleIds) });
+        return this.userRepo.save(user);
+    }
+
+    
+    async deleteUser(id: number): Promise<Boolean> {
+        return (await this.userRepo.delete(id)).affected !== 0;
+    }
+    
+
+    async getUser(id: number): Promise<User | null> {
+        return await this.userRepo.findOne({ where: {id} });
+    }
+
+    //Need to handle querying (Temporary)
+    async getAllUsers(): Promise<User[]> {
+        return await this.userRepo.find();
+    }
+
+    async getUsersById( userIds: number[]): Promise<User[]>{
+        return await this.userRepo.find({ where: { id: In(userIds) }});
     }
 
     async createRole(roleDto: CreateRoleDto): Promise<Role | null | QueryFailedError> {
-        const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
+        const alreadyExists = await this.roleRepo.findOne({ where: { name: roleDto.name}});
         if(alreadyExists){
             return null;
         }
-        const role = await this.roleFactory.createDtoToEntity(roleDto);
-        return this.roles.create(role);
+        const userIds = roleDto.userIds || [];
+        const role = await this.roleFactory.createEntityInstance(roleDto, { users: this.getUsersById(userIds)});
+        return this.roleRepo.create(role);
     }
 
+    /**
+     * Id currently not used, using Repository.save for lifecycle hooks
+     * @param id currently not used, using Repository.save for lifecycle hooks
+     * @param roleDto 
+     * @returns 
+     */
     async updateRole(id: number, roleDto: UpdateRoleDto): Promise<Role | QueryFailedError> {
-        const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
+        const alreadyExists = await this.roleRepo.findOne({ where: { name: roleDto.name}});
         if(!alreadyExists){
             throw new ExceptionsHandler(); //more detailed error
         }
-        const role = await this.roleFactory.updateDtoToEntity(roleDto);
-        return this.roles.update(id, role);
+        const userIds = roleDto.userIds || []
+        const role = await this.roleFactory.updateEntityInstance(roleDto, { users: this.getUsersById(userIds)});
+        return this.roleRepo.save(role);
     }
 
-    async getUsers( userIds: number[]): Promise<User[]>{
-        return await this.usersRepo.find({ where: { id: In(userIds) }});
+    async deleteRole(id: number): Promise<Boolean> {
+        return (await this.roleRepo.delete(id)).affected !== 0; 
+    }
+    
+    async getRole(id: number): Promise<Role | null> {
+        return await this.roleRepo.findOne({where: {id} });
     }
 
-    async getRoles( roleIds: number[]): Promise<Role[]> {
-        return await this.rolesRepo.find({ where: { id: In(roleIds) }});
+    //Need to handle querying (Temporary)
+    async getAllRoles(): Promise<Role[]> {
+        return await this.roleRepo.find();
+    }
+
+    async getRolesById( roleIds: number[]): Promise<Role[]> {
+        return await this.roleRepo.find({ where: { id: In(roleIds) }});
+    }
+
+    createRoleQueryBuilder(): QueryBuilder<Role> {
+        return this.roleRepo.createQueryBuilder();
+    }
+
+    createUserQueryBuilder(): QueryBuilder<User> {
+        return this.userRepo.createQueryBuilder();
     }
 }

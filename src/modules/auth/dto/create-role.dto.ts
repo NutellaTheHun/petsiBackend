@@ -10,3 +10,9 @@ export class CreateRoleDto {
     @IsPositive({ each: true})
     readonly userIds: number[] = [];
 }
+
+export function CreateRoleDtoDefaultValues(): Partial<CreateRoleDto> {
+    return {
+        userIds: []
+    };
+}

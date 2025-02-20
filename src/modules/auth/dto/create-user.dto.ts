@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
 export class CreateUserDto {
 
@@ -7,7 +7,8 @@ export class CreateUserDto {
     readonly username: string;
 
     @IsString()
-    @IsNotEmpty()
+    //@IsNotEmpty()
+    @IsOptional()
     readonly email: string;
 
     @IsString()
@@ -18,4 +19,11 @@ export class CreateUserDto {
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })
     readonly roleIds: number[] = [];
+}
+
+export function CreateUserDtoDefaultValues(): Partial<CreateUserDto> {
+    return {
+        roleIds: [],
+        email: undefined,
+    };
 }
