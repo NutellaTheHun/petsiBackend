@@ -12,6 +12,7 @@ export class User{
     @Column({ nullable: false, unique: true })
     email: string;
 
+    //exclude() ?? messes with the dto -> entity / entity -> dto in authService/userFactory
     @Column({ nullable: false })
     passwordHash: string;
 

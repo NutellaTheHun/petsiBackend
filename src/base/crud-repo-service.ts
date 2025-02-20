@@ -1,6 +1,6 @@
 import { triggerAsyncId } from "async_hooks";
 import { Result } from "postcss";
-import { DeleteResult, FindOneOptions, FindOptionsWhere, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
+import { DeleteResult, FindManyOptions, FindOneOptions, FindOptionsWhere, ObjectLiteral, QueryBuilder, QueryFailedError, Repository } from "typeorm";
 
 /**
  * A generic Repository service that essentially wraps around typeORM Repositories to provide basic database access methods.
@@ -13,7 +13,7 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         private updateDto: new () => UDto,
     ){}
 
-    async findAll(): Promise<T[]> {
+    async findAll(): Promise<T[] | []> {
         return await this.repo.find();
     }
 
@@ -21,13 +21,14 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
         return await this.repo.findOne(findOptions);
     }
 
-    async find(findOptions: FindOneOptions<T>): Promise<T[] | null> {
+    async find(findOptions: FindManyOptions<T>): Promise<T[] | []> {
         return await this.repo.find(findOptions);
     }
     
-    async remove(entity: T): Promise<T> {
-        const result = await this.repo.remove(entity);
-        return result;
+    async remove(entity: T): Promise<boolean> {
+        //const result = await this.repo.remove(entity);
+        const result = await this.repo.delete(entity);
+        return result.affected !== 0;
     }
     /*
     async remove(entity : T): Promise<DeleteResult> {
@@ -35,17 +36,16 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
     }*/
     
     //Cant access id within type T without id being type any, with idField: string = 'id'
-    async removeById(id: any, idField: string = 'id'): Promise<DeleteResult> {
+    async removeById(id: any, idField: string = 'id'): Promise<Boolean> {
         const entity = await this.repo.findOne({ where: { id } });
-        if(!entity){
-            throw new Error('entity with id:${id} not found')
+        if(entity){
+            return this.remove(entity);
         }
-        return await this.repo.delete(entity);
-        //return await this.remove(entity);
+        return false;
     }
     
 
-    async create(entity : T) : Promise<T> {
+    async create(entity : T) : Promise<T | QueryFailedError> {
         return await this.repo.save(entity);
     }
 
@@ -55,6 +55,7 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
      * @param updateDto 
      */
     async update(id: number, entity : T) : Promise<T> {
+        //return await this.repo.save(entity);
         return await this.repo.save(entity);
     }
 

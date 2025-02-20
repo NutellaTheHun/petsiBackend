@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
-import { Repository } from 'typeorm';
+import { QueryFailedError, Repository } from 'typeorm';
 import { Role } from './entities/role.entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -55,16 +55,16 @@ export class AuthService {
         return this.configSerivce.get<string>('JWT_SECRET');
     }
 
-    async createUser(userDto: CreateUserDto): Promise<User>{
+    async createUser(userDto: CreateUserDto): Promise<User | null | QueryFailedError>{
         const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
         if(alreadyExists){
-            throw new ExceptionsHandler();// needs more refined error
+            return null;
         }
         const user = await this.userFactory.createDtoToEntity(userDto);
         return this.users.create(user);
     }
 
-    async updateUser(id: number, userDto: UpdateUserDto): Promise<User> {
+    async updateUser(id: number, userDto: UpdateUserDto): Promise<User | QueryFailedError> {
         const alreadyExists = await this.users.findOne({ where: { username: userDto.username,},});
         if(!alreadyExists){
             throw new ExceptionsHandler(); // needs more refined error
@@ -73,16 +73,16 @@ export class AuthService {
         return this.users.update(id, user);
     }
 
-    async createRole(roleDto: CreateRoleDto): Promise<Role> {
+    async createRole(roleDto: CreateRoleDto): Promise<Role | null | QueryFailedError> {
         const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
         if(alreadyExists){
-            throw new ExceptionsHandler(); //more detailed error
+            return null;
         }
         const role = await this.roleFactory.createDtoToEntity(roleDto);
         return this.roles.create(role);
     }
 
-    async updateRole(id: number, roleDto: UpdateRoleDto): Promise<Role> {
+    async updateRole(id: number, roleDto: UpdateRoleDto): Promise<Role | QueryFailedError> {
         const alreadyExists = await this.roles.findOne({ where: { name: roleDto.name}});
         if(!alreadyExists){
             throw new ExceptionsHandler(); //more detailed error

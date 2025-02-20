@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, NotFoundException, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Role } from './entities/role.entities';
 import { User } from './entities/user.entities';
@@ -7,75 +7,119 @@ import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { isQueryFailedError, isRole, isUser } from '../../util/type-checkers';
+import { queryFailedBadRequest, unexpectedErrorInteralServerError } from './utils/db-http-exceptions';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Get('roles')
-    findAllRoles(): Promise<Role[]> {
-        // handle if null
-        return this.authService.roles.findAll();
+    async findAllRoles(): Promise<Role[]> {
+        return await this.authService.roles.findAll();
     }
 
     @Get('roles/:id')
-    fineOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
-        // handle if null
-        return this.authService.roles.findOne({where: {id: id,},});
+    async fineOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
+        const result = await this.authService.roles.findOne({where: {id: id,} });
+        if(!result){
+            throw new NotFoundException('Role with id ${id} not found');
+        }
+        return result;
     }
 
     @Post('roles')
-    createRole(@Body() createRoleDto: CreateRoleDto){
-        // validate: role doesn't already exist (will currently update if so save())
-        return this.authService.createRole(createRoleDto);
+    async createRole(@Body() createRoleDto: CreateRoleDto){
+        const result = await this.authService.createRole(createRoleDto);
+        if(isRole(result)){
+            return result;
+        }
+        else if(isQueryFailedError(result)){
+            throw queryFailedBadRequest(result)
+        }
+        else{
+            throw unexpectedErrorInteralServerError("Role to create already exists, or unexpected error.")
+        }
     }
 
     @Patch('roles/:id')
-    updateRole(@Param('id', ParseIntPipe) id: number, updateRoleDto: UpdateRoleDto){
-        // if id not found? (currently using save() so will insert)
-        return this.authService.updateRole(id, updateRoleDto);
+    async updateRole(@Param('id', ParseIntPipe) id: number, updateRoleDto: UpdateRoleDto){
+        const result = await this.authService.updateRole(id, updateRoleDto);
+        if(isRole(result)){
+            return result;
+        }
+        else if(isQueryFailedError(result)){
+            throw queryFailedBadRequest(result);
+        }
+        else {
+            throw unexpectedErrorInteralServerError(`role with id ${id} to update doesn't exist, or unexpected error`);
+        }
     }
 
     @Delete('roles/:id')
-    removeRole(@Param('id', ParseIntPipe) id: number){
-        // handle if id not found
-        return this.authService.roles.removeById(id);  //returns Promise<DeleteResult>
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removeRole(@Param('id', ParseIntPipe) id: number){
+        const result = await this.authService.roles.removeById(id); 
+        if(!result){
+            throw new NotFoundException(`Role with id ${id} not found.`);
+        }
     }
 
     @Get('users')
-    findAllUsers(): Promise<User[]> {
-        // handle if null
-        return this.authService.users.findAll();
+    async findAllUsers(): Promise<User[]> {
+        return await this.authService.users.findAll();
     }
 
     @Get('users/:id')
-    findOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
-        // handle if null
-        return this.authService.users.findOne({where: {id: id,},});
+    async findOneUser(@Param('id', ParseIntPipe) id: number): Promise<User | null> { 
+        const result = await this.authService.users.findOne({where: {id: id,},});
+        if(!result){
+            throw new NotFoundException(`User with id ${id} not found.`);
+        }
+        return result;
     }
 
     @Post('users')
-    createUser(@Body() createUserDto: CreateUserDto){
-        return this.authService.createUser(createUserDto);
+    async createUser(@Body() createUserDto: CreateUserDto){
+        const result = await this.authService.createUser(createUserDto);
+        if(isUser(result)){
+            return result;
+        }
+        else if(isQueryFailedError(result)){
+            throw queryFailedBadRequest(result);
+        }
+        else{
+            throw unexpectedErrorInteralServerError("User to create already exists, or unexpected error");
+        }
     }
 
     @Patch(':id')
-    updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto){
-        // if id not found? (currently using save() so will insert)
-        return this.authService.updateUser(id, updateUserDto);
+    async updateUser(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto){
+        const result = await this.authService.updateUser(id, updateUserDto);
+        if(isUser(result)){
+            return result;
+        }
+        else if(isQueryFailedError(result)){
+            throw queryFailedBadRequest(result);
+        }
+        else {
+            throw unexpectedErrorInteralServerError(`User with id: ${id} to update doesn't exist, or unexpected error`);
+        }
     }
 
     @Delete('users/:id')
-    removeUser(@Param('id', ParseIntPipe) id: number){
-        // handle if id not found
-        return this.authService.users.removeById(id); //returns Promise<DeleteResult>
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removeUser(@Param('id', ParseIntPipe) id: number){
+        const result = await this.authService.users.removeById(id);
+        if(!result){
+            throw new NotFoundException(`User with id ${id} not found.`);
+        }
     }
 
     // Authentication
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    signIn(@Body() signInDto: SignInDto) {
-        //validate signInDto fields are populated?
-        return this.authService.signIn(signInDto.username, signInDto.password)
+    async signIn(@Body() signInDto: SignInDto) {
+        return await this.authService.signIn(signInDto.username, signInDto.password)
     }
 }

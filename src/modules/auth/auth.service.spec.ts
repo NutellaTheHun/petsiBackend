@@ -6,6 +6,7 @@ import { Role } from './entities/role.entities';
 import { UserFactory } from './factories/user.factory';
 import { error } from 'console';
 import { UnauthorizedException } from '@nestjs/common';
+import { isQueryFailedError, isRole, isUser } from '../../util/type-checkers';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -20,7 +21,6 @@ describe('AuthService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = (await getAuthTestingModule());
-
     roleFactory = module.get<RoleFactory>(RoleFactory);
     service = module.get<AuthService>(AuthService);
     userFactory = module.get<UserFactory>(UserFactory);
@@ -28,20 +28,6 @@ describe('AuthService', () => {
 
   
   afterAll(async() => {
-    /*
-    const roles = roleFactory.getTestingRoles();
-
-    const dbRoles = await Promise.all(
-      roles.map(role => 
-        service.roles.findOne({where: { name: role.name } })
-      )
-    );
-
-    const removalResults = await Promise.all(
-      dbRoles.filter((role): role is Role => role !== null)
-        .map(async (roleEntity) => await service.roles.remove(roleEntity))
-    );
-    */
     const roleQueryBuilder = service.roles.createQueryBuilder();
     await roleQueryBuilder.delete().execute();
     const userQueryBuilder = service.users.createQueryBuilder();
@@ -57,11 +43,15 @@ describe('AuthService', () => {
       const role = new Role();
       role.name = "test";
       
-      const op = await service.roles.create(role);
-
-      const saved = await service.roles.findOne({ where: { id: op.id } })
-      
-      expect(saved).not.toBeNull();
+      const result = await service.roles.create(role);
+      if(isRole(result)){
+        const saved = await service.roles.findOne({ where: { id: result.id } })
+        expect(saved).not.toBeNull();
+      }
+      else if(isQueryFailedError(result)){
+        throw new Error(`Insert role failed: ${result.message}`);
+      }
+      throw new error('result is not type Role (could be a queryError) role.create failed.')
   });
 
   it('should delete a role', async () => {
@@ -113,9 +103,15 @@ describe('AuthService', () => {
     const inputResult = await service.createRole(
       roleFactory.entityToCreateDto(testRole)
     )
-    inputResult.name = "updatetest";
-    const result = await service.roles.update(inputResult?.id, inputResult);
-    expect(result.name).toBe("updatetest");
+    if(isRole(inputResult)){
+      inputResult.name = "updatetest";
+      const result = await service.roles.update(inputResult?.id, inputResult);
+      expect(result.name).toBe("updatetest");
+    }
+    else if(isQueryFailedError(inputResult)){
+      throw new Error(`Insert role failed: ${inputResult.message}`);
+    }
+    throw new error('inputResult is null or a queryError, service.createRole failed.');
   });
 
   it("should remove role UPDATETEST", async () => {
@@ -136,12 +132,19 @@ describe('AuthService', () => {
     if (!role) {
       throw new Error("Role 'staff' not found");
     }
+
     const roles = [role];
     const user = await userFactory.createUserInstance(testUserName, "testPass", "email@email.com", roles)
     const dto = userFactory.entityToCreateDto(user, "testPass");
     const result = await service.createUser(dto);
-    expect(result).not.toBeNull()
-    expect(result.roles[0].name).toBe(STAFF);
+    if(isUser(result)){
+      expect(result).not.toBeNull()
+      expect(result.roles[0].name).toBe(STAFF);
+    }
+    if(isQueryFailedError(result)){
+      throw new Error(`Insert user failed: ${result.message}`);
+    }
+    throw new error('result is null, user already exists.')
   });
 
   it("should update the roles user reference", async () => {
@@ -173,21 +176,26 @@ describe('AuthService', () => {
     expect(affectedRole?.users).toBeUndefined();
   });
 
-  it("should insert and remove by id" , async () => {
+  it("should insert and remove user by id" , async () => {
     const user = await userFactory.createUserInstance("testIdUser", "testIdPass", "email@email.com", [])
     const dto = userFactory.entityToCreateDto(user, "testIdPass");
     const creation = await service.createUser(dto);
     if(!creation){
       throw new error("insert user failed");
     }
+    if(isUser(creation)){
+      const result = await service.users.removeById(creation.id);
+      if(!result){
+        throw new error("removal by id failed");
+      }
+      const shouldBeEmpty = await service.users.findOne({ where: { id: creation.id }});
 
-    const result = await service.users.removeById(creation.id);
-    if(!result){
-      throw new error("removal by id failed");
+      expect(shouldBeEmpty).not.toBeNull();
     }
-    const shouldBeEmpty = await service.users.findOne({ where: { id: creation.id }});
-
-    expect(shouldBeEmpty).not.toBeNull();
+    if(isQueryFailedError(creation)){
+      throw new Error(`Insert user failed: ${creation.message}`);
+    }
+    
   })
 
   it("should update a user", async () =>{
@@ -197,16 +205,21 @@ describe('AuthService', () => {
     if(!creation){
       throw new error("insert user failed");
     }
-    const toUpdate = await service.users.findOne({ where: {id: creation.id } });
-    if(toUpdate){
-      toUpdate.email = "newEmail@email.com";
-    } else{
-      throw new error("failed to retrieve user to update.")
+    if(isUser(creation)){
+      const toUpdate = await service.users.findOne({ where: {id: creation.id } });
+      if(toUpdate){
+        toUpdate.email = "newEmail@email.com";
+        const result = await service.users.update(toUpdate.id, toUpdate);
+        const updatedEmail = await service.users.findOne({ where: {id: result.id } });
+        expect(updatedEmail?.email).toBe("newEmail@email.com");
+      } else{
+        throw new error("failed to retrieve user to update.")
+      }
+    }
+    if(isQueryFailedError(creation)){
+      throw new Error(`create user failed: ${creation.message}`);
     }
 
-    const result = await service.users.update(toUpdate.id, toUpdate);
-    const updatedEmail = await service.users.findOne({ where: {id: result.id } });
-    expect(updatedEmail?.email).toBe("newEmail@email.com");
   })
  
   it("should sign in", async () => {
