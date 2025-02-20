@@ -20,7 +20,7 @@ export class AuthController {
     }
 
     @Get('roles/:id')
-    async fineOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
+    async findOneRole(@Param('id', ParseIntPipe) id: number): Promise<Role | null> {
         const result = await this.authService.roles.findOne({where: {id: id,} });
         if(!result){
             throw new NotFoundException('Role with id ${id} not found');
@@ -59,10 +59,7 @@ export class AuthController {
     @Delete('roles/:id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeRole(@Param('id', ParseIntPipe) id: number){
-        const result = await this.authService.roles.removeById(id); 
-        if(!result){
-            throw new NotFoundException(`Role with id ${id} not found.`);
-        }
+        return await this.authService.roles.removeById(id); 
     }
 
     @Get('users')
@@ -110,10 +107,7 @@ export class AuthController {
     @Delete('users/:id')
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeUser(@Param('id', ParseIntPipe) id: number){
-        const result = await this.authService.users.removeById(id);
-        if(!result){
-            throw new NotFoundException(`User with id ${id} not found.`);
-        }
+        return await this.authService.users.removeById(id);
     }
 
     // Authentication

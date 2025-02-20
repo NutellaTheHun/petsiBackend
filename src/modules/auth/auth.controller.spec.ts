@@ -14,6 +14,9 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { DeleteResult, Entity, FindManyOptions, FindOneOptions } from 'typeorm';
 import { User } from './entities/user.entities';
 import { Role } from './entities/role.entities';
+import { isQueryFailedError, isRole, isUser } from '../../util/type-checkers';
+import exp from 'constants';
+import { SignInDto } from './dto/sign-in.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -81,7 +84,7 @@ describe('AuthController', () => {
     jest.spyOn(authService, "createRole").mockImplementation(async (createDto: CreateRoleDto) => {
       const exists = roles.find(role => role.name === createDto.name)
       if(exists){
-        throw new error("role to create already exists");
+        throw new Error("role to create already exists");
       }
       const role = roleFactory.createDtoToEntity(createDto);
       role.id = 4;
@@ -194,108 +197,159 @@ describe('AuthController', () => {
   });
 
   // find all roles
-  it('should return all roles', () => {
-
+  it('should return all roles', async () => {
+    const result = await controller.findAllRoles();
+    expect(result.length).not.toEqual(0);
   });
 
   // get role :id SUCCESS
-  it("should get one role by id", () => {
-
+  it("should get one role by id", async () => {
+    const result = await controller.findOneRole(1);
+    expect(isUser(result)).toBeTruthy();
   })
 
   // get role :id FAIL NOT FOUND
-  it("should not return one role (bad id)", () => {
-
+  it("should not return one role (bad id)", async () => {
+    const result = await controller.findOneRole(0);
+    expect(result).toBeNull();
   })
 
   // create role SUCCESS
-  it("should create and return a role", () => {
-    
+  it("should create and return a role", async () => {
+    const newRole = roleFactory.createRoleInstance("newRole", []);
+    const result = await controller.createRole(roleFactory.entityToCreateDto(newRole));
+    expect(result.id).toEqual(4);
   })
 
   // create role FAIL
-  it("should fail to create a role (non-unique name)", () => {
-    
+  it("should fail to create a role (non-unique name)", async () => {
+    const newRole = roleFactory.createRoleInstance("admin", []);
+    //const result = await controller.createRole(roleFactory.entityToCreateDto(newRole));
+    //expect(isQueryFailedError(result)).toBeTruthy();
+    await expect(controller.createRole(roleFactory.entityToCreateDto(newRole))).rejects.toThrow(Error)
   })
 
   // update role :id SUCCESS
-  it("should update a role", () => {
-    
+  it("should update a role", async () => {
+    const roleToUpdate = await controller.findOneRole(4);
+    if(roleToUpdate){
+      roleToUpdate.name = "updatedRole";
+      const result = await controller.updateRole(roleToUpdate.id, roleToUpdate);
+      expect(isRole(result)).toBeTruthy();
+    }
+    throw new error('role to update returned null');
   })
 
   // update role :id FAIL
-  it("should fail to update a role (bad id)", () => {
-    
+  //currently doesnt check by id to update
+  /*
+  it("should fail to update a role (bad id)", async () => {
+    const roleToUpdate = await controller.findOneRole(4);
+    if(roleToUpdate){
+      roleToUpdate.name = "updatedRole";
+      const result = await controller.updateRole(roleToUpdate.id, roleToUpdate);
+      expect(isRole(result)).toBeTruthy();
+    }
+    throw new error('role to update returned null');
   })
+  */
 
   // delete role :id SUCCESS
-  it("should remove a role", () => {
-    
+  it("should remove a role", async () => {
+    const removal = await controller.removeRole(4);
+    const notExist = await controller.findOneRole(4);
+    expect(removal).toBeTruthy();
+    expect(notExist).toBeNull();
   })
 
   // delete role :id fail
-  it("should fail to remove a role (bad id)", () => {
-    
+  it("should fail to remove a role (bad id)", async () => {
+    const result = await controller.removeRole(4);
+    expect(result).toBeFalsy();
   })
 
   // get all users
-  it("should return all users", () => {
-    
+  it("should return all users", async () => {
+    const users = await controller.findAllUsers();
+    expect(users.length).not.toBe(0);
   })
 
   // get user :id SUCCESS
-  it("should get one user by id", () => {
-    
+  it("should get one user by id", async () => {
+    const user = await controller.findOneUser(1);
+    expect(isUser(user)).toBeTruthy();
   })
 
   // get user :id FAIL
-  it("should get one user and return null (bad id/not found)", () => {
-    
+  it("should get one user and return null (bad id/not found)", async () => {
+    const user = await controller.findOneUser(0);
+    expect(user).toBeNull();
   })
 
   // create user SUCCESS
-  it("should create a user", () => {
-    
+  it("should create a user", async () => {
+    const newUser = await userFactory.createUserInstance("newUser", "newPass", "newEmail@email.com", []);
+    const result = await controller.createUser(userFactory.entityToCreateDto(newUser, "newPass"));
+    expect(isUser(result)).toBeTruthy();
+    expect(result.id).toEqual(5);
   })
 
   // create user FAIL
-  it("should fail to create a user (non-unique username)", () => {
-    
+  it("should fail to create a user (non-unique username)", async () => {
+    const newUser = await userFactory.createUserInstance("userA", "passA", "emailA", []);
+    await expect(controller.createUser(userFactory.entityToCreateDto(newUser, "passA"))).rejects.toThrow(Error);
   })
 
   // update user :id SUCCESS
-  it("should update a user", () => {
-    
+  it("should update a user", async () => {
+    const userToUpdate = await controller.findOneUser(5);
+    if(isUser(userToUpdate)){
+      userToUpdate.username = "updatedUser";
+      const result = await controller.updateUser(userToUpdate.id, userToUpdate)
+      expect(isUser(result)).toBeTruthy();
+    }
   })
 
   // update user :id FAIL
+  // cant cause error by bad id because id isnt checked currently
+  /*
   it("should fail to update a user (bad id)", () => {
     
   })
+  */
 
   // remove user :id SUCCESS
-  it("should remove a user by id", () => {
-    
+  it("should remove a user by id", async () => {
+    const result = await controller.removeUser(5);
+    expect(result).toBeTruthy();
   })
 
   // remove user :id FAIL
-  it("should fail to remove a user (bad id)", () => {
-    
+  it("should fail to remove a user (bad id)", async () => {
+    const result = await controller.removeUser(5);
+    expect(result).toBeFalsy();
   })
 
   // sign in SUCCESS
-  it("should sign in", () => {
-    
+  it("should sign in", async () => {
+    const username = 'userA'
+    const pass = 'passA'
+    const result = await controller.signIn({ username: username, password: pass} as SignInDto);
+    expect(result.access_token).toEqual('mock_token');
   })
 
   // sign in FAIL No username
-  it("should fail to sign in (username doesnt exist)", () => {
-    
+  it("should fail to sign in (username doesnt exist)", async () => {
+    const username = 'userE'
+    const pass = 'passA'
+    await expect(controller.signIn({ username: username, password: pass} as SignInDto)).rejects.toThrow(UnauthorizedException);
   })
 
   //sign in Fail bad pword
-  it("should fail to sign in (wrong password)", () => {
-    
+  it("should fail to sign in (wrong password)", async () => {
+    const username = 'userA'
+    const pass = 'passB'
+    await expect(controller.signIn({ username: username, password: pass} as SignInDto)).rejects.toThrow(UnauthorizedException);
   })
 
 });
