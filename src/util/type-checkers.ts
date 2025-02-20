@@ -11,5 +11,5 @@ export function isQueryFailedError(value: any): value is QueryFailedError {
 }
 
 export function isRole(value: any): value is Role {
-    return value instanceof User;
+    return value instanceof Role;
 }

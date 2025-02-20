@@ -5,17 +5,16 @@ import { AuthService } from './auth.service';
 import { RoleFactory } from './factories/role.factory';
 import { UserFactory } from './factories/user.factory';
 import { isPassHashMatch } from './utils/hash';
-import { UnauthorizedException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { error } from 'console';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { DeleteResult, Entity, FindManyOptions, FindOneOptions } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere } from 'typeorm';
 import { User } from './entities/user.entities';
 import { Role } from './entities/role.entities';
-import { isQueryFailedError, isRole, isUser } from '../../util/type-checkers';
-import exp from 'constants';
+import { isRole, isUser } from '../../util/type-checkers';
 import { SignInDto } from './dto/sign-in.dto';
 
 describe('AuthController', () => {
@@ -32,7 +31,7 @@ describe('AuthController', () => {
     userFactory = module.get<UserFactory>(UserFactory);
     roleFactory = module.get<RoleFactory>(RoleFactory);
 
-    const users = [
+    let users = [
       await userFactory.createUserInstance("userA", "passA", "emailA", []),
       await userFactory.createUserInstance("userB", "passB", "emailB", []),
       await userFactory.createUserInstance("userC", "passC", "emailC", []),
@@ -43,7 +42,7 @@ describe('AuthController', () => {
     users[2].id = 3;
     users[3].id = 4;
 
-    const roles = roleFactory.getDefaultRoles();
+    let roles = roleFactory.getDefaultRoles();
     roles[0].id = 1;
     roles[1].id = 2;
     roles[2].id = 3;
@@ -110,42 +109,27 @@ describe('AuthController', () => {
 
     
     jest.spyOn(authService.users, "find").mockImplementation(async (options) => {
-      return users.filter(user => user.id === options.where);
+      return users.filter(user => user.id === (options.where as FindOptionsWhere<User>)?.id);
+    });
+
+    jest.spyOn(authService.users, "findOne").mockImplementation(async (options) => {
+      return users.find(user => user.id === (options.where as FindOptionsWhere<User>)?.id) || null;
     });
 
     
     jest.spyOn(authService.users, "remove").mockImplementation(async (entity: User) => {
-      const result = DeleteResult;
-      result.prototype.affected = 1;
-      const originalSize = users.length;
-
-      const user = users.find(user => user.id === entity.id);
+      const index = users.findIndex(user => user.id === entity.id);
+      if (index === -1) return false;
       
-      if(!user){
-        return false;
-      }
-      
-      users.filter(user => user.id !== entity.id);
-      if(originalSize === users.length){
-        return false;
-      }
-
+      users.splice(index, 1);
       return true;
     });
 
     
     jest.spyOn(authService.users, "removeById").mockImplementation(async (id: number) => {
-      const originalSize = users.length;
-      const result = DeleteResult;
-      result.prototype.affected = 1;
-
-      users.filter(user => user.id !== id);
-
-      if(originalSize === users.length){
-        return false;
-      }
-      
-      return true;
+      const originalLength = users.length;
+      users = users.filter(user => user.id !== id);
+      return users.length !== originalLength;
     });
 
     
@@ -153,41 +137,28 @@ describe('AuthController', () => {
 
     
     jest.spyOn(authService.roles, "find").mockImplementation(async (options: FindManyOptions<Role>) => {
-      return roles.filter(role => role.id === options.where);
+      return roles.filter(role => role.id === (options.where as FindOptionsWhere<Role>)?.id);
     });
 
+    jest.spyOn(authService.roles, "findOne").mockImplementation(async (options) => {
+      return roles.find(role => role.id === (options.where as FindOptionsWhere<Role>)?.id) || null;
+    });
     
     jest.spyOn(authService.roles, "remove").mockImplementation(async (entity: Role) =>{
-      const result = DeleteResult;
-      result.prototype.affected = 1;
-      const originalSize = roles.length;
+      const index = roles.findIndex(role => role.id === entity.id);
+      if (index === -1) return false;
 
-      const role = roles.find(role => role.id === role.id);
-      
-      if(!role){
-        return false;
-      }
-      
-      roles.filter(role => role.id !== entity.id);
-      if(originalSize === users.length){
-        return false;
-      }
+      roles.splice(index, 1);
+      console.log("Roles after removal:", roles);
 
       return true;
     });
 
     
     jest.spyOn(authService.roles, "removeById").mockImplementation(async (id: number) => {
-      const originalSize = roles.length;
-      const result = DeleteResult;
-      result.prototype.affected = 1;
-
-      users.filter(role => role.id !== id);
-      if(originalSize == roles.length){
-        return false;
-      }
-
-      return true;
+      const originalLength = roles.length;
+      roles = roles.filter(role => role.id !== id);
+      return roles.length !== originalLength;
     });
 
   });
@@ -205,13 +176,12 @@ describe('AuthController', () => {
   // get role :id SUCCESS
   it("should get one role by id", async () => {
     const result = await controller.findOneRole(1);
-    expect(isUser(result)).toBeTruthy();
+    expect(isRole(result)).toBeTruthy();
   })
 
   // get role :id FAIL NOT FOUND
   it("should not return one role (bad id)", async () => {
-    const result = await controller.findOneRole(0);
-    expect(result).toBeNull();
+    await expect(controller.findOneRole(0)).rejects.toThrow(NotFoundException);
   })
 
   // create role SUCCESS
@@ -236,8 +206,9 @@ describe('AuthController', () => {
       roleToUpdate.name = "updatedRole";
       const result = await controller.updateRole(roleToUpdate.id, roleToUpdate);
       expect(isRole(result)).toBeTruthy();
+    } else{
+      throw new error('role to update returned null');
     }
-    throw new error('role to update returned null');
   })
 
   // update role :id FAIL
@@ -257,9 +228,8 @@ describe('AuthController', () => {
   // delete role :id SUCCESS
   it("should remove a role", async () => {
     const removal = await controller.removeRole(4);
-    const notExist = await controller.findOneRole(4);
-    expect(removal).toBeTruthy();
-    expect(notExist).toBeNull();
+    await expect(removal).toBeTruthy();
+    await expect(controller.findOneRole(4)).rejects.toThrow(NotFoundException);
   })
 
   // delete role :id fail
@@ -281,9 +251,8 @@ describe('AuthController', () => {
   })
 
   // get user :id FAIL
-  it("should get one user and return null (bad id/not found)", async () => {
-    const user = await controller.findOneUser(0);
-    expect(user).toBeNull();
+  it("should fail to get one user and return null (bad id/not found)", async () => {
+    await expect(controller.findOneUser(0)).rejects.toThrow(NotFoundException);
   })
 
   // create user SUCCESS
@@ -322,6 +291,7 @@ describe('AuthController', () => {
   it("should remove a user by id", async () => {
     const result = await controller.removeUser(5);
     expect(result).toBeTruthy();
+    await expect(controller.findOneUser(5)).rejects.toThrow(NotFoundException);
   })
 
   // remove user :id FAIL
