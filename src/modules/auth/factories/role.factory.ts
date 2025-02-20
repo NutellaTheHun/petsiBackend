@@ -3,17 +3,21 @@ import { User } from "../entities/user.entities";
 import { CreateRoleDto } from "../dto/create-role.dto";
 import { plainToInstance } from "class-transformer";
 import { UpdateRoleDto } from "../dto/update-role.dto";
-import { Injectable } from "@nestjs/common";
 import { EntityFactory } from "../../../base/entity-factory";
+import { AuthService } from "../auth.service";
 
-@Injectable()
+//@Injectable()
 export class RoleFactory {
     readonly entityFactory: EntityFactory<Role, CreateRoleDto, UpdateRoleDto>;
-
-    constructor() { this.entityFactory = new EntityFactory<Role , CreateRoleDto, UpdateRoleDto>(Role, CreateRoleDto, UpdateRoleDto); }
+    readonly authService: AuthService;
+    constructor(service: AuthService) {
+         this.entityFactory = new EntityFactory<Role , CreateRoleDto, UpdateRoleDto>(Role, CreateRoleDto, UpdateRoleDto); 
+         this.authService = service;
+    }
     
     createDtoToEntity(roleDto: CreateRoleDto): Role{
-        return plainToInstance(Role, { ...roleDto });
+        const users = this.authService.getUsers(roleDto.userIds);
+        return plainToInstance(Role, { ...roleDto, users: users });
     }
 
     updateDtoToEntity(roleDto: UpdateRoleDto): Role {
@@ -43,6 +47,5 @@ export class RoleFactory {
         role.name = name;
         role.users = users;
         return role;
-    }
-        
+    }     
 }

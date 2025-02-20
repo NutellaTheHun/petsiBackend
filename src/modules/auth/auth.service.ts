@@ -19,6 +19,8 @@ import { CrudRepoService } from '../../base/crud-repo-service';``
 export class AuthService {
     readonly users: CrudRepoService<User, CreateUserDto, UpdateUserDto>;
     readonly roles: CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>;
+    readonly userFactory: UserFactory;
+    readonly roleFactory: RoleFactory;
 
     constructor(
         @InjectRepository(User)
@@ -29,12 +31,11 @@ export class AuthService {
 
         private jwtService: JwtService,
         private configSerivce: ConfigService,
-
-        private readonly userFactory: UserFactory,
-        private readonly roleFactory: RoleFactory,
     ){ 
         this.users = new CrudRepoService<User, CreateUserDto, UpdateUserDto>(this.usersRepo, CreateUserDto, UpdateUserDto);
         this.roles = new CrudRepoService<Role, CreateRoleDto, UpdateRoleDto>(this.rolesRepo, CreateRoleDto, UpdateRoleDto);
+        this.userFactory = new UserFactory(this);
+        this.roleFactory = new RoleFactory(this);
     }
 
     async signIn(username: string, pass: string): Promise<{ access_token: string }> {

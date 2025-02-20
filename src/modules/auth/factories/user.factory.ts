@@ -3,22 +3,21 @@ import { hashPassword } from "../utils/hash";
 import { Role } from "../entities/role.entities";
 import { User } from "../entities/user.entities";
 import { plainToInstance } from "class-transformer";
-import { In, Repository } from "typeorm";
 import { UpdateUserDto } from "../dto/update-user.dto";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Injectable } from "@nestjs/common";
+import { AuthService } from "../auth.service";
 
-@Injectable()
+//@Injectable()
 export class UserFactory{
-    
+    readonly authService: AuthService
     constructor(
-        @InjectRepository(Role)
-        private rolesRepo: Repository<Role>,
-    ){}
+       service: AuthService
+    ){
+        this.authService = service;
+    }
 
     async createDtoToEntity(userDto: CreateUserDto) : Promise<User>{
         const pHash = await hashPassword(userDto.rawPassword)
-        const roles = await this.rolesRepo.find({ where: { id: In(userDto.roleIds) }});
+        const roles = await this.authService.getRoles(userDto.roleIds);
 
         return plainToInstance(User, {
             username: userDto.username,
@@ -30,7 +29,7 @@ export class UserFactory{
 
     async updateDtoToEntity(userDto: UpdateUserDto) : Promise<User> {
         const roles = userDto.roleIds?.length
-            ? await this.rolesRepo.find({ where: { id: In(userDto.roleIds) }})
+            ? await this.authService.getRoles(userDto.roleIds)
             : [];
    
             return plainToInstance(User, {
