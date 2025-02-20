@@ -22,6 +22,6 @@ export class User{
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToMany(() => Role, (role) => role.users, { nullable: true })
+    @ManyToMany(() => Role, (role) => role.users, { nullable: true, onDelete: 'CASCADE' })
     roles: Role[];
 }

@@ -25,7 +25,7 @@ export class CrudRepoService<T extends ObjectLiteral, CDto extends ObjectLiteral
     
     async remove(entity: T): Promise<boolean> {
         //const result = await this.repo.remove(entity);
-        const result = await this.repo.delete(entity);
+        const result = await this.repo.delete(entity.id);
         return result.affected !== 0;
     }
     /*

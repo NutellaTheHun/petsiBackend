@@ -19,6 +19,10 @@ describe('AuthService', () => {
   
   const testUserName = "testUser";
 
+  const USER_A = "userA";
+  const USER_B = "userB";
+  const USER_C = "userC";
+
   beforeAll(async () => {
     const module: TestingModule = (await getAuthTestingModule());
     roleFactory = module.get<RoleFactory>(RoleFactory);
@@ -51,7 +55,9 @@ describe('AuthService', () => {
       else if(isQueryFailedError(result)){
         throw new Error(`Insert role failed: ${result.message}`);
       }
-      throw new error('result is not type Role (could be a queryError) role.create failed.')
+      else {
+        throw new Error('result is not type Role (could be a queryError) role.create failed.');
+      }
   });
 
   it('should delete a role', async () => {
@@ -103,15 +109,18 @@ describe('AuthService', () => {
     const inputResult = await service.createRole(
       roleFactory.entityToCreateDto(testRole)
     )
-    if(isRole(inputResult)){
+    if(isRole(inputResult)) {
       inputResult.name = "updatetest";
       const result = await service.roles.update(inputResult?.id, inputResult);
       expect(result.name).toBe("updatetest");
     }
-    else if(isQueryFailedError(inputResult)){
+    else if(isQueryFailedError(inputResult)) {
       throw new Error(`Insert role failed: ${inputResult.message}`);
     }
-    throw new error('inputResult is null or a queryError, service.createRole failed.');
+    else {
+      throw new Error('inputResult is null or a queryError, service.createRole failed.');
+    }
+    
   });
 
   it("should remove role UPDATETEST", async () => {
@@ -141,10 +150,13 @@ describe('AuthService', () => {
       expect(result).not.toBeNull()
       expect(result.roles[0].name).toBe(STAFF);
     }
-    if(isQueryFailedError(result)){
+    else if(isQueryFailedError(result)){
       throw new Error(`Insert user failed: ${result.message}`);
     }
-    throw new error('result is null, user already exists.')
+    else {
+      throw new Error('result is null, user already exists.');
+    }
+    
   });
 
   it("should update the roles user reference", async () => {
@@ -159,7 +171,6 @@ describe('AuthService', () => {
     if(!user){
       throw new Error("testUser not found")
     }
-    console.log(`user to removes id ${user?.id}`);  // Check the id value
 
     const removal = await service.users.remove(user);
     if(!removal){
@@ -190,7 +201,7 @@ describe('AuthService', () => {
       }
       const shouldBeEmpty = await service.users.findOne({ where: { id: creation.id }});
 
-      expect(shouldBeEmpty).not.toBeNull();
+      expect(shouldBeEmpty).toBeNull();
     }
     if(isQueryFailedError(creation)){
       throw new Error(`Insert user failed: ${creation.message}`);
@@ -203,7 +214,7 @@ describe('AuthService', () => {
     const dto = userFactory.entityToCreateDto(user, "testUpdatePass");
     const creation = await service.createUser(dto);
     if(!creation){
-      throw new error("insert user failed");
+      throw new Error("insert user failed");
     }
     if(isUser(creation)){
       const toUpdate = await service.users.findOne({ where: {id: creation.id } });
@@ -213,7 +224,7 @@ describe('AuthService', () => {
         const updatedEmail = await service.users.findOne({ where: {id: result.id } });
         expect(updatedEmail?.email).toBe("newEmail@email.com");
       } else{
-        throw new error("failed to retrieve user to update.")
+        throw new Error("failed to retrieve user to update.")
       }
     }
     if(isQueryFailedError(creation)){
@@ -227,7 +238,7 @@ describe('AuthService', () => {
     const dto = userFactory.entityToCreateDto(user, "loginPassword");
     const creation = await service.createUser(dto);
     if(!creation){
-      throw new error("insert user failed");
+      throw new Error("insert user failed");
     }
     const result = await service.signIn(user.username, "loginPassword");
     expect(result.access_token).not.toBeNull();
@@ -240,4 +251,34 @@ describe('AuthService', () => {
   it("should fail sign in (no user)", async() => {
     await expect(service.signIn("nonExistingUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);
   })
+
+  it("should get Roles from a list of role ids", async () => {
+    const list = await service.roles.findAll();
+    if(list.length == 0){
+      throw new Error('list of roles to retrieve is 0, cannot perform getRoles test.');
+    }
+    const result = await service.getRoles(list.map(item => item.id))
+    expect(result.length).toEqual(list.length);
+  });
+
+  it("should get Users from a list of user ids", async () => {
+    const userA = await userFactory.createUserInstance(USER_A, "testAPass", "emailA@email.com", [])
+    const dtoA = userFactory.entityToCreateDto(userA, "testAPass");
+    await service.createUser(dtoA);
+    
+    const userB = await userFactory.createUserInstance(USER_B, "testBPass", "emailB@email.com", [])
+    const dtoB = userFactory.entityToCreateDto(userB, "testBPass");
+    await service.createUser(dtoB);
+
+    const userC = await userFactory.createUserInstance(USER_C, "testCPass", "emailC@email.com", [])
+    const dtoC = userFactory.entityToCreateDto(userC, "testCPass");
+    await service.createUser(dtoC);
+
+    const list = await service.users.findAll();
+    if(list.length == 0){
+      throw new Error('list of users to retrieve is 0, cannot perform getRoles test.');
+    }
+    const result = await service.getUsers(list.map(item => item.id))
+    expect(result.length).toEqual(list.length);
+  });
 });

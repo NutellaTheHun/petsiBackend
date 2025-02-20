@@ -7,4 +7,6 @@ export class InventoryAreaFactory {
     createInventoryAreaInstance(name: string, inventoryCounts: InventoryAreaCount[]){
         return {name: name, inventoryCounts: inventoryCounts} as InventoryArea;
     }
+
+    createDtoToEntity
 }

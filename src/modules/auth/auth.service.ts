@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
-import { QueryFailedError, Repository } from 'typeorm';
+import { In, QueryFailedError, Repository } from 'typeorm';
 import { Role } from './entities/role.entities';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -89,5 +89,13 @@ export class AuthService {
         }
         const role = await this.roleFactory.updateDtoToEntity(roleDto);
         return this.roles.update(id, role);
+    }
+
+    async getUsers( userIds: number[]): Promise<User[]>{
+        return await this.usersRepo.find({ where: { id: In(userIds) }});
+    }
+
+    async getRoles( roleIds: number[]): Promise<Role[]> {
+        return await this.rolesRepo.find({ where: { id: In(roleIds) }});
     }
 }
