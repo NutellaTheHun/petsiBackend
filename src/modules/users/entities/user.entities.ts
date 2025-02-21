@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToMany } from "typeorm";
-import { Role } from "./role.entities";
+import { Role } from "../../roles/entities/role.entities";
+import { Exclude } from "class-transformer";
 
 @Entity({ name: "app_users" })
 export class User{
@@ -12,7 +13,7 @@ export class User{
     @Column({ nullable: true })
     email: string;
 
-    //exclude() ?? messes with the dto -> entity / entity -> dto in authService/userFactory
+    @Exclude()
     @Column({ nullable: false })
     passwordHash: string;
 
