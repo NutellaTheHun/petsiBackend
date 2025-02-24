@@ -1,17 +1,12 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../users/entities/user.entities';
-import { Role } from '../roles/entities/role.entities';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserFactory } from '../users/entities/user.factory';
-import { RoleFactory } from '../roles/entities/role.factory';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role]),
     ConfigModule,
     JwtModule.registerAsync({
       imports:[ConfigModule],
@@ -21,9 +16,10 @@ import { RoleFactory } from '../roles/entities/role.factory';
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: { expiresIn: '60s'},
       }),
-    })
+    }),
+    UsersModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserFactory, RoleFactory]
+  providers: [AuthService]
 })
 export class AuthModule {}

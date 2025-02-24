@@ -13,6 +13,8 @@ import { InventoryItemsModule } from './modules/inventory-items/inventory-items.
 import { TypeORMPostgresModule } from './typeorm/configs/TypeORMPostgresProd';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
+import { UsersModule } from './modules/users/users.module';
+import { RolesModule } from './modules/roles/roles.module';
 
 @Module({
   imports: [ 
@@ -20,7 +22,9 @@ import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.m
     TypeORMPostgresModule([]),
     OrdersModule, MenuItemsModule, TemplatesModule, 
     LabelsModule, AuthModule, InventoryAreasModule, 
-    InventoryItemsModule, RecipesModule, UnitOfMeasureModule],
+    InventoryItemsModule, RecipesModule, UnitOfMeasureModule,
+    UsersModule, RolesModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

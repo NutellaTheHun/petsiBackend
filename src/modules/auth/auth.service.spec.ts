@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
-import { getAuthTestingModule } from './utils/authTestingModule';
+import { getAuthTestingModule } from './utils/auth-testing-module';
 import { UserFactory } from '../users/entities/user.factory';
 import { UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -12,7 +12,7 @@ describe('AuthService', () => {
   let userFactory: UserFactory;
 
   beforeAll(async () => {
-    const module: TestingModule = (await getAuthTestingModule());
+    const module: TestingModule = await getAuthTestingModule();
     userService = module.get<UsersService>(UsersService);
     service = module.get<AuthService>(AuthService);
     userFactory = module.get<UserFactory>(UserFactory);
@@ -23,11 +23,9 @@ describe('AuthService', () => {
     await userQueryBuilder.delete().execute();
   })
   
-  
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
-
 
   it("should sign in", async () => {
     const userDto = userFactory.createDtoInstance(
@@ -41,11 +39,9 @@ describe('AuthService', () => {
     expect(result.access_token).not.toBeNull();
   })
 
-
   it("should fail sign in (incorrect password)", async() => {
     await expect(service.signIn("loginUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);
   })
-
 
   it("should fail sign in (no user)", async() => {
     await expect(service.signIn("nonExistingUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);

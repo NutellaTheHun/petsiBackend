@@ -1,6 +1,6 @@
 import { QueryFailedError } from "typeorm";
-import { User } from "../modules/auth/entities/user.entities";
-import { Role } from "../modules/auth/entities/role.entities";
+import { User } from "../modules/users/entities/user.entities";
+import { Role } from "../modules/roles/entities/role.entities";
 
 export function isUser(value: any): value is User {
     return value instanceof User;

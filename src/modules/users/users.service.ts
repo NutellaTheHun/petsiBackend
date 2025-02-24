@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserFactory } from './entities/user.factory';
@@ -17,7 +17,7 @@ export class UsersService {
     @Inject()
     private readonly userFactory: UserFactory,
 
-    @Inject()
+    @Inject(forwardRef(() => RolesService))
     private readonly rolesService: RolesService,
   ){}
 
@@ -25,10 +25,8 @@ export class UsersService {
     const alreadyExists = await this.userRepo.findOne({ where: { username: createUserDto.username }});
     if(alreadyExists){ return null; }
 
-    const roleIds = createUserDto.roleIds || []
-    const user = await this.userFactory.createEntityInstance(createUserDto, { roles: this.rolesService.findRolesById(roleIds)});
-    //const {}
-    
+    const user = await this.userFactory.createEntityInstance(createUserDto, { roles: this.rolesService.findRolesById(createUserDto.roleIds)});
+  
     return this.userRepo.create(user);
   }
 

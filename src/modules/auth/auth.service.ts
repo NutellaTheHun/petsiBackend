@@ -1,17 +1,18 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { isPassHashMatch } from './utils/hash';
 import { UsersService } from '../users/users.service';
+import { RolesService } from '../roles/roles.service';
 
 
 @Injectable()
 export class AuthService {
     constructor(
-        @Inject()
-        readonly userService: UsersService,
-        private jwtService: JwtService,
-        private configSerivce: ConfigService,
+        //@Inject(forwardRef(() => RolesService))
+        private readonly userService: UsersService,
+        private readonly jwtService: JwtService,
+        private readonly configSerivce: ConfigService,
     ){}
 
     async signIn(username: string, pass: string): Promise<{ access_token: string }> {

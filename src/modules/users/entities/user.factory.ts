@@ -20,8 +20,22 @@ export class UserFactory extends EntityFactory<User, CreateUserDto, UpdateUserDt
         ];
     }
     
+    /**
+     * 
+     * @returns Returns 4 users { "userA-D" "passA-D", email:...}
+     */
     async getTestUsers() : Promise<User[]> {
-        return await this.defaultUsers();
+        let users = [
+            await this.createEntityInstance({ username: "userA", rawPassword: "passA", email: "emailA" }),
+            await this.createEntityInstance({ username: "userB", rawPassword: "passB", email: "emailB" }),
+            await this.createEntityInstance({ username: "userC", rawPassword: "passC", email: "emailC" }),
+            await this.createEntityInstance({ username: "userD", rawPassword: "passD", email: "emailD" })
+          ];
+          users[0].id = 1;
+          users[1].id = 2;
+          users[2].id = 3;
+          users[3].id = 4;
+        return users;
     }
 }
 

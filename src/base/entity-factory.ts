@@ -16,18 +16,26 @@ export class EntityFactory<T extends ObjectLiteral, CDto extends ObjectLiteral, 
         updateDtoToEntity(updateDto: UDto) : T {
             return plainToInstance(this.entityClass , updateDto);
         }
-
-        createEntityInstance(createDto: any, propertyOverrides: Record<string, any> = {}): T {
-            const dtoWithExtras = { ...this.defaultVals, ...createDto, ...propertyOverrides } as CDto;
-            return this.createDtoToEntity(dtoWithExtras);
+        
+        createEntityInstance(vals: any, propertyOverrides: Record<string, any> = {}) : T {
+            const dtoWithExtras = { ...this.defaultVals, ...vals, ...propertyOverrides };
+            return this.createDtoToEntity(
+                this.createDtoInstance(dtoWithExtras)
+            );
         }
 
-        updateEntityInstance(updateDto: any, propertyOverrides: Record<string, any> = {}): T {
-            const dtoWithExtras = { ...this.defaultVals, ...updateDto, ...propertyOverrides } as CDto;
-            return this.createDtoToEntity(dtoWithExtras);
+        updateEntityInstance(vals: any, propertyOverrides: Record<string, any> = {}) : T {
+            const dtoWithExtras = { ...this.defaultVals, ...vals, ...propertyOverrides };
+            return this.updateDtoToEntity(
+                this.updateDtoInstance(dtoWithExtras)
+            );
         }
 
         createDtoInstance(vals: any) : CDto{
             return plainToInstance(this.createDto, {...this.defaultVals, ...vals }) as CDto;
+        }
+
+        updateDtoInstance(vals: any) : UDto{
+            return plainToInstance(this.updateDto, {...this.defaultVals, ...vals }) as UDto;
         }
 }
