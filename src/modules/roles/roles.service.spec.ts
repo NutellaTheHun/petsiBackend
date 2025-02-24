@@ -1,15 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
 import { RolesService } from './roles.service';
-import { UsersService } from '../users/users.service';
 import { RoleFactory } from './entities/role.factory';
-import { UserFactory } from '../users/entities/user.factory';
 import { getRolesTestingModule } from './utils/roles-testing-module';
 
 describe('RolesService', () => {
-  let usersService: UsersService;
   let rolesService: RolesService;
   let roleFactory: RoleFactory;
-  let userFactory: UserFactory;
 
   const ADMIN = "admin";
   const MANAGER = "manager";
@@ -21,19 +17,13 @@ describe('RolesService', () => {
   
   beforeAll(async () => {
       const module: TestingModule = await getRolesTestingModule();
-      usersService = module.get<UsersService>(UsersService);
       rolesService = module.get<RolesService>(RolesService);
-
-      userFactory = module.get<UserFactory>(UserFactory);
       roleFactory = module.get<RoleFactory>(RoleFactory);
   });
   
   afterAll(async() => {
     const roleQueryBuilder = rolesService.createRoleQueryBuilder();
     await roleQueryBuilder.delete().execute();
-
-    const userQueryBuilder = usersService.createUserQueryBuilder();
-    await userQueryBuilder.delete().execute();
   })
 
   it('should be defined', () => {

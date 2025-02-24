@@ -7,7 +7,6 @@ import { RolesService } from '../roles/roles.service';
 @Controller('users')
 export class UsersController {
   constructor(
-    @Inject(forwardRef(() => RolesService))
     private readonly usersService: UsersService,
   ) {}
 

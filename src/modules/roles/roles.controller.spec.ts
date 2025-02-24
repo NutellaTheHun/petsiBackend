@@ -5,12 +5,16 @@ import { RoleFactory } from './entities/role.factory';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { getRolesTestingModule } from './utils/roles-testing-module';
+import { Role } from './entities/role.entities';
 
 describe('RolesController', () => {
   let controller: RolesController;
   let rolesService: RolesService;
   let roleFactory: RoleFactory;
-
+  
+  let roleId = 4;
+  let roles: Role[];
+  
   beforeAll(async () => {
     const module: TestingModule = await getRolesTestingModule();
 
@@ -18,7 +22,7 @@ describe('RolesController', () => {
     rolesService = module.get<RolesService>(RolesService);
     roleFactory = module.get<RoleFactory>(RoleFactory);
 
-    let roles = roleFactory.getDefaultRoles();
+    let roles = roleFactory.getTestingRoles();
     roles[0].id = 1;
     roles[1].id = 2;
     roles[2].id = 3;
@@ -30,7 +34,7 @@ describe('RolesController', () => {
       }
 
       const role = roleFactory.createDtoToEntity(createDto);
-      role.id = 4;
+      role.id = roleId;
       roles.push(role);
 
       return role;
@@ -38,15 +42,12 @@ describe('RolesController', () => {
 
     
     jest.spyOn(rolesService, "update").mockImplementation(async (id: number, updateDto: UpdateRoleDto) => {
-      const exists = roles.find(role => role.id === id);
-      if(!exists){
-        throw new Error("Role to update doesn't exist");
-      }
+      const index = roles.findIndex(role => role.id === id);
+      if(index === -1) return null;
 
       const updated = roleFactory.updateDtoToEntity(updateDto);
       updated.id = id;
-      roles.filter(role => role.id !== id);
-      roles.push(updated);
+      roles[index] = updated;
 
       return updated;
     });
@@ -83,7 +84,7 @@ describe('RolesController', () => {
   });
 
   it("should not return one role (bad id)", async () => {
-    await expect(controller.findOne(0)).toBeNull();
+    await expect(controller.findOne(0)).resolves.toBeNull();
   });
 
   it("should create and return a role", async () => {
@@ -95,7 +96,7 @@ describe('RolesController', () => {
 
   it("should fail to create a role (non-unique name)", async () => {
     const roleDto = roleFactory.createDtoInstance({ name: "newRole" });
-    await expect(controller.create(roleDto)).toBeNull();
+    await expect(controller.create(roleDto)).resolves.toBeNull();
   });
 
   it("should update a role", async () => {
@@ -111,7 +112,7 @@ describe('RolesController', () => {
     const removal = await controller.remove(4);
 
     await expect(removal).toBeTruthy();
-    await expect(controller.findOne(4)).toBeNull();
+    await expect(controller.findOne(4)).resolves.toBeNull();
   });
 
   it("should fail to remove a role (bad id)", async () => {

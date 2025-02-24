@@ -5,7 +5,6 @@ import { RoleFactory } from './entities/role.factory';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entities';
 import { In, QueryBuilder, Repository } from 'typeorm';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 import { UsersService } from '../users/users.service';
 
 @Injectable()

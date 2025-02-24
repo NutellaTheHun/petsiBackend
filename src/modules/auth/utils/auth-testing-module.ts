@@ -33,10 +33,10 @@ export async function getAuthTestingModule(): Promise<TestingModule> {
                             signOptions: { expiresIn: '60s'},
                           }),
                         }),
-                    forwardRef(() => UsersModule),
-                    forwardRef(() => RolesModule),
+                    UsersModule,
+                    RolesModule,
                     AuthModule,
                   ],
                   controllers: [AuthController],
-                  providers: [AuthService],
+                  providers: [],
 }).compile()};
