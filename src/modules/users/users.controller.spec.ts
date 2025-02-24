@@ -22,7 +22,7 @@ describe('UsersController', () => {
 
     jest.spyOn(usersService, "create").mockImplementation(async (createDto : CreateUserDto) => {
       const exists = users.find(user => user.username === createDto.username)
-      if(exists){ throw new Error('User already exists'); }
+      if(exists){ return null; }
 
       const user = await userFactory.createDtoToEntity(createDto);
       user.id = 5;
@@ -33,7 +33,7 @@ describe('UsersController', () => {
 
     jest.spyOn(usersService, "update").mockImplementation(async (id: number, updateDto: UpdateUserDto) => {
       const exists = users.find(user => user.id === id)
-      if(!exists){ throw new Error("User doesn't exist"); }
+      if(!exists){ return null; }
 
       const updated = await userFactory.updateDtoToEntity(updateDto);
       updated.id = id;
@@ -62,12 +62,6 @@ describe('UsersController', () => {
       users.splice(index, 1);
       return true;
     });
-
-    jest.spyOn(usersService, "remove").mockImplementation(async (id: number) => {
-      const originalLength = users.length;
-      users = users.filter(user => user.id !== id);
-      return users.length !== originalLength;
-    });
   });
 
   it('should be defined', () => {
@@ -85,7 +79,7 @@ describe('UsersController', () => {
   });
 
   it("should fail to get one user and return null (bad id/not found)", async () => {
-    await expect(controller.findOne(0)).toBeNull();
+    await expect(controller.findOne(0)).resolves.toBeNull();
   });
 
   it("should create a user", async () => {
@@ -97,7 +91,7 @@ describe('UsersController', () => {
 
   it("should fail to create a user (non-unique username)", async () => {
     const newUser = userFactory.createDtoInstance({name: "newUser", rawPassword: "newPass", email: "newEmail@email.com" });
-    await expect(controller.create(newUser)).rejects.toThrow(Error);
+    await expect(controller.create(newUser)).resolves.toBeNull();
   });
 
   it("should update a user", async () => {
@@ -115,7 +109,7 @@ describe('UsersController', () => {
       const result = await controller.remove(5);
       expect(result).toBeTruthy();
 
-      await expect(controller.findOne(5)).toBeNull();
+      await expect(controller.findOne(5)).resolves.toBeNull();
     });
   
     it("should fail to remove a user (bad id)", async () => {

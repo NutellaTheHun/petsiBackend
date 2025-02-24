@@ -13,7 +13,7 @@ export class CreateUserDto {
 
     @IsString()
     @IsNotEmpty()
-    readonly rawPassword: string;
+    readonly password: string;
     
     @IsArray()
     @IsNumber({}, { each: true })

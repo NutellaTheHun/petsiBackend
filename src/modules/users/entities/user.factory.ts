@@ -16,7 +16,7 @@ export class UserFactory extends EntityFactory<User, CreateUserDto, UpdateUserDt
         // figure out nice way of getting roles.
         const roles = []
         return [
-            this.createEntityInstance({username: "admin", rawPassword: "test"})
+            this.createEntityInstance({username: "admin", password: "test"})
         ];
     }
     
@@ -26,10 +26,10 @@ export class UserFactory extends EntityFactory<User, CreateUserDto, UpdateUserDt
      */
     async getTestUsers() : Promise<User[]> {
         let users = [
-            await this.createEntityInstance({ username: "userA", rawPassword: "passA", email: "emailA" }),
-            await this.createEntityInstance({ username: "userB", rawPassword: "passB", email: "emailB" }),
-            await this.createEntityInstance({ username: "userC", rawPassword: "passC", email: "emailC" }),
-            await this.createEntityInstance({ username: "userD", rawPassword: "passD", email: "emailD" })
+            await this.createEntityInstance({ username: "userA", password: "passA", email: "emailA" }),
+            await this.createEntityInstance({ username: "userB", password: "passB", email: "emailB" }),
+            await this.createEntityInstance({ username: "userC", password: "passC", email: "emailC" }),
+            await this.createEntityInstance({ username: "userD", password: "passD", email: "emailD" })
           ];
           users[0].id = 1;
           users[1].id = 2;

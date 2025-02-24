@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entities';
 import { In, QueryBuilder, Repository } from 'typeorm';
 import { RolesService } from '../roles/roles.service';
+import { hashPassword } from '../auth/utils/hash';
 
 @Injectable()
 export class UsersService {
@@ -25,25 +26,29 @@ export class UsersService {
     const alreadyExists = await this.userRepo.findOne({ where: { username: createUserDto.username }});
     if(alreadyExists){ return null; }
 
-    const user = await this.userFactory.createEntityInstance(createUserDto, { roles: this.rolesService.findRolesById(createUserDto.roleIds)});
-  
-    return this.userRepo.create(user);
+    const roles = await this.rolesService.findRolesById(createUserDto.roleIds);
+    const password = await hashPassword(createUserDto.password);
+    const user = await this.userFactory.createEntityInstance(createUserDto, { roles, password });
+    
+    const result = await this.userRepo.save(user);
+    result.password = "";
+    return result;
   }
 
-  async findAll() {
-    return await this.userRepo.find();
+  async findAll(relations?: string[]) {
+    return await this.userRepo.find({ relations: relations });
   }
 
-  async findOne(id: number) {
-    return await this.userRepo.findOne({ where: {id} });
+  async findOne(id: number, relations?: string[]) {
+    return await this.userRepo.findOne({ where: {id}, relations: relations });
   }
 
-  async findOneByName(username: string): Promise<User | null> {
-    return await this.userRepo.findOne({where : { username: username }});
+  async findOneByName(username: string, relations?: string[]): Promise<User | null> {
+    return await this.userRepo.findOne({where : { username: username }, relations: relations });
   }
 
-  async findUsersById( userIds: number[]): Promise<User[]>{
-    return await this.userRepo.find({ where: { id: In(userIds) }});
+  async findUsersById( userIds: number[], relations?: string[]): Promise<User[]>{
+    return await this.userRepo.find({ where: { id: In(userIds) }, relations: relations });
   }
 
   /**

@@ -13,9 +13,8 @@ export class User{
     @Column({ nullable: true })
     email: string;
 
-    @Exclude()
     @Column({ nullable: false })
-    passwordHash: string;
+    password: string;
 
     @CreateDateColumn()
     createdAt: Date;

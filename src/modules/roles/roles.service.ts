@@ -22,29 +22,29 @@ export class RolesService {
   ){}
 
   async create(createRoleDto: CreateRoleDto): Promise<Role | null> {
-    const alreadyExists = await this.roleRepo.findOne({ where: { name: createRoleDto.name}});
+    const alreadyExists = await this.roleRepo.findOne({ where: { name: createRoleDto.name }});
     if(alreadyExists){ return null; }
 
     const userIds = createRoleDto.userIds || [];
-    const role = await this.roleFactory.createEntityInstance(createRoleDto, { users: this.usersService.findUsersById(userIds)});
+    const role = await this.roleFactory.createEntityInstance(createRoleDto, { users: await this.usersService.findUsersById(userIds)});
 
-    return this.roleRepo.save(role);
+    return await this.roleRepo.save(role);
   }
 
-  async findAll(): Promise<Role[]> {
-    return await this.roleRepo.find();
+  async findAll(relations?: string[]): Promise<Role[]> {
+    return await this.roleRepo.find({relations: relations});
   }
 
-  async findOne(id: number): Promise<Role | null> {
-    return await this.roleRepo.findOne({ where: { id } });
+  async findOne(id: number, relations?: string[]): Promise<Role | null> {
+    return await this.roleRepo.findOne({ where: { id }, relations: relations });
   }
 
-  async findOneByName(roleName: string): Promise<Role | null> {
-    return await this.roleRepo.findOne({ where: { name: roleName } });
+  async findOneByName(roleName: string, relations?: string[]): Promise<Role | null> {
+    return await this.roleRepo.findOne({ where: { name: roleName }, relations: relations  });
   }
 
-  async findRolesById( roleIds: number[]): Promise<Role[]> {
-    return await this.roleRepo.find({ where: { id: In(roleIds) } });
+  async findRolesById( roleIds: number[], relations?: string[]): Promise<Role[]> {
+    return await this.roleRepo.find({ where: { id: In(roleIds) }, relations: relations });
   }
 
   /**

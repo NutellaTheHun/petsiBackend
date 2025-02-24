@@ -29,13 +29,13 @@ describe('UsersService', () => {
       rolesService = module.get<RolesService>(RolesService);
       roleFactory = module.get<RoleFactory>(RoleFactory);
 
-      rolesService.create(
+      await rolesService.create(
         roleFactory.createDtoInstance({name: ADMIN})
       );
-      rolesService.create(
+      await rolesService.create(
         roleFactory.createDtoInstance({name: MANAGER})
       );
-      rolesService.create(
+      await rolesService.create(
         roleFactory.createDtoInstance({name: STAFF})
       );
   });
@@ -53,12 +53,12 @@ describe('UsersService', () => {
   });
 
   it("should insert a user", async () => {
-    const role = await usersService.findOneByName(STAFF);
+    const role = await rolesService.findOneByName(STAFF);
     if (!role) { throw new Error("Role 'staff' not found"); }
 
     const result = await usersService.create(
       userFactory.createDtoInstance(
-        {username: testUsername, rawPassword: testUserPass, email: testUserEmail, roleIds: [role.id]})
+        {username: testUsername, password: testUserPass, email: testUserEmail, roleIds: [role.id]})
     );
     if(!result){ throw new Error("user creation fail, result is null. (Possibly already exists)"); }
 
@@ -69,11 +69,11 @@ describe('UsersService', () => {
     expect(result.roles[0].name).toBe(STAFF);
   });
 
-  it("should update the roles user reference", async () => {
+  it("should update the roles user reference after user is assigned the role", async () => {
     //const updatedRole = await usersService.findOne({ where: { name: STAFF }, relations: ["users"], });
-    const updatedRole = await rolesService.findOneByName(STAFF);
+    const updatedRole = await rolesService.findOneByName(STAFF, ["users"]);
     expect(updatedRole).not.toBeNull();
-    expect(updatedRole?.users[0]).toBe(testUsername);
+    expect(updatedRole?.users[0].username).toBe(testUsername);
   });
 
   it("should update a user", async () =>{
@@ -113,17 +113,17 @@ describe('UsersService', () => {
   it("should get Users from a list of user ids", async () => {
     await usersService.create(
       userFactory.createDtoInstance(
-        {username: "USER_A", rawPassword:  "testAPass", email: "emailA@email.com"})
+        {username: "USER_A", password: "testAPass", email: "emailA@email.com"})
     );
     
     await usersService.create(
       userFactory.createDtoInstance(
-        {username: "USER_B", rawPassword:  "testBPass", email: "emailB@email.com" })
+        {username: "USER_B", password: "testBPass", email: "emailB@email.com" })
       );
 
     await usersService.create(
       userFactory.createDtoInstance(
-        {username: "USER_C", rawPassword:  "testCPass", email: "emailC@email.com" })
+        {username: "USER_C", password: "testCPass", email: "emailC@email.com" })
       );
 
     const list = await usersService.findAll();

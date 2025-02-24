@@ -19,7 +19,7 @@ export class AuthService {
         const user = await this.userService.findOneByName(username);
         if(!user){ throw new UnauthorizedException('Invalid username or password'); }// check if this wil suffice
         
-        if (!(await isPassHashMatch(pass, user.passwordHash))){
+        if (!(await isPassHashMatch(pass, user.password))){
             throw new UnauthorizedException('Invalid username or password');
         }
 
