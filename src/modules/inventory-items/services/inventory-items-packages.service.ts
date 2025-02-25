@@ -14,37 +14,37 @@ export class InventoryItemPackagesService {
     
         private readonly packageFactory: InventoryItemPackageFactory 
     
-      ){}
+    ){}
 
-      async create(createDto: CreateInventoryItemPackageDto)/*: Promise< | null> */{
+    async create(createDto: CreateInventoryItemPackageDto)/*: Promise< | null> */{
 
-        }
-      
-        async findAll(relations?: string[])/*: Promise<[]>*/{
+    }
+    
+    async findAll(relations?: string[])/*: Promise<[]>*/{
 
-        }
-      
-        async findOne(id: number, relations?: string[])/*: Promise< | null>*/{
+    }
+    
+    async findOne(id: number, relations?: string[])/*: Promise< | null>*/{
 
-        }
-      
-        async findOneByName(Name: string, relations?: string[])/*: Promise< | null>*/ {
+    }
+    
+    async findOneByName(Name: string, relations?: string[])/*: Promise< | null>*/ {
 
-        }
-      
-        async findsById( Ids: number[], relations?: string[])/*: Promise<[]> */{
+    }
+    
+    async findsById( Ids: number[], relations?: string[])/*: Promise<[]> */{
 
-        }
-      
-        async update(id: number, updateDto: UpdateInventoryItemPackageDto)/*: Promise< | null>*/{
+    }
+    
+    async update(id: number, updateDto: UpdateInventoryItemPackageDto)/*: Promise< | null>*/{
 
-        }
-      
-        async remove(id: number)/*: Promise<Boolean> */{
+    }
+    
+    async remove(id: number)/*: Promise<Boolean> */{
 
-        }
-      
-        createQueryBuilder()/*: QueryBuilder<> */{
+    }
+    
+    createQueryBuilder()/*: QueryBuilder<> */{
 
-        }
+    }
 }
