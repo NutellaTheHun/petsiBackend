@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, HttpStatus, Inject, forwardRef } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, HttpCode, HttpStatus } from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { UsersService } from '../users/users.service';
 import { Role } from './entities/role.entities';
+import { Roles } from '../../util/decorators/PublicRole';
 
 @Controller('roles')
+@Roles("admin")
 export class RolesController {
   constructor(
-    //@Inject(forwardRef(() => UsersService))
     private readonly rolesService: RolesService
   ) {}
 

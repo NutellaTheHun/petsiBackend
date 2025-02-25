@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -15,6 +15,9 @@ import { RecipesModule } from './modules/recipes/recipes.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 import { UsersModule } from './modules/users/users.module';
 import { RolesModule } from './modules/roles/roles.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './modules/auth/auth.guard';
+import { RolesGuard } from './modules/roles/roles.guard';
 
 @Module({
   imports: [ 
@@ -26,7 +29,16 @@ import { RolesModule } from './modules/roles/roles.module';
     UsersModule, RolesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },],
 })
 export class AppModule {
   constructor(private dataSource: DataSource){}

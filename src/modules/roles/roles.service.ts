@@ -14,7 +14,6 @@ export class RolesService {
     @InjectRepository(Role)
     private readonly roleRepo: Repository<Role>,
 
-    @Inject()
     private readonly roleFactory: RoleFactory,
 
     @Inject(forwardRef(() => UsersService))

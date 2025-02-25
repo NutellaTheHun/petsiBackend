@@ -1,13 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Inject} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entities';
+import { Roles } from '../../util/decorators/PublicRole';
 
 @Controller('users')
+@Roles("admin")
 export class UsersController {
   constructor(
-    @Inject()
     private readonly usersService: UsersService,
   ) {}
 

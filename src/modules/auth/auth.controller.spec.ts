@@ -4,14 +4,13 @@ import { getAuthTestingModule } from './utils/auth-testing-module';
 import { AuthService } from './auth.service';
 import { RoleFactory } from '../roles/entities/role.factory';
 import { UserFactory } from '../users/entities/user.factory';
-import { isPassHashMatch } from './utils/hash';
+import { hashPassword, isPassHashMatch } from './utils/hash';
 import { UnauthorizedException } from '@nestjs/common';
 import { SignInDto } from './dto/sign-in.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
-  let roleFactory: RoleFactory;
   let userFactory: UserFactory;
   
   beforeAll(async () => {
@@ -22,11 +21,17 @@ describe('AuthController', () => {
     userFactory = module.get<UserFactory>(UserFactory);
 
     let users = await userFactory.getTestUsers();
-
-    jest.spyOn(authService, "signIn").mockImplementation(async (username, pass) => {
+    users = await Promise.all(
+      users.map(async (user) => {
+        user.password = await hashPassword(user.password);
+        return user;
+      })
+    );
+    
+    jest.spyOn(authService, "signIn").mockImplementation(async (username, inputPass) => {
       const user = users.find(user => user.username === username);
-      if(!user || !(await isPassHashMatch(pass,user.passwordHash))) throw new UnauthorizedException();
-      return { access_token: 'mock_token' };
+      if(!user || !(await isPassHashMatch(inputPass, user.password))) throw new UnauthorizedException();
+      return { access_token: 'mock_token', roles: ["role"] };
     });
   });
 
@@ -52,5 +57,4 @@ describe('AuthController', () => {
     const pass = 'passB'
     await expect(controller.signIn({ username: username, password: pass} as SignInDto)).rejects.toThrow(UnauthorizedException);
   });
-
 });

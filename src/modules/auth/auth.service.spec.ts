@@ -29,12 +29,12 @@ describe('AuthService', () => {
 
   it("should sign in", async () => {
     const userDto = userFactory.createDtoInstance(
-      {username: "loginUser", rawPassword: "loginPassword", email: "loginUser@email.com"});
+      {username: "loginUser", password: "loginPassword", email: "loginUser@email.com"});
 
     const creation = await userService.create(userDto);
     if(!creation){ throw new Error("insert user failed"); }
 
-    const result = await service.signIn(userDto.username, userDto.rawPassword);
+    const result = await service.signIn(userDto.username, userDto.password);
 
     expect(result.access_token).not.toBeNull();
   })
