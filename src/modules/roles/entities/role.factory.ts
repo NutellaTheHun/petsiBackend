@@ -1,5 +1,5 @@
 import { Role } from "./role.entities";
-import { CreateRoleDto, CreateRoleDtoDefaultValues } from "../dto/create-role.dto";
+import { CreateDefaultDtoValues, CreateRoleDto } from "../dto/create-role.dto";
 import { UpdateRoleDto } from "../dto/update-role.dto";
 import { EntityFactory } from "../../../base/entity-factory";
 import { Injectable } from "@nestjs/common";
@@ -8,7 +8,7 @@ import { Injectable } from "@nestjs/common";
 export class RoleFactory extends EntityFactory<Role, CreateRoleDto, UpdateRoleDto>{
 
     constructor() {
-        super( Role, CreateRoleDto, UpdateRoleDto, CreateRoleDtoDefaultValues());
+        super( Role, CreateRoleDto, UpdateRoleDto, CreateDefaultDtoValues());
     }
 
     getDefaultRoles(): Role[] {

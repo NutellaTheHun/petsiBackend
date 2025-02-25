@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
 export class CreateInventoryItemSizeDto {
     @IsNumber()
@@ -15,4 +15,10 @@ export class CreateInventoryItemSizeDto {
     @IsPositive()
     @IsNotEmpty()
     readonly inventoryItemId: number;
+}
+
+export function CreateDefaultInventoryItemSizeDtoValues(): Partial<CreateInventoryItemSizeDto> {
+    return {
+        
+    };
 }

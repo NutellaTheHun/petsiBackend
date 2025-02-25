@@ -10,3 +10,9 @@ export class CreateInventoryItemCategoryDto {
     @IsNumber({}, { each: true})
     readonly inventoryItemIds: number[] = [];
 }
+
+export function CreateDefaultInventoryItemCategoryDtoValues(): Partial<CreateInventoryItemCategoryDto> {
+    return {
+        
+    };
+}

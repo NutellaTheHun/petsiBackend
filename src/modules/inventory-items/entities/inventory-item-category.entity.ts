@@ -18,5 +18,5 @@ export class InventoryItemCategory {
      * - is updated through the creation/modification/deletion of InventoryItems
      */
     @OneToMany(() => InventoryItem, (item) => item.category, { nullable: false })
-    items : InventoryItem[] = [];
+    items : InventoryItem[];
 }

@@ -31,5 +31,5 @@ export class InventoryAreaCount{
      * - handled with cascade: true
      */
     @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: false})
-    countedItems: InventoryAreaItemCount[] = [];
+    countedItems: InventoryAreaItemCount[];
 }

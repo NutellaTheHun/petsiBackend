@@ -5,3 +5,9 @@ export class CreateInventoryItemPackageDto {
     @IsNotEmpty()
     readonly name: string;
 }
+
+export function CreateDefaultInventoryItemPackageDtoValues(): Partial<CreateInventoryItemPackageDto> {
+    return {
+        
+    };
+}

@@ -14,3 +14,9 @@ export class CreateInventoryItemDto {
     @IsPositive({ each: true})
     readonly sizeIds: number[] = [];
 }
+
+export function CreateDefaultInventoryItemDtoValues(): Partial<CreateInventoryItemDto> {
+    return {
+        
+    };
+}

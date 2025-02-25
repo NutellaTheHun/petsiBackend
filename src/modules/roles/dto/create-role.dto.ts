@@ -11,7 +11,7 @@ export class CreateRoleDto {
     readonly userIds: number[] = [];
 }
 
-export function CreateRoleDtoDefaultValues(): Partial<CreateRoleDto> {
+export function CreateDefaultDtoValues(): Partial<CreateRoleDto> {
     return {
         userIds: []
     };
