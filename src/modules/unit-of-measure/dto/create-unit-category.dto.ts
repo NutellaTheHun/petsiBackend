@@ -14,3 +14,9 @@ export class CreateUnitCategoryDto{
     @IsOptional()
     baseUnitId?: number; 
 }
+
+export function CreateDefaultUnitCategoryDtoValues(): Partial<CreateUnitCategoryDto> {
+    return {
+        
+    };
+}

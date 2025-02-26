@@ -13,6 +13,6 @@ export class CreateInventoryItemVendorDto {
 
 export function CreateDefaultInventoryItemVendorDtoValues(): Partial<CreateInventoryItemVendorDto> {
     return {
-        
+        inventoryItemIds: []
     };
 }

@@ -13,7 +13,7 @@ export class UnitCategory{
     name: string;
 
     @OneToMany(() => UnitOfMeasure, (unit) => unit.category, { nullable: false})
-    units: UnitOfMeasure[] = []
+    units: UnitOfMeasure[];
 
     /**
      * The type of unit that all units in the category convert to for conversions.
@@ -21,5 +21,5 @@ export class UnitCategory{
      */
     @OneToOne(() => UnitOfMeasure, { nullable: true })
     @JoinColumn()
-    baseUnit?: UnitOfMeasure
+    baseUnit?: UnitOfMeasure;
 }

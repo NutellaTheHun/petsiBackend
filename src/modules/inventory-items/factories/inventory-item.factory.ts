@@ -18,9 +18,9 @@ export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInv
     }
     
     // name
-    // category entity
-    // size[] entity
-    // vendor? entity
+    // category?: InventoryItemCategory
+    // sizes: InventoryItemSize[]
+    // vendor?: InventoryItemVendor
     getTestingRoles(): InventoryItem[]{
         return [
 

@@ -19,3 +19,9 @@ export class CreateUnitOfMeasureDto {
     @IsOptional()
     readonly conversionFactorToBase?: string;
 }
+
+export function CreateDefaultUnitOfMeasureDtoValues(): Partial<CreateUnitOfMeasureDto> {
+    return {
+        
+    };
+}

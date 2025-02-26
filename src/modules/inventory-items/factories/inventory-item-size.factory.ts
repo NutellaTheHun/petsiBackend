@@ -11,6 +11,9 @@ export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, C
         super( InventoryItemSize, CreateInventoryItemSizeDto, UpdateInventoryItemSizeDto, CreateDefaultInventoryItemSizeDtoValues());
     }
 
+    // measureUnit: UnitOfMeasure
+    // packageType: InventoryItemPackage
+    // item: InventoryItem
     getDefaultRoles(): InventoryItemSize[] {
         return [
             
