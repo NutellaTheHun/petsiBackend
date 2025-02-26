@@ -5,34 +5,19 @@ import { InventoryItemCategory } from '../entities/inventory-item-category.entit
 import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
 import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
 import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
+import { ServiceBase } from '../../../base/service-base';
 
 @Injectable()
-export class InventoryItemCategoriesService {
+export class InventoryItemCategoriesService extends ServiceBase<InventoryItemCategory> {
     constructor(
         @InjectRepository(InventoryItemCategory)
         private readonly categoryRepo: Repository<InventoryItemCategory>,
     
         private readonly categoryFactory: InventoryItemCategoryFactory
     
-    ){}
+    ){ super(categoryRepo); }
 
     async create(createDto: CreateInventoryItemCategoryDto)/*: Promise< | null> */{
-
-    }
-    
-    async findAll(relations?: string[])/*: Promise<[]>*/{
-
-    }
-    
-    async findOne(id: number, relations?: string[])/*: Promise< | null>*/{
-
-    }
-    
-    async findOneByName(Name: string, relations?: string[])/*: Promise< | null>*/ {
-
-    }
-    
-    async findsById( Ids: number[], relations?: string[])/*: Promise<[]> */{
 
     }
     
@@ -40,11 +25,7 @@ export class InventoryItemCategoriesService {
 
     }
     
-    async remove(id: number)/*: Promise<Boolean> */{
-
-    }
-    
-    createQueryBuilder()/*s: QueryBuilder<> */{
+    async findOneByName(Name: string, relations?: string[])/*: Promise< | null>*/ {
 
     }
 }

@@ -1,13 +1,9 @@
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
-import { EntityFactory } from "./entity-factory";
 
-export class ServiceBase<T extends ObjectLiteral, CDto extends ObjectLiteral, UDto extends ObjectLiteral> {
+export class ServiceBase<T extends ObjectLiteral> {
   
   constructor(
     private readonly entityRepo: Repository<T>,
-    private readonly entityFactory: EntityFactory<T, CDto, UDto>,
-    private createDto: new () => CDto,
-    private updateDto: new () => UDto,
   ){}
 
   /*
@@ -26,11 +22,12 @@ export class ServiceBase<T extends ObjectLiteral, CDto extends ObjectLiteral, UD
     );
   }
 
+  /*
   async findOneByName(name: string, relations?: string[]): Promise<T | null> {
     return await this.entityRepo.findOne({ 
         where: { name: name } as unknown as FindOptionsWhere<T>, 
         relations: relations  });
-  }
+  }*/
 
   async findEntitiesById( ids: number[], relations?: string[]): Promise<T[]> {
     return await this.entityRepo.find({ 
@@ -47,7 +44,7 @@ export class ServiceBase<T extends ObjectLiteral, CDto extends ObjectLiteral, UD
     return (await this.entityRepo.delete(id)).affected !== 0;
   }
 
-  createTQueryBuilder(): QueryBuilder<T> {
+  getQueryBuilder(): QueryBuilder<T> {
     return this.entityRepo.createQueryBuilder();
   }
 }

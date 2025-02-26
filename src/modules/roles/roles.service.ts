@@ -4,11 +4,12 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { RoleFactory } from './entities/role.factory';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from './entities/role.entities';
-import { In, QueryBuilder, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
+import { ServiceBase } from '../../base/service-base';
 
 @Injectable()
-export class RolesService {
+export class RolesService extends ServiceBase<Role> {
   
   constructor(
     @InjectRepository(Role)
@@ -18,32 +19,20 @@ export class RolesService {
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
-  ){}
+  ){ super(roleRepo)}
 
   async create(createRoleDto: CreateRoleDto): Promise<Role | null> {
     const alreadyExists = await this.roleRepo.findOne({ where: { name: createRoleDto.name }});
     if(alreadyExists){ return null; }
 
     const userIds = createRoleDto.userIds || [];
-    const role = await this.roleFactory.createEntityInstance(createRoleDto, { users: await this.usersService.findUsersById(userIds)});
+    const role = await this.roleFactory.createEntityInstance(createRoleDto, { users: await this.usersService.findEntitiesById(userIds)});
 
     return await this.roleRepo.save(role);
   }
 
-  async findAll(relations?: string[]): Promise<Role[]> {
-    return await this.roleRepo.find({relations: relations});
-  }
-
-  async findOne(id: number, relations?: string[]): Promise<Role | null> {
-    return await this.roleRepo.findOne({ where: { id }, relations: relations });
-  }
-
   async findOneByName(roleName: string, relations?: string[]): Promise<Role | null> {
     return await this.roleRepo.findOne({ where: { name: roleName }, relations: relations  });
-  }
-
-  async findRolesById( roleIds: number[], relations?: string[]): Promise<Role[]> {
-    return await this.roleRepo.find({ where: { id: In(roleIds) }, relations: relations });
   }
 
   /**
@@ -57,16 +46,8 @@ export class RolesService {
     if(!alreadyExists){ return null; } //more detailed error
 
     const userIds = updateRoleDto.userIds || []
-    const role = await this.roleFactory.updateEntityInstance(updateRoleDto, { users: this.usersService.findUsersById(userIds)});
+    const role = await this.roleFactory.updateEntityInstance(updateRoleDto, { users: this.usersService.findEntitiesById(userIds)});
     
     return this.roleRepo.save(role);
-  }
-
-  async remove(id: number): Promise<Boolean> {
-    return (await this.roleRepo.delete(id)).affected !== 0;
-  }
-
-  createRoleQueryBuilder(): QueryBuilder<Role> {
-    return this.roleRepo.createQueryBuilder();
   }
 }
