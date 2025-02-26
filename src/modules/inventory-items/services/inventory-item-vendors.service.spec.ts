@@ -1,17 +1,18 @@
 import { TestingModule } from '@nestjs/testing';
 import { getInventoryItemsTestingModule } from '../utils/inventory-items-testing-module';
 import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
-import { InventoryItemSizesService } from './inventory-items-sizes.service';
+import { InventoryItemVendorsService } from './inventory-item-vendors.service';
 
 
-describe('InventoryItemSizesService', () => {
-  let service: InventoryItemSizesService;
+
+describe('InventoryItemVendorService', () => {
+  let service: InventoryItemVendorsService;
   let factory: InventoryItemSizeFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemsTestingModule();
 
-    service = module.get<InventoryItemSizesService>(InventoryItemSizesService);
+    service = module.get<InventoryItemVendorsService>(InventoryItemVendorsService);
     factory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
   });
 

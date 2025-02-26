@@ -19,27 +19,27 @@ describe('InventoryItemPackagesService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a ___', async () => {
+  it('should create a inventory item package', async () => {
 
   })
 
-  it('should update a ___', async () => {
+  it('should update a inventory item package', async () => {
     
   })
 
-  it('should remove a ___', async () => {
+  it('should remove a inventory item package', async () => {
     
   })
 
-  it('should get all ___', async () => {
+  it('should get all inventory item packages', async () => {
     
   })
 
-  it('should get by name ___', async () => {
+  it('should get a inventory item package by name', async () => {
     
   })
 
-  it('should get from a list of ___ ids', async () => {
+  it('should get inventory item packages from a list of ids', async () => {
     
   })
 });

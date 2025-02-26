@@ -9,6 +9,11 @@ import { InventoryItemSize } from './entities/inventory-item-size.entity';
 import { InventoryItemSizesController } from './controllers/inventory-item-sizes.contoller';
 import { InventoryItemCategoriesController } from './controllers/inventory-item-categories.contoller';
 import { InventoryItemPackagesController } from './controllers/inventory-item-packages.contoller';
+import { InventoryItemVendor } from './entities/inventory-item-vendor.entity';
+import { InventoryItemCategoriesService } from './services/inventory-items-categories.service';
+import { InventoryItemPackagesService } from './services/inventory-items-packages.service';
+import { InventoryItemSizesService } from './services/inventory-items-sizes.service';
+import { InventoryItemVendorsService } from './services/inventory-item-vendors.service';
 
 @Module({
   imports: [ 
@@ -16,14 +21,25 @@ import { InventoryItemPackagesController } from './controllers/inventory-item-pa
       InventoryItem, 
       InventoryItemCategory, 
       InventoryItemPackage, 
-      InventoryItemSize])],
+      InventoryItemSize,
+      InventoryItemVendor,
+    ])
+  ],
 
   controllers: [
     InventoryItemsController, 
     InventoryItemCategoriesController, 
     InventoryItemPackagesController, 
-    InventoryItemSizesController, ],
+    InventoryItemSizesController,
+    InventoryItemVendor,
+  ],
     
-  providers: [InventoryItemsService]
+  providers: [
+    InventoryItemsService,
+    InventoryItemCategoriesService,
+    InventoryItemPackagesService,
+    InventoryItemSizesService,
+    InventoryItemVendorsService,
+  ]
 })
 export class InventoryItemsModule {}

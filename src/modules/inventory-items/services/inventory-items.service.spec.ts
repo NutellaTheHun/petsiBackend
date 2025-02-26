@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TestingModule } from '@nestjs/testing';
 import { InventoryItemsService } from './inventory-items.service';
 import { InventoryItemFactory } from '../factories/inventory-item.factory';
 import { getInventoryItemsTestingModule } from '../utils/inventory-items-testing-module';
@@ -19,27 +19,27 @@ describe('InventoryItemsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a ___', async () => {
+  it('should create a inventory item', async () => {
 
   })
 
-  it('should update a ___', async () => {
+  it('should update a inventory item', async () => {
     
   })
 
-  it('should remove a ___', async () => {
+  it('should remove a inventory item', async () => {
     
   })
 
-  it('should get all ___', async () => {
+  it('should get all inventory items', async () => {
     
   })
 
-  it('should get by name ___', async () => {
+  it('should get a inventory item by name', async () => {
     
   })
 
-  it('should get from a list of ___ ids', async () => {
+  it('should get inventory items from a list of ids', async () => {
     
   })
 });

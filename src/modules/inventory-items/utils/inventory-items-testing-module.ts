@@ -10,6 +10,7 @@ import { InventoryItemsController } from "../controllers/inventory-items.control
 import { InventoryItemCategoriesController } from "../controllers/inventory-item-categories.contoller";
 import { InventoryItemSizesController } from "../controllers/inventory-item-sizes.contoller";
 import { InventoryItemPackagesController } from "../controllers/inventory-item-packages.contoller";
+import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 
 export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -19,13 +20,15 @@ export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
                 InventoryItem, 
                 InventoryItemCategory, 
                 InventoryItemPackage, 
-                InventoryItemSize]
+                InventoryItemSize,
+                InventoryItemVendor,]
             ),
             TypeOrmModule.forFeature([
                 InventoryItem, 
                 InventoryItemCategory, 
                 InventoryItemPackage, 
-                InventoryItemSize]
+                InventoryItemSize,
+                InventoryItemVendor,]
             ),
     ],
 
@@ -33,7 +36,8 @@ export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
         InventoryItemsController, 
         InventoryItemCategoriesController, 
         InventoryItemSizesController, 
-        InventoryItemPackagesController
+        InventoryItemPackagesController,
+        InventoryItemsController,
     ],
 
     providers: [],

@@ -1,6 +1,7 @@
 import { BeforeInsert, BeforeRemove, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemSize } from "./inventory-item-size.entity";
 import { InventoryItemCategory } from "./inventory-item-category.entity";
+import { InventoryItemVendor } from "./inventory-item-vendor.entity";
 
 /**
  * An item that exists in inventory, referenced for inventory counting, and ingredients for recipes. 
@@ -16,7 +17,7 @@ export class InventoryItem{
     /**
      * - categories must be pre-existing, or null  (cannot create a new category when making a new item)
      * - If the inventory item is deleted, it's removed from the category's reference via BeforeRemove()
-     * - If the associated category is deleted, its category will be set to null.
+     * - If the associated category is deleted, the item's category will be set to null.
      * - When an item is created, its reference is passed to update category.items via BeforeInsert() hook
      */
     @ManyToOne(() => InventoryItemCategory, (category) => category.items, {   
@@ -50,5 +51,35 @@ export class InventoryItem{
      * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
      */
     @OneToMany(() => InventoryItemSize, size => size.item, { nullable: false, cascade: true })
-    sizes: InventoryItemSize[] = [];
+    sizes: InventoryItemSize[];
+
+    /**
+     * - If the inventory item is deleted, it's removed from the vendors's reference via BeforeRemove()
+     * - If the associated vendor is deleted, the item's vendor will be set to null?(maybe not).
+     * - When an item is created, its reference is passed to update vendor.items via BeforeInsert() hook
+     */
+    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.items, {       
+         nullable: true, 
+        cascade: ['update'], 
+        onDelete: 'SET NULL'  
+    })
+    vendor?: InventoryItemVendor;
+
+    /** When an item is created, its reference is given to it's categories list of items. */
+    @BeforeInsert()
+    async addToVendor() {
+        if (this.vendor) {
+            this.vendor.items = [...this.vendor.items, this];
+        }
+    }
+
+    /**
+     * When an item is removed, delete its reference from category.items
+     */
+    @BeforeRemove()
+    async removeFromVendor(){
+        if(this.vendor){
+            this.vendor.items = this.vendor.items.filter( item => item.id !== this.id);
+        }
+    }
 }
