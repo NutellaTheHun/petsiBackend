@@ -13,6 +13,10 @@ export class CreateInventoryItemDto {
     @IsNumber({},{ each: true })
     @IsPositive({ each: true})
     readonly sizeIds: number[] = [];
+
+    @IsNumber()
+    @IsPositive()
+    readonly vendorId: number;
 }
 
 export function CreateDefaultInventoryItemDtoValues(): Partial<CreateInventoryItemDto> {

@@ -13,7 +13,12 @@ export class InventoryItemPackageFactory extends EntityFactory<InventoryItemPack
 
     getDefaultRoles(): InventoryItemPackage[] {
         return [
-
+            this.createEntityInstance({name: "bag"}),
+            this.createEntityInstance({name: "package"}),
+            this.createEntityInstance({name: "box"}),
+            this.createEntityInstance({name: "other"}),
+            this.createEntityInstance({name: "container"}),
+            this.createEntityInstance({name: "can"})
         ];
     }
 

@@ -16,8 +16,14 @@ export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInv
 
         ];
     }
-
+    
+    // name
+    // category entity
+    // size[] entity
+    // vendor? entity
     getTestingRoles(): InventoryItem[]{
-        return this.getDefaultRoles();
+        return [
+
+        ];
     }  
 }

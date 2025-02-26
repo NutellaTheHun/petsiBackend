@@ -18,6 +18,10 @@ export class InventoryItemVendorFactory extends EntityFactory<InventoryItemVendo
     }
 
     getTestingRoles(): InventoryItemVendor[]{
-        return this.getDefaultRoles();
+        return [
+            this.createEntityInstance({name: "vendor A"}),
+            this.createEntityInstance({name: "vendor B"}),
+            this.createEntityInstance({name: "vendor C"}),
+        ];
     }  
 }

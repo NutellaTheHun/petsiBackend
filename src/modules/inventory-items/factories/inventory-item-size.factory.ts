@@ -13,7 +13,7 @@ export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, C
 
     getDefaultRoles(): InventoryItemSize[] {
         return [
-
+            
         ];
     }
 

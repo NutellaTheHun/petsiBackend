@@ -13,7 +13,14 @@ export class InventoryItemCategoryFactory extends EntityFactory<InventoryItemCat
 
     getDefaultRoles(): InventoryItemCategory[] {
         return [
-
+            this.createEntityInstance({name: "cleaning"}),
+            this.createEntityInstance({name: "dairy"}),
+            this.createEntityInstance({name: "dry goods"}),
+            this.createEntityInstance({name: "food"}),
+            this.createEntityInstance({name: "frozen"}),
+            this.createEntityInstance({name: "other"}),
+            this.createEntityInstance({name: "papger goods"}),
+            this.createEntityInstance({name: "produce"}),
         ];
     }
 
