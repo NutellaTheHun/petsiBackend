@@ -7,6 +7,7 @@ import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+import Big from "big.js";
 
 
 @Injectable()
@@ -56,5 +57,17 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     );
     
     return this.unitRepo.save(unit);
+  }
+
+  convert(unitAmount: Big, inputUnitType: UnitOfMeasure, outputUnitType: UnitOfMeasure): Big {
+    if (!inputUnitType.conversionFactorToBase || !outputUnitType.conversionFactorToBase) {
+      throw new Error("Both units must have conversion factors to base.");
+    }
+
+    const baseAmount = new Big(unitAmount).times(new Big(inputUnitType.conversionFactorToBase));
+
+    const targetAmount = baseAmount.div(new Big(outputUnitType.conversionFactorToBase));
+
+    return targetAmount;
   }
 }
