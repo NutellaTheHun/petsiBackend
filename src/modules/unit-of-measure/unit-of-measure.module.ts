@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UnitOfMeasureService } from './unit-of-measure.service';
-import { UnitOfMeasureController } from './unit-of-measure.controller';
-import { UnitCategoryService } from './unit-category.service';
-import { UnitCategoryController } from './unit-category.controller';
+import { UnitOfMeasureController } from './controllers/unit-of-measure.controller';
+import { UnitCategoryService } from './services/unit-category.service';
+import { UnitCategoryController } from './controllers/unit-category.controller';
 import { UnitOfMeasureFactory } from './factories/unit-of-measure.factory';
 import { UnitCategoryFactory } from './factories/unit-category.factory';
+import { UnitOfMeasureService } from './services/unit-of-measure.service';
 
 @Module({
   providers: [

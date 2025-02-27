@@ -11,6 +11,10 @@ export class UnitOfMeasureFactory extends EntityFactory<UnitOfMeasure, CreateUni
         super( UnitOfMeasure, CreateUnitOfMeasureDto, UpdateUnitOfMeasureDto, CreateDefaultUnitOfMeasureDtoValues());
     }
 
+    // name: string
+    // abreviation: string
+    // category entity: UnitCategory
+    // conversionFactorBase?: string
     getDefaultRoles(): UnitOfMeasure[] {
         return [
             

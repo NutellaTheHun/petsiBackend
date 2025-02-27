@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UnitOfMeasure } from './entities/unit-of-measure.entity';
-import { CreateUnitOfMeasureDto } from './dto/create-unit-of-measure.dto';
-import { In, QueryBuilder, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UnitCategoryService } from './unit-category.service';
-import { UnitOfMeasureFactory } from './factories/unit-of-measure.factory';
-import { UpdateUnitOfMeasureDto } from './dto/update-unit-of-measure.dto';
-import { ServiceBase } from '../../base/service-base';
+import { ServiceBase } from '../../../base/service-base';
+import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
+import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+
 
 @Injectable()
 export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
@@ -40,7 +41,6 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    * Id currently not used, using Repository.save for lifecycle hooks
    * @param id currently not used, using Repository.save for lifecycle hooks
    * @param UnitOfMeasureDto 
-   * @returns 
    */
   async update(id: number, updateDto: UpdateUnitOfMeasureDto): Promise<UnitOfMeasure | null> {
     const alreadyExists = await this.unitRepo.findOne({ where: { id }});

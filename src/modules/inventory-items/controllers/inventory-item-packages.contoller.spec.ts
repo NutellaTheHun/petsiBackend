@@ -1,5 +1,4 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { InventoryItemCategoriesController } from "./inventory-item-categories.contoller";
 import { InventoryItemPackagesController } from "./inventory-item-packages.contoller";
 
 describe('InventoryItemPackagesController', () => {

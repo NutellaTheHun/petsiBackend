@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UnitCategory } from './entities/unit-category.entity';
-import { UnitCategoryFactory } from './factories/unit-category.factory';
-import { CreateUnitCategoryDto } from './dto/create-unit-category.dto';
-import { UpdateUnitCategoryDto } from './dto/update-unit-category.dto';
+import { UnitCategory } from '../entities/unit-category.entity';
+import { UnitCategoryFactory } from '../factories/unit-category.factory';
+import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { ServiceBase } from '../../base/service-base';
+import { ServiceBase } from '../../../base/service-base';
 
 @Injectable()
 export class UnitCategoryService extends ServiceBase<UnitCategory> {
@@ -39,8 +39,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   /**
   * Id currently not used, using Repository.save for lifecycle hooks
   * @param id currently not used, using Repository.save for lifecycle hooks
-  * @param updateDto 
-  * @returns 
+  * @param updateDto
   */
   async update(id: number, updateDto: UpdateUnitCategoryDto): Promise<UnitCategory | null> {
     const exists = await this.categoryRepo.findOne({ where: { id } });
