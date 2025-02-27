@@ -6,10 +6,10 @@ export class ServiceBase<T extends ObjectLiteral> {
     private readonly entityRepo: Repository<T>,
   ){}
 
-  /*
-  async create(createDto: CDto){
+  
+  async create(createDto: any): Promise<any | null>{
     // gets overridden by concrete implementations
-  }*/
+  }
 
   async findAll(relations?: string[]): Promise<T[]> {
     return await this.entityRepo.find({relations: relations});
@@ -35,10 +35,10 @@ export class ServiceBase<T extends ObjectLiteral> {
         relations: relations });
   }
 
-  /*
-  async update(id: number, updateTDto: UDto) {
+  
+  async update(id: number, updateTDto: any): Promise<any | null> {
     // gets overridden by concrete implementations
-  }*/
+  }
 
   async remove(id: number): Promise<Boolean> {
     return (await this.entityRepo.delete(id)).affected !== 0;
