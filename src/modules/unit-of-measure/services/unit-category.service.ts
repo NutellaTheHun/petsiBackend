@@ -7,6 +7,7 @@ import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UnitOfMeasureService } from './unit-of-measure.service';
 import { ServiceBase } from '../../../base/service-base';
+import { GRAM, MILLILITER, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 
 @Injectable()
 export class UnitCategoryService extends ServiceBase<UnitCategory> {
@@ -52,5 +53,18 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     );
 
     return this.categoryRepo.save(category);
+  }
+
+  async initializeDefaultCategoryBaseUnits(): Promise<void> {
+    await this.setCategoryBaseUnit(WEIGHT, GRAM);
+    await this.setCategoryBaseUnit(VOLUME, MILLILITER);
+    await this.setCategoryBaseUnit(UNIT, UNIT);
+  }
+
+  async setCategoryBaseUnit(categoryName: string, baseUnitOfMeasure: string): Promise<void> {
+    const category = await this.findOneByName(categoryName);
+    if(!category){ throw new Error(`${categoryName} category not found.`); }
+    category.baseUnit = await this.unitService.findOneByName(baseUnitOfMeasure);
+    await this.update(category.id, category);
   }
 }

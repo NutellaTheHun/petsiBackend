@@ -3,6 +3,7 @@ import { CreateDefaultUnitCategoryDtoValues, CreateUnitCategoryDto } from "../dt
 import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
 import { UnitCategory } from "../entities/unit-category.entity";
 import { EntityFactory } from "../../../base/entity-factory";
+import { UNIT, VOLUME, WEIGHT } from "../utils/constants";
 
 @Injectable()
 export class UnitCategoryFactory extends EntityFactory<UnitCategory, CreateUnitCategoryDto, UpdateUnitCategoryDto>{
@@ -11,15 +12,21 @@ export class UnitCategoryFactory extends EntityFactory<UnitCategory, CreateUnitC
         super( UnitCategory, CreateUnitCategoryDto, UpdateUnitCategoryDto, CreateDefaultUnitCategoryDtoValues());
     }
 
-    getDefaultRoles(): UnitCategory[] {
+    async getDefaultRoles(): Promise<UnitCategory[]> {
         return [
-            this.createEntityInstance({name: "unit"}),
-            this.createEntityInstance({name: "volume"}),
-            this.createEntityInstance({name: "weight"}),
+            this.createEntityInstance({
+                name: UNIT,
+            }),
+            this.createEntityInstance({
+                name: VOLUME,
+            }),
+            this.createEntityInstance({
+                name: WEIGHT,
+            }),
         ];
     }
 
-    getTestingRoles(): UnitCategory[]{
-        return this.getDefaultRoles();
+    async getTestingRoles(): Promise<UnitCategory[]>{
+        return await this.getDefaultRoles();
     }  
 }

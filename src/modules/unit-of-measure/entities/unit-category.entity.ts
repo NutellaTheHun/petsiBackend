@@ -3,6 +3,7 @@ import { UnitOfMeasure } from "./unit-of-measure.entity";
 
 /**
  * The type of metric that a unit represents, such as a measurement "by volume" or "by weight" or "by unit"
+ * Required units to exist before declaring baseUnit
  */
 @Entity()
 export class UnitCategory{
@@ -21,5 +22,5 @@ export class UnitCategory{
      */
     @OneToOne(() => UnitOfMeasure, { nullable: true })
     @JoinColumn()
-    baseUnit?: UnitOfMeasure;
+    baseUnit?: UnitOfMeasure | null;
 }
