@@ -5,10 +5,17 @@ import { UnitCategoryController } from './controllers/unit-category.controller';
 import { UnitOfMeasureFactory } from './factories/unit-of-measure.factory';
 import { UnitCategoryFactory } from './factories/unit-category.factory';
 import { UnitOfMeasureService } from './services/unit-of-measure.service';
+import { UnitOfMeasure } from './entities/unit-of-measure.entity';
+import { UnitCategory } from './entities/unit-category.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
+  imports: [
+    TypeOrmModule.forFeature([UnitOfMeasure, UnitCategory]),
+  ],
+
   providers: [
-    UnitOfMeasureService, 
+    UnitOfMeasureService,
     UnitCategoryService, 
     UnitOfMeasureFactory, 
     UnitCategoryFactory,
@@ -17,6 +24,8 @@ import { UnitOfMeasureService } from './services/unit-of-measure.service';
   controllers: [
     UnitOfMeasureController, 
     UnitCategoryController,
-  ]
+  ],
+
+  exports: [UnitOfMeasureService, UnitCategoryService]
 })
 export class UnitOfMeasureModule {}

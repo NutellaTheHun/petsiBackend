@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UnitCategoryService } from './unit-category.service';
@@ -18,6 +18,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
 
     private readonly unitFactory: UnitOfMeasureFactory,
 
+    @Inject(forwardRef(() => UnitCategoryService))
     private readonly categoryService: UnitCategoryService,
   ){ super(unitRepo); }
 
@@ -64,6 +65,10 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
       throw new Error("Both units must have conversion factors to base.");
     }
 
+    if (inputUnitType.category !== outputUnitType.category) {
+      throw new Error("Both units must be in the same category to convert.");
+    }
+
     const baseAmount = new Big(unitAmount).times(new Big(inputUnitType.conversionFactorToBase));
 
     const targetAmount = baseAmount.div(new Big(outputUnitType.conversionFactorToBase));
@@ -71,3 +76,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     return targetAmount;
   }
 }
+function ForwardRef(arg0: () => typeof UnitCategoryService): import("@nestjs/common").InjectionToken | import("@nestjs/common").ForwardReference<any> | undefined {
+  throw new Error('Function not implemented.');
+}
+

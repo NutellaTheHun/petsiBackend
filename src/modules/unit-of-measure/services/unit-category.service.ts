@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UnitCategory } from '../entities/unit-category.entity';
@@ -16,7 +16,8 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
       private readonly categoryRepo: Repository<UnitCategory>,
   
       private readonly categoryFactory: UnitCategoryFactory,
-  
+
+      @Inject(forwardRef(() => UnitOfMeasureService))
       private readonly unitService: UnitOfMeasureService,
   ){ super(categoryRepo); }
   
@@ -27,10 +28,11 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const unitOfMeasureIds = createDto.unitOfMeasureIds || [];
     const category = this.categoryFactory.createEntityInstance(
       createDto, 
-      { units: this.unitService.findEntitiesById(unitOfMeasureIds) }
+      { units: await this.unitService.findEntitiesById(unitOfMeasureIds) }
     );
 
-    return await this.categoryRepo.save(category);
+    const result = await this.categoryRepo.save(category);
+    return result;
   }
 
   async findOneByName(categoryName: string, relations?: string[]): Promise<UnitCategory | null> {
@@ -49,7 +51,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const unitIds = updateDto.unitOfMeasureIds || [];
     const category = this.categoryFactory.updateEntityInstance(
       updateDto, 
-      { units: this.unitService.findEntitiesById(unitIds)}
+      { units: await this.unitService.findEntitiesById(unitIds)}
     );
 
     return this.categoryRepo.save(category);

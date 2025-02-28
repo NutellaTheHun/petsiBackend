@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EntityFactory } from "../../../base/entity-factory";
 import { CreateDefaultUnitOfMeasureDtoValues, CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
@@ -9,6 +9,7 @@ import { CUP, CUP_ABBREV, EACH, EACH_ABBREV, FL_OUNCE, FL_OUNCE_ABBREV, GALLON, 
 @Injectable()
 export class UnitOfMeasureFactory extends EntityFactory<UnitOfMeasure, CreateUnitOfMeasureDto, UpdateUnitOfMeasureDto>{
     constructor(
+        @Inject(forwardRef(() => UnitCategoryService))
         private readonly categoryService: UnitCategoryService,
     ) {
         super(UnitOfMeasure, CreateUnitOfMeasureDto, UpdateUnitOfMeasureDto, CreateDefaultUnitOfMeasureDtoValues());

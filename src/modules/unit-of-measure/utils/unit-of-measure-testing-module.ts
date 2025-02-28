@@ -7,8 +7,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { UnitOfMeasureModule } from "../unit-of-measure.module";
 import { UnitOfMeasureController } from "../controllers/unit-of-measure.controller";
 import { UnitCategoryController } from "../controllers/unit-category.controller";
+import { UnitOfMeasureService } from "../services/unit-of-measure.service";
+import { UnitCategoryService } from "../services/unit-category.service";
+import { forwardRef } from "@nestjs/common";
 
-export async function getRolesTestingModule(): Promise<TestingModule> {
+export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
             ConfigModule.forRoot({ isGlobal: true }),
