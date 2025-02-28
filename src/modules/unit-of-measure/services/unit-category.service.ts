@@ -57,6 +57,17 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     return this.categoryRepo.save(category);
   }
 
+  async initializeDefaultCategories(): Promise<void> {
+    const categories = await this.categoryFactory.getDefaultRoles()
+    await Promise.all(
+      categories.map( category => 
+        this.create(
+          this.categoryFactory.createDtoInstance({ name: category.name })
+        )
+      )
+    );
+  }
+
   async initializeDefaultCategoryBaseUnits(): Promise<void> {
     await this.setCategoryBaseUnit(WEIGHT, GRAM);
     await this.setCategoryBaseUnit(VOLUME, MILLILITER);

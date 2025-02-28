@@ -54,7 +54,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
 
     const unit = await this.unitFactory.updateEntityInstance(
       updateDto, 
-      { category: category }
+      { categoryId: category?.id }
     );
     
     return this.unitRepo.save(unit);
@@ -75,8 +75,6 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
 
     return targetAmount;
   }
-}
-function ForwardRef(arg0: () => typeof UnitCategoryService): import("@nestjs/common").InjectionToken | import("@nestjs/common").ForwardReference<any> | undefined {
-  throw new Error('Function not implemented.');
-}
 
+  //initializeDefaultUnits()
+}
