@@ -25,11 +25,15 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const exists = await this.categoryRepo.findOne({ where: { name: createDto.name }});
     if(exists){ return null; } 
 
-    const unitOfMeasureIds = createDto.unitOfMeasureIds || [];
     const category = this.categoryFactory.createEntityInstance(
-      createDto, 
-      { units: await this.unitService.findEntitiesById(unitOfMeasureIds) }
+      createDto
     );
+    if(createDto.unitOfMeasureIds){
+      category.units = await this.unitService.findEntitiesById(createDto.unitOfMeasureIds);
+    }
+    if(createDto.baseUnitId){
+      category.baseUnit = await this.unitService.findOne(createDto.baseUnitId);
+    }
 
     const result = await this.categoryRepo.save(category);
     return result;
@@ -47,13 +51,10 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   async update(id: number, updateDto: UpdateUnitCategoryDto, relations?: string[]): Promise<UnitCategory | null> {
     const category = await this.categoryRepo.findOne({ where: { id }, relations });
     if(!category) { return null; }
-    /*
-    const unitIds = updateDto.unitOfMeasureIds || [];
-    const category = this.categoryFactory.updateEntityInstance(
-      updateDto, 
-      { units: await this.unitService.findEntitiesById(unitIds)}
-    );
-    */
+
+    if(updateDto.name){
+      category.name = updateDto.name;
+    }
    // Update units
     if (updateDto.unitOfMeasureIds) {
         category.units = await this.unitService.findEntitiesById(updateDto.unitOfMeasureIds);
@@ -61,7 +62,9 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
 
     // Update base unit
     if (updateDto.baseUnitId) {
-        category.baseUnit = await this.unitService.findOne(updateDto.baseUnitId);
+        const baseUnit = await this.unitService.findOne(updateDto.baseUnitId);
+        if(!baseUnit) { throw new Error(`base unit with id:${updateDto.baseUnitId} was not found.`); }
+        category.baseUnit = baseUnit;
     }
     
     return await this.categoryRepo.save(category);
@@ -89,11 +92,13 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const category = await this.findOneByName(categoryName);
     if(!category){ throw new Error(`${categoryName} category not found.`); }
 
-    //is not finding the baseUnit
     const baseUnit = await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
     if(!baseUnit){ throw new Error("base unit not found"); }
     category.baseUnit = baseUnit;
     
-    await this.update(category.id, category);
+    await this.update(category.id, {
+      name: category.name,
+      baseUnitId: category.baseUnit.id
+    });
   }
 }

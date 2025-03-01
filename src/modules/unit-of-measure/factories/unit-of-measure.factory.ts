@@ -16,6 +16,10 @@ export class UnitOfMeasureFactory extends EntityFactory<UnitOfMeasure, CreateUni
         this.categoryService = categoryService;
     }
 
+    /**
+     * Required default unit categories to exist in database
+     * @returns 
+     */
     async getDefaultRoles(): Promise<UnitOfMeasure[]> {
         return [
             this.createEntityInstance({

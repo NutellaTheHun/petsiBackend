@@ -40,18 +40,21 @@ describe('UnitCategoryService', () => {
   });
 
   it('should insert test categories', async () => {
-    const results = await Promise.all(
-      testCategories.map( category => 
-        categoryService.create(
-          factory.createDtoInstance({ name: category.name })
-        )
-      )
-    );
+    let results: any[] = [];
+
+    for (const category of testCategories){
+      results.push(await categoryService.create(
+        factory.createDtoInstance({ name: category.name })
+      ));
+    }
+
     expect(results).not.toBeNull();
+
     if(results[0]?.id){ testCategoryId = results[0].id; }
 
     expect(results.length).toEqual(testCategories.length);
     results.map(category => {
+      expect(category).not.toBeNull();
       expect(category?.id).not.toBeNull();
     });
   });
@@ -89,7 +92,7 @@ describe('UnitCategoryService', () => {
     expect(unit).not.toBeNull();
     expect(unit?.baseUnit).not.toBeNull();
   });
-
+  
   it('should update one test category', async() => {
     const category = await categoryService.findOne(testCategoryId);
     if(!category){ throw new Error("category is null"); }
@@ -115,4 +118,5 @@ describe('UnitCategoryService', () => {
     const verify = await categoryService.findOne(testCategoryId);
     expect(verify).toBeNull();
   });
+  
 });

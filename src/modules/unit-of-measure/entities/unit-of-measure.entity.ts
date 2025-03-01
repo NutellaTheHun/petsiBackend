@@ -15,7 +15,7 @@ export class UnitOfMeasure {
     @Column({ nullable: false })
     abbreviation: string;
 
-    @ManyToOne(() => UnitCategory, (category) => category.units, { nullable: false})
+    @ManyToOne(() => UnitCategory, (category) => category.units, { nullable: true, onDelete: 'SET NULL' })
     category: UnitCategory;
 
     /**

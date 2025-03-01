@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, QueryFailedError, Repository } from 'typeorm';
 import { UnitCategoryService } from './unit-category.service';
 import { ServiceBase } from '../../../base/service-base';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
@@ -26,17 +26,21 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     const alreadyExists = await this.unitRepo.findOne({ where: { name: createDto.name }});
     if(alreadyExists){ return null; }
 
-    const categoryId = createDto.categoryId;
     const unit = await this.unitFactory.createEntityInstance(
       createDto, 
-      { category: await this.categoryService.findOne(categoryId) }
     );
+
+    if(createDto.categoryId){
+      const category = await this.categoryService.findOne(createDto.categoryId);
+      if(!category){ throw new Error(`category with id ${createDto.categoryId} was not found.`); }
+      unit.category = category;
+    }
 
     return await this.unitRepo.save(unit);
   }
 
   async findOneByName(unitName: string, relations?: string[]): Promise<UnitOfMeasure | null> {
-    return await this.unitRepo.findOne({ where: { name: unitName }, relations: relations  });
+    return await this.unitRepo.findOne({ where: { name: unitName }, relations });
   }
 
   /**
@@ -44,19 +48,28 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    * @param id currently not used, using Repository.save for lifecycle hooks
    * @param UnitOfMeasureDto 
    */
-  async update(id: number, updateDto: UpdateUnitOfMeasureDto): Promise<UnitOfMeasure | null> {
-    const alreadyExists = await this.unitRepo.findOne({ where: { id }});
-    if(!alreadyExists){ return null; } //more detailed error
+  async update(id: number, updateDto: UpdateUnitOfMeasureDto, relations?: string[]): Promise<UnitOfMeasure | null> {
+    const unit = await this.unitRepo.findOne({ where: { id }, relations});
+    if(!unit){ return null; } //more detailed error
 
-    const category = updateDto.categoryId
-      ? await this.categoryService.findOne(updateDto.categoryId)
-      : null;
+    if(updateDto.name){
+      unit.name = updateDto.name;
+    }
 
-    const unit = await this.unitFactory.updateEntityInstance(
-      updateDto, 
-      { categoryId: category?.id }
-    );
-    
+    if(updateDto.abbreviation){
+      unit.abbreviation = updateDto.abbreviation;
+    }
+
+    if(updateDto.categoryId){
+      const category =  await this.categoryService.findOne(updateDto.categoryId);
+      if(!category) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
+      unit.category = category
+    }
+
+    if(updateDto.conversionFactorToBase){
+      unit.conversionFactorToBase = updateDto.conversionFactorToBase;
+    }
+  
     return this.unitRepo.save(unit);
   }
 
@@ -80,16 +93,24 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    * Requires default categories to already exist in the database
    */
   async initializeDefaultUnits(): Promise<void> {
-    const units = await this.unitFactory.getDefaultRoles();
-    await Promise.all(
-      units.map((
-        unit => this.create(this.unitFactory.createDtoInstance({ 
-          name: unit.name,
-          abbreviation: unit.abbreviation,
-          categoryId: unit.category.id,
-          conversionFactorToBase: unit.conversionFactorToBase,
-        }))
-      ))
-    );
+    await this.unitRepo.manager.transaction(async (manager: EntityManager) => {
+      const units = await this.unitFactory.getDefaultRoles();
+      
+      for (const unit of units) {
+          const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });
+          if (exists) {
+              continue;
+          }
+
+          const newUnit = manager.create(UnitOfMeasure, {
+              name: unit.name,
+              abbreviation: unit.abbreviation,
+              categoryId: unit.category.id,
+              conversionFactorToBase: unit.conversionFactorToBase,
+          });
+
+          await manager.save(newUnit);
+      }
+    });
   }
 }
