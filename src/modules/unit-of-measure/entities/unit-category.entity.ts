@@ -20,7 +20,7 @@ export class UnitCategory{
      * The type of unit that all units in the category convert to for conversions.
      * - Relevant to UnitOfMeasure.conversionFactorToBase
      */
-    @OneToOne(() => UnitOfMeasure, { nullable: true })
+    @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     baseUnit: UnitOfMeasure | null;
 }

@@ -76,5 +76,20 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     return targetAmount;
   }
 
-  //initializeDefaultUnits()
+  /**
+   * Requires default categories to already exist in the database
+   */
+  async initializeDefaultUnits(): Promise<void> {
+    const units = await this.unitFactory.getDefaultRoles();
+    await Promise.all(
+      units.map((
+        unit => this.create(this.unitFactory.createDtoInstance({ 
+          name: unit.name,
+          abbreviation: unit.abbreviation,
+          categoryId: unit.category.id,
+          conversionFactorToBase: unit.conversionFactorToBase,
+        }))
+      ))
+    );
+  }
 }

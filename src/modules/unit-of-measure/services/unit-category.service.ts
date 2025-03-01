@@ -36,7 +36,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   }
 
   async findOneByName(categoryName: string, relations?: string[]): Promise<UnitCategory | null> {
-    return this.categoryRepo.findOne({ where: { name: categoryName }, relations: relations });
+    return this.categoryRepo.findOne({ where: { name: categoryName }, relations });
   }
 
   /**
@@ -44,17 +44,27 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   * @param id currently not used, using Repository.save for lifecycle hooks
   * @param updateDto
   */
-  async update(id: number, updateDto: UpdateUnitCategoryDto): Promise<UnitCategory | null> {
-    const exists = await this.categoryRepo.findOne({ where: { id } });
-    if(!exists) { return null; }
-
+  async update(id: number, updateDto: UpdateUnitCategoryDto, relations?: string[]): Promise<UnitCategory | null> {
+    const category = await this.categoryRepo.findOne({ where: { id }, relations });
+    if(!category) { return null; }
+    /*
     const unitIds = updateDto.unitOfMeasureIds || [];
     const category = this.categoryFactory.updateEntityInstance(
       updateDto, 
       { units: await this.unitService.findEntitiesById(unitIds)}
     );
+    */
+   // Update units
+    if (updateDto.unitOfMeasureIds) {
+        category.units = await this.unitService.findEntitiesById(updateDto.unitOfMeasureIds);
+    }
 
-    return this.categoryRepo.save(category);
+    // Update base unit
+    if (updateDto.baseUnitId) {
+        category.baseUnit = await this.unitService.findOne(updateDto.baseUnitId);
+    }
+    
+    return await this.categoryRepo.save(category);
   }
 
   async initializeDefaultCategories(): Promise<void> {
@@ -74,10 +84,16 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     await this.setCategoryBaseUnit(UNIT, UNIT);
   }
 
+  
   async setCategoryBaseUnit(categoryName: string, baseUnitOfMeasure: string): Promise<void> {
     const category = await this.findOneByName(categoryName);
     if(!category){ throw new Error(`${categoryName} category not found.`); }
-    category.baseUnit = await this.unitService.findOneByName(baseUnitOfMeasure);
+
+    //is not finding the baseUnit
+    const baseUnit = await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
+    if(!baseUnit){ throw new Error("base unit not found"); }
+    category.baseUnit = baseUnit;
+    
     await this.update(category.id, category);
   }
 }
