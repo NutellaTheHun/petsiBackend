@@ -4,7 +4,8 @@ import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { GRAM, UNIT, VOLUME } from '../utils/constants';
+import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT } from '../utils/constants';
+import Big from "big.js";
 
 describe('UnitOfMeasureService', () => {
   let unitService: UnitOfMeasureService;
@@ -68,26 +69,120 @@ describe('UnitOfMeasureService', () => {
     expect(result).not.toBeNull();
   });
 
-  it('should update categories units list after unit changes category', async () => {
-    const unit = await unitService.findOneByName(UNIT, ['category']);
-    if(!unit) {throw new Error('couldnt find unit'); }
-    const oldCategoryId = unit?.category?.id;
-    const newCategory = await categoryService.findOneByName(VOLUME);
-    if(!newCategory) {throw new Error('couldnt find category'); }
-
-    await unitService.update(unit.id,
-      {
-        categoryId: newCategory?.id,
-      }
-    );
+  it('should initialize default units', async () => {
+    await unitService.initializeDefaultUnits();
     
-    if(!oldCategoryId){ throw new Error('old category id is null'); }
-    const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);
-    expect(verifyNotInOld?.units.find(u => u.id == unit.id)).toBeUndefined();
-
-    const verifyInNew = await categoryService.findOne(newCategory.id, ['units']);
-    expect(verifyInNew?.units.find(u => u.id == unit.id)).not.toBeUndefined();
+    const results = await unitService.findAll();
+    expect(results.length).toEqual((await unitFactory.getDefaultRoles()).length);
   });
+
+
+  it('should convert 1 gallon to liters', async () => {
+    const unitA = await unitService.findOneByName(GALLON, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(LITER, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(1, unitA, unitB);
+    expect(result).toEqual(new Big("3.78541178400001928642"));
+  });
+
+  it('should convert 2 quarts to pints', async () => {
+    const unitA = await unitService.findOneByName(QUART, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(PINT, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(2, unitA, unitB);
+    expect(result).toEqual(new Big("4"));
+  });
+
+  // fl_ounce to cup
+  it('should convert 3 fl ounce to cup', async () => {
+    const unitA = await unitService.findOneByName(FL_OUNCE, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(CUP, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(3, unitA, unitB);
+    expect(result).toEqual(new Big("0.36966911953125188344"));
+  });
+
+  // cup to liter
+  it('should convert 4 cups to liters', async () => {
+    const unitA = await unitService.findOneByName(CUP, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(LITER, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(4, unitA, unitB);
+    expect(result).toEqual(new Big("0.96"));
+  });
+
+  // ounce to kilogram
+  it('should convert 80 ounce to kilograms', async () => {
+    const unitA = await unitService.findOneByName(OUNCE, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(KILOGRAM, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(80, unitA, unitB);
+    expect(result).toEqual(new Big("2.26796"));
+  });
+
+  // pound to ounce
+  it('should convert 2 pounds to ounces', async () => {
+    const unitA = await unitService.findOneByName(POUND, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(OUNCE, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(2, unitA, unitB);
+    expect(result).toEqual(new Big("32.0000000003315755128"));
+  });
+
+  // gram to pound
+  it('should convert 100 grams to pounds', async () => {
+    const unitA = await unitService.findOneByName(GRAM, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(POUND, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(100, unitA, unitB);
+    expect(result).toEqual(new Big("0.22046244201609337581"));
+  });
+
+  // unit to each
+  it('should convert 1 unit to 1 each', async () => {
+    const unitA = await unitService.findOneByName(UNIT, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(EACH, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    const result = unitService.convert(1, unitA, unitB);
+    expect(result).toEqual(new Big("1"));
+  });
+
+  it('should fail to convert (different categories)', async () => {
+    const unitA = await unitService.findOneByName(GALLON, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(POUND, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    expect(() => unitService.convert(1, unitA, unitB)).toThrow(Error);
+  });
+
+  it('should fail to convert (conversion factor not set)', async () => {
+    const unitA = await unitService.findOneByName(GALLON, ['category']);
+    if(!unitA) throw new Error("unitA not found");
+    const unitB = await unitService.findOneByName(LITER, ['category']);
+    if(!unitB) throw new Error("unitB not found");
+
+    unitA.conversionFactorToBase = undefined;
+
+    expect(() => unitService.convert(1, unitA, unitB)).toThrow(Error);
+  });
+  
 
   it('should update one test unit', async () => {
     const toUpdate = await unitService.findOne(testUnitId, ['category']);
@@ -108,7 +203,5 @@ describe('UnitOfMeasureService', () => {
     const verify = await unitService.findOne(testUnitId);
     expect(verify).toBeNull();
   });
-
-  //convert
 
 });

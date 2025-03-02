@@ -117,7 +117,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
       throw new Error("Both units must have conversion factors to base.");
     }
 
-    if (inputUnitType.category !== outputUnitType.category) {
+    if (inputUnitType.category?.id !== outputUnitType.category?.id) {
       throw new Error("Both units must be in the same category to convert.");
     }
 
@@ -147,19 +147,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
           categoryId: unit.category?.id,
           conversionFactorToBase: unit.conversionFactorToBase,
       }));
-
-        // const category = unit.category;
-        // category?.pushUnit(unit);
-        /*
-        const newUnit = manager.create(UnitOfMeasure, {
-            name: unit.name,
-            abbreviation: unit.abbreviation,
-            category: category,
-            conversionFactorToBase: unit.conversionFactorToBase,
-        });
-        */
-        // await manager.save(newUnit);
-      }
+    }
       
     });
   }
