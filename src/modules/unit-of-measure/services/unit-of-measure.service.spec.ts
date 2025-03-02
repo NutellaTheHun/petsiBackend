@@ -4,7 +4,7 @@ import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { GRAM } from '../utils/constants';
+import { GRAM, UNIT, VOLUME } from '../utils/constants';
 
 describe('UnitOfMeasureService', () => {
   let unitService: UnitOfMeasureService;
@@ -66,6 +66,27 @@ describe('UnitOfMeasureService', () => {
   it('should retrieve one test unit by name', async () => {
     const result = await unitService.findOneByName(GRAM);
     expect(result).not.toBeNull();
+  });
+
+  it('should update categories units list after unit changes category', async () => {
+    const unit = await unitService.findOneByName(UNIT, ['category']);
+    if(!unit) {throw new Error('couldnt find unit'); }
+    const oldCategoryId = unit?.category?.id;
+    const newCategory = await categoryService.findOneByName(VOLUME);
+    if(!newCategory) {throw new Error('couldnt find category'); }
+
+    await unitService.update(unit.id,
+      {
+        categoryId: newCategory?.id,
+      }
+    );
+    
+    if(!oldCategoryId){ throw new Error('old category id is null'); }
+    const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);
+    expect(verifyNotInOld?.units.find(u => u.id == unit.id)).toBeUndefined();
+
+    const verifyInNew = await categoryService.findOne(newCategory.id, ['units']);
+    expect(verifyInNew?.units.find(u => u.id == unit.id)).not.toBeUndefined();
   });
 
   it('should update one test unit', async () => {

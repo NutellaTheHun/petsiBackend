@@ -13,7 +13,7 @@ export class UnitCategory{
     @Column()
     name: string;
 
-    @OneToMany(() => UnitOfMeasure, (unit) => unit.category, { nullable: false})
+    @OneToMany(() => UnitOfMeasure, (unit) => unit.category, { nullable: false })
     units: UnitOfMeasure[];
 
     /**

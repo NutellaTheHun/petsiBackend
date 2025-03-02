@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, QueryFailedError, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { UnitCategoryService } from './unit-category.service';
 import { ServiceBase } from '../../../base/service-base';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
@@ -26,17 +26,22 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     const alreadyExists = await this.unitRepo.findOne({ where: { name: createDto.name }});
     if(alreadyExists){ return null; }
 
+    // create initial unit entity
     const unit = await this.unitFactory.createEntityInstance(
       createDto, 
     );
 
-    if(createDto.categoryId){
+    await this.unitRepo.save(unit);
+
+    // if assigning a category or assigning no category
+    if(createDto.categoryId || createDto.categoryId == null){
       const category = await this.categoryService.findOne(createDto.categoryId);
       if(!category){ throw new Error(`category with id ${createDto.categoryId} was not found.`); }
       unit.category = category;
+      await this.unitRepo.save(unit);
     }
 
-    return await this.unitRepo.save(unit);
+    return unit;
   }
 
   async findOneByName(unitName: string, relations?: string[]): Promise<UnitOfMeasure | null> {
@@ -49,28 +54,62 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    * @param UnitOfMeasureDto 
    */
   async update(id: number, updateDto: UpdateUnitOfMeasureDto, relations?: string[]): Promise<UnitOfMeasure | null> {
-    const unit = await this.unitRepo.findOne({ where: { id }, relations});
-    if(!unit){ return null; } //more detailed error
+    const unitToUpdate = await this.unitRepo.findOne({ where: { id }, relations});
+    if(!unitToUpdate){ return null; } //more detailed error
+
 
     if(updateDto.name){
-      unit.name = updateDto.name;
+      unitToUpdate.name = updateDto.name;
     }
 
     if(updateDto.abbreviation){
-      unit.abbreviation = updateDto.abbreviation;
-    }
-
-    if(updateDto.categoryId){
-      const category =  await this.categoryService.findOne(updateDto.categoryId);
-      if(!category) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
-      unit.category = category
+      unitToUpdate.abbreviation = updateDto.abbreviation;
     }
 
     if(updateDto.conversionFactorToBase){
-      unit.conversionFactorToBase = updateDto.conversionFactorToBase;
+      unitToUpdate.conversionFactorToBase = updateDto.conversionFactorToBase;
     }
-  
-    return this.unitRepo.save(unit);
+
+    // if assigning a category, or unassigning its category (null).
+    // if update doesn't involve the category, the default value of the DTO passed undefined.
+    if(updateDto.categoryId){
+      const newCategory =  await this.categoryService.findOne(updateDto.categoryId);
+      if(!newCategory) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
+
+      if(unitToUpdate.category == null){
+        unitToUpdate.category = newCategory;
+        newCategory.units = [];
+        newCategory.units.push(unitToUpdate);
+      }
+      else if(unitToUpdate.category !== newCategory){
+          unitToUpdate.category.units = unitToUpdate.category.units.filter(unit => unit.id !== unitToUpdate.id);
+          await this.unitRepo.save(unitToUpdate);
+
+          if (!newCategory.units) {
+            newCategory.units = [];  
+          }
+          newCategory.units.push(unitToUpdate);
+          unitToUpdate.category = newCategory;
+      }
+
+    }
+    /*
+    if(updateDto.categoryId || updateDto.categoryId == null){
+      if(updateDto.categoryId){
+        const category =  await this.categoryService.findOne(updateDto.categoryId);
+        if(!category) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
+
+        await this.categoryService.update(category.id, category);
+      } else {
+        
+        if(unit.category && unit.category.id){ 
+          
+          await this.categoryService.update(unit.category.id, unit.category); 
+        }
+      }
+    }*/
+
+    return await this.unitRepo.save(unitToUpdate);
   }
 
   convert(unitAmount: Big, inputUnitType: UnitOfMeasure, outputUnitType: UnitOfMeasure): Big {
@@ -96,21 +135,32 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     await this.unitRepo.manager.transaction(async (manager: EntityManager) => {
       const units = await this.unitFactory.getDefaultRoles();
       
-      for (const unit of units) {
-          const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });
-          if (exists) {
-              continue;
-          }
-
-          const newUnit = manager.create(UnitOfMeasure, {
-              name: unit.name,
-              abbreviation: unit.abbreviation,
-              categoryId: unit.category.id,
-              conversionFactorToBase: unit.conversionFactorToBase,
-          });
-
-          await manager.save(newUnit);
+    for (const unit of units) {
+      const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });
+      if (exists) {
+          continue;
       }
+      
+      await this.create(this.unitFactory.createDtoInstance({
+          name: unit.name,
+          abbreviation: unit.abbreviation,
+          categoryId: unit.category?.id,
+          conversionFactorToBase: unit.conversionFactorToBase,
+      }));
+
+        // const category = unit.category;
+        // category?.pushUnit(unit);
+        /*
+        const newUnit = manager.create(UnitOfMeasure, {
+            name: unit.name,
+            abbreviation: unit.abbreviation,
+            category: category,
+            conversionFactorToBase: unit.conversionFactorToBase,
+        });
+        */
+        // await manager.save(newUnit);
+      }
+      
     });
   }
 }

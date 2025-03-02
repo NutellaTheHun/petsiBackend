@@ -19,9 +19,13 @@ export class CreateUnitOfMeasureDto {
     @IsOptional()
     readonly conversionFactorToBase?: string;
 }
-
+/**
+ * If the DTO doesn't involve updating the category, categoryId must be undefined,
+ * setting the category specifically handles either a category entity or a null value.
+ * @returns 
+ */
 export function CreateDefaultUnitOfMeasureDtoValues(): Partial<CreateUnitOfMeasureDto> {
     return {
-        
+        categoryId: undefined,
     };
 }

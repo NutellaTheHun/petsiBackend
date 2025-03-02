@@ -25,9 +25,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const exists = await this.categoryRepo.findOne({ where: { name: createDto.name }});
     if(exists){ return null; } 
 
-    const category = this.categoryFactory.createEntityInstance(
-      createDto
-    );
+    const category = this.categoryFactory.createEntityInstance(createDto);
     if(createDto.unitOfMeasureIds){
       category.units = await this.unitService.findEntitiesById(createDto.unitOfMeasureIds);
     }
@@ -55,12 +53,13 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     if(updateDto.name){
       category.name = updateDto.name;
     }
-   // Update units
+
+    
     if (updateDto.unitOfMeasureIds) {
         category.units = await this.unitService.findEntitiesById(updateDto.unitOfMeasureIds);
     }
 
-    // Update base unit
+    
     if (updateDto.baseUnitId) {
         const baseUnit = await this.unitService.findOne(updateDto.baseUnitId);
         if(!baseUnit) { throw new Error(`base unit with id:${updateDto.baseUnitId} was not found.`); }
