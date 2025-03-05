@@ -1,6 +1,5 @@
-import { BeforeInsert, BeforeRemove, BeforeUpdate, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UnitCategory } from "./unit-category.entity";
-import { ucs2 } from "node:punycode";
 
 // requires categories to exist first,
 // then add units

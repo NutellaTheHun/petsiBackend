@@ -1,0 +1,66 @@
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InventoryItem } from '../entities/inventory-item.entity';
+import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
+import { InventoryItemFactory } from '../factories/inventory-item.factory';
+import { ServiceBase } from '../../../base/service-base';
+import { InventoryItemCategoryService } from './inventory-item-category.service';
+import { InventoryItemSizeService } from './inventory-item-size.service';
+import { InventoryItemVendorService } from './inventory-item-vendor.service';
+
+@Injectable()
+export class InventoryItemService extends ServiceBase<InventoryItem> {
+  constructor(
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
+
+    private readonly itemFactory: InventoryItemFactory,
+    private readonly categoryService: InventoryItemCategoryService,
+    private readonly sizeService: InventoryItemSizeService,
+    private readonly vendorService: InventoryItemVendorService,
+  ){ super(itemRepo)}
+
+  async create(createDto: CreateInventoryItemDto): Promise<InventoryItem | null> {
+    const exist = await this.findOneByName(createDto.name);
+    if(exist){ return null; }
+
+    const item = this.itemFactory.createEntityInstance({
+      name: createDto.name,
+      category: await this.categoryService.findOne(createDto.inventoryItemCategoryId),
+      sizes: await this.sizeService.findEntitiesById(createDto.sizeIds),
+      vendor: await this.vendorService.findOne(createDto.vendorId),
+    });
+
+    return await this.itemRepo.save(item);
+  }
+      
+  async update(id: number, updateDto: UpdateInventoryItemDto): Promise<InventoryItem | null>{
+    const toUpdate = await this.findOne(id);
+    if(!toUpdate){ return null; }
+
+    if(updateDto.name){
+      toUpdate.name = updateDto.name
+    }
+
+    if(updateDto.inventoryItemCategoryId){
+      toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId)
+    }
+
+    if(updateDto.sizeIds){
+      toUpdate.sizes = await this.sizeService.findEntitiesById(updateDto.sizeIds)
+    }
+
+    if(updateDto.vendorId){
+      toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId);
+    }
+
+    return await this.itemRepo.save(toUpdate);
+  }
+
+  async findOneByName(name: string, relations?: string[]): Promise<InventoryItem | null> {
+    return await this.itemRepo.findOne({ where: { name: name }});
+  }
+  
+}

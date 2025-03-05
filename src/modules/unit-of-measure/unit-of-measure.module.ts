@@ -26,6 +26,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     UnitCategoryController,
   ],
 
-  exports: [UnitOfMeasureService, UnitCategoryService]
+  exports: [
+    UnitOfMeasureService, 
+    UnitCategoryService,
+  ]
 })
 export class UnitOfMeasureModule {}

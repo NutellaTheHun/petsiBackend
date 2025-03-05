@@ -93,22 +93,6 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
       }
 
     }
-    /*
-    if(updateDto.categoryId || updateDto.categoryId == null){
-      if(updateDto.categoryId){
-        const category =  await this.categoryService.findOne(updateDto.categoryId);
-        if(!category) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
-
-        await this.categoryService.update(category.id, category);
-      } else {
-        
-        if(unit.category && unit.category.id){ 
-          
-          await this.categoryService.update(unit.category.id, unit.category); 
-        }
-      }
-    }*/
-
     return await this.unitRepo.save(unitToUpdate);
   }
 

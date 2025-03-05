@@ -25,7 +25,7 @@ export class InventoryItem{
         cascade: ['update'], 
         onDelete: 'SET NULL' 
     })
-    category?: InventoryItemCategory;
+    category?: InventoryItemCategory | null;
 
     /** When an item is created, its reference is given to it's categories list of items. */
     @BeforeInsert()
@@ -59,11 +59,11 @@ export class InventoryItem{
      * - When an item is created, its reference is passed to update vendor.items via BeforeInsert() hook
      */
     @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.items, {       
-         nullable: true, 
+        nullable: true, 
         cascade: ['update'], 
         onDelete: 'SET NULL'  
     })
-    vendor?: InventoryItemVendor;
+    vendor?: InventoryItemVendor | null;
 
     /** When an item is created, its reference is given to it's categories list of items. */
     @BeforeInsert()

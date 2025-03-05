@@ -63,7 +63,6 @@ describe('RolesController', () => {
       if (index === -1) return false;
 
       roles.splice(index, 1);
-      console.log("Roles after removal:", roles);
 
       return true;
     });

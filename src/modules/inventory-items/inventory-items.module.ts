@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { InventoryItemsController } from './controllers/inventory-items.controller';
-import { InventoryItemsService } from './services/inventory-items.service';
+import { InventoryItemService } from './services/inventory-item.service';
 import { InventoryItem } from './entities/inventory-item.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryItemCategory } from './entities/inventory-item-category.entity';
@@ -10,10 +10,11 @@ import { InventoryItemSizesController } from './controllers/inventory-item-sizes
 import { InventoryItemCategoriesController } from './controllers/inventory-item-categories.contoller';
 import { InventoryItemPackagesController } from './controllers/inventory-item-packages.contoller';
 import { InventoryItemVendor } from './entities/inventory-item-vendor.entity';
-import { InventoryItemCategoriesService } from './services/inventory-items-categories.service';
-import { InventoryItemPackagesService } from './services/inventory-items-packages.service';
-import { InventoryItemSizesService } from './services/inventory-items-sizes.service';
-import { InventoryItemVendorsService } from './services/inventory-item-vendors.service';
+import { InventoryItemCategoryService } from './services/inventory-item-category.service';
+import { InventoryItemPackageService } from './services/inventory-item-package.service';
+import { InventoryItemSizeService } from './services/inventory-item-size.service';
+import { InventoryItemVendorService } from './services/inventory-item-vendor.service';
+import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 
 @Module({
   imports: [ 
@@ -23,7 +24,8 @@ import { InventoryItemVendorsService } from './services/inventory-item-vendors.s
       InventoryItemPackage, 
       InventoryItemSize,
       InventoryItemVendor,
-    ])
+    ]),
+    UnitOfMeasureModule,
   ],
 
   controllers: [
@@ -35,11 +37,19 @@ import { InventoryItemVendorsService } from './services/inventory-item-vendors.s
   ],
     
   providers: [
-    InventoryItemsService,
-    InventoryItemCategoriesService,
-    InventoryItemPackagesService,
-    InventoryItemSizesService,
-    InventoryItemVendorsService,
+    InventoryItemService,
+    InventoryItemCategoryService,
+    InventoryItemPackageService,
+    InventoryItemSizeService,
+    InventoryItemVendorService,
+  ],
+
+  exports: [
+    InventoryItemService,
+    InventoryItemCategoryService,
+    InventoryItemPackageService,
+    InventoryItemSizeService,
+    InventoryItemVendorService,
   ]
 })
 export class InventoryItemsModule {}

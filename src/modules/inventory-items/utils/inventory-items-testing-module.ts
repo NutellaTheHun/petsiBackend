@@ -11,6 +11,8 @@ import { InventoryItemCategoriesController } from "../controllers/inventory-item
 import { InventoryItemSizesController } from "../controllers/inventory-item-sizes.contoller";
 import { InventoryItemPackagesController } from "../controllers/inventory-item-packages.contoller";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { UnitOfMeasureModule } from "../../unit-of-measure/unit-of-measure.module";
 
 export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -30,6 +32,7 @@ export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
                 InventoryItemSize,
                 InventoryItemVendor,]
             ),
+            UnitOfMeasureModule,
     ],
 
     controllers: [
