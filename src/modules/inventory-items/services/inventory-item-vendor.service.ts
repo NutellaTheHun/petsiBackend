@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
@@ -15,6 +15,8 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         private readonly vendorRepo: Repository<InventoryItemVendor>,
 
         private readonly vendorFactory: InventoryItemVendorFactory,
+
+        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
     
     ){ super(vendorRepo)}

@@ -1,22 +1,27 @@
 import { TestingModule } from '@nestjs/testing';
-import { InventoryItemFactory } from '../factories/inventory-item.factory';
 import { getInventoryItemsTestingModule } from '../utils/inventory-items-testing-module';
 import { InventoryItemPackageService } from './inventory-item-package.service';
+import { InventoryItemPackageFactory } from '../factories/inventory-item-package.factory';
+import { InventoryItemService } from './inventory-item.service';
 
 
 describe('InventoryItemPackageService', () => {
-  let service: InventoryItemPackageService;
-  let factory: InventoryItemFactory;
+  let packageService: InventoryItemPackageService;
+  let packageFactory: InventoryItemPackageFactory;
+
+  let itemService: InventoryItemService;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemsTestingModule();
 
-    service = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    factory = module.get<InventoryItemFactory>(InventoryItemFactory);
+    packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
+    packageFactory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
+
+    itemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(packageService).toBeDefined();
   });
 
   it('should create a inventory item package', async () => {

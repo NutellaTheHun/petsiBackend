@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
@@ -16,10 +16,13 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @InjectRepository(InventoryItemSize)
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
-        private readonly sizeFactory: InventoryItemSizeFactory,
+        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
+
         private readonly packageService: InventoryItemPackageService,
         private readonly unitService: UnitOfMeasureService,
+
+        private readonly sizeFactory: InventoryItemSizeFactory,
 
     ){ super(sizeRepo); }
 

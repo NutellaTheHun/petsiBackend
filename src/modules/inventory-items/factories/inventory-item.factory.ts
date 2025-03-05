@@ -1,20 +1,21 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EntityFactory } from "../../../base/entity-factory";
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { CreateDefaultInventoryItemDtoValues, CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
 import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
-import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { DRY_A, DRY_B, DRY_C, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_C, FOOD_CAT, OTHER_A, OTHER_B, OTHER_C, OTHER_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from "../utils/constants";
 
 @Injectable()
 export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto>{
 
     constructor(
+        @Inject(forwardRef(() => InventoryItemCategoryService))
         private readonly categoryService: InventoryItemCategoryService,
+
+        @Inject(forwardRef(() => InventoryItemVendorService))
         private readonly vendorService: InventoryItemVendorService,
-        private readonly sizeService: InventoryItemSizeService,
     ) {
         super( InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto, CreateDefaultInventoryItemDtoValues());
     }

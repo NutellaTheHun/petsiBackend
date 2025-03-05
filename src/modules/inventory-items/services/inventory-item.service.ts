@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InventoryItem } from '../entities/inventory-item.entity';
@@ -16,10 +16,17 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     @InjectRepository(InventoryItem)
     private readonly itemRepo: Repository<InventoryItem>,
 
-    private readonly itemFactory: InventoryItemFactory,
+    @Inject(forwardRef(() => InventoryItemCategoryService))
     private readonly categoryService: InventoryItemCategoryService,
+
+    @Inject(forwardRef(() => InventoryItemSizeService))
     private readonly sizeService: InventoryItemSizeService,
+
+    @Inject(forwardRef(() => InventoryItemVendorService))
     private readonly vendorService: InventoryItemVendorService,
+    
+    private readonly itemFactory: InventoryItemFactory,
+    
   ){ super(itemRepo)}
 
   async create(createDto: CreateInventoryItemDto): Promise<InventoryItem | null> {

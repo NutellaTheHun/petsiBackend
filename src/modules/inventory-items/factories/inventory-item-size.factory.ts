@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EntityFactory } from "../../../base/entity-factory";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { CreateDefaultInventoryItemSizeDtoValues, CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
@@ -13,9 +13,11 @@ import { EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, PINT,
 export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, CreateInventoryItemSizeDto, UpdateInventoryItemSizeDto>{
 
     constructor(
-        private readonly unitService: UnitOfMeasureService,
-        private readonly packageService: InventoryItemPackageService,
+        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
+        
+        private readonly packageService: InventoryItemPackageService,
+        private readonly unitService: UnitOfMeasureService,
     ) {
         super( InventoryItemSize, CreateInventoryItemSizeDto, UpdateInventoryItemSizeDto, CreateDefaultInventoryItemSizeDtoValues());
     }
