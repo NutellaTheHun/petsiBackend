@@ -3,6 +3,7 @@ import { getInventoryItemsTestingModule } from '../utils/inventory-items-testing
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemPackageFactory } from '../factories/inventory-item-package.factory';
 import { InventoryItemService } from './inventory-item.service';
+import { BOX_PKG } from '../utils/constants';
 
 
 describe('InventoryItemPackageService', () => {
@@ -10,6 +11,9 @@ describe('InventoryItemPackageService', () => {
   let packageFactory: InventoryItemPackageFactory;
 
   let itemService: InventoryItemService;
+  const testPackageName = "testPackageName";
+  let testId: number;
+  let testIds: number[];
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemsTestingModule();
@@ -20,31 +24,81 @@ describe('InventoryItemPackageService', () => {
     itemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
+  afterAll(async () => {
+    const packageQueryBuider = packageService.getQueryBuilder();
+    packageQueryBuider.delete().execute();
+
+    const itemQueryBuilder = itemService.getQueryBuilder();
+    itemQueryBuilder.delete().execute();
+  });
+
   it('should be defined', () => {
     expect(packageService).toBeDefined();
   });
 
   it('should create a inventory item package', async () => {
+    const createPkg = packageFactory.createDtoInstance({ name: testPackageName});
+    
+    const result = await packageService.create(createPkg);
 
-  })
+    // for future testing
+    testId = result?.id as number;
+
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+  });
 
   it('should update a inventory item package', async () => {
-    
-  })
+    const updatedName = "UPDATED NAME"
+    const toUpdate = await packageService.findOne(testId);
+    if(!toUpdate) { throw new Error('toUpdate is null'); }
+
+    toUpdate.name = updatedName;
+    const result = await packageService.update(testId, toUpdate);
+
+    expect(result?.name).toEqual(updatedName);
+  });
 
   it('should remove a inventory item package', async () => {
-    
-  })
+    const removal = await packageService.remove(testId);
+    expect(removal).toBeTruthy();
 
-  it('should get all inventory item packages', async () => {
-    
-  })
+    const verify = await packageService.findOne(testId);
+    expect(verify).toBeNull();
+  });
+
+  it('should insert default packages and get all inventory item packages', async () => {
+    const defaultPackages = await packageFactory.getTestingPackages();
+    if(!defaultPackages){ throw Error('default packages is null'); }
+
+    for(const pkg of defaultPackages){
+      await packageService.create(
+        packageFactory.createDtoInstance({ name: pkg.name })
+      )
+    }
+
+    const results = await packageService.findAll();
+
+    // for future testing
+    testIds = [results[0].id, results[1].id, results[2].id];
+
+    expect(results.length).toEqual(defaultPackages.length);
+  });
 
   it('should get a inventory item package by name', async () => {
-    
-  })
+    const result = await packageService.findOneByName(BOX_PKG);
+
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual(BOX_PKG);
+  });
 
   it('should get inventory item packages from a list of ids', async () => {
-    
-  })
+    const results = await packageService.findEntitiesById(testIds);
+
+    expect(results.length).toEqual(testIds.length);
+
+    for(const result of results){
+      expect(testIds.find(id => result.id)).toBeTruthy();
+    }
+  });
 });

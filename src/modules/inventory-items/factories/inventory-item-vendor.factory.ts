@@ -11,13 +11,13 @@ export class InventoryItemVendorFactory extends EntityFactory<InventoryItemVendo
         super(InventoryItemVendor, CreateInventoryItemVendorDto, UpdateInventoryItemVendorDto, CreateDefaultInventoryItemVendorDtoValues());
     }
 
-    getDefaultRoles(): InventoryItemVendor[] {
+    getDefaultVendors(): InventoryItemVendor[] {
         return [
 
         ];
     }
 
-    getTestingRoles(): InventoryItemVendor[]{
+    getTestingVendors(): InventoryItemVendor[]{
         return [
             this.createEntityInstance({ name: "vendorA" }),
             this.createEntityInstance({ name: "vendorB" }),

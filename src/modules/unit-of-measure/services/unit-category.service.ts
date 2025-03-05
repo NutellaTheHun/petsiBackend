@@ -70,7 +70,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   }
 
   async initializeDefaultCategories(): Promise<void> {
-    const categories = await this.categoryFactory.getDefaultRoles()
+    const categories = await this.categoryFactory.getDefaultUnitCategories()
     await Promise.all(
       categories.map( category => 
         this.create(

@@ -21,7 +21,7 @@ describe('UnitOfMeasureController', () => {
     unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
 
-    units = await unitFactory.getTestingRoles();
+    units = await unitFactory.getTestingUnits();
     let id = 1;
     units.map(unit => unit.id = id++);
 

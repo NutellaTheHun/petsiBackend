@@ -11,7 +11,7 @@ export class InventoryItemCategoryFactory extends EntityFactory<InventoryItemCat
         super( InventoryItemCategory, CreateInventoryItemDto, UpdateInventoryItemDto, CreateDefaultInventoryItemDtoValues());
     }
 
-    getDefaultRoles(): InventoryItemCategory[] {
+    getDefaultItemCategories(): InventoryItemCategory[] {
         return [
             this.createEntityInstance({ name: "cleaning" }),
             this.createEntityInstance({ name: "dairy" }),
@@ -24,7 +24,7 @@ export class InventoryItemCategoryFactory extends EntityFactory<InventoryItemCat
         ];
     }
 
-    getTestingRoles(): InventoryItemCategory[]{
-        return this.getDefaultRoles();
+    getTestingItemCategories(): InventoryItemCategory[]{
+        return this.getDefaultItemCategories();
     }  
 }

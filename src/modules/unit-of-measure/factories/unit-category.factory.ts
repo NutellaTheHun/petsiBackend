@@ -12,7 +12,7 @@ export class UnitCategoryFactory extends EntityFactory<UnitCategory, CreateUnitC
         super( UnitCategory, CreateUnitCategoryDto, UpdateUnitCategoryDto, CreateDefaultUnitCategoryDtoValues());
     }
 
-    async getDefaultRoles(): Promise<UnitCategory[]> {
+    async getDefaultUnitCategories(): Promise<UnitCategory[]> {
         return [
             this.createEntityInstance({
                 name: UNIT,
@@ -26,7 +26,7 @@ export class UnitCategoryFactory extends EntityFactory<UnitCategory, CreateUnitC
         ];
     }
 
-    async getTestingRoles(): Promise<UnitCategory[]>{
-        return await this.getDefaultRoles();
+    async getTestingUnitCategories(): Promise<UnitCategory[]>{
+        return await this.getDefaultUnitCategories();
     }  
 }

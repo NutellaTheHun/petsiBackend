@@ -25,13 +25,13 @@ export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, C
     // measureUnit: UnitOfMeasure
     // packageType: InventoryItemPackage
     // item: InventoryItem
-    getDefaultRoles(): InventoryItemSize[] {
+    getDefaultItemSizes(): InventoryItemSize[] {
         return [
             
         ];
     }
     
-    async getTestingRoles(): Promise<InventoryItemSize[]>{
+    async getTestingItemSizes(): Promise<InventoryItemSize[]>{
         return [
             this.createEntityInstance({
                 measureUnit: await this.unitService.findOneByName(POUND),

@@ -21,7 +21,7 @@ describe('UnitCategoryService', () => {
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
     factory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
 
-    testCategories = await factory.getTestingRoles();
+    testCategories = await factory.getTestingUnitCategories();
     if(!testCategories) { throw new Error('categories is null'); }
 
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);

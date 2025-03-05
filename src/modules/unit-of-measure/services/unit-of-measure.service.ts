@@ -117,7 +117,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    */
   async initializeDefaultUnits(): Promise<void> {
     await this.unitRepo.manager.transaction(async (manager: EntityManager) => {
-      const units = await this.unitFactory.getDefaultRoles();
+      const units = await this.unitFactory.getDefaultUnits();
       
     for (const unit of units) {
       const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });

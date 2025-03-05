@@ -15,6 +15,7 @@ import { InventoryItemPackageService } from './services/inventory-item-package.s
 import { InventoryItemSizeService } from './services/inventory-item-size.service';
 import { InventoryItemVendorService } from './services/inventory-item-vendor.service';
 import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
+import { UnitOfMeasureService } from '../unit-of-measure/services/unit-of-measure.service';
 
 @Module({
   imports: [ 

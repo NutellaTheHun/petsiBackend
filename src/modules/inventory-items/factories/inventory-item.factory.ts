@@ -20,7 +20,7 @@ export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInv
         super( InventoryItem, CreateInventoryItemDto, UpdateInventoryItemDto, CreateDefaultInventoryItemDtoValues());
     }
 
-    getDefaultRoles(): InventoryItem[] {
+    getDefaultItems(): InventoryItem[] {
         return [
 
         ];
@@ -30,7 +30,7 @@ export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInv
      * Doesnt set item sizes, returns 9 items, vendor: vendorA-B, categories: food, dry goods, others
      * @returns 
      */
-    async getTestingRoles(): Promise<InventoryItem[]> {
+    async getTestingItems(): Promise<InventoryItem[]> {
         const vendorA = await this.vendorService.findOneByName(VENDOR_A);
         const vendorB = await this.vendorService.findOneByName(VENDOR_B);
         const vendorC = await this.vendorService.findOneByName(VENDOR_C);

@@ -23,7 +23,7 @@ describe('UnitOfMeasureService', () => {
       categoryService = module.get<UnitCategoryService>(UnitCategoryService);
 
       await categoryService.initializeDefaultCategories();
-      testUnits = await unitFactory.getTestingRoles();
+      testUnits = await unitFactory.getTestingUnits();
     });
   
     afterAll(async () => {
@@ -73,7 +73,7 @@ describe('UnitOfMeasureService', () => {
     await unitService.initializeDefaultUnits();
     
     const results = await unitService.findAll();
-    expect(results.length).toEqual((await unitFactory.getDefaultRoles()).length);
+    expect(results.length).toEqual((await unitFactory.getDefaultUnits()).length);
   });
 
 

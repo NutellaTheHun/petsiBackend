@@ -20,7 +20,7 @@ export class UnitOfMeasureFactory extends EntityFactory<UnitOfMeasure, CreateUni
      * Required default unit categories to exist in database
      * @returns 
      */
-    async getDefaultRoles(): Promise<UnitOfMeasure[]> {
+    async getDefaultUnits(): Promise<UnitOfMeasure[]> {
         return [
             this.createEntityInstance({
                 name: GALLON, 
@@ -117,7 +117,7 @@ export class UnitOfMeasureFactory extends EntityFactory<UnitOfMeasure, CreateUni
         ];
     }
 
-    async getTestingRoles(): Promise<UnitOfMeasure[]>{
-        return await this.getDefaultRoles();
+    async getTestingUnits(): Promise<UnitOfMeasure[]>{
+        return await this.getDefaultUnits();
     }  
 }

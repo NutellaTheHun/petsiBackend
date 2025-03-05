@@ -11,7 +11,7 @@ export class InventoryItemPackageFactory extends EntityFactory<InventoryItemPack
         super( InventoryItemPackage, CreateInventoryItemPackageDto, UpdateInventoryItemPackageDto, CreateDefaultInventoryItemPackageDtoValues());
     }
 
-    getDefaultRoles(): InventoryItemPackage[] {
+    getDefaultPackages(): InventoryItemPackage[] {
         return [
             this.createEntityInstance({ name: "bag" }),
             this.createEntityInstance({ name: "package" }),
@@ -22,7 +22,7 @@ export class InventoryItemPackageFactory extends EntityFactory<InventoryItemPack
         ];
     }
 
-    getTestingRoles(): InventoryItemPackage[]{
-        return this.getDefaultRoles();
+    getTestingPackages(): InventoryItemPackage[]{
+        return this.getDefaultPackages();
     }  
 }

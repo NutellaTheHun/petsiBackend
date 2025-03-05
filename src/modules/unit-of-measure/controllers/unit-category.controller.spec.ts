@@ -21,7 +21,7 @@ describe('UnitCategoryController', () => {
     categoryFactory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
 
-    categories = await categoryFactory.getTestingRoles();
+    categories = await categoryFactory.getTestingUnitCategories();
     let id = 1;
     categories.map(category => category.id = id++);
 
