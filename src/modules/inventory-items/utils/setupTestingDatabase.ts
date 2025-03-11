@@ -12,7 +12,7 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
  Phases:
  0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
  1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
- 2: ItemSizes, InventoryItem.sizes, UnitOfMeasure.baseUnits(if needed)
+ 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
  */
 
 /**
@@ -91,7 +91,9 @@ export async function setupTestingDatabaseLayerTWO(module: TestingModule): Promi
 
     //setup item.sizes[]
 
-    //UnitOfMeasure.baseUnit (if needed)
+    // UnitCategory.baseUnits (if needed)
+    // const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService); 
+    // await measureCategoryService.initializeTestingCategoryBaseUnits()
 }
 
 /**
@@ -103,4 +105,9 @@ export async function cleanupTestingDatabaseLayerTWO(module: TestingModule): Pro
 
     const sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
     await sizeService.getQueryBuilder().delete().execute();
+
+    // item.sizes[]
+
+    // const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService); 
+    // await measureCategoryService.getQueryBuilder().delete().execute();
 }

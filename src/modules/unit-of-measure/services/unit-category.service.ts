@@ -104,4 +104,8 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   async initializeTestingDatabase(): Promise<void> {
     await this.initializeDefaultCategories();
   }
+
+  async initializeTestingCategoryBaseUnits(): Promise<void> {
+    await this.initializeDefaultCategories();
+  }
 }
