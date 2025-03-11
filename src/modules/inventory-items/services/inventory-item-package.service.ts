@@ -41,4 +41,14 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     async findOneByName(name: string, relations?: string[]): Promise<InventoryItemPackage | null> {
         return await this.packageRepo.findOne({ where: { name: name }, relations });
     }
+
+    async initializeTestingDatabase(): Promise<void> {
+        const defaultPackages = await this.packageFactory.getTestingPackages();
+
+        for(const pkg of defaultPackages){
+            await this.create(
+              this.packageFactory.createDtoInstance({ name: pkg.name })
+            )
+          }
+    } 
 }

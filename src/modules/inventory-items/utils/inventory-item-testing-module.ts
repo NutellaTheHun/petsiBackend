@@ -6,15 +6,16 @@ import { InventoryItemCategory } from "../entities/inventory-item-category.entit
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { InventoryItemsController } from "../controllers/inventory-items.controller";
-import { InventoryItemCategoriesController } from "../controllers/inventory-item-categories.contoller";
-import { InventoryItemSizesController } from "../controllers/inventory-item-sizes.contoller";
-import { InventoryItemPackagesController } from "../controllers/inventory-item-packages.contoller";
+import { InventoryItemCategoryController } from "../controllers/inventory-item-categories.contoller";
+import { InventoryItemSizeController } from "../controllers/inventory-item-sizes.contoller";
+import { InventoryItemPackageController } from "../controllers/inventory-item-packages.contoller";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
-import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { UnitOfMeasureModule } from "../../unit-of-measure/unit-of-measure.module";
+import { InventoryItemController } from "../controllers/inventory-item.controller";
+import { InventoryItemVendorController } from "../controllers/inventory-item-vendor.controller";
+import { InventoryItemsModule } from "../inventory-items.module";
 
-export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
+export async function getInventoryItemTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
             ConfigModule.forRoot({ isGlobal: true }),
@@ -33,14 +34,15 @@ export async function getInventoryItemsTestingModule(): Promise<TestingModule> {
                 InventoryItemVendor,]
             ),
             UnitOfMeasureModule,
+            InventoryItemsModule,
     ],
 
     controllers: [
-        InventoryItemsController, 
-        InventoryItemCategoriesController, 
-        InventoryItemSizesController, 
-        InventoryItemPackagesController,
-        InventoryItemsController,
+        InventoryItemController, 
+        InventoryItemCategoryController, 
+        InventoryItemSizeController, 
+        InventoryItemPackageController,
+        InventoryItemVendorController,
     ],
 
     providers: [],

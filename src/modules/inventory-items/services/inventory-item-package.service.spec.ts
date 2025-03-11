@@ -1,35 +1,35 @@
 import { TestingModule } from '@nestjs/testing';
-import { getInventoryItemsTestingModule } from '../utils/inventory-items-testing-module';
+import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemPackageFactory } from '../factories/inventory-item-package.factory';
 import { InventoryItemService } from './inventory-item.service';
 import { BOX_PKG } from '../utils/constants';
 
 
-describe('InventoryItemPackageService', () => {
+describe('Inventory Item Package Service', () => {
   let packageService: InventoryItemPackageService;
   let packageFactory: InventoryItemPackageFactory;
 
-  let itemService: InventoryItemService;
+  //let itemService: InventoryItemService;
   const testPackageName = "testPackageName";
   let testId: number;
   let testIds: number[];
 
   beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemsTestingModule();
+    const module: TestingModule = await getInventoryItemTestingModule();
 
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
     packageFactory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
 
-    itemService = module.get<InventoryItemService>(InventoryItemService);
+    //itemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
   afterAll(async () => {
     const packageQueryBuider = packageService.getQueryBuilder();
     packageQueryBuider.delete().execute();
 
-    const itemQueryBuilder = itemService.getQueryBuilder();
-    itemQueryBuilder.delete().execute();
+    //const itemQueryBuilder = itemService.getQueryBuilder();
+    //itemQueryBuilder.delete().execute();
   });
 
   it('should be defined', () => {

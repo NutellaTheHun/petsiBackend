@@ -7,6 +7,7 @@ import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendo
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
 import { ServiceBase } from '../../../base/service-base';
 import { InventoryItemService } from './inventory-item.service';
+import { factory } from 'typescript';
 
 @Injectable()
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>{
@@ -50,5 +51,14 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
 
     async findOneByName(name: string, relations?: string[]): Promise<InventoryItemVendor | null> {
         return await this.vendorRepo.findOne({ where: { name: name }, relations });
+    }
+
+    async initializeTestingDatabase(): Promise<void>{
+        const vendors = this.vendorFactory.getTestingVendors();
+        for(const vendor of vendors){
+            await this.create(
+                this.vendorFactory.createDtoInstance({ name: vendor.name })
+            )
+          }
     }
 }

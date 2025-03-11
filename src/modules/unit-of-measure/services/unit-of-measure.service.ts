@@ -8,6 +8,7 @@ import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import Big from "big.js";
+import { factory } from 'typescript';
 
 
 @Injectable()
@@ -119,20 +120,34 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     await this.unitRepo.manager.transaction(async (manager: EntityManager) => {
       const units = await this.unitFactory.getDefaultUnits();
       
-    for (const unit of units) {
-      const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });
-      if (exists) {
-          continue;
+      for (const unit of units) {
+        const exists = await manager.findOne(UnitOfMeasure, { where: { name: unit.name } });
+        if (exists) {
+            continue;
+        }
+        
+        await this.create(this.unitFactory.createDtoInstance({
+            name: unit.name,
+            abbreviation: unit.abbreviation,
+            categoryId: unit.category?.id,
+            conversionFactorToBase: unit.conversionFactorToBase,
+        }));
       }
-      
-      await this.create(this.unitFactory.createDtoInstance({
-          name: unit.name,
-          abbreviation: unit.abbreviation,
-          categoryId: unit.category?.id,
-          conversionFactorToBase: unit.conversionFactorToBase,
-      }));
-    }
       
     });
   }
+
+  /**
+   * Initializes unit of measure entities, for testing purposes. Reqquires default unit Categories to be to be populated.
+   */
+  async initializeTestingDatabase(): Promise<void> {
+
+    const testUnits = await this.unitFactory.getTestingUnits();
+    for(const unit of testUnits){
+      await this.create((
+        this.unitFactory.createDtoInstance(unit)
+      ))
+    }
+  }
 }
+

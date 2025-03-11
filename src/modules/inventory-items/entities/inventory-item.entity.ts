@@ -1,6 +1,6 @@
-import { BeforeInsert, BeforeRemove, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { InventoryItemSize } from "./inventory-item-size.entity";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemCategory } from "./inventory-item-category.entity";
+import { InventoryItemSize } from "./inventory-item-size.entity";
 import { InventoryItemVendor } from "./inventory-item-vendor.entity";
 
 /**
@@ -16,34 +16,15 @@ export class InventoryItem{
 
     /**
      * - categories must be pre-existing, or null  (cannot create a new category when making a new item)
-     * - If the inventory item is deleted, it's removed from the category's reference via BeforeRemove()
      * - If the associated category is deleted, the item's category will be set to null.
-     * - When an item is created, its reference is passed to update category.items via BeforeInsert() hook
+
      */
     @ManyToOne(() => InventoryItemCategory, (category) => category.items, {   
         nullable: true, 
-        cascade: ['update'], 
+        cascade: true,
         onDelete: 'SET NULL' 
     })
-    category?: InventoryItemCategory | null;
-
-    /** When an item is created, its reference is given to it's categories list of items. */
-    @BeforeInsert()
-    async addToCategory() {
-        if (this.category) {
-            this.category.items = [...this.category.items, this];
-        }
-    }
-
-    /**
-     * When an item is removed, delete its reference from category.items
-     */
-    @BeforeRemove()
-    async removeFromCategory(){
-        if(this.category){
-            this.category.items = this.category.items.filter( item => item.id !== this.id);
-        }
-    }
+    category?: InventoryItemCategory | null
 
     /**
      * Pre-existing item sizes, (combination of package type and unit of measurement)
@@ -54,32 +35,12 @@ export class InventoryItem{
     sizes: InventoryItemSize[];
 
     /**
-     * - If the inventory item is deleted, it's removed from the vendors's reference via BeforeRemove()
      * - If the associated vendor is deleted, the item's vendor will be set to null?(maybe not).
-     * - When an item is created, its reference is passed to update vendor.items via BeforeInsert() hook
      */
     @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.items, {       
         nullable: true, 
-        cascade: ['update'], 
+        cascade: true, 
         onDelete: 'SET NULL'  
     })
     vendor?: InventoryItemVendor | null;
-
-    /** When an item is created, its reference is given to it's categories list of items. */
-    @BeforeInsert()
-    async addToVendor() {
-        if (this.vendor) {
-            this.vendor.items = [...this.vendor.items, this];
-        }
-    }
-
-    /**
-     * When an item is removed, delete its reference from category.items
-     */
-    @BeforeRemove()
-    async removeFromVendor(){
-        if(this.vendor){
-            this.vendor.items = this.vendor.items.filter( item => item.id !== this.id);
-        }
-    }
 }

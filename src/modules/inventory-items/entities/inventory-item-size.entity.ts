@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemPackage } from "./inventory-item-package.entity";
 import { InventoryItem } from "./inventory-item.entity";
-import { UnitOfMeasure } from "src/modules/unit-of-measure/entities/unit-of-measure.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 
 /**
  * A child entity to Inventory Item. Can be created through modifying an InventoryItem, or during an InventoryCount.
@@ -21,7 +21,7 @@ export class InventoryItemSize {
      * - Selected from pre-existing options.
      */
     @ManyToOne(() => UnitOfMeasure, { nullable: false })
-    measureUnit: UnitOfMeasure; //UnitOfMeasure module?
+    measureUnit: UnitOfMeasure;
 
     /**
      * Type of package an inventory item is counted in. "Box", "Can", "Bag"

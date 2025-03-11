@@ -50,4 +50,14 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     async findOneByName(name: string, relations?: string[]): Promise<InventoryItemCategory | null> {
         return await this.categoryRepo.findOne({ where: { name: name }, relations });
     }
+    
+    async initializeTestingDatabase(): Promise<void> {
+        const categories = this.categoryFactory.getDefaultItemCategories();
+
+        for(const category of categories) {
+            await this.create(
+                this.categoryFactory.createDtoInstance({ name: category.name })
+            )
+        }
+    }
 }

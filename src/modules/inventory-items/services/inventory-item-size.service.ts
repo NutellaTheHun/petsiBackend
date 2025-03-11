@@ -22,6 +22,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         private readonly packageService: InventoryItemPackageService,
         private readonly unitService: UnitOfMeasureService,
 
+        @Inject(forwardRef(() => InventoryItemSizeFactory))
         private readonly sizeFactory: InventoryItemSizeFactory,
 
     ){ super(sizeRepo); }

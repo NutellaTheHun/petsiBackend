@@ -2,8 +2,8 @@ import { InventoryItemCategory } from "../entities/inventory-item-category.entit
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { ControllerBase } from "../../../base/controller-base";
 
-export class InventoryItemCategoriesController extends ControllerBase<InventoryItemCategory> {
+export class InventoryItemCategoryController extends ControllerBase<InventoryItemCategory> {
     constructor(
-      categoriesService: InventoryItemCategoryService
-    ){ super(categoriesService); }
+      private readonly categoryService: InventoryItemCategoryService
+    ){ super(categoryService); }
 }

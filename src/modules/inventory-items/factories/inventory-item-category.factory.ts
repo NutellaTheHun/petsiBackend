@@ -3,12 +3,14 @@ import { EntityFactory } from "../../../base/entity-factory";
 import { CreateDefaultInventoryItemDtoValues, CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
 import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
+import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
+import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 
 @Injectable()
-export class InventoryItemCategoryFactory extends EntityFactory<InventoryItemCategory, CreateInventoryItemDto, UpdateInventoryItemDto>{
+export class InventoryItemCategoryFactory extends EntityFactory<InventoryItemCategory, CreateInventoryItemCategoryDto, UpdateInventoryItemCategoryDto>{
 
     constructor() {
-        super( InventoryItemCategory, CreateInventoryItemDto, UpdateInventoryItemDto, CreateDefaultInventoryItemDtoValues());
+        super( InventoryItemCategory, CreateInventoryItemCategoryDto, UpdateInventoryItemCategoryDto, CreateDefaultInventoryItemDtoValues());
     }
 
     getDefaultItemCategories(): InventoryItemCategory[] {
