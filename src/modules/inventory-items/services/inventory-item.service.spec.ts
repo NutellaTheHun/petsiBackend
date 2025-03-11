@@ -30,17 +30,11 @@ describe('Inventory Item Service', () => {
   let measureService: UnitOfMeasureService;
 
   beforeAll(async () => {
-    //const module: TestingModule = await getInventoryItemTestingModule();
     module = await getInventoryItemTestingModule();
 
     categoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    // await itemCategoryService.initializeTestingDatabase();
-
     vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    // await itemVendorService.initializeTestingDatabase();
-
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    // await itemPackageService.initializeTestingDatabase();
 
     await setupTestingDatabaseLayerZERO(module);
 
@@ -57,16 +51,6 @@ describe('Inventory Item Service', () => {
   });
 
   afterAll(async () => {
-    /*
-    const categoryQuery = itemCategoryService.getQueryBuilder();
-    await categoryQuery.delete().execute();
-
-    const vendorQuery = itemVendorService.getQueryBuilder();
-    await vendorQuery.delete().execute();
-
-    const packageQuery = itemPackageService.getQueryBuilder();
-    await packageQuery.delete().execute();
-    */
     await cleanupTestingDatabaseLayerZERO(module);
 
     const measureQuery = measureService.getQueryBuilder();
@@ -135,7 +119,15 @@ describe('Inventory Item Service', () => {
     toUpdate.vendor = vendor;
     toUpdate.sizes = [size];
 
-    const result = await itemService.update(testId, toUpdate);
+    const result = await itemService.update(testId, 
+      itemFactory.createDtoInstance({
+        name: toUpdate.name,
+        inventoryItemCategoryId: toUpdate.category.id,
+        sizeIds: [toUpdate.sizes[0].id],
+        vendorId: toUpdate.vendor.id
+      })
+    );
+
     expect(result).not.toBeNull();
     expect(result?.category?.id).toEqual(category?.id);
     expect(result?.vendor?.id).toEqual(vendor?.id);
