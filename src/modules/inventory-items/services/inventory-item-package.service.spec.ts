@@ -2,16 +2,12 @@ import { TestingModule } from '@nestjs/testing';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemPackageFactory } from '../factories/inventory-item-package.factory';
-import { InventoryItemService } from './inventory-item.service';
 import { BOX_PKG } from '../utils/constants';
-
 
 describe('Inventory Item Package Service', () => {
   let packageService: InventoryItemPackageService;
   let packageFactory: InventoryItemPackageFactory;
 
-  //let itemService: InventoryItemService;
-  const testPackageName = "testPackageName";
   let testId: number;
   let testIds: number[];
 
@@ -20,16 +16,11 @@ describe('Inventory Item Package Service', () => {
 
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
     packageFactory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
-
-    //itemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
   afterAll(async () => {
     const packageQueryBuider = packageService.getQueryBuilder();
-    packageQueryBuider.delete().execute();
-
-    //const itemQueryBuilder = itemService.getQueryBuilder();
-    //itemQueryBuilder.delete().execute();
+    await packageQueryBuider.delete().execute();
   });
 
   it('should be defined', () => {
@@ -37,7 +28,7 @@ describe('Inventory Item Package Service', () => {
   });
 
   it('should create a inventory item package', async () => {
-    const createPkg = packageFactory.createDtoInstance({ name: testPackageName});
+    const createPkg = packageFactory.createDtoInstance({ name: "testPackageName"});
     
     const result = await packageService.create(createPkg);
 
@@ -54,7 +45,11 @@ describe('Inventory Item Package Service', () => {
     if(!toUpdate) { throw new Error('toUpdate is null'); }
 
     toUpdate.name = updatedName;
-    const result = await packageService.update(testId, toUpdate);
+    const result = await packageService.update(testId, 
+      packageFactory.createDtoInstance({
+        name: toUpdate.name,
+      })
+    );
 
     expect(result?.name).toEqual(updatedName);
   });

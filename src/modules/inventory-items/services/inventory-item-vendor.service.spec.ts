@@ -7,8 +7,6 @@ describe('Inventory Item Vendor Service', () => {
   let service: InventoryItemVendorService;
   let factory: InventoryItemVendorFactory;
 
-  const testName = "testVendorName";
-  const updateName = "UPDATE_NAME";
   let testId: number;
   let testIds: number[];
 
@@ -21,7 +19,7 @@ describe('Inventory Item Vendor Service', () => {
 
   afterAll(async () => {
     const queryBuilder = service.getQueryBuilder();
-    queryBuilder.delete().execute();
+    await queryBuilder.delete().execute();
   });
 
   it('should be defined', () => {
@@ -29,7 +27,7 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should create a vendor', async () => {
-    const vendorDto = await factory.createDtoInstance({ name: testName });
+    const vendorDto = await factory.createDtoInstance({ name: "testVendorName" });
 
     const result = await service.create(vendorDto);
 
@@ -44,10 +42,14 @@ describe('Inventory Item Vendor Service', () => {
     const toUpdate = await service.findOne(testId);
     if(!toUpdate) { throw new Error('vendor to update is null.'); }
 
-    toUpdate.name = updateName;
-    const result = await service.update(testId, toUpdate);
+    toUpdate.name = "UPDATE_NAME";
+    const result = await service.update(testId, 
+      factory.createDtoInstance({
+        name: toUpdate.name,
+      })
+    );
 
-    expect(result?.name).toEqual(updateName);
+    expect(result?.name).toEqual("UPDATE_NAME");
   });
 
   it('should remove a vendor', async () => {
@@ -86,6 +88,4 @@ describe('Inventory Item Vendor Service', () => {
     const results = await service.findEntitiesById(testIds);
     expect(results.length).toEqual(testIds.length);
   });
-
-  // test inventory item updates
 });

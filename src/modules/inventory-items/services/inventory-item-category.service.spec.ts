@@ -2,8 +2,6 @@ import { TestingModule } from '@nestjs/testing';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
-import exp from 'constants';
-
 
 describe('Inventory Item Category Service', () => {
   let service: InventoryItemCategoryService;
@@ -22,7 +20,7 @@ describe('Inventory Item Category Service', () => {
 
   afterAll(async () => {
     const categoryQueryBuilder = service.getQueryBuilder();
-    categoryQueryBuilder.delete().execute();
+    await categoryQueryBuilder.delete().execute();
   });
 
   it('should be defined', () => {
@@ -48,7 +46,11 @@ describe('Inventory Item Category Service', () => {
     if(!toUpdate) { throw new Error('category to update is null'); }
 
     toUpdate.name = updatedName;
-    const result = await service.update(testId, toUpdate);
+    const result = await service.update(testId, 
+      factory.createDtoInstance({
+        name: toUpdate.name,
+      })
+    );
 
     expect(result?.name).toEqual(updatedName);
   });
@@ -95,6 +97,4 @@ describe('Inventory Item Category Service', () => {
       expect(testIds.find(id => result.id)).toBeTruthy();
     }
   });
-
-  // test category item updates
 });

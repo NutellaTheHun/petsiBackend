@@ -5,77 +5,47 @@ import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
 import { FOOD_A, FOOD_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
-import { InventoryItemCategoryService } from './inventory-item-category.service';
+import { cleanupTestingDatabaseLayerONE, setupTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
-import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
 
 
 describe('Inventory Item Size Service', () => {
+  let module: TestingModule;
+  
   let sizeService: InventoryItemSizeService;
   let sizeFactory: InventoryItemSizeFactory;
 
-  // depends on unitCategoryService
   let unitService: UnitOfMeasureService;
   let unitCategoryService: UnitCategoryService;
 
   let packageService: InventoryItemPackageService;
 
-  // depends on itemCategoryService, and vendorService
   let itemService: InventoryItemService;
-  let itemCategoryService: InventoryItemCategoryService;
-  let itemVendorService: InventoryItemVendorService;
 
   let testId: number;
   let testIds: number[];
 
   beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
-
-    unitCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    await unitCategoryService.initializeDefaultCategories();
-
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    await unitService.initializeDefaultUnits();
-
+    module = await getInventoryItemTestingModule();
+    
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    await packageService.initializeTestingDatabase();
-
-    itemCategoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    await itemCategoryService.initializeTestingDatabase();
-
-    itemVendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    await itemVendorService.initializeTestingDatabase();
-
+    unitCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
     itemService = module.get<InventoryItemService>(InventoryItemService);
-    await itemService.initializeTestingDatabase();
+    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
 
+    await setupTestingDatabaseLayerONE(module);
+    
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
     sizeFactory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
   });
 
   afterAll( async () => {
+    await cleanupTestingDatabaseLayerONE(module);
+
     const sizeQuery = sizeService.getQueryBuilder();
     await sizeQuery.delete().execute();
-    
-    const unitCategorQuery = unitCategoryService.getQueryBuilder();
-    await unitCategorQuery.delete().execute();
-
-    const unitQuery = unitService.getQueryBuilder();
-    await unitQuery.delete().execute();
-
-    const packageQuery = packageService.getQueryBuilder();
-    await packageQuery.delete().execute();
-
-    const itemCategoryQuery = itemCategoryService.getQueryBuilder();
-    await itemCategoryQuery.delete().execute();
-
-    const itemVendorQuery = itemVendorService.getQueryBuilder();
-    await itemVendorQuery.delete().execute();
-
-    const itemQuery = itemService.getQueryBuilder();
-    await itemQuery.delete().execute();
   });
 
   it('should be defined', () => {
@@ -126,6 +96,7 @@ describe('Inventory Item Size Service', () => {
       inventoryPackageTypeId: updatePackage.id,
       inventoryItemId: updateItem.id,
     });
+
     expect(result).not.toBeNull();
     expect(result?.item.id).toEqual(updateItem.id);
     expect(result?.measureUnit.id).toEqual(updateUnit.id);
@@ -155,6 +126,7 @@ describe('Inventory Item Size Service', () => {
     }
 
     const results = await sizeService.findAll();
+
     expect(results).not.toBeNull();
     expect(results.length).toBeGreaterThan(0);
     expect(results.length).toEqual(testingSizes.length);
@@ -165,12 +137,14 @@ describe('Inventory Item Size Service', () => {
 
   it('should get a inventory item size by item name', async () => {
     const results = await sizeService.findSizesByItemName(FOOD_A);
+
     expect(results).not.toBeNull();
     expect(results?.length).toBeGreaterThan(0);
   });
 
   it('should get inventory item sizes from a list of ids', async () => {
     const results = await sizeService.findEntitiesById(testIds);
+
     expect(results).not.toBeNull();
     expect(results.length).toEqual(testIds.length);
   });

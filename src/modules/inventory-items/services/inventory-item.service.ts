@@ -42,32 +42,58 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
 
     return await this.itemRepo.save(item);
   }
-      
+  
+  /**
+   * If an entity id (item category, vendor) value is 0, its reference is being removed. 
+   * If the value is null, its current value remains, and is not involved in the current update call.
+   */
   async update(id: number, updateDto: UpdateInventoryItemDto): Promise<InventoryItem | null>{
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ return null; }
 
     if(updateDto.name){
-      toUpdate.name = updateDto.name
+      toUpdate.name = updateDto.name;
     }
 
     if(updateDto.inventoryItemCategoryId){
-      toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId)
+      if(updateDto.inventoryItemCategoryId === 0){
+        /*
+        if(toUpdate.category?.id){
+          const category = await this.categoryService.findOne(toUpdate.category.id)
+
+          const index = category?.items.findIndex(item => item.id === toUpdate.id);
+          if(index === -1){ throw new Error('item not found in its reference invenvory item category'); }
+
+          category?.items.splice(index as number, 1);
+
+          await this.categoryService.update(category?.id as number, 
+            { inventoryItemIds: category?.items.map(item => item.id) }
+          );
+        }*/
+        
+        toUpdate.category = null; 
+      } else{ 
+        toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId);
+      }
     }
 
     if(updateDto.sizeIds){
-      toUpdate.sizes = await this.sizeService.findEntitiesById(updateDto.sizeIds)
+      toUpdate.sizes = await this.sizeService.findEntitiesById(updateDto.sizeIds);
     }
 
     if(updateDto.vendorId){
-      toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId);
+      if(updateDto.vendorId === 0){
+        toUpdate.vendor = null;
+      } else {
+        toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId);
+      }
     }
 
     return await this.itemRepo.save(toUpdate);
   }
 
   async findOneByName(name: string, relations?: string[]): Promise<InventoryItem | null> {
-    return await this.itemRepo.findOne({ where: { name: name }});
+    return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
   }
 
   async initializeTestingDatabase(): Promise<void> {
