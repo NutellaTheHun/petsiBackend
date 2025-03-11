@@ -77,4 +77,20 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
             relations
         });
     }
+
+    /**
+     *  Depends on UnitOfMeasureService, InventoryItemPackageService, InventoryItemService
+     */ 
+    async initializeTestingDatabase(): Promise<void> {
+        const testingSizes = await this.sizeFactory.getTestingItemSizes();
+
+        for(const size of testingSizes){
+            await this.create(
+                this.sizeFactory.createDtoInstance({
+                unitOfMeasureId: size.measureUnit.id,
+                inventoryPackageTypeId: size.packageType.id,
+                inventoryItemId: size.item.id,
+            }))
+        }
+    }
 }

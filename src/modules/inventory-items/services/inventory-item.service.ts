@@ -72,20 +72,13 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
 
   async initializeTestingDatabase(): Promise<void> {
     const items = await this.itemFactory.getTestingItems();
-    const results: InventoryItem[] = [];
-    /*
-    
+
     for(const item of items){
-      await results.push(this.itemRepo.create(item))
-    }*/
-    for(const item of items){
-      const result =
       await this.create(this.itemFactory.createDtoInstance({
         name: item.name,
         inventoryItemCategoryId: item.category?.id,
         vendorId: item.vendor?.id, 
       }));
-      if(result){ results.push(result); }
     }
   }
   

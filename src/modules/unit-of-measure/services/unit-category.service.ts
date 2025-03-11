@@ -100,4 +100,8 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
       baseUnitId: category.baseUnit.id
     });
   }
+
+  async initializeTestingDatabase(): Promise<void> {
+    await this.initializeDefaultCategories();
+  }
 }

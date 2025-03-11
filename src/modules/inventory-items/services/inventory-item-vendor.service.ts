@@ -1,13 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
-import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
+import { ServiceBase } from '../../../base/service-base';
 import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
-import { ServiceBase } from '../../../base/service-base';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
 import { InventoryItemService } from './inventory-item.service';
-import { factory } from 'typescript';
 
 @Injectable()
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>{

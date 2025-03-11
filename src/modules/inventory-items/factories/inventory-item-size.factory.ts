@@ -31,6 +31,9 @@ export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, C
         ];
     }
     
+    /**
+     *  Depends on UnitOfMeasureService, InventoryItemPackageService, InventoryItemService
+     */ 
     async getTestingItemSizes(): Promise<InventoryItemSize[]>{
         return [
             this.createEntityInstance({

@@ -28,7 +28,7 @@ export class InventoryItemFactory extends EntityFactory<InventoryItem, CreateInv
     
     /**
      * Doesnt set item sizes, returns 9 items, vendor: vendorA-B, categories: food, dry goods, others
-     * @returns 
+     * Depends on InventoryItemVendorService and InventoryItemCategoryService
      */
     async getTestingItems(): Promise<InventoryItem[]> {
         const vendorA = await this.vendorService.findOneByName(VENDOR_A);

@@ -76,7 +76,6 @@ describe('Inventory Item Size Service', () => {
 
     const itemQuery = itemService.getQueryBuilder();
     await itemQuery.delete().execute();
-    
   });
 
   it('should be defined', () => {

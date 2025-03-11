@@ -8,7 +8,6 @@ import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import Big from "big.js";
-import { factory } from 'typescript';
 
 
 @Injectable()
