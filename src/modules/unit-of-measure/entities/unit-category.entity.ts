@@ -22,5 +22,5 @@ export class UnitCategory{
      */
     @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    baseUnit: UnitOfMeasure | null;
+    baseUnit?: UnitOfMeasure | null;
 }

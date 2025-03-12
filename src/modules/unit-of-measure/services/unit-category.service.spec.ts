@@ -5,26 +5,30 @@ import { UnitCategory } from '../entities/unit-category.entity';
 import { OUNCE, POUND, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 
 
 describe('UnitCategoryService', () => {
   let categoryService: UnitCategoryService;
-  let factory: UnitCategoryFactory;
+  let categoryFactory: UnitCategoryFactory;
+
   let testCategories: UnitCategory[];
   let testCategoryId: number;
 
   let unitService: UnitOfMeasureService;
+  let unitFactory: UnitOfMeasureFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
 
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    factory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
+    categoryFactory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
 
-    testCategories = await factory.getTestingUnitCategories();
+    testCategories = await categoryFactory.getTestingUnitCategories();
     if(!testCategories) { throw new Error('categories is null'); }
 
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
+    unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
   });
 
   afterAll(async () => {
@@ -44,7 +48,7 @@ describe('UnitCategoryService', () => {
 
     for (const category of testCategories){
       results.push(await categoryService.create(
-        factory.createDtoInstance({ name: category.name })
+        categoryFactory.createDtoInstance({ name: category.name })
       ));
     }
 
@@ -116,18 +120,19 @@ describe('UnitCategoryService', () => {
   it('should update categories units list after unit changes category', async () => {
     const unit = await unitService.findOneByName(OUNCE, ['category']);
     if(!unit) {throw new Error('couldnt find unit'); }
+
     const oldCategoryId = unit?.category?.id;
+    if(!oldCategoryId){ throw new Error('old category id is null'); }
 
     const newCategory = await categoryService.findOneByName(VOLUME);
     if(!newCategory) {throw new Error('couldnt find category'); }
 
     await unitService.update(unit.id,
-      {
+      unitFactory.updateDtoInstance({
         categoryId: newCategory?.id,
-      }
+      })
     );
     
-    if(!oldCategoryId){ throw new Error('old category id is null'); }
     const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);
     expect(verifyNotInOld?.units.find(u => u.id == unit.id)).toBeUndefined();
 

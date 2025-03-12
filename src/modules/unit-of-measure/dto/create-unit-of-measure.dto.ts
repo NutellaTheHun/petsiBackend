@@ -12,7 +12,7 @@ export class CreateUnitOfMeasureDto {
 
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
+    @IsOptional()
     readonly categoryId: number;
 
     @IsString()
@@ -26,6 +26,6 @@ export class CreateUnitOfMeasureDto {
  */
 export function CreateDefaultUnitOfMeasureDtoValues(): Partial<CreateUnitOfMeasureDto> {
     return {
-        categoryId: undefined,
+        //categoryId: undefined,
     };
 }

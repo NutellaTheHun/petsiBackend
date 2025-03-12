@@ -70,28 +70,12 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
       unitToUpdate.conversionFactorToBase = updateDto.conversionFactorToBase;
     }
 
-    // if assigning a category, or unassigning its category (null).
-    // if update doesn't involve the category, the default value of the DTO passed undefined.
-    if(updateDto.categoryId){
-      const newCategory =  await this.categoryService.findOne(updateDto.categoryId);
-      if(!newCategory) { throw new Error(`category with id:${updateDto.categoryId} was not found`); }
-
-      if(unitToUpdate.category == null){
-        unitToUpdate.category = newCategory;
-        newCategory.units = [];
-        newCategory.units.push(unitToUpdate);
+    if(updateDto.categoryId !== null){
+      if(updateDto.categoryId === 0){
+        unitToUpdate.category = null;
+      } else {
+        unitToUpdate.category = await this.categoryService.findOne(updateDto.categoryId as number);
       }
-      else if(unitToUpdate.category !== newCategory){
-          unitToUpdate.category.units = unitToUpdate.category.units.filter(unit => unit.id !== unitToUpdate.id);
-          await this.unitRepo.save(unitToUpdate);
-
-          if (!newCategory.units) {
-            newCategory.units = [];  
-          }
-          newCategory.units.push(unitToUpdate);
-          unitToUpdate.category = newCategory;
-      }
-
     }
     return await this.unitRepo.save(unitToUpdate);
   }

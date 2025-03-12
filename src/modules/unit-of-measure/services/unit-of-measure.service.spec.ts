@@ -4,7 +4,7 @@ import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT } from '../utils/constants';
+import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT, VOLUME } from '../utils/constants';
 import Big from "big.js";
 
 describe('UnitOfMeasureService', () => {
@@ -39,16 +39,16 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('should insert all test units', async () => {
-    const insertion = await Promise.all(
-      testUnits.map((
-        unit => unitService.create(unitFactory.createDtoInstance(unit))
-        ))
-    );
-
-    expect(insertion).not.toBeNull();
-    insertion.map(unit => {
-      expect(unit?.id).not.toBeNull()
-    });
+    for(const unit of testUnits){
+      await unitService.create(
+        unitFactory.createDtoInstance({
+          name: unit.name,
+          abbreviation: unit.abbreviation,
+          categoryId: unit.category?.id,
+          conversionFactorToBase: unit.conversionFactorToBase,
+        })
+      )
+    }
   });
 
   it('should retrieve all test units', async () => {
@@ -184,16 +184,69 @@ describe('UnitOfMeasureService', () => {
   });
   
 
-  it('should update one test unit', async () => {
+  it('should update test unit name', async () => {
     const toUpdate = await unitService.findOne(testUnitId, ['category']);
     if(!toUpdate){ throw new Error("unit to update is null"); }
     if(!toUpdate.category) { throw new Error("category is null"); }
     
     toUpdate.name = "UPDATED_NAME";
-    const result = await unitService.update(toUpdate.id, toUpdate);
+    const result = await unitService.update(toUpdate.id, 
+      unitFactory.updateDtoInstance({
+        name: toUpdate.name,
+      })
+    );
 
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("UPDATED_NAME");
+  });
+
+  it('should change test unit category, old category should lose reference, new should gain', async () => {
+    const toUpdate = await unitService.findOne(testUnitId, ['category']);
+    if(!toUpdate){ throw new Error("unit to update is null"); }
+    if(!toUpdate.category) { throw new Error("category is null"); }
+
+    const oldCategory = await categoryService.findOne(toUpdate.category.id, ['units']);
+    if(!oldCategory){ throw new Error('oldCategory is null'); }
+    expect(oldCategory.units.findIndex(u => u.id === toUpdate.id)).not.toEqual(-1);
+
+    let newCategory = await categoryService.findOneByName(UNIT);
+    if(newCategory?.id === oldCategory.id){
+      newCategory = await categoryService.findOneByName(VOLUME);
+    }
+    const result = await unitService.update(toUpdate.id, 
+      unitFactory.updateDtoInstance({
+        categoryId: newCategory?.id,
+      })
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.category?.id).toEqual(newCategory?.id);
+
+    const verifyOld = await categoryService.findOne(oldCategory.id, ['units']);
+    expect(verifyOld?.units.findIndex(u => u.id === result?.id)).toEqual(-1);
+
+    const verifyNew = await categoryService.findOne(newCategory?.id as number, ['units']);
+    expect(verifyNew?.units.findIndex(u => u.id === result?.id)).not.toEqual(-1);
+  });
+
+  it('should unset test unit category, old category should lose reference', async () => {
+    const toUpdate = await unitService.findOne(testUnitId, ['category']);
+    if(!toUpdate){ throw new Error("unit to update is null"); }
+    if(!toUpdate.category) { throw new Error("category is null"); }
+
+    const oldCategory = await categoryService.findOne(toUpdate.category.id);
+    if(!oldCategory){ throw new Error('oldCategory is null'); }
+
+    const result = await unitService.update(toUpdate.id, 
+      unitFactory.updateDtoInstance({
+        categoryId: 0,
+      })
+    );
+    expect(result).not.toBeNull();
+    expect(result?.category).toBeNull();
+
+    const verifyOld = await categoryService.findOne(toUpdate.category.id, ['units']); 
+    expect(verifyOld?.units.findIndex(u => u.id === result?.id)).toEqual(-1);
   });
 
   it('should remove one test unit', async () => {
