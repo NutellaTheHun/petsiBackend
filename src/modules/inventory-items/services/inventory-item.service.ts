@@ -55,37 +55,25 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
       toUpdate.name = updateDto.name;
     }
 
-    if(updateDto.inventoryItemCategoryId){
+    if(updateDto.inventoryItemCategoryId !== null){
       if(updateDto.inventoryItemCategoryId === 0){
-        /*
-        if(toUpdate.category?.id){
-          const category = await this.categoryService.findOne(toUpdate.category.id)
-
-          const index = category?.items.findIndex(item => item.id === toUpdate.id);
-          if(index === -1){ throw new Error('item not found in its reference invenvory item category'); }
-
-          category?.items.splice(index as number, 1);
-
-          await this.categoryService.update(category?.id as number, 
-            { inventoryItemIds: category?.items.map(item => item.id) }
-          );
-        }*/
-        
-        toUpdate.category = null; 
+        toUpdate.category = null;
       } else{ 
-        toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId);
+        toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId as number);
       }
     }
 
     if(updateDto.sizeIds){
+      if(!toUpdate.sizes){ toUpdate.sizes = []; }
+      
       toUpdate.sizes = await this.sizeService.findEntitiesById(updateDto.sizeIds);
     }
 
-    if(updateDto.vendorId){
+    if(updateDto.vendorId !== null){
       if(updateDto.vendorId === 0){
         toUpdate.vendor = null;
       } else {
-        toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId);
+        toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId as number);
       }
     }
 

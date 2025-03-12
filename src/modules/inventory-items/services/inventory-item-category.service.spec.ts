@@ -2,6 +2,8 @@ import { TestingModule } from '@nestjs/testing';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
+import { InventoryItem } from '../entities/inventory-item.entity';
+import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 
 describe('Inventory Item Category Service', () => {
   let service: InventoryItemCategoryService;

@@ -15,9 +15,16 @@ export class InventoryItem{
     name: string;
 
     /**
+     * Pre-existing item sizes, (combination of package type and unit of measurement)
+     * - Can be created explicitly through updating InventoryItem, 
+     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
+     */
+    @OneToMany(() => InventoryItemSize, size => size.item, { nullable: true, cascade: true })
+    sizes?: InventoryItemSize[] | null;
+
+    /**
      * - categories must be pre-existing, or null  (cannot create a new category when making a new item)
      * - If the associated category is deleted, the item's category will be set to null.
-
      */
     @ManyToOne(() => InventoryItemCategory, (category) => category.items, {   
         nullable: true, 
@@ -25,14 +32,6 @@ export class InventoryItem{
         onDelete: 'SET NULL' 
     })
     category?: InventoryItemCategory | null
-
-    /**
-     * Pre-existing item sizes, (combination of package type and unit of measurement)
-     * - Can be created explicitly through updating InventoryItem, 
-     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
-     */
-    @OneToMany(() => InventoryItemSize, size => size.item, { nullable: true, cascade: true })
-    sizes: InventoryItemSize[] | null;
 
     /**
      * - If the associated vendor is deleted, the item's vendor will be set to null?(maybe not).

@@ -12,6 +12,6 @@ export class InventoryItemVendor {
     @Column({ nullable: false })
     name: string;
 
-    @OneToMany(() => InventoryItem, (item) => item.category, { nullable: false })
-    items : InventoryItem[];
+    @OneToMany(() => InventoryItem, (item) => item.vendor, { nullable: false })
+    items: InventoryItem[];
 } 
