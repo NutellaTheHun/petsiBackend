@@ -6,9 +6,9 @@ import { InventoryItemCategory } from "../entities/inventory-item-category.entit
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { InventoryItemCategoryController } from "../controllers/inventory-item-categories.contoller";
-import { InventoryItemSizeController } from "../controllers/inventory-item-sizes.contoller";
-import { InventoryItemPackageController } from "../controllers/inventory-item-packages.contoller";
+import { InventoryItemCategoryController } from "../controllers/inventory-item-category.controller";
+import { InventoryItemSizeController } from "../controllers/inventory-item-size.controller";
+import { InventoryItemPackageController } from "../controllers/inventory-item-package.controller";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 import { UnitOfMeasureModule } from "../../unit-of-measure/unit-of-measure.module";
 import { InventoryItemController } from "../controllers/inventory-item.controller";

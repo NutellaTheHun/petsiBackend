@@ -1,5 +1,5 @@
 import { TestingModule } from "@nestjs/testing";
-import { InventoryItemCategoryController } from "./inventory-item-categories.contoller";
+import { InventoryItemCategoryController } from "./inventory-item-category.controller";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { InventoryItemCategoryFactory } from "../factories/inventory-item-category.factory";
@@ -7,7 +7,7 @@ import { InventoryItemCategory } from "../entities/inventory-item-category.entit
 import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
 import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 
-describe('Inventory Item Category Controller', () => {
+describe('Inventory Item Categories Controller', () => {
   let controller: InventoryItemCategoryController;
   let categoryService: InventoryItemCategoryService;
   let categoryFactory: InventoryItemCategoryFactory;

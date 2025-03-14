@@ -172,7 +172,6 @@ describe('UnitCategoryService', () => {
     const category = await categoryService.findOne(testCategoryId, ['units']);
     expect(category).not.toBeNull();
 
-
     const removal = await categoryService.remove(testCategoryId);
     expect(removal).toBeTruthy();
 
