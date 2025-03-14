@@ -79,42 +79,6 @@ describe('Inventory Item Size Controller', () => {
     let itemId = 1;
     items.map(pkg => pkg.id = itemId++);
 
-    /*
-    sizes = [
-      sizeFactory.createEntityInstance({
-          measureUnit: units[0],
-          packageType: packages[0],
-          item:items[0],
-        }),
-        
-        sizeFactory.createEntityInstance({
-          measureUnit: units[1],
-          packageType: packages[1],
-          item: items[1],
-        }),
-
-        sizeFactory.createEntityInstance({
-          measureUnit: units[2],
-          packageType: packages[2],
-          item: items[2],
-        }),
-
-        sizeFactory.createEntityInstance({
-          measureUnit: units[3],
-          packageType: packages[3],
-          item: items[3],
-        }),
-
-        sizeFactory.createEntityInstance({
-          measureUnit: units[4],
-          packageType: packages[4],
-          item: items[4],
-          id: 5,
-        })
-    ];
-    sizes.map(size => size.id = sizeId++);
-    */  
-
     jest.spyOn(service, "create").mockImplementation(async (createDto: CreateInventoryItemSizeDto) => {
       const exists = sizes.find(unit => 
         unit.item.id === createDto.inventoryItemId &&
@@ -127,7 +91,7 @@ describe('Inventory Item Size Controller', () => {
       const pkg = items.find(p => p.id === createDto.inventoryPackageTypeId);
       const measure = items.find(m => m.id === createDto.unitOfMeasureId);
       const unit = { measureUnit: measure, packageType: pkg, item: item } as InventoryItemSize;
-      
+
       unit.id = sizeId++;
       sizes.push(unit);
       return unit;
