@@ -1,4 +1,5 @@
 import { IsArray, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { CreateInventoryAreaItemCountDto } from "./create-inventory-area-item-count.dto";
 
 export class CreateInventoryAreaCountDto{
     @IsNumber()
@@ -8,5 +9,11 @@ export class CreateInventoryAreaCountDto{
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
-    readonly countedItemIds: number[] = [];
+    readonly itemCountCreateDto: CreateInventoryAreaItemCountDto[] = [];
+}
+
+export function CreateDefaultInventoryAreaCountDtoValues(){
+    return [
+
+    ];
 }

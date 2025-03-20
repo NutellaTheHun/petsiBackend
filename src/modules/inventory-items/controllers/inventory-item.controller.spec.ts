@@ -1,16 +1,16 @@
 import { TestingModule } from '@nestjs/testing';
-import { InventoryItemController } from './inventory-item.controller';
-import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
-import { InventoryItemService } from '../services/inventory-item.service';
-import { InventoryItemFactory } from '../factories/inventory-item.factory';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
-import { DRY_A, DRY_B, DRY_C, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_C, FOOD_CAT, OTHER_A, OTHER_B, OTHER_C, OTHER_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from "../utils/constants";
-import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
+import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
 import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
+import { InventoryItemFactory } from '../factories/inventory-item.factory';
+import { InventoryItemService } from '../services/inventory-item.service';
+import { DRY_A, DRY_B, DRY_C, FOOD_A, FOOD_B, FOOD_C, OTHER_A, OTHER_B, OTHER_C } from "../utils/constants";
+import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemController } from './inventory-item.controller';
 
 
 describe('Inventory Item Controller', () => {

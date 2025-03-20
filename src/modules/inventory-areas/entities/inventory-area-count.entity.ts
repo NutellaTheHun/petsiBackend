@@ -30,6 +30,6 @@ export class InventoryAreaCount{
      * - countedItems will be populated when an Inventory Count is inserted.
      * - handled with cascade: true
      */
-    @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: false})
-    countedItems: InventoryAreaItemCount[];
+    @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: true})
+    items?: InventoryAreaItemCount[] | null;
 }
