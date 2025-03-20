@@ -13,7 +13,7 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
         @InjectRepository(InventoryArea)
         private readonly areaRepo: Repository<InventoryArea>,
 
-        @Inject(forwardRef(() => InventoryAreaService))
+        @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
 
         private readonly areaFactory: InventoryAreaFactory,

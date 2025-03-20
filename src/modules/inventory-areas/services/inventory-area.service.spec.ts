@@ -45,7 +45,9 @@ describe('Inventory area service', () => {
     });
 
     it('should update an area', async () => {
-        const toUpdate = factory.updateDtoInstance({});
+        const toUpdate = factory.updateDtoInstance({
+            name: updateTestAreaName,
+        });
 
         const result = await service.update(testId, toUpdate);
 

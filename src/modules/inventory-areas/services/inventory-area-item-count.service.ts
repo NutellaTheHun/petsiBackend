@@ -21,7 +21,11 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
         private readonly areaCountService: InventoryAreaCountService,
 
         private readonly inventoryAreaService: InventoryAreaService,
+
+        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
+
+        @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly itemSizeService: InventoryItemSizeService,
 
         private readonly itemCountFactory: InventoryAreaItemCountFactory

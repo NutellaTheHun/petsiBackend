@@ -1,4 +1,4 @@
-import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
