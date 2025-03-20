@@ -9,4 +9,13 @@ export class InventoryAreaFactory extends EntityFactory<InventoryArea, CreateInv
     constructor(){
         super(InventoryArea, CreateInventoryAreaDto, UpdateInventoryAreaDto, CreateDefaultInventoryAreaDtoValues()); 
     }
+
+    getTestingAreas(): InventoryArea[] {
+        return [
+            this.createEntityInstance({ name: "AREA A" }),
+            this.createEntityInstance({ name: "AREA B" }),
+            this.createEntityInstance({ name: "AREA C" }),
+            this.createEntityInstance({ name: "AREA D" }),
+        ]
+    }
 }
