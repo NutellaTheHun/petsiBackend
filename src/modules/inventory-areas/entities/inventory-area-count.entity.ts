@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryArea } from "./inventory-area.entity";
 import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
 
@@ -8,7 +8,7 @@ import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
  */
 @Entity()
 export class InventoryAreaCount{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     /**

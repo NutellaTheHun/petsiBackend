@@ -1,11 +1,10 @@
 import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
 import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
 import { InventoryAreaItemCountService } from "./inventory-area-item-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
@@ -41,24 +40,12 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
         if(createDto.inventoryItemCountIds){ throw new Error('InventoryCountIds present in create call, must only be present in update') }
 
-        // how does inventoryArea get updated with a new count?
         const area = await this.areaService.findOne(createDto.inventoryAreaId);
         if(!area){ throw new Error('inventory area not found'); }
 
         const count = this.areaCountFactory.createEntityInstance({
             inventoryArea: area,
         })
-
-        //Updates area's inventory Count with new count.
-        area.inventoryCounts.push(count);
-        await this.areaService.update(area.id, area);
-
-        /*await this.areaCountRepo.save(count);
-        
-        if(createDto.inventoryItemCountIds){
-            const countedItems = await this.areaItemService.findEntitiesById(createDto.inventoryItemCountIds);
-            count.items = countedItems;
-        }*/
         
         return await this.areaCountRepo.save(count);
     }
@@ -94,7 +81,21 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         });
     }
 
+    /**
+     * finds all counts for the given day of date, ignores time.
+     */
     async findByDate(date: Date, relations?: string[]): Promise<InventoryAreaCount[]> {
-        return await this.areaCountRepo.find({ where: { countDate: date }, relations });
+        const startOfDay = new Date(date);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(date);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        return await this.areaCountRepo.find({
+            where: {
+                countDate: Between(startOfDay, endOfDay),
+            },
+            relations,
+        });
     }
 }

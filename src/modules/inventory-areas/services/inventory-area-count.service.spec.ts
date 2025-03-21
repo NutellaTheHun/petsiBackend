@@ -27,6 +27,8 @@ describe('Inventory area item count service', () => {
 
     afterAll(async () => {
         await areaCountService.getQueryBuilder().delete().execute();
+
+        await inventoryAreaService.getQueryBuilder().delete().execute();
     });
 
     it('should be defined', () => {
@@ -72,9 +74,7 @@ describe('Inventory area item count service', () => {
             inventoryItemCountIds: [1, 2, 3, 4]
         });
 
-        const result = await areaCountService.create(dto);
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull();
+        await expect(areaCountService.create(dto)).rejects.toThrow(Error);
     });
 
     it('should update areaCount\'s area', async () => {
@@ -84,7 +84,6 @@ describe('Inventory area item count service', () => {
         const toUpdate = await areaCountService.findOne(testId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        //toUpdate.inventoryArea = newArea;
         const result = await areaCountService.update(toUpdate.id, areaCountFactory.updateDtoInstance({
             inventoryAreaId: newArea.id
         }));
@@ -94,14 +93,14 @@ describe('Inventory area item count service', () => {
         expect(result?.inventoryArea.name).toEqual(newArea.name);
     });
 
-    it('should remove inventoryCount reference from old inventory Area, and update new One', async () => {
+    it('should remove inventoryCount reference from old inventory Area, and update new one', async () => {
         const oldArea = await inventoryAreaService.findOneByName(AREA_A, ["inventoryCounts"]);
         if(!oldArea){ throw new Error('old inventory area not found'); }
-        expect(oldArea?.inventoryCounts).toBeUndefined();
+        expect(oldArea?.inventoryCounts.length).toEqual(0);
 
         const newArea = await inventoryAreaService.findOneByName(AREA_B, ["inventoryCounts"]);
         if(!newArea){ throw new Error('new inventoryArea not found'); }
-        expect(newArea?.inventoryCounts).not.toBeUndefined();
+        expect(newArea?.inventoryCounts).not.toBeNull();
         expect(newArea?.inventoryCounts.length).toEqual(1);
         expect(newArea?.inventoryCounts[0].id).toEqual(testId);
     });
@@ -117,7 +116,6 @@ describe('Inventory area item count service', () => {
         const toUpdate = await areaCountService.findOne(testId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        //toUpdate.inventoryArea = newArea;
         const result = await areaCountService.update(0, areaCountFactory.updateDtoInstance({
             inventoryAreaId: newArea.id
         }));
@@ -126,7 +124,7 @@ describe('Inventory area item count service', () => {
     });
 
     it('should find area counts by area', async () => {
-        const results = await areaCountService.findByArea(AREA_A);
+        const results = await areaCountService.findByArea(AREA_B);
         expect(results).not.toBeNull();
         expect(results.length).toEqual(1);
     });
@@ -134,15 +132,15 @@ describe('Inventory area item count service', () => {
     it('should find area counts by date', async () => {
         const results = await areaCountService.findByDate(new Date());
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(4); // area_A, area_b, area_c, area_d
+        expect(results.length).toEqual(1);
 
-        testIds = [results[0].id, results[1].id, results[2].id];
+        testIds = [results[0].id];
     });
 
     it('should get all area counts', async () => {
         const results = await areaCountService.findAll()
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(4); // area_A, area_b, area_c, area_d
+        expect(results.length).toEqual(1); // area_A, area_b, area_c, area_d
     });
 
     it('should get area counts by id', async () => {
@@ -161,5 +159,8 @@ describe('Inventory area item count service', () => {
 
         const verify = await areaCountService.findOne(testId);
         expect(verify).toBeNull();
+
+        const area = await inventoryAreaService.findOneByName(AREA_B, ["inventoryCounts"]);
+        expect(area?.inventoryCounts.length).toEqual(0);
     });
 });

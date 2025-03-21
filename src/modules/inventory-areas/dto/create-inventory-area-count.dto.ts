@@ -9,7 +9,7 @@ export class CreateInventoryAreaCountDto{
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
-    readonly inventoryItemCountIds: number[] = [];
+    readonly inventoryItemCountIds: number[];
 }
 
 export function CreateDefaultInventoryAreaCountDtoValues(){
