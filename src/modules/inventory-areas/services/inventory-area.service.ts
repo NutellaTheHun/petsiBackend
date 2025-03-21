@@ -52,4 +52,13 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
     async findOneByName(name: string, relations?: string[]): Promise<InventoryArea | null> {
         return await this.areaRepo.findOne({ where: { name }, relations}); 
     }
+
+    async initializeTestingDatabase(): Promise<void> {
+        const areas = this.areaFactory.getTestingAreas();
+        for(const area of areas){
+            await this.create(
+                this.areaFactory.createDtoInstance({ name: area.name })
+            )
+        }
+    }
 }

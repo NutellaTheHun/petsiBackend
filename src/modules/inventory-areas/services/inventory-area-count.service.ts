@@ -10,6 +10,15 @@ import { InventoryAreaCountFactory } from "../factories/inventory-area-count.fac
 import { InventoryAreaItemCountService } from "./inventory-area-item-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
 
+/**
+ * Intended flow of facilitating an inventory count:
+ * - select pre-existing inventory area
+ * - Create InventoryAreaCount with an InvArea, and empty list of inventoryItemCount
+ * - employee performs inventory count, creating list of inventoryItemCount
+ * - employee saves/completes/finished inventory count, updateDTO is sent with areaId, countId, and inventoryItemCountDTOs
+ * - inventoryItemCountDTOs are created (via separate call to inventoryItemCountController)
+ * - with returned list of inventoryItemCountIDs, update areaCount entity with itemIDs
+ */
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     constructor(
         @InjectRepository(InventoryAreaCount)
@@ -24,33 +33,33 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         private readonly areaItemService: InventoryAreaItemCountService,
     ){ super(areaCountRepo); }
 
+    /**
+     * Creates an InventoryCount, required prexisting AreaId present, is created before inventoryItemCounts are
+     * created/assigned. InventoryItemCounts are assigned in a following update call.
+     */
     async create(createDto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount | null> {
+        if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
+        if(createDto.inventoryItemCountIds){ throw new Error('InventoryCountIds present in create call, must only be present in update') }
+
+        // how does inventoryArea get updated with a new count?
+        const area = await this.areaService.findOne(createDto.inventoryAreaId);
+        if(!area){ throw new Error('inventory area not found'); }
 
         const count = this.areaCountFactory.createEntityInstance({
-            inventoryArea: await this.areaService.findOne(createDto.inventoryAreaId),
-            countDate: new Date(),
+            inventoryArea: area,
         })
-        await this.areaCountRepo.save(count);
 
-        if(createDto.itemCountCreateDto){
-            const countedItems: InventoryAreaItemCount[] = [];
-            for(const dto of createDto.itemCountCreateDto){
-                const countedItem = await this.areaItemService.create(dto);
-                if(!countedItem){ throw new Error('creation of inventoryAreaItemCount failed'); }
+        //Updates area's inventory Count with new count.
+        area.inventoryCounts.push(count);
+        await this.areaService.update(area.id, area);
 
-                countedItems.push(countedItem);
-            }
-
-            count.items = countedItems;
-        }
+        /*await this.areaCountRepo.save(count);
         
-        /*
-        const count = this.areaCountFactory.createEntityInstance({
-            inventoryArea: await this.areaService.findOne(createDto.inventoryAreaId),
-            countDate: new Date(),
-            items: countedItems,
-        })
-        */
+        if(createDto.inventoryItemCountIds){
+            const countedItems = await this.areaItemService.findEntitiesById(createDto.inventoryItemCountIds);
+            count.items = countedItems;
+        }*/
+        
         return await this.areaCountRepo.save(count);
     }
 
@@ -67,14 +76,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
             toUpdate.inventoryArea = newArea;
         }
 
-        if(updateDto.itemCountCreateDto){
-            const countedItems: InventoryAreaItemCount[] = [];
-            for(const dto of updateDto.itemCountCreateDto){
-                const countedItem = await this.areaItemService.create(dto);
-                if(countedItem){ countedItems.push(countedItem); }
-                else { throw new Error('error occured creating inventoryAreaItemCount')}
-            }
-
+        if(updateDto.inventoryItemCountIds){
+            const countedItems = await this.areaItemService.findEntitiesById(updateDto.inventoryItemCountIds);
             toUpdate.items = countedItems;
         }
 
@@ -92,6 +95,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     }
 
     async findByDate(date: Date, relations?: string[]): Promise<InventoryAreaCount[]> {
-        return await this.areaCountRepo.find({ where: { countDate: date }, relations});
+        return await this.areaCountRepo.find({ where: { countDate: date }, relations });
     }
 }
