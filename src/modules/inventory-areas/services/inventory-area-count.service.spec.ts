@@ -57,8 +57,6 @@ describe('Inventory area item count service', () => {
     it('should THROW ERROR, to create area count (no areaID)', async () => {
         const dto = areaCountFactory.createDtoInstance({ });
 
-        //const result = await areaCountService.create(dto);
-        //await expect(service.signIn("loginUser", "wrongPassword")).rejects.toThrow(UnauthorizedException);
         await expect(areaCountService.create(dto)).rejects.toThrow(Error);
     });
 
@@ -124,7 +122,7 @@ describe('Inventory area item count service', () => {
     });
 
     it('should find area counts by area', async () => {
-        const results = await areaCountService.findByArea(AREA_B);
+        const results = await areaCountService.findByAreaName(AREA_B);
         expect(results).not.toBeNull();
         expect(results.length).toEqual(1);
     });
@@ -140,7 +138,7 @@ describe('Inventory area item count service', () => {
     it('should get all area counts', async () => {
         const results = await areaCountService.findAll()
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(1); // area_A, area_b, area_c, area_d
+        expect(results.length).toEqual(1);
     });
 
     it('should get area counts by id', async () => {

@@ -7,7 +7,7 @@ import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { cleanupTestingDatabaseLayerZERO, setupTestingDatabaseLayerZERO } from '../utils/setupTestingDatabase';
+import { cleanupInventoryItemTestingDatabaseLayerZERO, setupInventoryItemTestingDatabaseLayerZERO } from '../utils/setupTestingDatabase';
 import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
 import { LITER } from '../../unit-of-measure/utils/constants';
 import { DRY_A, DRY_B, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
@@ -36,7 +36,7 @@ describe('Inventory Item Service', () => {
     vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
 
-    await setupTestingDatabaseLayerZERO(module);
+    await setupInventoryItemTestingDatabaseLayerZERO(module);
 
     measureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
     await measureService.initializeTestingDatabase();
@@ -51,7 +51,7 @@ describe('Inventory Item Service', () => {
   });
 
   afterAll(async () => {
-    await cleanupTestingDatabaseLayerZERO(module);
+    await cleanupInventoryItemTestingDatabaseLayerZERO(module);
 
     const measureQuery = measureService.getQueryBuilder();
     await measureQuery.delete().execute();

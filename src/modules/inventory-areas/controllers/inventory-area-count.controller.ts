@@ -6,6 +6,6 @@ import { InventoryAreaCountService } from "../services/inventory-area-count.serv
 @Controller('inventory-area-count')
 export class InventoryAreaCountController extends ControllerBase<InventoryAreaCount> {
     constructor(
-        private readonly areaCountService: InventoryAreaCountService
+        private readonly areaCountService: InventoryAreaCountService,
     ) { super(areaCountService); }
 }

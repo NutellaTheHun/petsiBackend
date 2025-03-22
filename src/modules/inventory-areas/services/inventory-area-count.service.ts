@@ -8,6 +8,7 @@ import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
 import { InventoryAreaItemCountService } from "./inventory-area-item-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
+import { AREA_A, AREA_B } from "../utils/constants";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -71,8 +72,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         return await this.areaCountRepo.save(toUpdate);
     }
 
-    async findByArea(areaName: string, relations?: string[]): Promise<InventoryAreaCount[]> {
-        const area = await this.areaService.findOneByName(areaName);
+    async findByAreaName(name: string, relations?: string[]): Promise<InventoryAreaCount[]> {
+        const area = await this.areaService.findOneByName(name);
         if(!area){ throw new Error('inventory area not found'); }
         
         return await this.areaCountRepo.find({ 
@@ -97,5 +98,24 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
             },
             relations,
         });
+    }
+
+    async initializeTestingDatabase(): Promise<InventoryAreaCount[]> {
+        const results: InventoryAreaCount[] = []
+        const inventoryArea_A = await this.areaService.findOneByName(AREA_A);
+        const areaCountDTO_A = this.areaCountFactory.createDtoInstance({ inventoryAreaId: inventoryArea_A?.id });
+
+        const result_A = await this.create(areaCountDTO_A);
+        if(!result_A){ throw new Error('failed to create test inventory count'); }
+        results.push(result_A);
+
+        const inventoryArea_B = await this.areaService.findOneByName(AREA_B);
+        const areaCountDTO_B = this.areaCountFactory.createDtoInstance({ inventoryAreaId: inventoryArea_B?.id });
+
+        const result_B = await this.create(areaCountDTO_B);
+        if(!result_B){ throw new Error('failed to create test inventory count'); }
+        results.push(result_B);
+        
+        return results;
     }
 }

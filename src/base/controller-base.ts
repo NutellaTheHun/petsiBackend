@@ -8,8 +8,8 @@ export class ControllerBase<T extends ObjectLiteral> {
   ) {}
 
   @Post()
-  async create(@Body() createRoleDto: any): Promise<T | null> {
-    return await this.entityService.create(createRoleDto);
+  async create(@Body() createDto: any): Promise<T | null> {
+    return await this.entityService.create(createDto);
   }
 
   @Get()
@@ -23,8 +23,8 @@ export class ControllerBase<T extends ObjectLiteral> {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: any): Promise<T | null> {
-    return await this.entityService.update(id, updateRoleDto);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any): Promise<T | null> {
+    return await this.entityService.update(id, updateDto);
   }
 
   @Delete(':id')

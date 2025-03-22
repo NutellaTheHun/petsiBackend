@@ -5,10 +5,10 @@ import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
 import { FOOD_A, FOOD_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
-import { cleanupTestingDatabaseLayerONE, setupTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
+import { setupInventoryItemTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
 
 
 describe('Inventory Item Size Service', () => {
@@ -35,7 +35,7 @@ describe('Inventory Item Size Service', () => {
     itemService = module.get<InventoryItemService>(InventoryItemService);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
 
-    await setupTestingDatabaseLayerONE(module);
+    await setupInventoryItemTestingDatabaseLayerONE(module);
     
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
     sizeFactory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
@@ -149,3 +149,7 @@ describe('Inventory Item Size Service', () => {
     expect(results.length).toEqual(testIds.length);
   });
 });
+
+function cleanupTestingDatabaseLayerONE(module: TestingModule) {
+  throw new Error('Function not implemented.');
+}

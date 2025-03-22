@@ -18,8 +18,12 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 /**
  * Calls initializeTestingDatabase() on:
  * InventoryItemCategory, InventoryItemVendor, InventoryItemPackage, UnitOfMeasureModule.UnitCategory
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
  */
-export async function setupTestingDatabaseLayerZERO(module: TestingModule): Promise<void>{
+export async function setupInventoryItemTestingDatabaseLayerZERO(module: TestingModule): Promise<void>{
     const itemCategoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
     await itemCategoryService.initializeTestingDatabase();
 
@@ -34,29 +38,16 @@ export async function setupTestingDatabaseLayerZERO(module: TestingModule): Prom
 }
 
 /**
- * Clears all rows from tables for entites:
- * InventoryItemCategory, InventoryItemVendor, InventoryItemPackage, UnitOfMeasureModule.UnitCategory
- */
-export async function cleanupTestingDatabaseLayerZERO(module: TestingModule): Promise<void> {
-    const itemCategoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    await itemCategoryService.getQueryBuilder().delete().execute();
-
-    const itemVendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    await itemVendorService.getQueryBuilder().delete().execute();
-
-    const itemPackageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    await itemPackageService.getQueryBuilder().delete().execute();
-
-    const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    await measureCategoryService.getQueryBuilder().delete().execute();
-}
-
-/**
  * Calls initializeTestingDatabase() on:
  * UnitOfMeasureModule.UnitOfMeasure, InventoryItem(doesn't depend on InventoryItemSize)
+ * , with required dependencies beforehand
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
  */
-export async function setupTestingDatabaseLayerONE(module: TestingModule): Promise<void>{
-    await setupTestingDatabaseLayerZERO(module);
+export async function setupInventoryItemTestingDatabaseLayerONE(module: TestingModule): Promise<void>{
+    await setupInventoryItemTestingDatabaseLayerZERO(module);
 
     const unitMeasureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
     await unitMeasureService.initializeTestingDatabase();
@@ -66,48 +57,70 @@ export async function setupTestingDatabaseLayerONE(module: TestingModule): Promi
 }
 
 /**
- * Clears all rows from tables for entites:
- * UnitOfMeasureModule.UnitOfMeasure, InventoryItem
- */
-export async function cleanupTestingDatabaseLayerONE(module: TestingModule): Promise<void> {
-    await cleanupTestingDatabaseLayerZERO(module);
-
-    const unitMeasureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    await unitMeasureService.getQueryBuilder().delete().execute();
-
-    const itemService = module.get<InventoryItemService>(InventoryItemService);
-    await itemService.getQueryBuilder().delete().execute();
-}
-
-/**
  * Calls initializeTestingDatabase() on:
- * InventoryItemSize, InventoryItem.sizes[]
+ * InventoryItemSize, InventoryItem.sizes[], with required dependencies beforehand
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes
  */
-export async function setupTestingDatabaseLayerTWO(module: TestingModule): Promise<void>{
-    await setupTestingDatabaseLayerONE(module);
+export async function setupInventoryItemTestingDatabaseLayerTWO(module: TestingModule): Promise<void>{
+    await setupInventoryItemTestingDatabaseLayerONE(module);
 
     const sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
     await sizeService.initializeTestingDatabase();
+}
 
-    //setup item.sizes[]
+/**
+ * Clears all rows from tables for entites:
+ * InventoryItemCategory, InventoryItemVendor, InventoryItemPackage, UnitOfMeasureModule.UnitCategory
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
+ */
+export async function cleanupInventoryItemTestingDatabaseLayerZERO(module: TestingModule): Promise<void> {
+    await module.get<InventoryItemVendorService>(InventoryItemVendorService)
+        .getQueryBuilder().delete().execute();
 
-    // UnitCategory.baseUnits (if needed)
-    // const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService); 
-    // await measureCategoryService.initializeTestingCategoryBaseUnits()
+    await module.get<InventoryItemCategoryService>(InventoryItemCategoryService)
+        .getQueryBuilder().delete().execute();
+
+    await module.get<InventoryItemPackageService>(InventoryItemPackageService)
+        .getQueryBuilder().delete().execute();
+
+    await module.get<UnitCategoryService>(UnitCategoryService)
+        .getQueryBuilder().delete().execute();
+}
+
+/**
+ * Clears all rows from tables for entites:
+ * UnitOfMeasureModule.UnitOfMeasure, InventoryItem
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
+ */
+export async function cleanupInventoryItemTestingDatabaseLayerONE(module: TestingModule): Promise<void> {
+    await cleanupInventoryItemTestingDatabaseLayerZERO(module);
+
+    await module.get<UnitOfMeasureService>(UnitOfMeasureService)
+        .getQueryBuilder().delete().execute();
+    await module.get<InventoryItemService>(InventoryItemService)
+        .getQueryBuilder().delete().execute();
 }
 
 /**
  * Clears all rows from tables for entites:
  * InventoryItemSize, InventoryItem
+ * - Phases:
+ * - 0: Categories, Vendors, Packages, UnitOfMeasureModule.UnitCategory (0 Dependencies to insert)
+ * - 1: UnitOfMeasurement, InventoryItem(initializes with no sizes)
+ * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
  */
-export async function cleanupTestingDatabaseLayerTWO(module: TestingModule): Promise<void> {
-    await cleanupTestingDatabaseLayerONE(module);
+export async function cleanupInventoryItemTestingDatabaseLayerTWO(module: TestingModule): Promise<void> {
+    await cleanupInventoryItemTestingDatabaseLayerONE(module);
 
-    const sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-    await sizeService.getQueryBuilder().delete().execute();
-
-    // item.sizes[]
-
-    // const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService); 
-    // await measureCategoryService.getQueryBuilder().delete().execute();
+    await module.get<InventoryItemSizeService>(InventoryItemSizeService)
+        .getQueryBuilder().delete().execute();
 }

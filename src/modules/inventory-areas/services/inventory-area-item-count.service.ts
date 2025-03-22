@@ -1,8 +1,7 @@
-import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
@@ -32,79 +31,68 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
     ){ super(itemCountRepo); }
 
     /**
-     * - This createDTO has an optional ItemSizeID or a createItemSizeDto, handles if the counted item is
-     *   using a pre-existing itemSize, or create a new one at function call.
-     * 
-     * - MEANING a createDTO should contain either a ItemSizeCreateDTO and ItemSizeId of 0, 
-     *   OR a null/undefined ItemSizeCreateDTO and a non-Zero itemSize id.
-     * 
-     * - is called during the AreaCountService.Create() method, (when an areaCount is being created, the areaCount
-     *   create DTO holds a list of child inventoryAreaItemCountDTOs to be created during the AreaCount create call)
-     * 
-     * - MEANING the parent AreaCount MUST already be inserted into the database.
+     * - InventoryItemSize property can be either created or a pre-existing entity on this create call.
+     * - If InventoryItemSize is new, a new itemSize is created at the controller level, and its ID is assigned to
+     *   the DTO and passed to this method.
+     * - Requires the parent inventoryAreaCount and InventoryArea entities to already exist
      */
     async create(dto: CreateInventoryAreaItemCountDto): Promise<InventoryAreaItemCount | null> {
-        if(dto.itemSizeId !== 0 && dto.itemSizeCreateDto){ 
-            throw new Error('create item count DTO has a populated itemSizeId and createitemSizeDto');
-        }
-        if((!dto.itemSizeId || dto.itemSizeId === 0) && !dto.itemSizeCreateDto){
-            throw new Error('create item doesnt has any itemSize information');
-        }
-        /**
-         * An item size can either be a prexisting entity, or created during the inventory count
-         * So if it already exists, the DTO will have the itemSize id, otherwise passes 0,
-         * signaling that a new item size is being created for this item count.
-         */
-        let itemSize: InventoryItemSize;
-        if(dto.itemSizeId !== 0){
-            const existingItemSize = await this.itemSizeService.findOne(dto.itemSizeId);
-            if(!existingItemSize){ throw new Error("item size not found"); }
-            itemSize = existingItemSize;
-        }
-        else { 
-            const newItemSize = await this.itemSizeService.create(dto.itemSizeCreateDto);
-            if(!newItemSize){ throw new Error('new item size failed tocreate'); }
-            itemSize = newItemSize;
-        }
+
+        const item = await this.itemService.findOne(dto.inventoryItemId);
+        if(!item){ throw new Error('inventoryItem is null'); }
+
+        const size = await this.itemSizeService.findOne(dto.itemSizeId);
+        if(!size){ throw new Error('InventoryItemSize is null'); }
+
+        const count = await this.areaCountService.findOne(dto.areaCountId);
+        if(!count){ throw new Error('inventoryCount is null'); }
+
+        const area = await this.inventoryAreaService.findOne(dto.inventoryAreaId);
+        if(!area){ throw new Error('inventoryArea is null'); }
 
         const countedItem = this.itemCountFactory.createEntityInstance({
-            inventoryArea: await this.inventoryAreaService.findOne(dto.inventoryAreaId),
-            areaCount: await this.areaCountService.findOne(dto.areaCountId),
-            item: await this.itemService.findOne(dto.inventoryItemId),
+            inventoryArea: area,
+            areaCount: count,
+            item: item,
             unitAmount: dto.unitAmount || 1,
             measureAmount: dto.measureAmount,
-            size: itemSize
-        })
+            size: size
+        });
+
         return this.itemCountRepo.save(countedItem);
     }
 
     /**
      * Uses Repository.Save(), NOT Update()
-     * updateDto cannot have both a itemSizeId to update, and a createItemSizeDto to create.
+     * - If the inventoryItem changes, the itemSize must also change.
+     * Updating an itemCount could contain a new InventoryItemSize entity, if so, a new size is created at controller level and its
+     * Id is assigned to this DTO before being passed to this method.
      */
     async update(id: number, dto: UpdateInventoryAreaItemCountDto): Promise< InventoryAreaItemCount | null> {
-        if(dto.inventoryItemId && dto.itemSizeCreateDto){
-            throw new Error('updateDto cannot have both an ItemSizeId to update, and a createItemSizeDto to create');
+        if(dto.inventoryItemId && !dto.itemSizeId){ 
+            throw new Error('updated itemCount attempt to change item without new item size'); 
         }
+
         const toUpdate = await this.findOne(id);
-        if(!toUpdate){ throw new Error('counted item to update not found'); }
-        
+        if(!toUpdate){ 
+            return null;
+        }
+
         if(dto.inventoryAreaId){
             const newArea = await this.inventoryAreaService.findOne(dto.inventoryAreaId);
             if(!newArea){ throw new Error('new area for updated counted item not found'); }
+
             toUpdate.inventoryArea = newArea;
         }
         
         if(dto.areaCountId){
             const newAreaCount = await this.areaCountService.findOne(dto.areaCountId);
             if(!newAreaCount){ throw new Error('new area for updated counted item not found'); }
+
             toUpdate.areaCount = newAreaCount;
         }
         
-        // if the inventoryItem is changing, the itemSize must change as well
-        if(dto.inventoryItemId){
-            if(!dto.itemSizeId && !dto.itemSizeCreateDto){ throw new Error('updated itemCount attempt to change item without new item size'); }
-            
+        if(dto.inventoryItemId){   
             const newItem = await this.itemService.findOne(dto.inventoryItemId);
             if(!newItem){ throw new Error('new item for itemCount update not found'); }
 
@@ -114,11 +102,6 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
             const newSize =  await this.itemSizeService.findOne(dto.itemSizeId);
             if(!newSize){ throw new Error("item size not found"); }
             toUpdate.size = newSize;
-        }
-        if(dto.itemSizeCreateDto){
-            const newItemSize = await this.itemSizeService.create(dto.itemSizeCreateDto);
-            if(!newItemSize){ throw new Error('new item size failed tocreate'); }
-            toUpdate.size = newItemSize;
         }
         
         if(dto.unitAmount){

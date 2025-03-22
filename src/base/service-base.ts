@@ -22,20 +22,12 @@ export class ServiceBase<T extends ObjectLiteral> {
     );
   }
 
-  /*
-  async findOneByName(name: string, relations?: string[]): Promise<T | null> {
-    return await this.entityRepo.findOne({ 
-        where: { name: name } as unknown as FindOptionsWhere<T>, 
-        relations: relations  });
-  }*/
-
   async findEntitiesById( ids: number[], relations?: string[]): Promise<T[]> {
     return await this.entityRepo.find({ 
         where: { id: In(ids) } as unknown as FindOptionsWhere<T>, 
         relations: relations });
   }
 
-  
   async update(id: number, updateTDto: any): Promise<any | null> {
     // gets overridden by concrete implementations
   }

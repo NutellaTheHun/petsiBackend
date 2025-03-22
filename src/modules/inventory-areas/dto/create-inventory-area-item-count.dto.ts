@@ -28,11 +28,25 @@ export class CreateInventoryAreaItemCountDto {
     @IsNotEmpty()
     readonly measureAmount: number;
 
+    /**
+     * -When creating a countedItem (during an inventory count), 
+     * an item could assign a pre-existing InventoryItemSize or create a new one.
+     * - If the itemSize exists, the DTO that the controller recieves with have a populated itemSizeId property, and an empty itemSizeCreateDto
+     * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
+     *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
+     */
     @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly itemSizeId: number;
 
+    /**
+     * -When creating a countedItem (during an inventory count), 
+     * an item could assign a pre-existing InventoryItemSize or create a new one.
+     * - If the itemSize exists, the DTO that the controller recieves with have a populated itemSizeId property, and an empty itemSizeCreateDto
+     * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
+     *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
+     */
     @IsOptional()
     readonly itemSizeCreateDto: CreateInventoryItemSizeDto;
 }

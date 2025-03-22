@@ -32,7 +32,8 @@ export class InventoryAreaItemCount {
      * - If the inventory item is deleted from the catalog, it's references in all inventory counts will be removed.
      * - Must reference a pre-existing inventory item. (No creation while performing an inventory count)
      */
-    @OneToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
+    // 1-1
+    @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
     item: InventoryItem;
 
     /**
@@ -59,6 +60,7 @@ export class InventoryAreaItemCount {
      * - If an inventory item size is deleted, all referencing items will also be removed. 
      * (inventory item sizes are a set of sizes per item, meaning only all counts referencing that item/itemsize combination will be removed)
      */
-    @OneToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+    //1-1
+    @ManyToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
     size: InventoryItemSize;
 }
