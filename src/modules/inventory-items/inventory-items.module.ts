@@ -48,14 +48,23 @@ import { InventoryItemVendorController } from './controllers/inventory-item-vend
     InventoryItemPackageService,
     InventoryItemSizeService,
     InventoryItemVendorService,
+
     InventoryItemFactory,
     InventoryItemCategoryFactory,
     InventoryItemPackageFactory,
     InventoryItemSizeFactory,
     InventoryItemVendorFactory,
+
+    InventoryItemController, 
+    InventoryItemCategoryController, 
+    InventoryItemPackageController, 
+    InventoryItemSizeController,
+    InventoryItemVendorController,
   ],
 
   exports: [
+    InventoryItemSizeController,
+
     InventoryItemService,
     InventoryItemCategoryService,
     InventoryItemPackageService,

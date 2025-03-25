@@ -32,6 +32,7 @@ import { InventoryAreaItemCountFactory } from './factories/inventory-area-item-c
     InventoryAreaService,
     InventoryAreaCountService,
     InventoryAreaItemCountService,
+
     InventoryAreaFactory,
     InventoryAreaCountFactory,
     InventoryAreaItemCountFactory,
@@ -39,7 +40,7 @@ import { InventoryAreaItemCountFactory } from './factories/inventory-area-item-c
   exports: [
     InventoryAreaService,
     InventoryAreaCountService,
-    InventoryAreaItemCountService
+    InventoryAreaItemCountService,
   ]
 })
 export class InventoryAreasModule {}

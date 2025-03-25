@@ -1,5 +1,4 @@
 import { IsArray, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
-import { CreateInventoryAreaItemCountDto } from "./create-inventory-area-item-count.dto";
 
 export class CreateInventoryAreaCountDto{
     @IsNumber()

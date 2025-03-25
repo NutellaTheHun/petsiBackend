@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, forwardRef, Inject, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
 import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
 import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
@@ -9,6 +9,7 @@ import { InventoryItemSizeController } from "../../inventory-items/controllers/i
 export class InventoryAreaItemCountController extends ControllerBase<InventoryAreaItemCount> {
     constructor(
         private readonly itemCountService: InventoryAreaItemCountService,
+
         private readonly itemSizeController: InventoryItemSizeController,
     ){ super(itemCountService); }
 

@@ -272,14 +272,14 @@ describe('Inventory area item count service', () => {
     });
 
     it('should find by area name', async () => {
-        const results = await itemCountService.findByArea(AREA_B);
+        const results = await itemCountService.findByAreaName(AREA_B);
 
         expect(results).not.toBeNull();
         expect(results.length).toEqual(3);
     });
 
     it('should find by item name', async () => {
-        const results = await itemCountService.findByItem(FOOD_B, ["item"]);
+        const results = await itemCountService.findByItemName(FOOD_B, ["item"]);
 
         expect(results).not.toBeNull();
         expect(results.length).toEqual(1);
