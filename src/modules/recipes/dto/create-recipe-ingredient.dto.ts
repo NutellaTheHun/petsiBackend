@@ -27,3 +27,9 @@ export class CreateRecipeIngredientDto {
     @IsPositive()
     readonly unitOfMeasureId: number;
 }
+
+export function CreateDefaultRecipeIngredientDtoValues(){
+    return [
+
+    ];
+}

@@ -15,7 +15,7 @@ export class Recipe{
      * - If the MenuItem is deleted, the recipe is also deleted "onDelete: CASCADE" 
      */
     @OneToOne(() => MenuItem, {nullable: true, onDelete: 'CASCADE'})
-    menuItem?: MenuItem;
+    menuItem?: MenuItem | null;
 
     /*
     * A recipe with isIngredient set to true doesn't directly make a MenuItem,
@@ -26,7 +26,7 @@ export class Recipe{
     isIngredient: boolean;
 
     @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: false, cascade: true })
-    ingredients: RecipeIngredient[] = [];
+    ingredients: RecipeIngredient[];
 
     @Column({ nullable: false })
     batchResultQuantity: number;
@@ -53,6 +53,9 @@ export class Recipe{
     @ManyToOne(() => RecipeCategory, (category) => category.recipes, { nullable: true, onDelete: 'SET NULL'})
     category?: RecipeCategory;
 
+    /**
+     * Can only be a sub-category from the referenced category's property RecipeCategory.subCategories[]
+     */
     @ManyToOne(() => RecipeSubCategory, (subCategory) => subCategory.recipes, { nullable: true, onDelete: 'SET NULL' })
     subCategory?: RecipeSubCategory;
 }

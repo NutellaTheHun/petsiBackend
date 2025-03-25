@@ -55,3 +55,9 @@ export class CreateRecipeDto {
     @IsPositive()
     readonly subCategoryId?: number;
 }
+
+export function CreateDefaultRecipeDtoValues(){
+    return [
+
+    ];
+}

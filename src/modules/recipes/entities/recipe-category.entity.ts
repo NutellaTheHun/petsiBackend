@@ -14,5 +14,5 @@ export class RecipeCategory {
     subCategories: RecipeSubCategory[] = [];
 
     @OneToMany(() => Recipe, (recipe) => recipe.category, { nullable: false })
-    recipes: Recipe[] = [];
+    recipes: Recipe[];
 }
