@@ -7,4 +7,9 @@ export class RecipeIngredientFactory extends EntityFactory<RecipeIngredient, Cre
     constructor(){
         super(RecipeIngredient, CreateRecipeIngredientDto, UpdateRecipeIngredientDto, CreateDefaultRecipeIngredientDtoValues())
     }
+
+    // inventoryItem?: InventoryItem | null;
+    // subRecipe?: Recipe | null;
+    // quantity: number;
+    // unit: UnitOfMeasure;
 }

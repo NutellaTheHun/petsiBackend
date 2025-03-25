@@ -6,8 +6,7 @@ describe('recipe sub category controller', () => {
   let controller: RecipeSubCategoryController;
 
   beforeAll(async () => {
-      const module: TestingModule = await getRecipeTestingModule();
-  }).compile();
+    const module: TestingModule = await getRecipeTestingModule();
 
     controller = module.get<RecipeSubCategoryController>(RecipeSubCategoryController);
   });

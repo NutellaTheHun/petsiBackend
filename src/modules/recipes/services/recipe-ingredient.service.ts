@@ -3,9 +3,11 @@ import { ServiceBase } from "../../../base/service-base";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { Repository } from "typeorm";
 import { RecipeIngredientFactory } from "../factories/recipe-ingredient.factory";
-import { NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { RecipeService } from "./recipe.service";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 
 export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
     constructor(
@@ -13,6 +15,11 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         private readonly ingredientRepo: Repository<RecipeIngredient>,
 
         private readonly ingredientFactory: RecipeIngredientFactory,
+
+        @Inject(forwardRef(() => RecipeService))
+        private readonly recipeService: RecipeService,
+
+        private readonly inventoryItemService: InventoryItemService,
     ){ super(ingredientRepo); }
 
     async create(createDto: CreateRecipeIngredientDto): Promise<RecipeIngredient | null> {

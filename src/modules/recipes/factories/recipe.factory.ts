@@ -7,4 +7,16 @@ export class RecipeFactory extends EntityFactory<Recipe, CreateRecipeDto, Update
     constructor(){
         super(Recipe, CreateRecipeDto, UpdateRecipeDto, CreateDefaultRecipeDtoValues());
     }
-}
+
+    // menuItem?: MenuItem | null;
+    // isIngredient: boolean;
+    // ingredients: RecipeIngredient[];
+    // batchResultQuantity: number;
+    // batchResultUnitOfMeasure: UnitOfMeasure;
+    // servingSizeQuantity: number;
+    // servingSizeUnitOfMeasure: UnitOfMeasure;
+    // salesPrice: number = 0;
+    // cost: number = 0;
+    // category?: RecipeCategory;
+    // subCategory?: RecipeSubCategory;
+}   
