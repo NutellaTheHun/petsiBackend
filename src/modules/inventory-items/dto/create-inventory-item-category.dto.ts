@@ -13,6 +13,6 @@ export class CreateInventoryItemCategoryDto {
 
 export function CreateDefaultInventoryItemCategoryDtoValues(): Partial<CreateInventoryItemCategoryDto> {
     return {
-        
+        inventoryItemIds: []
     };
 }

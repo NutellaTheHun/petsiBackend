@@ -19,7 +19,7 @@ describe('AuthService', () => {
   });
 
   afterAll(async() => {
-    const userQueryBuilder = userService.createUserQueryBuilder();
+    const userQueryBuilder = userService.getQueryBuilder();
     await userQueryBuilder.delete().execute();
   })
   

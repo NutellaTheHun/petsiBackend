@@ -14,5 +14,6 @@ export const TypeORMPostgresTestingModule = (entities: any[]) =>
       database: configService.get<string>('DB_TEST_DATABASE'),
       autoLoadEntities: true,
       synchronize: true,
+      //logging: ['query', 'error'],
     }),
   });

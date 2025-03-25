@@ -7,10 +7,18 @@ export class CreateUnitCategoryDto{
 
     @IsArray()
     @IsNumber({}, { each: true })
-    unitOfMeasureIds: number[] = [];
+    @IsPositive({ each: true })
+    readonly unitOfMeasureIds: number[] = [];
 
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    baseUnitId?: number; 
+    readonly baseUnitId?: number | null; 
+}
+
+export function CreateDefaultUnitCategoryDtoValues(): Partial<CreateUnitCategoryDto> {
+    return {
+        unitOfMeasureIds: [],
+        baseUnitId: null,
+    };
 }

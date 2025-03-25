@@ -22,7 +22,7 @@ describe('RolesService', () => {
   });
   
   afterAll(async() => {
-    const roleQueryBuilder = rolesService.createRoleQueryBuilder();
+    const roleQueryBuilder = rolesService.getQueryBuilder();
     await roleQueryBuilder.delete().execute();
   })
 
@@ -109,7 +109,8 @@ describe('RolesService', () => {
     if(list.length == 0){
       throw new Error('list of roles to retrieve is 0, cannot perform getRoles test.');
     }
-    const result = await rolesService.findRolesById(list.map(item => item.id))
+    //const result = await rolesService.findRolesById(list.map(item => item.id))
+    const result = await rolesService.findEntitiesById(list.map(item => item.id))
     expect(result.length).toEqual(list.length);
   });
 });

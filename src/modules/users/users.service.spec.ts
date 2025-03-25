@@ -41,10 +41,10 @@ describe('UsersService', () => {
   });
     
   afterAll(async() => {
-      const roleQueryBuilder = rolesService.createRoleQueryBuilder();
+      const roleQueryBuilder = rolesService.getQueryBuilder();
       await roleQueryBuilder.delete().execute();
 
-      const userQueryBuilder = usersService.createUserQueryBuilder();
+      const userQueryBuilder = usersService.getQueryBuilder();
       await userQueryBuilder.delete().execute();
   })
 
@@ -130,7 +130,7 @@ describe('UsersService', () => {
     if(list.length == 0){
       throw new Error('list of users to retrieve is 0, cannot perform getRoles test.');
     }
-    const result = await usersService.findUsersById(list.map(item => item.id))
+    const result = await usersService.findEntitiesById(list.map(item => item.id))
     expect(result.length).toEqual(list.length);
   });
 });

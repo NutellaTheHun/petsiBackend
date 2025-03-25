@@ -10,3 +10,9 @@ export class CreateInventoryAreaDto {
     @IsPositive()
     readonly inventoryCountIds: number[] = [];
 }
+
+export function CreateDefaultInventoryAreaDtoValues(){
+    return [
+
+    ];
+}

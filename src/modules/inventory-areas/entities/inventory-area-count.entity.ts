@@ -1,4 +1,4 @@
-import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryArea } from "./inventory-area.entity";
 import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
 
@@ -8,7 +8,7 @@ import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
  */
 @Entity()
 export class InventoryAreaCount{
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     /**
@@ -26,10 +26,10 @@ export class InventoryAreaCount{
 
     /**
      * The record of items and their quantites resulting from the inventory count.
-     * - Cannot be null, always initialized to empty array
-     * - countedItems will be populated when an Inventory Count is inserted.
+     * - An inventory count is created separate and before when the inventoryItems are created.
+     * - countedItems will be populated when an Inventory Count is updated.
      * - handled with cascade: true
      */
-    @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: false})
-    countedItems: InventoryAreaItemCount[];
+    @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: true})
+    items?: InventoryAreaItemCount[] | null;
 }

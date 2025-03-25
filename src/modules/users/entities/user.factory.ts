@@ -11,7 +11,7 @@ export class UserFactory extends EntityFactory<User, CreateUserDto, UpdateUserDt
         super(User, CreateUserDto, UpdateUserDto, CreateUserDtoDefaultValues());
     }
 
-    async defaultUsers() : Promise<User[]> {
+    async getDefaultUsers() : Promise<User[]> {
         const pHash = await hashPassword("test");
         // figure out nice way of getting roles.
         const roles = []

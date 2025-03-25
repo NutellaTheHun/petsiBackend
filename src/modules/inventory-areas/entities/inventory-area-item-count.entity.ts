@@ -1,7 +1,8 @@
 import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { InventoryItem } from "src/modules/inventory-items/entities/inventory-item.entity";
-import { InventoryItemSize } from "src/modules/inventory-items/entities/inventory-item-size.entity";
 import { InventoryAreaCount } from "./inventory-area-count.entity";
+import { InventoryArea } from "./inventory-area.entity";
+import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
+import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
 
 /**
  * A single item within the process of an inventory count,
@@ -12,6 +13,12 @@ import { InventoryAreaCount } from "./inventory-area-count.entity";
 export class InventoryAreaItemCount {
     @PrimaryGeneratedColumn()
     id: number;
+
+    /**
+     * The area the inventory item was counted
+     */
+    @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
+    inventoryArea: InventoryArea;
 
     /**
      * Reference to the inventory count when this item is counted.
@@ -25,11 +32,25 @@ export class InventoryAreaItemCount {
      * - If the inventory item is deleted from the catalog, it's references in all inventory counts will be removed.
      * - Must reference a pre-existing inventory item. (No creation while performing an inventory count)
      */
-    @OneToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
-    inventoryItem: InventoryItem;
+    // 1-1
+    @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
+    item: InventoryItem;
 
+    /**
+     * Represents the amount of units per measuredQuantity and size, for instances of multi pack items.
+     * - example: 6 pack of 28oz can of evaporated milk (the 6 is the unit quantity)
+     * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
+     * - NOT FINAL: Most likely controlled by a isMultiPack bool on the buisness logic side?
+     */
+    @Column({ type: 'int', nullable: true })
+    unitAmount?: number | null;
+
+    /**
+     * Represents the quantity associated with the unit of measure
+     * - Example: 10 lb of flour (10 is the quanity of the measure type)
+     */
     @Column({ nullable: false })
-    itemQuantity: number;
+    measureAmount: number;
     
     /**
      * The size of the item counted. 
@@ -39,6 +60,7 @@ export class InventoryAreaItemCount {
      * - If an inventory item size is deleted, all referencing items will also be removed. 
      * (inventory item sizes are a set of sizes per item, meaning only all counts referencing that item/itemsize combination will be removed)
      */
-    @OneToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
-    itemSize: InventoryItemSize;
+    //1-1
+    @ManyToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
+    size: InventoryItemSize;
 }
