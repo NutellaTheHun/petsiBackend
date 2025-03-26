@@ -1,15 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { ServiceBase } from '../../../base/service-base';
+import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
-import { ServiceBase } from '../../../base/service-base';
-import { InventoryItemService } from './inventory-item.service';
-import { InventoryItemPackageService } from './inventory-item-package.service';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
@@ -17,17 +14,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @InjectRepository(InventoryItemSize)
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
-        @Inject(forwardRef(() => InventoryItemService))
-        private readonly itemService: InventoryItemService,
-
-        private readonly packageService: InventoryItemPackageService,
-        private readonly unitService: UnitOfMeasureService,
-
         @Inject(forwardRef(() => InventoryItemSizeFactory))
         private readonly sizeFactory: InventoryItemSizeFactory,
-
         private readonly sizeBuilder: InventoryItemSizeBuilder,
-
     ){ super(sizeRepo); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {

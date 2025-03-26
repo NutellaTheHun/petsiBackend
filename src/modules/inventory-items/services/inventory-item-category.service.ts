@@ -1,23 +1,18 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
-import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
-import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
-import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
 import { ServiceBase } from '../../../base/service-base';
-import { InventoryItemService } from './inventory-item.service';
 import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
+import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
+import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
 
 @Injectable()
 export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategory> {
     constructor(
         @InjectRepository(InventoryItemCategory)
         private readonly categoryRepo: Repository<InventoryItemCategory>,
-
-        @Inject(forwardRef(() => InventoryItemService))
-        private readonly itemService: InventoryItemService,
-
         private readonly categoryFactory: InventoryItemCategoryFactory,
         private readonly categoryBuilder: InventoryItemCategoryBuilder,
     ){ super(categoryRepo); }
