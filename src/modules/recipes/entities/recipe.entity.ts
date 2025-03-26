@@ -64,11 +64,11 @@ export class Recipe{
     cost: number = 0;
 
     @ManyToOne(() => RecipeCategory, (category) => category.recipes, { nullable: true, onDelete: 'SET NULL'})
-    category?: RecipeCategory;
+    category?: RecipeCategory| null;
 
     /**
      * Can only be a sub-category from the referenced category's property RecipeCategory.subCategories[]
      */
     @ManyToOne(() => RecipeSubCategory, (subCategory) => subCategory.recipes, { nullable: true, onDelete: 'SET NULL' })
-    subCategory?: RecipeSubCategory;
+    subCategory?: RecipeSubCategory | null;
 }

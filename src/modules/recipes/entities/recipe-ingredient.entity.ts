@@ -29,7 +29,7 @@ export class RecipeIngredient{
      * - A subRecipe doesn't represent an item on the menu (menuItem).
      */
     @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
-    subRecipe?: Recipe | null;
+    subRecipeIngredient?: Recipe | null;
     
     /*
     @BeforeInsert()

@@ -13,7 +13,7 @@ export class CreateUnitOfMeasureDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly categoryId: number;
+    readonly categoryId?: number;
 
     @IsString()
     @IsOptional()

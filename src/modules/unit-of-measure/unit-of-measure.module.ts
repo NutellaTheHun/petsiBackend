@@ -8,6 +8,8 @@ import { UnitOfMeasureService } from './services/unit-of-measure.service';
 import { UnitOfMeasure } from './entities/unit-of-measure.entity';
 import { UnitCategory } from './entities/unit-category.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
+import { UnitCategoryBuilder } from './builders/unit-category.builder';
 
 @Module({
   imports: [
@@ -17,8 +19,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [
     UnitOfMeasureService,
     UnitCategoryService, 
+
     UnitOfMeasureFactory, 
     UnitCategoryFactory,
+
+    UnitOfMeasureBuilder,
+    UnitCategoryBuilder,
   ],
 
   controllers: [

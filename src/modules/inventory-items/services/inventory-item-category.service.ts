@@ -7,6 +7,7 @@ import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-cat
 import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
 import { ServiceBase } from '../../../base/service-base';
 import { InventoryItemService } from './inventory-item.service';
+import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
 
 @Injectable()
 export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategory> {
@@ -18,16 +19,14 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
         private readonly itemService: InventoryItemService,
 
         private readonly categoryFactory: InventoryItemCategoryFactory,
+        private readonly categoryBuilder: InventoryItemCategoryBuilder,
     ){ super(categoryRepo); }
 
     async create(createDto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory | null> {
         const exists = await this.findOneByName(createDto.name);
         if(exists){ return null; }
 
-        const category = this.categoryFactory.createEntityInstance({
-            name: createDto.name,
-            items: await this.itemService.findEntitiesById(createDto.inventoryItemIds),
-        })
+        const category = await this.categoryBuilder.buildCreateDto(createDto);
 
         return await this.categoryRepo.save(category);
     }
@@ -36,13 +35,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
         const toUpdate = await this.findOne(id);
         if(!toUpdate) { return null; }
 
-        if(updateDto.name){
-            toUpdate.name = updateDto.name;
-        }
-
-        if(updateDto.inventoryItemIds){
-            toUpdate.items = await this.itemService.findEntitiesById(updateDto.inventoryItemIds);
-        }
+        await this.categoryBuilder.buildUpdateDto(toUpdate, updateDto);
 
         return await this.categoryRepo.save(toUpdate);
     }

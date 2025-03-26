@@ -7,6 +7,7 @@ import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendo
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
 import { InventoryItemService } from './inventory-item.service';
+import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.builder';
 
 @Injectable()
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>{
@@ -18,6 +19,8 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
 
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
+
+        private readonly vendorBuilder: InventoryItemVendorBuilder,
     
     ){ super(vendorRepo)}
 
@@ -25,10 +28,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         const exists = await this.findOneByName(createDto.name);
         if(exists) {return null; }
 
-        const vendor = this.vendorFactory.createEntityInstance({
-            name: createDto.name,
-            items: await this.itemService.findEntitiesById(createDto.inventoryItemIds),
-        })
+        const vendor = await this.vendorBuilder.buildCreateDto(createDto);
 
         return await this.vendorRepo.save(vendor);
     }
@@ -37,13 +37,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         const toUpdate = await this.findOne(id);
         if(!toUpdate) {return null; }
 
-        if(updateDto.name){
-            toUpdate.name = updateDto.name;
-        }
-
-        if(updateDto.inventoryItemIds){
-            toUpdate.items = await this.itemService.findEntitiesById(updateDto.inventoryItemIds);
-        }
+        await this.vendorBuilder.buildUpdateDto(toUpdate, updateDto);
 
         return await this.vendorRepo.save(toUpdate);
     }

@@ -9,6 +9,7 @@ import { ServiceBase } from '../../../base/service-base';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
+import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 
 @Injectable()
 export class InventoryItemService extends ServiceBase<InventoryItem> {
@@ -26,6 +27,8 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     private readonly vendorService: InventoryItemVendorService,
     
     private readonly itemFactory: InventoryItemFactory,
+
+    private readonly itemBuilder: InventoryItemBuilder,
     
   ){ super(itemRepo)}
 
@@ -33,12 +36,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     const exist = await this.findOneByName(createDto.name);
     if(exist){ return null; }
 
-    const item = this.itemFactory.createEntityInstance({
-      name: createDto.name,
-      category: await this.categoryService.findOne(createDto.inventoryItemCategoryId),
-      sizes: await this.sizeService.findEntitiesById(createDto.sizeIds),
-      vendor: await this.vendorService.findOne(createDto.vendorId),
-    });
+    const item = await this.itemBuilder.buildCreateDto(createDto);
 
     return await this.itemRepo.save(item);
   }
@@ -51,31 +49,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ return null; }
 
-    if(updateDto.name){
-      toUpdate.name = updateDto.name;
-    }
-
-    if(updateDto.inventoryItemCategoryId !== null){
-      if(updateDto.inventoryItemCategoryId === 0){
-        toUpdate.category = null;
-      } else{ 
-        toUpdate.category = await this.categoryService.findOne(updateDto.inventoryItemCategoryId as number);
-      }
-    }
-
-    if(updateDto.sizeIds){
-      if(!toUpdate.sizes){ toUpdate.sizes = []; }
-      
-      toUpdate.sizes = await this.sizeService.findEntitiesById(updateDto.sizeIds);
-    }
-
-    if(updateDto.vendorId !== null){
-      if(updateDto.vendorId === 0){
-        toUpdate.vendor = null;
-      } else {
-        toUpdate.vendor = await this.vendorService.findOne(updateDto.vendorId as number);
-      }
-    }
+    await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
 
     return await this.itemRepo.save(toUpdate);
   }

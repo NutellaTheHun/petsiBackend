@@ -8,6 +8,7 @@ import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UnitOfMeasureService } from './unit-of-measure.service';
 import { ServiceBase } from '../../../base/service-base';
 import { GRAM, MILLILITER, UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { UnitCategoryBuilder } from '../builders/unit-category.builder';
 
 @Injectable()
 export class UnitCategoryService extends ServiceBase<UnitCategory> {
@@ -16,25 +17,21 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
       private readonly categoryRepo: Repository<UnitCategory>,
   
       private readonly categoryFactory: UnitCategoryFactory,
+      private readonly categoryBuilder: UnitCategoryBuilder,
 
-      @Inject(forwardRef(() => UnitOfMeasureService))
+      @Inject(forwardRef(() => UnitOfMeasureService)) 
       private readonly unitService: UnitOfMeasureService,
   ){ super(categoryRepo); }
   
   async create(createDto: CreateUnitCategoryDto): Promise<UnitCategory | null> {
     const exists = await this.categoryRepo.findOne({ where: { name: createDto.name }});
-    if(exists){ return null; } 
+    if(exists){ return null; }
+    
+    const category = await this.categoryBuilder.buildCreateDto(createDto);
 
-    const category = this.categoryFactory.createEntityInstance(createDto);
-    if(createDto.unitOfMeasureIds){
-      category.units = await this.unitService.findEntitiesById(createDto.unitOfMeasureIds);
-    }
-    if(createDto.baseUnitId){
-      category.baseUnit = await this.unitService.findOne(createDto.baseUnitId);
-    }
+    await this.categoryRepo.save(category);
 
-    const result = await this.categoryRepo.save(category);
-    return result;
+    return category;
   }
 
   async findOneByName(categoryName: string, relations?: string[]): Promise<UnitCategory | null> {
@@ -50,34 +47,18 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     const category = await this.categoryRepo.findOne({ where: { id }, relations });
     if(!category) { return null; }
 
-    if(updateDto.name){
-      category.name = updateDto.name;
-    }
+    this.categoryBuilder.buildUpdateDto(category, updateDto);
 
-    
-    if (updateDto.unitOfMeasureIds) {
-        category.units = await this.unitService.findEntitiesById(updateDto.unitOfMeasureIds);
-    }
-
-    
-    if (updateDto.baseUnitId) {
-        const baseUnit = await this.unitService.findOne(updateDto.baseUnitId);
-        if(!baseUnit) { throw new Error(`base unit with id:${updateDto.baseUnitId} was not found.`); }
-        category.baseUnit = baseUnit;
-    }
-    
     return await this.categoryRepo.save(category);
   }
 
   async initializeDefaultCategories(): Promise<void> {
     const categories = await this.categoryFactory.getDefaultUnitCategories()
-    await Promise.all(
-      categories.map( category => 
-        this.create(
-          this.categoryFactory.createDtoInstance({ name: category.name })
-        )
+    for(const category of categories){
+      await this.create(
+        this.categoryFactory.createDtoInstance({ name: category.name })
       )
-    );
+    }
   }
 
   async initializeDefaultCategoryBaseUnits(): Promise<void> {

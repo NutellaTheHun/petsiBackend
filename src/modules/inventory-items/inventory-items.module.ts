@@ -21,6 +21,11 @@ import { InventoryItemPackageFactory } from './factories/inventory-item-package.
 import { InventoryItemSizeFactory } from './factories/inventory-item-size.factory';
 import { InventoryItemVendorFactory } from './factories/inventory-item-vendor.factory';
 import { InventoryItemVendorController } from './controllers/inventory-item-vendor.controller';
+import { InventoryItemBuilder } from './builders/inventory-item.builder';
+import { InventoryItemCategoryBuilder } from './builders/inventory-item-category.builder';
+import { InventoryItemPackageBuilder } from './builders/inventory-item-package.builder';
+import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder';
+import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.builder';
 
 @Module({
   imports: [ 
@@ -60,6 +65,12 @@ import { InventoryItemVendorController } from './controllers/inventory-item-vend
     InventoryItemPackageController, 
     InventoryItemSizeController,
     InventoryItemVendorController,
+
+    InventoryItemBuilder,
+    InventoryItemCategoryBuilder,
+    InventoryItemPackageBuilder,
+    InventoryItemSizeBuilder,
+    InventoryItemVendorBuilder,
   ],
 
   exports: [

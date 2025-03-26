@@ -8,7 +8,7 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
-import { setupInventoryItemTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
+import { cleanupInventoryItemTestingDatabaseLayerONE, setupInventoryItemTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
 
 
 describe('Inventory Item Size Service', () => {
@@ -42,7 +42,7 @@ describe('Inventory Item Size Service', () => {
   });
 
   afterAll( async () => {
-    await cleanupTestingDatabaseLayerONE(module);
+    await cleanupInventoryItemTestingDatabaseLayerONE(module);
 
     const sizeQuery = sizeService.getQueryBuilder();
     await sizeQuery.delete().execute();
@@ -149,7 +149,3 @@ describe('Inventory Item Size Service', () => {
     expect(results.length).toEqual(testIds.length);
   });
 });
-
-function cleanupTestingDatabaseLayerONE(module: TestingModule) {
-  throw new Error('Function not implemented.');
-}

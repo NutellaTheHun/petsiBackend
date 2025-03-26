@@ -15,7 +15,7 @@ export class CreateRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly subRecipeId?: number;
+    readonly subRecipeIngredientId?: number;
 
     @IsNumber()
     @IsNotEmpty()

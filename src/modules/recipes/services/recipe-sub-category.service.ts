@@ -1,11 +1,11 @@
+import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ServiceBase } from "../../../base/service-base";
-import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 import { Repository } from "typeorm";
-import { RecipeIngredientFactory } from "../factories/recipe-ingredient.factory";
+import { ServiceBase } from "../../../base/service-base";
 import { CreateRecipeSubCategoryDto } from "../dto/create-recipe-sub-category.dto";
 import { UpdateRecipeSubCategoryDto } from "../dto/update-recipe-sub-category.dto";
-import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
+import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
+import { RecipeIngredientFactory } from "../factories/recipe-ingredient.factory";
 import { RecipeCategoryService } from "./recipe-category.service";
 import { RecipeService } from "./recipe.service";
 
@@ -52,7 +52,6 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
             toUpdate.name = updateDto.name;
         }
 
-        
         if(updateDto.parentCategoryId){
             const parentCategory = await this.categoryService.findOne(updateDto.parentCategoryId);
             if(!parentCategory){ throw new Error("parent category not found"); }
@@ -68,6 +67,15 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         return await this.subCategoryRepo.save(toUpdate);
     }
 
+    async findOneByName(name: string, relations?: string[]): Promise<RecipeSubCategory | null> {
+        return this.subCategoryRepo.findOne({
+            where: {
+                name: name
+            },
+            relations
+        });
+    }
+
     /**
      * Returns a list of a categories sub-categories
      */
@@ -78,6 +86,9 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         return category.subCategories;
     }
 
+    /**
+     * Returns one sub-category given the sub category name and the parentCategory name.
+     */
     async findOneByCategoryNameAndSubCategoryName(
         categoryName: string, 
         subCategoryName: string,  
@@ -88,13 +99,11 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
             throw new Error("category not found"); 
         }
 
-        const subCategory = await this.subCategoryRepo.findOne({
+        return await this.subCategoryRepo.findOne({
             where: { 
                 parentCategory: category, 
                 name: subCategoryName 
             }, 
             relations});
-            
-        return subCategory;
     }
 }
