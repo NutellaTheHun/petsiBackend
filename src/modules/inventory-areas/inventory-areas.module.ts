@@ -13,6 +13,10 @@ import { InventoryAreaItemCountService } from './services/inventory-area-item-co
 import { InventoryAreaFactory } from './factories/inventory-area.factory';
 import { InventoryAreaCountFactory } from './factories/inventory-area-count.factory';
 import { InventoryAreaItemCountFactory } from './factories/inventory-area-item-count.factory';
+import { InventoryAreaBuilder } from './builders/inventory-area.builder';
+import { InventoryAreaCountBuilder } from './builders/inventory-area-count.builder';
+import { InventoryAreaItemCountBuilder } from './builders/inventory-area-item-count.builder';
+import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 
 @Module({
   imports: [
@@ -36,6 +40,12 @@ import { InventoryAreaItemCountFactory } from './factories/inventory-area-item-c
     InventoryAreaFactory,
     InventoryAreaCountFactory,
     InventoryAreaItemCountFactory,
+
+    InventoryAreaBuilder,
+    InventoryAreaCountBuilder,
+    InventoryAreaItemCountBuilder,
+
+    InventoryAreaTestUtil,
   ],
   exports: [
     InventoryAreaService,

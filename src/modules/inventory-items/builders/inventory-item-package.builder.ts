@@ -7,9 +7,7 @@ import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-pack
 export class InventoryItemPackageBuilder {
     private itemPackage: InventoryItemPackage;
 
-    constructor(){ 
-        this.reset(); 
-    }
+    constructor(){  this.reset(); }
 
     public reset(): this {
         this.itemPackage = new InventoryItemPackage();

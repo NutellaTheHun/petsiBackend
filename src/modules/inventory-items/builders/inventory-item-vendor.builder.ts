@@ -12,9 +12,7 @@ export class InventoryItemVendorBuilder {
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ) {
-        this.reset();
-    }
+    ) { this.reset(); }
 
     public reset(): this {
         this.vendor = new InventoryItemVendor;

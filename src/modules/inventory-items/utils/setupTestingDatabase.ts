@@ -1,4 +1,3 @@
-
 import { TestingModule } from "@nestjs/testing";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
@@ -7,6 +6,8 @@ import { UnitCategoryService } from "../../unit-of-measure/services/unit-categor
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { InventoryItemService } from "../services/inventory-item.service";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
+import { InventoryItemTestingUtil } from "./inventory-item-testing.util";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 
 /*
  Phases:
@@ -24,17 +25,13 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
  * - 2: ItemSizes, InventoryItem.sizes, UnitCategory.baseUnits(if needed)
  */
 export async function setupInventoryItemTestingDatabaseLayerZERO(module: TestingModule): Promise<void>{
-    const itemCategoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    await itemCategoryService.initializeTestingDatabase();
+    const inventoryItemTestingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await inventoryItemTestingUtil.initializeInventoryItemCategoryDatabaseTesting();
+    await inventoryItemTestingUtil.initializeInventoryItemVendorDatabaseTesting();
+    await inventoryItemTestingUtil.initializeInventoryItemPackageDatabaseTesting();
 
-    const itemVendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    await itemVendorService.initializeTestingDatabase();
-
-    const itemPackageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    await itemPackageService.initializeTestingDatabase();
-
-    const measureCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    await measureCategoryService.initializeTestingDatabase();
+    const unitOfMeasureTestingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+    await unitOfMeasureTestingUtil.initializeUnitCategoryTestingDatabase();
 }
 
 /**
@@ -49,11 +46,11 @@ export async function setupInventoryItemTestingDatabaseLayerZERO(module: Testing
 export async function setupInventoryItemTestingDatabaseLayerONE(module: TestingModule): Promise<void>{
     await setupInventoryItemTestingDatabaseLayerZERO(module);
 
-    const unitMeasureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    await unitMeasureService.initializeTestingDatabase();
+    const unitOfMeasureTestingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+    await unitOfMeasureTestingUtil.initializeUnitOfMeasureTestingDatabase();
 
-    const itemService = module.get<InventoryItemService>(InventoryItemService);
-    await itemService.initializeTestingDatabase();
+    const inventoryItemTestingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await inventoryItemTestingUtil.initializeInventoryItemDatabaseTesting();
 }
 
 /**
@@ -67,8 +64,8 @@ export async function setupInventoryItemTestingDatabaseLayerONE(module: TestingM
 export async function setupInventoryItemTestingDatabaseLayerTWO(module: TestingModule): Promise<void>{
     await setupInventoryItemTestingDatabaseLayerONE(module);
 
-    const sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-    await sizeService.initializeTestingDatabase();
+    const inventoryItemTestingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await inventoryItemTestingUtil.initializeInventoryItemSizeDatabaseTesting();
 }
 
 /**

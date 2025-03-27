@@ -26,6 +26,7 @@ import { InventoryItemCategoryBuilder } from './builders/inventory-item-category
 import { InventoryItemPackageBuilder } from './builders/inventory-item-package.builder';
 import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder';
 import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.builder';
+import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
 
 @Module({
   imports: [ 
@@ -71,6 +72,8 @@ import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.bui
     InventoryItemPackageBuilder,
     InventoryItemSizeBuilder,
     InventoryItemVendorBuilder,
+
+    InventoryItemTestingUtil
   ],
 
   exports: [

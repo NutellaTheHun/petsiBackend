@@ -1,21 +1,24 @@
 import { TestingModule } from '@nestjs/testing';
-import { InventoryItemService } from './inventory-item.service';
-import { InventoryItemFactory } from '../factories/inventory-item.factory';
+import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { LITER } from '../../unit-of-measure/utils/constants';
+import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
+import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
+import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
+import { DRY_A, DRY_B, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
+import { cleanupInventoryItemTestingDatabaseLayerZERO, setupInventoryItemTestingDatabaseLayerZERO } from '../utils/setupTestingDatabase';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
+import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
-import { InventoryItemPackageService } from './inventory-item-package.service';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { cleanupInventoryItemTestingDatabaseLayerZERO, setupInventoryItemTestingDatabaseLayerZERO } from '../utils/setupTestingDatabase';
-import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
-import { LITER } from '../../unit-of-measure/utils/constants';
-import { DRY_A, DRY_B, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
+import { InventoryItemService } from './inventory-item.service';
 
 describe('Inventory Item Service', () => {
   let module: TestingModule;
+  let testingUtil: InventoryItemTestingUtil;
   let itemService: InventoryItemService;
-  let itemFactory: InventoryItemFactory;
 
   let testId: number;
   let testIds: number[];
@@ -24,30 +27,25 @@ describe('Inventory Item Service', () => {
   let packageService: InventoryItemPackageService;
   let sizeService: InventoryItemSizeService;
   let vendorService: InventoryItemVendorService;
-
-  let sizeFactory: InventoryItemSizeFactory;
-
+  let measureTestingUtil: UnitOfMeasureTestingUtil;
   let measureService: UnitOfMeasureService;
 
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
+    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+
+    await setupInventoryItemTestingDatabaseLayerZERO(module);
+
+    measureTestingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+    await measureTestingUtil.initializeUnitOfMeasureTestingDatabase();
 
     categoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
     vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
 
-    await setupInventoryItemTestingDatabaseLayerZERO(module);
-
     measureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    await measureService.initializeTestingDatabase();
-
-    // not initialized, depends on testing inventory items being populated.
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-
     itemService = module.get<InventoryItemService>(InventoryItemService);
-    itemFactory = module.get<InventoryItemFactory>(InventoryItemFactory);
-
-    sizeFactory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
   });
 
   afterAll(async () => {
@@ -74,11 +72,11 @@ describe('Inventory Item Service', () => {
     const vendor = await vendorService.findOneByName("vendorA");
     if(!vendor){ throw new Error('vendor is null'); }
 
-    const itemDto = itemFactory.createDtoInstance({
+    const itemDto = {
       name: "testItem",
       inventoryItemCategoryId: category?.id,
       vendorId: vendor?.id,
-    });
+    } as CreateInventoryItemDto;
 
     const result = await itemService.create(itemDto);
     
@@ -100,11 +98,11 @@ describe('Inventory Item Service', () => {
     const packageType = await packageService.findOneByName("bag");
     if(!packageType){ throw new Error('package type is null'); }
 
-    const sizeDto = sizeFactory.createDtoInstance({
+    const sizeDto = {
       unitOfMeasureId: unit?.id,
       inventoryPackageTypeId: packageType?.id,
       inventoryItemId: toUpdate?.id,
-    })
+    } as CreateInventoryItemSizeDto;
 
     const size = await sizeService.create(sizeDto);
     if(!size || !size?.id){ throw new Error('size for updating is null'); }
@@ -119,13 +117,14 @@ describe('Inventory Item Service', () => {
     toUpdate.vendor = vendor;
     toUpdate.sizes = [size];
 
-    const result = await itemService.update(testId, 
-      itemFactory.createDtoInstance({
+    const result = await itemService.update(
+      testId, 
+      {
         name: toUpdate.name,
         inventoryItemCategoryId: toUpdate.category.id,
         sizeIds: [toUpdate.sizes[0].id],
         vendorId: toUpdate.vendor.id
-      })
+      } as UpdateInventoryItemDto,
     );
 
     expect(result).not.toBeNull();
@@ -143,16 +142,8 @@ describe('Inventory Item Service', () => {
   });
 
   it('should insert testing items and get all items', async () => {
-    const items = await itemFactory.getTestingItems();
-    for(const item of items){
-      await itemService.create(
-        itemFactory.createDtoInstance({
-          name: item.name,
-          inventoryItemCategoryId: item.category?.id,
-          vendorId: item.vendor?.id,
-        })
-      )
-    }
+    const items = await testingUtil.getTestInventoryItemEntities();
+    await testingUtil.initializeInventoryItemDatabaseTesting();
 
     const results = await itemService.findAll();
 
@@ -187,10 +178,9 @@ describe('Inventory Item Service', () => {
     expect(item.category?.id).toEqual(category.id);
     expect(category.items.findIndex(i => i.id === item.id)).not.toBe(-1);
 
-    const updated = await itemService.update(item.id, 
-      itemFactory.updateDtoInstance({
-        inventoryItemCategoryId: 0,
-      })
+    const updated = await itemService.update(
+      item.id, 
+      { inventoryItemCategoryId: 0, } as UpdateInventoryItemDto,
     );
     expect(updated).not.toBeNull();
     expect(updated?.category).toBeNull();
@@ -213,10 +203,9 @@ describe('Inventory Item Service', () => {
     const newCategory = await categoryService.findOneByName(DRYGOOD_CAT, ['items']);
     if(!newCategory){ throw new Error('new category is null'); }
 
-    const updated = await itemService.update(item.id, 
-      itemFactory.updateDtoInstance({
-        inventoryItemCategoryId: newCategory?.id,
-      })
+    const updated = await itemService.update(
+      item.id, 
+      { inventoryItemCategoryId: newCategory?.id } as UpdateInventoryItemDto,
     );
 
     expect(updated).not.toBeNull();
@@ -235,16 +224,14 @@ describe('Inventory Item Service', () => {
     expect(newCategory?.items).toBeUndefined();
 
     // create new item, that will be assigned to the newCategory in an update call
-    const newItem = await itemService.create(itemFactory.createDtoInstance({ 
-      name: "newItem",
-    }));
+    const newItem = await itemService.create({ name: "newItem" } as CreateInventoryItemDto);
     if(!newItem || !newItem.id){ throw new Error('new item is null'); }
 
     // update item with newCategory, update should initialize array and procede as expected
-    const result = await itemService.update(newItem?.id, 
-      itemFactory.createDtoInstance({ 
-        inventoryItemCategoryId: newCategory?.id,
-    }));
+    const result = await itemService.update(
+      newItem?.id, 
+      { inventoryItemCategoryId: newCategory?.id } as UpdateInventoryItemDto
+    );
 
     const verifyCategory = await categoryService.findOneByName("produce", ["items"]);
     expect(verifyCategory?.items).not.toBeNull();
@@ -260,11 +247,11 @@ describe('Inventory Item Service', () => {
 
     expect(vendor.items.findIndex(i => i.id === item.id)).not.toEqual(-1);
 
-    const itemDto = itemFactory.updateDtoInstance({
-      vendorId: 0,
-    });
+    const result = await itemService.update(
+      item.id, 
+      { vendorId: 0 } as UpdateInventoryItemDto
+    );
 
-    const result = await itemService.update(item.id, itemDto);
     expect(result).not.toBeNull();
     expect(result?.vendor).toBeNull();
 
@@ -286,11 +273,11 @@ describe('Inventory Item Service', () => {
     const newVendor = await vendorService.findOneByName(VENDOR_C);
     if(!newVendor){ throw new Error('vendorC is null'); }
 
-    const itemDto = itemFactory.updateDtoInstance({
-      vendorId: newVendor.id,
-    });
+    const result = await itemService.update(
+      item.id, 
+      { vendorId: newVendor.id } as UpdateInventoryItemDto
+    );
 
-    const result = await itemService.update(item.id, itemDto);
     expect(result).not.toBeNull();
     expect(result?.vendor?.id).toEqual(newVendor.id);
 
@@ -306,9 +293,7 @@ describe('Inventory Item Service', () => {
   it('should remove size entites when item.size gets removed', async () => {
 
     // create item
-    const itemDto = itemFactory.createDtoInstance({
-      name: "testItemSize",
-    });
+    const itemDto = { name: "testItemSize" } as CreateInventoryItemDto;
     const itemCreateResult = await itemService.create(itemDto);
     if(!itemCreateResult){ throw new Error('created item is null');}
 
@@ -319,11 +304,11 @@ describe('Inventory Item Service', () => {
     const packageType = await packageService.findOneByName("bag");
     if(!packageType){ throw new Error('package type is null'); }
 
-    const sizeDto = sizeFactory.createDtoInstance({
+    const sizeDto = {
       unitOfMeasureId: unit?.id,
       inventoryPackageTypeId: packageType?.id,
       inventoryItemId: itemCreateResult?.id,
-    })
+    } as CreateInventoryItemSizeDto;
 
     const size = await sizeService.create(sizeDto);
     if(!size || !size?.id){ throw new Error('size is null'); } 

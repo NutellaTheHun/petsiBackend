@@ -1,13 +1,15 @@
 import { TestingModule } from "@nestjs/testing";
-import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
 import { AREA_A, AREA_B } from "../utils/constants";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
+import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
+import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 
 describe('Inventory area item count service', () => {
+    let testingUtil: InventoryAreaTestUtil;
     let areaCountService: InventoryAreaCountService;
-    let areaCountFactory: InventoryAreaCountFactory;
 
     let inventoryAreaService: InventoryAreaService;
 
@@ -17,12 +19,11 @@ describe('Inventory area item count service', () => {
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
 
-        areaCountService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
-        areaCountFactory = module.get<InventoryAreaCountFactory>(InventoryAreaCountFactory);
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initializeInventoryAreaDatabaseTesting();
 
-        //areas "AREA_[A-D]"
+        areaCountService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
         inventoryAreaService = module.get<InventoryAreaService>(InventoryAreaService);
-        await inventoryAreaService.initializeTestingDatabase();
     })
 
     afterAll(async () => {
@@ -37,7 +38,7 @@ describe('Inventory area item count service', () => {
 
     it('should create area count', async () => {
         const areaA = await inventoryAreaService.findOneByName(AREA_A);
-        const dto = areaCountFactory.createDtoInstance({ inventoryAreaId: areaA?.id });
+        const dto = { inventoryAreaId: areaA?.id } as CreateInventoryAreaCountDto;
 
         const result = await areaCountService.create(dto);
         expect(result).not.toBeNull();
@@ -55,22 +56,22 @@ describe('Inventory area item count service', () => {
     });
 
     it('should THROW ERROR, to create area count (no areaID)', async () => {
-        const dto = areaCountFactory.createDtoInstance({ });
+        const dto = { } as CreateInventoryAreaCountDto;
 
         await expect(areaCountService.create(dto)).rejects.toThrow(Error);
     });
 
     it('should THROW ERROR, to create area count (bad areaID)', async () => {
-        const dto = areaCountFactory.createDtoInstance({ inventoryAreaId: 10 });
+        const dto = { inventoryAreaId: 10 } as CreateInventoryAreaCountDto;
         await expect(areaCountService.create(dto)).rejects.toThrow(Error);
     });
 
     it('should THROW ERROR, to create area count (has list of itemCountIDs)', async () => {
         const areaA = await inventoryAreaService.findOneByName(AREA_A);
-        const dto = areaCountFactory.createDtoInstance({ 
+        const dto = { 
             inventoryAreaId: areaA?.id,
             inventoryItemCountIds: [1, 2, 3, 4]
-        });
+        } as CreateInventoryAreaCountDto;
 
         await expect(areaCountService.create(dto)).rejects.toThrow(Error);
     });
@@ -82,9 +83,10 @@ describe('Inventory area item count service', () => {
         const toUpdate = await areaCountService.findOne(testId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        const result = await areaCountService.update(toUpdate.id, areaCountFactory.updateDtoInstance({
-            inventoryAreaId: newArea.id
-        }));
+        const result = await areaCountService.update(
+            toUpdate.id, 
+            { inventoryAreaId: newArea.id } as UpdateInventoryAreaCountDto,
+        );
 
         expect(result).not.toBeNull();
         expect(result?.inventoryArea.id).toEqual(newArea.id);
@@ -114,9 +116,10 @@ describe('Inventory area item count service', () => {
         const toUpdate = await areaCountService.findOne(testId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        const result = await areaCountService.update(0, areaCountFactory.updateDtoInstance({
-            inventoryAreaId: newArea.id
-        }));
+        const result = await areaCountService.update(
+            0, 
+            { inventoryAreaId: newArea.id } as UpdateInventoryAreaCountDto
+        );
 
         expect(result).toBeNull();
     });

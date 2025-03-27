@@ -1,34 +1,31 @@
 import { TestingModule } from '@nestjs/testing';
-import { UnitCategoryService } from './unit-category.service';
-import { UnitCategoryFactory } from '../factories/unit-category.factory';
+import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { UnitCategory } from '../entities/unit-category.entity';
 import { OUNCE, POUND, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
+import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 
 
 describe('UnitCategoryService', () => {
+  let testingUtil: UnitOfMeasureTestingUtil;
   let categoryService: UnitCategoryService;
-  let categoryFactory: UnitCategoryFactory;
+
+  let unitService: UnitOfMeasureService;
 
   let testCategories: UnitCategory[];
   let testCategoryId: number;
 
-  let unitService: UnitOfMeasureService;
-  let unitFactory: UnitOfMeasureFactory;
-
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-
+    testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    categoryFactory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
-
-    testCategories = await categoryFactory.getTestingUnitCategories();
-    if(!testCategories) { throw new Error('categories is null'); }
-
+  
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
+
+    testCategories = testingUtil.getCategoriesEntities();
   });
 
   afterAll(async () => {
@@ -48,7 +45,7 @@ describe('UnitCategoryService', () => {
 
     for (const category of testCategories){
       results.push(await categoryService.create(
-        categoryFactory.createDtoInstance({ name: category.name })
+        { name: category.name } as CreateUnitCategoryDto
       ));
     }
 
@@ -81,8 +78,8 @@ describe('UnitCategoryService', () => {
 
     
   it('should set each categories base unit', async () => {
-    await unitService.initializeDefaultUnits();
-    await categoryService.initializeDefaultCategoryBaseUnits();
+    await testingUtil.initializeUnitOfMeasureTestingDatabase();
+    await await testingUtil.initializeDefaultCategoryBaseUnits();
     
     const weight = await categoryService.findOneByName(WEIGHT, ['baseUnit',]);
     expect(weight).not.toBeNull();
@@ -127,10 +124,9 @@ describe('UnitCategoryService', () => {
     const newCategory = await categoryService.findOneByName(VOLUME);
     if(!newCategory) {throw new Error('couldnt find category'); }
 
-    await unitService.update(unit.id,
-      unitFactory.updateDtoInstance({
-        categoryId: newCategory?.id,
-      })
+    await unitService.update(
+      unit.id,
+      { categoryId: newCategory?.id } as UpdateUnitOfMeasureDto
     );
     
     const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);

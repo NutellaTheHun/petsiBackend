@@ -11,9 +11,7 @@ export class InventoryItemCategoryBuilder {
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ 
-        this.reset();
-    }
+    ){ this.reset(); }
 
     public reset(): this {
         this.category = new InventoryItemCategory();

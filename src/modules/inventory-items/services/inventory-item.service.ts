@@ -6,14 +6,12 @@ import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemFactory } from '../factories/inventory-item.factory';
 
 @Injectable()
 export class InventoryItemService extends ServiceBase<InventoryItem> {
   constructor(
     @InjectRepository(InventoryItem)
     private readonly itemRepo: Repository<InventoryItem>,
-    private readonly itemFactory: InventoryItemFactory,
     private readonly itemBuilder: InventoryItemBuilder,
   ){ super(itemRepo)}
 
@@ -22,7 +20,6 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     if(exist){ return null; }
 
     const item = await this.itemBuilder.buildCreateDto(createDto);
-
     return await this.itemRepo.save(item);
   }
   
@@ -35,24 +32,10 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     if(!toUpdate){ return null; }
 
     await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
-
     return await this.itemRepo.save(toUpdate);
   }
 
   async findOneByName(name: string, relations?: string[]): Promise<InventoryItem | null> {
     return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
   }
-
-  async initializeTestingDatabase(): Promise<void> {
-    const items = await this.itemFactory.getTestingItems();
-
-    for(const item of items){
-      await this.create(this.itemFactory.createDtoInstance({
-        name: item.name,
-        inventoryItemCategoryId: item.category?.id,
-        vendorId: item.vendor?.id, 
-      }));
-    }
-  }
-  
 }

@@ -1,20 +1,21 @@
 import { TestingModule } from '@nestjs/testing';
+import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
+import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
-import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
 
 describe('Inventory Item Vendor Service', () => {
+  let testingUtil: InventoryItemTestingUtil;
   let service: InventoryItemVendorService;
-  let factory: InventoryItemVendorFactory;
 
   let testId: number;
   let testIds: number[];
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
-
+    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
     service = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    factory = module.get<InventoryItemVendorFactory>(InventoryItemVendorFactory);
   });
 
   afterAll(async () => {
@@ -27,7 +28,7 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should create a vendor', async () => {
-    const vendorDto = await factory.createDtoInstance({ name: "testVendorName" });
+    const vendorDto ={ name: "testVendorName" } as CreateInventoryItemVendorDto;
 
     const result = await service.create(vendorDto);
 
@@ -43,10 +44,9 @@ describe('Inventory Item Vendor Service', () => {
     if(!toUpdate) { throw new Error('vendor to update is null.'); }
 
     toUpdate.name = "UPDATE_NAME";
-    const result = await service.update(testId, 
-      factory.createDtoInstance({
-        name: toUpdate.name,
-      })
+    const result = await service.update(
+      testId, 
+      { name: toUpdate.name } as UpdateInventoryItemVendorDto
     );
 
     expect(result?.name).toEqual("UPDATE_NAME");
@@ -61,14 +61,11 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should get all vendors', async () => {
-    const vendors = factory.getTestingVendors();
-    if(!vendors){ throw new Error('testing vendors list is null'); }
-    expect(vendors.length).toBeGreaterThan(0);
+    const vendors = testingUtil.getTestInventoryItemVendorEntities();
+    await testingUtil.initializeInventoryItemVendorDatabaseTesting();
 
     for(const vendor of vendors){
-      await service.create(
-        factory.createDtoInstance({ name: vendor.name })
-      )
+      await service.create( { name: vendor.name } as CreateInventoryItemVendorDto );
     }
 
     const results = await service.findAll();

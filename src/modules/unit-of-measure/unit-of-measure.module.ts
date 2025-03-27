@@ -10,6 +10,7 @@ import { UnitCategory } from './entities/unit-category.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
 import { UnitCategoryBuilder } from './builders/unit-category.builder';
+import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
 
 @Module({
   imports: [
@@ -25,6 +26,8 @@ import { UnitCategoryBuilder } from './builders/unit-category.builder';
 
     UnitOfMeasureBuilder,
     UnitCategoryBuilder,
+
+    UnitOfMeasureTestingUtil,
   ],
 
   controllers: [
