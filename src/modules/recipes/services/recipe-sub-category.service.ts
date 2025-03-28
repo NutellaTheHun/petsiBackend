@@ -2,25 +2,20 @@ import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
 import { CreateRecipeSubCategoryDto } from "../dto/create-recipe-sub-category.dto";
 import { UpdateRecipeSubCategoryDto } from "../dto/update-recipe-sub-category.dto";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
-import { RecipeIngredientFactory } from "../factories/recipe-ingredient.factory";
 import { RecipeCategoryService } from "./recipe-category.service";
-import { RecipeService } from "./recipe.service";
 
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     constructor(
         @InjectRepository(RecipeSubCategory)
         private readonly subCategoryRepo: Repository<RecipeSubCategory>,
-
-        private readonly subCategoryFactory: RecipeIngredientFactory,
+        private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
 
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-
-        @Inject(forwardRef(() => RecipeService))
-        private readonly recipeService: RecipeService,
     ){ super(subCategoryRepo); }
 
     /**
@@ -33,11 +28,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         const exists = await this.findOneByCategoryNameAndSubCategoryName(parentCategory.name, createDto.name);
         if(exists) { return null; }
 
-        const subCategory = this.subCategoryFactory.createEntityInstance({
-            parentCategory: parentCategory,
-            name: createDto.name,
-        });
-
+        const subCategory = await this.subCategoryBuilder.buildCreateDto(createDto);
         return await this.subCategoryRepo.save(subCategory);
     }
     
@@ -48,22 +39,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         const toUpdate = await this.findOne(id);
         if(!toUpdate){ return null; }
         
-        if(updateDto.name){
-            toUpdate.name = updateDto.name;
-        }
-
-        if(updateDto.parentCategoryId){
-            const parentCategory = await this.categoryService.findOne(updateDto.parentCategoryId);
-            if(!parentCategory){ throw new Error("parent category not found"); }
-
-            toUpdate.parentCategory = parentCategory
-        }
-
-        if(updateDto.recipeIds){
-            const recipes = await this.recipeService.findEntitiesById(updateDto.recipeIds);
-            toUpdate.recipes = recipes;
-        }
-
+        await this.subCategoryBuilder.buildUpdateDto(toUpdate, updateDto);
         return await this.subCategoryRepo.save(toUpdate);
     }
 
@@ -89,10 +65,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     /**
      * Returns one sub-category given the sub category name and the parentCategory name.
      */
-    async findOneByCategoryNameAndSubCategoryName(
-        categoryName: string, 
-        subCategoryName: string,  
-        relations?: string[]
+    async findOneByCategoryNameAndSubCategoryName(categoryName: string, subCategoryName: string,  relations?: string[]
     ): Promise<RecipeSubCategory | null>{
         const category = await this.categoryService.findOneByName(categoryName);
         if(!category){ 
