@@ -1,17 +1,15 @@
+import { NotImplementedException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { InventoryAreaItemCountController } from "./inventory-area-item-count.controller";
-import { InventoryAreaItemCountFactory } from "../factories/inventory-area-item-count.factory";
 import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
 import { UpdateInventoryAreaItemCountDto } from "../dto/update-inventory-area-item-count.dto";
 import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
-import { NotImplementedException } from "@nestjs/common";
 import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
+import { InventoryAreaItemCountController } from "./inventory-area-item-count.controller";
 
 describe('inventory area item count controller', () => {
     let controller: InventoryAreaItemCountController;
     let itemCountService: InventoryAreaItemCountService;
-    let itemCountFactory: InventoryAreaItemCountFactory;
 
     let itemCounts: InventoryAreaItemCount[];
     
@@ -20,7 +18,6 @@ describe('inventory area item count controller', () => {
 
         controller = module.get<InventoryAreaItemCountController>(InventoryAreaItemCountController);
         itemCountService = module.get<InventoryAreaItemCountService>(InventoryAreaItemCountService);
-        itemCountFactory = module.get<InventoryAreaItemCountFactory>(InventoryAreaItemCountFactory);
 
         itemCounts = [];
 

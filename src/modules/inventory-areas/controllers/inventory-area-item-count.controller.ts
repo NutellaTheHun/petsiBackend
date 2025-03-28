@@ -4,6 +4,7 @@ import { InventoryAreaItemCountService } from "../services/inventory-area-item-c
 import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
 import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
 import { InventoryItemSizeController } from "../../inventory-items/controllers/inventory-item-size.controller";
+import { UpdateInventoryAreaItemCountDto } from "../dto/update-inventory-area-item-count.dto";
 
 @Controller('inventory-area-item-count')
 export class InventoryAreaItemCountController extends ControllerBase<InventoryAreaItemCount> {
@@ -27,7 +28,7 @@ export class InventoryAreaItemCountController extends ControllerBase<InventoryAr
             if(!newSize){ throw new Error("new item size is null"); }
             if(!newSize?.id){ throw new Error("new item size id is null"); }
 
-            createDto = { ...createDto, itemSizeId: newSize?.id }
+            createDto = { ...createDto, itemSizeId: newSize?.id } as CreateInventoryAreaItemCountDto;
         }
         return await this.itemCountService.create(createDto);
     }
@@ -46,7 +47,7 @@ export class InventoryAreaItemCountController extends ControllerBase<InventoryAr
             if(!newSize){ throw new Error("new item size is null"); }
             if(!newSize?.id){ throw new Error("new item size id is null"); }
 
-            updateDto = { ...updateDto, itemSizeId: newSize?.id }
+            updateDto = { ...updateDto, itemSizeId: newSize?.id } as UpdateInventoryAreaItemCountDto;
         }
         return await this.itemCountService.update(id, updateDto);
     }
