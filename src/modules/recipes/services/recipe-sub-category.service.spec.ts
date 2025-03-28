@@ -14,4 +14,22 @@ describe('recipe sub category service', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+  // create
+
+  // update
+
+  // findAll
+
+  // findOne
+
+  // findEntitiesById
+
+  // remove
+
+  // findOneByName
+
+  // findByCategoryName
+
+  // findByCategorynameAndSubCategoryName
 });
