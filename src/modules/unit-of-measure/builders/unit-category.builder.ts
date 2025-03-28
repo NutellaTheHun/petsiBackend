@@ -3,16 +3,20 @@ import { CreateUnitCategoryDto } from "../dto/create-unit-category.dto";
 import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
 import { UnitCategory } from "../entities/unit-category.entity";
 import { UnitOfMeasureService } from "../services/unit-of-measure.service";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 
 @Injectable()
 export class UnitCategoryBuilder {
     private category: UnitCategory;
+    private unitMethods: BuilderMethodBase<UnitOfMeasure>;
 
     constructor(
         @Inject(forwardRef(() => UnitOfMeasureService)) 
         private readonly unitService: UnitOfMeasureService,
     ){
         this.reset();
+        this.unitMethods = new BuilderMethodBase(this.unitService, this.unitService.findOneByName.bind(this.unitService));
     }
 
     public reset(): this{
@@ -26,25 +30,26 @@ export class UnitCategoryBuilder {
     }
 
     public async unitsById(ids: number[]): Promise<this>{
-        this.category.units = await this.unitService.findEntitiesById(ids);
+        await this.unitMethods.entityByIds(
+            (units) => {this.category.units = units; },
+            ids,
+        )
         return this;
     }
 
     public async baseUnitById(id: number): Promise<this> {
-        const unit = await this.unitService.findOne(id);
-        if(!unit){
-            throw new Error("unit of measure not found")
-        }
-        this.category.baseUnit = unit;
+        await this.unitMethods.entityById(
+            (unit) => {this.category.baseUnit = unit;},
+            id,
+        )
         return this;
     }
 
     public async baseUnitByName(name: string): Promise<this> {
-        const unit = await this.unitService.findOneByName(name);
-        if(!unit){
-            throw new Error("unit of measure not found")
-        }
-        this.category.baseUnit = unit;
+        await this.unitMethods.entityByName(
+            (unit) => {this.category.baseUnit = unit;},
+            name,
+        )
         return this;
     }
 
@@ -77,7 +82,6 @@ export class UnitCategoryBuilder {
 
     public async buildUpdateDto(toUpdate: UnitCategory, dto: UpdateUnitCategoryDto): Promise<UnitCategory> {
         this.reset();
-
         this.updateCategory(toUpdate);
 
         if(dto.name){

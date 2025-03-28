@@ -19,6 +19,10 @@ import { RecipeFactory } from './factories/recipe.factory';
 import { RecipeCategoryFactory } from './factories/recipe-category.factory';
 import { RecipeSubCategoryFactory } from './factories/recipe-sub-category';
 import { RecipeIngredientFactory } from './factories/recipe-ingredient.factory';
+import { RecipeBuilder } from './builders/recipe.builder';
+import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
+import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
+import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
 
 @Module({
   imports: [
@@ -48,6 +52,11 @@ import { RecipeIngredientFactory } from './factories/recipe-ingredient.factory';
     RecipeCategoryFactory,
     RecipeSubCategoryFactory,
     RecipeIngredientFactory,
+
+    RecipeBuilder,
+    RecipeIngredientBuilder,
+    RecipeCategoryBuilder,
+    RecipeSubCategoryBuilder,
   ],
   exports: [
     RecipeService,

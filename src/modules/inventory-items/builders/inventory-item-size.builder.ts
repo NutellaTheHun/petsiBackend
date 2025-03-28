@@ -5,10 +5,18 @@ import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dt
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { InventoryItemService } from "../services/inventory-item.service";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { InventoryItem } from "../entities/inventory-item.entity";
 
 @Injectable()
 export class InventoryItemSizeBuilder {
     private size: InventoryItemSize;
+
+    private packageMethods: BuilderMethodBase<InventoryItemPackage>;
+    private unitMethods: BuilderMethodBase<UnitOfMeasure>;
+    private itemMethods: BuilderMethodBase<InventoryItem>;
 
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
@@ -16,7 +24,12 @@ export class InventoryItemSizeBuilder {
 
         private readonly packageService: InventoryItemPackageService,
         private readonly unitService: UnitOfMeasureService,
-    ){ this.reset(); }
+    ){ 
+        this.reset(); 
+        this.packageMethods = new BuilderMethodBase(this.packageService, this.packageService.findOneByName.bind(this.packageService))
+        this.unitMethods = new BuilderMethodBase(this.unitService, this.unitService.findOneByName.bind(this.unitService));
+        this.itemMethods = new BuilderMethodBase(this.itemService, this.itemService.findOneByName.bind(this.itemService));
+    }
 
     public reset(): this{
         this.size = new InventoryItemSize();
@@ -24,56 +37,50 @@ export class InventoryItemSizeBuilder {
     }
 
     public async unitOfMeasureById(id: number): Promise<this> {
-        const unit = await this.unitService.findOne(id);
-        if(!unit){
-            throw new Error("unit of measure not found");
-        }
-        this.size.measureUnit = unit;
+        await this.unitMethods.entityById(
+            (unit) => {this.size.measureUnit = unit; },
+            id,
+        )
         return this;
     }
 
     public async unitOfMeasureByName(name: string): Promise<this> {
-        const unit = await this.unitService.findOneByName(name);
-        if(!unit){
-            throw new Error("unit of measure not found");
-        }
-        this.size.measureUnit = unit;
+        await this.unitMethods.entityByName(
+            (unit) => {this.size.measureUnit = unit; },
+            name,
+        )
         return this;
     }
 
     public async packageById(id: number): Promise<this> {
-        const packageType = await this.packageService.findOne(id);
-        if(!packageType){
-            throw new Error("package not found");
-        }
-        this.size.packageType = packageType;
+        await this.packageMethods.entityById(
+            (pkg) => {this.size.packageType = pkg; },
+            id,
+        )
         return this;
     }
 
     public async packageByName(name: string): Promise<this> {
-        const packageType = await this.packageService.findOneByName(name);
-        if(!packageType){
-            throw new Error("package not found");
-        }
-        this.size.packageType = packageType;
+        await this.packageMethods.entityByName(
+            (pkg) => {this.size.packageType = pkg; },
+            name,
+        )
         return this;
     }
 
     public async InventoryItemById(id: number): Promise<this> {
-        const item = await this.itemService.findOne(id);
-        if(!item){
-            throw new Error("item not found");
-        }
-        this.size.item = item;
+        await this.itemMethods.entityById(
+            (item) => {this.size.item = item; },
+            id,
+        )
         return this;
     }
 
     public async InventoryItemByName(name: string): Promise<this> {
-        const item = await this.itemService.findOneByName(name);
-        if(!item){
-            throw new Error("item not found");
-        }
-        this.size.item = item;
+        await this.itemMethods.entityByName(
+            (item) => {this.size.item = item; },
+            name,
+        );
         return this;
     }
 
@@ -89,11 +96,9 @@ export class InventoryItemSizeBuilder {
         if(dto.inventoryItemId){
             await this.InventoryItemById(dto.inventoryItemId);
         }
-
         if(dto.inventoryPackageTypeId){
             await this.packageById(dto.inventoryPackageTypeId);
         }
-
         if(dto.unitOfMeasureId){
             await this.unitOfMeasureById(dto.unitOfMeasureId);
         }
@@ -108,17 +113,14 @@ export class InventoryItemSizeBuilder {
 
     public async buildUpdateDto(toUpdate: InventoryItemSize, dto: UpdateInventoryItemSizeDto): Promise<InventoryItemSize> {
         this.reset();
-
         this.updateItemSize(toUpdate);
 
         if(dto.inventoryItemId){
             await this.InventoryItemById(dto.inventoryItemId);
         }
-
         if(dto.inventoryPackageTypeId){
             await this.packageById(dto.inventoryPackageTypeId);
         }
-
         if(dto.unitOfMeasureId){
             await this.unitOfMeasureById(dto.unitOfMeasureId);
         }

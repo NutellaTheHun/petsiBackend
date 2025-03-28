@@ -5,10 +5,17 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
 import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
+import { InventoryItemSize } from "../entities/inventory-item-size.entity";
+import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 
 @Injectable()
 export class InventoryItemBuilder {
     private item: InventoryItem;
+    private categoryMethods: BuilderMethodBase<InventoryItemCategory>;
+    private sizeMethods: BuilderMethodBase<InventoryItemSize>;
+    private vendorMethods: BuilderMethodBase<InventoryItemVendor>;
 
     constructor(
         @Inject(forwardRef(() => InventoryItemCategoryService))
@@ -19,7 +26,12 @@ export class InventoryItemBuilder {
     
         @Inject(forwardRef(() => InventoryItemVendorService))
         private readonly vendorService: InventoryItemVendorService,
-    ){ this.reset(); }
+    ){ 
+        this.reset(); 
+        this.categoryMethods = new BuilderMethodBase(this.categoryService, this.categoryService.findOneByName.bind(this.categoryService));
+        this.sizeMethods = new BuilderMethodBase(this.sizeService);
+        this.vendorMethods = new BuilderMethodBase(this.vendorService, this.vendorService.findOneByName.bind(this.vendorService));
+    }
 
     public reset(): this {
         this.item = new InventoryItem;
@@ -32,43 +44,42 @@ export class InventoryItemBuilder {
     }
 
     public async sizesByIds(ids: number[]): Promise<this> {
-        this.item.sizes = await this.sizeService.findEntitiesById(ids);
+        await this.sizeMethods.entityByIds(
+            (sizes) => { this.item.sizes = sizes},
+            ids,
+        );
         return this;
     }
-
+    
     public async categoryById(id: number): Promise<this> {
-        const category = await this.categoryService.findOne(id);
-        if(!category){
-            throw new Error("category not found");
-        }
-        this.item.category = category;
+        await this.categoryMethods.entityById(
+            (cat) => {this.item.category = cat; },
+            id,
+        );
         return this;
     }
 
     public async categoryByName(name: string): Promise<this> {
-        const category = await this.categoryService.findOneByName(name);
-        if(!category){
-            throw new Error("category not found");
-        }
-        this.item.category = category;
+        await this.categoryMethods.entityByName(
+            (cat) => {this.item.category = cat; },
+            name,
+        );
         return this;
     }
 
     public async vendorById(id: number): Promise<this> {
-        const vendor = await this.vendorService.findOne(id);
-        if(!vendor){
-            throw new Error("category not found");
-        }
-        this.item.vendor = vendor;
+        await this.vendorMethods.entityById(
+            (ven) => {this.item.vendor = ven; },
+            id,
+        );
         return this;
     }
 
     public async vendorByName(name: string): Promise<this> {
-        const vendor = await this.vendorService.findOneByName(name);
-        if(!vendor){
-            throw new Error("category not found");
-        }
-        this.item.vendor = vendor;
+        await this.vendorMethods.entityByName(
+            (ven) => {this.item.vendor = ven; },
+            name,
+        );
         return this;
     }
 
@@ -84,15 +95,12 @@ export class InventoryItemBuilder {
         if(dto.inventoryItemCategoryId){
             await this.categoryById(dto.inventoryItemCategoryId)
         }
-
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.sizeIds){
             await this.sizesByIds(dto.sizeIds);
         }
-
         if(dto.vendorId){
             await this.vendorById(dto.vendorId);
         }
@@ -107,7 +115,6 @@ export class InventoryItemBuilder {
 
     public async buildUpdateDto(toUpdate: InventoryItem, dto: UpdateInventoryItemDto): Promise<InventoryItem> {
         this.reset();
-
         this.updateItem(toUpdate);
 
         if(dto.inventoryItemCategoryId !== undefined){
@@ -118,15 +125,12 @@ export class InventoryItemBuilder {
                 await this.categoryById(dto.inventoryItemCategoryId);
             }
         }
-
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.sizeIds){
             await this.sizesByIds(dto.sizeIds);
         }
-
         if(dto.vendorId !== undefined){
             if(dto.vendorId === 0){
                 this.item.vendor = null;

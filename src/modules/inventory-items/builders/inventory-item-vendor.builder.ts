@@ -1,18 +1,23 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { InventoryItemBuilder } from "./inventory-item.builder";
-import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
-import { InventoryItemService } from "../services/inventory-item.service";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
 import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendor.dto";
 import { UpdateInventoryItemVendorDto } from "../dto/update-inventory-item-vendor.dto";
+import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
+import { InventoryItem } from "../entities/inventory-item.entity";
+import { InventoryItemService } from "../services/inventory-item.service";
 
 @Injectable()
 export class InventoryItemVendorBuilder {
     private vendor: InventoryItemVendor;
+    private itemMethods: BuilderMethodBase<InventoryItem>;
 
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ) { this.reset(); }
+    ) { 
+        this.reset(); 
+        this.itemMethods = new BuilderMethodBase(this.itemService, this.itemService.findOneByName.bind(this.itemService));
+    }
 
     public reset(): this {
         this.vendor = new InventoryItemVendor;
@@ -25,7 +30,10 @@ export class InventoryItemVendorBuilder {
     }
 
     public async inventoryItemsByIds(ids: number[]): Promise<this> {
-        this.vendor.items = await this.itemService.findEntitiesById(ids);
+        await this.itemMethods.entityByIds(
+            (items) => { this.vendor.items = items},
+            ids,
+        )
         return this;
     }
 
@@ -41,7 +49,6 @@ export class InventoryItemVendorBuilder {
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.inventoryItemIds){
            await this.inventoryItemsByIds(dto.inventoryItemIds);
         }
@@ -56,13 +63,11 @@ export class InventoryItemVendorBuilder {
 
     public async buildUpdateDto(toUpdate: InventoryItemVendor, dto: UpdateInventoryItemVendorDto): Promise<InventoryItemVendor> {
         this.reset();
-
         this.updateVendor(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.inventoryItemIds){
            await this.inventoryItemsByIds(dto.inventoryItemIds);
         }

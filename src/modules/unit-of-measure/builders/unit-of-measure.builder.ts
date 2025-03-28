@@ -3,17 +3,20 @@ import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { UnitCategoryService } from "../services/unit-category.service";
 import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/update-unit-of-measure.dto";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { UnitCategory } from "../entities/unit-category.entity";
 
 @Injectable()
 export class UnitOfMeasureBuilder {
-
     private unit: UnitOfMeasure;
+    private categoryMethods: BuilderMethodBase<UnitCategory>;
 
     constructor(
         @Inject(forwardRef(() => UnitCategoryService))
         private readonly categoryService: UnitCategoryService,
     ){ 
         this.reset(); 
+        this.categoryMethods = new BuilderMethodBase(this.categoryService, this.categoryService.findOneByName.bind(this.categoryService));
     }
     
     public reset(): this {
@@ -32,20 +35,18 @@ export class UnitOfMeasureBuilder {
     }
 
     public async categoryById(id: number): Promise<this> {
-        const category = await this.categoryService.findOne(id);
-            if(!category){
-                throw new Error("category not found");
-            }
-            this.unit.category = category;
-            return this;
+        await this.categoryMethods.entityById(
+            (cat) => {this.unit.category = cat; },
+            id,
+        );
+        return this;
     }
 
     public async categoryByName(name: string): Promise<this> {
-        const category = await this.categoryService.findOneByName(name);
-        if(!category){
-            throw new Error("category not found");
-        }
-        this.unit.category = category;
+        await this.categoryMethods.entityByName(
+            (cat) => {this.unit.category = cat; },
+            name,
+        );
         return this;
     }
 
@@ -62,15 +63,16 @@ export class UnitOfMeasureBuilder {
 
     public async buildCreateDto(dto: CreateUnitOfMeasureDto): Promise<UnitOfMeasure> {
         this.reset();
-        
-        this.name(dto.name);
 
-        this.abbreviation(dto.abbreviation);
-
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.abbreviation){
+            this.abbreviation(dto.abbreviation);
+        }
         if(dto.conversionFactorToBase){
         this.conversionFactor(dto.conversionFactorToBase);
         }
-
         if(dto.categoryId){
             await this.categoryById(dto.categoryId);
         }
@@ -85,21 +87,17 @@ export class UnitOfMeasureBuilder {
 
     public async buildUpdateDto(toUpdate: UnitOfMeasure, dto: UpdateUnitOfMeasureDto): Promise<UnitOfMeasure> {
         this.reset();
-
         this.updateUnit(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
         }
-        
         if(dto.abbreviation){
             this.abbreviation(dto.abbreviation);
         }
-        
         if(dto.conversionFactorToBase){
         this.conversionFactor(dto.conversionFactorToBase);
         }
-
         // 0 is passed intentionally to remove a category to a unit,
         // so null cannot be used to evaluate in the IF statement.
         if(dto.categoryId !== undefined){
@@ -109,7 +107,6 @@ export class UnitOfMeasureBuilder {
                 await this.categoryById(dto.categoryId);
             }
         }
-
         return this.getUnit();
     }
 }

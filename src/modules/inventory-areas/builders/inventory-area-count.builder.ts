@@ -4,11 +4,16 @@ import { InventoryAreaService } from "../services/inventory-area.service";
 import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { InventoryArea } from "../entities/inventory-area.entity";
+import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
 
 
 @Injectable()
 export class InventoryAreaCountBuilder {
     private count: InventoryAreaCount;
+    private areaMethods: BuilderMethodBase<InventoryArea>;
+    private areaItemMethods: BuilderMethodBase<InventoryAreaItemCount>;
 
     constructor(
         @Inject(forwardRef(() => InventoryAreaService))
@@ -16,7 +21,11 @@ export class InventoryAreaCountBuilder {
         
         @Inject(forwardRef(() => InventoryAreaItemCountService))
         private readonly areaItemService: InventoryAreaItemCountService,
-    ){ this.reset(); }
+    ){ 
+        this.reset(); 
+        this.areaMethods = new BuilderMethodBase(this.areaService, this.areaService.findOneByName.bind(this.areaService));
+        this.areaItemMethods = new BuilderMethodBase(this.areaItemService);
+    }
 
     public reset(): this {
         this.count = new InventoryAreaCount;
@@ -24,27 +33,26 @@ export class InventoryAreaCountBuilder {
     }
 
     public async inventoryAreaById(id: number): Promise<this> {
-        const area = await this.areaService.findOne(id);
-        if(!area){
-            throw new Error("inventory area not found");
-        }
-
-        this.count.inventoryArea = area;
+        await this.areaMethods.entityById(
+            (area) => {this.count.inventoryArea = area; },
+            id,
+        );
         return this;
     }
 
     public async inventoryAreaByName(name: string): Promise<this> {
-        const area = await this.areaService.findOneByName(name);
-        if(!area){
-            throw new Error("inventory area not found");
-        }
-
-        this.count.inventoryArea = area;
+        await this.areaMethods.entityByName(
+            (area) => {this.count.inventoryArea = area; },
+            name,
+        );
         return this;
     }
 
     public async countedItemsById(ids: number[]): Promise<this> {
-        this.count.items = await this.areaItemService.findEntitiesById(ids);
+        await this.areaItemMethods.entityByIds(
+            (items) => {this.count.items = items},
+            ids,
+        );
         return this;
     }
 
@@ -60,7 +68,6 @@ export class InventoryAreaCountBuilder {
         if(dto.inventoryAreaId){
             await this.inventoryAreaById(dto.inventoryAreaId);
         }
-
         if(dto.inventoryItemCountIds){
             await this.countedItemsById(dto.inventoryItemCountIds);
         }
@@ -75,13 +82,11 @@ export class InventoryAreaCountBuilder {
 
     public async buildUpdateDto(toUpdate: InventoryAreaCount, dto: UpdateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
-
         this.updateCount(toUpdate);
 
         if(dto.inventoryAreaId){
             await this.inventoryAreaById(dto.inventoryAreaId);
         }
-
         if(dto.inventoryItemCountIds){
             await this.countedItemsById(dto.inventoryItemCountIds);
         }

@@ -6,7 +6,7 @@ import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-pack
 @Injectable()
 export class InventoryItemPackageBuilder {
     private itemPackage: InventoryItemPackage;
-
+    
     constructor(){  this.reset(); }
 
     public reset(): this {

@@ -3,15 +3,21 @@ import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
+import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 
 @Injectable()
 export class InventoryAreaBuilder {
     private area: InventoryArea;
+    private countMethods: BuilderMethodBase<InventoryAreaCount>;
 
     constructor(
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
-    ){ this.reset(); }
+    ){ 
+        this.reset();
+        this.countMethods = new BuilderMethodBase(this.countService);
+    }
 
     public reset(): this {
         this.area = new InventoryArea;
@@ -24,7 +30,10 @@ export class InventoryAreaBuilder {
     }
 
     public async inventoryCountsById(ids: number[]): Promise<this> {
-        this.area.inventoryCounts = await this.countService.findEntitiesById(ids);
+        await this.countMethods.entityByIds(
+            (counts) => { this.area.inventoryCounts = counts; },
+            ids,
+        );
         return this;
     }
 
@@ -40,7 +49,6 @@ export class InventoryAreaBuilder {
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.inventoryCountIds){
             await this.inventoryCountsById(dto.inventoryCountIds);
         }
@@ -61,7 +69,6 @@ export class InventoryAreaBuilder {
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.inventoryCountIds){
             await this.inventoryCountsById(dto.inventoryCountIds);
         }
