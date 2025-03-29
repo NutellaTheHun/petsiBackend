@@ -17,7 +17,6 @@ describe('Inventory area service', () => {
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-
         service = module.get<InventoryAreaService>(InventoryAreaService);
     });
 

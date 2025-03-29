@@ -6,11 +6,13 @@ import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-pack
 @Injectable()
 export class InventoryItemPackageBuilder {
     private itemPackage: InventoryItemPackage;
-    
+    private taskQueue: (() => Promise<void>)[];
+
     constructor(){  this.reset(); }
 
     public reset(): this {
         this.itemPackage = new InventoryItemPackage();
+        this.taskQueue = [];
         return this;
     }
 
@@ -19,29 +21,32 @@ export class InventoryItemPackageBuilder {
         return this;
     }
 
-    public getPackage(): InventoryItemPackage{
+    public async build(): Promise<InventoryItemPackage>{
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.itemPackage;
         this.reset();
         return result;
     }
 
-    public buildCreateDto(dto: CreateInventoryItemPackageDto): InventoryItemPackage {
+    public async buildCreateDto(dto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage> {
         this.reset();
 
         if(dto.name){
             this.name(dto.name);
         }
 
-        return this.getPackage();
+        return await this.build();
     }
 
     public updatePackage(itemPackage: InventoryItemPackage): this {
         this.itemPackage = itemPackage;
         return this;
-        
     }
 
-    public buildUpdateDto(itemPackage: InventoryItemPackage,dto: UpdateInventoryItemPackageDto): InventoryItemPackage {
+    public async buildUpdateDto(itemPackage: InventoryItemPackage,dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
         this.reset();
 
         this.updatePackage(itemPackage);
@@ -50,6 +55,6 @@ export class InventoryItemPackageBuilder {
             this.name(dto.name);
         }
 
-        return this.getPackage();
+        return await this.build();
     }
 }

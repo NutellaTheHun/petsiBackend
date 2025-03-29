@@ -48,8 +48,8 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
 
     async findByRecipeName(name: string, relations?:string[]): Promise<RecipeIngredient[]>{
         const recipe = await this.recipeService.findOneByName(name, ["ingredients"]);
-        if(!recipe){
-            throw new Error("recipe not found");
+        if(!recipe?.ingredients){
+            throw new Error("recipe ingredients not found");
         }
         return recipe.ingredients;
     }

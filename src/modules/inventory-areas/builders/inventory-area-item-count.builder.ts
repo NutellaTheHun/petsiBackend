@@ -15,6 +15,8 @@ import { InventoryItemSize } from "../../inventory-items/entities/inventory-item
 @Injectable()
 export class InventoryAreaItemCountBuilder {
     private countedItem: InventoryAreaItemCount;
+    private taskQueue: (() => Promise<void>)[];
+
     private areaCountMethods: BuilderMethodBase<InventoryAreaCount>;
     private areaMethods: BuilderMethodBase<InventoryArea>;
     private itemMethods: BuilderMethodBase<InventoryItem>;
@@ -24,6 +26,7 @@ export class InventoryAreaItemCountBuilder {
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly areaCountService: InventoryAreaCountService,
 
+        @Inject(forwardRef(() => InventoryAreaService))
         private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryItemService))
@@ -41,38 +44,47 @@ export class InventoryAreaItemCountBuilder {
 
     public reset(): this {
         this.countedItem = new InventoryAreaItemCount();
+        this.taskQueue = [];
         return this;
     }
 
-    public async inventoryAreaById(id: number): Promise<this> {
-        await this.areaMethods.entityById(
-            (area) => {this.countedItem.inventoryArea = area},
-            id,
-        );
+    public inventoryAreaById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.areaMethods.entityById(
+                (area) => {this.countedItem.inventoryArea = area},
+                id,
+            );
+        });
         return this;
     }
 
-    public async inventoryAreaByName(name: string): Promise<this> {
-        await this.areaMethods.entityByName(
-            (area) => {this.countedItem.inventoryArea = area},
-            name,
-        );
+    public inventoryAreaByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.areaMethods.entityByName(
+                (area) => {this.countedItem.inventoryArea = area},
+                name,
+            );
+        });
         return this;
     }
 
-    public async inventoryItemById(id: number): Promise<this> {
-        await this.itemMethods.entityById(
-            (item) => {this.countedItem.item = item},
-            id,
-        );
+    public inventoryItemById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityById(
+                (item) => {this.countedItem.item = item},
+                id,
+            );
+        });
         return this;
     }
 
-    public async inventoryItemByName(name: string): Promise<this> {
-        await this.itemMethods.entityByName(
-            (item) => {this.countedItem.item = item},
-            name,
-        );
+    public inventoryItemByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityByName(
+                (item) => {this.countedItem.item = item},
+                name,
+            );
+        });
         return this;
     }
 
@@ -86,23 +98,31 @@ export class InventoryAreaItemCountBuilder {
         return this;
     }
 
-    public async sizesById(id: number): Promise<this> {
-        await this.itemSizeMethods.entityById(
-            (size) => {this.countedItem.size = size},
-            id,
-        )
+    public sizesById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.itemSizeMethods.entityById(
+                (size) => {this.countedItem.size = size},
+                id,
+            )
+        });
         return this;
     }
 
-    public async areaCountById(id: number): Promise<this>{
-        await this.areaCountMethods.entityById(
-            (count) => {this.countedItem.areaCount = count},
-            id,
-        );
+    public areaCountById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.areaCountMethods.entityById(
+                (count) => {this.countedItem.areaCount = count},
+                id,
+            );
+        });
         return this;
     }
 
-    public getItem(): InventoryAreaItemCount {
+    public async build(): Promise<InventoryAreaItemCount> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.countedItem;
         this.reset();
         return result;
@@ -112,16 +132,16 @@ export class InventoryAreaItemCountBuilder {
         this.reset();
 
         if(dto.areaCountId){
-            await this.areaCountById(dto.areaCountId);
+            this.areaCountById(dto.areaCountId);
         }
         if(dto.inventoryAreaId){
-            await this.inventoryAreaById(dto.inventoryAreaId);
+           this.inventoryAreaById(dto.inventoryAreaId);
         }
         if(dto.inventoryItemId){
-            await this.inventoryItemById(dto.inventoryItemId);
+            this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.itemSizeId){
-            await this.sizesById(dto.itemSizeId);
+            this.sizesById(dto.itemSizeId);
         }
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
@@ -130,7 +150,7 @@ export class InventoryAreaItemCountBuilder {
             this.unitAmount(dto.unitAmount);
         }
 
-        return this.getItem();
+        return await this.build();
     }
 
     public updateCountedItem(toUpdate: InventoryAreaItemCount): this {
@@ -143,16 +163,16 @@ export class InventoryAreaItemCountBuilder {
         this.updateCountedItem(toUpdate);
 
         if(dto.areaCountId){
-            await this.areaCountById(dto.areaCountId);
+            this.areaCountById(dto.areaCountId);
         }
         if(dto.inventoryAreaId){
-            await this.inventoryAreaById(dto.inventoryAreaId);
+            this.inventoryAreaById(dto.inventoryAreaId);
         }
         if(dto.inventoryItemId){
-            await this.inventoryItemById(dto.inventoryItemId);
+            this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.itemSizeId){
-            await this.sizesById(dto.itemSizeId);
+            this.sizesById(dto.itemSizeId);
         }
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
@@ -161,6 +181,6 @@ export class InventoryAreaItemCountBuilder {
             this.unitAmount(dto.unitAmount);
         }
 
-        return this.getItem();
+        return await this.build();
     }
 }

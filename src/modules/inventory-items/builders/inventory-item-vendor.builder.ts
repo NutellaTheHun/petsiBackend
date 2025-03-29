@@ -9,6 +9,8 @@ import { InventoryItemService } from "../services/inventory-item.service";
 @Injectable()
 export class InventoryItemVendorBuilder {
     private vendor: InventoryItemVendor;
+    private taskQueue: (() => Promise<void>)[];
+
     private itemMethods: BuilderMethodBase<InventoryItem>;
 
     constructor(
@@ -21,7 +23,8 @@ export class InventoryItemVendorBuilder {
 
     public reset(): this {
         this.vendor = new InventoryItemVendor;
-        return this
+        this.taskQueue = [];
+        return this;
     }
 
     public name(name: string): this {
@@ -29,15 +32,21 @@ export class InventoryItemVendorBuilder {
         return this;
     }
 
-    public async inventoryItemsByIds(ids: number[]): Promise<this> {
-        await this.itemMethods.entityByIds(
-            (items) => { this.vendor.items = items},
-            ids,
-        )
+    public inventoryItemsByIds(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityByIds(
+                (items) => { this.vendor.items = items},
+                ids,
+            )
+        });
         return this;
     }
 
-    public getVendor(): InventoryItemVendor {
+    public async build(): Promise<InventoryItemVendor> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+
         const result = this.vendor;
         this.reset();
         return result;
@@ -50,10 +59,10 @@ export class InventoryItemVendorBuilder {
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
-           await this.inventoryItemsByIds(dto.inventoryItemIds);
+        this.inventoryItemsByIds(dto.inventoryItemIds);
         }
 
-        return this.getVendor();
+        return await this.build();
     }
 
     public updateVendor(toUpdate: InventoryItemVendor): this {
@@ -69,9 +78,9 @@ export class InventoryItemVendorBuilder {
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
-           await this.inventoryItemsByIds(dto.inventoryItemIds);
+        this.inventoryItemsByIds(dto.inventoryItemIds);
         }
 
-        return this.getVendor();
+        return await this.build();
     }
 }

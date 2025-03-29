@@ -61,7 +61,7 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should get all vendors', async () => {
-    const vendors = testingUtil.getTestInventoryItemVendorEntities();
+    const vendors = await testingUtil.getTestInventoryItemVendorEntities();
     await testingUtil.initializeInventoryItemVendorDatabaseTesting();
 
     for(const vendor of vendors){

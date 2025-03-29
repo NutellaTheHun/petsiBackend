@@ -9,6 +9,7 @@ import { UnitCategory } from "../entities/unit-category.entity";
 @Injectable()
 export class UnitOfMeasureBuilder {
     private unit: UnitOfMeasure;
+    private taskQueue: (() => Promise<void>)[];
     private categoryMethods: BuilderMethodBase<UnitCategory>;
 
     constructor(
@@ -21,6 +22,7 @@ export class UnitOfMeasureBuilder {
     
     public reset(): this {
         this.unit = new UnitOfMeasure();
+        this.taskQueue = [];
         return this;
     }
 
@@ -34,19 +36,23 @@ export class UnitOfMeasureBuilder {
         return this;
     }
 
-    public async categoryById(id: number): Promise<this> {
-        await this.categoryMethods.entityById(
-            (cat) => {this.unit.category = cat; },
-            id,
-        );
+    public categoryById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityById(
+                (cat) => {this.unit.category = cat; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async categoryByName(name: string): Promise<this> {
-        await this.categoryMethods.entityByName(
-            (cat) => {this.unit.category = cat; },
-            name,
-        );
+    public categoryByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityByName(
+                (cat) => {this.unit.category = cat; },
+                name,
+            );
+        });
         return this;
     }
 
@@ -55,7 +61,11 @@ export class UnitOfMeasureBuilder {
         return this;
     }
 
-    public getUnit(): UnitOfMeasure {
+    public async build(): Promise<UnitOfMeasure> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+
         const result = this.unit;
         this.reset();
         return result;
@@ -71,13 +81,13 @@ export class UnitOfMeasureBuilder {
             this.abbreviation(dto.abbreviation);
         }
         if(dto.conversionFactorToBase){
-        this.conversionFactor(dto.conversionFactorToBase);
+            this.conversionFactor(dto.conversionFactorToBase);
         }
         if(dto.categoryId){
-            await this.categoryById(dto.categoryId);
+            this.categoryById(dto.categoryId);
         }
 
-        return this.getUnit();
+        return await this.build();
     }
 
     public updateUnit(toUpdate: UnitOfMeasure): this {
@@ -96,7 +106,7 @@ export class UnitOfMeasureBuilder {
             this.abbreviation(dto.abbreviation);
         }
         if(dto.conversionFactorToBase){
-        this.conversionFactor(dto.conversionFactorToBase);
+            this.conversionFactor(dto.conversionFactorToBase);
         }
         // 0 is passed intentionally to remove a category to a unit,
         // so null cannot be used to evaluate in the IF statement.
@@ -104,9 +114,9 @@ export class UnitOfMeasureBuilder {
             if(dto.categoryId === 0){
                 this.unit.category = null;
               } else {
-                await this.categoryById(dto.categoryId);
+                this.categoryById(dto.categoryId);
             }
         }
-        return this.getUnit();
+        return await this.build();
     }
 }

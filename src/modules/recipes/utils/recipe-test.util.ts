@@ -14,12 +14,14 @@ import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import * as CONSTANT from "./constants";
 import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
 import { RecipeBuilder } from "../builders/recipe.builder";
-import { OUNCE, POUND } from "../../unit-of-measure/utils/constants";
+import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
+import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
 
 @Injectable()
 export class RecipeTestUtil {
     constructor(
         private readonly ingredientService: RecipeIngredientService,
+        private readonly ingredientBuilder: RecipeIngredientBuilder,
 
         private readonly categoryService: RecipeCategoryService,
         private readonly categorybuilder: RecipeCategoryBuilder,
@@ -43,86 +45,153 @@ export class RecipeTestUtil {
          * quantity: number;
          * unit: UnitOfMeasure;
          */
-        throw new NotImplementedException();
+        return [
+            /*await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(0.5)
+                .recipeByName(CONSTANT.REC_A)
+                .unitOfMeasureByName(OUNCE)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(1.0)
+                .recipeByName(CONSTANT.REC_A)
+                .unitOfMeasureByName(POUND)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(1.5)
+                .recipeByName(CONSTANT.REC_B)
+                .unitOfMeasureByName(GRAM)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(2)
+                .recipeByName(CONSTANT.REC_B)
+                .unitOfMeasureByName(FL_OUNCE)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(2.5)
+                .recipeByName(CONSTANT.REC_C)
+                .unitOfMeasureByName(LITER)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(2.75)
+                .recipeByName(CONSTANT.REC_C)
+                .unitOfMeasureByName(GALLON)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(3)
+                .recipeByName(CONSTANT.REC_D)
+                .unitOfMeasureByName(KILOGRAM)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(3.5)
+                .recipeByName(CONSTANT.REC_D)
+                .unitOfMeasureByName(GRAM)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(10)
+                .recipeByName(CONSTANT.REC_E)
+                .unitOfMeasureByName(POUND)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(10.5)
+                .recipeByName(CONSTANT.REC_E)
+                .unitOfMeasureByName(CUP)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(10.75)
+                .recipeByName(CONSTANT.REC_F)
+                .unitOfMeasureByName(TABLESPOON)
+                .build(),
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName()
+                //.subRecipeByName()
+                .quantity(15)
+                .recipeByName(CONSTANT.REC_F)
+                .unitOfMeasureByName(TEASPOON)
+                .build(),*/
+        ]
     }
 
     /**
      * 
-     * @returns 4 Categories with no subcategories or recipies, catgories A-C and category "no category".
+     * @returns 3 Categories with no subcategories or recipies, catgories A,B and category "no category".
      */
-    public getTestRecipeCategoryEntities(): RecipeCategory[] {
+    public async getTestRecipeCategoryEntities(): Promise<RecipeCategory[]> {
         /**
          * name: string;
          * subCategories: RecipeSubCategory[] = [];
          * recipes: Recipe[];
          */
         return [
-            this.categorybuilder.reset()
+            await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_A)
-                .getCategory(),
-            this.categorybuilder.reset()
+                .build(),
+            await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_B)
-                .getCategory(),
-            this.categorybuilder.reset()
-                .name(CONSTANT.REC_CAT_C)
-                .getCategory(),
-            this.categorybuilder.reset()
+                .build(),
+            await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_NONE)
-                .getCategory(),
+                .build(),
         ];
     }
 
+    /**
+     * 
+     * @returns returns 6 sub-categories(Sub cat 1-4, for categories a,b and "no sub-category" for each)
+     */
     public async getTestRecipeSubCategoryEntities(): Promise<RecipeSubCategory[]> {
-        const catA = await this.categoryService.findOneByName(CONSTANT.REC_CAT_A);
-        if(!catA){ throw new Error("category A not found"); }
-        const catB = await this.categoryService.findOneByName(CONSTANT.REC_CAT_B);
-        if(!catB){ throw new Error("category B not found"); }
-        const catC = await this.categoryService.findOneByName(CONSTANT.REC_CAT_C);
-        if(!catC){ throw new Error("categoryC not found"); }
         /**
          * name: string
          * parentCategory: RecipeCategory
          * recipes: Recipe[]
          */
         return [
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_1")
-                .parentCategoryById(catA.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_2")
-                .parentCategoryById(catA.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("no_sub_cat")
-                .parentCategoryById(catA.id))
-                .getSubCategory(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_1)
+                .parentCategoryByName(CONSTANT.REC_CAT_A)
+                .build(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_2)
+                .parentCategoryByName(CONSTANT.REC_CAT_A)
+                .build(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_NONE)
+                .parentCategoryByName(CONSTANT.REC_CAT_A)
+                .build(),
 
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_3")
-                .parentCategoryById(catB.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_4")
-                .parentCategoryById(catB.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("no_sub_cat")
-                .parentCategoryById(catB.id))
-                .getSubCategory(),
-
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_5")
-                .parentCategoryById(catC.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("sub_cat_6")
-                .parentCategoryById(catC.id))
-                .getSubCategory(),
-            (await this.subCategoryBuilder.reset()
-                .name("no_sub_cat")
-                .parentCategoryById(catC.id))
-                .getSubCategory(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_3)
+                .parentCategoryByName(CONSTANT.REC_CAT_B)
+                .build(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_4)
+                .parentCategoryByName(CONSTANT.REC_CAT_B)
+                .build(),
+            await this.subCategoryBuilder.reset()
+                .name(CONSTANT.REC_SUBCAT_NONE)
+                .parentCategoryByName(CONSTANT.REC_CAT_B)
+                .build(),
         ];
     }
 
@@ -143,20 +212,79 @@ export class RecipeTestUtil {
          */
         return [
             await this.recipeBuilder.reset()
-                .name("recipeA")
+                .name(CONSTANT.REC_A)
                 .isIngredient(false)
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
                 .cost(2.99)
                 .salesPrice(4.99)
                 .servingUnitOfMeasureByName(OUNCE)
-                .build()
-                
-                
-                
-        
+                .batchResultUnitOfMeasureByName(POUND)
+                .categoryByName(CONSTANT.REC_CAT_A)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_1)
+                .build(),
+            await this.recipeBuilder.reset()
+                .name(CONSTANT.REC_B)
+                .isIngredient(true)
+                .batchResultQuantity(3)
+                .servingSizeQuantity(4)
+                .cost(5.99)
+                .salesPrice(8.99)
+                .servingUnitOfMeasureByName(MILLILITER)
+                .batchResultUnitOfMeasureByName(LITER)
+                .categoryByName(CONSTANT.REC_CAT_A)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_2)
+                .build(),
+            await this.recipeBuilder.reset()
+                .name(CONSTANT.REC_C)
+                .isIngredient(false)
+                .batchResultQuantity(5)
+                .servingSizeQuantity(6)
+                .cost(10.99)
+                .salesPrice(12.99)
+                .servingUnitOfMeasureByName(GRAM)
+                .batchResultUnitOfMeasureByName(KILOGRAM)
+                .categoryByName(CONSTANT.REC_CAT_A)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_NONE)
+                .build(),
+            await this.recipeBuilder.reset()
+                .name(CONSTANT.REC_D)
+                .isIngredient(false)
+                .batchResultQuantity(1)
+                .servingSizeQuantity(2)
+                .cost(2.99)
+                .salesPrice(4.99)
+                .servingUnitOfMeasureByName(OUNCE)
+                .batchResultUnitOfMeasureByName(POUND)
+                .categoryByName(CONSTANT.REC_CAT_B)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_3)
+                .build(),
+            await this.recipeBuilder.reset()
+                .name(CONSTANT.REC_E)
+                .isIngredient(true)
+                .batchResultQuantity(3)
+                .servingSizeQuantity(4)
+                .cost(5.99)
+                .salesPrice(8.99)
+                .servingUnitOfMeasureByName(MILLILITER)
+                .batchResultUnitOfMeasureByName(LITER)
+                .categoryByName(CONSTANT.REC_CAT_B)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_4)
+                .build(),
+            await this.recipeBuilder.reset()
+                .name(CONSTANT.REC_F)
+                .isIngredient(false)
+                .batchResultQuantity(5)
+                .servingSizeQuantity(6)
+                .cost(10.99)
+                .salesPrice(12.99)
+                .servingUnitOfMeasureByName(GRAM)
+                .batchResultUnitOfMeasureByName(KILOGRAM)
+                .categoryByName(CONSTANT.REC_CAT_A)
+                .subCategoryByName(CONSTANT.REC_SUBCAT_NONE)
+                .build(),
         ];
-        throw new NotImplementedException();
+        
     }
 
     public async initRecipeIngredientTestingDatabase(): Promise<void> {

@@ -52,7 +52,7 @@ describe('Inventory area item count service', () => {
         if(!areaA){ throw new Error('inventory area not found'); }
 
         expect(areaA?.inventoryCounts).not.toBeUndefined();
-        expect(areaA?.inventoryCounts.length).toEqual(1);
+        expect(areaA?.inventoryCounts?.length).toEqual(1);
     });
 
     it('should THROW ERROR, to create area count (no areaID)', async () => {
@@ -96,12 +96,13 @@ describe('Inventory area item count service', () => {
     it('should remove inventoryCount reference from old inventory Area, and update new one', async () => {
         const oldArea = await inventoryAreaService.findOneByName(AREA_A, ["inventoryCounts"]);
         if(!oldArea){ throw new Error('old inventory area not found'); }
-        expect(oldArea?.inventoryCounts.length).toEqual(0);
+        expect(oldArea?.inventoryCounts?.length).toEqual(0);
 
         const newArea = await inventoryAreaService.findOneByName(AREA_B, ["inventoryCounts"]);
         if(!newArea){ throw new Error('new inventoryArea not found'); }
+        if(!newArea.inventoryCounts){ throw new Error('new inventoryAreas inventory counts not found'); }
         expect(newArea?.inventoryCounts).not.toBeNull();
-        expect(newArea?.inventoryCounts.length).toEqual(1);
+        expect(newArea?.inventoryCounts?.length).toEqual(1);
         expect(newArea?.inventoryCounts[0].id).toEqual(testId);
     });
 
@@ -162,6 +163,6 @@ describe('Inventory area item count service', () => {
         expect(verify).toBeNull();
 
         const area = await inventoryAreaService.findOneByName(AREA_B, ["inventoryCounts"]);
-        expect(area?.inventoryCounts.length).toEqual(0);
+        expect(area?.inventoryCounts?.length).toEqual(0);
     });
 });

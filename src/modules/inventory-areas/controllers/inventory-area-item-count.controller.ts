@@ -1,17 +1,16 @@
 import { Body, Controller, forwardRef, Inject, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
-import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
+import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
-import { InventoryItemSizeController } from "../../inventory-items/controllers/inventory-item-size.controller";
 import { UpdateInventoryAreaItemCountDto } from "../dto/update-inventory-area-item-count.dto";
+import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
+import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
 
 @Controller('inventory-area-item-count')
 export class InventoryAreaItemCountController extends ControllerBase<InventoryAreaItemCount> {
     constructor(
         private readonly itemCountService: InventoryAreaItemCountService,
-
-        private readonly itemSizeController: InventoryItemSizeController,
+        private readonly itemSizeService: InventoryItemSizeService,
     ){ super(itemCountService); }
 
     @Post()
@@ -24,7 +23,7 @@ export class InventoryAreaItemCountController extends ControllerBase<InventoryAr
         }
 
         if(createDto.itemSizeCreateDto){
-            const newSize = await this.itemSizeController.create(createDto.itemSizeCreateDto);
+            const newSize = await this.itemSizeService.create(createDto.itemSizeCreateDto);
             if(!newSize){ throw new Error("new item size is null"); }
             if(!newSize?.id){ throw new Error("new item size id is null"); }
 
@@ -43,7 +42,7 @@ export class InventoryAreaItemCountController extends ControllerBase<InventoryAr
         }
 
         if(updateDto.itemSizeCreateDto){
-            const newSize = await this.itemSizeController.create(updateDto.itemSizeCreateDto);
+            const newSize = await this.itemSizeService.create(updateDto.itemSizeCreateDto);
             if(!newSize){ throw new Error("new item size is null"); }
             if(!newSize?.id){ throw new Error("new item size id is null"); }
 

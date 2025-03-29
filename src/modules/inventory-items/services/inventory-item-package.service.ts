@@ -19,7 +19,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
         const exists = await this.findOneByName(createDto.name);
         if(exists){ return null; }
 
-        const packageType = this.packageBuilder.buildCreateDto(createDto);
+        const packageType = await this.packageBuilder.buildCreateDto(createDto);
         return await this.packageRepo.save(packageType);
     }
       

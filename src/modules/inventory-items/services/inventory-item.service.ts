@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -12,6 +12,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
   constructor(
     @InjectRepository(InventoryItem)
     private readonly itemRepo: Repository<InventoryItem>,
+
     private readonly itemBuilder: InventoryItemBuilder,
   ){ super(itemRepo)}
 

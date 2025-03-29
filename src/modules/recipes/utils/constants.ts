@@ -17,3 +17,10 @@ export const RECIPE_SUB_CAT_GREEN = "sub category green";
 export const RECIPE_SUB_CAT_YELLOW = "sub category yellow";
 export const RECIPE_SUB_CAT_ORANGE = "sub category orange";
 export const RECIPE_SUB_CAT_NONE = "no sub category";
+
+export const REC_A = "recipe_A";
+export const REC_B = "recipe_B";
+export const REC_C = "recipe_C";
+export const REC_D = "recipe_D";
+export const REC_E = "recipe_E";
+export const REC_F = "recipe_F";

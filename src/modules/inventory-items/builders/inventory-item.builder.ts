@@ -13,6 +13,8 @@ import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 @Injectable()
 export class InventoryItemBuilder {
     private item: InventoryItem;
+    private taskQueue: (() => Promise<void>)[];
+
     private categoryMethods: BuilderMethodBase<InventoryItemCategory>;
     private sizeMethods: BuilderMethodBase<InventoryItemSize>;
     private vendorMethods: BuilderMethodBase<InventoryItemVendor>;
@@ -35,6 +37,7 @@ export class InventoryItemBuilder {
 
     public reset(): this {
         this.item = new InventoryItem;
+        this.taskQueue = [];
         return this;
     }
 
@@ -43,47 +46,61 @@ export class InventoryItemBuilder {
         return this;
     }
 
-    public async sizesByIds(ids: number[]): Promise<this> {
-        await this.sizeMethods.entityByIds(
-            (sizes) => { this.item.sizes = sizes},
-            ids,
-        );
+    public sizesByIds(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.sizeMethods.entityByIds(
+                (sizes) => { this.item.sizes = sizes},
+                ids,
+            );
+        });
         return this;
     }
     
-    public async categoryById(id: number): Promise<this> {
-        await this.categoryMethods.entityById(
-            (cat) => {this.item.category = cat; },
-            id,
-        );
+    public categoryById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityById(
+                (cat) => {this.item.category = cat; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async categoryByName(name: string): Promise<this> {
-        await this.categoryMethods.entityByName(
-            (cat) => {this.item.category = cat; },
-            name,
-        );
+    public categoryByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityByName(
+                (cat) => {this.item.category = cat; },
+                name,
+            );
+        });
         return this;
     }
 
-    public async vendorById(id: number): Promise<this> {
-        await this.vendorMethods.entityById(
-            (ven) => {this.item.vendor = ven; },
-            id,
-        );
+    public vendorById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.vendorMethods.entityById(
+                (ven) => {this.item.vendor = ven; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async vendorByName(name: string): Promise<this> {
-        await this.vendorMethods.entityByName(
-            (ven) => {this.item.vendor = ven; },
-            name,
-        );
+    public vendorByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.vendorMethods.entityByName(
+                (ven) => {this.item.vendor = ven; },
+                name,
+            );
+        });
         return this;
     }
 
-    public getItem(): InventoryItem {
+    public async build(): Promise<InventoryItem> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+
         const result = this.item;
         this.reset();
         return result;
@@ -93,19 +110,19 @@ export class InventoryItemBuilder {
         this.reset();
 
         if(dto.inventoryItemCategoryId){
-            await this.categoryById(dto.inventoryItemCategoryId)
+            this.categoryById(dto.inventoryItemCategoryId)
         }
         if(dto.name){
             this.name(dto.name);
         }
         if(dto.sizeIds){
-            await this.sizesByIds(dto.sizeIds);
+            this.sizesByIds(dto.sizeIds);
         }
         if(dto.vendorId){
-            await this.vendorById(dto.vendorId);
+            this.vendorById(dto.vendorId);
         }
 
-        return this.getItem();
+        return await this.build();
     }
 
     public updateItem(toUpdate: InventoryItem): this {
@@ -122,23 +139,23 @@ export class InventoryItemBuilder {
                 this.item.category = null;
             }
             else{
-                await this.categoryById(dto.inventoryItemCategoryId);
+                this.categoryById(dto.inventoryItemCategoryId);
             }
         }
         if(dto.name){
             this.name(dto.name);
         }
         if(dto.sizeIds){
-            await this.sizesByIds(dto.sizeIds);
+            this.sizesByIds(dto.sizeIds);
         }
         if(dto.vendorId !== undefined){
             if(dto.vendorId === 0){
                 this.item.vendor = null;
             } else {
-                await this.vendorById(dto.vendorId);
+                this.vendorById(dto.vendorId);
             }
         }
 
-        return this.getItem();
+        return await this.build();
     }
 }

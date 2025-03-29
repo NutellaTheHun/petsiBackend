@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -13,11 +13,15 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
     constructor(
         @InjectRepository(InventoryAreaItemCount)
         private readonly itemCountRepo: Repository<InventoryAreaItemCount>,
+
+        @Inject(forwardRef(() => InventoryAreaItemCountBuilder))
         private readonly itemCountBuilder: InventoryAreaItemCountBuilder,
+
+        @Inject(forwardRef(() => InventoryAreaService))
+        private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-        private readonly inventoryAreaService: InventoryAreaService,
     ){ super(itemCountRepo); }
 
     /**
@@ -56,7 +60,7 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
         if(!area){ throw new Error('inventory area not found'); }
 
         return await this.itemCountRepo.find({ 
-            where: { inventoryArea: { id: area.id } }, 
+            where: { inventoryArea: { name: name } }, 
             relations
         });
     }

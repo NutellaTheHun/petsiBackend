@@ -9,6 +9,7 @@ import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 @Injectable()
 export class InventoryAreaBuilder {
     private area: InventoryArea;
+    private taskQueue: (() => Promise<void>)[];
     private countMethods: BuilderMethodBase<InventoryAreaCount>;
 
     constructor(
@@ -21,6 +22,7 @@ export class InventoryAreaBuilder {
 
     public reset(): this {
         this.area = new InventoryArea;
+        this.taskQueue = [];
         return this;
     }
 
@@ -29,15 +31,21 @@ export class InventoryAreaBuilder {
         return this;
     }
 
-    public async inventoryCountsById(ids: number[]): Promise<this> {
-        await this.countMethods.entityByIds(
-            (counts) => { this.area.inventoryCounts = counts; },
-            ids,
-        );
+    public inventoryCountsById(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.countMethods.entityByIds(
+                (counts) => { this.area.inventoryCounts = counts; },
+                ids,
+            );
+        });
         return this;
     }
 
-    public getArea(): InventoryArea {
+    public async build(): Promise<InventoryArea> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+
         const result = this.area;
         this.reset();
         return result;
@@ -50,10 +58,10 @@ export class InventoryAreaBuilder {
             this.name(dto.name);
         }
         if(dto.inventoryCountIds){
-            await this.inventoryCountsById(dto.inventoryCountIds);
+            this.inventoryCountsById(dto.inventoryCountIds);
         }
 
-        return this.getArea();
+        return await this.build();
     }
 
     public updateArea(toUpdate: InventoryArea): this {
@@ -63,16 +71,15 @@ export class InventoryAreaBuilder {
 
     public async buildUpdateDto(toUpdate: InventoryArea, dto: UpdateInventoryAreaDto): Promise<InventoryArea> {
         this.reset();
-
         this.updateArea(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
         }
         if(dto.inventoryCountIds){
-            await this.inventoryCountsById(dto.inventoryCountIds);
+            this.inventoryCountsById(dto.inventoryCountIds);
         }
 
-        return this.getArea();
+        return await this.build();
     }
 }

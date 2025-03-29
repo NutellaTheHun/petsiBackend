@@ -7,13 +7,14 @@ import { Recipe } from "../entities/recipe.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { BuilderMethodBase } from "../../../base/builder-method-base";
-import { dot } from "node:test/reporters";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 
 @Injectable()
 export class RecipeIngredientBuilder {
     private ingredient: RecipeIngredient;
+    private taskQueue: (() => Promise<void>)[];
+
     private recipeMethods: BuilderMethodBase<Recipe>;
     private itemMethods: BuilderMethodBase<InventoryItem>;
     private unitMethods: BuilderMethodBase<UnitOfMeasure>;
@@ -32,54 +33,67 @@ export class RecipeIngredientBuilder {
 
     public reset(): this {
         this.ingredient = new RecipeIngredient;
+        this.taskQueue = [];
         return this;
     }
 
-    public async recipeById(id: number): Promise<this> {
-        await this.recipeMethods.entityById(
-            (rec) => { this.ingredient.recipe = rec; },
-            id,
-        );
+    public recipeById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.recipeMethods.entityById(
+                (rec) => { this.ingredient.recipe = rec; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async recipeByName(name: string): Promise<this> {
-        await this.recipeMethods.entityByName(
-            (rec) => { this.ingredient.recipe = rec; },
-            name,
-        );
+    public recipeByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.recipeMethods.entityByName(
+                (rec) => { this.ingredient.recipe = rec; },
+                name,
+            );
+        });
         return this;
     }
 
-    public async inventoryItemById(id: number): Promise<this> {
-        await this.itemMethods.entityById(
-            (item) => { this.ingredient.inventoryItem = item; },
-            id,
-        );
+    public inventoryItemById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityById(
+                (item) => { this.ingredient.inventoryItem = item; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async inventoryItemByName(name: string): Promise<this> {
-        await this.itemMethods.entityByName(
-            (item) => { this.ingredient.inventoryItem = item; },
-            name,
-        );
+    public inventoryItemByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityByName(
+                (item) => { this.ingredient.inventoryItem = item; },
+                name,
+            );
+        });
         return this;
     }
 
-    public async subRecipeById(id: number): Promise<this> {
-        await this.recipeMethods.entityById(
-            (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
-            id,
-        );
+    public subRecipeById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.recipeMethods.entityById(
+                (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async subRecipeByName(name: string): Promise<this> {
-        await this.recipeMethods.entityByName(
-            (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
-            name,
-        );
+    public subRecipeByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.recipeMethods.entityByName(
+                (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
+                name,
+            );
+        });
         return this;
     }
 
@@ -88,23 +102,31 @@ export class RecipeIngredientBuilder {
         return this;
     }
 
-    public async unitOfMeasureById(id: number): Promise<this> {
-        await this.unitMethods.entityById(
-            (unit) => { this.ingredient.unit = unit; },
-            id,
-        );
+    public unitOfMeasureById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityById(
+                (unit) => { this.ingredient.unit = unit; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async unitOfMeasureByName(name: string): Promise<this> {
-        await this.unitMethods.entityByName(
-            (unit) => { this.ingredient.unit = unit; },
-            name,
-        );
+    public unitOfMeasureByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityByName(
+                (unit) => { this.ingredient.unit = unit; },
+                name,
+            );
+        });
         return this;
     }
 
-    public getIngredient(): RecipeIngredient {
+    public async build(): Promise<RecipeIngredient> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.ingredient;
         this.reset();
         return result;
@@ -114,22 +136,22 @@ export class RecipeIngredientBuilder {
         this.reset();
 
         if(dto.inventoryItemId){
-            await this.inventoryItemById(dto.inventoryItemId);
+            this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
         if(dto.recipeId){
-            await this.recipeById(dto.recipeId);
+            this.recipeById(dto.recipeId);
         }
         if(dto.subRecipeIngredientId){
-            await this.subRecipeById(dto.subRecipeIngredientId);
+            this.subRecipeById(dto.subRecipeIngredientId);
         }
         if(dto.unitOfMeasureId){
-            await this.unitOfMeasureById(dto.unitOfMeasureId);
+            this.unitOfMeasureById(dto.unitOfMeasureId);
         }
 
-        return this.getIngredient();
+        return await this.build();
     } 
 
     public updateIngredient(toUpdate: RecipeIngredient): this {
@@ -142,21 +164,21 @@ export class RecipeIngredientBuilder {
         this.updateIngredient(toUpdate);
 
         if(dto.inventoryItemId){
-            await this.inventoryItemById(dto.inventoryItemId);
+            this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
         if(dto.recipeId){
-            await this.recipeById(dto.recipeId);
+            this.recipeById(dto.recipeId);
         }
         if(dto.subRecipeIngredientId){
-            await this.subRecipeById(dto.subRecipeIngredientId);
+            this.subRecipeById(dto.subRecipeIngredientId);
         }
         if(dto.unitOfMeasureId){
-            await this.unitOfMeasureById(dto.unitOfMeasureId);
+            this.unitOfMeasureById(dto.unitOfMeasureId);
         }
 
-        return this.getIngredient();
+        return await this.build();
     }
 }

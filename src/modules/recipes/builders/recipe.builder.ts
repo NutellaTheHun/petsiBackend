@@ -41,13 +41,20 @@ export class RecipeBuilder {
         this.reset(); 
         //this.menuItemMethods = new BuilderMethodBase(this.menuItemService, );
         this.ingredientMethods = new BuilderMethodBase(this.ingredientService, );
-        this.measureMethods = new BuilderMethodBase(this.measureService, this.measureService.findOneByName.bind(this.measureService));
-        this.categoryMethods = new BuilderMethodBase(this.categoryService, this.categoryService.findOneByName.bind(this.categoryService));
-        this.subCategoryMethods = new BuilderMethodBase(this.subCategoryService, this.subCategoryService.findOneByName.bind(this.subCategoryService));
+        this.measureMethods = new BuilderMethodBase(
+            this.measureService, 
+            this.measureService.findOneByName.bind(this.measureService));
+        this.categoryMethods = new BuilderMethodBase(
+            this.categoryService, 
+            this.categoryService.findOneByName.bind(this.categoryService));
+        this.subCategoryMethods = new BuilderMethodBase(
+            this.subCategoryService, 
+            this.subCategoryService.findOneByName.bind(this.subCategoryService));
     }
 
     public reset(): this {
         this.recipe = new Recipe;
+        this.taskQueue = [];
         return this
     }
 
@@ -76,14 +83,7 @@ export class RecipeBuilder {
         this.recipe.isIngredient = value;
         return this;
     }
-    /*
-    public async ingredientsById(ids: number[]): Promise<this> {
-        await this.ingredientMethods.entityByIds(
-            (ingreds) => { this.recipe.ingredients = ingreds; },
-            ids,
-        )
-        return this;
-    }*/
+
     public ingredientsById(ids: number[]): this {
         this.taskQueue.push(async () => {
             await this.ingredientMethods.entityByIds(
@@ -99,19 +99,25 @@ export class RecipeBuilder {
         return this;
     }
 
-    public async batchResultUnitOfMeasureById(id: number): Promise<this> {
-        await this.measureMethods.entityById(
-            (unit) => { this.recipe.batchResultUnitOfMeasure = unit; },
-            id,
-        );
+    public batchResultUnitOfMeasureById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.measureMethods.entityById(
+                (unit) => { this.recipe.batchResultUnitOfMeasure = unit; },
+                id,
+            );
+        });
+        
         return this;
     }
 
-    public async batchResultUnitOfMeasureByName(name: string): Promise<this> {
-        await this.measureMethods.entityByName(
-            (unit) => { this.recipe.batchResultUnitOfMeasure = unit; },
-            name,
-        );
+    public batchResultUnitOfMeasureByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.measureMethods.entityByName(
+                (unit) => { this.recipe.batchResultUnitOfMeasure = unit; },
+                name,
+            );
+        });
+        
         return this;
     }
 
@@ -120,11 +126,13 @@ export class RecipeBuilder {
         return this;
     }
 
-    public async servingUnitOfMeasureById(id: number): Promise<this> {
-        await this.measureMethods.entityById(
-            (unit) => { this.recipe.servingSizeUnitOfMeasure = unit; },
-            id,
-        );
+    public servingUnitOfMeasureById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.measureMethods.entityById(
+                (unit) => { this.recipe.servingSizeUnitOfMeasure = unit; },
+                id,
+            );
+        });
         return this;
     }
 
@@ -149,51 +157,51 @@ export class RecipeBuilder {
         return this;
     }
 
-    public async categoryById(id: number): Promise<this> {
-        await this.categoryMethods.entityById(
-            (cat) => { this.recipe.category = cat; },
-            id,
-        );
+    public categoryById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityById(
+                (cat) => { this.recipe.category = cat; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async categoryByName(name: string): Promise<this> {
-        await this.categoryMethods.entityByName(
-            (cat) => { this.recipe.category = cat; },
-            name,
-        );
+    public categoryByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityByName(
+                (cat) => { this.recipe.category = cat; },
+                name,
+            );
+        });
         return this;
     }
 
-    public async subCategoryById(id: number): Promise<this> {
-        await this.subCategoryMethods.entityById(
-            (cat) => { this.recipe.subCategory = cat; },
-            id,
-        );
+    public subCategoryById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.subCategoryMethods.entityById(
+                (cat) => { this.recipe.subCategory = cat; },
+                id,
+            );
+        });
         return this;
     }
 
-    public async subCategoryByName(name: string): Promise<this> {
-        await this.subCategoryMethods.entityByName(
-            (cat) => { this.recipe.subCategory = cat; },
-            name,
-        );
+    public subCategoryByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.subCategoryMethods.entityByName(
+                (cat) => { this.recipe.subCategory = cat; },
+                name,
+            );
+        });
         return this;
-    }
-
-    private getRecipe(): Recipe {
-        const result = this.recipe;
-        this.reset();
-        return result;
     }
 
     public async build(): Promise<Recipe> {
-        // Process all async tasks in the queue
         for (const task of this.taskQueue) {
             await task();
         }
 
-        // Return the built recipe
         const result = this.recipe;
         this.reset();
         return result;
@@ -206,16 +214,16 @@ export class RecipeBuilder {
             this.batchResultQuantity(dto.batchResultQuantity);
         }
         if(dto.batchResultUnitOfMeasureId){
-            await this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
         if(dto.categoryId){
-            await this.categoryById(dto.categoryId);
+            this.categoryById(dto.categoryId);
         }
         if(dto.cost){
             this.cost(dto.cost);
         }
         if(dto.ingredientIds){ 
-            await this.ingredientsById(dto.ingredientIds);
+            this.ingredientsById(dto.ingredientIds);
         }
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
@@ -233,13 +241,13 @@ export class RecipeBuilder {
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
         if(dto.servingSizeUnitOfMeasureId){
-            await this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
         if(dto.subCategoryId){
-            await this.subCategoryById(dto.subCategoryId);
+            this.subCategoryById(dto.subCategoryId);
         }
 
-        return this.getRecipe();
+        return await this.build();
     }
 
     public updateRecipe(toUpdate: Recipe): this{
@@ -255,16 +263,16 @@ export class RecipeBuilder {
             this.batchResultQuantity(dto.batchResultQuantity);
         }
         if(dto.batchResultUnitOfMeasureId){
-            await this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
         if(dto.categoryId){
-            await this.categoryById(dto.categoryId);
+            this.categoryById(dto.categoryId);
         }
         if(dto.cost){
             this.cost(dto.cost);
         }
         if(dto.ingredientIds){ 
-            await this.ingredientsById(dto.ingredientIds);
+            this.ingredientsById(dto.ingredientIds);
         }
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
@@ -282,12 +290,12 @@ export class RecipeBuilder {
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
         if(dto.servingSizeUnitOfMeasureId){
-            await this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
         if(dto.subCategoryId){
-            await this.subCategoryById(dto.subCategoryId);
+            this.subCategoryById(dto.subCategoryId);
         }
 
-        return this.getRecipe();
+        return await this.build();
     }
 }

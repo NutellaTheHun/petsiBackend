@@ -13,6 +13,7 @@ import { InventoryItem } from "../entities/inventory-item.entity";
 @Injectable()
 export class InventoryItemSizeBuilder {
     private size: InventoryItemSize;
+    private taskQueue: (() => Promise<void>)[];
 
     private packageMethods: BuilderMethodBase<InventoryItemPackage>;
     private unitMethods: BuilderMethodBase<UnitOfMeasure>;
@@ -33,58 +34,75 @@ export class InventoryItemSizeBuilder {
 
     public reset(): this{
         this.size = new InventoryItemSize();
+        this.taskQueue = [];
         return this;
     }
 
-    public async unitOfMeasureById(id: number): Promise<this> {
-        await this.unitMethods.entityById(
-            (unit) => {this.size.measureUnit = unit; },
-            id,
-        )
+    public unitOfMeasureById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityById(
+                (unit) => {this.size.measureUnit = unit; },
+                id,
+            )
+        });
         return this;
     }
 
-    public async unitOfMeasureByName(name: string): Promise<this> {
-        await this.unitMethods.entityByName(
-            (unit) => {this.size.measureUnit = unit; },
-            name,
-        )
+    public unitOfMeasureByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityByName(
+                (unit) => {this.size.measureUnit = unit; },
+                name,
+            )
+        })
         return this;
     }
 
-    public async packageById(id: number): Promise<this> {
-        await this.packageMethods.entityById(
-            (pkg) => {this.size.packageType = pkg; },
-            id,
-        )
+    public packageById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.packageMethods.entityById(
+                (pkg) => {this.size.packageType = pkg; },
+                id,
+            )
+        })
         return this;
     }
 
-    public async packageByName(name: string): Promise<this> {
-        await this.packageMethods.entityByName(
-            (pkg) => {this.size.packageType = pkg; },
-            name,
-        )
+    public packageByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.packageMethods.entityByName(
+                (pkg) => {this.size.packageType = pkg; },
+                name,
+            )
+        })
         return this;
     }
 
-    public async InventoryItemById(id: number): Promise<this> {
-        await this.itemMethods.entityById(
-            (item) => {this.size.item = item; },
-            id,
-        )
+    public InventoryItemById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityById(
+                (item) => {this.size.item = item; },
+                id,
+            )
+        })
         return this;
     }
 
-    public async InventoryItemByName(name: string): Promise<this> {
-        await this.itemMethods.entityByName(
-            (item) => {this.size.item = item; },
-            name,
-        );
+    public InventoryItemByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityByName(
+                (item) => {this.size.item = item; },
+                name,
+            );
+        })
         return this;
     }
 
-    public getItemSize(): InventoryItemSize {
+    public async build(): Promise<InventoryItemSize> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.size;
         this.reset();
         return result;
@@ -94,16 +112,16 @@ export class InventoryItemSizeBuilder {
         this.reset();
 
         if(dto.inventoryItemId){
-            await this.InventoryItemById(dto.inventoryItemId);
+            this.InventoryItemById(dto.inventoryItemId);
         }
         if(dto.inventoryPackageTypeId){
-            await this.packageById(dto.inventoryPackageTypeId);
+            this.packageById(dto.inventoryPackageTypeId);
         }
         if(dto.unitOfMeasureId){
-            await this.unitOfMeasureById(dto.unitOfMeasureId);
+            this.unitOfMeasureById(dto.unitOfMeasureId);
         }
 
-        return this.getItemSize();
+        return this.build();
     }
 
     public updateItemSize(toUpdate: InventoryItemSize): this{
@@ -116,15 +134,15 @@ export class InventoryItemSizeBuilder {
         this.updateItemSize(toUpdate);
 
         if(dto.inventoryItemId){
-            await this.InventoryItemById(dto.inventoryItemId);
+            this.InventoryItemById(dto.inventoryItemId);
         }
         if(dto.inventoryPackageTypeId){
-            await this.packageById(dto.inventoryPackageTypeId);
+            this.packageById(dto.inventoryPackageTypeId);
         }
         if(dto.unitOfMeasureId){
-            await this.unitOfMeasureById(dto.unitOfMeasureId);
+            this.unitOfMeasureById(dto.unitOfMeasureId);
         }
 
-        return this.getItemSize();
+        return this.build();
     }
 }

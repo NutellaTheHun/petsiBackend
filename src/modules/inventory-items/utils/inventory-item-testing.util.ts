@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
@@ -17,154 +17,153 @@ import { InventoryItemService } from "../services/inventory-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import * as UNIT_CONSTANT from "../../unit-of-measure/utils/constants";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
+import { InventoryItemVendorBuilder } from "../builders/inventory-item-vendor.builder";
+import { InventoryItemSizeBuilder } from "../builders/inventory-item-size.builder";
+import { InventoryItemCategoryBuilder } from "../builders/inventory-item-category.builder";
+import { InventoryItemPackageBuilder } from "../builders/inventory-item-package.builder";
+import { InventoryItemBuilder } from "../builders/inventory-item.builder";
 
 @Injectable()
 export class InventoryItemTestingUtil {
+    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C ];
+    
+    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT ];
+
+    private readonly packageNames: string[] = [ 
+        CONSTANT.BAG_PKG,       CONSTANT.PACKAGE_PKG, 
+        CONSTANT.BOX_PKG,       CONSTANT.OTHER_PKG, 
+        CONSTANT.CONTAINER_PKG, CONSTANT.CAN_PKG 
+    ];
+
+    private readonly itemNames: string[] = [
+        CONSTANT.FOOD_A, CONSTANT.DRY_A, CONSTANT.OTHER_A,
+        CONSTANT.FOOD_B, CONSTANT.DRY_B, CONSTANT.OTHER_B,
+        CONSTANT.FOOD_C, CONSTANT.DRY_C, CONSTANT.OTHER_C,
+    ];
+
+    private readonly measureNames: string[] = [
+        UNIT_CONSTANT.GALLON,     UNIT_CONSTANT.LITER, 
+        UNIT_CONSTANT.MILLILITER, UNIT_CONSTANT.FL_OUNCE, 
+        UNIT_CONSTANT.PINT,
+
+        UNIT_CONSTANT.OUNCE, UNIT_CONSTANT.GRAM,
+        UNIT_CONSTANT.POUND, UNIT_CONSTANT.KILOGRAM,
+
+        UNIT_CONSTANT.UNIT, UNIT_CONSTANT.EACH,
+    ];
+    
     constructor(
         private readonly vendorService: InventoryItemVendorService,
-        private readonly packageService: InventoryItemPackageService,
-        private readonly categoryService: InventoryItemCategoryService,
-        private readonly sizeService: InventoryItemSizeService,
-        private readonly itemService: InventoryItemService,
+        private readonly vendorBuilder: InventoryItemVendorBuilder,
 
-        private readonly unitService: UnitOfMeasureService,
+        private readonly packageService: InventoryItemPackageService,
+        private readonly packageBuilder: InventoryItemPackageBuilder,
+
+        private readonly categoryService: InventoryItemCategoryService,
+        private readonly categoryBuilder: InventoryItemCategoryBuilder,
+
+        private readonly sizeService: InventoryItemSizeService,
+        private readonly sizeBuilder: InventoryItemSizeBuilder,
+
+        private readonly itemService: InventoryItemService,
+        private readonly itemBuilder: InventoryItemBuilder,
     ){ }
 
-    public getTestInventoryItemVendorEntities(): InventoryItemVendor[] {
-        return [
-            { name: CONSTANT.VENDOR_A} as InventoryItemVendor,
-            { name: CONSTANT.VENDOR_B} as InventoryItemVendor,
-            { name: CONSTANT.VENDOR_C} as InventoryItemVendor,
-        ];
+    /**
+     * 
+     * @returns 3 vendors, VendorA, B, and C
+     */
+    public async getTestInventoryItemVendorEntities(): Promise<InventoryItemVendor[]> {
+        const results: InventoryItemVendor[] = [];
+        for(const name of this.vendorNames){
+            results.push(
+                await this.vendorBuilder.reset()
+                    .name(name)
+                    .build()
+            )
+        }
+        return results;
     }
 
-    public getTestInventoryItemPackageEntities(): InventoryItemPackage[] {
-        return [
-            { name: CONSTANT.BAG_PKG } as InventoryItemPackage,
-            { name: CONSTANT.PACKAGE_PKG } as InventoryItemPackage,
-            { name: CONSTANT.BOX_PKG } as InventoryItemPackage,
-            { name: CONSTANT.OTHER_PKG } as InventoryItemPackage,
-            { name: CONSTANT.CONTAINER_PKG } as InventoryItemPackage,
-            { name: CONSTANT.CAN_PKG } as InventoryItemPackage
-        ];
+    /**
+     * 
+     * @returns 6 package types: bag, package, box, other, container, can
+     */
+    public async getTestInventoryItemPackageEntities(): Promise<InventoryItemPackage[]> {
+        const results: InventoryItemPackage[] = [];
+        for(const name of this.packageNames){
+            results.push(
+                await this.packageBuilder.reset()
+                    .name(name)
+                    .build()
+            )
+        }
+        return results;
     }
 
-    public getTestInventoryItemCategoryEntities(): InventoryItemCategory[] {
-        return [
-            { name: CONSTANT.FOOD_CAT } as InventoryItemCategory,
-            { name: CONSTANT.OTHER_CAT } as InventoryItemCategory,
-            { name: CONSTANT.DRYGOOD_CAT } as InventoryItemCategory,
-            { name: CONSTANT.DAIRY_CAT } as InventoryItemCategory,
-        ];
+    /**
+     * 
+     * @returns 4 Categories, FOOD, OTHER, DRYGOOD, DAIRY
+     */
+    public async getTestInventoryItemCategoryEntities(): Promise<InventoryItemCategory[]> {
+        const results: InventoryItemCategory[] = [];
+        for(const name of this.categoryNames){
+            results.push(
+                await this.categoryBuilder.reset()
+                    .name(name)
+                    .build()
+            )
+        }
+        return results;
     }
 
+    /**
+     * 
+     * @returns 9 Inventory Items
+     */
     public async getTestInventoryItemEntities(): Promise<InventoryItem[]>{
-        const vendorA = await this.vendorService.findOneByName(CONSTANT.VENDOR_A);
-        const vendorB = await this.vendorService.findOneByName(CONSTANT.VENDOR_B);
-        const vendorC = await this.vendorService.findOneByName(CONSTANT.VENDOR_C);
-
-        const foodCat = await this.categoryService.findOneByName(CONSTANT.FOOD_CAT);
-        const dryGoodsCat = await this.categoryService.findOneByName(CONSTANT.DRYGOOD_CAT);
-        const otherCat = await this.categoryService.findOneByName(CONSTANT.OTHER_CAT);
-
-        return [
-            { name: CONSTANT.FOOD_A, category: foodCat, vendor: vendorA } as InventoryItem,
-            { name: CONSTANT.DRY_A, category: dryGoodsCat, vendor: vendorA } as InventoryItem,
-            { name: CONSTANT.OTHER_A, category: otherCat, vendor: vendorA } as InventoryItem,
-
-            { name: CONSTANT.FOOD_B, category: foodCat, vendor: vendorB } as InventoryItem,
-            { name: CONSTANT.DRY_B, category: dryGoodsCat, vendor: vendorB } as InventoryItem,
-            { name: CONSTANT.OTHER_B, category: otherCat, vendor: vendorB } as InventoryItem,
-
-            { name: CONSTANT.FOOD_C, category: foodCat, vendor: vendorC } as InventoryItem,
-            { name: CONSTANT.DRY_C, category: dryGoodsCat, vendor: vendorC } as InventoryItem,
-            { name: CONSTANT.OTHER_C, category: otherCat, vendor: vendorC } as InventoryItem,
-        ];
+        const results: InventoryItem[] = [];
+        for(let i = 0; i < this.itemNames.length; i++){
+            results.push(
+                await this.itemBuilder.reset()
+                    .name(this.itemNames[i])
+                    .categoryByName(this.categoryNames[i % this.categoryNames.length])
+                    .vendorByName(this.vendorNames[i % this.vendorNames.length])
+                    .build()
+            )  
+        }
+        return results;
     }
 
+    /**
+     * 
+     * @returns 2 sizes for each inventory item (9 items)
+     */
     public async getTestInventoryItemSizeEntities(): Promise<InventoryItemSize[]> {
-        return [
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.POUND),
-                packageType: await this.packageService.findOneByName(CONSTANT.BOX_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_A),
-            } as InventoryItemSize, 
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.GALLON),
-                packageType: await this.packageService.findOneByName(CONSTANT.CONTAINER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_A),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.KILOGRAM),
-                packageType: await this.packageService.findOneByName(CONSTANT.PACKAGE_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_B),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.UNIT),
-                packageType: await this.packageService.findOneByName(CONSTANT.OTHER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_B),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.LITER),
-                packageType: await this.packageService.findOneByName(CONSTANT.CONTAINER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_C),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.MILLILITER),
-                packageType: await this.packageService.findOneByName(CONSTANT.OTHER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.FOOD_C),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.OUNCE),
-                packageType: await this.packageService.findOneByName(CONSTANT.BOX_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_A),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.GRAM),
-                packageType: await this.packageService.findOneByName(CONSTANT.CONTAINER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_A),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.EACH),
-                packageType: await this.packageService.findOneByName(CONSTANT.OTHER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_B),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.POUND),
-                packageType: await this.packageService.findOneByName(CONSTANT.BAG_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_B),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.KILOGRAM),
-                packageType: await this.packageService.findOneByName(CONSTANT.CAN_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_C),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.UNIT),
-                packageType: await this.packageService.findOneByName(CONSTANT.BAG_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.DRY_C),
-            } as InventoryItemSize,
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.FL_OUNCE),
-                packageType: await this.packageService.findOneByName(CONSTANT.BOX_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.OTHER_A),
-            } as InventoryItemSize, 
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.GRAM),
-                packageType: await this.packageService.findOneByName(CONSTANT.BAG_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.OTHER_B),
-            } as InventoryItemSize,
-
-            {
-                measureUnit: await this.unitService.findOneByName(UNIT_CONSTANT.PINT),
-                packageType: await this.packageService.findOneByName(CONSTANT.CONTAINER_PKG),
-                item: await this.itemService.findOneByName(CONSTANT.OTHER_C),
-            } as InventoryItemSize,
-        ]
+        const results: InventoryItemSize[] = [];
+        let msrIdx = 0;
+        let pkgIdx = 0; 
+        for(let i = 0; i < this.itemNames.length; i++){
+            results.push(
+                await this.sizeBuilder.reset()
+                    .InventoryItemByName(this.itemNames[i])
+                    .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
+                    .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+                    .build()
+            );
+            results.push(
+                await this.sizeBuilder.reset()
+                    .InventoryItemByName(this.itemNames[i])
+                    .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
+                    .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+                    .build()
+            );    
+        }
+        return results;
     }
 
     public async initializeInventoryItemVendorDatabaseTesting(): Promise<void> {
-        const vendors = this.getTestInventoryItemVendorEntities();
+        const vendors = await this.getTestInventoryItemVendorEntities();
         for(const vendor of vendors){
             await this.vendorService.create(
                 { name: vendor.name } as CreateInventoryItemVendorDto
@@ -183,7 +182,7 @@ export class InventoryItemTestingUtil {
     }
 
     public async initializeInventoryItemCategoryDatabaseTesting(): Promise<void> {
-        const categories = this.getTestInventoryItemCategoryEntities();
+        const categories = await this.getTestInventoryItemCategoryEntities();
 
         for(const category of categories) {
             await this.categoryService.create(

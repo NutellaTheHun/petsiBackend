@@ -9,6 +9,8 @@ import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 @Injectable()
 export class UnitCategoryBuilder {
     private category: UnitCategory;
+    private taskQueue: (() => Promise<void>)[];
+
     private unitMethods: BuilderMethodBase<UnitOfMeasure>;
 
     constructor(
@@ -21,6 +23,7 @@ export class UnitCategoryBuilder {
 
     public reset(): this{
         this.category = new UnitCategory();
+        this.taskQueue = [];
         return this;
     }
 
@@ -29,19 +32,23 @@ export class UnitCategoryBuilder {
         return this;
     }
 
-    public async unitsById(ids: number[]): Promise<this>{
-        await this.unitMethods.entityByIds(
-            (units) => {this.category.units = units; },
-            ids,
-        )
+    public unitsById(ids: number[]): this{
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityByIds(
+                (units) => {this.category.units = units; },
+                ids,
+            )
+        });
         return this;
     }
 
-    public async baseUnitById(id: number): Promise<this> {
-        await this.unitMethods.entityById(
-            (unit) => {this.category.baseUnit = unit;},
-            id,
-        )
+    public baseUnitById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.unitMethods.entityById(
+                (unit) => {this.category.baseUnit = unit;},
+                id,
+            )
+        });
         return this;
     }
 
@@ -53,7 +60,10 @@ export class UnitCategoryBuilder {
         return this;
     }
 
-    public getCategory(): UnitCategory {
+    public async build(): Promise<UnitCategory> {
+        for(const task of this.taskQueue){
+            await task();
+        }
         const result = this.category;
         this.reset();
         return result;
@@ -66,13 +76,13 @@ export class UnitCategoryBuilder {
             this.name(dto.name);
         }
         if(dto.baseUnitId){
-            await this.baseUnitById(dto.baseUnitId);
+            this.baseUnitById(dto.baseUnitId);
         }
         if(dto.unitOfMeasureIds){
-            await this.unitsById(dto.unitOfMeasureIds);
+            this.unitsById(dto.unitOfMeasureIds);
         }
 
-        return this.getCategory();
+        return await this.build();
     }
 
     public updateCategory(toUpdate: UnitCategory): this {
@@ -88,12 +98,12 @@ export class UnitCategoryBuilder {
             this.name(dto.name);
         }
         if(dto.baseUnitId){
-            await this.baseUnitById(dto.baseUnitId);
+            this.baseUnitById(dto.baseUnitId);
         }
         if(dto.unitOfMeasureIds){
-            await this.unitsById(dto.unitOfMeasureIds);
+            this.unitsById(dto.unitOfMeasureIds);
         }
 
-        return this.getCategory();
+        return await this.build();
     }
 }

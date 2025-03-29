@@ -37,6 +37,7 @@ import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
       InventoryItemSize,
       InventoryItemVendor,
     ]),
+    
     UnitOfMeasureModule,
   ],
 
@@ -61,12 +62,6 @@ import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
     InventoryItemSizeFactory,
     InventoryItemVendorFactory,
 
-    InventoryItemController, 
-    InventoryItemCategoryController, 
-    InventoryItemPackageController, 
-    InventoryItemSizeController,
-    InventoryItemVendorController,
-
     InventoryItemBuilder,
     InventoryItemCategoryBuilder,
     InventoryItemPackageBuilder,
@@ -77,13 +72,13 @@ import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
   ],
 
   exports: [
-    InventoryItemSizeController,
-
     InventoryItemService,
     InventoryItemCategoryService,
     InventoryItemPackageService,
     InventoryItemSizeService,
     InventoryItemVendorService,
+
+    InventoryItemTestingUtil,
   ]
 })
 export class InventoryItemsModule {}

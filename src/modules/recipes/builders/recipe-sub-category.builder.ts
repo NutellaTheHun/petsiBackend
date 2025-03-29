@@ -6,12 +6,13 @@ import { BuilderMethodBase } from "../../../base/builder-method-base";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { CreateRecipeSubCategoryDto } from "../dto/create-recipe-sub-category.dto";
-import { timeStamp } from "console";
 import { UpdateRecipeSubCategoryDto } from "../dto/update-recipe-sub-category.dto";
 
 @Injectable()
 export class RecipeSubCategoryBuilder{
     private subCategory: RecipeSubCategory
+    private taskQueue: (() => Promise<void>)[];
+
     private categoryMethods: BuilderMethodBase<RecipeCategory>;
     private recipeMethods: BuilderMethodBase<Recipe>;
 
@@ -29,6 +30,7 @@ export class RecipeSubCategoryBuilder{
 
     public reset(): this {
         this.subCategory = new RecipeSubCategory;
+        this.taskQueue = [];
         return this;
     }
 
@@ -37,31 +39,41 @@ export class RecipeSubCategoryBuilder{
         return this;
     }
 
-    public async parentCategoryById(id: number): Promise<this> {
-        await this.categoryMethods.entityById(
-            (cat) => {this.subCategory.parentCategory = cat; },
-            id
-        );
+    public parentCategoryById(id: number): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityById(
+                (cat) => {this.subCategory.parentCategory = cat; },
+                id
+            );
+        });
         return this;
     }
 
-    public async parentCategoryByName(name: string): Promise<this> {
-        await this.categoryMethods.entityByName(
-            (cat) => {this.subCategory.parentCategory = cat; },
-            name
-        );
+    public parentCategoryByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.categoryMethods.entityByName(
+                (cat) => {this.subCategory.parentCategory = cat; },
+                name
+            );
+        });
         return this;
     }
 
-    public async recipesById(ids: number[]): Promise<this> {
-        await this.recipeMethods.entityByIds(
-            (recs) => {this.subCategory.recipes = recs; },
-            ids
-        );
+    public recipesById(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.recipeMethods.entityByIds(
+                (recs) => {this.subCategory.recipes = recs; },
+                ids
+            );
+        });
         return this;
     }
 
-    public getSubCategory(): RecipeSubCategory{
+    public async build(): Promise<RecipeSubCategory>{
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.subCategory;
         this.reset();
         return result;
@@ -74,13 +86,13 @@ export class RecipeSubCategoryBuilder{
             this.name(dto.name);
         }
         if(dto.parentCategoryId){
-            await this.parentCategoryById(dto.parentCategoryId);
+            this.parentCategoryById(dto.parentCategoryId);
         }
         if(dto.recipeIds){
-            await this.recipesById(dto.recipeIds);
+            this.recipesById(dto.recipeIds);
         }
 
-        return this.getSubCategory();
+        return await this.build();
     }
 
     public updateSubCategory(toUpdate: RecipeSubCategory): this {
@@ -96,12 +108,12 @@ export class RecipeSubCategoryBuilder{
             this.name(dto.name);
         }
         if(dto.parentCategoryId){
-            await this.parentCategoryById(dto.parentCategoryId);
+            this.parentCategoryById(dto.parentCategoryId);
         }
         if(dto.recipeIds){
-            await this.recipesById(dto.recipeIds);
+            this.recipesById(dto.recipeIds);
         }
 
-        return this.getSubCategory();
+        return await this.build();
     }
 }

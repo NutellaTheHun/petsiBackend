@@ -65,7 +65,7 @@ describe('Inventory Item Category Service', () => {
   });
 
   it('should insert testing item categories and get all categories', async () => {
-    const categories = testingUtil.getTestInventoryItemCategoryEntities();
+    const categories = await testingUtil.getTestInventoryItemCategoryEntities();
     await testingUtil.initializeInventoryItemCategoryDatabaseTesting();
 
     const results = await service.findAll();

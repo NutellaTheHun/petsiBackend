@@ -9,6 +9,8 @@ import { InventoryItem } from "../entities/inventory-item.entity";
 @Injectable()
 export class InventoryItemCategoryBuilder {
     private category: InventoryItemCategory;
+    private taskQueue: (() => Promise<void>)[];
+    
     private itemMethods: BuilderMethodBase<InventoryItem>;
 
     constructor(
@@ -21,6 +23,7 @@ export class InventoryItemCategoryBuilder {
 
     public reset(): this {
         this.category = new InventoryItemCategory();
+        this.taskQueue = [];
         return this;
     }
 
@@ -29,15 +32,21 @@ export class InventoryItemCategoryBuilder {
         return this;
     }
 
-    public async inventoryItemsById(ids: number[]): Promise<this> {
-        await this.itemMethods.entityByIds(
-            (items) => { this.category.items = items; },
-            ids,
-        )
+    public inventoryItemsById(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.itemMethods.entityByIds(
+                (items) => { this.category.items = items; },
+                ids,
+            )
+        });
         return this;
     }
 
-    public getCategory(): InventoryItemCategory {
+    public async build(): Promise<InventoryItemCategory> {
+        for(const task of this.taskQueue){
+            await task();
+        }
+        
         const result = this.category;
         this.reset();
         return result;
@@ -50,10 +59,10 @@ export class InventoryItemCategoryBuilder {
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
-            await this.inventoryItemsById(dto.inventoryItemIds);
+            this.inventoryItemsById(dto.inventoryItemIds);
         }
 
-        return this.getCategory();
+        return await this.build();
     }
 
     public updateCategory(toUpdate: InventoryItemCategory): this{
@@ -69,9 +78,9 @@ export class InventoryItemCategoryBuilder {
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
-            await this.inventoryItemsById(dto.inventoryItemIds);
+            this.inventoryItemsById(dto.inventoryItemIds);
         }
 
-        return this.getCategory();
+        return await this.build();
     }
 }

@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -21,10 +21,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     constructor(
         @InjectRepository(InventoryAreaCount)
         private readonly areaCountRepo: Repository<InventoryAreaCount>,
-        private readonly areaCountBuilder: InventoryAreaCountBuilder,
 
-        @Inject(forwardRef(() => InventoryAreaService))
-        private readonly areaService: InventoryAreaService,
+        @Inject(forwardRef(() => InventoryAreaCountBuilder))
+        private readonly areaCountBuilder: InventoryAreaCountBuilder,
     ){ super(areaCountRepo); }
 
     /**
@@ -48,14 +47,12 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
         await this.areaCountBuilder.buildUpdateDto(toUpdate, updateDto);
         return await this.areaCountRepo.save(toUpdate);
+        
     }
 
     async findByAreaName(name: string, relations?: string[]): Promise<InventoryAreaCount[]> {
-        const area = await this.areaService.findOneByName(name);
-        if(!area){ throw new Error('inventory area not found'); }
-        
         return await this.areaCountRepo.find({ 
-            where: { inventoryArea: { id: area.id } }, 
+            where: { inventoryArea: { name: name } }, 
             relations
         });
     }
