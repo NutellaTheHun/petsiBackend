@@ -17,6 +17,8 @@ import { UpdateRecipeDto } from "../dto/update-recipe-dto";
 @Injectable()
 export class RecipeBuilder {
     private recipe: Recipe;
+    private taskQueue: (() => Promise<void>)[]; // Queue for async tasks
+
     //private menuItemMethods: BuilderMethodBase<MenuItem>;
     private ingredientMethods: BuilderMethodBase<RecipeIngredient>;
     private measureMethods: BuilderMethodBase<UnitOfMeasure>;
@@ -74,12 +76,21 @@ export class RecipeBuilder {
         this.recipe.isIngredient = value;
         return this;
     }
-
+    /*
     public async ingredientsById(ids: number[]): Promise<this> {
         await this.ingredientMethods.entityByIds(
             (ingreds) => { this.recipe.ingredients = ingreds; },
             ids,
         )
+        return this;
+    }*/
+    public ingredientsById(ids: number[]): this {
+        this.taskQueue.push(async () => {
+            await this.ingredientMethods.entityByIds(
+                (ingreds) => { this.recipe.ingredients = ingreds; },
+                ids,
+            );
+        });
         return this;
     }
 
@@ -117,11 +128,14 @@ export class RecipeBuilder {
         return this;
     }
 
-    public async servingUnitOfMeasureByName(name: string): Promise<this> {
-        await this.measureMethods.entityByName(
-            (unit) => { this.recipe.servingSizeUnitOfMeasure = unit; },
-            name,
-        );
+    public servingUnitOfMeasureByName(name: string): this {
+        this.taskQueue.push(async () => {
+            await this.measureMethods.entityByName(
+                (unit) => { this.recipe.servingSizeUnitOfMeasure = unit; },
+                name,
+            );
+        });
+        
         return this;
     }
 
@@ -167,7 +181,19 @@ export class RecipeBuilder {
         return this;
     }
 
-    public getRecipe(): Recipe {
+    private getRecipe(): Recipe {
+        const result = this.recipe;
+        this.reset();
+        return result;
+    }
+
+    public async build(): Promise<Recipe> {
+        // Process all async tasks in the queue
+        for (const task of this.taskQueue) {
+            await task();
+        }
+
+        // Return the built recipe
         const result = this.recipe;
         this.reset();
         return result;
