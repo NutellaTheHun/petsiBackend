@@ -1,4 +1,3 @@
-//US LEGAL or imperial?
 export const VOLUME = "volume";
 export const WEIGHT = "weight";
 export const UNIT = "unit";

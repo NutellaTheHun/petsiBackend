@@ -7,140 +7,149 @@ import { CreateUnitCategoryDto } from "../dto/create-unit-category.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
+import { UnitCategoryBuilder } from "../builders/unit-category.builder";
+import { UnitOfMeasureBuilder } from "../builders/unit-of-measure.builder";
 
 @Injectable()
 export class UnitOfMeasureTestingUtil {
     constructor(
         private readonly categoryService: UnitCategoryService,
+        private readonly categoryBuilder: UnitCategoryBuilder,
+
         private readonly unitService: UnitOfMeasureService,
+        private readonly unitBuilder: UnitOfMeasureBuilder,
     ){ }
 
-    public getCategoriesEntities(): UnitCategory[] {
+    public async getCategoriesEntities(): Promise<UnitCategory[]> {
         return [
-            { name: CONSTANTS.UNIT} as UnitCategory,
-            { name: CONSTANTS.VOLUME } as UnitCategory,
-            { name: CONSTANTS.WEIGHT } as UnitCategory,
-        ]
+            await await this.categoryBuilder.reset()
+                .name(CONSTANTS.UNIT)
+                .build(),
+            await await this.categoryBuilder.reset()
+                .name(CONSTANTS.VOLUME)
+                .build(),
+            await await this.categoryBuilder.reset()
+                .name(CONSTANTS.WEIGHT)
+                .build()
+        ];
     }
 
     public async getUnitsOfMeasureEntities(): Promise<UnitOfMeasure[]> {
-        const volumeCategory = await this.categoryService.findOneByName(CONSTANTS.VOLUME);
-        const weightCategory = await this.categoryService.findOneByName(CONSTANTS.WEIGHT);
-        const unitCategory = await this.categoryService.findOneByName(CONSTANTS.UNIT);
-        
+        const results: UnitOfMeasure[] = [];
+
         return[
             // Volume
-            {
-                name: CONSTANTS.GALLON, 
-                abbreviation: CONSTANTS.GALLON_ABBREV,
-                category: volumeCategory, 
-                conversionFactorToBase: "3785.4080001023799014"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.LITER, 
-                abbreviation: CONSTANTS.LITER_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "999.99900039999965884"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.MILLILITER, 
-                abbreviation: CONSTANTS.MILLILITER_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "1"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.FL_OUNCE, 
-                abbreviation: CONSTANTS.FL_OUNCE_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "29.573500000799839427"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.QUART, 
-                abbreviation: CONSTANTS.QUART_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "946.35200002559486165"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.PINT, 
-                abbreviation: CONSTANTS.PINT_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "473.17600001279748767"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.TABLESPOON, 
-                abbreviation: CONSTANTS.TABLESPOON_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "14.786750000399919713"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.TEASPOON, 
-                abbreviation: CONSTANTS.TEASPOON_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "4.9289150730515665089"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.CUP, 
-                abbreviation: CONSTANTS.CUP_ABBREV,
-                category: volumeCategory,
-                conversionFactorToBase: "239.99976009599993176"
-            } as UnitOfMeasure, 
+            await await this.unitBuilder.reset()
+                .name(CONSTANTS.GALLON)
+                .abbreviation(CONSTANTS.GALLON_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("3785.4080001023799014")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.LITER)
+                .abbreviation(CONSTANTS.LITER_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("999.99900039999965884")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.MILLILITER)
+                .abbreviation(CONSTANTS.MILLILITER_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("1")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.FL_OUNCE)
+                .abbreviation(CONSTANTS.FL_OUNCE_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("29.573500000799839427")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.QUART)
+                .abbreviation(CONSTANTS.QUART_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("946.35200002559486165")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.PINT)
+                .abbreviation(CONSTANTS.PINT_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("473.17600001279748767")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.TABLESPOON)
+                .abbreviation(CONSTANTS.TABLESPOON_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("14.786750000399919713")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.TEASPOON)
+                .abbreviation(CONSTANTS.TEASPOON_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("4.9289150730515665089")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.CUP)
+                .abbreviation(CONSTANTS.CUP_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("239.99976009599993176")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.KILOGRAM)
+                .abbreviation(CONSTANTS.KILOGRAM_ABBREV)
+                .categoryByName(CONSTANTS.VOLUME)
+                .conversionFactor("1000")
+                .build(),
 
             // Weight
-            {
-                name: CONSTANTS.KILOGRAM, 
-                abbreviation: CONSTANTS.KILOGRAM_ABBREV,
-                category: weightCategory,
-                conversionFactorToBase: "1000"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.GRAM, 
-                abbreviation: CONSTANTS.GRAM_ABBREV,
-                category: weightCategory,
-                conversionFactorToBase: "1"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.OUNCE, 
-                abbreviation: CONSTANTS.OUNCE_ABBREV,
-                category: weightCategory,
-                conversionFactorToBase: "28.3495"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.POUND, 
-                abbreviation: CONSTANTS.POUND_ABBREV,
-                category: weightCategory,
-                conversionFactorToBase: "453.592000004704"
-            } as UnitOfMeasure, 
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.GRAM)
+                .abbreviation(CONSTANTS.GRAM_ABBREV)
+                .categoryByName(CONSTANTS.WEIGHT)
+                .conversionFactor("1")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.OUNCE)
+                .abbreviation(CONSTANTS.OUNCE_ABBREV)
+                .categoryByName(CONSTANTS.WEIGHT)
+                .conversionFactor("28.3495")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.POUND)
+                .abbreviation(CONSTANTS.POUND_ABBREV)
+                .categoryByName(CONSTANTS.WEIGHT)
+                .conversionFactor("453.592000004704")
+                .build(),
 
             // Units
-            {
-                name: CONSTANTS.UNIT, 
-                abbreviation: CONSTANTS.UNIT,
-                category: unitCategory,
-                conversionFactorToBase: "1"
-            } as UnitOfMeasure, 
-            {
-                name: CONSTANTS.EACH, 
-                abbreviation: CONSTANTS.EACH_ABBREV,
-                category: unitCategory,
-                conversionFactorToBase: "1"
-            } as UnitOfMeasure, 
-        ]
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.EACH)
+                .abbreviation(CONSTANTS.EACH_ABBREV)
+                .categoryByName(CONSTANTS.UNIT)
+                .conversionFactor("1")
+                .build(),
+            await this.unitBuilder.reset()
+                .name(CONSTANTS.UNIT)
+                .abbreviation(CONSTANTS.UNIT)
+                .categoryByName(CONSTANTS.UNIT)
+                .conversionFactor("1")
+                .build(),
+        ];
     }
 
     public async initializeUnitCategoryTestingDatabase(): Promise<void> {
-        const categories = this.getCategoriesEntities();
+        const categories = await this.getCategoriesEntities();
 
         for(const category of categories){
-            await this.categoryService.create(
+            await await this.categoryService.create(
                 { name: category.name } as CreateUnitCategoryDto
             )
         }
     }
 
     public async initializeUnitOfMeasureTestingDatabase(): Promise<void> {
-        const units = await this.getUnitsOfMeasureEntities();
+        const units = await await this.getUnitsOfMeasureEntities();
         for(const unit of units){
-            await this.unitService.create((
+            await await this.unitService.create((
                 {
                     name: unit.name,
                     abbreviation: unit.abbreviation,
@@ -152,21 +161,21 @@ export class UnitOfMeasureTestingUtil {
     }
 
     async initializeDefaultCategoryBaseUnits(): Promise<void> {
-        await this.setCategoryBaseUnit(CONSTANTS.WEIGHT, CONSTANTS.GRAM);
-        await this.setCategoryBaseUnit(CONSTANTS.VOLUME, CONSTANTS.MILLILITER);
-        await this.setCategoryBaseUnit(CONSTANTS.UNIT, CONSTANTS.UNIT);
+        await await this.setCategoryBaseUnit(CONSTANTS.WEIGHT, CONSTANTS.GRAM);
+        await await this.setCategoryBaseUnit(CONSTANTS.VOLUME, CONSTANTS.MILLILITER);
+        await await this.setCategoryBaseUnit(CONSTANTS.UNIT, CONSTANTS.UNIT);
     }
     
       
     async setCategoryBaseUnit(categoryName: string, baseUnitOfMeasure: string): Promise<void> {
-        const category = await this.categoryService.findOneByName(categoryName);
+        const category = await await this.categoryService.findOneByName(categoryName);
         if(!category){ throw new Error(`${categoryName} category not found.`); }
     
-        const baseUnit = await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
+        const baseUnit = await await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
         if(!baseUnit){ throw new Error("base unit not found"); }
         category.baseUnit = baseUnit;
         
-        await this.categoryService.update(
+        await await this.categoryService.update(
             category.id,
             {
                 name: category.name,
