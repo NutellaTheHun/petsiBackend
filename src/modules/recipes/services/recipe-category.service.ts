@@ -24,7 +24,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
         const category = await this.categoryBuilder.buildCreateDto(createDto);
         return await this.categoryRepo.save(category);
     }
-    
+
     /**
     * Uses Repository.Save(), Not Repository.Update()
     */

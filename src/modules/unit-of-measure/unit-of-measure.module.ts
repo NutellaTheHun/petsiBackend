@@ -38,6 +38,8 @@ import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
   exports: [
     UnitOfMeasureService, 
     UnitCategoryService,
+    
+    UnitOfMeasureTestingUtil,
   ]
 })
 export class UnitOfMeasureModule {}

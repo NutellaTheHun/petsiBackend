@@ -6,9 +6,11 @@ import { InventoryAreaService } from "./inventory-area.service";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 describe('Inventory area item count service', () => {
     let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
     let areaCountService: InventoryAreaCountService;
 
     let inventoryAreaService: InventoryAreaService;
@@ -18,18 +20,16 @@ describe('Inventory area item count service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
-
+        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-        await testingUtil.initializeInventoryAreaDatabaseTesting();
+        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
 
         areaCountService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
         inventoryAreaService = module.get<InventoryAreaService>(InventoryAreaService);
     })
 
     afterAll(async () => {
-        await areaCountService.getQueryBuilder().delete().execute();
-
-        await inventoryAreaService.getQueryBuilder().delete().execute();
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {
@@ -104,10 +104,6 @@ describe('Inventory area item count service', () => {
         expect(newArea?.inventoryCounts).not.toBeNull();
         expect(newArea?.inventoryCounts?.length).toEqual(1);
         expect(newArea?.inventoryCounts[0].id).toEqual(testId);
-    });
-
-    it('should update areaCount\'s countedItems', async () => {
-        
     });
 
     it('should fail to update area count (doesnt exist)', async () => {

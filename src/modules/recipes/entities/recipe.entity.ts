@@ -1,9 +1,10 @@
-import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
+
 import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { RecipeIngredient } from "./recipe-ingredient.entity";
 import { RecipeCategory } from "./recipe-category.entity";
 import { RecipeSubCategory } from "./recipe-sub-category.entity";
-import { UnitOfMeasure } from "src/modules/unit-of-measure/entities/unit-of-measure.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 
 @Entity()
 export class Recipe{
@@ -21,8 +22,8 @@ export class Recipe{
      * The MenuItem that this recipe creates, some recipes are "prep" and are a sub-recipe to another Recipe
      * - If the MenuItem is deleted, the recipe is also deleted "onDelete: CASCADE" 
      */
-    @OneToOne(() => MenuItem, {nullable: true, onDelete: 'CASCADE'})
-    menuItem?: MenuItem | null;
+    //@OneToOne(() => MenuItem, {nullable: true, onDelete: 'CASCADE'})
+    //menuItem?: MenuItem | null;
 
     /*
     * A recipe with isIngredient set to true doesn't directly make a MenuItem,

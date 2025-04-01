@@ -5,9 +5,11 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Package Service', () => {
   let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let packageService: InventoryItemPackageService;
 
   let testId: number;
@@ -15,7 +17,11 @@ describe('Inventory Item Package Service', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+    
+    dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await testingUtil.initInventoryItemPackageTestDatabase(dbTestContext);
+
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
   });
 
@@ -63,8 +69,7 @@ describe('Inventory Item Package Service', () => {
   });
 
   it('should insert default packages and get all inventory item packages', async () => {
-    const defaultPackages = await testingUtil.getTestInventoryItemPackageEntities()
-    await testingUtil.initializeInventoryItemPackageDatabaseTesting();
+    const defaultPackages = await testingUtil.getTestInventoryItemPackageEntities(dbTestContext);
 
     const results = await packageService.findAll();
 

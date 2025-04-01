@@ -1,7 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { DRY_A, DRY_B, FOOD_A, FOOD_B, FOOD_C, OTHER_A, OTHER_B } from "../../inventory-items/utils/constants";
-import { cleanupInventoryItemTestingDatabaseLayerTWO, setupInventoryItemTestingDatabaseLayerTWO } from "../../inventory-items/utils/setupTestingDatabase";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
@@ -17,6 +17,7 @@ import { InventoryAreaService } from "./inventory-area.service";
 describe('Inventory area item count service', () => {
     let module: TestingModule;
     let testingUtil : InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
     let itemCountService: InventoryAreaItemCountService;
 
     let inventoryAreaService: InventoryAreaService;
@@ -31,11 +32,10 @@ describe('Inventory area item count service', () => {
 
     beforeAll(async () => {
         module = await getInventoryAreasTestingModule();
-        await setupInventoryItemTestingDatabaseLayerTWO(module);
 
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-        await testingUtil.initializeInventoryAreaDatabaseTesting();
-        await testingUtil.initializeInventoryAreaCountTestingDataBase();
+        dbTestContext = new DatabaseTestContext();
+        await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
 
         itemCountService = module.get<InventoryAreaItemCountService>(InventoryAreaItemCountService);
         inventoryAreaService = module.get<InventoryAreaService>(InventoryAreaService);
@@ -44,10 +44,7 @@ describe('Inventory area item count service', () => {
     })
 
     afterAll(async () => {
-        await itemCountService.getQueryBuilder().delete().execute();
-        await inventoryAreaService.getQueryBuilder().delete().execute();
-        await inventoryCountService.getQueryBuilder().delete().execute();
-        await cleanupInventoryItemTestingDatabaseLayerTWO(module);
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {

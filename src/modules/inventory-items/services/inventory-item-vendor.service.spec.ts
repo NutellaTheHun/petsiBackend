@@ -4,9 +4,11 @@ import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendo
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Vendor Service', () => {
   let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let service: InventoryItemVendorService;
 
   let testId: number;
@@ -14,13 +16,16 @@ describe('Inventory Item Vendor Service', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+
+    dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
+
     service = module.get<InventoryItemVendorService>(InventoryItemVendorService);
   });
 
   afterAll(async () => {
-    const queryBuilder = service.getQueryBuilder();
-    await queryBuilder.delete().execute();
+    await dbTestContext.executeCleanupFunctions();
   });
 
   it('should be defined', () => {
@@ -61,18 +66,17 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should get all vendors', async () => {
-    const vendors = await testingUtil.getTestInventoryItemVendorEntities();
-    await testingUtil.initializeInventoryItemVendorDatabaseTesting();
+    const vendors = await testingUtil.getTestInventoryItemVendorEntities(dbTestContext);
 
     for(const vendor of vendors){
-      await service.create( { name: vendor.name } as CreateInventoryItemVendorDto );
+      await service.create({ name: vendor.name } as CreateInventoryItemVendorDto );
     }
 
     const results = await service.findAll();
     expect(results.length).toEqual(vendors.length);
 
     // for future test
-    testIds = [results[0].id, results[1].id, results[2].id]
+    testIds = [results[0].id, results[1].id, results[2].id];
   });
 
   it('should get a vendor by name', async () => {

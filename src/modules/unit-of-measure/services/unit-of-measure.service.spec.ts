@@ -8,9 +8,11 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('UnitOfMeasureService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let unitService: UnitOfMeasureService;
   let categoryService: UnitCategoryService;
 
@@ -19,37 +21,22 @@ describe('UnitOfMeasureService', () => {
 
   beforeAll(async () => {
       const module: TestingModule = await getUnitOfMeasureTestingModule();
+      dbTestContext = new DatabaseTestContext();
       testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+      await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+
       unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
       categoryService = module.get<UnitCategoryService>(UnitCategoryService);
 
-      await testingUtil.initializeUnitCategoryTestingDatabase()
-      testUnits = await testingUtil.getUnitsOfMeasureEntities();
+      testUnits = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
     });
   
     afterAll(async () => {
-      const unitQueryBuilder = unitService.getQueryBuilder();
-      await unitQueryBuilder.delete().execute();
-
-      const categoryQueryBuilder = categoryService.getQueryBuilder();
-      await categoryQueryBuilder.delete().execute();
+      await dbTestContext.executeCleanupFunctions();
     })
 
   it('unitService should be defined', () => {
     expect(unitService).toBeDefined();
-  });
-
-  it('should insert all test units', async () => {
-    for(const unit of testUnits){
-      await unitService.create(
-        {
-          name: unit.name,
-          abbreviation: unit.abbreviation,
-          categoryId: unit.category?.id,
-          conversionFactorToBase: unit.conversionFactorToBase,
-        } as CreateUnitOfMeasureDto
-      )
-    }
   });
 
   it('should retrieve all test units', async () => {
@@ -71,11 +58,10 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('should initialize default units', async () => {
-    await testingUtil.initializeUnitOfMeasureTestingDatabase();
-    const units = await testingUtil.getUnitsOfMeasureEntities()
+    await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+    const units = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
 
     const results = await unitService.findAll();
-
     expect(results.length).toEqual(units.length);
   });
 

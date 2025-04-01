@@ -7,62 +7,44 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { UnitCategoryBuilder } from '../builders/unit-category.builder';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 
 describe('UnitCategoryService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
-  let categoryService: UnitCategoryService;
+  let dbTestContext: DatabaseTestContext;
 
+  let categoryService: UnitCategoryService;
+  let categoryBuilder: UnitCategoryBuilder;
   let unitService: UnitOfMeasureService;
 
-  let testCategories: UnitCategory[];
   let testCategoryId: number;
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
+    dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+    await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+    
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
-  
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-
-    testCategories = testingUtil.getCategoriesEntities();
   });
 
   afterAll(async () => {
-    const unitQueryBuilder = unitService.getQueryBuilder();
-    await unitQueryBuilder.delete().execute();
-
-    const categoryQueryBuilder = categoryService.getQueryBuilder();
-    await categoryQueryBuilder.delete().execute();
+    await dbTestContext.executeCleanupFunctions();
   })
 
   it('should be defined', () => {
     expect(categoryService).toBeDefined();
   });
 
-  it('should insert test categories', async () => {
-    let results: any[] = [];
-
-    for (const category of testCategories){
-      results.push(await categoryService.create(
-        { name: category.name } as CreateUnitCategoryDto
-      ));
-    }
-
-    expect(results).not.toBeNull();
-
-    if(results[0]?.id){ testCategoryId = results[0].id; }
-
-    expect(results.length).toEqual(testCategories.length);
-    results.map(category => {
-      expect(category).not.toBeNull();
-      expect(category?.id).not.toBeNull();
-    });
-  });
-
   it('should retrieve all test categories', async () => {
+    const testCategories = await testingUtil.getCategoryEntities(dbTestContext);
     const results = await categoryService.findAll();
     expect(results.length).toEqual(testCategories.length);
+
+    if(results[0]?.id){ testCategoryId = results[0].id; }
   });
 
   it('should retrieve one test category', async() => {
@@ -78,8 +60,7 @@ describe('UnitCategoryService', () => {
 
     
   it('should set each categories base unit', async () => {
-    await testingUtil.initializeUnitOfMeasureTestingDatabase();
-    await await testingUtil.initializeDefaultCategoryBaseUnits();
+    await testingUtil.initializeDefaultCategoryBaseUnits();
     
     const weight = await categoryService.findOneByName(WEIGHT, ['baseUnit',]);
     expect(weight).not.toBeNull();

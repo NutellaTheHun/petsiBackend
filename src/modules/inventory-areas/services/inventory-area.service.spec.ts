@@ -4,9 +4,11 @@ import { InventoryAreaService } from "./inventory-area.service";
 import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
     let service: InventoryAreaService;
 
     const testAreaName = "testAreaName";
@@ -16,12 +18,15 @@ describe('Inventory area service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
+        dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
+
         service = module.get<InventoryAreaService>(InventoryAreaService);
     });
 
     afterAll(async () => {
-        await service.getQueryBuilder().delete().execute();
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {
@@ -81,8 +86,7 @@ describe('Inventory area service', () => {
     });
 
     it('should get ALL areas', async () => {
-        const testAreas = await testingUtil.getTestInventoryAreaEntities();
-        await testingUtil.initializeInventoryAreaDatabaseTesting();
+        const testAreas = await testingUtil.getTestInventoryAreaEntities(dbTestContext);
 
         const results = await service.findAll();
         expect(results.length).toEqual(testAreas.length);

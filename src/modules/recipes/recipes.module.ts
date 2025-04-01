@@ -23,6 +23,7 @@ import { RecipeBuilder } from './builders/recipe.builder';
 import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
 import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
+import { RecipeTestUtil } from './utils/recipe-test.util';
 
 @Module({
   imports: [
@@ -63,6 +64,8 @@ import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder
     RecipeCategoryService,
     RecipeSubCategoryService,
     RecipeIngredientService,
+
+    RecipeTestUtil,
   ],
 })
 export class RecipesModule {}

@@ -16,10 +16,17 @@ import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builde
 import { RecipeBuilder } from "../builders/recipe.builder";
 import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
 import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
+import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
+import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 @Injectable()
 export class RecipeTestUtil {
     constructor(
+        private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
+        private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
+
         private readonly ingredientService: RecipeIngredientService,
         private readonly ingredientBuilder: RecipeIngredientBuilder,
 
@@ -32,117 +39,114 @@ export class RecipeTestUtil {
         private readonly recipeService: RecipeService,
         private readonly recipeBuilder: RecipeBuilder,
 
-        private readonly inventoryItemService: InventoryItemService,
-        private readonly measureService: UnitOfMeasureService,
+        //private readonly inventoryItemService: InventoryItemService,
+        //private readonly measureService: UnitOfMeasureService,
+
         //private readonly menuItemService: MenuItemsService,
     ){ }
 
-    public async getTestRecipeIngredientEntities(): Promise<RecipeIngredient[]> {
-        /**
-         * recipe: Recipe;
-         * inventoryItem?: InventoryItem | null;
-         * subRecipeIngredient?: Recipe | null;
-         * quantity: number;
-         * unit: UnitOfMeasure;
-         */
+    /**
+     * Dependencies: InventoryItems, UnitOfMeasure, Recipe
+     * @returns 
+     */
+    public async getTestRecipeIngredientEntities(testContext: DatabaseTestContext): Promise<RecipeIngredient[]> {
+        await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
+        await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
+        await this.initRecipeTestingDatabase(testContext);
+        
         return [
-            /*await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+            await this.ingredientBuilder.reset()
+                .inventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(0.5)
                 .recipeByName(CONSTANT.REC_A)
                 .unitOfMeasureByName(OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(DRY_A)
                 //.subRecipeByName()
                 .quantity(1.0)
                 .recipeByName(CONSTANT.REC_A)
                 .unitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(1.5)
                 .recipeByName(CONSTANT.REC_B)
                 .unitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(2)
                 .recipeByName(CONSTANT.REC_B)
                 .unitOfMeasureByName(FL_OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
-                //.subRecipeByName()
+                //.inventoryItemByName(DRY_C)
+                .subRecipeByName(CONSTANT.REC_B)
                 .quantity(2.5)
                 .recipeByName(CONSTANT.REC_C)
                 .unitOfMeasureByName(LITER)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(2.75)
                 .recipeByName(CONSTANT.REC_C)
                 .unitOfMeasureByName(GALLON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(3)
                 .recipeByName(CONSTANT.REC_D)
                 .unitOfMeasureByName(KILOGRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(3.5)
                 .recipeByName(CONSTANT.REC_D)
                 .unitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(10)
                 .recipeByName(CONSTANT.REC_E)
                 .unitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(10.5)
                 .recipeByName(CONSTANT.REC_E)
                 .unitOfMeasureByName(CUP)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(DRY_C)
                 //.subRecipeByName()
                 .quantity(10.75)
                 .recipeByName(CONSTANT.REC_F)
                 .unitOfMeasureByName(TABLESPOON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName()
+                .inventoryItemByName(OTHER_A)
                 //.subRecipeByName()
                 .quantity(15)
                 .recipeByName(CONSTANT.REC_F)
                 .unitOfMeasureByName(TEASPOON)
-                .build(),*/
-        ]
+                .build(),
+        ];
     }
 
     /**
-     * 
+     * Dependencies: None
      * @returns 3 Categories with no subcategories or recipies, catgories A,B and category "no category".
      */
-    public async getTestRecipeCategoryEntities(): Promise<RecipeCategory[]> {
-        /**
-         * name: string;
-         * subCategories: RecipeSubCategory[] = [];
-         * recipes: Recipe[];
-         */
+    public async getTestRecipeCategoryEntities(testContext: DatabaseTestContext): Promise<RecipeCategory[]> {
         return [
             await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_A)
@@ -157,15 +161,12 @@ export class RecipeTestUtil {
     }
 
     /**
-     * 
+     * Dependencies: RecipeCategory
      * @returns returns 6 sub-categories(Sub cat 1-4, for categories a,b and "no sub-category" for each)
      */
-    public async getTestRecipeSubCategoryEntities(): Promise<RecipeSubCategory[]> {
-        /**
-         * name: string
-         * parentCategory: RecipeCategory
-         * recipes: Recipe[]
-         */
+    public async getTestRecipeSubCategoryEntities(testContext: DatabaseTestContext): Promise<RecipeSubCategory[]> {
+        await this.initRecipeCategoryTestingDatabase(testContext);
+
         return [
             await this.subCategoryBuilder.reset()
                 .name(CONSTANT.REC_SUBCAT_1)
@@ -195,21 +196,15 @@ export class RecipeTestUtil {
         ];
     }
 
-    public async getTestRecipeEntities(): Promise<Recipe[]> { 
-        /**
-         * name: string
-         * menuItem?: MenutItem | null
-         * isIngredient: boolean
-         * ingredients: RecipeIngredient[]
-         * batchResultQuantity: number
-         * batchResultUnitOfMeasure: UnitOfMeasure
-         * servingSizeQuantity: number
-         * servingSizeUnitOfMeasure: UnitOfMeasure
-         * salesPrice: number = 0;
-         * cost: number = 0;
-         * category?: RecipeCategory| null;
-         * subCategory?: RecipeSubCategory | null;
-         */
+    /**
+     * Dependencies: UnitOfMeasure, RecipeCategory, RecipeSubCategory
+     * @returns 
+     */
+    public async getTestRecipeEntities(testContext: DatabaseTestContext): Promise<Recipe[]> { 
+        await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
+        await this.initRecipeCategoryTestingDatabase(testContext);
+        await this.initRecipeSubCategoryTestingDatabase(testContext);
+
         return [
             await this.recipeBuilder.reset()
                 .name(CONSTANT.REC_A)
@@ -284,22 +279,69 @@ export class RecipeTestUtil {
                 .subCategoryByName(CONSTANT.REC_SUBCAT_NONE)
                 .build(),
         ];
+    }
+
+    public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void>{
+        testContext.addCleanupFunction(() => this.cleanupRecipeIngredientTestingDatabase());
+        await this.ingredientService.insertEntities(
+            await this.getTestRecipeIngredientEntities(testContext)
+        );
+    }
+
+    public async initRecipeCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        const categories = await this.getTestRecipeCategoryEntities(testContext);
+        const toInsert: RecipeCategory[] = [];
+
+        testContext.addCleanupFunction(() => this.cleanupRecipeCategoryTestingDatabase());
+
+        for(const category of categories){
+            const exists = await this.categoryService.findOneByName(category.name);
+            if(!exists){ toInsert.push(category); }
+        }
+        await this.categoryService.insertEntities(toInsert);
+    }
+
+    public async initRecipeSubCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        const subCategories = await this.getTestRecipeSubCategoryEntities(testContext);
+        const toInsert: RecipeSubCategory[] = [];
         
+        testContext.addCleanupFunction(() => this.cleanupRecipeSubCategoryTestingDatabase());
+
+        for(const subCat of subCategories){
+            const exists = await this.subCategoryService.findOneByName(subCat.name);
+            if(!exists){ toInsert.push(subCat); }
+        }
+
+        await this.subCategoryService.insertEntities(toInsert);
     }
 
-    public async initRecipeIngredientTestingDatabase(): Promise<void> {
-        throw new NotImplementedException();
+    public async initRecipeTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        const recipes = await this.getTestRecipeEntities(testContext);
+        const toInsert: Recipe[] = [];
+        
+        testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
+
+        for(const recipe of recipes){
+            const exists = await this.recipeService.findOneByName(recipe.name);
+            if(!exists){ toInsert.push(recipe); }
+        }
+
+        await this.recipeService.insertEntities(toInsert);
     }
 
-    public async initRecipeCategoryTestingDatabase(): Promise<void> {
-        throw new NotImplementedException();
+    public async cleanupRecipeIngredientTestingDatabase(): Promise<void>{
+        await this.ingredientService.getQueryBuilder().delete().execute();
     }
 
-    public async initRecipeSubCategoryTestingDatabase(): Promise<void> {
-        throw new NotImplementedException();
+    public async cleanupRecipeCategoryTestingDatabase(): Promise<void> {
+        await this.categoryService.getQueryBuilder().delete().execute();
     }
 
-    public async initRecipeTestingDatabase(): Promise<void> {
-        throw new NotImplementedException();
+    public async cleanupRecipeSubCategoryTestingDatabase(): Promise<void> {
+        await this.subCategoryService.getQueryBuilder().delete().execute();
+    }
+
+    public async cleanupRecipeTestingDatabase(): Promise<void> {
+        await this.recipeService.getQueryBuilder().delete().execute();
     }
 }

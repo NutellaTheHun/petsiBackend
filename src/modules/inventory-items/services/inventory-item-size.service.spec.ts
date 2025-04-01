@@ -1,21 +1,21 @@
 import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitCategoryService } from '../../unit-of-measure/services/unit-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
-import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
+import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { FOOD_A, FOOD_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
-import { cleanupInventoryItemTestingDatabaseLayerONE, setupInventoryItemTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
-import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
-import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
   let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let sizeService: InventoryItemSizeService;
 
   let unitService: UnitOfMeasureService;
@@ -28,9 +28,13 @@ describe('Inventory Item Size Service', () => {
 
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
-    await setupInventoryItemTestingDatabaseLayerONE(module);
+    dbTestContext = new DatabaseTestContext();
 
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+    //await setupInventoryItemTestingDatabaseLayerONE(module);
+
+
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
 
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
@@ -40,10 +44,12 @@ describe('Inventory Item Size Service', () => {
   });
 
   afterAll( async () => {
+    /*
     await cleanupInventoryItemTestingDatabaseLayerONE(module);
 
     const sizeQuery = sizeService.getQueryBuilder();
-    await sizeQuery.delete().execute();
+    await sizeQuery.delete().execute();*/
+    await dbTestContext.executeCleanupFunctions();
   });
 
   it('should be defined', () => {
@@ -110,9 +116,8 @@ describe('Inventory Item Size Service', () => {
   });
 
   it('should insert tesing sizes and get all', async () => {
-    const testingSizes = await testingUtil.getTestInventoryItemSizeEntities();
-    await testingUtil.initializeInventoryItemSizeDatabaseTesting();
-
+    const testingSizes = await testingUtil.getTestInventoryItemSizeEntities(dbTestContext);
+    
     const results = await sizeService.findAll();
 
     expect(results).not.toBeNull();

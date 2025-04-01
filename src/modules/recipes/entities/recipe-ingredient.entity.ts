@@ -1,7 +1,7 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Recipe } from "./recipe.entity";
-import { InventoryItem } from "src/modules/inventory-items/entities/inventory-item.entity";
-import { UnitOfMeasure } from "src/modules/unit-of-measure/entities/unit-of-measure.entity";
+import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 
 /**
  * A ingredient in a Recipe, can either be an InventoryItem or another Recipe that is marked isIngredient.
