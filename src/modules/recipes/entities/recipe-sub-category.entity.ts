@@ -10,9 +10,9 @@ export class RecipeSubCategory{
     @Column({ nullable: false })
     name: string;
 
-    @ManyToOne(() => RecipeCategory, { nullable: false })
+    @ManyToOne(() => RecipeCategory, { nullable: false, onDelete: 'CASCADE' })
     parentCategory: RecipeCategory;
 
-    @OneToMany(() => Recipe, (recipe) => recipe.category, { nullable: false })
+    @OneToMany(() => Recipe, (recipe) => recipe.category, { nullable: false, onDelete: 'SET NULL' })
     recipes: Recipe[];
 }

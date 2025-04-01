@@ -18,7 +18,9 @@ export class ServiceBase<T extends ObjectLiteral> {
   async insertEntities(entities: T[]): Promise<T[] | null> {
       const results: T[]  = [];
       for(const entity of entities){
-          results.push(await this.entityRepo.save(entity));
+          results.push(
+            await this.entityRepo.save(entity)
+          );
       }
       return results;
   }

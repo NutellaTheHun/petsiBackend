@@ -138,7 +138,7 @@ export class RecipeTestUtil {
 
     /**
      * Dependencies: None
-     * @returns 3 Categories with no subcategories or recipies, catgories A,B and category "no category".
+     * @returns 4 Categories with no subcategories or recipies, catgories A,B, C and category "no category".
      */
     public async getTestRecipeCategoryEntities(testContext: DatabaseTestContext): Promise<RecipeCategory[]> {
         return [
@@ -147,6 +147,9 @@ export class RecipeTestUtil {
                 .build(),
             await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_B)
+                .build(),
+            await this.categorybuilder.reset()
+                .name(CONSTANT.REC_CAT_C)
                 .build(),
             await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_NONE)
@@ -250,7 +253,7 @@ export class RecipeTestUtil {
                 .build(),
             await this.recipeBuilder.reset()
                 .name(CONSTANT.REC_E)
-                .isIngredient(true)
+                .isIngredient(false)
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
                 .cost(5.99)
@@ -275,6 +278,11 @@ export class RecipeTestUtil {
         ];
     }
 
+    /**
+     * Inserts 12 recipe ingredients into database, 
+     * - with recipe C referencing recipe B as an ingredient
+     * - Depends on InventoryItems, UnitOfMeasure, and Recipe, which are initialized beforehand.
+     */
     public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void>{
         testContext.addCleanupFunction(() => this.cleanupRecipeIngredientTestingDatabase());
         await this.ingredientService.insertEntities(
@@ -282,6 +290,12 @@ export class RecipeTestUtil {
         );
     }
 
+    /**
+     *  -Inserts 4 categories into database, 
+     * - categories A,B,C, 
+     * - and No Category
+     *  -No Dependencies
+     */
     public async initRecipeCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
         const categories = await this.getTestRecipeCategoryEntities(testContext);
         const toInsert: RecipeCategory[] = [];
@@ -295,6 +309,12 @@ export class RecipeTestUtil {
         await this.categoryService.insertEntities(toInsert);
     }
 
+    /**
+     * Inserts 6 sub categories into the database, 
+     * - 3 each for category A and B, subCat 1-4 (CatA: subCat 1 and 2 ect.), 
+     * - and no category for each cat A and B
+     * - Dependent on RecipeCategory entitiy and inserts before.
+     */
     public async initRecipeSubCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
         const subCategories = await this.getTestRecipeSubCategoryEntities(testContext);
         const toInsert: RecipeSubCategory[] = [];
@@ -309,6 +329,11 @@ export class RecipeTestUtil {
         await this.subCategoryService.insertEntities(toInsert);
     }
 
+    /**
+     * Inserts 6 Recipes (A-F) into the database, 
+     * - Recipes B is marked an Ingredient Recipe (isIngredient = true),
+     * - Depends on UnitOfMeasure, RecipeCategory, and RecipeSubCategory, which are initalized beforehand
+     */
     public async initRecipeTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
         const recipes = await this.getTestRecipeEntities(testContext);
         const toInsert: Recipe[] = [];

@@ -11,6 +11,7 @@ import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 import { CreateRecipeDto } from "../dto/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/update-recipe-dto";
+import { REC_CAT_NONE, REC_SUBCAT_NONE } from "../utils/constants";
 
 @Injectable()
 export class RecipeBuilder {
@@ -217,6 +218,11 @@ export class RecipeBuilder {
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
         }
+        else{
+            const defaultCategory = await this.categoryService.findOneByName(REC_CAT_NONE);
+            if(!defaultCategory){ throw new Error("default category (NO CATEGORY) is null"); }
+            this.categoryById(defaultCategory.id);
+        }
         if(dto.cost){
             this.cost(dto.cost);
         }
@@ -243,6 +249,10 @@ export class RecipeBuilder {
         }
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
+        }else{
+            const defaultCategory = await this.subCategoryService.findOneByName(REC_SUBCAT_NONE);
+            if(!defaultCategory){ throw new Error("default sub-category (NO CATEGORY) is null"); }
+            this.subCategoryById(defaultCategory.id);
         }
 
         return await this.build();

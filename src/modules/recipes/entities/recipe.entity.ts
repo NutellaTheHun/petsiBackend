@@ -1,5 +1,5 @@
 
-import { Column, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RecipeIngredient } from "./recipe-ingredient.entity";
 import { RecipeCategory } from "./recipe-category.entity";
 import { RecipeSubCategory } from "./recipe-sub-category.entity";
@@ -39,20 +39,22 @@ export class Recipe{
      * - Or a Recipe: Apple Mix, (quantity), (unit of measure), 
      *   where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true })
+    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true, onDelete: 'SET NULL' })
     ingredients?: RecipeIngredient[] | null;
 
     @Column({ nullable: false })
     batchResultQuantity: number;
 
-    @OneToOne(() => UnitOfMeasure, { nullable: false })
-    batchResultUnitOfMeasure: UnitOfMeasure;
+    @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn()
+    batchResultUnitOfMeasure?: UnitOfMeasure | null;
 
     @Column({ nullable: false })
     servingSizeQuantity: number;
 
-    @OneToOne(() => UnitOfMeasure, { nullable: false })
-    servingSizeUnitOfMeasure: UnitOfMeasure;
+    @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn()
+    servingSizeUnitOfMeasure?: UnitOfMeasure | null;
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
     salesPrice: number = 0;

@@ -1,7 +1,7 @@
-import { BeforeInsert, BeforeRemove, Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
-import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
 
 /**
  * An item that is a literal product to be sold. 

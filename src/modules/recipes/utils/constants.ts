@@ -1,5 +1,5 @@
 export const REC_CAT_A = "recipeCategory_A";
-export const REC_CAT_B = "categorecipeCategory_Bry_B";
+export const REC_CAT_B = "recipeCategory_B";
 export const REC_CAT_C = "recipeCategory_C";
 export const REC_CAT_NONE = "no category";
 

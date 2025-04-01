@@ -21,15 +21,15 @@ describe('recipe category service', () => {
     dbTestContext = new DatabaseTestContext();
     testUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
     await testUtil.initRecipeCategoryTestingDatabase(dbTestContext);
+    await testUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
+    await testUtil.initRecipeTestingDatabase(dbTestContext);
+    await testUtil.initRecipeIngredientTestingDatabase(dbTestContext);
 
     categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
     categoryBuilder = module.get<RecipeCategoryBuilder>(RecipeCategoryBuilder);
-
-    
   });
 
   afterAll(async () => {
-    //await categoryService.getQueryBuilder().delete().execute();
     await dbTestContext.executeCleanupFunctions();
   });
 
@@ -37,9 +37,6 @@ describe('recipe category service', () => {
     expect(categoryService).toBeDefined();
   });
 
-  // name: string
-  // subCategories: RecipeSubCategory[]
-  // recipes: Recipe[]
   it('should create a recipe category', async () => {
     const result = await categoryService.create({
       name: "testCategory"

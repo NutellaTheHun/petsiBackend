@@ -3,18 +3,30 @@ import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryService } from './recipe-sub-category.service';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { RecipeCategoryService } from './recipe-category.service';
+import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
+import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
+import { error } from 'console';
+import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
 
 describe('recipe sub category service', () => {
-  let service: RecipeSubCategoryService;
-  let testingUtil: InventoryItemTestingUtil;
+  let subCategoryService: RecipeSubCategoryService;
+  let testingUtil: RecipeTestUtil;
   let dbTestContext: DatabaseTestContext;
+  let categoryService: RecipeCategoryService;
+
+  let testId: number;
+  let testIds: number[];
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
-    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
     dbTestContext = new DatabaseTestContext();
+    await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
 
-    service = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
+    subCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
+    categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
   });
 
   afterAll(async () => {
@@ -22,43 +34,94 @@ describe('recipe sub category service', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(subCategoryService).toBeDefined();
   });
 
-  // create
   it('should create a sub-category', async () => {
+    const catC = await categoryService.findOneByName(REC_CAT_C);
+    if(!catC){ throw new Error("recipe category C is null"); }
 
+    const dto = {
+      name: "test sub Cat",
+      parentCategoryId: catC.id,
+    } as CreateRecipeSubCategoryDto;
+
+    const result = await subCategoryService.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("test sub Cat");
+    expect(result?.parentCategory.id).toEqual(catC.id);
+    
+    testId = result?.id as number;
   });
-  // update
+
   it('should update a sub-category', async () => {
+    const toUpdate = await subCategoryService.findOne(testId);
+    if(!toUpdate){ throw new Error("sub-category to update is null"); }
 
-  });
-  // findAll
-  it('should get all sub-categories', async () => {
+    const newCat =  await categoryService.findOneByName(REC_CAT_A);
+    if(!newCat){ throw new Error("recipe category A not found"); }
 
-  });
-  // findOne
-  it('should get one sub-category by id', async () => {
+    const dto = {
+      name: "Update Sub Cat Name",
+      parentCategoryId: newCat.id,
+    } as UpdateRecipeSubCategoryDto;
 
-  });
-  // findEntitiesById
-  it('should get sub-categories by a list of ids', async () => {
+    const result = await subCategoryService.update(toUpdate.id, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("Update Sub Cat Name");
+    expect(result?.parentCategory.id).toEqual(newCat.id);
 
+    const checkOldCat = await categoryService.findOneByName(REC_CAT_C, ["subCategories"]);
+    if(!checkOldCat){ throw new Error("old recipe category C not found"); }
+    if(!checkOldCat.subCategories){ throw new Error("sub categories is null"); }
+    expect(checkOldCat.subCategories.findIndex(s => s.name === result?.name)).toEqual(-1);
+
+    const checkNewCat = await categoryService.findOneByName(REC_CAT_A, ["subCategories"]);
+    if(!checkNewCat){ throw new Error("new recipe category A not found"); }
+    if(!checkNewCat.subCategories){ throw new Error("sub categories is null"); }
+    expect(checkNewCat.subCategories.findIndex(s => s.name === result?.name)).not.toEqual(-1);
   });
-  // remove
+
   it('should remove a sub-category', async () => {
+    const removal = await subCategoryService.remove(testId);
+    expect(removal).toBeTruthy();
 
+    const verify = await subCategoryService.findOne(testId);
+    expect(verify).toBeNull();
   });
-  // findOneByName
+
+  it('should get all sub-categories', async () => {
+    const expected = await testingUtil.getTestRecipeSubCategoryEntities(dbTestContext);
+    const results = await subCategoryService.findAll();
+    expect(results.length).toEqual(expected.length);
+
+    testIds = [ results[0].id, results[1].id, results[2].id ];
+  });
+
+  it('should get sub-categories by a list of ids', async () => {
+    const results = await subCategoryService.findEntitiesById(testIds);
+    expect(results.length).toEqual(testIds.length);
+    for(const result of results){
+      expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
+    }
+  });
+
   it('should get one sub-category by name', async () => {
-
+    const result = await subCategoryService.findOneByName(REC_SUBCAT_1);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual(REC_SUBCAT_1);
   });
-  // findByCategoryName
+
   it('should get a list of sub-categories by category name', async () => {
-
+    const results = await subCategoryService.findByCategoryName(REC_CAT_A);
+    expect(results).not.toBeNull();
+    expect(results.length).toBeGreaterThan(0);
   });
-  // findByCategorynameAndSubCategoryName
-  it('should get one sub-category with a category name and sub-category name', async () => {
 
+  it('should get one sub-category with a category name and sub-category name', async () => {
+    const result =  await subCategoryService.findOneByCategoryNameAndSubCategoryName(REC_CAT_A, REC_SUBCAT_1, ["parentCategory"]);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual(REC_SUBCAT_1);
+    expect(result?.parentCategory.name).toEqual(REC_CAT_A);
   });
 });
