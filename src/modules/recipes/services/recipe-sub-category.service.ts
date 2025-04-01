@@ -58,6 +58,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     async findByCategoryName(name: string, relations?: string[]): Promise<RecipeSubCategory[]>{
         const category = await this.categoryService.findOneByName(name, ["subCategories"]);
         if(!category){ throw new Error("category not found"); }
+        if(!category.subCategories){ throw new Error("sub-categories not found"); }
 
         return category.subCategories;
     }

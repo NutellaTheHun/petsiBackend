@@ -110,7 +110,7 @@ describe('recipe category service', () => {
     if(!result){ throw new Error("category is null"); }
 
     expect(result.subCategories).not.toBeNull();
-    expect(result.subCategories.length).toBeGreaterThan(0);
+    expect(result.subCategories?.length).toBeGreaterThan(0);
   });
 
   it('should find recipes categories with recipes', async () => {

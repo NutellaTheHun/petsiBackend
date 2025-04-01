@@ -1,5 +1,5 @@
 import { BeforeInsert, BeforeRemove, Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { MenuCategory } from "./menu-category.entity";
+import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
 import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
 
@@ -30,9 +30,9 @@ export class MenuItem {
      * - On entity insertion, the item's category.items property is passed this item.
      * - If this item is deleted, this item will automatically be removed it's referenced category.
      */
-    @ManyToOne(() => MenuCategory, { nullable: true, onDelete: 'SET NULL'})
-    category?: MenuCategory;
-
+    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL'})
+    category?: MenuItemCategory;
+    /*
     @BeforeInsert()
     async addToCategory() {
         if (this.category) {
@@ -45,7 +45,7 @@ export class MenuItem {
         if(this.category){
             this.category.items = this.category.items.filter( item => item.id !== this.id);
         }
-    }
+    }*/
 
     @Column({ nullable: false })
     name: string;
@@ -55,8 +55,8 @@ export class MenuItem {
      * and is captured for search purposes (Speicifically the drop down menu). Per MenuItem, users can add and 
      * remove searchable names to associate with the item.
      */
-    @Column({ nullable: false })
-    searchNames: string[] = [];
+    @Column( "text", { array: true, nullable: true })
+    searchNames?: string[] | null;
 
     /**
      * A MenuItem that represents the vegan version of the MenuItem object. Otherwise the value is null.
@@ -89,8 +89,8 @@ export class MenuItem {
      * - Not all pies are necessarily available in all sizes.
      * - All items except pies by default are size "regular" (Some merch have sizing, each size is its own ite)
      */
-    @ManyToOne(() => MenuItemSize, { nullable: false })
-    validSizes: MenuItemSize[] = [];
+    @ManyToOne(() => MenuItemSize, { nullable: true })
+    validSizes?: MenuItemSize[] | null;
 
     /**
      * A flag for pies that are pie of the month. POTM has a special row on BackListPie report to be 
@@ -109,8 +109,8 @@ export class MenuItem {
     /**
      * The list of MenuItems, their size, and quantity associated with the order.
      */
-    @OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: false })
-    onOrder: OrderMenuItem[] = [];
+    @OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
+    onOrder?: OrderMenuItem[] | null;
 
     /**
      * The date the order is inserted into the database. 

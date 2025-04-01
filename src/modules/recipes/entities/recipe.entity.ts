@@ -45,13 +45,13 @@ export class Recipe{
     @Column({ nullable: false })
     batchResultQuantity: number;
 
-    @Column({ nullable: false })
+    @OneToOne(() => UnitOfMeasure, { nullable: false })
     batchResultUnitOfMeasure: UnitOfMeasure;
 
     @Column({ nullable: false })
     servingSizeQuantity: number;
 
-    @Column({ nullable: false })
+    @OneToOne(() => UnitOfMeasure, { nullable: false })
     servingSizeUnitOfMeasure: UnitOfMeasure;
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })

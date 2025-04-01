@@ -1,6 +1,6 @@
 import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
-export class CreateMenuCategoryDto{
+export class CreateMenuItemCategoryDto{
     @IsString()
     @IsNotEmpty()
     readonly name: string;

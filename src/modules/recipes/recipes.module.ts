@@ -58,6 +58,8 @@ import { RecipeTestUtil } from './utils/recipe-test.util';
     RecipeIngredientBuilder,
     RecipeCategoryBuilder,
     RecipeSubCategoryBuilder,
+
+    RecipeTestUtil,
   ],
   exports: [
     RecipeService,

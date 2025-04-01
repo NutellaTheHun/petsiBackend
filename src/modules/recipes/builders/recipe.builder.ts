@@ -1,12 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Recipe } from "../entities/recipe.entity";
-import { MenuItemsService } from "../../menu-items/menu-items.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { BuilderMethodBase } from "../../../base/builder-method-base";
-import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { RecipeCategory } from "../entities/recipe-category.entity";

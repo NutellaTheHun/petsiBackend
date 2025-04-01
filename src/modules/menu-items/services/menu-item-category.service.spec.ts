@@ -1,4 +1,6 @@
-describe('menu item service', () => {
+import { MenuItemCategoryService } from "./menu-item-category.service";
+
+describe('menu item category service', () => {
     //let service: MenuItemCategoryService;
 
     beforeAll(async () => {

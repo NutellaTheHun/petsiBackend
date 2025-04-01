@@ -7,9 +7,6 @@ import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 import { Recipe } from "../entities/recipe.entity";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { MenuItemsService } from "../../menu-items/menu-items.service";
 import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import * as CONSTANT from "./constants";
 import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
@@ -38,9 +35,6 @@ export class RecipeTestUtil {
 
         private readonly recipeService: RecipeService,
         private readonly recipeBuilder: RecipeBuilder,
-
-        //private readonly inventoryItemService: InventoryItemService,
-        //private readonly measureService: UnitOfMeasureService,
 
         //private readonly menuItemService: MenuItemsService,
     ){ }

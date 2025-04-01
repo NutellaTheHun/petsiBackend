@@ -1,9 +1,45 @@
 import { Module } from '@nestjs/common';
-import { OrdersService } from './orders.service';
-import { OrdersController } from './orders.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Order } from './entities/order.entity';
+import { OrderType } from './entities/order-type.entity';
+import { OrderMenuItem } from './entities/order-menu-item.entity';
+import { OrderController } from './controllers/order.controller';
+import { OrderTypeController } from './controllers/order-type.controller';
+import { OrderMenuItemController } from './controllers/order-menu-item.controller';
+import { OrderService } from './services/order.service';
+import { OrderTypeService } from './services/order-type.service';
+import { OrderMenuItemService } from './services/order-menu-item.service';
+import { OrderBuilder } from './builders/order.builder';
+import { OrderTypeBuilder } from './builders/order-type.builder';
+import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
+
 
 @Module({
-  controllers: [OrdersController],
-  providers: [OrdersService],
+  imports:[
+    TypeOrmModule.forFeature([
+      Order,
+      OrderType,
+      OrderMenuItem,
+    ]),
+  ],
+  controllers: [
+    OrderController,
+    OrderTypeController,
+    OrderMenuItemController,
+  ],
+  providers: [
+    OrderService,
+    OrderTypeService,
+    OrderMenuItemService,
+
+    OrderBuilder,
+    OrderTypeBuilder,
+    OrderMenuItemBuilder,
+  ],
+  exports: [
+    OrderService,
+    OrderTypeService,
+    OrderMenuItemService,
+  ]
 })
 export class OrdersModule {}

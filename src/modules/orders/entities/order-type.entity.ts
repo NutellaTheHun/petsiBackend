@@ -12,6 +12,6 @@ export class OrderType{
     @Column({ nullable: false })
     name: string;
 
-    @OneToMany(() => Order, (order) => order.type, { nullable: false })
-    orders: Order[] = []
+    @OneToMany(() => Order, (order) => order.type, { nullable: true })
+    orders?: Order[] | null;
 }

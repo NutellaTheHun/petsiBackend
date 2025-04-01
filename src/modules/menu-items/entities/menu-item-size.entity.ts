@@ -1,4 +1,4 @@
-import { Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { MenuItem } from "./menu-item.entity";
 import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
 
@@ -14,7 +14,8 @@ export class MenuItemSize{
     /** 
      * By default, can be "regular", "cutie", "small", "medium", "large" 
      */
-    @OneToMany(() => MenuItem, (menuItem) => menuItem.validSizes, { nullable: false })
-    @OneToMany(() => OrderMenuItem, (orderItem) => orderItem.size, { nullable: false })
+    //@OneToMany(() => MenuItem, (menuItem) => menuItem.validSizes, { nullable: false })
+    //@OneToMany(() => OrderMenuItem, (orderItem) => orderItem.size, { nullable: false })
+    @Column()
     name: string;
 }

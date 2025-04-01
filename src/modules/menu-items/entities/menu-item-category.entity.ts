@@ -5,7 +5,7 @@ import { MenuItem } from "./menu-item.entity";
  * Product categories such as "Pie", "Pastry", "Merchandise"
  */
 @Entity()
-export class MenuCategory {
+export class MenuItemCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -17,6 +17,6 @@ export class MenuCategory {
      * A MenuItem is added through the BeforeInsert() hook in MenuItem
      * A MenuItem is removed through MenuItem's BeforeRemove() hook.
      */
-    @OneToMany(() => MenuItem, (item) => item.category, {nullable: false})
-    items: MenuItem[] = []
+    @OneToMany(() => MenuItem, (item) => item.category, {nullable: true})
+    items?: MenuItem[] | null;
 }

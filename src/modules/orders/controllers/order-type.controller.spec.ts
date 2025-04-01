@@ -1,4 +1,4 @@
-describe('menu item service', () => {
+describe('order type controller', () => {
     //let service: MenuItemCategoryService;
 
     beforeAll(async () => {
