@@ -11,6 +11,20 @@ export class ServiceBase<T extends ObjectLiteral> {
     // gets overridden by concrete implementations
   }
 
+  async insertEntity(entity: T): Promise<T | null> {
+    return await this.entityRepo.save(entity);
+  }
+  
+  async insertEntities(entities: T[]): Promise<T[] | null> {
+      const results: T[]  = [];
+      for(const entity of entities){
+          results.push(
+            await this.entityRepo.save(entity)
+          );
+      }
+      return results;
+  }
+
   async findAll(relations?: string[]): Promise<T[]> {
     return await this.entityRepo.find({relations: relations});
   }

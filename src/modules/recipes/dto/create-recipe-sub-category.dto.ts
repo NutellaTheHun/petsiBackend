@@ -16,3 +16,9 @@ export class CreateRecipeSubCategoryDto {
     @IsPositive({ each: true })
     readonly recipeIds: number[] = [];
 }
+
+export function CreateDefaultRecipeSubCategoryDtoValues(){
+    return [
+
+    ];
+}

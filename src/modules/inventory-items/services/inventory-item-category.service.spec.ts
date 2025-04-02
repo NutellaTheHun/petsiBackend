@@ -1,11 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
-import { InventoryItemCategoryFactory } from '../factories/inventory-item-category.factory';
+import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
+import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
 
 describe('Inventory Item Category Service', () => {
+  let testingUtil: InventoryItemTestingUtil;
   let service: InventoryItemCategoryService;
-  let factory: InventoryItemCategoryFactory;
 
   const testCategoryName = "testCategoryName";
   let testId: number;
@@ -13,9 +15,9 @@ describe('Inventory Item Category Service', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
 
     service = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    factory = module.get<InventoryItemCategoryFactory>(InventoryItemCategoryFactory);
   });
 
   afterAll(async () => {
@@ -28,7 +30,7 @@ describe('Inventory Item Category Service', () => {
   });
 
   it('should create a inventory item category', async () => {
-    const createCategory = factory.createDtoInstance({ name: testCategoryName });
+    const createCategory = { name: testCategoryName } as CreateInventoryItemCategoryDto;
 
     const result = await service.create(createCategory);
     
@@ -46,10 +48,9 @@ describe('Inventory Item Category Service', () => {
     if(!toUpdate) { throw new Error('category to update is null'); }
 
     toUpdate.name = updatedName;
-    const result = await service.update(testId, 
-      factory.createDtoInstance({
-        name: toUpdate.name,
-      })
+    const result = await service.update(
+      testId, 
+      { name: toUpdate.name } as UpdateInventoryItemCategoryDto
     );
 
     expect(result?.name).toEqual(updatedName);
@@ -63,15 +64,9 @@ describe('Inventory Item Category Service', () => {
     expect(verify).toBeNull();
   });
 
-  it('should insert default item categories and get all categories', async () => {
-    const categories = factory.getDefaultItemCategories();
-    if(!categories) { throw new Error('default categories is null'); }
-    
-    for(const category of categories) {
-      await service.create(
-        factory.createDtoInstance({ name: category.name })
-      )
-    }
+  it('should insert testing item categories and get all categories', async () => {
+    const categories = await testingUtil.getTestInventoryItemCategoryEntities();
+    await testingUtil.initInventoryItemCategoryTestDatabase();
 
     const results = await service.findAll();
 
@@ -82,10 +77,10 @@ describe('Inventory Item Category Service', () => {
   });
 
   it('should get a inventory item category by name', async () => {
-    const result = await service.findOneByName("cleaning");
+    const result = await service.findOneByName("food");
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("cleaning");
+    expect(result?.name).toEqual("food");
   });
 
   it('should get inventory item categories from a list of ids', async () => {

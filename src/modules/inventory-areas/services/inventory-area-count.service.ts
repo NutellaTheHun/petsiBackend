@@ -1,14 +1,12 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
-import { InventoryAreaItemCountService } from "./inventory-area-item-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
-import { AREA_A, AREA_B } from "../utils/constants";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -24,13 +22,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         @InjectRepository(InventoryAreaCount)
         private readonly areaCountRepo: Repository<InventoryAreaCount>,
 
-        private readonly areaCountFactory: InventoryAreaCountFactory,
-
-        @Inject(forwardRef(() => InventoryAreaService))
-        private readonly areaService: InventoryAreaService,
-
-        @Inject(forwardRef(() => InventoryAreaItemCountService))
-        private readonly areaItemService: InventoryAreaItemCountService,
+        @Inject(forwardRef(() => InventoryAreaCountBuilder))
+        private readonly areaCountBuilder: InventoryAreaCountBuilder,
     ){ super(areaCountRepo); }
 
     /**
@@ -40,14 +33,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     async create(createDto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount | null> {
         if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
         if(createDto.inventoryItemCountIds){ throw new Error('InventoryCountIds present in create call, must only be present in update') }
-
-        const area = await this.areaService.findOne(createDto.inventoryAreaId);
-        if(!area){ throw new Error('inventory area not found'); }
-
-        const count = this.areaCountFactory.createEntityInstance({
-            inventoryArea: area,
-        })
         
+        const count = await this.areaCountBuilder.buildCreateDto(createDto);
         return await this.areaCountRepo.save(count);
     }
 
@@ -58,26 +45,14 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         const toUpdate = await this.findOne(id);
         if(!toUpdate){ return null; }
 
-        if(updateDto.inventoryAreaId){
-            const newArea = await this.areaService.findOne(updateDto.inventoryAreaId);
-            if(!newArea){ throw new Error('inventory area to update not found'); }
-            toUpdate.inventoryArea = newArea;
-        }
-
-        if(updateDto.inventoryItemCountIds){
-            const countedItems = await this.areaItemService.findEntitiesById(updateDto.inventoryItemCountIds);
-            toUpdate.items = countedItems;
-        }
-
+        await this.areaCountBuilder.buildUpdateDto(toUpdate, updateDto);
         return await this.areaCountRepo.save(toUpdate);
+        
     }
 
     async findByAreaName(name: string, relations?: string[]): Promise<InventoryAreaCount[]> {
-        const area = await this.areaService.findOneByName(name);
-        if(!area){ throw new Error('inventory area not found'); }
-        
         return await this.areaCountRepo.find({ 
-            where: { inventoryArea: { id: area.id } }, 
+            where: { inventoryArea: { name: name } }, 
             relations
         });
     }
@@ -98,24 +73,5 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
             },
             relations,
         });
-    }
-
-    async initializeTestingDatabase(): Promise<InventoryAreaCount[]> {
-        const results: InventoryAreaCount[] = []
-        const inventoryArea_A = await this.areaService.findOneByName(AREA_A);
-        const areaCountDTO_A = this.areaCountFactory.createDtoInstance({ inventoryAreaId: inventoryArea_A?.id });
-
-        const result_A = await this.create(areaCountDTO_A);
-        if(!result_A){ throw new Error('failed to create test inventory count'); }
-        results.push(result_A);
-
-        const inventoryArea_B = await this.areaService.findOneByName(AREA_B);
-        const areaCountDTO_B = this.areaCountFactory.createDtoInstance({ inventoryAreaId: inventoryArea_B?.id });
-
-        const result_B = await this.create(areaCountDTO_B);
-        if(!result_B){ throw new Error('failed to create test inventory count'); }
-        results.push(result_B);
-        
-        return results;
     }
 }

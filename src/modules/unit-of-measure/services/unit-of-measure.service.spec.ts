@@ -1,15 +1,19 @@
 import { TestingModule } from '@nestjs/testing';
-import { UnitOfMeasureService } from './unit-of-measure.service';
-import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
-import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
-import { UnitCategoryService } from './unit-category.service';
+import Big from "big.js";
+import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT, VOLUME } from '../utils/constants';
-import Big from "big.js";
+import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
+import { UnitCategoryService } from './unit-category.service';
+import { UnitOfMeasureService } from './unit-of-measure.service';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('UnitOfMeasureService', () => {
+  let testingUtil: UnitOfMeasureTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let unitService: UnitOfMeasureService;
-  let unitFactory: UnitOfMeasureFactory;
   let categoryService: UnitCategoryService;
 
   let testUnits: UnitOfMeasure[];
@@ -17,38 +21,22 @@ describe('UnitOfMeasureService', () => {
 
   beforeAll(async () => {
       const module: TestingModule = await getUnitOfMeasureTestingModule();
-  
+      dbTestContext = new DatabaseTestContext();
+      testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+      await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+
       unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-      unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
       categoryService = module.get<UnitCategoryService>(UnitCategoryService);
 
-      await categoryService.initializeDefaultCategories();
-      testUnits = await unitFactory.getTestingUnits();
+      testUnits = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
     });
   
     afterAll(async () => {
-      const unitQueryBuilder = unitService.getQueryBuilder();
-      await unitQueryBuilder.delete().execute();
-
-      const categoryQueryBuilder = categoryService.getQueryBuilder();
-      await categoryQueryBuilder.delete().execute();
+      await dbTestContext.executeCleanupFunctions();
     })
 
   it('unitService should be defined', () => {
     expect(unitService).toBeDefined();
-  });
-
-  it('should insert all test units', async () => {
-    for(const unit of testUnits){
-      await unitService.create(
-        unitFactory.createDtoInstance({
-          name: unit.name,
-          abbreviation: unit.abbreviation,
-          categoryId: unit.category?.id,
-          conversionFactorToBase: unit.conversionFactorToBase,
-        })
-      )
-    }
   });
 
   it('should retrieve all test units', async () => {
@@ -70,10 +58,11 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('should initialize default units', async () => {
-    await unitService.initializeDefaultUnits();
-    
+    await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+    const units = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
+
     const results = await unitService.findAll();
-    expect(results.length).toEqual((await unitFactory.getDefaultUnits()).length);
+    expect(results.length).toEqual(units.length);
   });
 
 
@@ -190,10 +179,9 @@ describe('UnitOfMeasureService', () => {
     if(!toUpdate.category) { throw new Error("category is null"); }
     
     toUpdate.name = "UPDATED_NAME";
-    const result = await unitService.update(toUpdate.id, 
-      unitFactory.updateDtoInstance({
-        name: toUpdate.name,
-      })
+    const result = await unitService.update(
+      toUpdate.id, 
+      { name: toUpdate.name } as UpdateUnitOfMeasureDto
     );
 
     expect(result).not.toBeNull();
@@ -213,10 +201,9 @@ describe('UnitOfMeasureService', () => {
     if(newCategory?.id === oldCategory.id){
       newCategory = await categoryService.findOneByName(VOLUME);
     }
-    const result = await unitService.update(toUpdate.id, 
-      unitFactory.updateDtoInstance({
-        categoryId: newCategory?.id,
-      })
+    const result = await unitService.update(
+      toUpdate.id, 
+      { categoryId: newCategory?.id } as UpdateUnitOfMeasureDto
     );
 
     expect(result).not.toBeNull();
@@ -237,10 +224,9 @@ describe('UnitOfMeasureService', () => {
     const oldCategory = await categoryService.findOne(toUpdate.category.id);
     if(!oldCategory){ throw new Error('oldCategory is null'); }
 
-    const result = await unitService.update(toUpdate.id, 
-      unitFactory.updateDtoInstance({
-        categoryId: 0,
-      })
+    const result = await unitService.update(
+      toUpdate.id, 
+      { categoryId: 0 } as UpdateUnitOfMeasureDto
     );
     expect(result).not.toBeNull();
     expect(result?.category).toBeNull();
@@ -256,5 +242,4 @@ describe('UnitOfMeasureService', () => {
     const verify = await unitService.findOne(testUnitId);
     expect(verify).toBeNull();
   });
-
 });

@@ -3,19 +3,15 @@ import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
-import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
-import { InventoryAreaFactory } from "../factories/inventory-area.factory";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountController } from "./inventory-area-count.controller";
-import exp from "constants";
 
 describe('inventory area count controller', () => {
+    let testingUtil: InventoryAreaTestUtil;
     let controller: InventoryAreaCountController;
     let countService: InventoryAreaCountService;
-    let countFactory: InventoryAreaCountFactory;
-
-    let areaFactory: InventoryAreaFactory;
 
     let areas: InventoryArea[];
     let areaId = 1;
@@ -25,14 +21,11 @@ describe('inventory area count controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
-
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         controller = module.get<InventoryAreaCountController>(InventoryAreaCountController);
         countService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
-        countFactory = module.get<InventoryAreaCountFactory>(InventoryAreaCountFactory);
 
-        areaFactory = module.get<InventoryAreaFactory>(InventoryAreaFactory);
-
-        areas = areaFactory.getTestingAreas();
+        areas = testingUtil.getTestInventoryAreaEntities();
         areas.map(area => area.id = areaId++);
         
         areaCounts = [
@@ -57,9 +50,7 @@ describe('inventory area count controller', () => {
 
         jest.spyOn(countService, "create").mockImplementation(async (createDto: CreateInventoryAreaCountDto) => {
             const areaIndex = areas.findIndex(area => area.id == createDto.inventoryAreaId)
-            const newCount = countFactory.createEntityInstance({
-                inventoryArea: areas[areaIndex],
-            });
+            const newCount = { inventoryArea: areas[areaIndex] } as InventoryAreaCount;
 
             newCount.id = areaCountId++;
             areaCounts.push(newCount);
@@ -72,11 +63,6 @@ describe('inventory area count controller', () => {
             return area?.inventoryCounts || [];
         });
 
-        /*
-        jest.spyOn(countService, "findByDate").mockImplementation(async (name: string) => {
-            throw new NotImplementedException();
-        });*/
-        
         jest.spyOn(countService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaCountDto) => {
             const idx = areaCounts.findIndex(c => c.id === id);
             if(idx === -1){ return null; }
@@ -115,13 +101,10 @@ describe('inventory area count controller', () => {
     });
 
     it('should create an inventory count', async () => {
-        const dto = countFactory.createDtoInstance({
-            inventoryAreaId: 1,
-        })
+        const dto = { inventoryAreaId: 1 } as CreateInventoryAreaCountDto;
         const result = await controller.create(dto);
         expect(result).not.toBeNull();
     });
-    
 
     it('should return all itemCounts', async () => {
         const results = await controller.findAll();
@@ -132,16 +115,6 @@ describe('inventory area count controller', () => {
         const result = await controller.findOne(1);
         expect(result).not.toBeNull();
     });
-
-    /*
-    it('should return an inventory count by item name', async () => {
-
-    });*/
-
-    /*
-    it('should return an inventory count by date', async () => {
-
-    });*/
     
     it('should fail to return an inventory count (bad id, returns null)', async () => {
         const result = await controller.findOne(0);
@@ -152,23 +125,16 @@ describe('inventory area count controller', () => {
         const toUpdate = await controller.findOne(1);
         if(!toUpdate){ throw new Error('count to update not found'); }
 
-        const uDto = countFactory.updateDtoInstance({
-            inventoryAreaId: 2,
-        })
+        const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
 
-        const result = controller.update(toUpdate.id, uDto);
+        const result = await controller.update(toUpdate.id, uDto);
         expect(result).not.toBeNull();
     });
     
     it('should fail to update an inventory count (doesnt exist)', async () => {
-        const toUpdate = await controller.findOne(1);
-        if(!toUpdate){ throw new Error('count to update not found'); }
+        const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
 
-        const uDto = countFactory.updateDtoInstance({
-            inventoryAreaId: 2,
-        })
-
-        const result = controller.update(0, uDto);
+        const result = await controller.update(0, uDto);
         expect(result).toBeNull();
     });
     

@@ -1,6 +1,10 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
 
 export class CreateRecipeDto {
+
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
 
     @IsNumber()
     @IsPositive()
@@ -54,4 +58,10 @@ export class CreateRecipeDto {
     @IsOptional()
     @IsPositive()
     readonly subCategoryId?: number;
+}
+
+export function CreateDefaultRecipeDtoValues(){
+    return [
+
+    ];
 }

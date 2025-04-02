@@ -1,14 +1,11 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { ServiceBase } from '../../../base/service-base';
+import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
-import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
-import { ServiceBase } from '../../../base/service-base';
-import { InventoryItemService } from './inventory-item.service';
-import { InventoryItemPackageService } from './inventory-item-package.service';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
@@ -16,15 +13,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @InjectRepository(InventoryItemSize)
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
-        @Inject(forwardRef(() => InventoryItemService))
-        private readonly itemService: InventoryItemService,
-
-        private readonly packageService: InventoryItemPackageService,
-        private readonly unitService: UnitOfMeasureService,
-
-        @Inject(forwardRef(() => InventoryItemSizeFactory))
-        private readonly sizeFactory: InventoryItemSizeFactory,
-
+        private readonly sizeBuilder: InventoryItemSizeBuilder,
     ){ super(sizeRepo); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
@@ -37,12 +26,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         });
         if(exists){ return null; }
 
-        const itemSize = this.sizeFactory.createEntityInstance({
-            measureUnit: await this.unitService.findOne(createDto.unitOfMeasureId),
-            packageType: await this.packageService.findOne(createDto.inventoryPackageTypeId),
-            item: await this.itemService.findOne(createDto.inventoryItemId)
-        })
-        
+        const itemSize = await this.sizeBuilder.buildCreateDto(createDto);
         return await this.sizeRepo.save(itemSize);
     }
       
@@ -50,24 +34,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         const toUpdate = await this.findOne(id);
         if(!toUpdate) { return null; }
 
-        if(updateDto.unitOfMeasureId){
-            const unit = await this.unitService.findOne(updateDto.unitOfMeasureId);
-            if(!unit){ return null; }
-            toUpdate.measureUnit = unit;
-        }
-
-        if(updateDto.inventoryPackageTypeId){
-            const packageType = await this.packageService.findOne(updateDto.inventoryPackageTypeId);
-            if(!packageType){ return null; }
-            toUpdate.packageType = packageType;
-        }
-        
-        if(updateDto.inventoryItemId){
-            const item = await this.itemService.findOne(updateDto.inventoryItemId);
-            if(!item){ return null; }
-            toUpdate.item = item;
-        }
-
+        await this.sizeBuilder.buildUpdateDto(toUpdate, updateDto);
         return await this.sizeRepo.save(toUpdate);
     }
 
@@ -76,21 +43,5 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
             where: { item: { name } },
             relations
         });
-    }
-
-    /**
-     *  Depends on UnitOfMeasureService, InventoryItemPackageService, InventoryItemService
-     */ 
-    async initializeTestingDatabase(): Promise<void> {
-        const testingSizes = await this.sizeFactory.getTestingItemSizes();
-
-        for(const size of testingSizes){
-            await this.create(
-                this.sizeFactory.createDtoInstance({
-                unitOfMeasureId: size.measureUnit.id,
-                inventoryPackageTypeId: size.packageType.id,
-                inventoryItemId: size.item.id,
-            }))
-        }
     }
 }

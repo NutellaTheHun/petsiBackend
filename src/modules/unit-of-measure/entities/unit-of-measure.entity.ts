@@ -6,7 +6,7 @@ import { UnitCategory } from "./unit-category.entity";
 // then can set categories baseUnit
 @Entity()
 export class UnitOfMeasure {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn()   
     id: number;
 
     @Column({ unique: true, nullable: false })

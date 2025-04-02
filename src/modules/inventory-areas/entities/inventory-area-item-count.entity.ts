@@ -1,8 +1,8 @@
-import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
+import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { InventoryAreaCount } from "./inventory-area-count.entity";
 import { InventoryArea } from "./inventory-area.entity";
-import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
-import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
 
 /**
  * A single item within the process of an inventory count,

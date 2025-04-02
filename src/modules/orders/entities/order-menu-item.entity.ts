@@ -1,7 +1,7 @@
-import { MenuItemSize } from "src/modules/menu-items/entities/menu-item-size.entity";
-import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
-import { Order } from "src/modules/orders/entities/order.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Order } from "./order.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
+import { MenuItemSize } from "../../menu-items/entities/menu-item-size.entity";
 
 /**
  * A MenuItem specified with quantity and size on an Order.
@@ -14,7 +14,7 @@ export class OrderMenuItem {
     @ManyToOne(() => Order, (order) => order.items, { nullable: false })
     order: Order;
 
-    @ManyToOne(() => MenuItem, (menuItems) => menuItems.onOrder, { nullable: false })
+    @ManyToOne(() => MenuItem, (menuItem) => menuItem.onOrder, { nullable: false })
     menuItem: MenuItem;
 
     @Column({ nullable: false })

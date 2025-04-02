@@ -1,71 +1,50 @@
 import { TestingModule } from '@nestjs/testing';
-import { UnitCategoryService } from './unit-category.service';
-import { UnitCategoryFactory } from '../factories/unit-category.factory';
+import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { UnitCategory } from '../entities/unit-category.entity';
 import { OUNCE, POUND, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
+import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
+import { UnitCategoryBuilder } from '../builders/unit-category.builder';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 
 describe('UnitCategoryService', () => {
+  let testingUtil: UnitOfMeasureTestingUtil;
+  let dbTestContext: DatabaseTestContext;
+
   let categoryService: UnitCategoryService;
-  let categoryFactory: UnitCategoryFactory;
-
-  let testCategories: UnitCategory[];
-  let testCategoryId: number;
-
+  let categoryBuilder: UnitCategoryBuilder;
   let unitService: UnitOfMeasureService;
-  let unitFactory: UnitOfMeasureFactory;
+
+  let testCategoryId: number;
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-
+    dbTestContext = new DatabaseTestContext();
+    testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
+    await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+    
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
-    categoryFactory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
-
-    testCategories = await categoryFactory.getTestingUnitCategories();
-    if(!testCategories) { throw new Error('categories is null'); }
-
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
   });
 
   afterAll(async () => {
-    const unitQueryBuilder = unitService.getQueryBuilder();
-    await unitQueryBuilder.delete().execute();
-
-    const categoryQueryBuilder = categoryService.getQueryBuilder();
-    await categoryQueryBuilder.delete().execute();
+    await dbTestContext.executeCleanupFunctions();
   })
 
   it('should be defined', () => {
     expect(categoryService).toBeDefined();
   });
 
-  it('should insert test categories', async () => {
-    let results: any[] = [];
-
-    for (const category of testCategories){
-      results.push(await categoryService.create(
-        categoryFactory.createDtoInstance({ name: category.name })
-      ));
-    }
-
-    expect(results).not.toBeNull();
-
-    if(results[0]?.id){ testCategoryId = results[0].id; }
-
-    expect(results.length).toEqual(testCategories.length);
-    results.map(category => {
-      expect(category).not.toBeNull();
-      expect(category?.id).not.toBeNull();
-    });
-  });
-
   it('should retrieve all test categories', async () => {
+    const testCategories = await testingUtil.getCategoryEntities(dbTestContext);
     const results = await categoryService.findAll();
     expect(results.length).toEqual(testCategories.length);
+
+    if(results[0]?.id){ testCategoryId = results[0].id; }
   });
 
   it('should retrieve one test category', async() => {
@@ -81,8 +60,7 @@ describe('UnitCategoryService', () => {
 
     
   it('should set each categories base unit', async () => {
-    await unitService.initializeDefaultUnits();
-    await categoryService.initializeDefaultCategoryBaseUnits();
+    await testingUtil.initializeDefaultCategoryBaseUnits();
     
     const weight = await categoryService.findOneByName(WEIGHT, ['baseUnit',]);
     expect(weight).not.toBeNull();
@@ -127,10 +105,9 @@ describe('UnitCategoryService', () => {
     const newCategory = await categoryService.findOneByName(VOLUME);
     if(!newCategory) {throw new Error('couldnt find category'); }
 
-    await unitService.update(unit.id,
-      unitFactory.updateDtoInstance({
-        categoryId: newCategory?.id,
-      })
+    await unitService.update(
+      unit.id,
+      { categoryId: newCategory?.id } as UpdateUnitOfMeasureDto
     );
     
     const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);

@@ -8,6 +8,9 @@ import { UnitOfMeasureService } from './services/unit-of-measure.service';
 import { UnitOfMeasure } from './entities/unit-of-measure.entity';
 import { UnitCategory } from './entities/unit-category.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
+import { UnitCategoryBuilder } from './builders/unit-category.builder';
+import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
 
 @Module({
   imports: [
@@ -17,8 +20,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [
     UnitOfMeasureService,
     UnitCategoryService, 
+
     UnitOfMeasureFactory, 
     UnitCategoryFactory,
+
+    UnitOfMeasureBuilder,
+    UnitCategoryBuilder,
+
+    UnitOfMeasureTestingUtil,
   ],
 
   controllers: [
@@ -29,6 +38,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   exports: [
     UnitOfMeasureService, 
     UnitCategoryService,
+    
+    UnitOfMeasureTestingUtil,
   ]
 })
 export class UnitOfMeasureModule {}

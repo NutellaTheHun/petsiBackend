@@ -21,6 +21,12 @@ import { InventoryItemPackageFactory } from './factories/inventory-item-package.
 import { InventoryItemSizeFactory } from './factories/inventory-item-size.factory';
 import { InventoryItemVendorFactory } from './factories/inventory-item-vendor.factory';
 import { InventoryItemVendorController } from './controllers/inventory-item-vendor.controller';
+import { InventoryItemBuilder } from './builders/inventory-item.builder';
+import { InventoryItemCategoryBuilder } from './builders/inventory-item-category.builder';
+import { InventoryItemPackageBuilder } from './builders/inventory-item-package.builder';
+import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder';
+import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.builder';
+import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
 
 @Module({
   imports: [ 
@@ -31,6 +37,7 @@ import { InventoryItemVendorController } from './controllers/inventory-item-vend
       InventoryItemSize,
       InventoryItemVendor,
     ]),
+    
     UnitOfMeasureModule,
   ],
 
@@ -55,21 +62,23 @@ import { InventoryItemVendorController } from './controllers/inventory-item-vend
     InventoryItemSizeFactory,
     InventoryItemVendorFactory,
 
-    InventoryItemController, 
-    InventoryItemCategoryController, 
-    InventoryItemPackageController, 
-    InventoryItemSizeController,
-    InventoryItemVendorController,
+    InventoryItemBuilder,
+    InventoryItemCategoryBuilder,
+    InventoryItemPackageBuilder,
+    InventoryItemSizeBuilder,
+    InventoryItemVendorBuilder,
+
+    InventoryItemTestingUtil
   ],
 
   exports: [
-    InventoryItemSizeController,
-
     InventoryItemService,
     InventoryItemCategoryService,
     InventoryItemPackageService,
     InventoryItemSizeService,
     InventoryItemVendorService,
+
+    InventoryItemTestingUtil,
   ]
 })
 export class InventoryItemsModule {}

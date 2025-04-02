@@ -1,37 +1,53 @@
-import { TestingModule } from "@nestjs/testing";
+import { Test, TestingModule } from "@nestjs/testing";
 import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
-import { InventoryAreaCountFactory } from "../factories/inventory-area-count.factory";
-import { InventoryAreaFactory } from "../factories/inventory-area.factory";
 import { InventoryAreaService } from "../services/inventory-area.service";
-import { AREA_A } from "../utils/constants";
+import { AREA_A, AREA_B, AREA_C, AREA_D } from "../utils/constants";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaController } from "./inventory-area.controller";
+
 
 describe('inventory area controller', () => {
     let controller: InventoryAreaController;
     let areaService: InventoryAreaService;
-    let areaFactory: InventoryAreaFactory;
-
-    let countFactory: InventoryAreaCountFactory;
 
     let areas: InventoryArea[];
     let areaId = 1;
-
     let areaCounts: InventoryAreaCount[];
     let countId = 1;
-
     let idToRemove: number;
-    beforeAll(async () => {
-        const module: TestingModule = await getInventoryAreasTestingModule();
 
+    beforeAll(async () => {
+        //const module: TestingModule = await getInventoryAreasTestingModule();
+        
+        // Was getting a circular dependency problem with the above testing module that works for everything else?
+        const module: TestingModule = await Test.createTestingModule({
+            controllers: [InventoryAreaController],
+            providers: [
+                {
+                    provide: InventoryAreaService,
+                    useValue: {
+                        create: jest.fn(),
+                        findOneByName: jest.fn(),
+                        update: jest.fn(),
+                        findAll: jest.fn(),
+                        findOne: jest.fn(),
+                        remove: jest.fn(),
+                    },
+                },
+            ],
+        }).compile();
         controller = module.get<InventoryAreaController>(InventoryAreaController);
         areaService = module.get<InventoryAreaService>(InventoryAreaService);
-        areaFactory = module.get<InventoryAreaFactory>(InventoryAreaFactory);
 
-        areas = areaFactory.getTestingAreas();
+        areas = [
+            { name: AREA_A } as InventoryArea,
+            { name: AREA_B } as InventoryArea,
+            { name: AREA_C } as InventoryArea,
+            { name: AREA_D } as InventoryArea,
+        ];
         areas.map(area => area.id = areaId++);
 
         areaCounts = [
@@ -53,14 +69,12 @@ describe('inventory area controller', () => {
         areas[1].inventoryCounts = [ areaCounts[2], areaCounts[3] ];
         areas[2].inventoryCounts = [ areaCounts[4], areaCounts[5] ];
         areas[3].inventoryCounts = [ areaCounts[6], areaCounts[7] ];
-
+        
         jest.spyOn(areaService, "create").mockImplementation(async (createDto: CreateInventoryAreaDto) => {
             const exists = areas.findIndex(a => a.name === createDto.name);
             if(exists !== -1){ return null; }
 
-            const newArea = areaFactory.createEntityInstance({
-                name: createDto.name,
-            });
+            const newArea = { name: createDto.name } as InventoryArea;
 
             newArea.id = areaId++;
             areas.push(newArea);
@@ -95,6 +109,7 @@ describe('inventory area controller', () => {
         });
     
         jest.spyOn(areaService, "remove").mockImplementation( async (id: number) => {
+            
             const index = areas.findIndex(area => area.id === id);
             if(index === -1) return false;
 
@@ -108,17 +123,13 @@ describe('inventory area controller', () => {
     });
 
     it('should create an area', async () => {
-        const dto = areaFactory.createDtoInstance({
-            name: "testArea",
-        })
+        const dto = { name: "testArea" } as CreateInventoryAreaDto;
         const result = await controller.create(dto);
         expect(result).not.toBeNull();
     });
     
     it('should fail to create an area (already exists)', async () => {
-        const dto = areaFactory.createDtoInstance({
-            name: "testArea",
-        })
+        const dto = { name: "testArea" } as CreateInventoryAreaDto;
         const result = await controller.create(dto);
         expect(result).toBeNull();
     });
@@ -149,8 +160,8 @@ describe('inventory area controller', () => {
         if(!toUpdate?.id){ throw new Error('area id is null'); }
 
         const newCount =  { inventoryArea: toUpdate, countDate: new Date() } as InventoryAreaCount;
-
         newCount.id = countId++;
+
         toUpdate?.inventoryCounts.push(newCount);
 
         const result = await controller.update(toUpdate?.id, toUpdate);

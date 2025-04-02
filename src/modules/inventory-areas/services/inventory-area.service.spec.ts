@@ -1,11 +1,15 @@
 import { TestingModule } from "@nestjs/testing";
-import { InventoryAreaFactory } from "../factories/inventory-area.factory";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaService } from "./inventory-area.service";
+import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
+import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 describe('Inventory area service', () => {
+    let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
     let service: InventoryAreaService;
-    let factory: InventoryAreaFactory;
 
     const testAreaName = "testAreaName";
     const updateTestAreaName = "UPDATED_TEST_AREA";
@@ -14,13 +18,15 @@ describe('Inventory area service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
 
         service = module.get<InventoryAreaService>(InventoryAreaService);
-        factory = module.get<InventoryAreaFactory>(InventoryAreaFactory);
     });
 
     afterAll(async () => {
-        await service.getQueryBuilder().delete().execute();
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {
@@ -28,7 +34,7 @@ describe('Inventory area service', () => {
     });
 
     it('should create an area', async () => {
-        const area = factory.createDtoInstance({ name: testAreaName });
+        const area = { name: testAreaName } as CreateInventoryAreaDto;
         const result = await service.create(area);
         
         expect(result).not.toBeNull();
@@ -38,16 +44,14 @@ describe('Inventory area service', () => {
     });
 
     it('should fail to create an area (already exists)', async () => {
-        const area = factory.createDtoInstance({ name: testAreaName });
+        const area = { name: testAreaName } as CreateInventoryAreaDto;
         const result = await service.create(area);
 
         expect(result).toBeNull();
     });
 
     it('should update an area', async () => {
-        const toUpdate = factory.updateDtoInstance({
-            name: updateTestAreaName,
-        });
+        const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
 
         const result = await service.update(testId, toUpdate);
 
@@ -57,9 +61,7 @@ describe('Inventory area service', () => {
     });
 
     it('should fail to update an area (doesnt exist)', async () => {
-        const toUpdate = factory.updateDtoInstance({
-            name: updateTestAreaName,
-        });
+        const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
 
         const result = await service.update(0, toUpdate);
 
@@ -84,14 +86,7 @@ describe('Inventory area service', () => {
     });
 
     it('should get ALL areas', async () => {
-        const testAreas = factory.getTestingAreas();
-        for(const area of testAreas){
-            await service.create(
-                factory.createDtoInstance({
-                    name: area.name
-                })
-            )
-        }
+        const testAreas = await testingUtil.getTestInventoryAreaEntities(dbTestContext);
 
         const results = await service.findAll();
         expect(results.length).toEqual(testAreas.length);

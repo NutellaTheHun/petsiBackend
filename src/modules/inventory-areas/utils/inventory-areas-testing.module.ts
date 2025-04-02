@@ -25,8 +25,8 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
                 InventoryAreaCount,
                 InventoryAreaItemCount,
             ]),
-            InventoryAreasModule,
             InventoryItemsModule,
+            InventoryAreasModule,
         ],
         controllers: [
             InventoryAreaController,

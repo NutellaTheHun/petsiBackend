@@ -1,27 +1,26 @@
 import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitCategoryService } from '../../unit-of-measure/services/unit-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
-import { InventoryItemSizeFactory } from '../factories/inventory-item-size.factory';
+import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { FOOD_A, FOOD_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
-import { setupInventoryItemTestingDatabaseLayerONE } from '../utils/setupTestingDatabase';
 
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
-  
+  let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let sizeService: InventoryItemSizeService;
-  let sizeFactory: InventoryItemSizeFactory;
 
   let unitService: UnitOfMeasureService;
   let unitCategoryService: UnitCategoryService;
-
   let packageService: InventoryItemPackageService;
-
   let itemService: InventoryItemService;
 
   let testId: number;
@@ -29,23 +28,28 @@ describe('Inventory Item Size Service', () => {
 
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
-    
+    dbTestContext = new DatabaseTestContext();
+
+    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+    //await setupInventoryItemTestingDatabaseLayerONE(module);
+
+
+    sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
+
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
     unitCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
     itemService = module.get<InventoryItemService>(InventoryItemService);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-
-    await setupInventoryItemTestingDatabaseLayerONE(module);
-    
-    sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-    sizeFactory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
   });
 
   afterAll( async () => {
-    await cleanupTestingDatabaseLayerONE(module);
+    /*
+    await cleanupInventoryItemTestingDatabaseLayerONE(module);
 
     const sizeQuery = sizeService.getQueryBuilder();
-    await sizeQuery.delete().execute();
+    await sizeQuery.delete().execute();*/
+    await dbTestContext.executeCleanupFunctions();
   });
 
   it('should be defined', () => {
@@ -62,11 +66,11 @@ describe('Inventory Item Size Service', () => {
     const item = await itemService.findOneByName(FOOD_A);
     if(!item){ throw new Error('inventory item is null'); }
 
-    const sizeDto = sizeFactory.createDtoInstance({ 
+    const sizeDto = { 
       unitOfMeasureId: unit?.id,
       inventoryPackageTypeId: packageType?.id,
       inventoryItemId: item?.id,
-    });
+    } as CreateInventoryItemSizeDto;
 
     const result = await sizeService.create(sizeDto);
 
@@ -112,19 +116,8 @@ describe('Inventory Item Size Service', () => {
   });
 
   it('should insert tesing sizes and get all', async () => {
-    const testingSizes = await sizeFactory.getTestingItemSizes();
-    if(!testingSizes){ throw new Error('testing sizes is null'); }
-
-    for(const size of testingSizes){
-      await sizeService.create(
-        sizeFactory.createDtoInstance({
-          unitOfMeasureId: size.measureUnit.id,
-          inventoryPackageTypeId: size.packageType.id,
-          inventoryItemId: size.item.id,
-        })
-      )
-    }
-
+    const testingSizes = await testingUtil.getTestInventoryItemSizeEntities(dbTestContext);
+    
     const results = await sizeService.findAll();
 
     expect(results).not.toBeNull();
@@ -149,7 +142,3 @@ describe('Inventory Item Size Service', () => {
     expect(results.length).toEqual(testIds.length);
   });
 });
-
-function cleanupTestingDatabaseLayerONE(module: TestingModule) {
-  throw new Error('Function not implemented.');
-}

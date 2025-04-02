@@ -17,6 +17,6 @@ export class InventoryAreaFactory extends EntityFactory<InventoryArea, CreateInv
             this.createEntityInstance({ name: AREA_B }),
             this.createEntityInstance({ name: AREA_C }),
             this.createEntityInstance({ name: AREA_D }),
-        ]
+        ];
     }
 }

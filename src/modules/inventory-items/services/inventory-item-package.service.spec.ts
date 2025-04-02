@@ -1,21 +1,28 @@
 import { TestingModule } from '@nestjs/testing';
-import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
-import { InventoryItemPackageService } from './inventory-item-package.service';
-import { InventoryItemPackageFactory } from '../factories/inventory-item-package.factory';
+import { CreateInventoryItemPackageDto } from '../dto/create-inventory-item-package.dto';
 import { BOX_PKG } from '../utils/constants';
+import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
+import { InventoryItemPackageService } from './inventory-item-package.service';
+import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Package Service', () => {
+  let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
   let packageService: InventoryItemPackageService;
-  let packageFactory: InventoryItemPackageFactory;
 
   let testId: number;
   let testIds: number[];
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+    
+    dbTestContext = new DatabaseTestContext();
+    testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
+    await testingUtil.initInventoryItemPackageTestDatabase(dbTestContext);
 
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    packageFactory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
   });
 
   afterAll(async () => {
@@ -28,7 +35,7 @@ describe('Inventory Item Package Service', () => {
   });
 
   it('should create a inventory item package', async () => {
-    const createPkg = packageFactory.createDtoInstance({ name: "testPackageName"});
+    const createPkg = { name: "testPackageName"} as CreateInventoryItemPackageDto;
     
     const result = await packageService.create(createPkg);
 
@@ -45,10 +52,9 @@ describe('Inventory Item Package Service', () => {
     if(!toUpdate) { throw new Error('toUpdate is null'); }
 
     toUpdate.name = updatedName;
-    const result = await packageService.update(testId, 
-      packageFactory.createDtoInstance({
-        name: toUpdate.name,
-      })
+    const result = await packageService.update(
+      testId, 
+      { name: toUpdate.name, } as UpdateInventoryItemPackageDto
     );
 
     expect(result?.name).toEqual(updatedName);
@@ -63,14 +69,7 @@ describe('Inventory Item Package Service', () => {
   });
 
   it('should insert default packages and get all inventory item packages', async () => {
-    const defaultPackages = await packageFactory.getTestingPackages();
-    if(!defaultPackages){ throw Error('default packages is null'); }
-
-    for(const pkg of defaultPackages){
-      await packageService.create(
-        packageFactory.createDtoInstance({ name: pkg.name })
-      )
-    }
+    const defaultPackages = await testingUtil.getTestInventoryItemPackageEntities(dbTestContext);
 
     const results = await packageService.findAll();
 

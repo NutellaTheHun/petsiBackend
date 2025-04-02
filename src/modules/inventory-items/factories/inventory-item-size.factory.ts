@@ -40,19 +40,19 @@ export class InventoryItemSizeFactory extends EntityFactory<InventoryItemSize, C
                 measureUnit: await this.unitService.findOneByName(POUND),
                 packageType: await this.packageService.findOneByName(BOX_PKG),
                 item: await this.itemService.findOneByName(FOOD_A),
-             }),
+            }),
              
             this.createEntityInstance({
                 measureUnit: await this.unitService.findOneByName(GALLON),
                 packageType: await this.packageService.findOneByName(CONTAINER_PKG),
                 item: await this.itemService.findOneByName(FOOD_A),
-             }),
+            }),
 
             this.createEntityInstance({
                 measureUnit: await this.unitService.findOneByName(KILOGRAM),
                 packageType: await this.packageService.findOneByName(PACKAGE_PKG),
                 item: await this.itemService.findOneByName(FOOD_B),
-             }),
+            }),
 
             this.createEntityInstance({
                 measureUnit: await this.unitService.findOneByName(UNIT),

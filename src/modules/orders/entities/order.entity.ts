@@ -82,6 +82,6 @@ export class Order {
     @Column()
     isWeekly: boolean;
 
-    @OneToMany(() => OrderMenuItem, (item) => item.order, { nullable: false })
-    items: OrderMenuItem[] = [];
+    @OneToMany(() => OrderMenuItem, (item) => item.order, { nullable: true })
+    items?: OrderMenuItem[] | null;
 }
