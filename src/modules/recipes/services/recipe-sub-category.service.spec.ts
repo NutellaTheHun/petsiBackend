@@ -2,12 +2,10 @@ import { TestingModule } from '@nestjs/testing';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryService } from './recipe-sub-category.service';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { RecipeCategoryService } from './recipe-category.service';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
 import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
-import { error } from 'console';
 import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
 
 describe('recipe sub category service', () => {

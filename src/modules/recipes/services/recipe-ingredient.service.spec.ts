@@ -11,7 +11,6 @@ import { REC_A } from '../utils/constants';
 import { FOOD_A, OTHER_A } from '../../inventory-items/utils/constants';
 import { FL_OUNCE, MILLILITER } from '../../unit-of-measure/utils/constants';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
-import exp from 'constants';
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
