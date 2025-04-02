@@ -6,11 +6,13 @@ import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryController } from './recipe-sub-category.controller';
+import exp from 'constants';
 
 describe('recipe sub category controller', () => {
   let controller: RecipeSubCategoryController;
   let service: RecipeSubCategoryService;
 
+  let testId: number;
   let subCategories: RecipeSubCategory[];
   let subCatId: number;
 
@@ -103,38 +105,74 @@ describe('recipe sub category controller', () => {
   });
 
   it('should create a sub-category', async () => {
+    const dto = {
+      name: "testSubCat",
+      parentCategoryId: categories[0].id
+    } as CreateRecipeSubCategoryDto;
 
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("testSubCat");
+    expect(result?.parentCategory.id).toEqual(categories[0].id);
+
+    testId = result?.id as number;
   });
 
   it('should fail create a sub-category', async () => {
+    const dto = {
+      name: "testSubCat",
+      parentCategoryId: categories[0].id
+    } as CreateRecipeSubCategoryDto;
 
+    const result = await controller.create(dto);
+    expect(result).toBeNull();
   });
 
   it('should find one a sub-category', async () => {
-
+    const result = await controller.findOne(1);
+    expect(result).not.toBeNull();
   });
 
   it('should fail find one a sub-category', async () => {
-
+    const result = await controller.findOne(0);
+    expect(result).toBeNull();
   });
 
   it('should find all a sub-category', async () => {
-
+    const results = await controller.findAll();
+    expect(results).not.toBeNull();
+    expect(results.length).toBeGreaterThan(0);
   });
 
   it('should update a sub-category', async () => {
+    const dto = {
+      name: "UPDATEtestSubCat",
+      parentCategoryId: categories[1].id
+    } as UpdateRecipeSubCategoryDto;
 
+    const result = await controller.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("UPDATEtestSubCat");
+    expect(result?.parentCategory.id).toEqual(categories[1].id);
   });
 
   it('should fail update a sub-category', async () => {
+    const dto = {
+      name: "UPDATEtestSubCat",
+      parentCategoryId: categories[1].id
+    } as UpdateRecipeSubCategoryDto;
 
+    const result = await controller.update(0, dto);
+    expect(result).toBeNull();
   });
 
   it('should remove a sub-category', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeTruthy();
   });
 
   it('should fail remove a sub-category', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeFalsy();
   });
 });

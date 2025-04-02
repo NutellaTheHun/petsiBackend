@@ -9,10 +9,13 @@ import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import exp from 'constants';
 
 describe('recipe ingredient controller', () => {
   let controller: RecipeIngredientController;
   let service: RecipeIngredientService;
+
+  let testId: number;
 
   let ingredients: RecipeIngredient[];
   let ingredId: number;
@@ -23,7 +26,7 @@ describe('recipe ingredient controller', () => {
   let units: UnitOfMeasure[];
   let unitId: number;
 
-  let inventoryItem: InventoryItem[];
+  let items: InventoryItem[];
   let itemId: number;
   
   beforeAll(async () => {
@@ -40,7 +43,7 @@ describe('recipe ingredient controller', () => {
     recId = 1;
     recipes.map(recipe => recipe.id = recId++);
 
-    let units = [
+    units = [
       { name: "POUND" } as UnitOfMeasure,
       { name: "OUNCE" } as UnitOfMeasure,
       { name: "KILOGRAM" } as UnitOfMeasure,
@@ -49,7 +52,7 @@ describe('recipe ingredient controller', () => {
     unitId = 1;
     units.map(unit => unit.id = unitId++);
 
-    let items = [
+    items = [
       {name: "ITEM_A" } as InventoryItem,
       {name: "ITEM_B" } as InventoryItem,
       {name: "ITEM_C" } as InventoryItem,
@@ -95,7 +98,7 @@ describe('recipe ingredient controller', () => {
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeIngredientDto) => {
       const existIdx = ingredients.findIndex(ingred => ingred.id === id);
-      if(!existIdx){ return null; }
+      if(existIdx === -1){ return null; }
 
       if(dto.inventoryItemId){
         const item = items.find(item => item.id === dto.inventoryItemId);
@@ -147,38 +150,73 @@ describe('recipe ingredient controller', () => {
   });
 
   it('should create a recipe ingredient', async () => {
+    const dto = {
+      recipeId: recipes[0].id,
+      inventoryItemId: items[2].id,
+      quantity: 1,
+      unitOfMeasureId: units[2].id,
+    } as CreateRecipeIngredientDto;
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.recipe.id).toEqual(recipes[0].id);
+    expect(result?.inventoryItem?.id).toEqual(items[2].id);
+    expect(result?.quantity).toEqual(1);
+    expect(result?.unit.id).toEqual(units[2].id);
 
-  });
-
-  it('should fail create a recipe ingredient', async () => {
-
+    testId = result?.id as number;
   });
 
   it('should find one a recipe ingredient', async () => {
-
+    const result = await controller.findOne(testId);
+    expect(result).not.toBeNull();
   });
 
   it('should fail find one a recipe ingredient', async () => {
-
+    const result = await controller.findOne(0);
+    expect(result).toBeNull();
   });
 
   it('should find all a recipe ingredient', async () => {
-
+    const results = await controller.findAll();
+    expect(results).not.toBeNull();
+    expect(results.length).toBeGreaterThan(0);
   });
 
   it('should update a recipe ingredient', async () => {
-
+    const dto = {
+      recipeId: recipes[1].id,
+      inventoryItemId: items[4].id,
+      quantity: 4,
+      unitOfMeasureId: units[3].id,
+    } as CreateRecipeIngredientDto;
+    const result = await controller.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.recipe.id).toEqual(recipes[1].id);
+    expect(result?.inventoryItem?.id).toEqual(items[4].id);
+    expect(result?.quantity).toEqual(4);
+    expect(result?.unit.id).toEqual(units[3].id);
   });
 
   it('should fail update a recipe ingredient', async () => {
-
+    const dto = {
+      recipeId: recipes[1].id,
+      inventoryItemId: items[4].id,
+      quantity: 4,
+      unitOfMeasureId: units[3].id,
+    } as CreateRecipeIngredientDto;
+    const result = await controller.update(0, dto);
+    expect(result).toBeNull();
   });
 
   it('should remove a recipe ingredient', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeTruthy();
   });
 
   it('should fail remove a recipe ingredient', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeFalsy();
   });
 });

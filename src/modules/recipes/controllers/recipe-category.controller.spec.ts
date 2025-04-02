@@ -11,6 +11,7 @@ describe('recipe category controller', () => {
   let service: RecipeCategoryService;
   let categories: RecipeCategory[];
   let id: number;
+  let testId: number; 
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
@@ -74,38 +75,68 @@ describe('recipe category controller', () => {
   });
 
   it('should create a recipe category', async () => {
+    const dto = {
+      name: "test category"
+    } as CreateRecipeCategoryDto;
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull()
+    expect(result?.name).toEqual("test category");
 
+    testId = result?.id as number;
   });
 
   it('should fail create a recipe category', async () => {
+    const dto = {
+      name: "test category"
+    } as CreateRecipeCategoryDto;
+    const result = await controller.create(dto);
+    expect(result).toBeNull();
 
   });
 
-  it('should find one a recipe category', async () => {
-
+  it('should find one recipe category', async () => {
+    const result = await controller.findOne(1);
+    expect(result).not.toBeNull();
   });
 
   it('should fail find one a recipe category', async () => {
-
+    const result = await controller.findOne(0);
+    expect(result).toBeNull();
   });
 
   it('should find all a recipe category', async () => {
-
+    const results = await controller.findAll();
+    expect(results).not.toBeNull();
+    expect(results.length).toBeGreaterThan(0);
   });
 
   it('should update a recipe category', async () => {
+    const dto = {
+      name: "updated test name"
+    } as UpdateRecipeCategoryDto;
 
+    const result = await controller.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("updated test name");
   });
 
   it('should fail update a recipe category', async () => {
+    const dto = {
+      name: "updated test name"
+    } as UpdateRecipeCategoryDto;
 
+    const result = await controller.update(0, dto);
+    expect(result).toBeNull();
   });
 
   it('should remove a recipe category', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeTruthy();
   });
 
   it('should fail remove a recipe category', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeFalsy();
   });
 });

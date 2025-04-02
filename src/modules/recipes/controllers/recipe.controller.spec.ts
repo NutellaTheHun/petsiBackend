@@ -12,6 +12,8 @@ describe('recipe controller', () => {
   let recipes: Recipe[];
   let id: number;
 
+  let testId: number;
+
  beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
 
@@ -43,8 +45,8 @@ describe('recipe controller', () => {
     });
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeDto) => {
-      const existIdx = recipes.findIndex(rec => rec.name === dto.name);
-      if(!existIdx){ return null; }
+      const existIdx = recipes.findIndex(rec => rec.id === id);
+      if(existIdx === -1){ return null; }
 
       if(dto.name){
         recipes[existIdx].name = dto.name;
@@ -89,38 +91,94 @@ describe('recipe controller', () => {
   });
 
   it('should create a recipe', async () => {
+    const dto = {
+      name: "testRecipe",
+      batchResultQuantity: 1,
+      servingSizeQuantity: 2,
+      salesPrice: 3,
+      cost: 4,
+    } as CreateRecipeDto;
 
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("testRecipe");
+    expect(result?.batchResultQuantity).toEqual(1);
+    expect(result?.servingSizeQuantity).toEqual(2);
+    expect(result?.salesPrice).toEqual(3);
+    expect(result?.cost).toEqual(4);
+
+    testId = result?.id as number;
   });
 
   it('should fail create a recipe', async () => {
+    const dto = {
+      name: "testRecipe",
+      batchResultQuantity: 1,
+      servingSizeQuantity: 2,
+      salesPrice: 3,
+      cost: 4,
+    } as CreateRecipeDto;
 
+    const result = await controller.create(dto);
+    expect(result).toBeNull();
   });
 
   it('should find one a recipe', async () => {
-
+    const result = await controller.findOne(testId);
+    expect(result).not.toBeNull();
   });
 
   it('should fail find one a recipe', async () => {
-
+    const result = await controller.findOne(0);
+    expect(result).toBeNull();
   });
 
   it('should find all a recipe', async () => {
-
+    const results = await controller.findAll();
+    expect(results).not.toBeNull();
+    expect(results.length).toBeGreaterThan(0);
   });
 
   it('should update a recipe', async () => {
+    const dto = {
+      name: "UPDATE_testRecipe",
+      batchResultQuantity: 5,
+      servingSizeQuantity: 6,
+      salesPrice: 7,
+      cost: 8,
+    } as UpdateRecipeDto;
 
+    const result = await controller.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("UPDATE_testRecipe");
+    expect(result?.batchResultQuantity).toEqual(5);
+    expect(result?.servingSizeQuantity).toEqual(6);
+    expect(result?.salesPrice).toEqual(7);
+    expect(result?.cost).toEqual(8);
   });
 
   it('should fail update a recipe', async () => {
+    const dto = {
+      name: "UPDATE_testRecipe",
+      batchResultQuantity: 5,
+      servingSizeQuantity: 6,
+      salesPrice: 7,
+      cost: 8,
+    } as UpdateRecipeDto;
 
+    const result = await controller.update(0, dto);
+    expect(result).toBeNull();
   });
 
   it('should remove a recipe', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeTruthy();
   });
 
   it('should fail remove a recipe', async () => {
-
+    const removal = await controller.remove(testId);
+    expect(removal).toBeFalsy();
   });
 });
