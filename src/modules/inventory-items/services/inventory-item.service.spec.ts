@@ -321,4 +321,7 @@ describe('Inventory Item Service', () => {
     const verifySizeRemove = await sizeService.findOne(size.id);
     expect(verifySizeRemove).toBeNull();
   });
+
+  // test when category id = 0 (should clear the category)
+  // test when vendor id = 0 (should clear the vendor)
 });

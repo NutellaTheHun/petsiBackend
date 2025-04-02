@@ -1,73 +1,31 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderMethodBase } from "../../../base/builder-method-base";
+import { BuilderBase } from "../../../base/builder-base";
 import { CreateRecipeCategoryDto } from "../dto/create-recipe-category.dto";
 import { UpdateRecipeCategoryDto } from "../dto/update-recipe-category.dto";
 import { RecipeCategory } from "../entities/recipe-category.entity";
-import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
-import { Recipe } from "../entities/recipe.entity";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";
 
 @Injectable()
-export class RecipeCategoryBuilder {
-    private category: RecipeCategory;
-    private taskQueue: (() => Promise<void>)[];
-
-    private subCategoryMethods: BuilderMethodBase<RecipeSubCategory>;
-    private recipeMethods: BuilderMethodBase<Recipe>;
-    
+export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     constructor(
         @Inject(forwardRef(() => RecipeService))
         private readonly subCategoryService: RecipeSubCategoryService,
         
         @Inject(forwardRef(() => RecipeSubCategoryService))
         private readonly recipeService: RecipeService,
-    ){ 
-        this.reset(); 
-        this.taskQueue = [];
-        this.subCategoryMethods = new BuilderMethodBase(this.subCategoryService, this.subCategoryService.findOneByName.bind(this.subCategoryService));
-        this.recipeMethods = new BuilderMethodBase(this.recipeService, this.recipeService.findOneByName.bind(this.recipeService));
-    }
-
-    public reset(): this {
-        this.category = new RecipeCategory;
-        this.taskQueue = [];
-        return this;
-    }
+    ){ super(RecipeCategory); }
 
     public name(name: string): this {
-        this.category.name = name;
-        return this;
+        return this.setProp('name', name);
     }
 
     public subCategoriesById(ids: number[]): this {
-        this.taskQueue.push(async () => {
-            await this.subCategoryMethods.entityByIds(
-                (subs) => { this.category.subCategories = subs; },
-                ids,
-            );
-        });
-        return this;
+        return this.setPropsByIds(this.subCategoryService.findEntitiesById.bind(this.subCategoryService), 'subCategories', ids);
     }
 
     public recipesById(ids: number[]): this {
-        this.taskQueue.push(async () => {
-            await this.recipeMethods.entityByIds(
-                (recs) => { this.category.recipes = recs; },
-                ids,
-            );
-        });
-        return this;
-    }
-
-    public async build(): Promise<RecipeCategory> {
-        for(const task of this.taskQueue){
-            await task();
-        }
-
-        const result = this.category;
-        this.reset();
-        return result;
+        return this.setPropsByIds(this.recipeService.findEntitiesById.bind(this.recipeService), 'recipes', ids);
     }
 
     public async buildCreateDto(dto: CreateRecipeCategoryDto): Promise<RecipeCategory> {
@@ -86,16 +44,11 @@ export class RecipeCategoryBuilder {
         return this.build();
     }
 
-    public updateCategory(toUpdate: RecipeCategory): this{
-        this.category = toUpdate;
-        return this;
-    }
-
     // handle if clearing all recipes?
     // handle if clearing all sub-recipes?
     public async buildUpdateDto(toUpdate: RecipeCategory, dto: UpdateRecipeCategoryDto): Promise<RecipeCategory> {
         this.reset();
-        this.updateCategory(toUpdate);
+        this.updateEntity(toUpdate);
 
         if(dto.name){
             this.name(dto.name);

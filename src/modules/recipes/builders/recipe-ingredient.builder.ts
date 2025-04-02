@@ -1,135 +1,55 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
-import { RecipeService } from "../services/recipe.service";
+import { BuilderBase } from "../../../base/builder-base";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { Recipe } from "../entities/recipe.entity";
-import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
-import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
-import { BuilderMethodBase } from "../../../base/builder-method-base";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
+import { RecipeService } from "../services/recipe.service";
 
 @Injectable()
-export class RecipeIngredientBuilder {
-    private ingredient: RecipeIngredient;
-    private taskQueue: (() => Promise<void>)[];
-
-    private recipeMethods: BuilderMethodBase<Recipe>;
-    private itemMethods: BuilderMethodBase<InventoryItem>;
-    private unitMethods: BuilderMethodBase<UnitOfMeasure>;
-
+export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient>{
     constructor(
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
-        private readonly inventoryItemService: InventoryItemService,
-        private readonly unitOfMeasureService: UnitOfMeasureService,
-    ){ 
-        this.reset(); 
-        this.recipeMethods = new BuilderMethodBase(this.recipeService, this.recipeService.findOneByName.bind(this.recipeService));
-        this.itemMethods = new BuilderMethodBase(this.inventoryItemService, this.inventoryItemService.findOneByName.bind(this.inventoryItemService));
-        this.unitMethods = new BuilderMethodBase(this.unitOfMeasureService, this.unitOfMeasureService.findOneByName.bind(this.unitOfMeasureService));
-    }
-
-    public reset(): this {
-        this.ingredient = new RecipeIngredient;
-        this.taskQueue = [];
-        return this;
-    }
+        private readonly itemService: InventoryItemService,
+        private readonly unitService: UnitOfMeasureService,
+    ){ super(RecipeIngredient); }
 
     public recipeById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.recipeMethods.entityById(
-                (rec) => { this.ingredient.recipe = rec; },
-                id,
-            );
-        });
-        return this;
+        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'recipe', id);
     }
 
     public recipeByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.recipeMethods.entityByName(
-                (rec) => { this.ingredient.recipe = rec; },
-                name,
-            );
-        });
-        return this;
+        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'recipe', name);
     }
 
     public inventoryItemById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.itemMethods.entityById(
-                (item) => { this.ingredient.inventoryItem = item; },
-                id,
-            );
-        });
-        return this;
+        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'inventoryItem', id);
     }
 
     public inventoryItemByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.itemMethods.entityByName(
-                (item) => { this.ingredient.inventoryItem = item; },
-                name,
-            );
-        });
-        return this;
+        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'inventoryItem', name);
     }
 
     public subRecipeById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.recipeMethods.entityById(
-                (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
-                id,
-            );
-        });
-        return this;
+        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'subRecipeIngredient', id);
     }
 
     public subRecipeByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.recipeMethods.entityByName(
-                (subRec) => { this.ingredient.subRecipeIngredient = subRec; },
-                name,
-            );
-        });
-        return this;
+        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'subRecipeIngredient', name);
     }
 
     public quantity(amount: number): this {
-        this.ingredient.quantity = amount;
-        return this;
+        return this.setProp('quantity', amount);
     }
 
     public unitOfMeasureById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.unitMethods.entityById(
-                (unit) => { this.ingredient.unit = unit; },
-                id,
-            );
-        });
-        return this;
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'unit', id);
     }
 
     public unitOfMeasureByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.unitMethods.entityByName(
-                (unit) => { this.ingredient.unit = unit; },
-                name,
-            );
-        });
-        return this;
-    }
-
-    public async build(): Promise<RecipeIngredient> {
-        for(const task of this.taskQueue){
-            await task();
-        }
-        
-        const result = this.ingredient;
-        this.reset();
-        return result;
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'unit', name);
     }
 
     public async buildCreateDto(dto: CreateRecipeIngredientDto): Promise<RecipeIngredient>{
@@ -154,14 +74,9 @@ export class RecipeIngredientBuilder {
         return await this.build();
     } 
 
-    public updateIngredient(toUpdate: RecipeIngredient): this {
-        this.ingredient = toUpdate;
-        return this;
-    }
-
     public async buildUpdateDto(toUpdate: RecipeIngredient, dto: UpdateRecipeIngredientDto): Promise<RecipeIngredient> {
         this.reset();
-        this.updateIngredient(toUpdate);
+        this.updateEntity(toUpdate);
 
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);

@@ -12,7 +12,6 @@ export class BuilderMethodBase<T extends ObjectLiteral> {
         if(!entity){ 
             throw new Error(`Entity not found in service: ${this.entityService.constructor.name}`); 
         }
-
         propertySetter(entity);
     }
 
@@ -25,7 +24,6 @@ export class BuilderMethodBase<T extends ObjectLiteral> {
         if(!entity){ 
             throw new Error(`Entity by name not found in service: ${this.entityService.constructor.name}`); 
         }
-
         propertySetter(entity);
     }
 

@@ -5,11 +5,14 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { InventoryItemService } from './inventory-item.service';
+import { DRY_A, FOOD_A, OTHER_A } from '../utils/constants';
 
 describe('Inventory Item Vendor Service', () => {
   let testingUtil: InventoryItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
-  let service: InventoryItemVendorService;
+  let vendorService: InventoryItemVendorService;
+  let itemService: InventoryItemService;
 
   let testId: number;
   let testIds: number[];
@@ -20,8 +23,10 @@ describe('Inventory Item Vendor Service', () => {
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
     await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
+    await testingUtil.initInventoryItemTestDatabase(dbTestContext);
 
-    service = module.get<InventoryItemVendorService>(InventoryItemVendorService);
+    vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
+    itemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
   afterAll(async () => {
@@ -29,13 +34,13 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(vendorService).toBeDefined();
   });
 
   it('should create a vendor', async () => {
     const vendorDto ={ name: "testVendorName" } as CreateInventoryItemVendorDto;
 
-    const result = await service.create(vendorDto);
+    const result = await vendorService.create(vendorDto);
 
     // for future testing
     testId = result?.id as number;
@@ -45,23 +50,30 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should update a vendor', async () => {
-    const toUpdate = await service.findOne(testId);
+    const toUpdate = await vendorService.findOne(testId);
     if(!toUpdate) { throw new Error('vendor to update is null.'); }
+    
+    const item_A = await itemService.findOneByName(FOOD_A);
+    const item_B = await itemService.findOneByName(DRY_A);
+    const item_C = await itemService.findOneByName(OTHER_A);
 
     toUpdate.name = "UPDATE_NAME";
-    const result = await service.update(
+    const result = await vendorService.update(
       testId, 
-      { name: toUpdate.name } as UpdateInventoryItemVendorDto
+      { 
+        name: toUpdate.name,
+        inventoryItemIds: [item_A?.id, item_B?.id, item_C?.id ]
+      } as UpdateInventoryItemVendorDto
     );
 
     expect(result?.name).toEqual("UPDATE_NAME");
   });
 
   it('should remove a vendor', async () => {
-    const removal = await service.remove(testId);
+    const removal = await vendorService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await service.findOne(testId);
+    const verify = await vendorService.findOne(testId);
     expect(verify).toBeNull();
   });
 
@@ -69,10 +81,10 @@ describe('Inventory Item Vendor Service', () => {
     const vendors = await testingUtil.getTestInventoryItemVendorEntities(dbTestContext);
 
     for(const vendor of vendors){
-      await service.create({ name: vendor.name } as CreateInventoryItemVendorDto );
+      await vendorService.create({ name: vendor.name } as CreateInventoryItemVendorDto );
     }
 
-    const results = await service.findAll();
+    const results = await vendorService.findAll();
     expect(results.length).toEqual(vendors.length);
 
     // for future test
@@ -80,13 +92,13 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should get a vendor by name', async () => {
-    const result = await service.findOneByName("vendorA");
+    const result = await vendorService.findOneByName("vendorA");
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("vendorA");
   });
 
   it('should get vendor from a list of ids', async () => {
-    const results = await service.findEntitiesById(testIds);
+    const results = await vendorService.findEntitiesById(testIds);
     expect(results.length).toEqual(testIds.length);
   });
 });

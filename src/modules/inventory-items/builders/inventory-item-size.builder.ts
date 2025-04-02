@@ -1,111 +1,43 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BuilderBase } from "../../../base/builder-base";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { InventoryItemService } from "../services/inventory-item.service";
-import { BuilderMethodBase } from "../../../base/builder-method-base";
-import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
-import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
-import { InventoryItem } from "../entities/inventory-item.entity";
 
 @Injectable()
-export class InventoryItemSizeBuilder {
-    private size: InventoryItemSize;
-    private taskQueue: (() => Promise<void>)[];
-
-    private packageMethods: BuilderMethodBase<InventoryItemPackage>;
-    private unitMethods: BuilderMethodBase<UnitOfMeasure>;
-    private itemMethods: BuilderMethodBase<InventoryItem>;
-
+export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize>{
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-
         private readonly packageService: InventoryItemPackageService,
         private readonly unitService: UnitOfMeasureService,
-    ){ 
-        this.reset(); 
-        this.packageMethods = new BuilderMethodBase(this.packageService, this.packageService.findOneByName.bind(this.packageService))
-        this.unitMethods = new BuilderMethodBase(this.unitService, this.unitService.findOneByName.bind(this.unitService));
-        this.itemMethods = new BuilderMethodBase(this.itemService, this.itemService.findOneByName.bind(this.itemService));
-    }
-
-    public reset(): this{
-        this.size = new InventoryItemSize();
-        this.taskQueue = [];
-        return this;
-    }
+    ){ super(InventoryItemSize); }
 
     public unitOfMeasureById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.unitMethods.entityById(
-                (unit) => {this.size.measureUnit = unit; },
-                id,
-            )
-        });
-        return this;
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'measureUnit', id);
     }
 
     public unitOfMeasureByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.unitMethods.entityByName(
-                (unit) => {this.size.measureUnit = unit; },
-                name,
-            )
-        })
-        return this;
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'measureUnit', name);
     }
 
     public packageById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.packageMethods.entityById(
-                (pkg) => {this.size.packageType = pkg; },
-                id,
-            )
-        })
-        return this;
+        return this.setPropById(this.packageService.findOne.bind(this.packageService), 'packageType', id);
     }
 
     public packageByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.packageMethods.entityByName(
-                (pkg) => {this.size.packageType = pkg; },
-                name,
-            )
-        })
-        return this;
+        return this.setPropByName(this.packageService.findOneByName.bind(this.packageService), 'packageType', name);
     }
 
     public InventoryItemById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.itemMethods.entityById(
-                (item) => {this.size.item = item; },
-                id,
-            )
-        })
-        return this;
+        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'item', id);
     }
 
     public InventoryItemByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.itemMethods.entityByName(
-                (item) => {this.size.item = item; },
-                name,
-            );
-        })
-        return this;
-    }
-
-    public async build(): Promise<InventoryItemSize> {
-        for(const task of this.taskQueue){
-            await task();
-        }
-        
-        const result = this.size;
-        this.reset();
-        return result;
+        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'item', name);
     }
 
     public async buildCreateDto(dto: CreateInventoryItemSizeDto): Promise<InventoryItemSize>{
@@ -124,14 +56,9 @@ export class InventoryItemSizeBuilder {
         return this.build();
     }
 
-    public updateItemSize(toUpdate: InventoryItemSize): this{
-        this.size = toUpdate;
-        return this;
-    }
-
     public async buildUpdateDto(toUpdate: InventoryItemSize, dto: UpdateInventoryItemSizeDto): Promise<InventoryItemSize> {
         this.reset();
-        this.updateItemSize(toUpdate);
+        this.updateEntity(toUpdate);
 
         if(dto.inventoryItemId){
             this.InventoryItemById(dto.inventoryItemId);

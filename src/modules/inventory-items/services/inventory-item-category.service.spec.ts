@@ -4,10 +4,12 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Category Service', () => {
   let testingUtil: InventoryItemTestingUtil;
   let service: InventoryItemCategoryService;
+  let dbTestContext: DatabaseTestContext;
 
   const testCategoryName = "testCategoryName";
   let testId: number;
@@ -15,6 +17,7 @@ describe('Inventory Item Category Service', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+    dbTestContext = new DatabaseTestContext()
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
 
     service = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
@@ -65,8 +68,8 @@ describe('Inventory Item Category Service', () => {
   });
 
   it('should insert testing item categories and get all categories', async () => {
-    const categories = await testingUtil.getTestInventoryItemCategoryEntities();
-    await testingUtil.initInventoryItemCategoryTestDatabase();
+    const categories = await testingUtil.getTestInventoryItemCategoryEntities(dbTestContext);
+    await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
 
     const results = await service.findAll();
 
