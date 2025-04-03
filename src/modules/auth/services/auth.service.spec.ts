@@ -1,9 +1,10 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { UserService } from '../users/services/user.service';
 import { AuthService } from './auth.service';
-import { getAuthTestingModule } from './utils/auth-testing-module';
+import { CreateUserDto } from '../../users/dto/create-user.dto';
+import { UserService } from '../../users/services/user.service';
+import { getAuthTestingModule } from '../utils/auth-testing-module';
+
 
 
 describe('AuthService', () => {

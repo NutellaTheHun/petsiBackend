@@ -1,12 +1,13 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { User } from '../users/entities/user.entities';
-import { USER_A, USER_B, USER_C, USER_D } from '../users/utils/constants';
+import { User } from '../../users/entities/user.entities';
+import { USER_A, USER_B, USER_C, USER_D } from '../../users/utils/constants';
+import { SignInDto } from '../dto/sign-in.dto';
+import { AuthService } from '../services/auth.service';
+import { getAuthTestingModule } from '../utils/auth-testing-module';
+import { hashPassword, isPassHashMatch } from '../utils/hash';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { SignInDto } from './dto/sign-in.dto';
-import { getAuthTestingModule } from './utils/auth-testing-module';
-import { hashPassword, isPassHashMatch } from './utils/hash';
+
 
 describe('AuthController', () => {
   let controller: AuthController;

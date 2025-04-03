@@ -1,27 +1,27 @@
 import { TestingModule } from '@nestjs/testing';
 import { UnitCategoryController } from './unit-category.controller';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
-import { UnitCategoryFactory } from '../factories/unit-category.factory';
 import { UnitCategory } from '../entities/unit-category.entity';
 import { UnitCategoryService } from '../services/unit-category.service';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
+import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
 
 describe('UnitCategoryController', () => {
   let controller: UnitCategoryController;
-  let categoryService: UnitCategoryService
-  let categoryFactory: UnitCategoryFactory;
-
+  let categoryService: UnitCategoryService;
   let categories: UnitCategory[];
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-
     controller = module.get<UnitCategoryController>(UnitCategoryController);
-    categoryFactory = module.get<UnitCategoryFactory>(UnitCategoryFactory);
     categoryService = module.get<UnitCategoryService>(UnitCategoryService);
 
-    categories = await categoryFactory.getTestingUnitCategories();
+    categories = [
+      { name: UNIT } as UnitCategory,
+      { name: VOLUME } as UnitCategory,
+      { name: WEIGHT } as UnitCategory,
+    ];
     let id = 1;
     categories.map(category => category.id = id++);
 
@@ -29,8 +29,11 @@ describe('UnitCategoryController', () => {
           const exists = categories.find(unit => unit.name === createDto.name);
           if(exists){ return null; }
     
-          const unit = categoryFactory.createDtoToEntity(createDto);
-          unit.id = id++;
+          const unit = {
+            id: id++,
+            name: createDto.name,
+          } as UnitCategory;
+
           categories.push(unit);
           return unit;
         });
@@ -42,12 +45,12 @@ describe('UnitCategoryController', () => {
         jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitCategoryDto) => {
           const index = categories.findIndex(unit => unit.id === id);
           if (index === -1) return null;
+          
+          if(updateDto.name){
+            categories[index].name = updateDto.name;
+          }
     
-          const updated = categoryFactory.updateDtoToEntity(updateDto);
-          updated.id = id++;
-          categories[index] = updated;
-    
-          return updated;
+          return categories[index];
         });
     
         jest.spyOn(categoryService, "findAll").mockResolvedValue(categories);
@@ -73,18 +76,20 @@ describe('UnitCategoryController', () => {
   });
 
   it('should create a category', async () => {
-    const unitDto = categoryFactory.createDtoInstance({
+    const dto = {
       name: "testCategory",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateUnitCategoryDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a category (already exists)', async () => {
-    const unitDto = categoryFactory.createDtoInstance({
+    const dto = {
       name: "testCategory",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateUnitCategoryDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 

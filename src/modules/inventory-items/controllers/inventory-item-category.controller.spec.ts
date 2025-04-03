@@ -1,16 +1,15 @@
 import { TestingModule } from "@nestjs/testing";
-import { InventoryItemCategoryController } from "./inventory-item-category.controller";
-import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
-import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
-import { InventoryItemCategoryFactory } from "../factories/inventory-item-category.factory";
-import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
 import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
+import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
+import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
+import { CLEANING_CAT, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, FROZEN_CAT, OTHER_CAT, PAPER_CAT, PRODUCE_CAT } from "../utils/constants";
+import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
+import { InventoryItemCategoryController } from "./inventory-item-category.controller";
 
 describe('Inventory Item Categories Controller', () => {
   let controller: InventoryItemCategoryController;
   let categoryService: InventoryItemCategoryService;
-  let categoryFactory: InventoryItemCategoryFactory;
 
   let categories: InventoryItemCategory[];
   beforeAll(async () => {
@@ -18,9 +17,17 @@ describe('Inventory Item Categories Controller', () => {
 
     controller = module.get<InventoryItemCategoryController>(InventoryItemCategoryController);
     categoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
-    categoryFactory = module.get<InventoryItemCategoryFactory>(InventoryItemCategoryFactory);
 
-    categories = await categoryFactory.getTestingItemCategories();
+    categories = [
+      { name: CLEANING_CAT } as InventoryItemCategory,
+      { name: DAIRY_CAT } as InventoryItemCategory,
+      { name: DRYGOOD_CAT } as InventoryItemCategory,
+      { name: FOOD_CAT } as InventoryItemCategory,
+      { name: FROZEN_CAT } as InventoryItemCategory,
+      { name: OTHER_CAT } as InventoryItemCategory,
+      { name: PAPER_CAT } as InventoryItemCategory,
+      { name: PRODUCE_CAT } as InventoryItemCategory,
+    ];
     let id = 1;
     categories.map(category => category.id = id++);
 
@@ -28,8 +35,11 @@ describe('Inventory Item Categories Controller', () => {
       const exists = categories.find(unit => unit.name === createDto.name);
       if(exists){ return null; }
 
-      const unit = categoryFactory.createDtoToEntity(createDto);
-      unit.id = id++;
+      const unit = {
+        id: id++,
+        name: createDto.name
+      } as InventoryItemCategory;
+
       categories.push(unit);
       return unit;
     });
@@ -42,11 +52,11 @@ describe('Inventory Item Categories Controller', () => {
       const index = categories.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      const updated = categoryFactory.updateDtoToEntity(updateDto);
-      updated.id = id++;
-      categories[index] = updated;
+      if(updateDto.name){
+        categories[index].name = updateDto.name;
+      }
 
-      return updated;
+      return categories[index];
     });
 
     jest.spyOn(categoryService, "findAll").mockResolvedValue(categories);
@@ -70,18 +80,20 @@ describe('Inventory Item Categories Controller', () => {
   });
   
   it('should create a category', async () => {
-    const unitDto = categoryFactory.createDtoInstance({
+    const dto = {
       name: "testCategory",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemCategoryDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a category (already exists)', async () => {
-    const unitDto = categoryFactory.createDtoInstance({
+    const dto = {
       name: "testCategory",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemCategoryDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 
@@ -104,8 +116,11 @@ describe('Inventory Item Categories Controller', () => {
     const toUpdate = await categoryService.findOneByName("testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    toUpdate.name = "UPDATED_testCategory";
-    const result = await controller.update(toUpdate.id, toUpdate);
+    const dto = {
+      name: "UPDATED_testCategory"
+    } as UpdateInventoryItemCategoryDto;
+
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("UPDATED_testCategory")
   });

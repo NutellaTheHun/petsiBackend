@@ -1,14 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
-import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
-import { UnitCategory } from '../entities/unit-category.entity';
 import { OUNCE, POUND, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { UnitCategoryBuilder } from '../builders/unit-category.builder';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 
 describe('UnitCategoryService', () => {
@@ -16,7 +13,6 @@ describe('UnitCategoryService', () => {
   let dbTestContext: DatabaseTestContext;
 
   let categoryService: UnitCategoryService;
-  let categoryBuilder: UnitCategoryBuilder;
   let unitService: UnitOfMeasureService;
 
   let testCategoryId: number;
@@ -58,7 +54,6 @@ describe('UnitCategoryService', () => {
     expect(result?.name).toEqual(WEIGHT);
   });
 
-    
   it('should set each categories base unit', async () => {
     await testingUtil.initializeDefaultCategoryBaseUnits();
     

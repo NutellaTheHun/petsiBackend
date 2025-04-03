@@ -16,8 +16,8 @@ import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.m
 import { UserModule } from './modules/users/user.module';
 import { RoleModule } from './modules/roles/role.module';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './modules/auth/auth.guard';
-import { RoleGuard } from './modules/roles/role.guard';
+import { RoleGuard } from './modules/roles/guards/role.guard';
+import { AuthGuard } from './modules/auth/guards/auth.guard';
 
 @Module({
   imports: [ 

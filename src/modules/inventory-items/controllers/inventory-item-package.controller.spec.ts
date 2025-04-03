@@ -1,16 +1,15 @@
 import { TestingModule } from "@nestjs/testing";
-import { InventoryItemPackageFactory } from "../factories/inventory-item-package.factory";
-import { InventoryItemPackageService } from "../services/inventory-item-package.service";
-import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
-import { InventoryItemPackageController } from "./inventory-item-package.controller";
 import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
 import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
+import { InventoryItemPackageService } from "../services/inventory-item-package.service";
+import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from "../utils/constants";
+import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
+import { InventoryItemPackageController } from "./inventory-item-package.controller";
 
 describe('Inventory Item Packages Controller', () => {
   let controller: InventoryItemPackageController;
   let service: InventoryItemPackageService;
-  let factory: InventoryItemPackageFactory;
 
   let packages: InventoryItemPackage[]
   beforeAll(async () => {
@@ -18,9 +17,15 @@ describe('Inventory Item Packages Controller', () => {
 
     controller = module.get<InventoryItemPackageController>(InventoryItemPackageController);
     service = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    factory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
-
-    packages = factory.getTestingPackages();
+ 
+    packages = [
+      { name: BAG_PKG } as InventoryItemPackage,
+      { name: PACKAGE_PKG } as InventoryItemPackage,
+      { name: BOX_PKG } as InventoryItemPackage,
+      { name: OTHER_PKG } as InventoryItemPackage,
+      { name: CONTAINER_PKG } as InventoryItemPackage,
+      { name: CAN_PKG } as InventoryItemPackage,
+    ];
     let id = 1;
     packages.map(pkg => pkg.id = id++);
 
@@ -28,8 +33,11 @@ describe('Inventory Item Packages Controller', () => {
       const exists = packages.find(unit => unit.name === createDto.name);
       if(exists){ return null; }
 
-      const unit = factory.createDtoToEntity(createDto);
-      unit.id = id++;
+      const unit = {
+        id: id++,
+        name: createDto.name,
+      } as InventoryItemPackage;
+
       packages.push(unit);
       return unit;
     });
@@ -42,11 +50,11 @@ describe('Inventory Item Packages Controller', () => {
       const index = packages.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      const updated = factory.updateDtoToEntity(updateDto);
-      updated.id = id++;
-      packages[index] = updated;
+      if(updateDto.name){
+        packages[index].name = updateDto.name;
+      }
 
-      return updated;
+      return packages[index];
     });
 
     jest.spyOn(service, "findAll").mockResolvedValue(packages);
@@ -70,18 +78,20 @@ describe('Inventory Item Packages Controller', () => {
   });
 
   it('should create a package', async () => {
-    const unitDto = factory.createDtoInstance({
+    const dto = {
       name: "testpackage",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemPackageDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a package (already exists)', async () => {
-    const unitDto = factory.createDtoInstance({
+    const dto = {
       name: "testpackage",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemPackageDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 
@@ -105,7 +115,11 @@ describe('Inventory Item Packages Controller', () => {
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
     toUpdate.name = "UPDATED_testpackage";
-    const result = await controller.update(toUpdate.id, toUpdate);
+    const dto = {
+      name: "UPDATED_testpackage"
+    } as UpdateInventoryItemPackageDto;
+    
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("UPDATED_testpackage")
   });
