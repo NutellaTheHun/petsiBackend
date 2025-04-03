@@ -2,21 +2,21 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "../entities/user.entities";
-import { UsersController } from "../users.controller";
+import { UserController } from "../user.controller";
 import { ConfigModule } from "@nestjs/config";
 import { Role } from "../../roles/entities/role.entities";
-import { UsersModule } from "../users.module";
-import { RolesModule } from "../../roles/roles.module";
+import { UserModule } from "../user.module";
+import { RoleModule } from "../../roles/role.module";
 
-export async function getUsersTestingModule(): Promise<TestingModule> {
+export async function getUserTestingModule(): Promise<TestingModule> {
      return await Test.createTestingModule({
         imports: [
                 ConfigModule.forRoot({ isGlobal: true }),
                 TypeORMPostgresTestingModule([User, Role]),
                 TypeOrmModule.forFeature([User, Role]),
-                UsersModule,
-                RolesModule,
+                UserModule,
+                RoleModule,
               ],
-              controllers: [UsersController],
+              controllers: [UserController],
               providers: [],
 }).compile()};

@@ -1,21 +1,21 @@
 import { TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
+import { UserController } from './user.controller';
 import { UserFactory } from './entities/user.factory';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { getUsersTestingModule } from './utils/users-testing-module';
+import { getUserTestingModule } from './utils/user-testing-module';
 
-describe('UsersController', () => {
-  let controller: UsersController;
+describe('User Controller', () => {
+  let controller: UserController;
   let userFactory: UserFactory;
-  let usersService: UsersService;
+  let usersService: UserService;
 
   beforeAll(async () => {
-    const module: TestingModule = await getUsersTestingModule();
+    const module: TestingModule = await getUserTestingModule();
 
-    controller = module.get<UsersController>(UsersController);
-    usersService = module.get<UsersService>(UsersService)
+    controller = module.get<UserController>(UserController);
+    usersService = module.get<UserService>(UserService)
     userFactory = module.get<UserFactory>(UserFactory);
 
     let users = await userFactory.getTestUsers();

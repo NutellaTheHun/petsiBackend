@@ -2,12 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { isPassHashMatch } from './utils/hash';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../users/user.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly userService: UsersService,
+        private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly configSerivce: ConfigService,
     ){}

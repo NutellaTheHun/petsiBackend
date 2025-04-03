@@ -3,17 +3,17 @@ import { AuthService } from './auth.service';
 import { getAuthTestingModule } from './utils/auth-testing-module';
 import { UserFactory } from '../users/entities/user.factory';
 import { UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../users/user.service';
 
 
 describe('AuthService', () => {
   let service: AuthService;
-  let userService: UsersService;
+  let userService: UserService;
   let userFactory: UserFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await getAuthTestingModule();
-    userService = module.get<UsersService>(UsersService);
+    userService = module.get<UserService>(UserService);
     service = module.get<AuthService>(AuthService);
     userFactory = module.get<UserFactory>(UserFactory);
   });

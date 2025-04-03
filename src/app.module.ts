@@ -13,11 +13,11 @@ import { InventoryItemsModule } from './modules/inventory-items/inventory-items.
 import { TypeORMPostgresModule } from './typeorm/configs/TypeORMPostgresProd';
 import { RecipesModule } from './modules/recipes/recipes.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
-import { UsersModule } from './modules/users/users.module';
-import { RolesModule } from './modules/roles/roles.module';
+import { UserModule } from './modules/users/user.module';
+import { RoleModule } from './modules/roles/role.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './modules/auth/auth.guard';
-import { RolesGuard } from './modules/roles/roles.guard';
+import { RoleGuard } from './modules/roles/role.guard';
 
 @Module({
   imports: [ 
@@ -26,7 +26,7 @@ import { RolesGuard } from './modules/roles/roles.guard';
     OrdersModule, MenuItemsModule, TemplatesModule, 
     LabelsModule, AuthModule, InventoryAreasModule, 
     InventoryItemsModule, RecipesModule, UnitOfMeasureModule,
-    UsersModule, RolesModule,
+    UserModule, RoleModule,
   ],
   controllers: [AppController],
   providers: [
@@ -37,7 +37,7 @@ import { RolesGuard } from './modules/roles/roles.guard';
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: RoleGuard,
     },],
 })
 export class AppModule {

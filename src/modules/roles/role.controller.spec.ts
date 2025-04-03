@@ -1,25 +1,25 @@
 import { TestingModule } from '@nestjs/testing';
-import { RolesController } from './roles.controller';
-import { RolesService } from './roles.service';
+import { RoleController } from './role.controller';
+import { RoleService } from './role.service';
 import { RoleFactory } from './entities/role.factory';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { getRolesTestingModule } from './utils/roles-testing-module';
+import { getRoleTestingModule } from './utils/role-testing-module';
 import { Role } from './entities/role.entities';
 
-describe('RolesController', () => {
-  let controller: RolesController;
-  let rolesService: RolesService;
+describe('Role Controller', () => {
+  let controller: RoleController;
+  let roleService: RoleService;
   let roleFactory: RoleFactory;
   
   let roleId = 4;
   let roles: Role[];
   
   beforeAll(async () => {
-    const module: TestingModule = await getRolesTestingModule();
+    const module: TestingModule = await getRoleTestingModule();
 
-    controller = module.get<RolesController>(RolesController);
-    rolesService = module.get<RolesService>(RolesService);
+    controller = module.get<RoleController>(RoleController);
+    roleService = module.get<RoleService>(RoleService);
     roleFactory = module.get<RoleFactory>(RoleFactory);
 
     let roles = roleFactory.getTestingRoles();
@@ -27,7 +27,7 @@ describe('RolesController', () => {
     roles[1].id = 2;
     roles[2].id = 3;
 
-    jest.spyOn(rolesService, "create").mockImplementation(async (createDto: CreateRoleDto) => {
+    jest.spyOn(roleService, "create").mockImplementation(async (createDto: CreateRoleDto) => {
       const exists = roles.find(role => role.name === createDto.name)
       if(exists){
         return null;
@@ -41,7 +41,7 @@ describe('RolesController', () => {
     });
 
     
-    jest.spyOn(rolesService, "update").mockImplementation(async (id: number, updateDto: UpdateRoleDto) => {
+    jest.spyOn(roleService, "update").mockImplementation(async (id: number, updateDto: UpdateRoleDto) => {
       const index = roles.findIndex(role => role.id === id);
       if(index === -1) return null;
 
@@ -52,13 +52,13 @@ describe('RolesController', () => {
       return updated;
     });
 
-    jest.spyOn(rolesService, "findAll").mockResolvedValue(roles);
+    jest.spyOn(roleService, "findAll").mockResolvedValue(roles);
 
-    jest.spyOn(rolesService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(roleService, "findOne").mockImplementation(async (id: number) => {
       return roles.find(role => role.id === id) || null;
     });
     
-    jest.spyOn(rolesService, "remove").mockImplementation(async (id: number) =>{
+    jest.spyOn(roleService, "remove").mockImplementation(async (id: number) =>{
       const index = roles.findIndex(role => role.id === id);
       if (index === -1) return false;
 
