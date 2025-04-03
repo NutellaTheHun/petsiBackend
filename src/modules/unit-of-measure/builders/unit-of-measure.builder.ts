@@ -4,6 +4,7 @@ import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/update-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { UnitCategoryService } from "../services/unit-category.service";
+import { NO_CAT } from "../utils/constants";
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
@@ -36,7 +37,9 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         return this.setProp('conversionFactorToBase', value);
     }
 
-    // Handle default category "No Category"?
+    /**
+     * If no category is given, default category is "no category"
+     */
     public async buildCreateDto(dto: CreateUnitOfMeasureDto): Promise<UnitOfMeasure> {
         this.reset();
 
@@ -51,6 +54,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         }
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
+        } else {
+            this.categoryByName(NO_CAT);
         }
 
         return await this.build();
