@@ -1,8 +1,9 @@
 import { Controller } from '@nestjs/common';
-import { UserService } from './user.service';
-import { User } from './entities/user.entities';
-import { Roles } from '../../util/decorators/PublicRole';
-import { ControllerBase } from '../../base/controller-base';
+import { ControllerBase } from '../../../base/controller-base';
+import { Roles } from '../../../util/decorators/PublicRole';
+import { User } from '../entities/user.entities';
+import { UserService } from '../services/user.service';
+
 
 @Controller('users')
 @Roles("admin")

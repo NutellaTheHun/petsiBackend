@@ -1,11 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { RoleService } from './role.service';
-import { RoleController } from './role.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Role } from './entities/role.entities';
 import { UserModule } from '../users/user.module';
-import { RoleFactory } from './entities/role.factory';
-import { RoleBuilder } from './role.builder';
+import { RoleBuilder } from './builders/role.builder';
+import { RoleController } from './controllers/role.controller';
+import { Role } from './entities/role.entities';
+import { RoleService } from './services/role.service';
 import { RoleTestUtil } from './utils/role-test.util';
 
 @Module({
@@ -14,7 +13,7 @@ import { RoleTestUtil } from './utils/role-test.util';
     forwardRef(() => UserModule),
   ],
   controllers: [RoleController,],
-  providers: [RoleService, RoleFactory, RoleBuilder, RoleTestUtil],
+  providers: [RoleService, RoleBuilder, RoleTestUtil],
   exports: [RoleService, RoleTestUtil],
 })
 export class RoleModule {}

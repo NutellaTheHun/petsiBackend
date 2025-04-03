@@ -1,21 +1,19 @@
+import { UnauthorizedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { UserService } from '../users/services/user.service';
 import { AuthService } from './auth.service';
 import { getAuthTestingModule } from './utils/auth-testing-module';
-import { UserFactory } from '../users/entities/user.factory';
-import { UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../users/user.service';
 
 
 describe('AuthService', () => {
   let service: AuthService;
   let userService: UserService;
-  let userFactory: UserFactory;
 
   beforeAll(async () => {
     const module: TestingModule = await getAuthTestingModule();
     userService = module.get<UserService>(UserService);
     service = module.get<AuthService>(AuthService);
-    userFactory = module.get<UserFactory>(UserFactory);
   });
 
   afterAll(async() => {
@@ -28,13 +26,16 @@ describe('AuthService', () => {
   });
 
   it("should sign in", async () => {
-    const userDto = userFactory.createDtoInstance(
-      {username: "loginUser", password: "loginPassword", email: "loginUser@email.com"});
+    const dto = {
+      username: "loginUser",
+      password: "loginPassword",
+      email: "loginUser@email.com",
+    } as CreateUserDto;
 
-    const creation = await userService.create(userDto);
+    const creation = await userService.create(dto);
     if(!creation){ throw new Error("insert user failed"); }
 
-    const result = await service.signIn(userDto.username, userDto.password);
+    const result = await service.signIn(dto.username, dto.password);
 
     expect(result.access_token).not.toBeNull();
   })

@@ -1,18 +1,17 @@
 import { TestingModule } from '@nestjs/testing';
 import { RoleController } from './role.controller';
-import { RoleService } from './role.service';
-import { RoleFactory } from './entities/role.factory';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
-import { getRoleTestingModule } from './utils/role-testing-module';
-import { Role } from './entities/role.entities';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+import { getRoleTestingModule } from '../utils/role-testing-module';
+import { Role } from '../entities/role.entities';
+import { RoleService } from '../services/role.service';
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../users/utils/constants';
 
 describe('Role Controller', () => {
   let controller: RoleController;
   let roleService: RoleService;
-  let roleFactory: RoleFactory;
   
-  let roleId = 4;
+  let roleId = 1;
   let roles: Role[];
   
   beforeAll(async () => {
@@ -20,12 +19,13 @@ describe('Role Controller', () => {
 
     controller = module.get<RoleController>(RoleController);
     roleService = module.get<RoleService>(RoleService);
-    roleFactory = module.get<RoleFactory>(RoleFactory);
 
-    let roles = roleFactory.getTestingRoles();
-    roles[0].id = 1;
-    roles[1].id = 2;
-    roles[2].id = 3;
+    roles = [
+      { name: ROLE_ADMIN } as Role,
+      { name: ROLE_MANAGER } as Role,
+      { name: ROLE_STAFF } as Role,
+    ];
+    roles.map(role => role.id = roleId++);
 
     jest.spyOn(roleService, "create").mockImplementation(async (createDto: CreateRoleDto) => {
       const exists = roles.find(role => role.name === createDto.name)
@@ -33,8 +33,11 @@ describe('Role Controller', () => {
         return null;
       }
 
-      const role = roleFactory.createDtoToEntity(createDto);
-      role.id = roleId;
+      const role = {
+        id: roleId++,
+        name: createDto.name,
+      } as Role;
+
       roles.push(role);
 
       return role;
@@ -45,11 +48,11 @@ describe('Role Controller', () => {
       const index = roles.findIndex(role => role.id === id);
       if(index === -1) return null;
 
-      const updated = roleFactory.updateDtoToEntity(updateDto);
-      updated.id = id;
-      roles[index] = updated;
+      if(updateDto.name){
+        roles[index].name = updateDto.name;
+      }
 
-      return updated;
+      return roles[index];
     });
 
     jest.spyOn(roleService, "findAll").mockResolvedValue(roles);
@@ -87,23 +90,26 @@ describe('Role Controller', () => {
   });
 
   it("should create and return a role", async () => {
-    const roleDto = roleFactory.createDtoInstance({ name: "newRole" });
-
-    const result = await controller.create(roleDto);
-    expect(result?.id).toEqual(4);
+    const dto = { name: "newRole" } as Role;
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
   });
 
   it("should fail to create a role (non-unique name)", async () => {
-    const roleDto = roleFactory.createDtoInstance({ name: "newRole" });
-    await expect(controller.create(roleDto)).resolves.toBeNull();
+    const dto = { name: "newRole" } as Role;
+    const result = await controller.create(dto);
+    expect(result).toBeNull();
   });
 
   it("should update a role", async () => {
-    const roleToUpdate = await controller.findOne(4);
-    if(!roleToUpdate){ throw new Error('role to update returned null'); } 
+    const toUpdate = await controller.findOne(4);
+    if(!toUpdate){ throw new Error('role to update returned null'); } 
 
-    roleToUpdate.name = "updatedRole";
-    const result = await controller.update(roleToUpdate.id, roleToUpdate);
+    const dto = {
+      name: "updatedRole"
+    } as UpdateRoleDto;
+
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
   });
 

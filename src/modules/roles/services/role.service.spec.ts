@@ -1,11 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../util/DatabaseTestContext';
-import { ROLE_ADMIN } from '../users/utils/constants';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
 import { RoleService } from './role.service';
-import { RoleTestUtil } from './utils/role-test.util';
-import { getRoleTestingModule } from './utils/role-testing-module';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { RoleTestUtil } from '../utils/role-test.util';
+import { getRoleTestingModule } from '../utils/role-testing-module';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+import { ROLE_ADMIN } from '../../users/utils/constants';
+
 
 describe('Role Service', () => {
   let roleService: RoleService;

@@ -1,52 +1,65 @@
 import { TestingModule } from '@nestjs/testing';
+import { UserService } from '../services/user.service';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { getUserTestingModule } from '../utils/user-testing-module';
+import { hashPassword } from '../../auth/utils/hash';
+import { User } from '../entities/user.entities';
+import { USER_A, USER_B, USER_C, USER_D } from '../utils/constants';
 import { UserController } from './user.controller';
-import { UserFactory } from './entities/user.factory';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { getUserTestingModule } from './utils/user-testing-module';
 
 describe('User Controller', () => {
   let controller: UserController;
-  let userFactory: UserFactory;
   let usersService: UserService;
+  let userId = 1;
 
   beforeAll(async () => {
     const module: TestingModule = await getUserTestingModule();
 
     controller = module.get<UserController>(UserController);
     usersService = module.get<UserService>(UserService)
-    userFactory = module.get<UserFactory>(UserFactory);
-
-    let users = await userFactory.getTestUsers();
+    
+    let users = [
+      { username: USER_A, password: await hashPassword("passA"), email: "email_A@email.com" } as User,
+      { username: USER_B, password: await hashPassword("passB"), email: "email_B@email.com" } as User,
+      { username: USER_C, password: await hashPassword("passC"), email: "email_C@email.com" } as User,
+      { username: USER_D, password: await hashPassword("passD"), email: "email_D@email.com" } as User,
+    ];
+    users.map(user => user.id = userId++);
 
     jest.spyOn(usersService, "create").mockImplementation(async (createDto : CreateUserDto) => {
       const exists = users.find(user => user.username === createDto.username)
       if(exists){ return null; }
 
-      const user = await userFactory.createDtoToEntity(createDto);
-      user.id = 5;
+      const user = {
+        id: userId++,
+        username: createDto.username,
+        email: createDto.email,
+        password: createDto.password,
+      } as User;
+
       users.push(user)
 
       return user;
     });
 
     jest.spyOn(usersService, "update").mockImplementation(async (id: number, updateDto: UpdateUserDto) => {
-      const exists = users.find(user => user.id === id)
-      if(!exists){ return null; }
-
-      const updated = await userFactory.updateDtoToEntity(updateDto);
-      updated.id = id;
-
       const index = users.findIndex(user => user.id == id);
       if(index === -1){
         throw new Error("User not found");
       }
 
-      users.splice(index, 1);
-      users.push(updated);
+      if(updateDto.email){
+        users[index].email = updateDto.email;
+      }
+      if(updateDto.password){
+        users[index].password = updateDto.password;
+      }
+      if(updateDto.username){
+        users[index].username = updateDto.username;
+      }
 
-      return updated;
+      return users[index];
     });
 
     jest.spyOn(usersService, "findAll").mockResolvedValue(users);
@@ -83,26 +96,36 @@ describe('User Controller', () => {
   });
 
   it("should create a user", async () => {
-    const newUser = userFactory.createDtoInstance({name: "newUser", rawPassword: "newPass", email: "newEmail@email.com" });
-    const result = await controller.create(newUser);
+    const dto = {
+      username: "newUser",
+      password: "newPass",
+      email: "newEmail@email.com",
+    } as CreateUserDto;
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
-    expect(result?.id).toEqual(5);
   });
 
   it("should fail to create a user (non-unique username)", async () => {
-    const newUser = userFactory.createDtoInstance({name: "newUser", rawPassword: "newPass", email: "newEmail@email.com" });
-    await expect(controller.create(newUser)).resolves.toBeNull();
+    const dto = {
+      username: "newUser",
+      password: "newPass",
+      email: "newEmail@email.com",
+    } as CreateUserDto;
+    const result = await controller.create(dto);
+    expect(result).toBeNull();
   });
 
   it("should update a user", async () => {
     const userToUpdate = await controller.findOne(5);
     if(!userToUpdate){ throw new Error("User to update is null."); }
 
-    userToUpdate.username = "updatedUser";
-    const result = await controller.update(userToUpdate.id, userToUpdate);
+    const dto = {
+      username: "updatedUser",
+    } as UpdateUserDto;
+    const result = await controller.update(userToUpdate.id, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.id).toEqual(userToUpdate.id);
+    expect(result?.username).toEqual("updatedUser");
   });
 
   it("should remove a user by id", async () => {

@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { isPassHashMatch } from './utils/hash';
-import { UserService } from '../users/user.service';
+import { UserService } from '../users/services/user.service';
 
 @Injectable()
 export class AuthService {

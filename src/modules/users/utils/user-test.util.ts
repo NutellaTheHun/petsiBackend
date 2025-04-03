@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { User } from "../entities/user.entities";
-import { UserBuilder } from "../user.builder";
-import { UserService } from "../user.service";
+import { UserBuilder } from "../builders/user.builder";
+import { UserService } from "../services/user.service";
 import { USER_A, USER_B, USER_C, USER_D, USER_E } from "./constants";
 
 @Injectable()

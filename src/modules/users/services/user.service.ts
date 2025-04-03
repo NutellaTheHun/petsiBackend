@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ServiceBase } from '../../base/service-base';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entities';
-import { UserBuilder } from './user.builder';
+import { ServiceBase } from '../../../base/service-base';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entities';
+import { UserBuilder } from '../builders/user.builder';
 
 @Injectable()
 export class UserService extends ServiceBase<User> {

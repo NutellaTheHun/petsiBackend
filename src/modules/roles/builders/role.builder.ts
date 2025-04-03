@@ -1,9 +1,9 @@
 import { forwardRef, Inject } from "@nestjs/common";
-import { BuilderBase } from "../../base/builder-base";
-import { Role } from "./entities/role.entities";
-import { UserService } from "../users/user.service";
-import { CreateRoleDto } from "./dto/create-role.dto";
-import { UpdateRoleDto } from "./dto/update-role.dto";
+import { BuilderBase } from "../../../base/builder-base";
+import { Role } from "../entities/role.entities";
+import { UserService } from "../../users/services/user.service";
+import { CreateRoleDto } from "../dto/create-role.dto";
+import { UpdateRoleDto } from "../dto/update-role.dto";
 
 export class RoleBuilder extends BuilderBase<Role>{
     constructor(

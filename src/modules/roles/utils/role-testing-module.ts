@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { Role } from "../entities/role.entities";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { RoleController } from "../role.controller";
+import { RoleController } from "../controllers/role.controller";
 import { ConfigModule } from "@nestjs/config";
 import { User } from "../../users/entities/user.entities";
 import { RoleModule } from "../role.module";

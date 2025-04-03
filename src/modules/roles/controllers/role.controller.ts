@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
-import { RoleService } from './role.service';
-import { Role } from './entities/role.entities';
-import { Roles } from '../../util/decorators/PublicRole';
-import { ControllerBase } from '../../base/controller-base';
+import { Role } from '../entities/role.entities';
+import { Roles } from '../../../util/decorators/PublicRole';
+import { ControllerBase } from '../../../base/controller-base';
+import { RoleService } from '../services/role.service';
 
 @Controller('roles')
 @Roles("admin")

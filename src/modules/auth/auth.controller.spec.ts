@@ -1,32 +1,29 @@
-import { TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
-import { getAuthTestingModule } from './utils/auth-testing-module';
-import { AuthService } from './auth.service';
-import { RoleFactory } from '../roles/entities/role.factory';
-import { UserFactory } from '../users/entities/user.factory';
-import { hashPassword, isPassHashMatch } from './utils/hash';
 import { UnauthorizedException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { User } from '../users/entities/user.entities';
+import { USER_A, USER_B, USER_C, USER_D } from '../users/utils/constants';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
+import { getAuthTestingModule } from './utils/auth-testing-module';
+import { hashPassword, isPassHashMatch } from './utils/hash';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
-  let userFactory: UserFactory;
   
   beforeAll(async () => {
     const module: TestingModule = await getAuthTestingModule();
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
-    userFactory = module.get<UserFactory>(UserFactory);
 
-    let users = await userFactory.getTestUsers();
-    users = await Promise.all(
-      users.map(async (user) => {
-        user.password = await hashPassword(user.password);
-        return user;
-      })
-    );
+    let users = [
+      { username: USER_A, password: await hashPassword("passA"), email: "email_A@email.com" } as User,
+      { username: USER_B, password: await hashPassword("passB"), email: "email_B@email.com" } as User,
+      { username: USER_C, password: await hashPassword("passC"), email: "email_C@email.com" } as User,
+      { username: USER_D, password: await hashPassword("passD"), email: "email_D@email.com" } as User,
+    ];
     
     jest.spyOn(authService, "signIn").mockImplementation(async (username, inputPass) => {
       const user = users.find(user => user.username === username);
@@ -40,7 +37,7 @@ describe('AuthController', () => {
   });
 
   it("should sign in", async () => {
-    const username = 'userA'
+    const username = 'user_A'
     const pass = 'passA'
     const result = await controller.signIn({ username: username, password: pass} as SignInDto);
     expect(result.access_token).toEqual('mock_token');

@@ -1,10 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderBase } from "../../base/builder-base";
-import { RoleService } from "../roles/role.service";
-import { User } from "./entities/user.entities";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
-import { hashPassword } from "../auth/utils/hash";
+import { BuilderBase } from "../../../base/builder-base";
+import { User } from "../entities/user.entities";
+import { CreateUserDto } from "../dto/create-user.dto";
+import { UpdateUserDto } from "../dto/update-user.dto";
+import { hashPassword } from "../../auth/utils/hash";
+import { RoleService } from "../../roles/services/role.service";
 
 @Injectable()
 export class UserBuilder extends BuilderBase<User> {
