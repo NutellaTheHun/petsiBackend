@@ -38,7 +38,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         return await this.sizeRepo.save(toUpdate);
     }
 
-    async findSizesByItemName(name: string, relations?: string[]): Promise<InventoryItemSize[] | null> {
+    async findSizesByItemName(name: string, relations?: Array<keyof InventoryItemSize>): Promise<InventoryItemSize[] | null> {
         return await this.sizeRepo.find({
             where: { item: { name } },
             relations

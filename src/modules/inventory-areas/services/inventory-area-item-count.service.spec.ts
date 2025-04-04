@@ -51,6 +51,18 @@ describe('Inventory area item count service', () => {
         expect(itemCountService).toBeDefined();
     });
 
+    /**
+     * - if the inventory area is deleted, the inv area item count should be deleted
+     * - if the count is deleted, the inv area item count should be deleted
+     * - if the inventory item is deleted, the inv area item count should be deleted
+     * - if an inventory item size is deleted, the referencing inv area item count should be deleted
+     * - inserting an inventory area item count, should update the count entity's item reference
+     */
+
+    it('should create an InventoryCountedItem', async () => {
+
+    });
+
     it('should create an itemCount', async () => {
         const area = await inventoryAreaService.findOneByName(AREA_A);
         if(!area){ throw new Error("area a not found"); }
@@ -180,7 +192,7 @@ describe('Inventory area item count service', () => {
             }  as InventoryAreaItemCount,
         ];
 
-        const countedItemIds_A: number[] = []
+        const countedItemIds_A: number[] = [];
         for(const countedItem of items_A){
             const result = await itemCountService.create({
                 inventoryAreaId: countedItem.inventoryArea.id,
@@ -197,7 +209,10 @@ describe('Inventory area item count service', () => {
                 countedItemIds_A.push(result?.id);
             }
         }
+
+        // For testing findEntitiesByIds()
         countedItemIds = [ countedItemIds_A[0], countedItemIds_A[1]];
+
         const updateResult_A = await inventoryCountService.update(
             areaCount_A.id, 
             { inventoryItemCountIds: countedItemIds_A } as UpdateInventoryAreaCountDto

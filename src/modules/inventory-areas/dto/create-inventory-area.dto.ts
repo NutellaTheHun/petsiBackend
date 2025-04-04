@@ -4,11 +4,11 @@ export class CreateInventoryAreaDto {
     @IsString()
     @IsNotEmpty()
     readonly name: string;
-
+    /*
     @IsArray()
     @IsNumber({}, { each: true})
     @IsPositive()
-    readonly inventoryCountIds: number[] = [];
+    readonly inventoryCountIds: number[] = [];*/
 }
 
 export function CreateDefaultInventoryAreaDtoValues(){

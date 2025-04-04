@@ -1,4 +1,12 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateInventoryAreaCountDto } from "./create-inventory-area-count.dto";
+import { IsArray, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
-export class UpdateInventoryAreaCountDto extends PartialType(CreateInventoryAreaCountDto){}
+export class UpdateInventoryAreaCountDto {
+    @IsNumber()
+    @IsNotEmpty()
+    readonly inventoryAreaId: number;
+    
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @IsPositive({ each: true})
+    readonly inventoryItemCountIds: number[] = [];
+}

@@ -34,7 +34,7 @@ export class RecipeService extends ServiceBase<Recipe>{
         return await this.recipeRepo.save(toUpdate);
     }
 
-    async findOneByName(name: string, relations?: string[]): Promise<Recipe | null> {
+    async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
         return this.recipeRepo.findOne({ where: {name: name }, relations});
     }
 }

@@ -35,7 +35,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
   * @param id currently not used, using Repository.save for lifecycle hooks
   * @param updateDto
   */
-  async update(id: number, updateDto: UpdateUnitCategoryDto, relations?: string[]): Promise<UnitCategory | null> {
+  async update(id: number, updateDto: UpdateUnitCategoryDto, relations?: Array<keyof UnitCategory>): Promise<UnitCategory | null> {
     const category = await this.categoryRepo.findOne({ where: { id }, relations });
     if(!category) { return null; }
 

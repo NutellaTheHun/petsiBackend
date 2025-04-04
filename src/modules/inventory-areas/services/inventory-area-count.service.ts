@@ -1,4 +1,4 @@
-import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -6,7 +6,6 @@ import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.buil
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaService } from "./inventory-area.service";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -32,7 +31,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
      */
     async create(createDto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount | null> {
         if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
-        if(createDto.inventoryItemCountIds){ throw new Error('InventoryCountIds present in create call, must only be present in update') }
         
         const count = await this.areaCountBuilder.buildCreateDto(createDto);
         return await this.areaCountRepo.save(count);
@@ -50,7 +48,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         
     }
 
-    async findByAreaName(name: string, relations?: string[]): Promise<InventoryAreaCount[]> {
+    async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
         return await this.areaCountRepo.find({ 
             where: { inventoryArea: { name: name } }, 
             relations
@@ -60,7 +58,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     /**
      * finds all counts for the given day of date, ignores time.
      */
-    async findByDate(date: Date, relations?: string[]): Promise<InventoryAreaCount[]> {
+    async findByDate(date: Date, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
         const startOfDay = new Date(date);
         startOfDay.setUTCHours(0, 0, 0, 0);
 

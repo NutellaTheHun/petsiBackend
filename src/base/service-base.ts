@@ -25,21 +25,21 @@ export class ServiceBase<T extends ObjectLiteral> {
       return results;
   }
 
-  async findAll(relations?: string[]): Promise<T[]> {
-    return await this.entityRepo.find({relations: relations});
+  async findAll(relations?: Array<keyof T>): Promise<T[]> {
+    return await this.entityRepo.find({relations: relations as string[]});
   }
 
-  async findOne(id: number, relations?: string[]): Promise<T | null> {
+  async findOne(id: number, relations?: Array<keyof T>): Promise<T | null> {
     return await this.entityRepo.findOne({ 
         where: { id } as unknown as FindOptionsWhere<T>, 
-        relations: relations }
+        relations: relations as string[] }
     );
   }
 
-  async findEntitiesById( ids: number[], relations?: string[]): Promise<T[]> {
+  async findEntitiesById( ids: number[], relations?: Array<keyof T>): Promise<T[]> {
     return await this.entityRepo.find({ 
         where: { id: In(ids) } as unknown as FindOptionsWhere<T>, 
-        relations: relations });
+        relations: relations as string[] });
   }
 
   async update(id: number, updateTDto: any): Promise<any | null> {

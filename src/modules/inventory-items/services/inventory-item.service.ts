@@ -36,7 +36,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     return await this.itemRepo.save(toUpdate);
   }
 
-  async findOneByName(name: string, relations?: string[]): Promise<InventoryItem | null> {
+  async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
     return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
   }
 }

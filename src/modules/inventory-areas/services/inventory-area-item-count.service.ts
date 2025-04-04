@@ -55,7 +55,7 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
         return await this.itemCountRepo.save(toUpdate);
     }
 
-    async findByAreaName(name: string, relations?: string[]): Promise<InventoryAreaItemCount[]> {
+    async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItemCount>): Promise<InventoryAreaItemCount[]> {
         const area = await this.inventoryAreaService.findOneByName(name);
         if(!area){ throw new Error('inventory area not found'); }
 
@@ -65,7 +65,7 @@ export class InventoryAreaItemCountService extends ServiceBase<InventoryAreaItem
         });
     }
 
-    async findByItemName(name: string, relations?: string[]): Promise<InventoryAreaItemCount[]> {
+    async findByItemName(name: string, relations?: Array<keyof InventoryAreaItemCount>): Promise<InventoryAreaItemCount[]> {
         const item = await this.itemService.findOneByName(name);
         if(!item){ throw new Error('inventory item not found'); }
 

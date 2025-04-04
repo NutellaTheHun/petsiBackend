@@ -26,7 +26,7 @@ export class UserService extends ServiceBase<User> {
     return result;
   }
 
-  async findOneByName(username: string, relations?: string[]): Promise<User | null> {
+  async findOneByName(username: string, relations?: Array<keyof User>): Promise<User | null> {
     return await this.userRepo.findOne({where : { username: username }, relations: relations });
   }
 

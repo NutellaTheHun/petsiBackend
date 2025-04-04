@@ -43,7 +43,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         return await this.subCategoryRepo.save(toUpdate);
     }
 
-    async findOneByName(name: string, relations?: string[]): Promise<RecipeSubCategory | null> {
+    async findOneByName(name: string, relations?: Array<keyof RecipeSubCategory>): Promise<RecipeSubCategory | null> {
         return this.subCategoryRepo.findOne({
             where: {
                 name: name
@@ -55,7 +55,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     /**
      * Returns a list of a categories sub-categories
      */
-    async findByCategoryName(name: string, relations?: string[]): Promise<RecipeSubCategory[]>{
+    async findByCategoryName(name: string, relations?: Array<keyof RecipeSubCategory>): Promise<RecipeSubCategory[]>{
         const category = await this.categoryService.findOneByName(name, ["subCategories"]);
         if(!category){ throw new Error("category not found"); }
         if(!category.subCategories){ throw new Error("sub-categories not found"); }
@@ -66,7 +66,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     /**
      * Returns one sub-category given the sub category name and the parentCategory name.
      */
-    async findOneByCategoryNameAndSubCategoryName(categoryName: string, subCategoryName: string,  relations?: string[]
+    async findOneByCategoryNameAndSubCategoryName(categoryName: string, subCategoryName: string,  relations?: Array<keyof RecipeSubCategory>
     ): Promise<RecipeSubCategory | null>{
         const category = await this.categoryService.findOneByName(categoryName);
         if(!category){ 

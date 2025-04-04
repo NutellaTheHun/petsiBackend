@@ -25,7 +25,7 @@ export class RoleService extends ServiceBase<Role> {
     return await this.roleRepo.save(role);
   }
 
-  async findOneByName(roleName: string, relations?: string[]): Promise<Role | null> {
+  async findOneByName(roleName: string, relations?: Array<keyof Role>): Promise<Role | null> {
     return await this.roleRepo.findOne({ where: { name: roleName }, relations: relations  });
   }
 

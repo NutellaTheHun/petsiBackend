@@ -21,23 +21,28 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
     }
 
     public inventoryAreaByName(name: string): this {
-        return this.setPropByName(this.areaService.findOne.bind(this.areaService), 'inventoryArea', name);
+        return this.setPropByName(this.areaService.findOneByName.bind(this.areaService), 'inventoryArea', name);
     }
 
     public countedItemsById(ids: number[]): this {
-        return this.setPropsByIds(this.areaItemService.findOne.bind(this.areaItemService), 'items', ids);
+        return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
     }
 
+    /**
+     * @param dto Must have an inventoryAreaId, WARNING: inventoryItemCountIds are not used in creation. Only in updates.
+     * @returns 
+     */
     public async buildCreateDto(dto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
 
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
+        /*
         if(dto.inventoryItemCountIds){
             this.countedItemsById(dto.inventoryItemCountIds);
         }
-
+        */
         return await this.build();
     }
 

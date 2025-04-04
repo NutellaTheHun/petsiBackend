@@ -46,7 +46,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         return await this.ingredientRepo.save(toUpdate);
     }
 
-    async findByRecipeName(name: string, relations?:string[]): Promise<RecipeIngredient[]>{
+    async findByRecipeName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
         const recipe = await this.recipeService.findOneByName(name, ["ingredients"]);
         if(!recipe?.ingredients){
             throw new Error("recipe ingredients not found");
@@ -54,7 +54,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         return recipe.ingredients;
     }
 
-    async findByInventoryItemName(name: string, relations?:string[]): Promise<RecipeIngredient[]>{
+    async findByInventoryItemName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
         const invItem = await this.inventoryItemService.findOneByName(name);
         if(!invItem){
             throw new Error('inventory item not found');

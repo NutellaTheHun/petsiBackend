@@ -35,7 +35,7 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
         return await this.areaRepo.save(toUpdate);
     }
 
-    async findOneByName(name: string, relations?: string[]): Promise<InventoryArea | null> {
+    async findOneByName(name: string, relations?: Array<keyof InventoryArea>): Promise<InventoryArea | null> {
         return await this.areaRepo.findOne({ where: { name }, relations}); 
     }
 }
