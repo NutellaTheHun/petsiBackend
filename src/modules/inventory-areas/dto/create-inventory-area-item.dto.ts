@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 
-export class CreateInventoryAreaItemCountDto {
+export class CreateInventoryAreaItemDto {
 
     @IsNumber()
     @IsPositive()
@@ -51,7 +51,7 @@ export class CreateInventoryAreaItemCountDto {
     readonly itemSizeCreateDto: CreateInventoryItemSizeDto;
 }
 
-export function CreateDefaultInventoryAreaItemCountDtoValues(){
+export function CreateDefaultInventoryAreaItemDtoValues(){
     return [
 
     ];

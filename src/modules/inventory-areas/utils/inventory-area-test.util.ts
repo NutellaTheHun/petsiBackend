@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
-import { InventoryAreaItemCountBuilder } from "../builders/inventory-area-item-count.builder";
+import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { InventoryAreaBuilder } from "../builders/inventory-area.builder";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
 import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
@@ -25,8 +25,8 @@ export class InventoryAreaTestUtil {
         private readonly countService: InventoryAreaCountService,
         private readonly areaCountBuilder: InventoryAreaCountBuilder,
 
-        private readonly itemCountService: InventoryAreaItemCountService,
-        private readonly itemCountBuilder: InventoryAreaItemCountBuilder,
+        private readonly itemCountService: InventoryAreaItemService,
+        private readonly itemCountBuilder: InventoryAreaItemBuilder,
         
         private readonly inventoryItemService: InventoryItemService,
 
@@ -51,13 +51,17 @@ export class InventoryAreaTestUtil {
 
     /**
      * Dependencies initialized: InventoryArea
-     * @returns 6 InventoryAreaCount entites (0 for area_a, 1 for area_b, 2 for area_c, 3 for area_d), 
+     * @returns 7 InventoryAreaCount entites (1 for area_a, 1 for area_b, 2 for area_c, 3 for area_d), 
      * no Ids, ready to be inserted into DB
      */
     public async getTestInventoryAreaCountEntities(testContext: DatabaseTestContext): Promise<InventoryAreaCount[]> {
         await this.initInventoryAreaTestDatabase(testContext);
 
         return [
+            await this.areaCountBuilder.reset()
+            .inventoryAreaByName(AREA_A)
+            .build(),
+
             await this.areaCountBuilder.reset()
                 .inventoryAreaByName(AREA_B)
                 .build(),
@@ -83,13 +87,13 @@ export class InventoryAreaTestUtil {
 
     /**
      * Dependencies initialized: InventoryArea, InventoryAreaCount, InventoryItem, InventoryItemSize
-     * @returns 12 items counts, 2 items for each test count, 1 for area B, 2 for area C, 3 for area D
+     * @returns 14 items counts, 2 items for each test count, 1 for area A, 1 for area B, 2 for area C, 3 for area D
      */
-    public async getTestInventoryAreaItemCountEntities(testContext: DatabaseTestContext): Promise<InventoryAreaItemCount[]> {
+    public async getTestInventoryAreaItemCountEntities(testContext: DatabaseTestContext): Promise<InventoryAreaItem[]> {
         await this.initInventoryAreaCountTestDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemSizeTestDatabase(testContext);
 
-        const results: InventoryAreaItemCount[] = [];
+        const results: InventoryAreaItem[] = [];
         const counts = await this.countService.findAll(["inventoryArea"]);
         const items = await this.inventoryItemService.findAll(["sizes"]);
         let itemPtr = 0;

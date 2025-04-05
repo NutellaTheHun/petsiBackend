@@ -1,13 +1,13 @@
 import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryArea } from "./inventory-area.entity";
-import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
+import { InventoryAreaItem } from "./inventory-area-item.entity";
 
 /**
  * The event of counting the items in an inventory area.
  * Associates a list of goods and their quantities at the time counted, with the inventory area.
  * 
  * USAGE:
- * - When an item count is performed, an empty InventoryAreaItemCount is created, 
+ * - When an item count is performed, an empty InventoryAreaCount is created, 
  * - the items that are counted are sent as an update to the entity.
  * - NOTE: See InventoryAreaCountBuilder.buildCreateDto() and .buildUpdateDto()
  * 
@@ -15,7 +15,7 @@ import { InventoryAreaItemCount } from "./inventory-area-item-count.entity";
  * - inventoryArea reference
  * 
  * Creational Restrictions:
- * - inventoryAreaItemCount references
+ * - inventoryAreaItem references
  */
 @Entity()
 export class InventoryAreaCount{
@@ -41,6 +41,6 @@ export class InventoryAreaCount{
      * - countedItems will be populated when an Inventory Count is updated.
      * - handled with cascade: true
      */
-    @OneToMany(() => InventoryAreaItemCount, (item) => item.areaCount, { cascade: true, nullable: true})
-    items?: InventoryAreaItemCount[] | null;
+    @OneToMany(() => InventoryAreaItem, (item) => item.areaCount, { cascade: true, nullable: true})
+    items?: InventoryAreaItem[] | null;
 }

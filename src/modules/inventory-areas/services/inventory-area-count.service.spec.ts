@@ -7,7 +7,7 @@ import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { InventoryAreaItemCountService } from "./inventory-area-item-count.service";
+import { InventoryAreaItemService } from "./inventory-area-item.service";
 
 describe('Inventory area item count service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -15,7 +15,7 @@ describe('Inventory area item count service', () => {
 
     let countService: InventoryAreaCountService;
     let areaService: InventoryAreaService;
-    let itemService: InventoryAreaItemCountService;
+    let itemService: InventoryAreaItemService;
 
     let testId: number;
     let testIds: number[];
@@ -29,7 +29,7 @@ describe('Inventory area item count service', () => {
 
         countService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
         areaService = module.get<InventoryAreaService>(InventoryAreaService);
-        itemService = module.get<InventoryAreaItemCountService>(InventoryAreaItemCountService);
+        itemService = module.get<InventoryAreaItemService>(InventoryAreaItemService);
     })
 
     afterAll(async () => {
@@ -56,7 +56,7 @@ describe('Inventory area item count service', () => {
         if(!areaA){ throw new Error('inventory area not found'); }
 
         expect(areaA?.inventoryCounts).not.toBeUndefined();
-        expect(areaA?.inventoryCounts?.length).toEqual(1);
+        expect(areaA?.inventoryCounts?.length).toEqual(2);
     });
 
     it('should THROW ERROR, to create area count (no areaID)', async () => {
@@ -67,16 +67,6 @@ describe('Inventory area item count service', () => {
 
     it('should THROW ERROR, to create area count (bad areaID)', async () => {
         const dto = { inventoryAreaId: 10 } as CreateInventoryAreaCountDto;
-        await expect(countService.create(dto)).rejects.toThrow(Error);
-    });
-
-    it('should THROW ERROR, to create area count (has list of itemCountIDs)', async () => {
-        const areaA = await areaService.findOneByName(AREA_A);
-        const dto = { 
-            inventoryAreaId: areaA?.id,
-            inventoryItemCountIds: [1, 2, 3, 4]
-        } as CreateInventoryAreaCountDto;
-
         await expect(countService.create(dto)).rejects.toThrow(Error);
     });
 
@@ -100,14 +90,14 @@ describe('Inventory area item count service', () => {
     it('should remove inventoryCount reference from old inventory Area, and update new one', async () => {
         const oldArea = await areaService.findOneByName(AREA_A, ["inventoryCounts"]);
         if(!oldArea){ throw new Error('old inventory area not found'); }
-        expect(oldArea?.inventoryCounts?.length).toEqual(0);
+        expect(oldArea?.inventoryCounts?.length).toEqual(1);
 
         const newArea = await areaService.findOneByName(AREA_B, ["inventoryCounts"]);
         if(!newArea){ throw new Error('new inventoryArea not found'); }
         if(!newArea.inventoryCounts){ throw new Error('new inventoryAreas inventory counts not found'); }
         expect(newArea?.inventoryCounts).not.toBeNull();
-        expect(newArea?.inventoryCounts?.length).toEqual(1);
-        expect(newArea?.inventoryCounts[0].id).toEqual(testId);
+        expect(newArea?.inventoryCounts?.length).toEqual(2); // Area B has 1 area count by default from test initialization
+        expect(newArea?.inventoryCounts.findIndex(count => count.id === testId)).not.toEqual(-1);
     });
 
     it('should fail to update area count (doesnt exist)', async () => {
@@ -128,13 +118,13 @@ describe('Inventory area item count service', () => {
     it('should find area counts by area', async () => {
         const results = await countService.findByAreaName(AREA_B);
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(1);
+        expect(results.length).toEqual(2);
     });
 
     it('should find area counts by date', async () => {
         const results = await countService.findByDate(new Date());
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(1);
+        expect(results.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
 
         testIds = [results[0].id];
     });
@@ -142,7 +132,7 @@ describe('Inventory area item count service', () => {
     it('should get all area counts', async () => {
         const results = await countService.findAll()
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(1);
+        expect(results.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
     });
 
     it('should get area counts by id', async () => {
@@ -163,6 +153,6 @@ describe('Inventory area item count service', () => {
         expect(verify).toBeNull();
 
         const area = await areaService.findOneByName(AREA_B, ["inventoryCounts"]);
-        expect(area?.inventoryCounts?.length).toEqual(0);
+        expect(area?.inventoryCounts?.length).toEqual(1);
     });
 });

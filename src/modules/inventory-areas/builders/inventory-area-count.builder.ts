@@ -3,7 +3,7 @@ import { BuilderBase } from "../../../base/builder-base";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 
 @Injectable()
@@ -12,8 +12,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         @Inject(forwardRef(() => InventoryAreaService))
         private readonly areaService: InventoryAreaService,
         
-        @Inject(forwardRef(() => InventoryAreaItemCountService))
-        private readonly areaItemService: InventoryAreaItemCountService,
+        @Inject(forwardRef(() => InventoryAreaItemService))
+        private readonly areaItemService: InventoryAreaItemService,
     ){ super(InventoryAreaCount); }
 
     public inventoryAreaById(id: number): this {

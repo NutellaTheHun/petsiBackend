@@ -1,27 +1,27 @@
 import { NotImplementedException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
-import { UpdateInventoryAreaItemCountDto } from "../dto/update-inventory-area-item-count.dto";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
-import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
-import { InventoryAreaItemCountController } from "./inventory-area-item-count.controller";
+import { InventoryAreaItemController } from "./inventory-area-item.controller";
 
-describe('inventory area item count controller', () => {
-    let controller: InventoryAreaItemCountController;
-    let itemCountService: InventoryAreaItemCountService;
+describe('inventory area item controller', () => {
+    let controller: InventoryAreaItemController;
+    let itemCountService: InventoryAreaItemService;
 
-    let itemCounts: InventoryAreaItemCount[];
+    let itemCounts: InventoryAreaItem[];
     
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
 
-        controller = module.get<InventoryAreaItemCountController>(InventoryAreaItemCountController);
-        itemCountService = module.get<InventoryAreaItemCountService>(InventoryAreaItemCountService);
+        controller = module.get<InventoryAreaItemController>(InventoryAreaItemController);
+        itemCountService = module.get<InventoryAreaItemService>(InventoryAreaItemService);
 
         itemCounts = [];
 
-        jest.spyOn(itemCountService, "create").mockImplementation(async (createDto: CreateInventoryAreaItemCountDto) => {
+        jest.spyOn(itemCountService, "create").mockImplementation(async (createDto: CreateInventoryAreaItemDto) => {
             throw new NotImplementedException();
         });
             
@@ -33,7 +33,7 @@ describe('inventory area item count controller', () => {
             throw new NotImplementedException();
         });
         
-        jest.spyOn(itemCountService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaItemCountDto) => {
+        jest.spyOn(itemCountService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaItemDto) => {
             throw new NotImplementedException();
         });
     

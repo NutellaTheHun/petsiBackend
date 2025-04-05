@@ -2,14 +2,14 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { CreateInventoryAreaItemCountDto } from "../dto/create-inventory-area-item-count.dto";
-import { UpdateInventoryAreaItemCountDto } from "../dto/update-inventory-area-item-count.dto";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 
 @Injectable()
-export class InventoryAreaItemCountBuilder extends BuilderBase<InventoryAreaItemCount>{
+export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
     constructor(
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
@@ -22,7 +22,7 @@ export class InventoryAreaItemCountBuilder extends BuilderBase<InventoryAreaItem
 
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    ){ super(InventoryAreaItemCount); }
+    ){ super(InventoryAreaItem); }
 
     public inventoryAreaById(id: number): this {
         return this.setPropById(this.areaService.findOne.bind(this.areaService), 'inventoryArea', id);
@@ -56,7 +56,7 @@ export class InventoryAreaItemCountBuilder extends BuilderBase<InventoryAreaItem
         return this.setPropById(this.countService.findOne.bind(this.countService), 'areaCount', id);
     }
 
-    public async buildCreateDto(dto: CreateInventoryAreaItemCountDto): Promise<InventoryAreaItemCount> {
+    public async buildCreateDto(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
         this.reset();
 
         if(dto.areaCountId){
@@ -81,7 +81,7 @@ export class InventoryAreaItemCountBuilder extends BuilderBase<InventoryAreaItem
         return await this.build();
     }
 
-    public async buildUpdateDto(toUpdate: InventoryAreaItemCount, dto: UpdateInventoryAreaItemCountDto): Promise<InventoryAreaItemCount> {
+    public async buildUpdateDto(toUpdate: InventoryAreaItem, dto: UpdateInventoryAreaItemDto): Promise<InventoryAreaItem> {
         this.reset();
         this.updateEntity(toUpdate);
 

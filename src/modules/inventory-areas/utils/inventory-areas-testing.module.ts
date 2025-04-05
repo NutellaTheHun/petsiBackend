@@ -4,10 +4,10 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { InventoryItemsModule } from "../../inventory-items/inventory-items.module";
 import { InventoryAreaCountController } from "../controllers/inventory-area-count.controller";
-import { InventoryAreaItemCountController } from "../controllers/inventory-area-item-count.controller";
+import { InventoryAreaItemController } from "../controllers/inventory-area-item.controller";
 import { InventoryAreaController } from "../controllers/inventory-area.controller";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreasModule } from "../inventory-areas.module";
 
@@ -18,12 +18,12 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
             TypeORMPostgresTestingModule([
                 InventoryArea,
                 InventoryAreaCount,
-                InventoryAreaItemCount,
+                InventoryAreaItem,
             ]),
             TypeOrmModule.forFeature([
                 InventoryArea,
                 InventoryAreaCount,
-                InventoryAreaItemCount,
+                InventoryAreaItem,
             ]),
             InventoryItemsModule,
             InventoryAreasModule,
@@ -31,7 +31,7 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
         controllers: [
             InventoryAreaController,
             InventoryAreaCountController,
-            InventoryAreaItemCountController,
+            InventoryAreaItemController,
         ],
         providers: [],
     }).compile()};

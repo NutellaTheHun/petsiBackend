@@ -9,10 +9,10 @@ import { InventoryArea } from "./inventory-area.entity";
  * representing an inventory item, its quantity, and the size of the item (its package type and unit of measure ment)
  * - Is created along with the creation of an Inventory Count, (Saving Inventory Count automatically saves this entity)
  */
-@Entity()
-export class InventoryAreaItemCount {
+@Entity('inventory_area_items')
+export class InventoryAreaItem {
     @PrimaryGeneratedColumn()
-    id: number;
+    id: number
 
     /**
      * The area the inventory item was counted
