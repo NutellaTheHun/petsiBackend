@@ -32,6 +32,20 @@ describe('Inventory Item Category Service', () => {
     expect(service).toBeDefined();
   });
 
+  // create
+
+  // update
+  
+  // findONeByName
+
+  // findOne by ID
+
+  // find ALL
+
+  // find by IDS
+
+  // remove
+
   it('should create a inventory item category', async () => {
     const createCategory = { name: testCategoryName } as CreateInventoryItemCategoryDto;
 

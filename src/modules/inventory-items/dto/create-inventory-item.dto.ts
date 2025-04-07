@@ -9,10 +9,10 @@ export class CreateInventoryItemDto {
     @IsPositive()
     readonly inventoryItemCategoryId: number;
 
-    @IsArray()
+    /*@IsArray()
     @IsNumber({},{ each: true })
     @IsPositive({ each: true})
-    readonly sizeIds: number[] = [];
+    readonly sizeIds: number[] = [];*/
 
     @IsNumber()
     @IsPositive()

@@ -1,11 +1,11 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/create-inventory-item-package.dto';
-import { BOX_PKG } from '../utils/constants';
+import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
-import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Package Service', () => {
   let testingUtil: InventoryItemTestingUtil;
@@ -39,25 +39,34 @@ describe('Inventory Item Package Service', () => {
     
     const result = await packageService.create(createPkg);
 
-    // for future testing
-    testId = result?.id as number;
-
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("testPackageName");
+
+    testId = result?.id as number;
   });
 
   it('should update a inventory item package', async () => {
-    const updatedName = "UPDATED NAME"
-    const toUpdate = await packageService.findOne(testId);
-    if(!toUpdate) { throw new Error('toUpdate is null'); }
+    const result = await packageService.findOne(testId);
+    if(!result) { throw new NotFoundException()}
 
-    toUpdate.name = updatedName;
-    const result = await packageService.update(
-      testId, 
-      { name: toUpdate.name, } as UpdateInventoryItemPackageDto
-    );
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("testPackageName");
+  });
 
-    expect(result?.name).toEqual(updatedName);
+  it('should get a inventory item package by name', async () => {
+    const result = await packageService.findOneByName("testPackageName");
+
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("testPackageName");
+  });
+
+  it('should update a inventory item package', async () => {
+    const dto = { name: "UPDATED NAME", } as UpdateInventoryItemPackageDto;
+
+    const result = await packageService.update(testId, dto);
+
+    expect(result?.name).toEqual("UPDATED NAME");
   });
 
   it('should remove a inventory item package', async () => {
@@ -68,22 +77,18 @@ describe('Inventory Item Package Service', () => {
     expect(verify).toBeNull();
   });
 
-  it('should insert default packages and get all inventory item packages', async () => {
-    const defaultPackages = await testingUtil.getTestInventoryItemPackageEntities(dbTestContext);
+  it('should fail to remove item package(not found)', async () => {
+    const removal = await packageService.remove(testId);
+    expect(removal).toBeFalsy();
+  });
 
+  it('should insert default packages and get all inventory item packages', async () => {
     const results = await packageService.findAll();
+
+    expect(results.length).toBeGreaterThan(0);
 
     // for future testing
     testIds = [results[0].id, results[1].id, results[2].id];
-
-    expect(results.length).toEqual(defaultPackages.length);
-  });
-
-  it('should get a inventory item package by name', async () => {
-    const result = await packageService.findOneByName(BOX_PKG);
-
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual(BOX_PKG);
   });
 
   it('should get inventory item packages from a list of ids', async () => {

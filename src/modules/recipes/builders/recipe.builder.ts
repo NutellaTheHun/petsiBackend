@@ -107,9 +107,10 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.categoryById(dto.categoryId);
         }
         else{
-            const defaultCategory = await this.categoryService.findOneByName(REC_CAT_NONE);
-            if(!defaultCategory){ throw new Error("default category (NO CATEGORY) is null"); }
-            this.categoryById(defaultCategory.id);
+            //const defaultCategory = await this.categoryService.findOneByName(REC_CAT_NONE);
+            //if(!defaultCategory){ throw new Error("default category (NO CATEGORY) is null"); }
+            //this.categoryById(defaultCategory.id);
+            this.categoryByName(REC_CAT_NONE);
         }
         if(dto.cost){
             this.cost(dto.cost);
@@ -139,9 +140,10 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
         }else{
-            const defaultCategory = await this.subCategoryService.findOneByName(REC_SUBCAT_NONE);
-            if(!defaultCategory){ throw new Error("default sub-category (NO CATEGORY) is null"); }
-            this.subCategoryById(defaultCategory.id);
+            //const defaultCategory = await this.subCategoryService.findOneByName(REC_SUBCAT_NONE);
+            //if(!defaultCategory){ throw new Error("default sub-category (NO CATEGORY) is null"); }
+            //this.subCategoryById(defaultCategory.id);
+            this.subCategoryByName(REC_SUBCAT_NONE);
         }
 
         return await this.build();

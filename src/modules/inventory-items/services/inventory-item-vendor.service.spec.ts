@@ -37,6 +37,20 @@ describe('Inventory Item Vendor Service', () => {
     expect(vendorService).toBeDefined();
   });
 
+  // create
+
+  // update
+
+  // findOneByName
+
+  //findOne by ID
+
+  //find ALL
+
+  //find by IDS
+
+  // remove
+
   it('should create a vendor', async () => {
     const vendorDto ={ name: "testVendorName" } as CreateInventoryItemVendorDto;
 

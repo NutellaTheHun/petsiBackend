@@ -13,6 +13,10 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
         private readonly itemSizeService: InventoryItemSizeService,
     ){ super(itemCountService); }
 
+    /**
+     * 
+     * @param createDto (areaCountId: number, inventoryAreaId: number, InventoryItemId: number, itemSizeId: number, measureAmount: number, unitAmount: number)
+     */
     @Post()
     async create(@Body() createDto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
         if(createDto.itemSizeCreateDto && createDto.itemSizeId){
@@ -32,6 +36,12 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
         return await this.itemCountService.create(createDto);
     }
 
+    /**
+     * 
+     * @param id 
+     * @param updateDto (areaCountId: number, inventoryAreaId: number, InventoryItemId: number, itemSizeId: number, measureAmount: number, unitAmount: number)
+     * note: if the inventoryItem changes, the itemSize must also change
+     */
     @Patch(':id')
     async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any): Promise<InventoryAreaItem | null> {
         if(updateDto.itemSizeCreateDto && updateDto.itemSizeId){

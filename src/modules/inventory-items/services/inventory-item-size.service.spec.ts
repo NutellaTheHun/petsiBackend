@@ -55,6 +55,20 @@ describe('Inventory Item Size Service', () => {
   it('should be defined', () => {
     expect(sizeService).toBeDefined();
   });
+
+  //create
+
+  //update
+
+  //find sizes by item name
+
+  //findOne by ID
+
+  //find ALL
+
+  //find by IDS
+
+  // remove
   
   it('should create a inventory item size', async () => {
     const unit = await unitService.findOneByName(LITER);
