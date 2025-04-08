@@ -288,7 +288,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('should remove item size, and item should lose reference to size', async () => {
-    const removal = sizeService.remove(sizeId);
+    const removal = await sizeService.remove(sizeId);
     if(!removal){ throw new Error("size removal failed"); }
 
     const testItem = await itemService.findOne(testId, ['sizes']);
@@ -323,7 +323,7 @@ describe('Inventory Item Service', () => {
     removalCategoryId = itemToRemove.category?.id as number;
     removalSizeId = itemToRemove.sizes[0].id as number;
 
-    const removal = await itemService.remove(testId);
+    const removal = await itemService.remove(removalId);
     expect(removal).toBeTruthy();
   });
 

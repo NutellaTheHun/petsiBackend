@@ -26,9 +26,9 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
         if(dto.name){
             this.name(dto.name);
         }
-        if(dto.inventoryItemIds){
-        this.inventoryItemsByIds(dto.inventoryItemIds);
-        }
+        /*if(dto.inventoryItemIds){
+            this.inventoryItemsByIds(dto.inventoryItemIds);
+        }*/
 
         return await this.build();
     }
@@ -41,7 +41,7 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
-        this.inventoryItemsByIds(dto.inventoryItemIds);
+            this.inventoryItemsByIds(dto.inventoryItemIds);
         }
 
         return await this.build();

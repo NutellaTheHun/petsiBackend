@@ -5,14 +5,14 @@ export class CreateInventoryItemVendorDto {
     @IsNotEmpty()
     readonly name: string;
 
-    @IsArray()
+    /*@IsArray()
     @IsPositive({ each: true})
     @IsNumber({}, { each: true})
-    readonly inventoryItemIds: number[] = [];
+    readonly inventoryItemIds: number[] = [];*/
 }
 
 export function CreateDefaultInventoryItemVendorDtoValues(): Partial<CreateInventoryItemVendorDto> {
     return {
-        inventoryItemIds: []
+        //inventoryItemIds: []
     };
 }

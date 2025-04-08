@@ -35,9 +35,11 @@ describe('Inventory Item Package Service', () => {
   });
 
   it('should create a inventory item package', async () => {
-    const createPkg = { name: "testPackageName"} as CreateInventoryItemPackageDto;
+    const dto = { 
+      name: "testPackageName"
+    } as CreateInventoryItemPackageDto;
     
-    const result = await packageService.create(createPkg);
+    const result = await packageService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
@@ -46,27 +48,20 @@ describe('Inventory Item Package Service', () => {
     testId = result?.id as number;
   });
 
-  it('should update a inventory item package', async () => {
-    const result = await packageService.findOne(testId);
-    if(!result) { throw new NotFoundException()}
-
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testPackageName");
-  });
-
-  it('should get a inventory item package by name', async () => {
-    const result = await packageService.findOneByName("testPackageName");
-
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testPackageName");
-  });
-
-  it('should update a inventory item package', async () => {
-    const dto = { name: "UPDATED NAME", } as UpdateInventoryItemPackageDto;
-
+  it('should update a package', async () => {
+    const dto = {
+      name: "update pkg name"
+    }
     const result = await packageService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("update pkg name");
+  });
 
-    expect(result?.name).toEqual("UPDATED NAME");
+  it('should get a package by name', async () => {
+    const result = await packageService.findOneByName("update pkg name");
+
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("update pkg name");
   });
 
   it('should remove a inventory item package', async () => {
@@ -85,7 +80,7 @@ describe('Inventory Item Package Service', () => {
   it('should insert default packages and get all inventory item packages', async () => {
     const results = await packageService.findAll();
 
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeGreaterThan(3);
 
     // for future testing
     testIds = [results[0].id, results[1].id, results[2].id];

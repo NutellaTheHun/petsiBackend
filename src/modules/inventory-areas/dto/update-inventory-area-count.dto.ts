@@ -1,12 +1,13 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsPositive } from "class-validator";
 
 export class UpdateInventoryAreaCountDto {
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     readonly inventoryAreaId: number;
     
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
+    @IsOptional()
     readonly inventoryItemCountIds: number[] = [];
 }

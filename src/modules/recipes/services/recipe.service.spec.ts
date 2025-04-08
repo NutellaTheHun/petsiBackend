@@ -71,11 +71,6 @@ describe('recipe service', () => {
 
     const result = await recipeService.create(dto);
 
-    const noCategory = await categoryService.findOneByName(REC_CAT_NONE);
-    if(!noCategory){ throw new Error("category NONE not found."); }
-    const noSubCategory = await subCategoryService.findOneByName(REC_SUBCAT_NONE);
-    if(!noSubCategory){ throw new Error("sub-category NONE not found"); }
-
     expect(result).not.toBeNull();
     expect(result?.name).toEqual(recName)
     expect(result?.batchResultQuantity).toEqual(batchAmount);
@@ -84,8 +79,8 @@ describe('recipe service', () => {
     expect(result?.servingSizeUnitOfMeasure?.id).toEqual(servingUnit.id);
     expect(result?.salesPrice).toEqual(salesAmount);
     expect(result?.cost).toEqual(costAmount);
-    expect(result?.category?.id).toEqual(noCategory.id);
-    expect(result?.subCategory?.id).toEqual(noSubCategory.id);
+    expect(result?.category?.name).toEqual(REC_CAT_NONE);
+    expect(result?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
 
     testId = result?.id as number;
   });
