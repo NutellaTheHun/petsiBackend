@@ -30,21 +30,6 @@ export class RecipeIngredient{
      */
     @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
     subRecipeIngredient?: Recipe | null;
-    
-    /*
-    @BeforeInsert()
-    @BeforeUpdate()
-    validateIngredientType() {
-        if (this.subRecipe && !this.subRecipe.isIngredient){
-            throw new Error("subRecipe must be marked as an ingredient");
-        }
-        if (this.inventoryItem && this.subRecipe){
-            throw new Error("Both inventoryItem and subRecipe cannot be set, one must be null.");
-        }
-        else if (!this.inventoryItem && !this.subRecipe) {
-            throw new Error("Both inventoryItem and subRecipe cannot be null.");
-        }
-    }*/
 
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
     quantity: number;

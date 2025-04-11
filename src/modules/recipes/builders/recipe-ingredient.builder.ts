@@ -72,7 +72,11 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient>{
         }
 
         return await this.build();
-    } 
+    }
+
+    public async buildManyCreateDto(dtos: CreateRecipeIngredientDto[]): Promise<RecipeIngredient[]> {
+        return Promise.all(dtos.map(dto => this.buildCreateDto(dto)));
+    }
 
     public async buildUpdateDto(toUpdate: RecipeIngredient, dto: UpdateRecipeIngredientDto): Promise<RecipeIngredient> {
         this.reset();

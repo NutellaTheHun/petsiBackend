@@ -3,9 +3,9 @@ import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 export class CreateRecipeIngredientDto {
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
-    readonly recipeId: number;
+    readonly recipeId?: number;
 
     @IsOptional()
     @IsNumber()
@@ -26,10 +26,4 @@ export class CreateRecipeIngredientDto {
     @IsNotEmpty()
     @IsPositive()
     readonly unitOfMeasureId: number;
-}
-
-export function CreateDefaultRecipeIngredientDtoValues(){
-    return [
-
-    ];
 }

@@ -37,6 +37,7 @@ describe('recipe category service', () => {
     expect(categoryService).toBeDefined();
   });
 
+
   it('should create a recipe category', async () => {
     const result = await categoryService.create({
       name: "testCategory"
@@ -94,7 +95,7 @@ describe('recipe category service', () => {
     const expected = await testUtil.getTestRecipeCategoryEntities(dbTestContext);
     const allCategories = await categoryService.findAll();
     expect(allCategories.length).toEqual(expected.length)
-    testIds = [allCategories[0].id, allCategories[1].id]
+    testIds = [ allCategories[0].id, allCategories[1].id ];
   });
 
   it('should find recipes by list of ids', async () => {

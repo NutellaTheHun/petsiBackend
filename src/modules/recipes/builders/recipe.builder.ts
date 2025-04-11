@@ -8,6 +8,8 @@ import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { REC_CAT_NONE, REC_SUBCAT_NONE } from "../utils/constants";
+import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
+import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe>{
@@ -23,6 +25,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         private readonly subCategoryService: RecipeSubCategoryService,
 
         private readonly unitService: UnitOfMeasureService,
+
+        private readonly ingredientBuilder: RecipeIngredientBuilder,
     ){ super(Recipe); }
 
     public name(name: string): this {
@@ -43,6 +47,14 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
     public ingredientsById(ids: number[]): this {
         return this.setPropsByIds(this.ingredientService.findEntitiesById.bind(this.ingredientService), 'ingredients', ids);
+    }
+
+    public ingredientsByBuilderAfter(recipeId: number, dtos: CreateRecipeIngredientDto[]): this {
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            recipeId,
+        }));
+        return this.setPropAfterBuild(this.ingredientBuilder.buildManyCreateDto.bind(this.ingredientBuilder), 'ingredients', enrichedDtos);
     }
 
     public batchResultQuantity(amount: number): this {
@@ -99,54 +111,64 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
+
         if(dto.batchResultUnitOfMeasureId){
             this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
+
         // if no category specified on creation, set to default category: "No Category"
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
         }
         else{
-            //const defaultCategory = await this.categoryService.findOneByName(REC_CAT_NONE);
-            //if(!defaultCategory){ throw new Error("default category (NO CATEGORY) is null"); }
-            //this.categoryById(defaultCategory.id);
             this.categoryByName(REC_CAT_NONE);
         }
+
         if(dto.cost){
             this.cost(dto.cost);
         }
-        if(dto.ingredientIds){ 
-            this.ingredientsById(dto.ingredientIds);
-        }
+
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
         }
+
+        // optional
         if(dto.menuItemId){
             // await this.menuItemById(dto.menuItemId);
         }
+
         if(dto.name){
             this.name(dto.name);
         }
+
         if(dto.salesPrice){
             this.salesPrice(dto.salesPrice);
         }
+
         if(dto.servingSizeQuantity){
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
+
         if(dto.servingSizeUnitOfMeasureId){
             this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
+
         // if no category specified on creation, set to default sub-category: "No Sub-Category"
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
-        }else{
-            //const defaultCategory = await this.subCategoryService.findOneByName(REC_SUBCAT_NONE);
-            //if(!defaultCategory){ throw new Error("default sub-category (NO CATEGORY) is null"); }
-            //this.subCategoryById(defaultCategory.id);
+        } 
+        else {
             this.subCategoryByName(REC_SUBCAT_NONE);
         }
 
+        if(dto.ingredientDtos){
+            this.ingredientsByBuilderAfter(this.entity.id, dto.ingredientDtos);
+        }
+
         return await this.build();
+
+        //await this.build();
+        //return await this.ThenAfter();
     }
 
     // handle if category/sub-category is 0, set to NO-|Sub|Category
@@ -166,9 +188,9 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.cost){
             this.cost(dto.cost);
         }
-        if(dto.ingredientIds){ 
+        /*if(dto.ingredientIds){ 
             this.ingredientsById(dto.ingredientIds);
-        }
+        }*/
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
         }

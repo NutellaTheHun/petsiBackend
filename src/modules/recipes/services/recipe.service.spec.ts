@@ -41,6 +41,15 @@ describe('recipe service', () => {
     await dbTestContext.executeCleanupFunctions();
   });
 
+  /**
+   * name: string
+   * 
+   * isIngredient: bool
+   * 
+   * ingredients: RecipeIngredient[]
+   *  -
+   */
+
   it('should be defined', () => {
     expect(recipeService).toBeDefined();
   });

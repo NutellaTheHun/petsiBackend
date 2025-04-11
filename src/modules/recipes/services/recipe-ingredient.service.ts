@@ -25,6 +25,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
      * Should be checked at controller level
      */
     async create(createDto: CreateRecipeIngredientDto): Promise<RecipeIngredient | null> {
+        if(!createDto.recipeId){ throw new Error("recipeId is null"); }
         const recipe = await this.recipeService.findOne(createDto.recipeId);
         if(!recipe){ 
             throw new Error("recipe not found"); 

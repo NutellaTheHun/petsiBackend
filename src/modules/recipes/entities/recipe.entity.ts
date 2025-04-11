@@ -39,7 +39,7 @@ export class Recipe{
      * - Or a Recipe: Apple Mix, (quantity), (unit of measure), 
      *   where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true, onDelete: 'SET NULL' })
+    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true })
     ingredients?: RecipeIngredient[] | null;
 
     @Column({ nullable: false })

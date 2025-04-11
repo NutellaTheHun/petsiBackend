@@ -41,6 +41,38 @@ describe('recipe ingredient service', () => {
     await dbTestContext.executeCleanupFunctions();
   });
 
+  /**
+   * recipe: Recipe
+   *  - If the recipe is deleted, the ingredient should also be deleted
+   * 
+   * inventoryItem: InventoryItem
+   *  - If the item is deleted, the ingredient is also deleted
+   * 
+   * subRecipeIngredient: Recipe
+   *  - If the subRecipe is deleted, the ingredient is also deleted
+   * 
+   * unit: Unit Of Measure:
+   *  - If the unit of measure is deleted, also delete the ingredient (cant delete units of measure rn)
+   */
+
+  // Create a ingredient with inventory item
+
+  // Create a ingredient with a sub recipe
+
+  // Update recipe
+  // - old one loses reference
+  // - new on gains reference
+
+  // Update inventory item
+
+  // Update subRecipe
+
+  // update quantity
+
+  // update unit of measure
+
+  //
+
   it('should be defined', () => {
     expect(ingredientService).toBeDefined();
   });
