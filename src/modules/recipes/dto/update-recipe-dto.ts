@@ -1,5 +1,9 @@
 import { Type } from "class-transformer";
 import { IsString, IsOptional, IsNumber, IsPositive, IsBoolean, IsArray, Min, ValidateNested } from "class-validator";
+import { CreateRecipeCategoryDto } from "./create-recipe-category.dto";
+import { RecipeIngredientUnionResolver } from "../utils/recipe-ingredient-union-resolver";
+import { CreateRecipeIngredientDto } from "./create-recipe-ingredient.dto";
+import { UpdateRecipeIngredientDto } from "./update-recipe-ingedient.dto";
 
 export class UpdateRecipeDto{
     @IsString()
@@ -55,28 +59,9 @@ export class UpdateRecipeDto{
     @IsPositive()
     readonly subCategoryId?: number;
 
-    @ValidateNested({ each: true })
-    @Type(() => UpdateRecipeIngredientInput)
+    @IsOptional()
     @IsArray()
-    @IsOptional()
-    readonly ingredientInputs: UpdateRecipeIngredientInput[] = [];
+    @ValidateNested({ each: true })
+    @Type(() => RecipeIngredientUnionResolver)
+    readonly ingredientDtos?: (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
 }
-
-class UpdateRecipeIngredientInput {
-    @IsOptional()
-    readonly id?: number;
-  
-    @IsOptional()
-    readonly inventoryItemId?: number;
-  
-    @IsOptional()
-    readonly subRecipeId?: number;
-  
-    @IsNumber()
-    @IsOptional()
-    readonly quantity?: number;
-  
-    @IsNumber()
-    @IsOptional()
-    readonly unitId?: number;
-  }

@@ -1,4 +1,4 @@
-import { forwardRef, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -6,6 +6,7 @@ import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builde
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemService } from './inventory-item.service';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
@@ -14,9 +15,13 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
         private readonly sizeBuilder: InventoryItemSizeBuilder,
+
+        @Inject(forwardRef(() => InventoryItemService))
+        private readonly itemService: InventoryItemService,
     ){ super(sizeRepo); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
+        if(!createDto.inventoryItemId){ throw new Error("inventory id required"); }
         const exists = await this.sizeRepo.findOne({
             where: { 
                 measureUnit: { id: createDto.unitOfMeasureId },
@@ -26,7 +31,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         });
         if(exists){ return null; }
 
-        const itemSize = await this.sizeBuilder.buildCreateDto(createDto);
+        const parentItem = await this.itemService.findOne(createDto.inventoryItemId);
+        if(!parentItem){ throw new NotFoundException(); }
+        const itemSize = await this.sizeBuilder.buildCreateDto(parentItem, createDto);
         return await this.sizeRepo.save(itemSize);
     }
       

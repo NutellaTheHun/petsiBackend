@@ -12,6 +12,7 @@ import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { NotFoundException } from '@nestjs/common';
+import { NumberLiteralType } from 'typescript';
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
@@ -26,6 +27,10 @@ describe('Inventory Item Size Service', () => {
 
   let testId: number;
   let testIds: number[];
+
+  let testPkgId: number;
+  let testUnitMeasureId: number;
+  let testItemId: number;
 
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
@@ -49,7 +54,7 @@ describe('Inventory Item Size Service', () => {
   it('should be defined', () => {
     expect(sizeService).toBeDefined();
   });
-
+  
   it('should create a inventory item size', async () => {
     const unit = await unitService.findOneByName(LITER);
     if(!unit){ throw new Error('measure unit is null'); }
@@ -70,6 +75,15 @@ describe('Inventory Item Size Service', () => {
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
     testId = result?.id as number;
+    testItemId = item.id;
+  });
+
+  it('should update inventoryItem query with new size', async () => {
+    const item = await itemService.findOne(testItemId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("sizes is null"); }
+
+    expect(item.sizes.findIndex(size => size.id === testId)).not.toEqual(-1);
   });
 
   it('should find item size by id', async () => {
@@ -94,6 +108,8 @@ describe('Inventory Item Size Service', () => {
     const result = await sizeService.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result?.measureUnit.id).toEqual(unit.id);
+
+    testUnitMeasureId = unit.id;
   });
 
   it('should update size package type', async () => {
@@ -106,18 +122,16 @@ describe('Inventory Item Size Service', () => {
     const result = await sizeService.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result?.packageType.id).toEqual(pkg.id);
+
+    testPkgId = pkg.id;
   });
 
-  it('should update size item', async () => {
-    const item = await itemService.findOneByName(FOOD_B);
-    if(!item) { throw new Error('item to update with is null'); }
-
-    const dto = {
-      inventoryItemId: item.id
-    } as UpdateInventoryItemSizeDto;
-    const result = await sizeService.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.item.id).toEqual(item.id);
+  it('should retain all updated properties', async () => {
+    const verify = await sizeService.findOne(testId, ['item', 'measureUnit', 'packageType']);
+    if(!verify){ throw new NotFoundException(); }
+    expect(verify.item.id).toEqual(testItemId);
+    expect(verify.measureUnit.id).toEqual(testUnitMeasureId);
+    expect(verify.packageType.id).toEqual(testPkgId);
   });
 
   it('should insert tesing sizes and get all', async () => {
@@ -202,6 +216,14 @@ describe('Inventory Item Size Service', () => {
 
     const verify = await sizeService.findOne(testId);
     expect(verify).toBeNull();
+  });
+
+  it('should query inventoryItem with removed size not present', async () => {
+    const item = await itemService.findOne(testItemId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("sizes is null"); }
+
+    expect(item.sizes.findIndex(size => size.id === testId)).toEqual(-1);
   });
 
 });

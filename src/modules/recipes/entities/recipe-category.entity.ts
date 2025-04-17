@@ -10,9 +10,9 @@ export class RecipeCategory {
     @Column({ nullable: false })
     name: string;
 
-    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, { nullable: true })
+    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory)
     subCategories?: RecipeSubCategory[] | null;
 
-    @OneToMany(() => Recipe, (recipe) => recipe.category, { nullable: false })
+    @OneToMany(() => Recipe, (recipe) => recipe.category)
     recipes: Recipe[];
 }

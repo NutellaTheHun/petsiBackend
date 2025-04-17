@@ -69,13 +69,14 @@ export class BuilderBase<T> {
         return this;
     }
 
-    protected setPropAfterBuild<K extends keyof T>(func: (args: any) => Promise<any>, prop: K, args: any): this {
+    protected setPropAfterBuild<K extends keyof T>(func: (entity: T, args: any) => Promise<any>, prop: K, entity: T, args: any): this {
         this.afterQueue.push(async () => {
-            const result = await func(args);
+            const result = await func(entity, args);
             if(!result){ 
                 throw new Error('property value to set is null');
             }
-            (this.entity as any)[prop] = result;
+            //(this.entity as any)[prop] = result;
+            (this.entity as any)[prop] = Array.isArray(result) ? [...result] : result;
         });
         return this;
     }

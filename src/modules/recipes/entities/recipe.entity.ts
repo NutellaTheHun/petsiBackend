@@ -40,7 +40,7 @@ export class Recipe{
      *   where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
     @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true })
-    ingredients?: RecipeIngredient[] | null;
+    ingredients?: RecipeIngredient[] | null; 
 
     @Column({ nullable: false })
     batchResultQuantity: number;

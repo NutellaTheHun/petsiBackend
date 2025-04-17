@@ -1,4 +1,5 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { CreateInventoryItemSizeDto } from "./create-inventory-item-size.dto";
 
 export class CreateInventoryItemDto {
     @IsString()
@@ -9,18 +10,11 @@ export class CreateInventoryItemDto {
     @IsPositive()
     readonly inventoryItemCategoryId: number;
 
-    /*@IsArray()
-    @IsNumber({},{ each: true })
-    @IsPositive({ each: true})
-    readonly sizeIds: number[] = [];*/
-
     @IsNumber()
     @IsPositive()
     readonly vendorId: number;
-}
 
-export function CreateDefaultInventoryItemDtoValues(): Partial<CreateInventoryItemDto> {
-    return {
-        
-    };
+    @IsOptional()
+    @IsArray()
+    itemSizeDtos?: CreateInventoryItemSizeDto[];
 }

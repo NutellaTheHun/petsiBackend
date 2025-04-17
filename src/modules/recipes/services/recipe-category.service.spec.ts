@@ -1,16 +1,14 @@
 import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { CreateRecipeCategoryDto } from '../dto/create-recipe-category.dto';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
-import { RecipeTestUtil } from '../utils/recipe-test.util';
-import { RecipeCategoryBuilder } from '../builders/recipe-category.builder';
-import { CreateRecipeCategoryDto } from '../dto/create-recipe-category.dto';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('recipe category service', () => {
   let categoryService: RecipeCategoryService;
   let testUtil: RecipeTestUtil;
   let dbTestContext: DatabaseTestContext;
-  let categoryBuilder: RecipeCategoryBuilder;
 
   let testId: number;
   let testIds: number[];
@@ -26,7 +24,6 @@ describe('recipe category service', () => {
     await testUtil.initRecipeIngredientTestingDatabase(dbTestContext);
 
     categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
-    categoryBuilder = module.get<RecipeCategoryBuilder>(RecipeCategoryBuilder);
   });
 
   afterAll(async () => {

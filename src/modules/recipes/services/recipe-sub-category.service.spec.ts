@@ -31,21 +31,6 @@ describe('recipe sub category service', () => {
     await dbTestContext.executeCleanupFunctions();
   });
 
-  /**
-   * name: string
-   * 
-   * parentCategory: RecipeCategory
-   *  - If parent category is deleted, delete sub category
-   * 
-   * recipe: Recipes[]
-   */
-
-  // Update name
-
-  // update parentCategory
-  //  - old one loses reference
-  //  - new one gaines reference
-
   it('should be defined', () => {
     expect(subCategoryService).toBeDefined();
   });

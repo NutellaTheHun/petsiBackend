@@ -32,7 +32,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ return null; }
 
-    await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
+    const updated = await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
     return await this.itemRepo.save(toUpdate);
   }
 

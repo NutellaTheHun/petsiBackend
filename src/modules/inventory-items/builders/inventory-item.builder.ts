@@ -7,6 +7,9 @@ import { InventoryItemCategoryService } from "../services/inventory-item-categor
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { NO_CAT, NO_VENDOR } from "../utils/constants";
+import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { InventoryItemSizeBuilder } from "./inventory-item-size.builder";
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
@@ -19,6 +22,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     
         @Inject(forwardRef(() => InventoryItemVendorService))
         private readonly vendorService: InventoryItemVendorService,
+
+        private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryItem); }
 
     public name(name: string): this {
@@ -28,11 +33,17 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     public sizesByIds(ids: number[]): this {
         return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'sizes', ids);
     }
+
+    public sizesByBuilderAfter(inventoryItemId: number, dtos: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[]): this {
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            inventoryItemId
+        }));
+        return this.setPropAfterBuild(this.itemSizeBuilder.buildManyDto.bind(this.itemSizeBuilder), 'sizes', this.entity, enrichedDtos);
+    }
     
     public categoryById(id: number): this {
         if(id === 0){
-            //this.entity.category = null;
-            //return this;
             return this.categoryByName(NO_CAT);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -44,8 +55,6 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
     public vendorById(id: number): this {
         if(id === 0){
-            //this.entity.vendor = null;
-            //return this;
             return this.vendorByName(NO_VENDOR);
         }
         return this.setPropById(this.vendorService.findOne.bind(this.vendorService), 'vendor', id);
@@ -61,24 +70,18 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         if(dto.inventoryItemCategoryId){
             this.categoryById(dto.inventoryItemCategoryId)
         } else {
-            //const defaultCategory = await this.categoryService.findOneByName(NO_CAT);
-            //if(!defaultCategory){ throw new Error("default category not found"); }
-            //this.categoryById(defaultCategory.id);
             this.categoryByName(NO_CAT);
         }
         if(dto.name){
             this.name(dto.name);
         }
-        /*if(dto.sizeIds){
-            this.sizesByIds(dto.sizeIds);
-        }*/
+        if(dto.itemSizeDtos){
+            this.sizesByBuilderAfter(this.entity.id, dto.itemSizeDtos);
+        }
         if(dto.vendorId){
             this.vendorById(dto.vendorId);
         }
         else {
-            //const defaultVendor = await this.vendorService.findOneByName(NO_VENDOR);
-            //if(!defaultVendor){ throw new Error("default vendor not found"); }
-            //this.vendorById(defaultVendor.id);
             this.vendorByName(NO_VENDOR);
         }
 
@@ -96,8 +99,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         if(dto.name){
             this.name(dto.name);
         }
-        if(dto.sizeIds){
-            this.sizesByIds(dto.sizeIds);
+        if(dto.sizeDtos){
+            this.sizesByBuilderAfter(this.entity.id, dto.sizeDtos);
         }
         // Passes id = 0 when clearing the vendor, so checks for undefined
         if(dto.vendorId !== undefined){

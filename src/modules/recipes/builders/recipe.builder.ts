@@ -10,6 +10,7 @@ import { RecipeSubCategoryService } from "../services/recipe-sub-category.servic
 import { REC_CAT_NONE, REC_SUBCAT_NONE } from "../utils/constants";
 import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
+import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe>{
@@ -49,12 +50,12 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return this.setPropsByIds(this.ingredientService.findEntitiesById.bind(this.ingredientService), 'ingredients', ids);
     }
 
-    public ingredientsByBuilderAfter(recipeId: number, dtos: CreateRecipeIngredientDto[]): this {
+    public ingredientsByBuilderAfter(recipeId: number, dtos: (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             recipeId,
         }));
-        return this.setPropAfterBuild(this.ingredientBuilder.buildManyCreateDto.bind(this.ingredientBuilder), 'ingredients', enrichedDtos);
+        return this.setPropAfterBuild(this.ingredientBuilder.buildManyDto.bind(this.ingredientBuilder), 'ingredients', this.entity, enrichedDtos);
     }
 
     public batchResultQuantity(amount: number): this {
@@ -90,6 +91,9 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public categoryById(id: number): this {
+        if(id === 0){
+            return this.categoryByName(REC_CAT_NONE);
+        }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
 
@@ -98,6 +102,9 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public subCategoryById(id: number): this {
+        if(id === 0){
+            return this.subCategoryByName(REC_SUBCAT_NONE);
+        }
         return this.setPropById(this.subCategoryService.findOne.bind(this.subCategoryService), 'subCategory', id);
     }
 
@@ -166,9 +173,6 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
 
         return await this.build();
-
-        //await this.build();
-        //return await this.ThenAfter();
     }
 
     // handle if category/sub-category is 0, set to NO-|Sub|Category
@@ -182,15 +186,15 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.batchResultUnitOfMeasureId){
             this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
-        if(dto.categoryId){
+        if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
+            if(!dto.subCategoryId){
+                this.subCategoryByName(REC_SUBCAT_NONE);
+            }
         }
         if(dto.cost){
             this.cost(dto.cost);
         }
-        /*if(dto.ingredientIds){ 
-            this.ingredientsById(dto.ingredientIds);
-        }*/
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
         }
@@ -209,8 +213,11 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.servingSizeUnitOfMeasureId){
             this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
-        if(dto.subCategoryId){
+        if(dto.subCategoryId !== undefined){
             this.subCategoryById(dto.subCategoryId);
+        }
+        if(dto.ingredientDtos){
+            this.ingredientsByBuilderAfter(this.entity.id, dto.ingredientDtos);
         }
 
         return await this.build();
