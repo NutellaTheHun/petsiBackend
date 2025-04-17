@@ -12,7 +12,7 @@ export class RecipeIngredient{
     id: number;
 
     // Link to Recipe that owns the ingredient
-    @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     recipe: Recipe;
     
     /**

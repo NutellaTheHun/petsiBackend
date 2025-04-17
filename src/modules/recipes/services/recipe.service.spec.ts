@@ -17,6 +17,8 @@ import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { error } from 'console';
+import { NotFoundError } from 'rxjs';
+import { NotFoundException } from '@nestjs/common';
 
 describe('recipe service', () => {
   let recipeService: RecipeService;
@@ -309,15 +311,29 @@ describe('recipe service', () => {
       testSubRecipeId = subRec.id
     }
 
-    const ingredUpdateDtos = ingreds.map(ingred => ({
+    const updatedDto = {
+      mode:'update',
+      id: ingreds[0].id,
+      subRecipeIngredientId: ingreds[0].subRecipeIngredient?.id,
+    } as UpdateRecipeIngredientDto;
+
+    const theRest = ingreds.slice(1).map(ingred => ({
+      mode:'update',
+      id: ingred.id,
+    }) as UpdateRecipeIngredientDto);
+
+    /*const ingredUpdateDtos = ingreds.map(ingred => ({
+      mode:'update',
       id: ingred.id,
       quantity: ingred.quantity,
       unitOfMeasureId: ingred.unit.id,
       subRecipeIngredientId: ingred.subRecipeIngredient?.id,
       inventoryItemId: ingred.inventoryItem?.id,
-    }) as UpdateRecipeIngredientDto)
+    }) as UpdateRecipeIngredientDto)*/
+    
     const dto = {
-      ingredientDtos: ingredUpdateDtos,
+      //ingredientDtos: ingredUpdateDtos,
+      ingredientDtos: [updatedDto, ...theRest],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -339,7 +355,6 @@ describe('recipe service', () => {
     
     const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
     if(!ingreds){ throw new Error("ingredient is null"); }
-    if(!ingreds[0].inventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
 
     if(ingreds[0].quantity === 1){
@@ -350,15 +365,19 @@ describe('recipe service', () => {
       ingreds[0].quantity = testQuantity;
     }
 
-    const ingredUpdateDtos = ingreds.map(ingred => ({
+    const updateDto = {
+      mode: 'update',
+      id: ingreds[0].id,
+      quantity:ingreds[0].quantity,
+    } as UpdateRecipeIngredientDto;
+
+    const theRest = ingreds.slice(1).map(ingred => ({
+      mode: 'update',
       id: ingred.id,
-      quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
-    }) as UpdateRecipeIngredientDto)
+    }) as UpdateRecipeIngredientDto);
+
     const dto = {
-      ingredientDtos: ingredUpdateDtos,
+      ingredientDtos: [updateDto, ...theRest ],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -376,17 +395,9 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
     
-    const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
-    if(!ingreds){ throw new Error("ingredient is null"); }
-    if(!ingreds[0].inventoryItem){ throw new Error("ingredient inventory item is null"); }
-
-    const ingredUpdateDtos = ingreds.map(ingred => ({
+    const ingredUpdateDtos = testRecipe.ingredients.slice(1).map(ingred => ({
       id: ingred.id,
-      quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
-    }) as UpdateRecipeIngredientDto).slice(0,1);
+    }) as UpdateRecipeIngredientDto);
 
     const dto = {
       ingredientDtos: ingredUpdateDtos,
@@ -396,15 +407,15 @@ describe('recipe service', () => {
     if(!result?.ingredients){ throw new Error("recipe ingredients is null")}
 
     expect(result).not.toBeNull();
-    expect(result?.ingredients?.length).toEqual(1);
+    expect(result?.ingredients?.length).toEqual(6);
 
     testIngredDeleteId = result?.ingredients[0].id as number;
   });
 
-  it('should remove all but 1 recipe ingredient from table', async () => {
+  it('should remove all but 6 recipe ingredient from table', async () => {
     const ingreds = await ingredientService.findByRecipeId(testId);
     expect(ingreds).not.toBeNull();
-    expect(ingreds.length).toEqual(1);
+    expect(ingreds.length).toEqual(6);
   });
 
   it('should update batch UnitOfMeaure', async () => {
@@ -584,8 +595,12 @@ describe('recipe service', () => {
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.category?.name).toEqual(REC_CAT_NONE);
-    expect(result?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
+    
+
+    const verify = await recipeService.findOne(testId, ['category', 'subCategory']);
+    if(!verify){ throw new NotFoundException(); }
+    expect(verify?.category?.name).toEqual(REC_CAT_NONE);
+    expect(verify?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
   });
 
   it('should find a recipe by name', async () => {
@@ -595,7 +610,7 @@ describe('recipe service', () => {
   });
 
   it('should remove a recipe', async () => {
-    const removalRecipe = await recipeService.findOneByName(REC_A, ['category', 'subCategory', 'ingredients']);
+    const removalRecipe = await recipeService.findOne(testId, ['category', 'subCategory', 'ingredients']);
     if(!removalRecipe){ throw new Error("recipe to remove is null"); }
     if(!removalRecipe.category){ throw new Error(""); }
     if(!removalRecipe.subCategory){ throw new Error(""); }

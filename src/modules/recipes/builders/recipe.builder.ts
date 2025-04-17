@@ -188,7 +188,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
         if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
-            if(!dto.subCategoryId){
+            if(dto.subCategoryId){
                 this.subCategoryByName(REC_SUBCAT_NONE);
             }
         }
