@@ -67,6 +67,8 @@ import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
     InventoryItemSizeService,
     InventoryItemVendorService,
 
+    InventoryItemSizeBuilder,
+
     InventoryItemTestingUtil,
   ]
 })

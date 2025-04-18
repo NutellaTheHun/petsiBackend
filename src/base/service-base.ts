@@ -29,11 +29,17 @@ export class ServiceBase<T extends ObjectLiteral> {
     return await this.entityRepo.find({relations: relations as string[]});
   }
 
-  async findOne(id: number, relations?: Array<keyof T>): Promise<T | null> {
+  async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T | null> {
+    const combinedRelations = [
+      ...(relations?.map(r => r.toString()) ?? []),
+      ...(childRelations ?? []),
+    ];
+
     return await this.entityRepo.findOne({ 
         where: { id } as unknown as FindOptionsWhere<T>, 
-        relations: relations as string[] }
-    );
+        /*relations: relations as string[]*/ 
+        relations: combinedRelations,
+    });
   }
 
   async findEntitiesById( ids: number[], relations?: Array<keyof T>): Promise<T[]> {

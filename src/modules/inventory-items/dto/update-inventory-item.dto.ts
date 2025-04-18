@@ -13,13 +13,7 @@ export class UpdateInventoryItemDto {
     @IsPositive()
     @IsOptional()
     readonly inventoryItemCategoryId: number;
-    /*
-    @IsArray()
-    @IsNumber({},{ each: true })
-    @IsPositive({ each: true})
-    @IsOptional()
-    readonly sizeIds: number[] = [];*/
-
+    
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })

@@ -95,4 +95,14 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize>{
         }
         return results;
     }
+
+    public async buildDto(parentItem: InventoryItem, dto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)): Promise<InventoryItemSize> {
+        if(dto.mode === 'create'){
+            return await this.buildCreateDto(parentItem, dto);
+        }
+        
+        const size = await this.sizeService.findOne(dto.id, ['item', 'measureUnit', 'packageType']);
+        if(!size){ throw new Error("item size not found"); }
+        return await this.buildUpdateDto(size, dto)
+    }
 }

@@ -1,8 +1,12 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { InventoryAreaBuilder } from "../builders/inventory-area.builder";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
@@ -10,8 +14,6 @@ import { InventoryAreaCountService } from "../services/inventory-area-count.serv
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
-import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 @Injectable()
 export class InventoryAreaTestUtil {
@@ -194,5 +196,27 @@ export class InventoryAreaTestUtil {
      */
     public async cleanupInventoryAreaItemCountTestDatabase(): Promise<void> {
         await this.itemCountService.getQueryBuilder().delete().execute();
+    }
+
+    public createInventoryAreaItemDtos(
+        inventoryAreaId: number, areaCountId: number, 
+        itemConfigs: {itemId: number, itemSizeId?: number, sizeDto?: CreateInventoryItemSizeDto}[]
+    ){
+        let unitAmount = 1;
+        let measureAmount = 1;
+        const results: CreateInventoryAreaItemDto[] = [];
+
+        for(const item of itemConfigs){
+            results.push({
+                inventoryAreaId,
+                areaCountId,
+                unitAmount: unitAmount++,
+                measureAmount: measureAmount++,
+                inventoryItemId: item.itemId,
+                itemSizeId: item.itemSizeId,
+                itemSizeDto: item.sizeDto
+            } as CreateInventoryAreaItemDto)
+        }
+        return results;
     }
 }

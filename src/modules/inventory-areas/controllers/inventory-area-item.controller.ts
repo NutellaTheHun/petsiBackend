@@ -19,20 +19,20 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
      */
     @Post()
     async create(@Body() createDto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
-        if(createDto.itemSizeCreateDto && createDto.itemSizeId){
+        if(createDto.itemSizeDto && createDto.itemSizeId){
             throw new Error("dto cannot have both a createItemSizeDTO and an itemSizeId");
         }
-        if(!createDto.itemSizeCreateDto && !createDto.itemSizeId){
+        if(!createDto.itemSizeDto && !createDto.itemSizeId){
             throw new Error("dto container neither itemSizeCreateDTO or itemSizeId, must have one of either");
         }
 
-        if(createDto.itemSizeCreateDto){
-            const newSize = await this.itemSizeService.create(createDto.itemSizeCreateDto);
+        /*if(createDto.itemSizeDto){
+            const newSize = await this.itemSizeService.create(createDto.itemSizeDto);
             if(!newSize){ throw new Error("new item size is null"); }
             if(!newSize?.id){ throw new Error("new item size id is null"); }
 
             createDto = { ...createDto, itemSizeId: newSize?.id } as CreateInventoryAreaItemDto;
-        }
+        }*/
         return await this.itemCountService.create(createDto);
     }
 

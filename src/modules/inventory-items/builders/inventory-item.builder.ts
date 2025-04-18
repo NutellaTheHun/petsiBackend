@@ -17,12 +17,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         @Inject(forwardRef(() => InventoryItemCategoryService))
         private readonly categoryService: InventoryItemCategoryService,
     
-        @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    
-        @Inject(forwardRef(() => InventoryItemVendorService))
         private readonly vendorService: InventoryItemVendorService,
-
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryItem); }
 

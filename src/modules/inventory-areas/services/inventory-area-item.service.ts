@@ -14,13 +14,10 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         @InjectRepository(InventoryAreaItem)
         private readonly itemCountRepo: Repository<InventoryAreaItem>,
 
-        @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
-        @Inject(forwardRef(() => InventoryAreaService))
         private readonly inventoryAreaService: InventoryAreaService,
 
-        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
     ){ super(itemCountRepo); }
 
@@ -31,8 +28,9 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
      * - Requires the parent inventoryAreaCount and InventoryArea entities to already exist
      */
     async create(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
-        const countedItem = await this.itemCountBuilder.buildCreateDto(dto);
-        return this.itemCountRepo.save(countedItem);
+        throw new NotImplementedException();
+        //const countedItem = await this.itemCountBuilder.buildCreateDto(dto);
+        //return this.itemCountRepo.save(countedItem);
     }
 
     /**

@@ -7,6 +7,11 @@ import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-co
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
+import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
+import { InventoryItemSizeBuilder } from "../../inventory-items/builders/inventory-item-size.builder";
 
 @Injectable()
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
@@ -14,14 +19,14 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
 
-        @Inject(forwardRef(() => InventoryAreaService))
+        @Inject(forwardRef(() => InventoryAreaItemService))
+        private readonly itemCountService: InventoryAreaItemService,
+        
         private readonly areaService: InventoryAreaService,
 
-        @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-
-        @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
+        private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryAreaItem); }
 
     public inventoryAreaById(id: number): this {
@@ -52,30 +57,45 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
         return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'size', id);
     }
 
+    public sizeByBuilderAfter(inventoryItemId: number, dto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)): this {
+        const enrichedDto = {
+            ...dto,
+            inventoryItemId,
+        }
+        return this.setPropAfterBuild(this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder), 'size', this.entity, enrichedDto)
+    }
+
     public areaCountById(id: number): this {
         return this.setPropById(this.countService.findOne.bind(this.countService), 'areaCount', id);
     }
 
-    public async buildCreateDto(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
+    public async buildCreateDto(parentCount: InventoryAreaCount, dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
         this.reset();
 
-        if(dto.areaCountId){
+        /*if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
-        }
+        }*/
+        this.entity.areaCount = parentCount;
+
         if(dto.inventoryAreaId){
            this.inventoryAreaById(dto.inventoryAreaId);
         }
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
-        if(dto.itemSizeId){
-            this.sizeById(dto.itemSizeId);
-        }
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
         }
         if(dto.unitAmount){
             this.unitAmount(dto.unitAmount);
+        }
+
+        // a counted item's size can either be created on the fly, or a pre-existing item size
+        if(dto.itemSizeDto){
+            this.sizeByBuilderAfter(dto.inventoryItemId, dto.itemSizeDto);
+        }
+        else if(dto.itemSizeId){
+            this.sizeById(dto.itemSizeId);
         }
 
         return await this.build();
@@ -94,9 +114,6 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
-        if(dto.itemSizeId){
-            this.sizeById(dto.itemSizeId);
-        }
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
         }
@@ -104,6 +121,28 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
             this.unitAmount(dto.unitAmount);
         }
 
+        // a counted item's size can either be created on the fly, updated on the fly, or a pre-existing item size
+        if(dto.itemSizeDto){
+            this.sizeByBuilderAfter(dto.inventoryItemId, dto.itemSizeDto);
+        }
+        else if(dto.itemSizeId){
+            this.sizeById(dto.itemSizeId);
+        }
+
         return await this.build();
+    }
+
+    public async buildManyDto(parentCount: InventoryAreaCount, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): Promise<InventoryAreaItem[]> {
+        const results: InventoryAreaItem[] = [];
+        for(const dto of dtos){
+            if(dto.mode === 'create'){
+                results.push(await this.buildCreateDto(parentCount, dto))
+            } else {
+                const countedItem = await this.itemCountService.findOne(dto.id, ['areaCount', 'inventoryArea', 'item', 'size'])
+                if(!countedItem){ throw new Error("counted item is null"); }
+                results.push(await this.buildUpdateDto(countedItem, dto));
+            }
+        }
+        return results;
     }
 }

@@ -5,15 +5,16 @@ import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
     constructor(
-        @Inject(forwardRef(() => InventoryAreaService))
         private readonly areaService: InventoryAreaService,
-        
-        @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly areaItemService: InventoryAreaItemService,
+        private readonly itemCountBuilder: InventoryAreaItemBuilder,
     ){ super(InventoryAreaCount); }
 
     public inventoryAreaById(id: number): this {
@@ -26,6 +27,14 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
 
     public countedItemsById(ids: number[]): this {
         return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
+    }
+
+    public countedItemsByBuilderAfter(areaCountId: number, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            areaCountId,
+        }));
+        return this.setPropAfterBuild(this.itemCountBuilder.buildManyDto.bind(this.itemCountBuilder), 'items', this.entity, enrichedDtos);
     }
 
     /**
@@ -53,8 +62,12 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
+        /*
         if(dto.inventoryItemCountIds){
             this.countedItemsById(dto.inventoryItemCountIds);
+        }*/
+        if(dto.itemCountDtos){
+            this.countedItemsByBuilderAfter(this.entity.id, dto.itemCountDtos);
         }
 
         return await this.build();
