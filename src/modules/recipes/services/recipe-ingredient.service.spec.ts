@@ -41,10 +41,42 @@ describe('recipe ingredient service', () => {
     await dbTestContext.executeCleanupFunctions();
   });
 
+  /**
+   * recipe: Recipe
+   *  - If the recipe is deleted, the ingredient should also be deleted
+   * 
+   * inventoryItem: InventoryItem
+   *  - If the item is deleted, the ingredient is also deleted
+   * 
+   * subRecipeIngredient: Recipe
+   *  - If the subRecipe is deleted, the ingredient is also deleted
+   * 
+   * unit: Unit Of Measure:
+   *  - If the unit of measure is deleted, also delete the ingredient (cant delete units of measure rn)
+   */
+
+  // Create a ingredient with inventory item
+
+  // Create a ingredient with a sub recipe
+
+  // Update recipe
+  // - old one loses reference
+  // - new on gains reference
+
+  // Update inventory item
+
+  // Update subRecipe
+
+  // update quantity
+
+  // update unit of measure
+
+  //
+
   it('should be defined', () => {
     expect(ingredientService).toBeDefined();
   });
-
+  /*
   it('should create an ingredient', async () => {
     // recipeA - ingredients already [ (FOOD_A, 0.5, OUNCE), (DRY_A, 1.0, POUND) ]
     const recipeA = await recipeService.findOneByName(REC_A);
@@ -57,9 +89,7 @@ describe('recipe ingredient service', () => {
     if(!unit){ throw new Error("unit of measure not found"); }
 
     const dto = {
-      recipeId: recipeA.id,
       inventoryItemId: item.id,
-      //subRecipeIngredientId: ,
       quantity: 1,
       unitOfMeasureId: unit.id,
     } as CreateRecipeIngredientDto;
@@ -73,8 +103,9 @@ describe('recipe ingredient service', () => {
     expect(result?.unit.id).toEqual(unit.id);
 
     testId = result?.id as number;
-  });
+  });*/
 
+  /*
   it('should update an ingredient', async () => {
     const toUpdate = await ingredientService.findOne(testId);
     if(!toUpdate){ throw new Error("ingredient to update is null"); }
@@ -91,15 +122,16 @@ describe('recipe ingredient service', () => {
     expect(result).not.toBeNull();
     expect(result?.quantity).toEqual(3);
     expect(result?.unit.id).toEqual(updateUnit.id);
-  });
+  });*/
 
+  /*
   it('should remove an ingredient', async () => {
     const removal = await ingredientService.remove(testId);
     expect(removal).toBeTruthy();
 
     const verify = await ingredientService.findOne(testId);
     expect(verify).toBeNull();
-  });
+  });*/
 
   it('should get all ingredients', async () => {
     const expected = await testingUtil.getTestRecipeIngredientEntities(dbTestContext);

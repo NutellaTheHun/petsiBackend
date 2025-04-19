@@ -29,6 +29,9 @@ export class UnitOfMeasureTestingUtil {
                 .build(),
             await await this.categoryBuilder.reset()
                 .name(CONSTANTS.WEIGHT)
+                .build(),
+            await this.categoryBuilder.reset()
+                .name(CONSTANTS.NO_CAT)
                 .build()
         ];
     }

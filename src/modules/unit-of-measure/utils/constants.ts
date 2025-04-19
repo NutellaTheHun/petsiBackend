@@ -1,6 +1,7 @@
 export const VOLUME = "volume";
 export const WEIGHT = "weight";
 export const UNIT = "unit";
+export const NO_CAT = "no category";
 
 export const EACH = "each";
 export const EACH_ABBREV = "ea";

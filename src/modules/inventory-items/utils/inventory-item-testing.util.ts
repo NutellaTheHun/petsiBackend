@@ -26,9 +26,9 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 @Injectable()
 export class InventoryItemTestingUtil {
-    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C ];
+    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C, CONSTANT.NO_VENDOR ];
     
-    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT ];
+    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT, CONSTANT.NO_CAT ];
 
     private readonly packageNames: string[] = [ 
         CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG, 
@@ -268,4 +268,35 @@ export class InventoryItemTestingUtil {
     public async cleanupInventoryItemTestDatabase(): Promise<void> {
         await this.itemService.getQueryBuilder().delete().execute();
     }
+
+    /**
+     * - Create's inventoryItemSize dtos for create method of an inventory item
+     */
+    public createInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[]): CreateInventoryItemSizeDto[] {
+        const results: CreateInventoryItemSizeDto[] = [];
+        
+        let packageIdx = 0;
+        let unitIdx = 0;
+        let packageIter = 0;
+
+        for(let i = 0; i < resultAmount; i++){
+            results.push(
+                {
+                    mode: 'create',
+                    unitOfMeasureId: unitIds[unitIdx++],
+                    inventoryPackageTypeId: packageIds[packageIdx++],
+                } as CreateInventoryItemSizeDto
+            )
+            if(unitIdx === unitIds.length){
+                unitIdx = 0;
+            }
+            if(packageIdx === packageIds.length){
+                packageIter++;
+                packageIdx = packageIter;
+            }
+        }
+        
+
+        return results;
+    }   
 }

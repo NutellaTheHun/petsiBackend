@@ -4,17 +4,20 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { FOOD_CAT } from '../utils/constants';
 
 describe('Inventory Item Category Service', () => {
   let testingUtil: InventoryItemTestingUtil;
   let service: InventoryItemCategoryService;
+  let dbTestContext: DatabaseTestContext;
 
-  const testCategoryName = "testCategoryName";
   let testId: number;
   let testIds: number[];
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
+    dbTestContext = new DatabaseTestContext()
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
 
     service = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
@@ -29,31 +32,41 @@ describe('Inventory Item Category Service', () => {
     expect(service).toBeDefined();
   });
 
+  // create
+
+  // update
+  
+  // findONeByName
+
+  // findOne by ID
+
+  // find ALL
+
+  // find by IDS
+
+  // remove
+
   it('should create a inventory item category', async () => {
-    const createCategory = { name: testCategoryName } as CreateInventoryItemCategoryDto;
+    const dto = { 
+      name: "testCategoryName" 
+    } as CreateInventoryItemCategoryDto;
 
-    const result = await service.create(createCategory);
+    const result = await service.create(dto);
     
-    // for future testing
-    testId = result?.id as number;
-
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("testCategoryName")
+
+    testId = result?.id as number;
   });
 
   it('should update a inventory item category', async () => {
-    const updatedName = "UPDATE_NAME";
+    const dto = {
+      name: "UPDATE_NAME"
+    } as UpdateInventoryItemCategoryDto;
+    const result = await service.update( testId, dto);
 
-    const toUpdate = await service.findOne(testId);
-    if(!toUpdate) { throw new Error('category to update is null'); }
-
-    toUpdate.name = updatedName;
-    const result = await service.update(
-      testId, 
-      { name: toUpdate.name } as UpdateInventoryItemCategoryDto
-    );
-
-    expect(result?.name).toEqual(updatedName);
+    expect(result?.name).toEqual("UPDATE_NAME");
   });
 
   it('should remove a inventory item category', async () => {
@@ -65,22 +78,21 @@ describe('Inventory Item Category Service', () => {
   });
 
   it('should insert testing item categories and get all categories', async () => {
-    const categories = await testingUtil.getTestInventoryItemCategoryEntities();
-    await testingUtil.initInventoryItemCategoryTestDatabase();
+    const categories = await testingUtil.getTestInventoryItemCategoryEntities(dbTestContext);
+    await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
 
     const results = await service.findAll();
 
-    // for future testing
-    testIds = [results[0].id, results[1].id, results[2].id];
-
     expect(results.length).toEqual(categories.length);
+
+    testIds = [results[0].id, results[1].id, results[2].id];
   });
 
   it('should get a inventory item category by name', async () => {
-    const result = await service.findOneByName("food");
+    const result = await service.findOneByName(FOOD_CAT);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("food");
+    expect(result?.name).toEqual(FOOD_CAT);
   });
 
   it('should get inventory item categories from a list of ids', async () => {

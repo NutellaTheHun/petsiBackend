@@ -1,4 +1,5 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateNested } from "class-validator";
+import { CreateRecipeIngredientDto } from "./create-recipe-ingredient.dto";
 
 export class CreateRecipeDto {
 
@@ -13,11 +14,6 @@ export class CreateRecipeDto {
 
     @IsBoolean()
     readonly isIngredient: boolean;
-
-    @IsArray()
-    @IsNumber({},{ each: true})
-    @IsPositive({ each: true })
-    readonly ingredientIds: number[] = [];
 
     @IsNumber()
     @IsPositive()
@@ -58,10 +54,8 @@ export class CreateRecipeDto {
     @IsOptional()
     @IsPositive()
     readonly subCategoryId?: number;
-}
 
-export function CreateDefaultRecipeDtoValues(){
-    return [
-
-    ];
+    @IsOptional()
+    @IsArray()
+    ingredientDtos?: CreateRecipeIngredientDto[];
 }

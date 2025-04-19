@@ -3,6 +3,10 @@ import { ControllerBase } from "../../../base/controller-base";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaService } from "../services/inventory-area.service";
 
+/**
+ * Create: (name: string)
+ * Update: (name: string,  inventoryCountIds: number[])
+ */
 @Controller('inventory-area')
 export class InventoryAreaController extends ControllerBase<InventoryArea> {
     constructor(

@@ -18,6 +18,7 @@ describe('Inventory area service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
+        
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         await testingUtil.initInventoryAreaTestDatabase(dbTestContext);

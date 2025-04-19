@@ -2,16 +2,16 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
 import { InventoryAreaCountBuilder } from './builders/inventory-area-count.builder';
-import { InventoryAreaItemCountBuilder } from './builders/inventory-area-item-count.builder';
+import { InventoryAreaItemBuilder } from './builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from './builders/inventory-area.builder';
 import { InventoryAreaCountController } from './controllers/inventory-area-count.controller';
-import { InventoryAreaItemCountController } from './controllers/inventory-area-item-count.controller';
+import { InventoryAreaItemController } from './controllers/inventory-area-item.controller';
 import { InventoryAreaController } from './controllers/inventory-area.controller';
 import { InventoryAreaCount } from './entities/inventory-area-count.entity';
-import { InventoryAreaItemCount } from './entities/inventory-area-item-count.entity';
+import { InventoryAreaItem } from './entities/inventory-area-item.entity';
 import { InventoryArea } from './entities/inventory-area.entity';
 import { InventoryAreaCountService } from './services/inventory-area-count.service';
-import { InventoryAreaItemCountService } from './services/inventory-area-item-count.service';
+import { InventoryAreaItemService } from './services/inventory-area-item.service';
 import { InventoryAreaService } from './services/inventory-area.service';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 
@@ -20,30 +20,30 @@ import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
     TypeOrmModule.forFeature([
       InventoryArea,
       InventoryAreaCount,
-      InventoryAreaItemCount
+      InventoryAreaItem
     ]),
     InventoryItemsModule
   ],
   controllers: [
     InventoryAreaController,
     InventoryAreaCountController,
-    InventoryAreaItemCountController,
+    InventoryAreaItemController,
   ],
   providers: [
     InventoryAreaService,
     InventoryAreaCountService,
-    InventoryAreaItemCountService,
+    InventoryAreaItemService,
 
     InventoryAreaBuilder,
     InventoryAreaCountBuilder,
-    InventoryAreaItemCountBuilder,
+    InventoryAreaItemBuilder,
 
     InventoryAreaTestUtil,
   ],
   exports: [
     InventoryAreaService,
     InventoryAreaCountService,
-    InventoryAreaItemCountService,
+    InventoryAreaItemService,
 
     InventoryAreaTestUtil,
   ]

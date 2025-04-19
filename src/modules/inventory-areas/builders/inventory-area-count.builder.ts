@@ -1,106 +1,73 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaService } from "../services/inventory-area.service";
-import { InventoryAreaItemCountService } from "../services/inventory-area-item-count.service";
+import { BuilderBase } from "../../../base/builder-base";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
-import { BuilderMethodBase } from "../../../base/builder-method-base";
-import { InventoryArea } from "../entities/inventory-area.entity";
-import { InventoryAreaItemCount } from "../entities/inventory-area-item-count.entity";
-
+import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { InventoryAreaService } from "../services/inventory-area.service";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 
 @Injectable()
-export class InventoryAreaCountBuilder {
-    private count: InventoryAreaCount;
-    private taskQueue: (() => Promise<void>)[];
-
-    private areaMethods: BuilderMethodBase<InventoryArea>;
-    private areaItemMethods: BuilderMethodBase<InventoryAreaItemCount>;
-
+export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
     constructor(
-        @Inject(forwardRef(() => InventoryAreaService))
         private readonly areaService: InventoryAreaService,
-        
-        @Inject(forwardRef(() => InventoryAreaItemCountService))
-        private readonly areaItemService: InventoryAreaItemCountService,
-    ){ 
-        this.reset(); 
-        this.areaMethods = new BuilderMethodBase(this.areaService, this.areaService.findOneByName.bind(this.areaService));
-        this.areaItemMethods = new BuilderMethodBase(this.areaItemService);
-    }
-
-    public reset(): this {
-        this.count = new InventoryAreaCount;
-        this.taskQueue = [];
-        return this;
-    }
+        private readonly areaItemService: InventoryAreaItemService,
+        private readonly itemCountBuilder: InventoryAreaItemBuilder,
+    ){ super(InventoryAreaCount); }
 
     public inventoryAreaById(id: number): this {
-        this.taskQueue.push(async () => {
-            await this.areaMethods.entityById(
-                (area) => {this.count.inventoryArea = area; },
-                id,
-            );
-        });
-        return this;
+        return this.setPropById(this.areaService.findOne.bind(this.areaService), 'inventoryArea', id);
     }
 
     public inventoryAreaByName(name: string): this {
-        this.taskQueue.push(async () => {
-            await this.areaMethods.entityByName(
-                (area) => {this.count.inventoryArea = area; },
-                name,
-            );
-        });
-        return this;
+        return this.setPropByName(this.areaService.findOneByName.bind(this.areaService), 'inventoryArea', name);
     }
 
     public countedItemsById(ids: number[]): this {
-        this.taskQueue.push(async () => {
-            await this.areaItemMethods.entityByIds(
-                (items) => {this.count.items = items},
-                ids,
-            );
-        });
-        return this;
+        return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
     }
 
-    public async build(): Promise<InventoryAreaCount> {
-        for(const task of this.taskQueue){
-            await task();
-        }
-        const result = this.count;
-        this.reset();
-        return result;
+    public countedItemsByBuilderAfter(areaCountId: number, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            areaCountId,
+        }));
+        return this.setPropAfterBuild(this.itemCountBuilder.buildManyDto.bind(this.itemCountBuilder), 'items', this.entity, enrichedDtos);
     }
 
+    /**
+     * @param dto Must have an inventoryAreaId, WARNING: inventoryItemCountIds are not used in creation. Only in updates.
+     * @returns 
+     */
     public async buildCreateDto(dto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
 
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
+        /*
         if(dto.inventoryItemCountIds){
             this.countedItemsById(dto.inventoryItemCountIds);
         }
-
+        */
         return await this.build();
-    }
-
-    public updateCount(toUpdate: InventoryAreaCount): this {
-        this.count = toUpdate;
-        return this;
     }
 
     public async buildUpdateDto(toUpdate: InventoryAreaCount, dto: UpdateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
-        this.updateCount(toUpdate);
+        this.updateEntity(toUpdate);
 
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
+        /*
         if(dto.inventoryItemCountIds){
             this.countedItemsById(dto.inventoryItemCountIds);
+        }*/
+        if(dto.itemCountDtos){
+            this.countedItemsByBuilderAfter(this.entity.id, dto.itemCountDtos);
         }
 
         return await this.build();

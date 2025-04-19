@@ -1,10 +1,10 @@
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { JwtModule } from "@nestjs/jwt";
-import { AuthController } from "../auth.controller";
-import { AuthService } from "../auth.service";
-import { UsersModule } from "../../users/users.module";
+import { UserModule } from "../../users/user.module";
 import { AuthModule } from "../auth.module";
+import { AuthController } from "../controllers/auth.controller";
+import { AuthService } from "../services/auth.service";
 
 export async function getAuthTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -20,7 +20,7 @@ export async function getAuthTestingModule(): Promise<TestingModule> {
                           }),
                         }),
                     AuthModule,
-                    UsersModule
+                    UserModule
                   ],
                   controllers: [AuthController],
                   providers: [AuthService],

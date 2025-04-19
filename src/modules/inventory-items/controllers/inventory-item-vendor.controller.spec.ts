@@ -2,17 +2,15 @@ import { TestingModule } from '@nestjs/testing';
 import { InventoryItemVendorController } from './inventory-item-vendor.controller';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
-import { InventoryItemVendorFactory } from '../factories/inventory-item-vendor.factory';
 import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { isTemplateSpan } from 'typescript';
+import { VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
 
 describe('Inventory Item Vendor Controller', () => {
   let controller: InventoryItemVendorController;
   let vendorService: InventoryItemVendorService;
-  let vendorFactory: InventoryItemVendorFactory;
 
   let vendors: InventoryItemVendor[] = [];
   let items: InventoryItem[];
@@ -22,9 +20,12 @@ describe('Inventory Item Vendor Controller', () => {
 
     controller = module.get<InventoryItemVendorController>(InventoryItemVendorController);
     vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
-    vendorFactory = module.get<InventoryItemVendorFactory>(InventoryItemVendorFactory);
 
-    vendors = vendorFactory.getTestingVendors();
+    vendors = [
+      { name: VENDOR_A } as InventoryItemVendor,
+      { name: VENDOR_B } as InventoryItemVendor,
+      { name: VENDOR_C } as InventoryItemVendor,
+    ];
     let id = 1;
     vendors.map(vendor => vendor.id = id++);
 
@@ -43,8 +44,11 @@ describe('Inventory Item Vendor Controller', () => {
       const exists = vendors.find(unit => unit.name === createDto.name);
       if(exists){ return null; }
 
-      const unit = vendorFactory.createDtoToEntity(createDto);
-      unit.id = id++;
+      const unit = {
+        id: id++,
+        name: createDto.name,
+      } as InventoryItemVendor;
+
       vendors.push(unit);
       return unit;
     });
@@ -57,20 +61,19 @@ describe('Inventory Item Vendor Controller', () => {
       const index = vendors.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      const updated = { name: updateDto.name } as InventoryItemVendor;
-
+      if(updateDto.name){
+        vendors[index].name = updateDto.name;
+      }
       if(updateDto.inventoryItemIds){
         const updateItems = [] as InventoryItem[];
         for(id of updateDto.inventoryItemIds){
           let item = items.find(i => i.id === id);
           if(item){ updateItems.push(item); }
         }
-        updated.items = updateItems;
+        vendors[index].items = updateItems;
       }
-      
-      vendors[index] = updated;
 
-      return updated;
+      return vendors[index];
     });
 
     jest.spyOn(vendorService, "findAll").mockResolvedValue(vendors);
@@ -94,18 +97,20 @@ describe('Inventory Item Vendor Controller', () => {
   });
 
   it('should create a vendor', async () => {
-    const unitDto = vendorFactory.createDtoInstance({
+    const dto = {
       name: "testVendor",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemVendorDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a vendor (already exists)', async () => {
-    const unitDto = vendorFactory.createDtoInstance({
+    const dto = {
       name: "testVendor",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateInventoryItemVendorDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 
@@ -128,8 +133,11 @@ describe('Inventory Item Vendor Controller', () => {
     const toUpdate = await vendorService.findOneByName("testVendor");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    toUpdate.name = "UPDATED_testVendor";
-    const result = await controller.update(toUpdate.id, toUpdate);
+    const dto = {
+      name: "UPDATED_testVendor"
+    } as UpdateInventoryItemVendorDto
+
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("UPDATED_testVendor")
   });

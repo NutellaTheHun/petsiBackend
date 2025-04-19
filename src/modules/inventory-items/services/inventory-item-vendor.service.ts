@@ -31,7 +31,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         return await this.vendorRepo.save(toUpdate);
     }
 
-    async findOneByName(name: string, relations?: string[]): Promise<InventoryItemVendor | null> {
+    async findOneByName(name: string, relations?: Array<keyof InventoryItemVendor>): Promise<InventoryItemVendor | null> {
         return await this.vendorRepo.findOne({ where: { name: name }, relations });
     }
 }

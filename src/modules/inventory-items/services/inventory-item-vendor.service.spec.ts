@@ -1,15 +1,16 @@
 import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
+import { VENDOR_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 
 describe('Inventory Item Vendor Service', () => {
   let testingUtil: InventoryItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
-  let service: InventoryItemVendorService;
+  let vendorService: InventoryItemVendorService;
 
   let testId: number;
   let testIds: number[];
@@ -21,7 +22,7 @@ describe('Inventory Item Vendor Service', () => {
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
     await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
 
-    service = module.get<InventoryItemVendorService>(InventoryItemVendorService);
+    vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
   });
 
   afterAll(async () => {
@@ -29,64 +30,53 @@ describe('Inventory Item Vendor Service', () => {
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
+    expect(vendorService).toBeDefined();
   });
 
   it('should create a vendor', async () => {
-    const vendorDto ={ name: "testVendorName" } as CreateInventoryItemVendorDto;
-
-    const result = await service.create(vendorDto);
-
-    // for future testing
-    testId = result?.id as number;
+    const dto = { 
+      name: "testVendorName" 
+    } as CreateInventoryItemVendorDto;
+    const result = await vendorService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    testId = result?.id as number;
   });
 
-  it('should update a vendor', async () => {
-    const toUpdate = await service.findOne(testId);
-    if(!toUpdate) { throw new Error('vendor to update is null.'); }
-
-    toUpdate.name = "UPDATE_NAME";
-    const result = await service.update(
-      testId, 
-      { name: toUpdate.name } as UpdateInventoryItemVendorDto
-    );
+  it('should update a vendor name', async () => {
+    const dto = {
+      name: "UPDATE_NAME",
+    } as UpdateInventoryItemVendorDto;
+    const result = await vendorService.update( testId, dto);
 
     expect(result?.name).toEqual("UPDATE_NAME");
   });
 
   it('should remove a vendor', async () => {
-    const removal = await service.remove(testId);
+    const removal = await vendorService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await service.findOne(testId);
+    const verify = await vendorService.findOne(testId);
     expect(verify).toBeNull();
   });
 
   it('should get all vendors', async () => {
     const vendors = await testingUtil.getTestInventoryItemVendorEntities(dbTestContext);
+    const results = await vendorService.findAll();
 
-    for(const vendor of vendors){
-      await service.create({ name: vendor.name } as CreateInventoryItemVendorDto );
-    }
-
-    const results = await service.findAll();
     expect(results.length).toEqual(vendors.length);
-
-    // for future test
     testIds = [results[0].id, results[1].id, results[2].id];
   });
 
   it('should get a vendor by name', async () => {
-    const result = await service.findOneByName("vendorA");
+    const result = await vendorService.findOneByName(VENDOR_A);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("vendorA");
+    expect(result?.name).toEqual(VENDOR_A);
   });
 
   it('should get vendor from a list of ids', async () => {
-    const results = await service.findEntitiesById(testIds);
+    const results = await vendorService.findEntitiesById(testIds);
     expect(results.length).toEqual(testIds.length);
   });
 });

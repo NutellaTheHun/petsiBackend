@@ -1,82 +1,64 @@
 import { TestingModule } from "@nestjs/testing";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { InventoryItemSizeFactory } from "../factories/inventory-item-size.factory";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemSizeController } from "./inventory-item-size.controller";
 import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
-import { UnitOfMeasureFactory } from "../../unit-of-measure/factories/unit-of-measure.factory";
-import { InventoryItemFactory } from "../factories/inventory-item.factory";
 import { FL_OUNCE, GALLON, LITER, MILLILITER, QUART } from "../../unit-of-measure/utils/constants";
-import { InventoryItemPackageFactory } from "../factories/inventory-item-package.factory";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { BAG_PKG, PACKAGE_PKG, BOX_PKG, OTHER_PKG, CONTAINER_PKG, CAN_PKG } from "../utils/constants";
 
 describe('Inventory Item Size Controller', () => {
   let controller: InventoryItemSizeController;
   let service: InventoryItemSizeService;
-  let sizeFactory: InventoryItemSizeFactory;
 
-  let itemFactory: InventoryItemFactory;
-  let packageFactory: InventoryItemPackageFactory
-  let unitFactory: UnitOfMeasureFactory;
-  
   let sizes: InventoryItemSize[] = [];
   let sizeId = 1;
 
   let packages: InventoryItemPackage[];
+  let pkgId = 1;
+
   let items: InventoryItem[];
+  let itemId = 1;
+
   let units: UnitOfMeasure[];
-  
+  let unitId = 1;
 
   beforeEach(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
 
     controller = module.get<InventoryItemSizeController>(InventoryItemSizeController);
     service = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-    sizeFactory = module.get<InventoryItemSizeFactory>(InventoryItemSizeFactory);
-
-    itemFactory = module.get<InventoryItemFactory>(InventoryItemFactory);
-    packageFactory = module.get<InventoryItemPackageFactory>(InventoryItemPackageFactory);
-    unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
 
     units = [
-      unitFactory.createEntityInstance({
-          name: GALLON, 
-          id: 1
-      }),
-      unitFactory.createEntityInstance({
-          name: LITER, 
-          id: 2,
-      }),
-      unitFactory.createEntityInstance({
-          name: MILLILITER, 
-          id: 3,
-      }),
-      unitFactory.createEntityInstance({
-          name: FL_OUNCE, 
-          id: 4,
-      }),
-      unitFactory.createEntityInstance({
-          name: QUART, 
-          id: 5,
-      })
+      { name: GALLON } as UnitOfMeasure,
+      { name: LITER } as UnitOfMeasure,
+      { name: MILLILITER } as UnitOfMeasure,
+      { name: FL_OUNCE } as UnitOfMeasure,
+      { name: QUART } as UnitOfMeasure,
     ];
+    units.map(unit => unit.id = unitId++);
 
-    packages = packageFactory.getTestingPackages();
-    let pkgId = 1;
+    packages = [
+      { name: BAG_PKG } as InventoryItemPackage,
+      { name: PACKAGE_PKG } as InventoryItemPackage,
+      { name: BOX_PKG } as InventoryItemPackage,
+      { name: OTHER_PKG } as InventoryItemPackage,
+      { name: CONTAINER_PKG } as InventoryItemPackage,
+      { name: CAN_PKG } as InventoryItemPackage,
+    ];
     packages.map(pkg => pkg.id = pkgId++);
 
     items = [
-      itemFactory.createEntityInstance({ name: "FOOD_A"  }),
-      itemFactory.createEntityInstance({ name: "DRY_A"   }),
-      itemFactory.createEntityInstance({ name: "OTHER_A" }),
-      itemFactory.createEntityInstance({ name: "FOOD_B"  }),
-      itemFactory.createEntityInstance({ name: "DRY_B"   }),
+      { name: "FOOD_A"  } as InventoryItem,
+      { name: "DRY_A"   } as InventoryItem,
+      { name: "OTHER_A" } as InventoryItem,
+      { name: "FOOD_B"  } as InventoryItem,
+      { name: "DRY_B"   } as InventoryItem,
     ];
-    let itemId = 1;
     items.map(pkg => pkg.id = itemId++);
 
     jest.spyOn(service, "create").mockImplementation(async (createDto: CreateInventoryItemSizeDto) => {
@@ -88,8 +70,8 @@ describe('Inventory Item Size Controller', () => {
       if(exists){ return null; }
 
       const item = items.find(i => i.id === createDto.inventoryItemId);
-      const pkg = items.find(p => p.id === createDto.inventoryPackageTypeId);
-      const measure = items.find(m => m.id === createDto.unitOfMeasureId);
+      const pkg = packages.find(p => p.id === createDto.inventoryPackageTypeId);
+      const measure = units.find(m => m.id === createDto.unitOfMeasureId);
       const unit = { measureUnit: measure, packageType: pkg, item: item } as InventoryItemSize;
 
       unit.id = sizeId++;
@@ -105,11 +87,23 @@ describe('Inventory Item Size Controller', () => {
       const index = sizes.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      const updated = sizeFactory.updateDtoToEntity(updateDto);
-      updated.id = id++;
-      sizes[index] = updated;
+      if(updateDto.inventoryItemId){
+        const item = items.find(i => i.id === updateDto.inventoryItemId);
+        if(!item){ throw new Error("item is null"); }
+        sizes[index].item = item;
+      }
+      if(updateDto.inventoryPackageTypeId){
+        const pkg = packages.find(p => p.id === updateDto.inventoryPackageTypeId);
+        if(!pkg){ throw new Error("package is null"); }
+        sizes[index].packageType = pkg;
+      }
+      if(updateDto.unitOfMeasureId){
+        const unit = units.find(m => m.id === updateDto.unitOfMeasureId);
+        if(!unit){ throw new Error("unit is null"); }
+        sizes[index].measureUnit = unit;
+      }
 
-      return updated;
+      return sizes[index];
     });
 
     jest.spyOn(service, "findAll").mockResolvedValue(sizes);
@@ -133,22 +127,24 @@ describe('Inventory Item Size Controller', () => {
   });
 
   it('should create a size', async () => {
-    const sizeDto = sizeFactory.createDtoInstance({
+    const dto = {
       unitOfMeasureId: 1,
       inventoryPackageTypeId: 1,
       inventoryItemId: 1,
-    })
-    const result = await controller.create(sizeDto);
+    } as CreateInventoryItemSizeDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a size (already exists)', async () => {
-    const sizeDto = sizeFactory.createDtoInstance({
+    const dto = {
       unitOfMeasureId: 1,
       inventoryPackageTypeId: 1,
       inventoryItemId: 1,
-    })
-    const result = await controller.create(sizeDto);
+    } as CreateInventoryItemSizeDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 
@@ -174,8 +170,10 @@ describe('Inventory Item Size Controller', () => {
     const toUpdate = results[0];
     if(!toUpdate){ throw new Error("size to update not found"); }
 
-    toUpdate.packageType = packages[1];
-    const result = await controller.update(toUpdate.id, toUpdate);
+    const dto = {
+      inventoryPackageTypeId: packages[1].id
+    } as UpdateInventoryItemSizeDto;
+    const result = await controller.update(toUpdate.id, dto);
 
     expect(result).not.toBeNull();
     expect(result?.packageType.id).toEqual(packages[1].id);

@@ -7,9 +7,11 @@ import { InventoryAreaCountService } from "../services/inventory-area-count.serv
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountController } from "./inventory-area-count.controller";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 describe('inventory area count controller', () => {
     let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
     let controller: InventoryAreaCountController;
     let countService: InventoryAreaCountService;
 
@@ -22,10 +24,11 @@ describe('inventory area count controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        dbTestContext = new DatabaseTestContext();
         controller = module.get<InventoryAreaCountController>(InventoryAreaCountController);
         countService = module.get<InventoryAreaCountService>(InventoryAreaCountService);
 
-        areas = testingUtil.getTestInventoryAreaEntities();
+        areas = await testingUtil.getTestInventoryAreaEntities(dbTestContext);
         areas.map(area => area.id = areaId++);
         
         areaCounts = [
@@ -54,6 +57,7 @@ describe('inventory area count controller', () => {
 
             newCount.id = areaCountId++;
             areaCounts.push(newCount);
+            if(!areas[areaIndex].inventoryCounts){ areas[areaIndex].inventoryCounts = []; }
             areas[areaIndex].inventoryCounts.push(newCount);
             return newCount;
         });
@@ -71,10 +75,15 @@ describe('inventory area count controller', () => {
             if(updateDto.inventoryAreaId){
                 const oldAreaIdx = areas.findIndex(area => area.id === toUpdate.inventoryArea.id);
                 if(oldAreaIdx === -1){ throw new Error('original area not found'); }
-                areas[oldAreaIdx].inventoryCounts =  areas[oldAreaIdx].inventoryCounts.filter(count => count.id !== id);
+                
+                if(areas[oldAreaIdx].inventoryCounts){
+                areas[oldAreaIdx].inventoryCounts = areas[oldAreaIdx].inventoryCounts.filter(count => count.id !== id);
+                }
 
                 const newAreaIdx = areas.findIndex(area => area.id === toUpdate.inventoryArea.id);
                 toUpdate.inventoryArea = areas[newAreaIdx];
+
+                if(!areas[newAreaIdx].inventoryCounts){ areas[newAreaIdx].inventoryCounts = []; }
                 areas[newAreaIdx].inventoryCounts.push(toUpdate);
             }
 

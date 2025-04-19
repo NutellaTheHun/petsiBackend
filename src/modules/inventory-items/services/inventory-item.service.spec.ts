@@ -1,11 +1,12 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { LITER } from '../../unit-of-measure/utils/constants';
+import { GALLON, KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
-import { DRY_A, DRY_B, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
+import { BOX_PKG, CAN_PKG, DAIRY_CAT, DRYGOOD_CAT, FOOD_A, FOOD_CAT, NO_CAT, NO_VENDOR, OTHER_PKG, VENDOR_A, VENDOR_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
@@ -13,6 +14,10 @@ import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { error } from 'console';
+import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 
 describe('Inventory Item Service', () => {
   let module: TestingModule;
@@ -23,12 +28,32 @@ describe('Inventory Item Service', () => {
 
   let testId: number;
   let testIds: number[];
+  let invItemSizesTestId: number;
+  let oldCategoryId: number;
+  let newCategoryId: number;
+  let oldVendorId: number;
+  let newVendorId: number;
+  let sizeId: number;
+
+  let updateItemSizeId: number;
+  let updateItemPkgId: number;
+  let newUnitId: number;
+  let newPkgId: number;
+  let deletedSizeId: number;
+  let savedSizeId: number;
+
+  let removalId: number;
+  let removalCategoryId: number;
+  let removalVendorId: number;
+  let removalSizeId: number;
 
   let categoryService: InventoryItemCategoryService;
   let packageService: InventoryItemPackageService;
   let sizeService: InventoryItemSizeService;
   let vendorService: InventoryItemVendorService;
   let measureService: UnitOfMeasureService;
+
+  
 
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
@@ -46,17 +71,6 @@ describe('Inventory Item Service', () => {
   });
 
   afterAll(async () => {
-    /*
-    await cleanupInventoryItemTestingDatabaseLayerZERO(module);
-
-    const measureQuery = measureService.getQueryBuilder();
-    await measureQuery.delete().execute();
-    
-    const sizeQuery = sizeService.getQueryBuilder();
-    await sizeQuery.delete().execute();
-
-    const itemQuery = itemService.getQueryBuilder();
-    await itemQuery.delete().execute();*/
     await dbTestContext.executeCleanupFunctions();
   })
 
@@ -64,261 +78,435 @@ describe('Inventory Item Service', () => {
     expect(itemService).toBeDefined();
   });
 
-  it('should create a inventory item', async () => {
-    const category = await categoryService.findOneByName("food");
-    if(!category){ throw new Error('category is null'); }
-
-    const vendor = await vendorService.findOneByName("vendorA");
-    if(!vendor){ throw new Error('vendor is null'); }
-
-    const itemDto = {
-      name: "testItem",
-      inventoryItemCategoryId: category?.id,
-      vendorId: vendor?.id,
+  // create
+  it('should create an inventory-item (Default Category and Vendor)', async () => {
+    const dto = {
+      name: "test item default vend/cat"
     } as CreateInventoryItemDto;
-
-    const result = await itemService.create(itemDto);
-    
-    // For future test
-    testId = result?.id as number;
+    const result = await itemService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("test item default vend/cat");
+    expect(result?.category?.name).toEqual(NO_CAT);
+    expect(result?.vendor?.name).toEqual(NO_VENDOR);
+
+    testId = result?.id as number;
   });
 
-  it('should update a inventory item', async () => {
-    const toUpdate = await itemService.findOne(testId);
-    if(!toUpdate){ throw new Error('item to update is null'); }
+  it('should create an inventory-item with category and vendor', async () => {
+    const cat = await categoryService.findOneByName(FOOD_CAT);
+    if(!cat){ throw new NotFoundException(); }
 
-    // create itemSize
-    const unit = await measureService.findOneByName(LITER);
-    if(!unit){ throw new Error('measure unit is null'); }
+    const vend = await vendorService.findOneByName(VENDOR_A);
+    if(!vend){ throw new NotFoundException(); }
 
-    const packageType = await packageService.findOneByName("bag");
-    if(!packageType){ throw new Error('package type is null'); }
-
-    const sizeDto = {
-      unitOfMeasureId: unit?.id,
-      inventoryPackageTypeId: packageType?.id,
-      inventoryItemId: toUpdate?.id,
-    } as CreateInventoryItemSizeDto;
-
-    const size = await sizeService.create(sizeDto);
-    if(!size || !size?.id){ throw new Error('size for updating is null'); }
-
-    const category = await categoryService.findOneByName("dairy");
-    if(!category){ throw new Error('category is null'); }
-
-    const vendor = await vendorService.findOneByName("vendorB");
-    if(!vendor){ throw new Error('vendor is null'); }
-
-    toUpdate.category = category;
-    toUpdate.vendor = vendor;
-    toUpdate.sizes = [size];
-
-    const result = await itemService.update(
-      testId, 
-      {
-        name: toUpdate.name,
-        inventoryItemCategoryId: toUpdate.category.id,
-        sizeIds: [toUpdate.sizes[0].id],
-        vendorId: toUpdate.vendor.id
-      } as UpdateInventoryItemDto,
-    );
+    const dto = {
+      name: "test Item with vend/cat",
+      vendorId: vend.id,
+      inventoryItemCategoryId: cat.id,
+    } as CreateInventoryItemDto;
+    const result = await itemService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.category?.id).toEqual(category?.id);
-    expect(result?.vendor?.id).toEqual(vendor?.id);
-    if(result?.sizes){ expect(result?.sizes[0]?.id).toEqual(size?.id); }
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("test Item with vend/cat");
+    expect(result?.category?.name).toEqual(FOOD_CAT);
+    expect(result?.vendor?.name).toEqual(VENDOR_A);
   });
 
-  it('should remove a inventory item', async () => {
-    const toRemove = await itemService.remove(testId);
-    expect(toRemove).toBeTruthy();
+  // should create inventory-item with item sizes
+  it('should create an inventory item with item sizes', async () => {
+    // packageIds
+    const packageIds = (await packageService.findAll()).map(pkg => pkg.id).slice(0,2);
+    // measureIds
+    const measureIds = (await measureService.findAll()).map(unit => unit.id).slice(0,2);
 
-    const verify = await itemService.findOne(testId);
+
+    const sizeDtos = testingUtil.createInventoryItemSizeDtos(
+      2,
+      packageIds,
+      measureIds
+    );
+
+    const cat = await categoryService.findOneByName(DRYGOOD_CAT);
+    if(!cat){ throw new NotFoundException(); }
+
+    const vend = await vendorService.findOneByName(VENDOR_B);
+    if(!vend){ throw new NotFoundException(); }
+
+    const itemDto = {
+      name: "testItemWithSizeDtos",
+      itemSizeDtos: sizeDtos,
+      vendorId: vend.id,
+      inventoryItemCategoryId: cat.id,
+    } as CreateInventoryItemDto;
+
+    const result = await itemService.create(itemDto);
+    if(!result?.sizes){ throw new Error("result sizes is null"); }
+
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("testItemWithSizeDtos")
+    expect(result.sizes.length).toEqual(2);
+    for(const size of result.sizes){
+      expect(measureIds.findIndex(id => id === size.measureUnit.id)).not.toEqual(-1);
+      expect(packageIds.findIndex(id => id === size.packageType.id)).not.toEqual(-1);
+    }
+
+    invItemSizesTestId = result?.id as number;
+  });
+
+  // find one by name
+  it('should find an item by name', async () => {
+    const result = await itemService.findOneByName("test item default vend/cat");
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("test item default vend/cat");
+  });
+  
+  //findOne by ID
+  it('should find an item by ID', async () => {
+    const result = await itemService.findOne(testId);
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual("test item default vend/cat");
+  });
+
+  // update
+  it('should update item name', async () => {
+    const dto = {
+      name: "Updated item name"
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("Updated item name");
+  });
+
+  it('should update item category', async () => {
+    const category = await categoryService.findOneByName(DAIRY_CAT);
+    if(!category){ throw new NotFoundException(); }
+
+    const dto = {
+      inventoryItemCategoryId: category.id
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.category?.id).toEqual(category.id);
+
+    oldCategoryId = category.id;
+  });
+
+  it('new category should gain reference to item', async () => {
+    const oldCat = await categoryService.findOne(oldCategoryId, ['items']);
+    if(!oldCat){ throw new NotFoundException(); }
+
+    expect(oldCat.items.findIndex(item => item.id === testId)).not.toEqual(-1);
+  });
+
+  it('should update item category to a new category', async () => {
+    const category = await categoryService.findOneByName(DRYGOOD_CAT);
+    if(!category){ throw new NotFoundException(); }
+
+    const dto = {
+      inventoryItemCategoryId: category.id
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.category?.id).toEqual(category.id);
+
+    newCategoryId = category.id;
+  });
+
+  it('old item category should loose reference to item', async () => {
+    const oldCat = await categoryService.findOne(oldCategoryId, ['items']);
+    if(!oldCat){ throw new NotFoundException(); }
+
+    expect(oldCat.items.findIndex(item => item.id === testId)).toEqual(-1);
+  });
+
+  it('new item category should gain reference to item', async () => {
+    const newCat = await categoryService.findOne(newCategoryId, ['items']);
+    if(!newCat){ throw new NotFoundException(); }
+
+    expect(newCat.items.findIndex(item => item.id === testId)).not.toEqual(-1);
+  });
+
+  it('should update item category to no category', async () => {
+    const dto = {
+      inventoryItemCategoryId: 0,
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.category?.name).toEqual(NO_CAT);
+  });
+
+  it('old item category should loose reference to item', async () => {
+    const newCat = await categoryService.findOne(newCategoryId, ['items']);
+    if(!newCat){ throw new NotFoundException(); }
+
+    expect(newCat.items.findIndex(item => item.id === testId)).toEqual(-1);
+  });
+
+  it('should update item vendor', async () => {
+    const vendor = await vendorService.findOneByName(VENDOR_A);
+    if(!vendor){ throw new NotFoundException(); }
+
+    const dto = {
+      vendorId: vendor.id
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.vendor?.id).toEqual(vendor.id);
+
+    oldVendorId = vendor.id;
+  });
+
+  it('vendor should gain reference to item', async () => {
+    const oldVend = await vendorService.findOne(oldVendorId, ['items']);
+    if(!oldVend){ throw new NotFoundException(); }
+
+    expect(oldVend.items.findIndex(item => item.id === testId)).not.toEqual(-1);
+  });
+
+  it('should update item vendor to a new vendor', async () => {
+    const vendor = await vendorService.findOneByName(VENDOR_B);
+    if(!vendor){ throw new NotFoundException(); }
+
+    const dto = {
+      vendorId: vendor.id
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.vendor?.id).toEqual(vendor.id);
+
+    newVendorId = vendor.id;
+  });
+
+  it('old vendor should loose reference to item', async () => {
+    const oldVend = await vendorService.findOne(oldVendorId, ['items']);
+    if(!oldVend){ throw new NotFoundException(); }
+
+    expect(oldVend.items.findIndex(item => item.id === testId)).toEqual(-1);
+  });
+
+  it('new vendor should gain reference to item', async () => {
+    const newVend = await vendorService.findOne(newVendorId, ['items']);
+    if(!newVend){ throw new NotFoundException(); }
+
+    expect(newVend.items.findIndex(item => item.id === testId)).not.toEqual(-1);
+  });
+
+  it('should update item vendor to no vendor', async () => {
+    const dto = {
+      vendorId: 0
+    } as UpdateInventoryItemDto;
+    const result = await itemService.update(testId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.vendor?.name).toEqual(NO_VENDOR);
+  });
+
+  it('old vendor should loose reference to item', async () => {
+    const newVend = await vendorService.findOne(newVendorId, ['items']);
+    if(!newVend){ throw new NotFoundException(); }
+
+    expect(newVend.items.findIndex(item => item.id === testId)).toEqual(-1);
+  });
+
+  it('should modify a item size, and item should gain reference to modified size', async () => {
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes are null"); }
+    const sizes = await sizeService.findEntitiesById(item.sizes.map(size => size.id), ['item','measureUnit','packageType']);
+    if(!sizes){ throw new Error("queried sizes are null"); }
+
+    updateItemSizeId = item.sizes[0].id;
+
+    let newUnit: UnitOfMeasure;
+    if(sizes[0].measureUnit.name === POUND){
+      const unit = await measureService.findOneByName(KILOGRAM);
+      if(!unit){ throw new NotFoundException(); }
+      newUnit = unit;
+      newUnitId = newUnit.id;
+    } else {
+      const unit = await measureService.findOneByName(POUND);
+      if(!unit){ throw new NotFoundException(); }
+      newUnit = unit;
+      newUnitId = newUnit.id;
+    }
+    
+    const updateSizeDtos = [
+      {
+      mode:'update',
+      id: sizes[0].id,
+      unitOfMeasureId: newUnit.id,
+      inventoryPackageTypeId: sizes[0].packageType.id,
+      } as UpdateInventoryItemSizeDto,
+      {
+      mode:'update',
+      id: sizes[1].id,
+      unitOfMeasureId: sizes[1].measureUnit.id,
+      inventoryPackageTypeId: sizes[1].packageType.id,
+      } as UpdateInventoryItemSizeDto,
+    ]
+
+    const updateDto = {
+      sizeDtos: updateSizeDtos,
+    } as UpdateInventoryItemDto
+
+    const result = await itemService.update(invItemSizesTestId, updateDto);
+    if(!result){ throw new Error("item update is null"); }
+    if(!result?.sizes){ throw new Error("result sizes is null"); }
+
+    expect(result).not.toBeNull();
+    expect(result.sizes.length).toEqual(2);
+  });
+
+  it('should reflect updated item size when queried', async () => {
+    const updatedSize = await sizeService.findOne(updateItemSizeId, ['measureUnit']);
+    if(!updatedSize){ throw new NotFoundException(); }
+    expect(updatedSize.measureUnit.id).toEqual(newUnitId);
+  });
+
+  it('should update inventory item with removed item size', async () => {
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes are null"); }
+
+    const sizes = await sizeService.findEntitiesById(item.sizes.map(size => size.id), ['item','measureUnit','packageType']);
+    if(!sizes){ throw new Error("queried sizes are null"); }
+
+    deletedSizeId = sizes[0].id;
+    savedSizeId = sizes[1].id;
+
+    const updateSizeDtos = [
+      {
+        mode:'update',
+        id: sizes[1].id,
+        //unitOfMeasureId: sizes[1].measureUnit.id,
+        //inventoryPackageTypeId: sizes[1].packageType.id,
+      } as UpdateInventoryItemSizeDto,
+    ];
+
+    const updateDto = {
+      sizeDtos: updateSizeDtos,
+    } as UpdateInventoryItemDto
+
+    const result = await itemService.update(invItemSizesTestId, updateDto);
+    if(!result){ throw new Error("item update is null"); }
+    if(!result?.sizes){ throw new Error("result sizes is null"); }
+
+    expect(result).not.toBeNull();
+    expect(result.sizes.length).toEqual(1);
+    expect(result.sizes[0].id).toEqual(savedSizeId);
+  });
+
+  it('deleteded itemSize from item update should not exist', async () => {
+    const verify = await sizeService.findOne(deletedSizeId);
     expect(verify).toBeNull();
   });
 
-  it('should insert testing items and get all items', async () => {
-    const items = await testingUtil.getTestInventoryItemEntities(dbTestContext);
-    //await testingUtil.initInventoryItemTestDatabase();
+  it('should update item with both a new and modified size', async () => {
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes are null"); }
+    const sizes = await sizeService.findEntitiesById(item.sizes.map(size => size.id), ['item','measureUnit','packageType']);
+    if(!sizes){ throw new Error("queried sizes are null"); }
 
-    const results = await itemService.findAll();
+    updateItemPkgId = item.sizes[0].id;
 
-    // For future test
-    testIds = [results[0].id, results[1].id, results[2].id];
+    let newPackage: InventoryItemPackage;
+    if(sizes[0].packageType.name === BOX_PKG){
+      const pkg = await packageService.findOneByName(CAN_PKG);
+      if(!pkg){ throw new NotFoundException(); }
+      newPackage = pkg;
+      newPkgId = newPackage.id;
+    } else {
+      const pkg = await packageService.findOneByName(BOX_PKG);
+      if(!pkg){ throw new NotFoundException(); }
+      newPackage = pkg;
+      newPkgId = newPackage.id;
+    }
+    
+    const createUnit = await measureService.findOneByName(GALLON)
+    if(!createUnit){ throw new NotFoundException(); }
+    const createPkg = await packageService.findOneByName(OTHER_PKG)
+    if(!createPkg){ throw new NotFoundException(); }
 
-    expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toEqual(items.length);
-  });
+    const sizeDtos = [
+      {
+      mode:'update',
+      id: sizes[0].id,
+      unitOfMeasureId: sizes[0].measureUnit.id,
+      inventoryPackageTypeId: sizes[0].packageType.id,
+      } as UpdateInventoryItemSizeDto,
+      {
+      mode:'create',
+      unitOfMeasureId: createUnit.id,
+      inventoryPackageTypeId: createPkg.id,
+      } as CreateInventoryItemSizeDto,
+    ]
 
-  it('should get a inventory item by name', async () => {
-    const result = await itemService.findOneByName(FOOD_A);
+    const updateDto = {
+      sizeDtos: sizeDtos,
+    } as UpdateInventoryItemDto
+
+    const result = await itemService.update(invItemSizesTestId, updateDto);
+    if(!result){ throw new Error("item update is null"); }
+    if(!result?.sizes){ throw new Error("result sizes is null"); }
+
     expect(result).not.toBeNull();
+    expect(result.sizes.length).toEqual(2);
   });
 
-  it('should get inventory items from a list of ids', async () => {
-    const results = await itemService.findEntitiesById(testIds);
+  //find ALL
+  it('should get all items', async () => {
+    const results = await itemService.findAll();
+    expect(results.length).toEqual(12) //9 from initTestItems, 3 from create methods
 
-    expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
+    testIds = [results[0].id, results[1].id, results[2].id];
+  });
+
+  //find by IDS
+  it('should get items by list of ids', async () => {
+    const results = await itemService.findEntitiesById(testIds);
     expect(results.length).toEqual(testIds.length);
   });
 
-  it('should remove category.items reference when item.category is set to null', async () => {
-    const item = await itemService.findOneByName(FOOD_A, ['category']);
-    if(!item){ throw new Error('item is null'); }
+  // remove
+  it('should remove an item', async () => {
+    const itemToRemove = await itemService.findOne(invItemSizesTestId, ['sizes', 'category', 'vendor']);
+    if(!itemToRemove){ throw new NotFoundException(); }
+    if(!itemToRemove.sizes){ throw new Error("sizes is null"); }
+    expect(itemToRemove.sizes?.length).toBeGreaterThan(0);
 
-    const category = await categoryService.findOneByName(FOOD_CAT, ['items']);
-    if(!category){ throw new Error('category is null'); }
+    removalId = itemToRemove.id;
+    removalVendorId = itemToRemove.vendor?.id as number;
+    removalCategoryId = itemToRemove.category?.id as number;
+    removalSizeId = itemToRemove.sizes[0].id as number;
 
-    expect(item.category?.id).toEqual(category.id);
-    expect(category.items.findIndex(i => i.id === item.id)).not.toBe(-1);
-
-    const updated = await itemService.update(
-      item.id, 
-      { inventoryItemCategoryId: 0, } as UpdateInventoryItemDto,
-    );
-    expect(updated).not.toBeNull();
-    expect(updated?.category).toBeNull();
-
-    const updatedCategory = await categoryService.findOneByName(FOOD_CAT, ['items']);
-    if(!updatedCategory){ throw new Error('updated category is null'); } 
-    expect(updatedCategory.items.findIndex(i => i.id === item.id)).toBe(-1);
+    const removal = await itemService.remove(removalId);
+    expect(removal).toBeTruthy();
   });
 
-  it('should remove category.items reference when item.category is set to a different category, and add reference to new category', async () => {
-    const item = await itemService.findOneByName(FOOD_B, ['category']);
-    if(!item){ throw new Error('item is null'); }
-
-    const category = await categoryService.findOneByName(FOOD_CAT, ['items']);
-    if(!category){ throw new Error('category is null'); }
-
-    expect(item.category?.id).toEqual(category.id);
-    expect(category.items.findIndex(i => i.id === item.id)).not.toBe(-1);
-
-    const newCategory = await categoryService.findOneByName(DRYGOOD_CAT, ['items']);
-    if(!newCategory){ throw new Error('new category is null'); }
-
-    const updated = await itemService.update(
-      item.id, 
-      { inventoryItemCategoryId: newCategory?.id } as UpdateInventoryItemDto,
-    );
-
-    expect(updated).not.toBeNull();
-    expect(updated?.category?.id).toEqual(newCategory.id);
-    
-    const verifyNewCategory = await categoryService.findOneByName(DRYGOOD_CAT, ['items']);
-    expect(verifyNewCategory?.items.findIndex(i => i.id === updated?.id)).not.toEqual(-1);
-
-    const verifyOldCategory = await categoryService.findOneByName(FOOD_CAT, ['items']);
-    expect(verifyOldCategory?.items.findIndex(i => i.id === updated?.id)).toEqual(-1);
+  it('removed item\'s vendor should lose reference to item', async () => {
+    const vendor = await vendorService.findOne(removalVendorId, ['items']);
+    if(!vendor){ throw new NotFoundException(); }
+    expect(vendor.items.findIndex(item => item.id === removalId)).toEqual(-1);
   });
 
-  it('should add to a category\'s sizes array when items is null, UPDATE METHOD', async () => {
-    // get a category with no items (so items array shoud be null/undefined)
-    const newCategory = await categoryService.findOneByName("produce");
-    expect(newCategory?.items).toBeUndefined();
-
-    // create new item, that will be assigned to the newCategory in an update call
-    const newItem = await itemService.create({ name: "newItem" } as CreateInventoryItemDto);
-    if(!newItem || !newItem.id){ throw new Error('new item is null'); }
-
-    // update item with newCategory, update should initialize array and procede as expected
-    const result = await itemService.update(
-      newItem?.id, 
-      { inventoryItemCategoryId: newCategory?.id } as UpdateInventoryItemDto
-    );
-
-    const verifyCategory = await categoryService.findOneByName("produce", ["items"]);
-    expect(verifyCategory?.items).not.toBeNull();
-    expect(verifyCategory?.items.findIndex(i => i.id === result?.id)).not.toEqual(-1);
+  it('removed item\'s category should lose reference to item', async () => {
+    const category = await categoryService.findOne(removalCategoryId, ['items']);
+    if(!category){ throw new NotFoundException(); }
+    expect(category.items.findIndex(item => item.id === removalId)).toEqual(-1);
   });
 
-  it('should remove the items reference from vendor.items when item.vendor is set to null', async () => {
-    const item = await itemService.findOneByName(DRY_A, ["vendor"]);
-    if(!item){ throw new Error('item is null'); }
-
-    const vendor = await vendorService.findOneByName(VENDOR_A, ["items"]);
-    if(!vendor){ throw new Error('vendorA is null'); }
-
-    expect(vendor.items.findIndex(i => i.id === item.id)).not.toEqual(-1);
-
-    const result = await itemService.update(
-      item.id, 
-      { vendorId: 0 } as UpdateInventoryItemDto
-    );
-
-    expect(result).not.toBeNull();
-    expect(result?.vendor).toBeNull();
-
-    const verifyVendor = await vendorService.findOneByName(VENDOR_A, ["items"]);
-    if(!verifyVendor){ throw new Error('verify vendorA is null'); }
-
-    expect(verifyVendor.items.findIndex(i => i.id === result?.id)).toEqual(-1);
-  });
-
-  it('should remove the items reference from vendor.items when item.vendor is set to a different vendor, and update new vendor', async () => {
-    const item = await itemService.findOneByName(DRY_B, ["vendor"]);
-    if(!item){ throw new Error('item is null'); }
-
-    const vendor = await vendorService.findOneByName(VENDOR_B, ["items"]);
-    if(!vendor){ throw new Error('vendorB is null'); }
-
-    expect(vendor.items.findIndex(i => i.id === item.id)).not.toEqual(-1);
-
-    const newVendor = await vendorService.findOneByName(VENDOR_C);
-    if(!newVendor){ throw new Error('vendorC is null'); }
-
-    const result = await itemService.update(
-      item.id, 
-      { vendorId: newVendor.id } as UpdateInventoryItemDto
-    );
-
-    expect(result).not.toBeNull();
-    expect(result?.vendor?.id).toEqual(newVendor.id);
-
-    const verifyOld = await vendorService.findOneByName(VENDOR_B, ["items"]);
-    if(!verifyOld){ throw new Error('old vendor is null'); }
-    expect(verifyOld.items.findIndex(i => i.id === result?.id)).toEqual(-1);
-
-    const verifyNew = await vendorService.findOneByName(VENDOR_C, ["items"]);
-    if(!verifyNew){ throw new Error('vendorC is null'); }
-    expect(verifyNew.items.findIndex(i => i.id === result?.id)).not.toEqual(-1);
-  });
-
-  it('should remove size entites when item.size gets removed', async () => {
-
-    // create item
-    const itemDto = { name: "testItemSize" } as CreateInventoryItemDto;
-    const itemCreateResult = await itemService.create(itemDto);
-    if(!itemCreateResult){ throw new Error('created item is null');}
-
-    // create itemSize
-    const unit = await measureService.findOneByName(LITER);
-    if(!unit){ throw new Error('measure unit is null'); }
-
-    const packageType = await packageService.findOneByName("bag");
-    if(!packageType){ throw new Error('package type is null'); }
-
-    const sizeDto = {
-      unitOfMeasureId: unit?.id,
-      inventoryPackageTypeId: packageType?.id,
-      inventoryItemId: itemCreateResult?.id,
-    } as CreateInventoryItemSizeDto;
-
-    const size = await sizeService.create(sizeDto);
-    if(!size || !size?.id){ throw new Error('size is null'); } 
-
-    const verifyCreate = await sizeService.findOne(size.id);
-    if(!verifyCreate){ throw new Error('created size is null'); }
-
-    const removeItem = await itemService.remove(itemCreateResult.id);
-    expect(removeItem).toBeTruthy();
-
-    const verifySizeRemove = await sizeService.findOne(size.id);
-    expect(verifySizeRemove).toBeNull();
+  it('removed item\'s sizes should be deleted', async () => {
+    const sizes = await sizeService.findSizesByItemName("testItemWithSizeDtos");
+    expect(sizes?.length).toEqual(0);
   });
 });

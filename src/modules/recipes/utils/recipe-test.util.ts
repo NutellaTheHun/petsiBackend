@@ -17,6 +17,7 @@ import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-
 import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeTestUtil {
@@ -201,7 +202,7 @@ export class RecipeTestUtil {
         await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.initRecipeCategoryTestingDatabase(testContext);
         await this.initRecipeSubCategoryTestingDatabase(testContext);
-
+        await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
         return [
             await this.recipeBuilder.reset()
                 .name(CONSTANT.REC_A)
@@ -265,7 +266,7 @@ export class RecipeTestUtil {
                 .build(),
             await this.recipeBuilder.reset()
                 .name(CONSTANT.REC_F)
-                .isIngredient(false)
+                .isIngredient(true)
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
                 .cost(10.99)
@@ -362,5 +363,49 @@ export class RecipeTestUtil {
 
     public async cleanupRecipeTestingDatabase(): Promise<void> {
         await this.recipeService.getQueryBuilder().delete().execute();
+    }
+
+    /**
+     * Returns a array CreateRecipeIngredientDto with no recipe Ids assigned, 
+     * - total amount of DTOs is equal to the number of elements of quantities array,
+     * - creates ingredients from inventoryItem ids array, then subRecipe ids array.
+     * - will loop through inventoryItems and subRecipes if size of quantites array is larger than the combined length of items and subRecipes
+     */
+    public createRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateRecipeIngredientDto[]{
+        const results: CreateRecipeIngredientDto[] = [];
+
+        let itemIndex = 0;
+        let subRecipeIndex = 0;
+
+        for(let i = 0; i < quantities.length; i++){
+            if(itemIndex < itemIds.length){
+                results.push({
+                    mode: 'create',
+                    inventoryItemId: itemIds[itemIndex++],
+                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    quantity: quantities[i]
+                } as CreateRecipeIngredientDto);
+            }
+            else if(subRecipeIndex < subRecipeIds.length){
+                results.push({
+                    mode: 'create',
+                    subRecipeIngredientId: subRecipeIds[i - itemIds.length-1],
+                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    quantity: quantities[i]
+                } as CreateRecipeIngredientDto);
+            }
+            else{
+                itemIndex = 0;
+                subRecipeIndex = 0;
+
+                results.push({
+                    mode: 'create',
+                    inventoryItemId: itemIds[itemIndex++],
+                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    quantity: quantities[i]
+                } as CreateRecipeIngredientDto);
+            }
+        }
+        return results;
     }
 }

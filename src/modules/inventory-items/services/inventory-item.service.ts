@@ -32,11 +32,11 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ return null; }
 
-    await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
+    const updated = await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);
     return await this.itemRepo.save(toUpdate);
   }
 
-  async findOneByName(name: string, relations?: string[]): Promise<InventoryItem | null> {
+  async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
     return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
   }
 }

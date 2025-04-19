@@ -26,7 +26,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     return unit;
   }
 
-  async findOneByName(unitName: string, relations?: string[]): Promise<UnitOfMeasure | null> {
+  async findOneByName(unitName: string, relations?: Array<keyof UnitOfMeasure>): Promise<UnitOfMeasure | null> {
     return await this.unitRepo.findOne({ where: { name: unitName }, relations });
   }
 
@@ -35,7 +35,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
    * @param id currently not used, using Repository.save for lifecycle hooks
    * @param UnitOfMeasureDto 
    */
-  async update(id: number, updateDto: UpdateUnitOfMeasureDto, relations?: string[]): Promise<UnitOfMeasure | null> {
+  async update(id: number, updateDto: UpdateUnitOfMeasureDto, relations?: Array<keyof UnitOfMeasure>): Promise<UnitOfMeasure | null> {
     const toUpdate = await this.unitRepo.findOne({ where: { id }, relations});
     if(!toUpdate){ return null; } //more detailed error
 

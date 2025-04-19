@@ -11,6 +11,7 @@ export const OTHER_C = "otherC";
 export const VENDOR_A = "vendorA";
 export const VENDOR_B = "vendorB";
 export const VENDOR_C = "vendorC";
+export const NO_VENDOR = "No Vendor";
 
 export const BAG_PKG = "bag";
 export const PACKAGE_PKG = "package";
@@ -27,3 +28,4 @@ export const FROZEN_CAT = "frozen";
 export const OTHER_CAT = "other";
 export const PAPER_CAT = "paper goods";
 export const PRODUCE_CAT = "produce";
+export const NO_CAT = "No Category";

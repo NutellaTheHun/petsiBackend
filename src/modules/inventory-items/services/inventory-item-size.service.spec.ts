@@ -4,13 +4,15 @@ import { UnitCategoryService } from '../../unit-of-measure/services/unit-categor
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
-import { FOOD_A, FOOD_B } from '../utils/constants';
+import { BAG_PKG, BOX_PKG, CAN_PKG, DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
-
+import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
+import { NotFoundException } from '@nestjs/common';
+import { NumberLiteralType } from 'typescript';
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
@@ -26,14 +28,16 @@ describe('Inventory Item Size Service', () => {
   let testId: number;
   let testIds: number[];
 
+  let testPkgId: number;
+  let testUnitMeasureId: number;
+  let testItemId: number;
+
   beforeAll(async () => {
     module = await getInventoryItemTestingModule();
     dbTestContext = new DatabaseTestContext();
 
     testingUtil = module.get<InventoryItemTestingUtil>(InventoryItemTestingUtil);
     await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
-    //await setupInventoryItemTestingDatabaseLayerONE(module);
-
 
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
 
@@ -44,11 +48,6 @@ describe('Inventory Item Size Service', () => {
   });
 
   afterAll( async () => {
-    /*
-    await cleanupInventoryItemTestingDatabaseLayerONE(module);
-
-    const sizeQuery = sizeService.getQueryBuilder();
-    await sizeQuery.delete().execute();*/
     await dbTestContext.executeCleanupFunctions();
   });
 
@@ -60,7 +59,7 @@ describe('Inventory Item Size Service', () => {
     const unit = await unitService.findOneByName(LITER);
     if(!unit){ throw new Error('measure unit is null'); }
 
-    const packageType = await packageService.findOneByName("bag");
+    const packageType = await packageService.findOneByName(BOX_PKG);
     if(!packageType){ throw new Error('package type is null'); }
 
     const item = await itemService.findOneByName(FOOD_A);
@@ -71,60 +70,78 @@ describe('Inventory Item Size Service', () => {
       inventoryPackageTypeId: packageType?.id,
       inventoryItemId: item?.id,
     } as CreateInventoryItemSizeDto;
-
     const result = await sizeService.create(sizeDto);
-
-    // For future tests
-    testId = result?.id as number;
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    testId = result?.id as number;
+    testItemId = item.id;
   });
 
-  it('should update a inventory item size', async () => {
-    const updateUnit = await unitService.findOneByName(GALLON);
-    if(!updateUnit){ throw new Error('unit of measure to update with is null'); }
+  it('should update inventoryItem query with new size', async () => {
+    const item = await itemService.findOne(testItemId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("sizes is null"); }
 
-    const updatePackage = await packageService.findOneByName("box");
-    if(!updatePackage){ throw new Error('pacakge to update with is null'); }
+    expect(item.sizes.findIndex(size => size.id === testId)).not.toEqual(-1);
+  });
 
-    const updateItem = await itemService.findOneByName(FOOD_B);
-    if(!updateItem) { throw new Error('item to update with is null'); }
-
-    const toUpdate = await sizeService.findOne(testId);
-    if(!toUpdate){ throw new Error('size to update is null'); }
-
-
-    const result = await sizeService.update(testId, {
-      unitOfMeasureId: updateUnit.id,
-      inventoryPackageTypeId: updatePackage.id,
-      inventoryItemId: updateItem.id,
-    });
-
+  it('should find item size by id', async () => {
+    const result = await sizeService.findOne(testId);
     expect(result).not.toBeNull();
-    expect(result?.item.id).toEqual(updateItem.id);
-    expect(result?.measureUnit.id).toEqual(updateUnit.id);
-    expect(result?.packageType.id).toEqual(updatePackage.id);
+    expect(result?.id).toEqual(testId);
   });
 
-  it('should remove a inventory item size', async () => {
-    const removal = await sizeService.remove(testId);
-    expect(removal).toBeTruthy();
+  it('should find item size by item name', async () => {
+    const results = await sizeService.findSizesByItemName(FOOD_A);
+    expect(results).not.toBeNull();
+    expect(results?.findIndex(size => size.id === testId)).not.toEqual(-1);
+  });
 
-    const verify = await sizeService.findOne(testId);
-    expect(verify).toBeNull();
+  it('should update size unit of measure', async () => {
+    const unit = await unitService.findOneByName(GALLON);
+    if(!unit){ throw new Error('unit of measure to update with is null'); }
+
+    const dto = {
+      unitOfMeasureId: unit.id
+    } as UpdateInventoryItemSizeDto;
+    const result = await sizeService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.measureUnit.id).toEqual(unit.id);
+
+    testUnitMeasureId = unit.id;
+  });
+
+  it('should update size package type', async () => {
+    const pkg = await packageService.findOneByName(CAN_PKG);
+    if(!pkg){ throw new Error('pacakge to update with is null'); }
+
+    const dto = {
+      inventoryPackageTypeId: pkg.id
+    } as UpdateInventoryItemSizeDto;
+    const result = await sizeService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.packageType.id).toEqual(pkg.id);
+
+    testPkgId = pkg.id;
+  });
+
+  it('should retain all updated properties', async () => {
+    const verify = await sizeService.findOne(testId, ['item', 'measureUnit', 'packageType']);
+    if(!verify){ throw new NotFoundException(); }
+    expect(verify.item.id).toEqual(testItemId);
+    expect(verify.measureUnit.id).toEqual(testUnitMeasureId);
+    expect(verify.packageType.id).toEqual(testPkgId);
   });
 
   it('should insert tesing sizes and get all', async () => {
     const testingSizes = await testingUtil.getTestInventoryItemSizeEntities(dbTestContext);
-    
     const results = await sizeService.findAll();
 
     expect(results).not.toBeNull();
     expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toEqual(testingSizes.length);
+    expect(results.length).toEqual(testingSizes.length + 1); // including size from create test
 
-    // for future tests
     testIds = [results[0].id, results[1].id, results[2].id];
   });
 
@@ -141,4 +158,72 @@ describe('Inventory Item Size Service', () => {
     expect(results).not.toBeNull();
     expect(results.length).toEqual(testIds.length);
   });
+
+  // Currently cant delete entities referencing units of measure
+  /*
+  // If a unit is deleted, the itemSizes are also deleted.
+  it('should delete a unit of measurement and delete the item size', async () => {
+    const item = await itemService.findOneByName(FOOD_A, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes is empty"); }
+    if(item.sizes.length < 2){ throw new Error("food A should have 2 items"); }
+
+    const size = await sizeService.findOne(item.sizes[0].id, ['measureUnit']);
+    if(!size){ throw new NotFoundException(); }
+
+    const removal = await unitService.remove(size?.measureUnit.id);
+    if(!removal){ throw new Error("unit of measure removal failed"); }
+
+    const verify = await sizeService.findOne(item.sizes[0].id);
+    expect(verify).toBeNull();
+  });*/
+
+  // If a package is deleted, the itemSizes are also deleted.
+  it('should delete a package and delete the item size', async () => {
+    const item = await itemService.findOneByName(DRY_A, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes is empty");} 
+    
+    const size = await sizeService.findOne(item.sizes[0].id, ['packageType']);
+    if(!size){ throw new NotFoundException(); }
+
+    const removal = await packageService.remove(size?.packageType.id);
+    if(!removal){ throw new Error("unit of measure removal failed"); }
+
+    const verify = await sizeService.findOne(item.sizes[0].id);
+    expect(verify).toBeNull();
+  });
+
+  // If a item is deleted, the itemSizes are also deleted.
+  it('should delete a item and delete the item size', async () => {
+    const item = await itemService.findOneByName(OTHER_A, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("item sizes is empty"); }
+
+    const size = await sizeService.findOne(item.sizes[0].id, ['item']);
+    if(!size){ throw new NotFoundException(); }
+
+    const removal = await itemService.remove(size?.item.id);
+    if(!removal){ throw new Error("unit of measure removal failed"); }
+
+    const verify = await sizeService.findOne(item.sizes[0].id);
+    expect(verify).toBeNull();
+  });
+
+  it('should remove a inventory item size', async () => {
+    const removal = await sizeService.remove(testId);
+    expect(removal).toBeTruthy();
+
+    const verify = await sizeService.findOne(testId);
+    expect(verify).toBeNull();
+  });
+
+  it('should query inventoryItem with removed size not present', async () => {
+    const item = await itemService.findOne(testItemId, ['sizes']);
+    if(!item){ throw new NotFoundException(); }
+    if(!item.sizes){ throw new Error("sizes is null"); }
+
+    expect(item.sizes.findIndex(size => size.id === testId)).toEqual(-1);
+  });
+
 });

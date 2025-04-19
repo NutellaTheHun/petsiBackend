@@ -19,7 +19,7 @@ export class InventoryItem{
      * - Can be created explicitly through updating InventoryItem, 
      * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
      */
-    @OneToMany(() => InventoryItemSize, size => size.item, { nullable: true, cascade: true })
+    @OneToMany(() => InventoryItemSize, size => size.item, { cascade: true, /*orphanedRowAction: 'delete'*/ })
     sizes?: InventoryItemSize[] | null;
 
     /**

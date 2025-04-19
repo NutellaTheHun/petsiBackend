@@ -1,36 +1,43 @@
 import { TestingModule } from '@nestjs/testing';
 import { UnitOfMeasureController } from './unit-of-measure.controller';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
-import { UnitOfMeasureFactory } from '../factories/unit-of-measure.factory';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+import { GALLON, LITER, MILLILITER, FL_OUNCE, QUART } from '../utils/constants';
 
 describe('UnitOfMeasureController', () => {
   let controller: UnitOfMeasureController;
   let unitService: UnitOfMeasureService;
-  let unitFactory: UnitOfMeasureFactory;
 
   let units: UnitOfMeasure[];
+  let unitId = 1;
 
  beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
 
     controller = module.get<UnitOfMeasureController>(UnitOfMeasureController);
-    unitFactory = module.get<UnitOfMeasureFactory>(UnitOfMeasureFactory);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
 
-    units = await unitFactory.getTestingUnits();
-    let id = 1;
-    units.map(unit => unit.id = id++);
+    units = [
+      { name: GALLON } as UnitOfMeasure,
+      { name: LITER } as UnitOfMeasure,
+      { name: MILLILITER } as UnitOfMeasure,
+      { name: FL_OUNCE } as UnitOfMeasure,
+      { name: QUART } as UnitOfMeasure,
+    ];
+    units.map(unit => unit.id = unitId++);
 
     jest.spyOn(unitService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureDto) => {
       const exists = units.find(unit => unit.name === createDto.name);
       if(exists){ return null; }
 
-      const unit = unitFactory.createDtoToEntity(createDto);
-      unit.id = id++;
+      const unit = {
+        id: unitId++,
+        name: createDto.name,
+      } as UnitOfMeasure;
+
       units.push(unit);
       return unit;
     });
@@ -43,11 +50,17 @@ describe('UnitOfMeasureController', () => {
       const index = units.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      const updated = unitFactory.updateDtoToEntity(updateDto);
-      updated.id = id++;
-      units[index] = updated;
+      if(updateDto.name){
+        units[index].name = updateDto.name;
+      }
+      if(updateDto.abbreviation){
+        units[index].abbreviation = updateDto.abbreviation;
+      }
+      if(updateDto.conversionFactorToBase){
+        units[index].conversionFactorToBase = updateDto.conversionFactorToBase;
+      }
 
-      return updated;
+      return units[index];
     });
 
     jest.spyOn(unitService, "findAll").mockResolvedValue(units);
@@ -72,18 +85,20 @@ describe('UnitOfMeasureController', () => {
   });
 
   it('should create a unit', async () => {
-    const unitDto = unitFactory.createDtoInstance({
+    const dto = {
       name: "testUnit",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateUnitOfMeasureDto;
+
+    const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
   
   it('should fail to create a unit (already exists)', async () => {
-    const unitDto = unitFactory.createDtoInstance({
+    const dto = {
       name: "testUnit",
-    })
-    const result = await controller.create(unitDto);
+    } as CreateUnitOfMeasureDto;
+
+    const result = await controller.create(dto);
     expect(result).toBeNull();
   });
 
@@ -106,8 +121,11 @@ describe('UnitOfMeasureController', () => {
     const toUpdate = await unitService.findOneByName("testUnit");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    toUpdate.name = "UPDATED_testUnit";
-    const result = await controller.update(toUpdate.id, toUpdate);
+    const dto = {
+      name: "UPDATED_testUnit"
+    } as UpdateUnitOfMeasureDto;
+
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
     expect(result?.name).toEqual("UPDATED_testUnit")
   });

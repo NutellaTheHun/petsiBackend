@@ -9,7 +9,7 @@ export class CreateUserDto {
     @IsString()
     //@IsNotEmpty()
     @IsOptional()
-    readonly email: string;
+    readonly email?: string | null;
 
     @IsString()
     @IsNotEmpty()
@@ -24,6 +24,5 @@ export class CreateUserDto {
 export function CreateUserDtoDefaultValues(): Partial<CreateUserDto> {
     return {
         roleIds: [],
-        email: undefined,
     };
 }

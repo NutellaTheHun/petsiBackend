@@ -11,15 +11,13 @@ export class RecipeService extends ServiceBase<Recipe>{
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
         private readonly recipeBuilder: RecipeBuilder,
-
-        //private readonly menuItemService: MenuItemService,
     ){ super(recipeRepo); }
 
-    async create(createDto: CreateRecipeDto): Promise<Recipe | null> {
-        const exists = await this.findOneByName(createDto.name);
+    async create(dto: CreateRecipeDto): Promise<Recipe | null> {
+        const exists = await this.findOneByName(dto.name);
         if(exists) { return null; }
 
-        const recipe = await this.recipeBuilder.buildCreateDto(createDto);
+        const recipe = await this.recipeBuilder.buildCreateDto(dto);
         return await this.recipeRepo.save(recipe);
     }
         
@@ -34,7 +32,11 @@ export class RecipeService extends ServiceBase<Recipe>{
         return await this.recipeRepo.save(toUpdate);
     }
 
-    async findOneByName(name: string, relations?: string[]): Promise<Recipe | null> {
+    async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
         return this.recipeRepo.findOne({ where: {name: name }, relations});
+    }
+
+    async findByIsIngredient(relations?: Array<keyof Recipe>): Promise<Recipe[]> {
+        return this.recipeRepo.find({where: { isIngredient: true }});
     }
 }

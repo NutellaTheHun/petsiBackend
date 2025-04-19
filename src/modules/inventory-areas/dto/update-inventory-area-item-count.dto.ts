@@ -1,4 +1,10 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateInventoryAreaItemCountDto } from "./create-inventory-area-item-count.dto";
+import { IsNumber, IsPositive } from "class-validator";
+import { BaseInventoryAreaItemDto } from "./base-inventory-area-item.dto";
 
-export class UpdateInventoryAreaItemCountDto extends PartialType(CreateInventoryAreaItemCountDto){}
+export class UpdateInventoryAreaItemDto extends BaseInventoryAreaItemDto{
+    readonly mode: 'update' = 'update';
+
+    @IsNumber()
+    @IsPositive()
+    readonly id: number;
+}

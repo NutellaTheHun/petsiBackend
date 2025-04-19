@@ -1,7 +1,6 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 import { QueryFailedError } from "typeorm";
 
-
 export function queryFailedBadRequest(queryError: QueryFailedError){
     return new HttpException(
                     {
