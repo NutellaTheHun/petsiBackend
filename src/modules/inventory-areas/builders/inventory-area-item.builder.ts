@@ -72,11 +72,12 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
     public async buildCreateDto(parentCount: InventoryAreaCount, dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
         this.reset();
 
-        /*if(dto.areaCountId){
+        if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
-        }*/
-        this.entity.areaCount = parentCount;
-
+        } else {
+            this.entity.areaCount = parentCount;
+        }
+        
         if(dto.inventoryAreaId){
            this.inventoryAreaById(dto.inventoryAreaId);
         }

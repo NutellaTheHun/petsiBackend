@@ -208,6 +208,7 @@ export class InventoryAreaTestUtil {
 
         for(const item of itemConfigs){
             results.push({
+                mode: 'create',
                 inventoryAreaId,
                 areaCountId,
                 unitAmount: unitAmount++,

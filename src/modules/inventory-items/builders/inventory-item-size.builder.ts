@@ -51,6 +51,10 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize>{
 
         this.entity.item = parentItem;
 
+        if(dto.inventoryItemId){
+            this.InventoryItemById(dto.inventoryItemId);
+        }
+
         if(dto.inventoryPackageTypeId){
             this.packageById(dto.inventoryPackageTypeId);
         }

@@ -44,8 +44,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         if(!toUpdate){ return null; }
 
         await this.areaCountBuilder.buildUpdateDto(toUpdate, updateDto);
-        return await this.areaCountRepo.save(toUpdate);
-        
+        return await this.areaCountRepo.save(toUpdate); 
     }
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {

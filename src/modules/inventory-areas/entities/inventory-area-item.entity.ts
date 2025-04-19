@@ -24,7 +24,7 @@ export class InventoryAreaItem {
      * Reference to the inventory count when this item is counted.
      * - If the referenced inventory count is deleted, its associated counted items will be deleted 
      */
-    @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     areaCount: InventoryAreaCount;
 
     /**

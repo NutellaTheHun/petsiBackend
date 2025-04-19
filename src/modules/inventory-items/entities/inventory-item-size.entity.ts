@@ -20,7 +20,7 @@ export class InventoryItemSize {
      * - Not a database entity. From UnitOfMeasureModule
      * - Selected from pre-existing options.
      */
-    @ManyToOne(() => UnitOfMeasure, { nullable: false })
+    @ManyToOne(() => UnitOfMeasure)
     measureUnit: UnitOfMeasure;
 
     /**
@@ -28,7 +28,7 @@ export class InventoryItemSize {
      * - Selected from pre-existing package types. (Not created during an inventory count when inventoryItemSize is created)
      * - If a package type is deleted, all ItemSizes referencing it will be removed.
      */
-    @ManyToOne(() => InventoryItemPackage, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => InventoryItemPackage, { onDelete: 'CASCADE' })
     packageType: InventoryItemPackage;
 
     /**
