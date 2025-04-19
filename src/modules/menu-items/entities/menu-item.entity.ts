@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
+import { Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
 
