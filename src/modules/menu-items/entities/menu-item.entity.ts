@@ -50,7 +50,7 @@ export class MenuItem {
      * - Example: MenuItem {Keylime Pie}, MenuItem.veganOption={null}
      * - Necessary for aggregating the pie and its vegan version together on the BackListPie report (vegan amount denoted with a "V")
      */
-    @OneToOne(() => MenuItem, { nullable:true })
+    @OneToOne(() => MenuItem, { nullable: true })
     veganOption?: MenuItem;
 
     /**
@@ -66,7 +66,7 @@ export class MenuItem {
      * - Example: MenuItem {Classic Apple}, MenuItem.veganTakeNBakeOption={Vegan Apple Take'n Bake}
      * - Example: MenuItem {Bananna Cream Pie}, MenuItem.takeNBakeOption={null}
      */
-    @OneToOne(() => MenuItem, { nullable:true })
+    @OneToOne(() => MenuItem, { nullable: true })
     veganTakeNBakeOption?: MenuItem;
 
     /**

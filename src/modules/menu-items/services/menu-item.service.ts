@@ -1,7 +1,8 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { MenuItemBuilder } from "../builders/menu-item.builder";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
@@ -11,14 +12,24 @@ export class MenuItemService extends ServiceBase<MenuItem> {
     constructor(
         @InjectRepository(MenuItem)
         private readonly itemRepo: Repository<MenuItem>,
+
+        private readonly itemBuilder: MenuItemBuilder,
     ){ super(itemRepo); }
 
     async create(dto: CreateMenuItemDto): Promise<MenuItem | null> {
-        throw new NotImplementedException();
+        const exist = await this.findOneByName(dto.name);
+        if(exist){ return null; }
+
+        const item = await this.itemBuilder.buildCreateDto(dto);
+        return await this.itemRepo.save(item);
     }
 
     async update(id: number, dto: UpdateMenuItemDto): Promise<MenuItem | null> {
-        throw new NotImplementedException();
+        const toUpdate = await this.findOne(id);
+        if(!toUpdate){ return null; }
+
+        const updated = await this.itemBuilder.buildUpdateDto(toUpdate, dto);
+        return await this.itemRepo.save(toUpdate);
     }
 
     async findOneByName(name: string, relations?: Array<keyof MenuItem>): Promise<MenuItem | null> {

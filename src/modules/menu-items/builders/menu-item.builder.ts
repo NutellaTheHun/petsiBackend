@@ -79,8 +79,6 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    
-
     public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {
         this.reset();
 

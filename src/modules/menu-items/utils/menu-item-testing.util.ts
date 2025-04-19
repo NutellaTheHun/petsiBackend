@@ -1,15 +1,15 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
-import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { MenuItemCategoryService } from "../services/menu-item-category.service";
+import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { MenuItemSize } from "../entities/menu-item-size.entity";
-import { MenuItemCategory } from "../entities/menu-item-category.entity";
-import { MenuItem } from "../entities/menu-item.entity";
-import { getTestCategoryNames, getTestItemNames } from "./constants";
-import { MenuItemBuilder } from "../builders/menu-item.builder";
-import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
 import { MenuItemCategoryBuilder } from "../builders/menu-item-category.builder";
+import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
+import { MenuItemBuilder } from "../builders/menu-item.builder";
+import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { MenuItemSize } from "../entities/menu-item-size.entity";
+import { MenuItem } from "../entities/menu-item.entity";
+import { MenuItemCategoryService } from "../services/menu-item-category.service";
+import { MenuItemSizeService } from "../services/menu-item-size.service";
+import { MenuItemService } from "../services/menu-item.service";
+import { getTestCategoryNames, getTestItemNames } from "./constants";
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -77,25 +77,29 @@ export class MenuItemTestingUtil {
 
 
     // Menu Item
+
+    /**
+     * Creates Menu Item entities with category and name set
+     * @param testContext 
+     */
     public async getTestMenuItemEntities(testContext: DatabaseTestContext): Promise<MenuItem[]>{
         await this.initMenuItemSizeTestDatabase(testContext);
         await this.initMenuItemCategoryTestDatabase(testContext);
 
         const itemNames = getTestItemNames();
+        const categoryIds = (await this.categoryService.findAll()).map(cat => cat.id);
+        let catIdx = 0;
         const results: MenuItem[] = [];
 
-        // squareCatalogId?: string
-        // squareCategoryId?: string
-        // category?: MenuItemCategory
-        // name: string
-        // searchNames?: string[] | null
-        // veganOption?: MenuItem
-        // takeNBakeOption?: MenuItem
-        // veganTakeNBakeOption?: MenuItem
-        // validSizes?: MenuItemSize[] | null
-        // isPOTM: boolean
-        // isParbake: boolean
-        throw new NotImplementedException();
+        for(const itemName of itemNames){
+            results.push(
+                await this.itemBuilder.reset()
+                    .categorybyId(catIdx++ % categoryIds.length)
+                    .name(itemName)
+                    .build()
+            )
+        }
+        return results;
     }
 
     public async initMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
