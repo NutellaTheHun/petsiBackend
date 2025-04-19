@@ -15,6 +15,7 @@ import { MenuItemBuilder } from './builders/menu-item.builder';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
 import { Order } from '../orders/entities/order.entity';
 import { OrderType } from '../orders/entities/order-type.entity';
+import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
 
 @Module({
   imports: [
@@ -22,10 +23,6 @@ import { OrderType } from '../orders/entities/order-type.entity';
       MenuItemCategory,
       MenuItemSize,
       MenuItem,
-
-      OrderMenuItem,
-      Order,
-      OrderType,
     ])
   ],
 
@@ -43,12 +40,16 @@ import { OrderType } from '../orders/entities/order-type.entity';
     MenuItemCategoryBuilder,
     MenuItemSizeBuilder,
     MenuItemBuilder,
+
+    MenuItemTestingUtil,
   ],
 
   exports: [
     MenuItemCategoryService,
     MenuItemSizeService,
     MenuItemService,
+
+    MenuItemTestingUtil,
   ]
 })
 export class MenuItemsModule {}

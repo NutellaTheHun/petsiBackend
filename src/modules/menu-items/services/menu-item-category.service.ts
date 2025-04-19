@@ -20,4 +20,8 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
     async update(id: number, dto: UpdateMenuItemCategoryDto): Promise<MenuItemCategory | null> {
         throw new NotImplementedException();
     }
+
+    async findOneByName(name: string, relations?: Array<keyof MenuItemCategory>): Promise<MenuItemCategory | null> {
+            return await this.categoryRepo.findOne({ where: { name: name }, relations: relations });
+    }
 }

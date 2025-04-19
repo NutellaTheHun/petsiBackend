@@ -16,14 +16,14 @@ export class MenuItem {
      * MenuItems that originate from Square's Catalog API will retain its catalog id. 
      * Otherwise this variable will be null
      */
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     squareCatalogId?: string;
 
     /**
      * MenuItems that originate from Square's Catalog API will retain its category id. 
      * Otherwise this variable will be null
      */
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     squareCategoryId?: string;
 
     /**
@@ -32,20 +32,6 @@ export class MenuItem {
      */
     @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL'})
     category?: MenuItemCategory;
-    /*
-    @BeforeInsert()
-    async addToCategory() {
-        if (this.category) {
-            this.category.items = [...this.category.items, this];
-        }
-    }
-
-    @BeforeRemove()
-    async removeFromCategory(){
-        if(this.category){
-            this.category.items = this.category.items.filter( item => item.id !== this.id);
-        }
-    }*/
 
     @Column({ nullable: false })
     name: string;
@@ -109,8 +95,8 @@ export class MenuItem {
     /**
      * The list of MenuItems, their size, and quantity associated with the order.
      */
-    @OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
-    onOrder?: OrderMenuItem[] | null;
+    //@OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
+    //onOrder?: OrderMenuItem[] | null;
 
     /**
      * The date the order is inserted into the database. 
