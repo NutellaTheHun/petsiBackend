@@ -15,10 +15,11 @@ describe('menu item size service', () => {
     let testIds: number[];
 
     beforeAll(async () => {
-         const module: TestingModule = await getMenuItemTestingModule();
+        const module: TestingModule = await getMenuItemTestingModule();
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-
+        await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
+        
         sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
     });
 

@@ -1,4 +1,12 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateMenuItemCategoryDto } from "./create-menu-item-category.dto";
+import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
-export class UpdateMenuItemCategoryDto extends PartialType(CreateMenuItemCategoryDto) {}
+export class UpdateMenuItemCategoryDto {
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
+
+    @IsArray()
+    @IsPositive({ each: true})
+    @IsNumber({}, { each: true})
+    readonly menuItemIds: number[];
+}

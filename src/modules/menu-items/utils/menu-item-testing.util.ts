@@ -9,7 +9,7 @@ import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
-import { getTestCategoryNames, getTestItemNames } from "./constants";
+import { getTestCategoryNames, getTestItemNames, getTestSizeNames } from "./constants";
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -25,7 +25,7 @@ export class MenuItemTestingUtil {
 
     // Menu Item Size
     public async getTestMenuItemSizeEntities(testContext: DatabaseTestContext): Promise<MenuItemSize[]>{
-        const sizeNames = getTestItemNames();
+        const sizeNames = getTestSizeNames();
         const results: MenuItemSize[] = [];
 
         for(const name in sizeNames){

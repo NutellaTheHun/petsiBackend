@@ -12,7 +12,6 @@ import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { NotFoundException } from '@nestjs/common';
-import { NumberLiteralType } from 'typescript';
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
