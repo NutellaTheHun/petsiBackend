@@ -1,4 +1,4 @@
-import { forwardRef, Inject, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject, NotFoundException, NotImplementedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -8,6 +8,7 @@ import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dt
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaService } from "./inventory-area.service";
+import { InventoryAreaCountService } from "./inventory-area-count.service";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(
@@ -17,6 +18,9 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
         private readonly inventoryAreaService: InventoryAreaService,
+
+        @Inject(forwardRef(() => InventoryAreaCountService))
+        private readonly countService: InventoryAreaCountService,
 
         private readonly itemService: InventoryItemService,
     ){ super(itemCountRepo); }
@@ -28,9 +32,11 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
      * - Requires the parent inventoryAreaCount and InventoryArea entities to already exist
      */
     async create(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
-        throw new NotImplementedException();
-        //const countedItem = await this.itemCountBuilder.buildCreateDto(dto);
-        //return this.itemCountRepo.save(countedItem);
+        const parentInventoryCount = await this.countService.findOne(dto.areaCountId as number)
+        if(!parentInventoryCount){ throw new NotFoundException(); }
+        
+        const countedItem = await this.itemCountBuilder.buildCreateDto(parentInventoryCount, dto);
+        return this.itemCountRepo.save(countedItem);
     }
 
     /**
