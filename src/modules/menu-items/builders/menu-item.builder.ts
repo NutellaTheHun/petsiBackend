@@ -48,6 +48,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public veganOptionById(id: number): this {
+        if(id === 0){
+            return this.setProp('veganOption', null);
+        }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganOption', id);
     }
 
@@ -56,6 +59,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public takeNBakeOptionById(id: number): this {
+        if(id === 0){
+            return this.setProp('takeNBakeOption', null)
+        }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'takeNBakeOption', id);
     }
 
@@ -64,6 +70,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public veganTakeNBakeOptionById(id: number): this {
+        if(id === 0){
+            return this.setProp('veganTakeNBakeOption', null);
+        }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganTakeNBakeOption', id);
     }
 
@@ -72,6 +81,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public categorybyId(id: number): this {
+        if(id === 0){
+            return this.setProp('category', null);
+        }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
 
@@ -148,16 +160,16 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.validSizeIds){
             this.validSizesById(dto.validSizeIds);
         }
-        if(dto.veganOptionMenuId){
+        if(dto.veganOptionMenuId !== undefined){
             this.veganOptionById(dto.veganOptionMenuId);
         }
-        if(dto.takeNBakeOptionMenuId){
+        if(dto.takeNBakeOptionMenuId !== undefined){
             this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
         }
-        if(dto.veganTakeNBakeOptionMenuId){
+        if(dto.veganTakeNBakeOptionMenuId !== undefined){
             this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
         }
-        if(dto.categoryId){
+        if(dto.categoryId !== undefined){
             this.categorybyId(dto.categoryId);
         }
 

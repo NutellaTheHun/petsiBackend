@@ -1,6 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { MenuItem } from "./menu-item.entity";
-import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 /**
  * - All items except pie are size "regular"

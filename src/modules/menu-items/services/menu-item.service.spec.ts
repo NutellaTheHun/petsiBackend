@@ -1,16 +1,14 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
-import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
-import { MenuItemService } from "./menu-item.service";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
-import exp from "constants";
-import { MenuItemCategoryService } from "./menu-item-category.service";
 import { CAT_BLUE, CAT_GREEN, CAT_RED, item_a, item_b, item_c } from "../utils/constants";
-import { NotFoundException } from "@nestjs/common";
-import { take } from "rxjs";
+import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
+import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
+import { MenuItemCategoryService } from "./menu-item-category.service";
 import { MenuItemSizeService } from "./menu-item-size.service";
+import { MenuItemService } from "./menu-item.service";
 
 describe('menu item service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -22,8 +20,6 @@ describe('menu item service', () => {
 
     let testId: number;
     let testIds: number[];
-    let validSizeAddIds: number[];
-    let validSizeRemoveIds: number[];
     let deletedValidSizeId: number;
     let veganTakeNBakeId: number;
     let takeNBakeId: number;
@@ -151,10 +147,10 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
-        for(const name of result?.searchNames){
+        for(const name of result.searchNames){
             expect(searchNamesMod.findIndex(sName => sName === name)).not.toEqual(-1);
         }
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
     });
 
     it('should update searchNames (remove)', async () => {
@@ -170,11 +166,11 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
-        for(const name of result?.searchNames){
+        for(const name of result.searchNames){
             expect(searchNamesMod.findIndex(sName => sName === name)).not.toEqual(-1);
         }
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
     });
 
     it('should update isPOTM', async () => {
@@ -191,8 +187,8 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
     });
 
@@ -210,8 +206,8 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
     });
@@ -233,8 +229,8 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category?.id).toEqual(category.id);
@@ -265,8 +261,8 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category?.id).toEqual(category.id);
@@ -301,8 +297,8 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeNull();
@@ -332,11 +328,11 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeNull();
+        expect(result.category).toBeUndefined();
         expect(result.veganOption?.id).toEqual(veganItem.id);
         expect(result.veganOption?.name).toEqual(veganItem.name);
 
@@ -360,11 +356,11 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeNull();
+        expect(result.category).toBeUndefined();
         expect(result.takeNBakeOption?.id).toEqual(takeNBakeItem.id);
         expect(result.takeNBakeOption?.name).toEqual(takeNBakeItem.name);
 
@@ -388,11 +384,11 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeNull();
+        expect(result.category).toBeUndefined();
         expect(result.veganTakeNBakeOption?.id).toEqual(veganTakeNBakeItem.id);
         expect(result.veganTakeNBakeOption?.name).toEqual(veganTakeNBakeItem.name);
 
@@ -416,11 +412,11 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeNull();
+        expect(result.category).toBeUndefined();
         expect(result.validSizes?.length).toEqual(4);
     });
 
@@ -444,11 +440,11 @@ describe('menu item service', () => {
         expect(result?.squareCatalogId).toEqual("123456");
         expect(result?.squareCategoryId).toEqual("abcdef");
         expect(result.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeNull();
+        expect(result.category).toBeUndefined();
         expect(result.validSizes?.length).toEqual(3);
         expect(result.validSizes?.findIndex(size => size.id === deletedValidSizeId)).toEqual(-1);
     });
@@ -463,8 +459,8 @@ describe('menu item service', () => {
         expect(item?.squareCatalogId).toEqual("123456");
         expect(item?.squareCategoryId).toEqual("abcdef");
         expect(item.searchNames.length).toEqual(2);
-        expect(searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(item.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(item.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(item.isPOTM).toBeTruthy();
         expect(item.isParbake).toBeTruthy();
         expect(item.category).toBeNull();
@@ -488,7 +484,76 @@ describe('menu item service', () => {
         const results = await itemService.findEntitiesById(testIds);
         if(!results){ throw new Error(); }
 
-        expect(results.length).toEqual(4);
+        expect(results.length).toEqual(3);
+    });
+
+    it('should remove veganOption', async () => {
+        const dto = {
+            veganOptionMenuId: 0
+        } as UpdateMenuItemDto;
+
+        const result = await itemService.update(testId, dto);
+        if(!result){ throw new NotFoundException(); }
+        if(!result.searchNames){ throw new Error(); }
+
+        expect(result).not.toBeNull();
+        expect(result?.name).toEqual("updateTestName");
+        expect(result?.squareCatalogId).toEqual("123456");
+        expect(result?.squareCategoryId).toEqual("abcdef");
+        expect(result.searchNames.length).toEqual(2);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.isPOTM).toBeTruthy();
+        expect(result.isParbake).toBeTruthy();
+        expect(result.category).toBeUndefined();
+
+        expect(result.veganOption).toBeNull();
+    });
+
+    it('should remove takeNBakeOption', async () => {
+        const dto = {
+            takeNBakeOptionMenuId: 0
+        } as UpdateMenuItemDto;
+
+        const result = await itemService.update(testId, dto);
+        if(!result){ throw new NotFoundException(); }
+        if(!result.searchNames){ throw new Error(); }
+
+        expect(result).not.toBeNull();
+        expect(result?.name).toEqual("updateTestName");
+        expect(result?.squareCatalogId).toEqual("123456");
+        expect(result?.squareCategoryId).toEqual("abcdef");
+        expect(result.searchNames.length).toEqual(2);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.isPOTM).toBeTruthy();
+        expect(result.isParbake).toBeTruthy();
+        expect(result.category).toBeUndefined();
+
+        expect(result.takeNBakeOption).toBeNull();
+    });
+
+    it('should remove veganTakeNBakeOption', async () => {
+        const dto = {
+            veganTakeNBakeOptionMenuId: 0
+        } as UpdateMenuItemDto;
+
+        const result = await itemService.update(testId, dto);
+        if(!result){ throw new NotFoundException(); }
+        if(!result.searchNames){ throw new Error(); }
+
+        expect(result).not.toBeNull();
+        expect(result?.name).toEqual("updateTestName");
+        expect(result?.squareCatalogId).toEqual("123456");
+        expect(result?.squareCategoryId).toEqual("abcdef");
+        expect(result.searchNames.length).toEqual(2);
+        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
+        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
+        expect(result.isPOTM).toBeTruthy();
+        expect(result.isParbake).toBeTruthy();
+        expect(result.category).toBeUndefined();
+
+        expect(result.veganTakeNBakeOption).toBeNull();
     });
 
     it('should remove menu item', async () => {

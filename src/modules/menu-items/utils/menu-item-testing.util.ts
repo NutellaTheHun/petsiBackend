@@ -28,7 +28,7 @@ export class MenuItemTestingUtil {
         const sizeNames = getTestSizeNames();
         const results: MenuItemSize[] = [];
 
-        for(const name in sizeNames){
+        for(const name of sizeNames){
             results.push(
                 await this.sizeBuilder.reset()
                     .name(name)
@@ -54,7 +54,7 @@ export class MenuItemTestingUtil {
         const categoryNames = getTestCategoryNames();
         const results: MenuItemCategory[] = [];
 
-        for(const name in categoryNames){
+        for(const name of categoryNames){
             results.push(
                 await this.categoryBuilder.reset()
                     .name(name)
@@ -94,7 +94,7 @@ export class MenuItemTestingUtil {
         for(const itemName of itemNames){
             results.push(
                 await this.itemBuilder.reset()
-                    .categorybyId(catIdx++ % categoryIds.length)
+                    .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                     .name(itemName)
                     .build()
             )
