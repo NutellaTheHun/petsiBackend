@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
@@ -13,7 +13,10 @@ import { Order } from "../entities/order.entity";
 export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
     constructor(
         private readonly orderService: OrderService,
+
+        @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
+
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
     ){ super(OrderMenuItem); }

@@ -1,23 +1,35 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { OrderMenuItemBuilder } from "../builders/order-menu-item.builder";
+import { OrderService } from "./order.service";
 
 @Injectable()
 export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
     constructor(
         @InjectRepository(OrderMenuItem)
-        private readonly orderItemRepo: Repository<OrderMenuItem>
+        private readonly orderItemRepo: Repository<OrderMenuItem>,
+        private readonly itemBuilder: OrderMenuItemBuilder,
+        private readonly orderService: OrderService,
     ){ super(orderItemRepo)}
 
-    async create(createDto: CreateOrderMenuItemDto): Promise<OrderMenuItem | null> {
-        throw new NotImplementedException();
+    async create(dto: CreateOrderMenuItemDto): Promise<OrderMenuItem | null> {
+        const parentOrder = await this.orderService.findOne(dto.orderId);
+        if(!parentOrder){ throw new NotFoundException(); }
+        
+        const oType = await this.itemBuilder.buildCreateDto(parentOrder, dto);
+        return await this.orderItemRepo.save(oType);
     }
 
-    async update(id: number, updateDto: UpdateOrderMenuItemDto): Promise<OrderMenuItem | null>{
-        throw new NotImplementedException();
+    async update(id: number, dto: UpdateOrderMenuItemDto): Promise<OrderMenuItem | null>{
+        const toUpdate = await this.findOne(id);
+        if(!toUpdate){ return null; }
+
+        await this.itemBuilder.buildUpdateDto(toUpdate, dto);
+        return await this.orderItemRepo.save(toUpdate);
     }
 }
