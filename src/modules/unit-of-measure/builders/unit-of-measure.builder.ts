@@ -4,7 +4,6 @@ import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/update-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { UnitCategoryService } from "../services/unit-category.service";
-import { NO_CAT } from "../utils/constants";
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
@@ -23,8 +22,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
 
     public categoryById(id: number): this {
         if(id === 0){
-            this.entity.category = null;
-            return this;
+            return this.setProp('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
@@ -54,8 +52,6 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         }
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
-        } else {
-            this.categoryByName(NO_CAT);
         }
 
         return await this.build();
@@ -74,10 +70,10 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         if(dto.conversionFactorToBase){
             this.conversionFactor(dto.conversionFactorToBase);
         }
-        // 0 is passed intentionally to remove a category to a unit,
         if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
         }
+        
         return await this.build();
     }
 }

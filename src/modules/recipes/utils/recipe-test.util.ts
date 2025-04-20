@@ -152,9 +152,6 @@ export class RecipeTestUtil {
             await this.categorybuilder.reset()
                 .name(CONSTANT.REC_CAT_C)
                 .build(),
-            await this.categorybuilder.reset()
-                .name(CONSTANT.REC_CAT_NONE)
-                .build(),
         ];
     }
 
@@ -174,10 +171,6 @@ export class RecipeTestUtil {
                 .name(CONSTANT.REC_SUBCAT_2)
                 .parentCategoryByName(CONSTANT.REC_CAT_A)
                 .build(),
-            await this.subCategoryBuilder.reset()
-                .name(CONSTANT.REC_SUBCAT_NONE)
-                .parentCategoryByName(CONSTANT.REC_CAT_A)
-                .build(),
 
             await this.subCategoryBuilder.reset()
                 .name(CONSTANT.REC_SUBCAT_3)
@@ -185,10 +178,6 @@ export class RecipeTestUtil {
                 .build(),
             await this.subCategoryBuilder.reset()
                 .name(CONSTANT.REC_SUBCAT_4)
-                .parentCategoryByName(CONSTANT.REC_CAT_B)
-                .build(),
-            await this.subCategoryBuilder.reset()
-                .name(CONSTANT.REC_SUBCAT_NONE)
                 .parentCategoryByName(CONSTANT.REC_CAT_B)
                 .build(),
         ];
@@ -238,7 +227,6 @@ export class RecipeTestUtil {
                 .servingUnitOfMeasureByName(GRAM)
                 .batchResultUnitOfMeasureByName(KILOGRAM)
                 .categoryByName(CONSTANT.REC_CAT_A)
-                .subCategoryByName(CONSTANT.REC_SUBCAT_NONE)
                 .build(),
             await this.recipeBuilder.reset()
                 .name(CONSTANT.REC_D)
@@ -274,7 +262,6 @@ export class RecipeTestUtil {
                 .servingUnitOfMeasureByName(GRAM)
                 .batchResultUnitOfMeasureByName(KILOGRAM)
                 .categoryByName(CONSTANT.REC_CAT_A)
-                .subCategoryByName(CONSTANT.REC_SUBCAT_NONE)
                 .build(),
         ];
     }

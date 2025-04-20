@@ -1,21 +1,21 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 import { CreateRecipeDto } from "../dto/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/update-recipe-dto";
+import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
-import { REC_CAT_NONE, REC_SUBCAT_NONE } from "../utils/constants";
 import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe>{
     constructor(
-        //private readonly menuItemService: MenuItemsService,
+        
         @Inject(forwardRef(() => RecipeIngredientService))
         private readonly ingredientService: RecipeIngredientService,
         
@@ -26,21 +26,24 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         private readonly subCategoryService: RecipeSubCategoryService,
 
         private readonly unitService: UnitOfMeasureService,
-
         private readonly ingredientBuilder: RecipeIngredientBuilder,
+        private readonly menuItemService: MenuItemService,
     ){ super(Recipe); }
 
     public name(name: string): this {
         return this.setProp('name', name);
     }
-    /*
+    
     public menuItemById(id: number): this {
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), ,id);
+        if(id === 0){
+            return this.setProp('menuItem', null);
+        }
+        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'menuItem',id);
     }
 
     public menuItemByName(name: string): this {
-        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), ,name);
-    }*/
+        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'menuItem', name);
+    }
 
     public isIngredient(value: boolean): this {
         return this.setProp('isIngredient', value);
@@ -92,7 +95,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
     public categoryById(id: number): this {
         if(id === 0){
-            return this.categoryByName(REC_CAT_NONE);
+            return this.setProp('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
@@ -103,7 +106,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
     public subCategoryById(id: number): this {
         if(id === 0){
-            return this.subCategoryByName(REC_SUBCAT_NONE);
+            return this.setProp('subCategory', null);
         }
         return this.setPropById(this.subCategoryService.findOne.bind(this.subCategoryService), 'subCategory', id);
     }
@@ -123,12 +126,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
 
-        // if no category specified on creation, set to default category: "No Category"
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
-        }
-        else{
-            this.categoryByName(REC_CAT_NONE);
         }
 
         if(dto.cost){
@@ -139,9 +138,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.isIngredient(dto.isIngredient);
         }
 
-        // optional
         if(dto.menuItemId){
-            // await this.menuItemById(dto.menuItemId);
+            await this.menuItemById(dto.menuItemId);
         }
 
         if(dto.name){
@@ -160,12 +158,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
 
-        // if no category specified on creation, set to default sub-category: "No Sub-Category"
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
-        } 
-        else {
-            this.subCategoryByName(REC_SUBCAT_NONE);
         }
 
         if(dto.ingredientDtos){
@@ -175,7 +169,6 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return await this.build();
     }
 
-    // handle if category/sub-category is 0, set to NO-|Sub|Category
     public async buildUpdateDto(toUpdate: Recipe, dto: UpdateRecipeDto): Promise<Recipe> {
         this.reset();
         this.updateEntity(toUpdate);
@@ -188,8 +181,11 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
         if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
-            if(dto.subCategoryId){
-                this.subCategoryByName(REC_SUBCAT_NONE);
+
+            if(dto.subCategoryId !== undefined){
+                this.subCategoryById(dto.subCategoryId);
+            } else {
+                this.subCategoryById(0);
             }
         }
         if(dto.cost){
@@ -198,8 +194,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
         }
-        if(dto.menuItemId){
-            // await this.menuItemById(dto.menuItemId);
+        if(dto.menuItemId !== undefined){
+            await this.menuItemById(dto.menuItemId);
         }
         if(dto.name){
             this.name(dto.name);
