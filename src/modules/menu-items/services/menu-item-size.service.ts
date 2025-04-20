@@ -1,23 +1,37 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
-import { MenuItemSize } from "../entities/menu-item-size.entity";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { MenuItemSize } from "../entities/menu-item-size.entity";
 
 @Injectable()
 export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
     constructor(
         @InjectRepository(MenuItemSize)
         private readonly sizeRepo: Repository<MenuItemSize>,
+        private readonly sizeBuilder: MenuItemSizeBuilder,
     ){ super(sizeRepo); }
 
     async create(dto: CreateMenuItemSizeDto): Promise<MenuItemSize | null> {
-        throw new NotImplementedException();
+        const exists = await this.findOneByName(dto.name);
+        if(exists){ return null; }
+
+        const packageType = await this.sizeBuilder.buildCreateDto(dto);
+        return await this.sizeRepo.save(packageType);
     }
 
     async update(id: number, dto: UpdateMenuItemSizeDto): Promise<MenuItemSize | null> {
-        throw new NotImplementedException();
+        const toUpdate = await this.findOne(id);
+        if(!toUpdate){ return null }
+
+        this.sizeBuilder.buildUpdateDto(toUpdate, dto);
+        return await this.sizeRepo.save(toUpdate);
+    }
+
+    async findOneByName(name: string, relations?: Array<keyof MenuItemSize>): Promise<MenuItemSize | null> {
+            return await this.sizeRepo.findOne({ where: { name: name }, relations });
     }
 }

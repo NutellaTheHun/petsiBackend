@@ -26,9 +26,9 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 @Injectable()
 export class InventoryItemTestingUtil {
-    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C, CONSTANT.NO_VENDOR ];
+    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C ];
     
-    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT, CONSTANT.NO_CAT ];
+    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT ];
 
     private readonly packageNames: string[] = [ 
         CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG, 

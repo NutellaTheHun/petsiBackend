@@ -24,15 +24,15 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
                 InventoryItemCategory, 
                 InventoryItemPackage, 
                 InventoryItemSize,
-                InventoryItemVendor,]
-            ),
+                InventoryItemVendor,
+            ]),
             TypeOrmModule.forFeature([
                 InventoryItem, 
                 InventoryItemCategory, 
                 InventoryItemPackage, 
                 InventoryItemSize,
-                InventoryItemVendor,]
-            ),
+                InventoryItemVendor,
+            ]),
             UnitOfMeasureModule,
             InventoryItemsModule,
     ],

@@ -4,7 +4,7 @@ import { Roles } from "../../../util/decorators/PublicRole";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 
-Controller('menu-category')
+@Controller('menu-category')
 @Roles("staff")
 export class MenuItemCategoryController extends ControllerBase<MenuItemCategory>{
   constructor(

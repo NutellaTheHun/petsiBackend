@@ -124,11 +124,11 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient>{
         const results: RecipeIngredient[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){
-                results.push( await this.buildCreateDto(parentRecipe, dto /*as CreateRecipeIngredientDto*/))
+                results.push( await this.buildCreateDto(parentRecipe, dto));
             } else {
                 const ingred = await this.ingredientService.findOne(dto.id, ['inventoryItem', 'recipe', 'subRecipeIngredient', 'unit']);
                 if(!ingred){ throw new Error("recipe ingredient not found"); }
-                results.push( await this.buildUpdateDto(ingred, dto /*as UpdateRecipeIngredientDto*/));
+                results.push( await this.buildUpdateDto(ingred, dto));
             }
         }
         return results;

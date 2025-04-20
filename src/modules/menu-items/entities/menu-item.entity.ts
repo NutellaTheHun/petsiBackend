@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { OrderMenuItem } from "../../orders/entities/order-menu-item.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
 
@@ -16,14 +15,14 @@ export class MenuItem {
      * MenuItems that originate from Square's Catalog API will retain its catalog id. 
      * Otherwise this variable will be null
      */
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     squareCatalogId?: string;
 
     /**
      * MenuItems that originate from Square's Catalog API will retain its category id. 
      * Otherwise this variable will be null
      */
-    @Column({ nullable:true })
+    @Column({ nullable: true })
     squareCategoryId?: string;
 
     /**
@@ -31,21 +30,7 @@ export class MenuItem {
      * - If this item is deleted, this item will automatically be removed it's referenced category.
      */
     @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL'})
-    category?: MenuItemCategory;
-    /*
-    @BeforeInsert()
-    async addToCategory() {
-        if (this.category) {
-            this.category.items = [...this.category.items, this];
-        }
-    }
-
-    @BeforeRemove()
-    async removeFromCategory(){
-        if(this.category){
-            this.category.items = this.category.items.filter( item => item.id !== this.id);
-        }
-    }*/
+    category?: MenuItemCategory | null;
 
     @Column({ nullable: false })
     name: string;
@@ -64,8 +49,9 @@ export class MenuItem {
      * - Example: MenuItem {Keylime Pie}, MenuItem.veganOption={null}
      * - Necessary for aggregating the pie and its vegan version together on the BackListPie report (vegan amount denoted with a "V")
      */
-    @OneToOne(() => MenuItem, { nullable:true })
-    veganOption?: MenuItem;
+    @OneToOne(() => MenuItem, { nullable: true })
+    @JoinColumn()
+    veganOption?: MenuItem | null;
 
     /**
      * A MenuItem in the catalog that represents the takeNBake (and take'n thaw) version of the MenuItem object, otherwise is null.
@@ -73,15 +59,17 @@ export class MenuItem {
      * - Example: MenuItem {Bananna Cream Pie}, MenuItem.takeNBakeOption={null}
      */
     @OneToOne(() => MenuItem, {nullable: true})
-    takeNBakeOption?: MenuItem;
+    @JoinColumn()
+    takeNBakeOption?: MenuItem | null;
 
     /**
      * A MenuItem in the catalog that represents the vegan takeNBake (and take'n thaw) version of the MenuItem object, otherwise is null.
      * - Example: MenuItem {Classic Apple}, MenuItem.veganTakeNBakeOption={Vegan Apple Take'n Bake}
      * - Example: MenuItem {Bananna Cream Pie}, MenuItem.takeNBakeOption={null}
      */
-    @OneToOne(() => MenuItem, { nullable:true })
-    veganTakeNBakeOption?: MenuItem;
+    @OneToOne(() => MenuItem, { nullable: true })
+    @JoinColumn()
+    veganTakeNBakeOption?: MenuItem | null;
 
     /**
      * The type of sizes that are valid to place orders with.
@@ -89,7 +77,8 @@ export class MenuItem {
      * - Not all pies are necessarily available in all sizes.
      * - All items except pies by default are size "regular" (Some merch have sizing, each size is its own ite)
      */
-    @ManyToOne(() => MenuItemSize, { nullable: true })
+    @ManyToMany(() => MenuItemSize, { nullable: true })
+    @JoinTable()
     validSizes?: MenuItemSize[] | null;
 
     /**
@@ -109,8 +98,8 @@ export class MenuItem {
     /**
      * The list of MenuItems, their size, and quantity associated with the order.
      */
-    @OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
-    onOrder?: OrderMenuItem[] | null;
+    //@OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
+    //onOrder?: OrderMenuItem[] | null;
 
     /**
      * The date the order is inserted into the database. 

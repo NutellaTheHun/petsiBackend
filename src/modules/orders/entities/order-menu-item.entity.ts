@@ -14,7 +14,7 @@ export class OrderMenuItem {
     @ManyToOne(() => Order, (order) => order.items, { nullable: false })
     order: Order;
 
-    @ManyToOne(() => MenuItem, (menuItem) => menuItem.onOrder, { nullable: false })
+    @ManyToOne(() => MenuItem, { nullable: false })
     menuItem: MenuItem;
 
     @Column({ nullable: false })

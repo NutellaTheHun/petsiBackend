@@ -1,14 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
 import Big from "big.js";
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
-import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, NO_CAT, OUNCE, PINT, POUND, QUART, UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 
 describe('UnitOfMeasureService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
@@ -38,14 +37,6 @@ describe('UnitOfMeasureService', () => {
     expect(unitService).toBeDefined();
   });
 
-  /**
-   * Creational Requirements:
-   * 
-   * Optional Requirements:
-   * 
-   * Denied creational properties:
-   * 
-   */
   it('should create a unit of measure (no category)', async () => {
     const dto = {
       name: "testUnit",
@@ -59,7 +50,6 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual("testUnit");
     expect(result?.abbreviation).toEqual("testAbrev");
     expect(result?.conversionFactorToBase).toEqual("1")
-    expect(result?.category?.name).toEqual(NO_CAT);
 
     testId = result?.id as number;
   });
@@ -167,6 +157,34 @@ describe('UnitOfMeasureService', () => {
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
     expect(volumeCategory.units.findIndex(unit => unit.id === testId)).not.toEqual(-1);
+  });
+
+  it('should remove category', async () => {
+    const dto = {
+      categoryId: 0,
+    } as UpdateUnitOfMeasureDto;
+
+    const result = await unitService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("UPDATE testUnit");
+    expect(result?.abbreviation).toEqual("UPDATE Abbrev");
+    expect(result?.conversionFactorToBase).toEqual("2.0000000000");
+    expect(result?.category).toBeNull();
+  });
+
+  it('should update unit of measure categor (for next test)', async () => {
+    const volumeCategory = await categoryService.findOneByName(VOLUME);
+    if(!volumeCategory){ throw new Error("volume category not found"); }
+    const dto = {
+      categoryId: volumeCategory?.id,
+    } as UpdateUnitOfMeasureDto;
+
+    const result = await unitService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("UPDATE testUnit");
+    expect(result?.abbreviation).toEqual("UPDATE Abbrev");
+    expect(result?.conversionFactorToBase).toEqual("2.0000000000");
+    expect(result?.category?.name).toEqual(VOLUME);
   });
 
   it('should remove unit of measure', async () => {

@@ -37,7 +37,7 @@ export class ServiceBase<T extends ObjectLiteral> {
 
     return await this.entityRepo.findOne({ 
         where: { id } as unknown as FindOptionsWhere<T>, 
-        /*relations: relations as string[]*/ 
+        /*relations: relations as string[]*/
         relations: combinedRelations,
     });
   }

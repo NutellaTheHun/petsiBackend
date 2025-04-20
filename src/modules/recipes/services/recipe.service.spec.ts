@@ -1,24 +1,24 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { getRecipeTestingModule } from '../utils/recipes-testing.module';
-import { RecipeService } from './recipe.service';
+import { error } from 'console';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateRecipeDto } from '../dto/create-recipe.dto';
-import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
+import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GRAM, KILOGRAM, OUNCE, POUND } from '../../unit-of-measure/utils/constants';
-import { RecipeCategoryService } from './recipe-category.service';
-import { RecipeSubCategoryService } from './recipe-sub-category.service';
-import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_CAT_NONE, REC_F, REC_SUBCAT_NONE } from '../utils/constants';
+import { CreateRecipeDto } from '../dto/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/update-recipe-dto';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
-import { RecipeIngredientService } from './recipe-ingredient.service';
-import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
-import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
-import { RecipeCategory } from '../entities/recipe-category.entity';
-import { error } from 'console';
-import { NotFoundError } from 'rxjs';
-import { NotFoundException } from '@nestjs/common';
+import { REC_A, REC_B, REC_CAT_B, REC_CAT_C, REC_F } from '../utils/constants';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeCategoryService } from './recipe-category.service';
+import { RecipeIngredientService } from './recipe-ingredient.service';
+import { RecipeSubCategoryService } from './recipe-sub-category.service';
+import { RecipeService } from './recipe.service';
+import { item_a } from '../../menu-items/utils/constants';
 
 describe('recipe service', () => {
   let recipeService: RecipeService;
@@ -30,7 +30,11 @@ describe('recipe service', () => {
   let ingredientService: RecipeIngredientService;
 
   let unitOfMeasureService: UnitOfMeasureService;
-  let itemService: InventoryItemService;
+
+  let invItemService: InventoryItemService;
+
+  let menuItemService: MenuItemService;
+  let menuItemTestUtil: MenuItemTestingUtil;
 
   let testId: number;
   let testIds: number[];
@@ -56,13 +60,18 @@ describe('recipe service', () => {
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initRecipeTestingDatabase(dbTestContext);
 
+    menuItemService = module.get<MenuItemService>(MenuItemService);
+    menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+    await menuItemTestUtil.initMenuItemTestDatabase(dbTestContext);
+
     recipeService = module.get<RecipeService>(RecipeService);
     categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
     subCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
     ingredientService = module.get<RecipeIngredientService>(RecipeIngredientService);
 
     unitOfMeasureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    itemService = module.get<InventoryItemService>(InventoryItemService);
+
+    invItemService = module.get<InventoryItemService>(InventoryItemService);
   });
 
   afterAll(async () => {
@@ -73,7 +82,7 @@ describe('recipe service', () => {
     expect(recipeService).toBeDefined();
   });
 
-  it('should create a recipe (with default category and sub category)', async () => {
+  it('should create a recipe (with no category and sub category)', async () => {
     const batchUnit = await unitOfMeasureService.findOneByName(POUND);
     if(!batchUnit){ throw new Error("unit of measure POUND not found"); }
     const servingUnit = await unitOfMeasureService.findOneByName(OUNCE);
@@ -85,7 +94,7 @@ describe('recipe service', () => {
     const salesAmount = 10.99;
     const costAmount = 5.99
 
-    const ingredientItems = await itemService.findAll();
+    const ingredientItems = await invItemService.findAll();
     const ingredientMeasureUnits = await unitOfMeasureService.findAll();
 
     const ingredientDtos = testingUtil.createRecipeIngredientDtos(
@@ -116,8 +125,6 @@ describe('recipe service', () => {
     expect(result?.servingSizeUnitOfMeasure?.id).toEqual(servingUnit.id);
     expect(result?.salesPrice).toEqual(salesAmount);
     expect(result?.cost).toEqual(costAmount);
-    expect(result?.category?.name).toEqual(REC_CAT_NONE);
-    expect(result?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
     expect(result?.ingredients?.length).toEqual(3);
     
     testId = result?.id as number;
@@ -163,7 +170,7 @@ describe('recipe service', () => {
     const testIngredients = await ingredientService.findEntitiesById(testRecipe.ingredients.map(i => i.id), ['inventoryItem', 'subRecipeIngredient', 'unit'])
     if(!testIngredients){ throw new error("recipe ingredients is null")}
 
-    const ingredientItems = await itemService.findAll();
+    const ingredientItems = await invItemService.findAll();
     const ingredientMeasureUnits = await unitOfMeasureService.findAll();
 
     const createIngredDtos = testingUtil.createRecipeIngredientDtos(
@@ -203,12 +210,12 @@ describe('recipe service', () => {
     testIngredientId = ingreds[0].id;
 
     if(ingreds[0].inventoryItem.name === FOOD_A){
-      const item = await itemService.findOneByName(FOOD_B);
+      const item = await invItemService.findOneByName(FOOD_B);
       if(!item){ throw new Error("inv item not found"); }
       ingreds[0].inventoryItem = item;
       testInvItemId = item.id;
     } else {
-      const item = await itemService.findOneByName(FOOD_A);
+      const item = await invItemService.findOneByName(FOOD_A);
       if(!item){ throw new Error("inv item not found"); }
       ingreds[0].inventoryItem = item;
       testInvItemId = item.id;
@@ -322,17 +329,7 @@ describe('recipe service', () => {
       id: ingred.id,
     }) as UpdateRecipeIngredientDto);
 
-    /*const ingredUpdateDtos = ingreds.map(ingred => ({
-      mode:'update',
-      id: ingred.id,
-      quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
-    }) as UpdateRecipeIngredientDto)*/
-    
     const dto = {
-      //ingredientDtos: ingredUpdateDtos,
       ingredientDtos: [updatedDto, ...theRest],
     } as UpdateRecipeDto;
 
@@ -487,83 +484,83 @@ describe('recipe service', () => {
     expect(result?.cost).toEqual(updateCostAmount);
   });
 
-  it('should update category', async () => {
+  it('should set category', async () => {
     const testRecipe = await recipeService.findOne(testId, ["category"]);
     if(!testRecipe){ throw new Error("recipe is null"); }
 
-    oldCategoryId = testRecipe.category?.id as number;
+    const cat = await categoryService.findOneByName(REC_CAT_B);
+    if(!cat){ throw new Error("recipe category is null"); }
 
-    let newCat: RecipeCategory;
-    if(testRecipe.category?.name === REC_CAT_A){
-      const cat = await categoryService.findOneByName(REC_CAT_B);
-      if(!cat){ throw new Error("recipe category is null"); }
-      newCat = cat;
-    } else {
-      const cat = await categoryService.findOneByName(REC_CAT_A);
-      if(!cat){ throw new Error("recipe category is null"); }
-      newCat = cat;
-    }
-
-    newCategoryId = newCat.id;
-
-    const updatedCategory = await categoryService.findOneByName(REC_CAT_A, ["subCategories"]);
-    if(!updatedCategory){ throw new Error("category A for update is null"); }
-    
     const dto = {
-      categoryId: newCategoryId,
+      categoryId: cat.id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-  });
 
-  it('should lose reference from old category', async () => {
-    const oldCat = await categoryService.findOne(oldCategoryId, ['recipes']);
-    if(!oldCat){ throw new Error("category is null"); }
-    expect(oldCat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
+    oldCategoryId = result?.category?.id as number;
   });
 
   it('should gain reference for new category', async () => {
-    const newCat = await categoryService.findOne(newCategoryId, ['recipes']);
-    if(!newCat){ throw new Error("category is null"); }
-    expect(newCat.recipes.findIndex(rec => rec.id === testId)).not.toEqual(-1);
+    const cat = await categoryService.findOne(oldCategoryId, ['recipes']);
+    if(!cat){ throw new Error("category is null"); }
+    expect(cat.recipes.findIndex(rec => rec.id === testId)).not.toEqual(-1);
   });
 
-  it('should update sub category', async () => {
-    const testRecipe = await recipeService.findOne(testId, ['category', 'subCategory']);
+  it('should set sub category', async () => {
+    const testRecipe = await recipeService.findOne(testId, ['category']);
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.category){ throw new Error("recipe category is null"); }
-
-    oldSubCategoryId = testRecipe.subCategory?.id as number;
-
+    
     const category = await categoryService.findOne(testRecipe.category.id, ["subCategories"]);
     if(!category){ throw new Error("category is null"); }
     if(!category.subCategories){ throw new Error("category subCategories is null"); }
 
-    let updatedSubCategory: RecipeSubCategory;
-    if(testRecipe.subCategory?.id === category.subCategories[0].id){
-      updatedSubCategory = category.subCategories[1];
-    } else {
-      updatedSubCategory = category.subCategories[0];
-    }
-
-    newSubCategoryId = updatedSubCategory.id;
-     
     const dto = {
-      subCategoryId: updatedSubCategory.id,
+      subCategoryId: category.subCategories[0].id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     if(!result?.subCategory){ throw new Error("recipe subCategory is null"); }
 
     expect(result).not.toBeNull();
-    expect(result?.subCategory.id).toEqual(updatedSubCategory.id);
+    expect(result?.subCategory.id).toEqual(category.subCategories[0].id);
+
+    oldSubCategoryId = result?.subCategory.id as number;
   });
 
-  it('should lose reference from old sub category', async () => {
-    const oldSubCat = await subCategoryService.findOne(oldSubCategoryId, ['recipes']);
-    if(!oldSubCat){ throw new Error("sub category is null"); }
-    expect(oldSubCat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
+  it('should gain reference from sub category', async () => {
+    const subCat = await subCategoryService.findOne(oldSubCategoryId, ['recipes']);
+    if(!subCat){ throw new Error("sub category is null"); }
+    expect(subCat.recipes.findIndex(rec => rec.id === testId)).not.toEqual(-1);
+  });
+
+  it('should change sub category', async () => {
+    const testRecipe = await recipeService.findOne(testId, ['category']);
+    if(!testRecipe){ throw new Error("recipe is null"); }
+    if(!testRecipe.category){ throw new Error("recipe category is null"); }
+    
+    const category = await categoryService.findOne(testRecipe.category.id, ["subCategories"]);
+    if(!category){ throw new Error("category is null"); }
+    if(!category.subCategories){ throw new Error("category subCategories is null"); }
+    
+    const dto = {
+      subCategoryId: category.subCategories[1].id,
+    } as UpdateRecipeDto;
+
+    const result = await recipeService.update(testId, dto);
+    if(!result?.subCategory){ throw new Error("recipe subCategory is null"); }
+
+    expect(result).not.toBeNull();
+    expect(result?.subCategory.id).toEqual(category.subCategories[1].id);
+
+    newSubCategoryId = result?.subCategory.id as number;
+  });
+
+  it('should lose reference from old category', async () => {
+    const oldCat = await subCategoryService.findOne(oldSubCategoryId, ['recipes']);
+    if(!oldCat){ throw new Error("category is null"); }
+    expect(oldCat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
   });
 
   it('should gain reference from new sub category', async () => {
@@ -571,7 +568,64 @@ describe('recipe service', () => {
     if(!newSubCat){ throw new Error("sub category is null"); }
     expect(newSubCat.recipes.findIndex(rec => rec.id === testId)).not.toEqual(-1);
   });
-  
+
+  it('should update category', async () => {
+    const testRecipe = await recipeService.findOne(testId, ["category"]);
+    if(!testRecipe){ throw new Error("recipe is null"); }
+
+    const cat = await categoryService.findOneByName(REC_CAT_C);
+    if(!cat){ throw new Error("recipe category is null"); }
+
+    const dto = {
+      categoryId: cat.id,
+    } as UpdateRecipeDto;
+
+    const result = await recipeService.update(testId, dto);
+    expect(result).not.toBeNull();
+
+    newCategoryId = result?.category?.id as number;
+  });
+
+  it('should lose reference from old category', async () => {
+    const cat = await categoryService.findOne(oldCategoryId, ['recipes']);
+    if(!cat){ throw new Error("category is null"); }
+    expect(cat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
+  });
+
+  it('should gain reference for new category', async () => {
+    const cat = await categoryService.findOne(newCategoryId, ['recipes']);
+    if(!cat){ throw new Error("category is null"); }
+    expect(cat.recipes.findIndex(rec => rec.id === testId)).not.toEqual(-1);
+  });
+
+  it('should have null sub-category', async () => {
+    const testRecipe = await recipeService.findOne(testId, ['subCategory']);
+    if(!testRecipe){ throw new Error("recipe is null"); }
+    expect(testRecipe.subCategory).toBeNull();
+  });
+
+  it('should set sub category (for next test)', async () => {
+    const testRecipe = await recipeService.findOne(testId, ['category']);
+    if(!testRecipe){ throw new Error("recipe is null"); }
+    if(!testRecipe.category){ throw new Error("recipe category is null"); }
+    
+    const cat = await categoryService.findOneByName(REC_CAT_B, ['subCategories']);
+    if(!cat){ throw new Error("recipe category is null"); }
+    if(!cat.subCategories){ throw new Error("recipe sub-category is null"); }
+    
+    const dto = {
+      subCategoryId: cat.subCategories[0].id,
+    } as UpdateRecipeDto;
+
+    const result = await recipeService.update(testId, dto);
+    if(!result?.subCategory){ throw new Error("recipe subCategory is null"); }
+
+    expect(result).not.toBeNull();
+    expect(result?.subCategory.id).toEqual(cat.subCategories[0].id);
+
+    newSubCategoryId = result?.subCategory.id as number;
+  });
+
   it('should update sub category (to no sub category)', async () => {
     const dto = {
       subCategoryId: 0
@@ -579,13 +633,13 @@ describe('recipe service', () => {
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
+    expect(result?.subCategory).toBeNull();
   });
 
-  it('should have default sub category (NO CATEGORY)', async () => {
-    const testRecipe = await recipeService.findOne(testId, ['subCategory']);
-    if(!testRecipe){ throw new Error("recipe is null"); }
-    expect(testRecipe.subCategory?.name).toEqual(REC_SUBCAT_NONE);
+  it('should lose reference from previous sub category', async () => {
+    const oldSubCat = await subCategoryService.findOne(newSubCategoryId, ['recipes']);
+    if(!oldSubCat){ throw new Error("sub category is null"); }
+    expect(oldSubCat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
   });
 
   it('should update category (to no category)', async () => {
@@ -596,17 +650,61 @@ describe('recipe service', () => {
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
     
-
     const verify = await recipeService.findOne(testId, ['category', 'subCategory']);
     if(!verify){ throw new NotFoundException(); }
-    expect(verify?.category?.name).toEqual(REC_CAT_NONE);
-    expect(verify?.subCategory?.name).toEqual(REC_SUBCAT_NONE);
+    expect(verify?.category).toBeNull();
+    expect(verify?.subCategory).toBeNull();
+  });
+
+  it('should lose reference from previous category', async () => {
+    const cat = await categoryService.findOne(newCategoryId, ['recipes']);
+    if(!cat){ throw new Error("category is null"); }
+    expect(cat.recipes.findIndex(rec => rec.id === testId)).toEqual(-1);
+  });
+
+  it('should update menuItem', async () => {
+    const menuItem = await menuItemService.findOneByName(item_a);
+    if(!menuItem){ throw new NotFoundException(); }
+
+    const dto = {
+      menuItemId: menuItem.id,
+    } as UpdateRecipeDto;
+
+    const result = await recipeService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.menuItem?.id).toEqual(menuItem.id);
+  });
+
+  it('should remove menuItem', async () => {
+    const menuItem = await menuItemService.findOneByName(item_a);
+    if(!menuItem){ throw new NotFoundException(); }
+
+    const dto = {
+      menuItemId: 0,
+    } as UpdateRecipeDto;
+
+    const result = await recipeService.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.menuItem).toBeNull();
   });
 
   it('should find a recipe by name', async () => {
     const result = await recipeService.findOneByName(REC_A);
     expect(result).not.toBeNull();
     expect(result?.name).toEqual(REC_A);
+  });
+
+  it('should set category and subcategory (for next test)', async () => {
+    const category = await categoryService.findOneByName(REC_CAT_B, ["subCategories"]);
+    if(!category){ throw new Error("category is null"); }
+    if(!category.subCategories){ throw new Error("category subCategories is null"); }
+
+    const dto = {
+      categoryId: category.id,
+      subCategoryId: category.subCategories[0].id,
+    } as UpdateRecipeDto;
+
+    await recipeService.update(testId, dto);
   });
 
   it('should remove a recipe', async () => {

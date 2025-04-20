@@ -92,7 +92,6 @@ describe('recipe category controller', () => {
     } as CreateRecipeCategoryDto;
     const result = await controller.create(dto);
     expect(result).toBeNull();
-
   });
 
   it('should find one recipe category', async () => {

@@ -1,12 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
+import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
-import { BOX_PKG, CAN_PKG, DAIRY_CAT, DRYGOOD_CAT, FOOD_A, FOOD_CAT, NO_CAT, NO_VENDOR, OTHER_PKG, VENDOR_A, VENDOR_B } from '../utils/constants';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { BOX_PKG, CAN_PKG, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, OTHER_PKG, VENDOR_A, VENDOR_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
@@ -14,10 +17,6 @@ import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { error } from 'console';
-import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
-import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 
 describe('Inventory Item Service', () => {
   let module: TestingModule;
@@ -88,8 +87,6 @@ describe('Inventory Item Service', () => {
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
     expect(result?.name).toEqual("test item default vend/cat");
-    expect(result?.category?.name).toEqual(NO_CAT);
-    expect(result?.vendor?.name).toEqual(NO_VENDOR);
 
     testId = result?.id as number;
   });
@@ -239,7 +236,7 @@ describe('Inventory Item Service', () => {
     const result = await itemService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.category?.name).toEqual(NO_CAT);
+    expect(result?.category).toBeNull();
   });
 
   it('old item category should loose reference to item', async () => {
@@ -307,7 +304,7 @@ describe('Inventory Item Service', () => {
     const result = await itemService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.vendor?.name).toEqual(NO_VENDOR);
+    expect(result?.vendor).toBeNull();;
   });
 
   it('old vendor should loose reference to item', async () => {

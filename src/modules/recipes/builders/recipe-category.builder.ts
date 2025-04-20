@@ -44,8 +44,6 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
         return this.build();
     }
 
-    // handle if clearing all recipes?
-    // handle if clearing all sub-recipes?
     public async buildUpdateDto(toUpdate: RecipeCategory, dto: UpdateRecipeCategoryDto): Promise<RecipeCategory> {
         this.reset();
         this.updateEntity(toUpdate);
