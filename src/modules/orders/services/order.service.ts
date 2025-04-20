@@ -11,13 +11,14 @@ export class OrderService extends ServiceBase<Order> {
     constructor(
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>
+        
     ){ super(orderRepo)}
 
-    async create(createDto: CreateOrderDto): Promise<Order | null> {
+    async create(dto: CreateOrderDto): Promise<Order | null> {
         throw new NotImplementedException();
     }
     
-    async update(id: number, updateDto: UpdateOrderDto): Promise<Order | null>{
+    async update(id: number, dto: UpdateOrderDto): Promise<Order | null>{
         throw new NotImplementedException();
     }
 }

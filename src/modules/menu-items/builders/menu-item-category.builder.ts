@@ -38,10 +38,6 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
             this.name(dto.name);
         }
 
-        if(dto.menuItemIds){
-            this.menuItemsById(dto.menuItemIds);
-        }
-        
         return this.build();
     }
 }
