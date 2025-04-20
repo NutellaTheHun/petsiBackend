@@ -2,10 +2,9 @@ export const CAT_RED = "category red";
 export const CAT_BLUE = "category blue";
 export const CAT_GREEN = "category green";
 export const CAT_ORANGE = "category orange";
-export const CAT_NONE = "no category";
 
 export function getTestCategoryNames(): string[] {
-    return [ CAT_RED, CAT_BLUE, CAT_GREEN, CAT_ORANGE, CAT_NONE];
+    return [ CAT_RED, CAT_BLUE, CAT_GREEN, CAT_ORANGE];
 }
 
 export const SIZE_ONE = "size 1";
