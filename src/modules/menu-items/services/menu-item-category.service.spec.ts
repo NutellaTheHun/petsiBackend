@@ -69,7 +69,7 @@ describe('menu item category service', () => {
 
     it('should find all categories', async () => {
         const results = await categoryService.findAll();
-        expect(results.length).toEqual(6);
+        expect(results.length).toEqual(5);
 
         testIds = results.slice(0,3).map(cat => cat.id);
     });

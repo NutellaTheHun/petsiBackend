@@ -5,7 +5,6 @@ import { MenuItemCategoryService } from "../services/menu-item-category.service"
 import { MenuItemCategoryController } from "./menu-item-category.controller";
 import { getTestCategoryNames } from "../utils/constants";
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import { NotImplementedException } from "@nestjs/common";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 
 describe('menu item category controller', () => {

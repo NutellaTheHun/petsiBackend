@@ -1,4 +1,5 @@
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { CreateOrderMenuItemDto } from "./create-order-menu-item.dto";
 
 export class CreateOrderDto {
     @IsString()
@@ -46,8 +47,7 @@ export class CreateOrderDto {
     @IsOptional()
     readonly isWeekly: boolean;
 
+    @IsOptional()
     @IsArray()
-    @IsNumber({},{ each: true })
-    @IsPositive({ each: true })
-    readonly orderMenuItemIds: number[] = [];
+    orderMenuItemDtos?: CreateOrderMenuItemDto[];
 }

@@ -12,6 +12,8 @@ import { OrderMenuItemService } from './services/order-menu-item.service';
 import { OrderBuilder } from './builders/order.builder';
 import { OrderTypeBuilder } from './builders/order-type.builder';
 import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
+import { OrderTestingUtil } from './utils/order-testing.util';
+import { MenuItemsModule } from '../menu-items/menu-items.module';
 
 
 @Module({
@@ -21,6 +23,7 @@ import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
       OrderType,
       OrderMenuItem,
     ]),
+    MenuItemsModule,
   ],
   controllers: [
     OrderController,
@@ -35,6 +38,8 @@ import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
     OrderBuilder,
     OrderTypeBuilder,
     OrderMenuItemBuilder,
+
+    OrderTestingUtil,
   ],
   exports: [
     OrderService,

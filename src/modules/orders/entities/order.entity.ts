@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGenerate
 import { OrderMenuItem } from "./order-menu-item.entity";
 import { OrderType } from "./order-type.entity";
 
-@Entity()
+@Entity("orders")
 export class Order {
     @PrimaryGeneratedColumn()
     id: number;
@@ -71,7 +71,7 @@ export class Order {
      * and will not be aggregated in various actions like
      * report creation, and list population (except when viewing frozen orders exclusively)
      */
-    @Column()
+    @Column({ default: false })
     isFrozen: boolean;
 
     /**
@@ -79,9 +79,9 @@ export class Order {
      * this flag ensures that its aggregation is calculated appropriately. 
      * Most orders will be isWeekly=false (A "one-shot" order, most orders are one and done after fulfillment). 
      */
-    @Column()
+    @Column({ default: false })
     isWeekly: boolean;
 
-    @OneToMany(() => OrderMenuItem, (item) => item.order, { nullable: true })
+    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true, nullable: true })
     items?: OrderMenuItem[] | null;
 }

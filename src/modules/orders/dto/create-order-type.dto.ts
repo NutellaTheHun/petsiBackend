@@ -8,5 +8,5 @@ export class CreateOrderTypeDto {
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
-    readonly orderIds: number[] = [];
+    readonly orderIds: number[];
 }

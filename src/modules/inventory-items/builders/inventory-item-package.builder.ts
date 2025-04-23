@@ -22,7 +22,7 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
         return await this.build();
     }
 
-    public async buildUpdateDto(itemPackage: InventoryItemPackage,dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
+    public async buildUpdateDto(itemPackage: InventoryItemPackage, dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
         this.reset();
         this.updateEntity(itemPackage);
         

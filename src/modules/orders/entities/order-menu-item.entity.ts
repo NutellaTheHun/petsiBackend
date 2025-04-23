@@ -11,10 +11,10 @@ export class OrderMenuItem {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Order, (order) => order.items, { nullable: false })
+    @ManyToOne(() => Order, (order) => order.items, { orphanedRowAction: 'delete', nullable: false, onDelete: 'CASCADE' })
     order: Order;
 
-    @ManyToOne(() => MenuItem, { nullable: false })
+    @ManyToOne(() => MenuItem, { nullable: false, onDelete: 'CASCADE' })
     menuItem: MenuItem;
 
     @Column({ nullable: false })
