@@ -12,6 +12,7 @@ import { Order } from "../entities/order.entity";
 @Injectable()
 export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
     constructor(
+        @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
 
         @Inject(forwardRef(() => OrderMenuItemService))

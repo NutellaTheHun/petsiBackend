@@ -13,6 +13,7 @@ export class OrderService extends ServiceBase<Order> {
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
         
+        @Inject(forwardRef(() => OrderBuilder))
         private readonly orderBuilder: OrderBuilder,
     ){ super(orderRepo)}
 

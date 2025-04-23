@@ -13,7 +13,11 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
     constructor(
         @InjectRepository(OrderMenuItem)
         private readonly orderItemRepo: Repository<OrderMenuItem>,
+        
+        @Inject(forwardRef(() => OrderMenuItemBuilder))
         private readonly itemBuilder: OrderMenuItemBuilder,
+
+        @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
     ){ super(orderItemRepo)}
 
