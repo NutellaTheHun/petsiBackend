@@ -15,6 +15,6 @@ export class TemplateMenuItem {
     @Column({ nullable: false })
     tablePosIndex: number;
 
-    @ManyToOne(() => Template, (template) => template.templateItems, { nullable: false })
+    @ManyToOne(() => Template, (template) => template.templateItems, { nullable: false, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
     template: Template;
 }

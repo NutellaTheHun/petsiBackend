@@ -11,6 +11,6 @@ export class Template {
     @Column()
     isPie: boolean;
 
-    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false })
-    templateItems: TemplateMenuItem[] = [];
+    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false, cascade: true })
+    templateItems?: TemplateMenuItem[] | null;
 }

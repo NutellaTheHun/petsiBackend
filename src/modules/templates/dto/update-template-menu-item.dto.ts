@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateTemplateMenuItemDto } from './create-template-menu-item.dto';
+import { IsNumber, IsPositive } from 'class-validator';
+import { BaseTemplateMenuItemDto } from './base-template-menu-item.dto';
 
-export class UpdateTemplateMenuItemDto extends PartialType(CreateTemplateMenuItemDto) {}
+export class UpdateTemplateMenuItemDto extends BaseTemplateMenuItemDto {
+    readonly mode: 'update' = 'update';
+
+    @IsPositive()
+    @IsNumber()
+    readonly id: number;
+}
