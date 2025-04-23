@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { TemplateMenuItem } from "../entities/template-menu-item.entity";
 import { TemplateService } from "../services/template.service";
@@ -11,7 +11,9 @@ import { MenuItemService } from "../../menu-items/services/menu-item.service";
 @Injectable()
 export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     constructor(
+        @Inject(forwardRef(() => TemplateService))
         private readonly templateService: TemplateService,
+        @Inject(forwardRef(() => TemplateMenuItemService))
         private readonly templateItemService: TemplateMenuItemService,
 
         private menuItemService: MenuItemService,

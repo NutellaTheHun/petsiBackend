@@ -21,6 +21,7 @@ export class TemplateTestingUtil {
     public async getTemplateEntities(testContext: DatabaseTestContext): Promise<Template[]>{
         const templateNames = getTestTemplateNames();
         const results: Template[] = [];
+        
         for(const name of templateNames){
             results.push({
                 name: name,
@@ -30,14 +31,14 @@ export class TemplateTestingUtil {
     }
 
     public async initTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase(testContext));
+        testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
 
         const templates = await this.getTemplateEntities(testContext);
 
         await this.templateService.insertEntities(templates);
     }
 
-    public async cleanupTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+    public async cleanupTemplateTestDatabase(): Promise<void>{
         await this.templateService.getQueryBuilder().delete().execute();
     }
 
@@ -69,14 +70,14 @@ export class TemplateTestingUtil {
     }
 
     public async initTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        testContext.addCleanupFunction(() => this.cleanupTemplateMenuItemTestDatabase(testContext));
+        testContext.addCleanupFunction(() => this.cleanupTemplateMenuItemTestDatabase());
 
         const items = await this.getTemplateMenuItemEntities(testContext);
 
         await this.templateItemService.insertEntities(items);
     }
 
-    public async cleanupTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+    public async cleanupTemplateMenuItemTestDatabase(): Promise<void>{
         await this.templateItemService.getQueryBuilder().delete().execute();
     }
 }

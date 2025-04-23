@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -13,8 +13,11 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
   constructor(
     @InjectRepository(TemplateMenuItem)
     private readonly itemRepo: Repository<TemplateMenuItem>,
+
+    @Inject(forwardRef(() => TemplateMenuItemBuilder))
     private readonly itemBuilder: TemplateMenuItemBuilder,
 
+    @Inject(forwardRef(() => TemplateService))
     private readonly templateService: TemplateService,
   ){ super(itemRepo); }
 

@@ -11,7 +11,6 @@ import { UpdateTemplateMenuItemDto } from "../dto/update-template-menu-item.dto"
 @Injectable()
 export class TemplateBuilder extends BuilderBase<Template> {
     constructor(
-        private readonly templateService: TemplateService,
         private readonly itemBuilder: TemplateMenuItemBuilder,
     ){ super(Template); }
 

@@ -1,7 +1,8 @@
-import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
-import { Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Template } from "./template.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 
+@Entity()
 export class TemplateMenuItem {
     @PrimaryGeneratedColumn()
     id: number;

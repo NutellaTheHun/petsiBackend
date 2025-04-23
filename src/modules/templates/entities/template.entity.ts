@@ -1,6 +1,7 @@
-import { Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TemplateMenuItem } from "./template-menu-item.entity";
 
+@Entity()
 export class Template {
     @PrimaryGeneratedColumn()
     id: number;

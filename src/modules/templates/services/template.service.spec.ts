@@ -11,6 +11,7 @@ import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto'
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
+import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 
 describe('Template Service', () => {
   let templateService: TemplateService;
@@ -18,7 +19,9 @@ describe('Template Service', () => {
   let dbTestContext: DatabaseTestContext;
 
   let templateItemService: TemplateMenuItemService;
+
   let menuItemService: MenuItemService;
+  let menuItemTestUtil: MenuItemTestingUtil;
 
   let testId: number;
   let testIds: number[];
@@ -38,7 +41,10 @@ describe('Template Service', () => {
 
     templateService = module.get<TemplateService>(TemplateService);
     templateItemService = module.get<TemplateMenuItemService>(TemplateMenuItemService);
+
     menuItemService = module.get<MenuItemService>(MenuItemService);
+    menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+    await menuItemTestUtil.initMenuItemTestDatabase(dbTestContext);
   });
 
   afterAll(async () => {
@@ -155,6 +161,7 @@ describe('Template Service', () => {
     modifiedMenuItemId = newItem.id;
 
     const uItemDto = {
+      mode: 'update',
       id: modifiedItemId,
       displayName: "update display name",
       tablePosIndex: 10,
@@ -162,6 +169,7 @@ describe('Template Service', () => {
     } as UpdateTemplateMenuItemDto;
 
     const theRest = template.templateItems.slice(1).map(item => ({
+      mode: 'update',
       id: item.id,
     }) as UpdateTemplateMenuItemDto);
 
@@ -184,7 +192,7 @@ describe('Template Service', () => {
   });
 
   it('should query modified template item', async() => {
-    const modifiedItem = await templateItemService.findOne(modifiedItemId, ['template']);
+    const modifiedItem = await templateItemService.findOne(modifiedItemId, ['template', 'menuItem']);
     if(!modifiedItem){ throw new Error(); }
 
     expect(modifiedItem.displayName).toEqual("update display name");
@@ -223,6 +231,7 @@ describe('Template Service', () => {
     const results = await templateService.findAll();
 
     expect(results).not.toBeNull();
+    expect(results.length).toEqual(5);
 
     testIds = results.slice(0,3).map(temp => temp.id);
   });
@@ -231,13 +240,13 @@ describe('Template Service', () => {
     const results = await templateService.findEntitiesById(testIds);
 
     expect(results).not.toBeNull();
-    expect(results.length).toEqual(5);
+    expect(results.length).toEqual(3);
   });
 
   it('should remove a template', async() => {
-    const template = await templateService.findOne(testId);
+    const template = await templateService.findOne(testId, ['templateItems']);
     if(!template){ throw new NotFoundException();}
-    if(!template.templateItems){ throw new NotFoundException();}
+    if(!template.templateItems){ throw new Error();}
 
     removedItemIds = template.templateItems.map(item => item.id);
 
