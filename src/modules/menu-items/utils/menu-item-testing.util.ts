@@ -89,6 +89,8 @@ export class MenuItemTestingUtil {
         const itemNames = getTestItemNames();
         const categoryIds = (await this.categoryService.findAll()).map(cat => cat.id);
         let catIdx = 0;
+        const sizeIds = (await this.sizeService.findAll()).map(size => size.id);
+        let sizeIdx = 0;
         const results: MenuItem[] = [];
 
         for(const itemName of itemNames){
@@ -96,6 +98,7 @@ export class MenuItemTestingUtil {
                 await this.itemBuilder.reset()
                     .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                     .name(itemName)
+                    .validSizesById([sizeIds[sizeIdx++]])
                     .build()
             )
         }

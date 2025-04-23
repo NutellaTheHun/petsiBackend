@@ -52,7 +52,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
             this.menuItemById(dto.menuItemId);
         }
         if(dto.menuItemSizeId){
-            this.menuItemSizeById(dto.menuItemId);
+            this.menuItemSizeById(dto.menuItemSizeId);
         }
         /*if(dto.orderId){
             this.orderById(dto.orderId);
@@ -72,6 +72,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
         
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
+            if(!dto.menuItemSizeId){
+                throw new Error();
+            }
         }
         if(dto.menuItemSizeId){
             this.menuItemSizeById(dto.menuItemSizeId);
@@ -93,7 +96,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
                 results.push( await this.buildCreateDto(parentOrder, dto));
             } else {
                 const item = await this.orderItemService.findOne(dto.id, ['menuItem', 'order', 'size']);
-                if(!item){ throw new Error("recipe ingredient not found"); }
+                if(!item){ throw new Error("orderMenuItem not found"); }
                 results.push( await this.buildUpdateDto(item, dto));
             }
         }

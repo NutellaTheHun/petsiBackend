@@ -4,7 +4,7 @@ export const CAT_GREEN = "category green";
 export const CAT_ORANGE = "category orange";
 
 export function getTestCategoryNames(): string[] {
-    return [ CAT_RED, CAT_BLUE, CAT_GREEN, CAT_ORANGE];
+    return [ CAT_RED, CAT_BLUE, CAT_GREEN, CAT_ORANGE ];
 }
 
 export const SIZE_ONE = "size 1";

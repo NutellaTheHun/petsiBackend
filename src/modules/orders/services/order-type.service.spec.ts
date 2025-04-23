@@ -18,6 +18,7 @@ describe('order type service', () => {
         const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         dbTestContext = new DatabaseTestContext();
+        await testingUtil.initOrderTypeTestDatabase(dbTestContext);
 
         service = module.get<OrderTypeService>(OrderTypeService);
     });

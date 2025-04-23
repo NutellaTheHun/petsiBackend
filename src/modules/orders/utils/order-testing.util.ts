@@ -9,6 +9,8 @@ import { OrderTypeService } from "../services/order-type.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "./constants";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
+import { BaseOrderMenuItemDto } from "../dto/base-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 
 @Injectable()
 export class OrderTestingUtil {
@@ -66,7 +68,7 @@ export class OrderTestingUtil {
             for(let i = 0; i < 4; i++){
                 const menuItem = menuItems[menuItemIdx++ % menuItems.length];
                 if(!menuItem.validSizes){ throw new Error(); }
-                
+
                 const size = menuItem.validSizes[sizeIdx++ % menuItem.validSizes?.length]
 
                 results.push({
@@ -139,5 +141,26 @@ export class OrderTestingUtil {
     
     public async cleanupOrderTestDatabase(): Promise<void> {
         await this.orderService.getQueryBuilder().delete().execute();
+    }
+
+    public async getCreateOrderMenuItemDtos(amount: number): Promise<CreateOrderMenuItemDto[]> {
+        const items = await this.menuItemService.findAll(['validSizes']);
+        if(!items){ throw new Error(); }
+        const results: CreateOrderMenuItemDto[] = [];
+        for(let i = 0; i < amount; i++)
+        {
+            const item = items[i % items.length];
+            if(!item.validSizes){ throw new Error(); }
+            if(item.validSizes.length === 0){ throw new Error(); }
+
+            results.push({
+                mode: 'create',
+                menuItemId: item.id,
+                quantity: 1,
+                menuItemSizeId: item.validSizes[0].id,
+            } as CreateOrderMenuItemDto);
+        }
+        
+        return results;
     }
 }

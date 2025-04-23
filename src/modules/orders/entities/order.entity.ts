@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGenerate
 import { OrderMenuItem } from "./order-menu-item.entity";
 import { OrderType } from "./order-type.entity";
 
-@Entity()
+@Entity("orders")
 export class Order {
     @PrimaryGeneratedColumn()
     id: number;
@@ -82,6 +82,6 @@ export class Order {
     @Column({ default: false })
     isWeekly: boolean;
 
-    @OneToMany(() => OrderMenuItem, (item) => item.order, { nullable: true })
+    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true, nullable: true })
     items?: OrderMenuItem[] | null;
 }
