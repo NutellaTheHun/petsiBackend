@@ -7,6 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { TemplatesModule } from "../templates.module";
 import { TemplateController } from "../controllers/template.controller";
 import { TemplateMenuItemController } from "../controllers/template-menu-item.controller";
+import { MenuItemsModule } from "../../menu-items/menu-items.module";
 
 export async function getTemplateTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -21,6 +22,7 @@ export async function getTemplateTestingModule(): Promise<TestingModule> {
                 TemplateMenuItem,
             ]),
             TemplatesModule,
+            MenuItemsModule,
         ],
 
         controllers: [

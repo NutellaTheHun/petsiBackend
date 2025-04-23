@@ -19,11 +19,9 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
   ){ super(itemRepo); }
 
   async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem | null> {
-    //const exists = await this.findOneByName(dto.name);
-    //if(exists) { return null; }
-
     const parentTemplate = await this.templateService.findOne(dto.templateId);
     if(!parentTemplate){ throw new NotFoundException(); }
+
     const item = await this.itemBuilder.buildCreateDto(parentTemplate, dto);
     return await this.itemRepo.save(item);
   }

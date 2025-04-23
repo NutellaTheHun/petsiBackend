@@ -8,7 +8,7 @@ export class Template {
     @Column({ nullable: false })
     name: string;
 
-    @Column()
+    @Column({ default: false })
     isPie: boolean;
 
     @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false, cascade: true })

@@ -8,10 +8,11 @@ import { Repository } from 'typeorm';
 import { TemplateBuilder } from '../builders/template.builder';
 
 @Injectable()
-export class TemplateService extends ServiceBase<Template> {
+export class TemplateService extends ServiceBase<Template>{
     constructor(
       @InjectRepository(Template)
       private readonly templateRepo: Repository<Template>,
+      
       private readonly templateBuilder: TemplateBuilder,
     ){ super(templateRepo); }
 
@@ -27,6 +28,8 @@ export class TemplateService extends ServiceBase<Template> {
         const toUpdate = await this.findOne(id);
         if(!toUpdate){ return null; }
 
+        await this.templateBuilder.buildUpdateDto(toUpdate, dto);
+        
         return await this.templateRepo.save(toUpdate);
     }
 
