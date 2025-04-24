@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { LabelsService } from './labels.service';
-import { CreateLabelDto } from './dto/create-label.dto';
-import { UpdateLabelDto } from './dto/update-label.dto';
+import { LabelService } from '../services/label.service';
+import { CreateLabelDto } from '../dto/create-label.dto';
+import { UpdateLabelDto } from '../dto/update-label.dto';
 
 @Controller('labels')
-export class LabelsController {
-  constructor(private readonly labelsService: LabelsService) {}
+export class LabelController {
+  constructor(private readonly labelsService: LabelService) {}
 
   @Post()
   create(@Body() createLabelDto: CreateLabelDto) {
