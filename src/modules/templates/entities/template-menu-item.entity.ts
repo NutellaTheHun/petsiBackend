@@ -1,7 +1,8 @@
-import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
-import { Column, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Template } from "./template.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 
+@Entity()
 export class TemplateMenuItem {
     @PrimaryGeneratedColumn()
     id: number;
@@ -9,12 +10,12 @@ export class TemplateMenuItem {
     @Column({ nullable: false })
     displayName: string;
 
-    @ManyToOne(() => MenuItem, { nullable: false })
+    @ManyToOne(() => MenuItem, { nullable: false, onDelete: 'CASCADE' })
     menuItem: MenuItem;
 
     @Column({ nullable: false })
     tablePosIndex: number;
 
-    @ManyToOne(() => Template, (template) => template.templateItems, { nullable: false })
+    @ManyToOne(() => Template, (template) => template.templateItems, { nullable: false, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
     template: Template;
 }

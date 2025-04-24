@@ -27,7 +27,8 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
         const toUpdate = await this.findOne(id);
         if(!toUpdate){ return null }
 
-        this.sizeBuilder.buildUpdateDto(toUpdate, dto);
+        await this.sizeBuilder.buildUpdateDto(toUpdate, dto);
+        
         return await this.sizeRepo.save(toUpdate);
     }
 

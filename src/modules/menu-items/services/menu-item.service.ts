@@ -28,7 +28,8 @@ export class MenuItemService extends ServiceBase<MenuItem> {
         const toUpdate = await this.findOne(id);
         if(!toUpdate){ return null; }
 
-        const updated = await this.itemBuilder.buildUpdateDto(toUpdate, dto);
+        await this.itemBuilder.buildUpdateDto(toUpdate, dto);
+        
         return await this.itemRepo.save(toUpdate);
     }
 

@@ -1,4 +1,5 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { CreateTemplateMenuItemDto } from "./create-template-menu-item.dto";
 
 export class CreateTemplateDto {
     @IsString()
@@ -9,8 +10,11 @@ export class CreateTemplateDto {
     @IsOptional()
     readonly isPie: boolean;
 
-    @IsArray()
+    /*@IsArray()
     @IsNumber({}, { each: true})
     @IsPositive({ each: true})
-    readonly templateItemIds: number[] = [];
+    readonly templateItemIds: number[] = [];*/
+    @IsOptional()
+    @IsArray()
+    itemDtos?: CreateTemplateMenuItemDto[];
 }

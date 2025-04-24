@@ -1,6 +1,7 @@
-import { Column, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { TemplateMenuItem } from "./template-menu-item.entity";
 
+@Entity()
 export class Template {
     @PrimaryGeneratedColumn()
     id: number;
@@ -8,9 +9,9 @@ export class Template {
     @Column({ nullable: false })
     name: string;
 
-    @Column()
+    @Column({ default: false })
     isPie: boolean;
 
-    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false })
-    templateItems: TemplateMenuItem[] = [];
+    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false, cascade: true })
+    templateItems?: TemplateMenuItem[] | null;
 }
