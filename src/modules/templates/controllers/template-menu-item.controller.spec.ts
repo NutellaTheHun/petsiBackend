@@ -1,22 +1,127 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { TemplateService } from '../services/template.service';
-import { TemplateController } from './template.controller';
+import { TestingModule } from '@nestjs/testing';
 import { TemplateMenuItemController } from './template-menu-item.controller';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
+import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import { getTemplateTestingModule } from '../utils/template-testing.module';
+import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
+import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
 
 describe('template menu item controller', () => {
   let controller: TemplateMenuItemController;
+  let service: TemplateMenuItemService;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [TemplateMenuItemController],
-      providers: [TemplateMenuItemService],
-    }).compile();
+  let items: TemplateMenuItem[];
+  let itemId = 1;
+  let testId: number;
+
+  beforeAll(async () => {
+    const module: TestingModule = await getTemplateTestingModule();
 
     controller = module.get<TemplateMenuItemController>(TemplateMenuItemController);
+    service = module.get<TemplateMenuItemService>(TemplateMenuItemService);
+
+    items = [];
+
+    jest.spyOn(service, 'create').mockImplementation(async (dto: CreateTemplateMenuItemDto) => {
+      const item = {
+        id: itemId++,
+        displayName: dto.displayName,
+        tablePosIndex: dto.tablePosIndex
+      } as TemplateMenuItem;
+
+      items.push(item);
+      return item;
+    });
+
+    jest.spyOn(service, 'findAll').mockResolvedValue(items);
+
+    jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
+      return items.filter(item => ids.findIndex(id => id === item.id) !== -1);
+    });
+
+    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+      return items.find(item => item.id === id) || null;
+    });
+
+    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
+      const index = items.findIndex(item => item.id === id);
+      if(index === -1){ return false; }
+
+      items.splice(index, 1);
+      return true;
+    });
+
+    jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateTemplateMenuItemDto) => {
+      const existIdx = items.findIndex(item => item.id === id);
+      if(existIdx === -1){ return null; }
+
+      if(dto.displayName){
+        items[existIdx].displayName = dto.displayName;
+      }
+
+      return items[existIdx];
+    });
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  it('should create a template item', async () => {
+        const dto = {
+          displayName: "testDisplayName",
+          tablePosIndex: 1,
+        } as CreateTemplateMenuItemDto;
+    
+        const result = await controller.create(dto);
+    
+        expect(result).not.toBeNull();
+        expect(result?.id).not.toBeNull()
+        expect(result?.displayName).toEqual("testDisplayName");
+        expect(result?.tablePosIndex).toEqual(1);
+    
+        testId = result?.id as number;
+      });
+    
+      it('should find template item by id', async () => {
+        const result = await controller.findOne(testId);
+        expect(result).not.toBeNull();
+      });
+    
+      it('should fail find template item by id (not exist)', async () => {
+        const result = await controller.findOne(0);
+        expect(result).toBeNull();
+      });
+    
+      it('should update template item display name', async () => {
+        const dto = {
+          displayName: "update displayName",
+        } as UpdateTemplateMenuItemDto;
+    
+        const result = await controller.update(testId, dto);
+    
+        expect(result).not.toBeNull();
+        expect(result?.id).not.toBeNull()
+        expect(result?.displayName).toEqual("update displayName");
+      });
+    
+      it('should fail update template item display name (not exist)', async () => {
+        const dto = {
+          displayName: "update displayName",
+        } as UpdateTemplateMenuItemDto;
+    
+        const result = await controller.update(0, dto);
+    
+        expect(result).toBeNull();
+      });
+    
+      it('should remove template item', async () => {
+        const result = await controller.remove(testId);
+        expect(result).toBeTruthy();
+      });
+    
+      it('should fail remove template item (not exist)', async () => {
+        const result = await controller.remove(testId);
+        expect(result).toBeFalsy();
+      });
 });

@@ -10,7 +10,7 @@ export class TemplateMenuItem {
     @Column({ nullable: false })
     displayName: string;
 
-    @ManyToOne(() => MenuItem, { nullable: false })
+    @ManyToOne(() => MenuItem, { nullable: false, onDelete: 'CASCADE' })
     menuItem: MenuItem;
 
     @Column({ nullable: false })

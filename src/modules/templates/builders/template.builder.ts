@@ -1,16 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { Template } from "../entities/template.entity";
-import { TemplateService } from "../services/template.service";
-import { CreateTemplateDto } from "../dto/create-template.dto";
-import { UpdateTemplateDto } from "../dto/update-template.dto";
 import { CreateTemplateMenuItemDto } from "../dto/create-template-menu-item.dto";
-import { TemplateMenuItemBuilder } from "./template-menu-item.builder";
+import { CreateTemplateDto } from "../dto/create-template.dto";
 import { UpdateTemplateMenuItemDto } from "../dto/update-template-menu-item.dto";
+import { UpdateTemplateDto } from "../dto/update-template.dto";
+import { Template } from "../entities/template.entity";
+import { TemplateMenuItemBuilder } from "./template-menu-item.builder";
 
 @Injectable()
 export class TemplateBuilder extends BuilderBase<Template> {
     constructor(
+        @Inject(forwardRef(() => TemplateMenuItemBuilder))
         private readonly itemBuilder: TemplateMenuItemBuilder,
     ){ super(Template); }
 

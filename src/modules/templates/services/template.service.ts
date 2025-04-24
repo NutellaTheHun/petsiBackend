@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateTemplateDto } from '../dto/create-template.dto';
 import { UpdateTemplateDto } from '../dto/update-template.dto';
 import { ServiceBase } from '../../../base/service-base';
@@ -12,7 +12,7 @@ export class TemplateService extends ServiceBase<Template>{
     constructor(
       @InjectRepository(Template)
       private readonly templateRepo: Repository<Template>,
-      
+
       private readonly templateBuilder: TemplateBuilder,
     ){ super(templateRepo); }
 
