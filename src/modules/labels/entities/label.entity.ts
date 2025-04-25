@@ -1,5 +1,6 @@
-import { MenuItem } from "src/modules/menu-items/entities/menu-item.entity";
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { LabelType } from "./label-type.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 
 /**
  * Contains all labels associated a menuItem, such as the assortment of wholesale labels (4x2, 2x1)
@@ -13,9 +14,18 @@ export class Label {
     /**
      * When a menuItem is deleted, its associated labels will be removed.
      */
-    @OneToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
+    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
     menuItem: MenuItem;
 
-    @Column('json', { nullable: false })
-    labelUrls: Record<string, string> = {};
+    /**
+     * Url of image stored in 3rd party source
+     */
+    @Column({ type: 'text', nullable: false })
+    imageUrl: string;
+
+    /**
+     * A label type for categories like: "4x2", "2x1", or "ingredient label"
+     */
+    @ManyToOne(() => LabelType, {nullable: false, onDelete: 'CASCADE' })
+    type: LabelType;
 }
