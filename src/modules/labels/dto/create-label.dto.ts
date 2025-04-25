@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsPositive } from "class-validator";
+import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsPositive, IsSemVer, IsString } from "class-validator";
 
 export class CreateLabelDto {
     @IsNotEmpty()
@@ -6,6 +6,12 @@ export class CreateLabelDto {
     @IsPositive()
     readonly menuItemId: number;
 
-    @IsObject() // might need further validation of its URLs
-    readonly labelUrls: Record<string, string> = {};
+    @IsString()
+    @IsNotEmpty()
+    readonly imageUrl: string;
+
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    readonly typeId: number;
 }

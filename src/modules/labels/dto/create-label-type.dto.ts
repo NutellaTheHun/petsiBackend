@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from "class-validator";
 
-export class CreateInventoryItemPackageDto {
+export class CreateLabelTypeDto {
     @IsString()
     @IsNotEmpty()
     readonly name: string;

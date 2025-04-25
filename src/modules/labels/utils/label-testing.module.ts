@@ -6,6 +6,8 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { LabelsModule } from "../labels.module";
 import { MenuItemsModule } from "../../menu-items/menu-items.module";
 import { LabelController } from "../controllers/label.controller";
+import { LabelType } from "../entities/label-type.entity";
+import { LabelTypeController } from "../controllers/label-type.controller";
 
 export async function getLabelsTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -13,9 +15,11 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
             ConfigModule.forRoot({ isGlobal: true }),
             TypeORMPostgresTestingModule([
                 Label,
+                LabelType,
             ]),
             TypeOrmModule.forFeature([
                 Label,
+                LabelType,
             ]),
             LabelsModule,
             MenuItemsModule,
@@ -23,6 +27,7 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
         
         controllers: [
             LabelController,
+            LabelTypeController,
         ],
 
         providers: [],
