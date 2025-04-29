@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { forwardRef, Inject, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -6,6 +6,8 @@ import { InventoryItemService } from "../../inventory-items/services/inventory-i
 import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { RecipeService } from "./recipe.service";
+import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
+import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 
 export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
     constructor(
@@ -22,31 +24,25 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
      * A recipe ingredient cannot reference both an inventory item and subRecipeIngredient, only one.
      * Should be checked at controller level
      */
-    /*
-    async create(createDto: CreateRecipeIngredientDto): Promise<RecipeIngredient | null> {
-        if(!createDto.recipeId){ throw new Error("recipeId is null"); }
-        const recipe = await this.recipeService.findOne(createDto.recipeId);
-        if(!recipe){ 
-            throw new Error("recipe not found"); 
-        }
+    async create(dto: CreateRecipeIngredientDto): Promise<RecipeIngredient | null> {
+        const parentRecipe = await this.recipeService.findOne(dto.recipeId);
+        if(!parentRecipe){ throw new NotFoundException(); }
 
-        const ingredient = await this.ingredientBuilder.buildCreateDto(null, createDto);
+        const ingredient = await this.ingredientBuilder.buildCreateDto(parentRecipe, dto);
         return await this.ingredientRepo.save(ingredient);
-        throw new NotImplementedException();
-    }*/
+    }
     
     /**
     * - Uses Repository.Save(), NOT UPDATE
     * - inventoryItem and subRecipe cannot be both assigned, only one, handled at controller level
     */
-   /*
     async update(id: number, updateDto: UpdateRecipeIngredientDto): Promise< RecipeIngredient | null> {
-        const toUpdate = await this.findOne(id);
+        const toUpdate = await this.findOne(id, ['inventoryItem', 'recipe', 'subRecipeIngredient', 'unit']);
         if(!toUpdate){ return null; }
         
         await this.ingredientBuilder.buildUpdateDto(toUpdate, updateDto);
         return await this.ingredientRepo.save(toUpdate);
-    }*/
+    }
 
     async findByRecipeName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
         const recipe = await this.recipeService.findOneByName(name, ["ingredients"]);

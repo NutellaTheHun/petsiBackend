@@ -21,6 +21,6 @@ export class BaseRecipeIngredientDto {
 
     @IsNumber()
     @IsPositive()
-    @IsOptional()
-    readonly recipeId?: number;
+    //@IsOptional()
+    readonly recipeId: number;
 }
