@@ -13,7 +13,11 @@ import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
     constructor(
         private readonly areaService: InventoryAreaService,
+        
+        @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly areaItemService: InventoryAreaItemService,
+
+        @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
     ){ super(InventoryAreaCount); }
 

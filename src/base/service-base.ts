@@ -27,7 +27,7 @@ export class ServiceBase<T extends ObjectLiteral> {
 
   async findAll( options?: {
     relations?: string[];
-    limit: number;
+    limit?: number;
     cursor?: string;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC'; 
@@ -53,8 +53,9 @@ export class ServiceBase<T extends ObjectLiteral> {
       query.orderBy('entity.id', 'ASC');
     }
 
-    query.limit(options.limit+1);
-
+    if(options.limit){
+      query.limit(options.limit+1);
+    }
     
     if(options.cursor) {
       const operator = options?.sortOrder === 'DESC' ? '<' : '>';
@@ -64,11 +65,13 @@ export class ServiceBase<T extends ObjectLiteral> {
     const results = await query.getMany();
 
     let nextCursor: string | undefined;
-    if(results.length > options.limit){
-      const nextEntity = results.pop();
-      nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+    if(options.limit){
+      if(results.length > options.limit){
+        const nextEntity = results.pop();
+        nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+      }
     }
-
+    
     return {
       items: results,
       nextCursor,

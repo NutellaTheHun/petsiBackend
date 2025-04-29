@@ -2,10 +2,10 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
-import { item_a, item_b } from '../../menu-items/utils/constants';
+import { item_a, item_b, item_g } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/create-label.dto';
 import { UpdateLabelDto } from '../dto/update-label.dto';
-import { type_a, type_b } from '../utils/constants';
+import { type_a, type_b, type_d } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeService } from './label-type.service';
@@ -43,9 +43,9 @@ describe('LabelsService', () => {
   });
 
   it('should create a label', async () => {
-    const item = await itemService.findOneByName(item_a);
+    const item = await itemService.findOneByName(item_g);
     if(!item){ throw new NotFoundException(); }
-    const lblType = await typeService.findOneByName(type_a);
+    const lblType = await typeService.findOneByName(type_d);
     if(!lblType){ throw new NotFoundException(); }
 
     const dto = {
@@ -79,7 +79,7 @@ describe('LabelsService', () => {
     const labels = await labelService.findByMenuItemId(item.id);
     
     expect(labels).not.toBeNull();
-    expect(labels.length).toEqual(2);
+    expect(labels.length).toEqual(1);
   });
 
   it('should update label menuItem', async () => {
@@ -124,9 +124,9 @@ describe('LabelsService', () => {
     const results = await labelService.findAll();
 
     expect(results).not.toBeNull();
-    expect(results.length).toEqual(8);
+    expect(results.items.length).toEqual(8);
 
-    testIds = results.slice(0,3).map(label => label.id);
+    testIds = results.items.slice(0,3).map(label => label.id);
   });
 
   it('should find labels by list of ids', async () => {

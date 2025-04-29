@@ -115,9 +115,9 @@ describe('Inventory Item Service', () => {
   // should create inventory-item with item sizes
   it('should create an inventory item with item sizes', async () => {
     // packageIds
-    const packageIds = (await packageService.findAll()).map(pkg => pkg.id).slice(0,2);
+    const packageIds = (await packageService.findAll()).items.map(pkg => pkg.id).slice(0,2);
     // measureIds
-    const measureIds = (await measureService.findAll()).map(unit => unit.id).slice(0,2);
+    const measureIds = (await measureService.findAll()).items.map(unit => unit.id).slice(0,2);
 
 
     const sizeDtos = testingUtil.createInventoryItemSizeDtos(
@@ -462,10 +462,10 @@ describe('Inventory Item Service', () => {
 
   //find ALL
   it('should get all items', async () => {
-    const results = await itemService.findAll();
-    expect(results.length).toEqual(12) //9 from initTestItems, 3 from create methods
+    const results = await itemService.findAll({ limit: 20 });
+    expect(results.items.length).toEqual(12) //9 from initTestItems, 3 from create methods
 
-    testIds = [results[0].id, results[1].id, results[2].id];
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
   });
 
   //find by IDS

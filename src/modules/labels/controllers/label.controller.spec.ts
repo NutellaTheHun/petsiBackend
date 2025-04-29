@@ -38,7 +38,7 @@ describe('Label  Controller', () => {
         return label;
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue(labels);
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: labels });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
       return labels.filter(label => ids.findIndex(id => id === label.id) !== -1);

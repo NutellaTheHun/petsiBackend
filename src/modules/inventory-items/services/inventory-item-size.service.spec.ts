@@ -135,13 +135,13 @@ describe('Inventory Item Size Service', () => {
 
   it('should insert tesing sizes and get all', async () => {
     const testingSizes = await testingUtil.getTestInventoryItemSizeEntities(dbTestContext);
-    const results = await sizeService.findAll();
+    const results = await sizeService.findAll({ limit: 25 });
 
     expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toEqual(testingSizes.length + 1); // including size from create test
+    expect(results.items.length).toBeGreaterThan(0);
+    expect(results.items.length).toEqual(testingSizes.length + 1); // including size from create test
 
-    testIds = [results[0].id, results[1].id, results[2].id];
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
   });
 
   it('should get a inventory item size by item name', async () => {

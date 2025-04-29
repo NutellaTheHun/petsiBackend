@@ -11,6 +11,7 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
     constructor(
         @InjectRepository(InventoryArea)
         private readonly areaRepo: Repository<InventoryArea>,
+        
         @Inject(forwardRef(() => InventoryAreaBuilder))
         private readonly areaBuilder: InventoryAreaBuilder,
         

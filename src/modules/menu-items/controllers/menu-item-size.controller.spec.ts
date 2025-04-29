@@ -42,7 +42,7 @@ describe('menu item size controller', () => {
         return size;
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue(sizes);
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: sizes });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
       return sizes.filter(size => ids.findIndex(id => id === size.id) !== -1);

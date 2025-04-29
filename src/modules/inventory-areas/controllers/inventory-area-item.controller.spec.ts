@@ -36,8 +36,8 @@ describe('inventory area item controller', () => {
         jest.spyOn(itemCountService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaItemDto) => {
             throw new NotImplementedException();
         });
-    
-        jest.spyOn(itemCountService, "findAll").mockResolvedValue(itemCounts);
+     
+        jest.spyOn(itemCountService, "findAll").mockResolvedValue( {items: itemCounts} );
     
         jest.spyOn(itemCountService, "findOne").mockImplementation(async (id: number) => {
             throw new NotImplementedException();

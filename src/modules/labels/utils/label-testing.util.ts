@@ -46,14 +46,16 @@ export class LabelTestingUtil{
     // Label
     public async getTestLabelEntities(testContext: DatabaseTestContext): Promise<Label[]> {
         await this.initLabelTypeTestDatabase(testContext);
-        const types = await this.typeService.findAll();
+        const typesRequest = await this.typeService.findAll();
+        const types = typesRequest.items;
         if(!types){ throw new Error(); }
         let typeIdx = 0;
 
         const urls = getTestImageUrls();
 
         await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
-        const items = await this.itemService.findAll();
+        const itemsRequest = await this.itemService.findAll();
+        const items = itemsRequest.items;
         if(!items){ throw new Error(); }
         let itemIdx = 0;
 

@@ -189,11 +189,11 @@ describe('Inventory area item service', () => {
     });
 
     it('should get all items', async () => {
-        const results = await areaItemService.findAll();
+        const results = await areaItemService.findAll({limit: 20});
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(15);
+        expect(results.items.length).toEqual(15);
 
-        testIds = [ results[0].id, results[1].id, results[2].id ];
+        testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
     });
 
     it('should get items by list of ids', async () => {

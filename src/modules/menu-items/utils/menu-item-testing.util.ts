@@ -87,9 +87,9 @@ export class MenuItemTestingUtil {
         await this.initMenuItemCategoryTestDatabase(testContext);
 
         const itemNames = getTestItemNames();
-        const categoryIds = (await this.categoryService.findAll()).map(cat => cat.id);
+        const categoryIds = (await this.categoryService.findAll()).items.map(cat => cat.id);
         let catIdx = 0;
-        const sizeIds = (await this.sizeService.findAll()).map(size => size.id);
+        const sizeIds = (await this.sizeService.findAll()).items.map(size => size.id);
         let sizeIdx = 0;
         const results: MenuItem[] = [];
 

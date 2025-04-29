@@ -59,7 +59,7 @@ describe('Inventory Item Categories Controller', () => {
       return categories[index];
     });
 
-    jest.spyOn(categoryService, "findAll").mockResolvedValue(categories);
+    jest.spyOn(categoryService, "findAll").mockResolvedValue( {items: categories} );
 
     jest.spyOn(categoryService, "findOne").mockImplementation(async (id: number) => {
       return categories.find(unit => unit.id === id) || null;
@@ -99,7 +99,7 @@ describe('Inventory Item Categories Controller', () => {
 
   it('should return all categories', async () => {
     const results = await controller.findAll();
-    expect(results.length).toEqual(categories.length);
+    expect(results.items.length).toEqual(categories.length);
   });
   
   it('should return a category by id', async () => {

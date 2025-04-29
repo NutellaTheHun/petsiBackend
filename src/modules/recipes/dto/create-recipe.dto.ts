@@ -2,7 +2,6 @@ import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsStr
 import { CreateRecipeIngredientDto } from "./create-recipe-ingredient.dto";
 
 export class CreateRecipeDto {
-
     @IsString()
     @IsNotEmpty()
     readonly name: string;
