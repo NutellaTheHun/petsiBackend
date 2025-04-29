@@ -98,7 +98,7 @@ export class MenuItemTestingUtil {
                 await this.itemBuilder.reset()
                     .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                     .name(itemName)
-                    .validSizesById([sizeIds[sizeIdx++]])
+                    .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
                     .build()
             )
         }

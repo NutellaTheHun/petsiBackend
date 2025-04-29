@@ -69,9 +69,9 @@ describe('menu item category service', () => {
 
     it('should find all categories', async () => {
         const results = await categoryService.findAll();
-        expect(results.length).toEqual(5);
+        expect(results.items.length).toEqual(5);
 
-        testIds = results.slice(0,3).map(cat => cat.id);
+        testIds = results.items.slice(0,3).map(cat => cat.id);
     });
 
     it('should find categories by a list of ids', async () => {

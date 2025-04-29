@@ -51,7 +51,7 @@ describe('order controller', () => {
             return order;
         });
 
-        jest.spyOn(service, 'findAll').mockResolvedValue(orders);
+        jest.spyOn(service, 'findAll').mockResolvedValue({ items: orders });
 
         jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
             return orders.filter(order => ids.findIndex(id => id === order.id) !== -1);

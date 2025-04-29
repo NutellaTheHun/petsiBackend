@@ -53,9 +53,12 @@ export class OrderTestingUtil {
         await this.initOrderTestDatabase(testContext);
         await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
 
-        const orders = await this.orderService.findAll();
+        const ordersRequest = await this.orderService.findAll();
+        const orders = ordersRequest.items;
         if(!orders){ throw new Error(); }
-        const menuItems = await this.menuItemService.findAll(['validSizes']);
+
+        const menuItemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
+        const menuItems = menuItemsRequest.items
         if(!menuItems){ throw new Error(); }
 
         let menuItemIdx = 0;
@@ -97,12 +100,13 @@ export class OrderTestingUtil {
     public async getTestOrderEntities(testContext: DatabaseTestContext): Promise<Order[]>{
         await this.initOrderTypeTestDatabase(testContext);
 
-        const recipients: string[] = [ "recipient_a","recipient_b","recipient_c","recipient_d","recipient_e","recipient_f", "recipient_g",];
+        const recipients: string[] = [ "recipient_a", "recipient_b", "recipient_c", "recipient_d", "recipient_e", "recipient_f", "recipient_g",];
         
         const fulfilltype: string[] = [ "fulfilltype_a", "fulfilltype_b"];
         let fIdx = 0;
 
-        const orderTypes = await this.typeService.findAll();
+        const orderTypesRequest = await this.typeService.findAll();
+        const orderTypes = orderTypesRequest.items;
         if(!orderTypes){ throw new Error(); }
         let otIndex = 0;
 
@@ -143,8 +147,10 @@ export class OrderTestingUtil {
     }
 
     public async getCreateOrderMenuItemDtos(amount: number): Promise<CreateOrderMenuItemDto[]> {
-        const items = await this.menuItemService.findAll(['validSizes']);
+        const itemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
+        const items = itemsRequest.items
         if(!items){ throw new Error(); }
+        
         const results: CreateOrderMenuItemDto[] = [];
         for(let i = 0; i < amount; i++)
         {

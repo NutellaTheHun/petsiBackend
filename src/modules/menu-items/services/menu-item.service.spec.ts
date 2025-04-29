@@ -396,7 +396,8 @@ describe('menu item service', () => {
     });
 
     it('should update validSizes (add)', async () => {
-        const sizes = await sizeService.findAll();
+        const sizesRequest = await sizeService.findAll();
+        const sizes = sizesRequest.items;
         if(!sizes){ throw new Error(); }
 
         const dto = {
@@ -421,7 +422,8 @@ describe('menu item service', () => {
     });
 
     it('should update validSizes (remove)', async () => {
-        const sizes = await sizeService.findAll();
+        const sizesRequest = await sizeService.findAll();
+        const sizes = sizesRequest.items
         if(!sizes){ throw new Error(); }
 
         const reducedSizes = sizes.slice(0,3).map(size => size.id);
@@ -475,9 +477,9 @@ describe('menu item service', () => {
         const results = await itemService.findAll();
         if(!results){ throw new Error(); }
 
-        expect(results.length).toEqual(8);
+        expect(results.items.length).toEqual(8);
 
-        testIds = results.slice(0,3).map(item => item.id);
+        testIds = results.items.slice(0,3).map(item => item.id);
     });
 
     it('should find menuItems by list of ids', async () => {
