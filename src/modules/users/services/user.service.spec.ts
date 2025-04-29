@@ -94,9 +94,9 @@ describe('User Service', () => {
     const expected = await userTestingUtil.getTestUserEntities(dbTestContext);
 
     const results = await usersService.findAll()
-    expect(results.length).toEqual(expected.length);
+    expect(results.items.length).toEqual(expected.length);
 
-    testIds = [results[0].id, results[1].id, results[2].id ];
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id ];
   });
 
   it("should get Users from a list of user ids", async () => {

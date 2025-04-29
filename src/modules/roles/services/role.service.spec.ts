@@ -69,9 +69,9 @@ describe('Role Service', () => {
 
     const results = await roleService.findAll()
 
-    expect(results.length).toEqual(expected.length);
+    expect(results.items.length).toEqual(expected.length);
 
-    testIds = [results[0].id, results[1].id ];
+    testIds = [results.items[0].id, results.items[1].id ];
   });
 
   it("should get Roles from a list of ids", async () => {

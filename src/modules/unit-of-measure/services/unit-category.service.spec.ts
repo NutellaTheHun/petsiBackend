@@ -147,8 +147,8 @@ describe('UnitCategoryService', () => {
 
     const results = await categoryService.findAll();
 
-    expect(results.length).toEqual(expected.length);
-    testIds = [ results[0].id, results[1].id, results[2].id,]
+    expect(results.items.length).toEqual(expected.length);
+    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id,]
   });
 
   it('should find categories by list of ids', async () => {

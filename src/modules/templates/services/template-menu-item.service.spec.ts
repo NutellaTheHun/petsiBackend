@@ -119,12 +119,12 @@ describe('Template menu item service', () => {
   });
 
   it('should find all template menu items', async () => {
-    const results = await templateItemService.findAll();
+    const results = await templateItemService.findAll({ limit: 15 });
 
     expect(results).not.toBeNull();
-    expect(results.length).toEqual(13);
+    expect(results.items.length).toEqual(13);
 
-    testIds = results.slice(0,3).map(item => item.id);
+    testIds = results.items.slice(0,3).map(item => item.id);
   });
 
   it('should get menuItems by list of ids', async () => {

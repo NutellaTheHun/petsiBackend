@@ -63,7 +63,7 @@ describe('UnitOfMeasureController', () => {
       return units[index];
     });
 
-    jest.spyOn(unitService, "findAll").mockResolvedValue(units);
+    jest.spyOn(unitService, "findAll").mockResolvedValue({ items: units });
 
     jest.spyOn(unitService, "findOne").mockImplementation(async (id: number) => {
       return units.find(unit => unit.id === id) || null;
@@ -104,7 +104,7 @@ describe('UnitOfMeasureController', () => {
 
   it('should return all units', async () => {
     const results = await controller.findAll();
-    expect(results.length).toEqual(units.length);
+    expect(results.items.length).toEqual(units.length);
   });
   
   it('should return a unit by id', async () => {

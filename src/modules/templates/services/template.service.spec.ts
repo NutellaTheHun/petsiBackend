@@ -231,9 +231,9 @@ describe('Template Service', () => {
     const results = await templateService.findAll();
 
     expect(results).not.toBeNull();
-    expect(results.length).toEqual(5);
+    expect(results.items.length).toEqual(5);
 
-    testIds = results.slice(0,3).map(temp => temp.id);
+    testIds = results.items.slice(0,3).map(temp => temp.id);
   });
 
   it('should find templates by list of ids', async() => {

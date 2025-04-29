@@ -136,9 +136,9 @@ describe('recipe ingredient service', () => {
   it('should get all ingredients', async () => {
     const expected = await testingUtil.getTestRecipeIngredientEntities(dbTestContext);
 
-    const results = await ingredientService.findAll();
-    expect(results.length).toEqual(expected.length);
-    testIds = [ results[0].id, results[1].id, results[2].id ];
+    const results = await ingredientService.findAll({ limit: 15 });
+    expect(results.items.length).toEqual(expected.length);
+    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
   });
 
   it('should get ingredients by list of ids', async () => {

@@ -55,7 +55,7 @@ describe('Role Controller', () => {
       return roles[index];
     });
 
-    jest.spyOn(roleService, "findAll").mockResolvedValue(roles);
+    jest.spyOn(roleService, "findAll").mockResolvedValue({ items: roles });
 
     jest.spyOn(roleService, "findOne").mockImplementation(async (id: number) => {
       return roles.find(role => role.id === id) || null;
@@ -77,7 +77,7 @@ describe('Role Controller', () => {
 
   it('should return all roles', async () => {
       const result = await controller.findAll();
-      expect(result.length).not.toEqual(0);
+      expect(result.items.length).not.toEqual(0);
   });
   
   it("should get one role by id", async () => {

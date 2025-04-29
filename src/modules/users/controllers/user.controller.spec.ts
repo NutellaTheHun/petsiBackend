@@ -62,7 +62,7 @@ describe('User Controller', () => {
       return users[index];
     });
 
-    jest.spyOn(usersService, "findAll").mockResolvedValue(users);
+    jest.spyOn(usersService, "findAll").mockResolvedValue({ items: users });
     
     jest.spyOn(usersService, "findOne").mockImplementation(async (id) => {
       return users.find(user => user.id === id) || null;
@@ -83,7 +83,7 @@ describe('User Controller', () => {
 
   it("should return all users", async () => {
       const users = await controller.findAll();
-      expect(users.length).not.toBe(0);
+      expect(users.items.length).not.toBe(0);
   });
   
   it("should get one user by id", async () => {
