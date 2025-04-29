@@ -25,8 +25,54 @@ export class ServiceBase<T extends ObjectLiteral> {
       return results;
   }
 
-  async findAll(relations?: Array<keyof T>): Promise<T[]> {
-    return await this.entityRepo.find({relations: relations as string[]});
+  async findAll( options?: {
+    relations?: string[];
+    limit: number;
+    cursor?: string;
+    sortBy?: string;
+    sortOrder?: 'ASC' | 'DESC'; 
+  }): Promise<{items: T[], nextCursor?: string}> {
+
+    options = {
+      limit: 10,
+      sortOrder: 'ASC',
+      ...options,
+    }
+
+    const query = this.entityRepo.createQueryBuilder('entity');
+
+    if(options.relations){
+      for(const relation of options.relations){
+        query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+      }
+    }
+
+    if(options.sortBy){
+      query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
+    } else {
+      query.orderBy('entity.id', 'ASC');
+    }
+
+    query.limit(options.limit+1);
+
+    
+    if(options.cursor) {
+      const operator = options?.sortOrder === 'DESC' ? '<' : '>';
+      query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
+    }
+
+    const results = await query.getMany();
+
+    let nextCursor: string | undefined;
+    if(results.length > options.limit){
+      const nextEntity = results.pop();
+      nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+    }
+
+    return {
+      items: results,
+      nextCursor,
+    };
   }
 
   async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T | null> {
@@ -37,7 +83,6 @@ export class ServiceBase<T extends ObjectLiteral> {
 
     return await this.entityRepo.findOne({ 
         where: { id } as unknown as FindOptionsWhere<T>, 
-        /*relations: relations as string[]*/
         relations: combinedRelations,
     });
   }
