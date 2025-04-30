@@ -4,7 +4,6 @@ import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryService } from "./menu-item-category.service";
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import exp from "constants";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 
 describe('menu item category service', () => {

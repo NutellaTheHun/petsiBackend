@@ -10,6 +10,9 @@ import { MenuItemCategoryService } from "../services/menu-item-category.service"
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { getTestCategoryNames, getTestItemNames, getTestSizeNames } from "./constants";
+import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { MenuItemComponentService } from "../services/menu-item-component.service";
+import { MenuItemComponentBuilder } from "../builders/menu-item-component.builder";
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -17,10 +20,12 @@ export class MenuItemTestingUtil {
         private readonly itemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
         private readonly categoryService: MenuItemCategoryService,
+        private readonly componentService: MenuItemComponentService,
 
         private readonly itemBuilder: MenuItemBuilder,
         private readonly sizeBuilder: MenuItemSizeBuilder,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
+        private readonly componentBuilder: MenuItemComponentBuilder,
     ){ }
 
     // Menu Item Size
@@ -114,5 +119,28 @@ export class MenuItemTestingUtil {
 
     public async cleanupMenuItemTestDatabase(): Promise<void> {
         await this.itemService.getQueryBuilder().delete().execute();
+    }
+
+
+    // Menu Item Component
+
+    public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemComponent[]>{
+        await this.initMenuItemTestDatabase(testContext);
+        
+        // const itemNames = getTestItemNames();
+        const results: MenuItemComponent[] = [];
+
+        return results;
+    }
+
+    public async initMenuItemComponentTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+        const components = await this.getTestMenuItemComponentEntities(testContext);
+        testContext.addCleanupFunction(() => this.cleanupMenuItemComponentTestDatabase());
+
+        await this.componentService.insertEntities(components);
+    }
+
+    public async cleanupMenuItemComponentTestDatabase(): Promise<void> {
+        await this.componentService.getQueryBuilder().delete().execute();
     }
 }
