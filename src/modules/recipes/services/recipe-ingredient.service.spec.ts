@@ -7,11 +7,13 @@ import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
 import { RecipeService } from './recipe.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { REC_A, REC_B, REC_C } from '../utils/constants';
-import { DRY_A, FOOD_A, OTHER_A } from '../../inventory-items/utils/constants';
+import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
+import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
 import { FL_OUNCE, GALLON, MILLILITER } from '../../unit-of-measure/utils/constants';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
 import { NotFoundException } from '@nestjs/common';
+import { validateOrReject, ValidationError } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
@@ -50,7 +52,6 @@ describe('recipe ingredient service', () => {
   });
 
   it('should create recipe ingredient (inventoryItem)', async() => {
-    // recipeA - ingredients already [ (FOOD_A, 0.5, OUNCE), (DRY_A, 1.0, POUND) ]
     const recipeA = await recipeService.findOneByName(REC_A);
     if(!recipeA){ throw new Error("recipe not found"); }
 
@@ -88,7 +89,6 @@ describe('recipe ingredient service', () => {
   });
 
   it('should create recipe ingredient (subRecipeIngredient', async() => {
-     // recipeA - ingredients already [ (FOOD_A, 0.5, OUNCE), (DRY_A, 1.0, POUND) ]
      const recipeA = await recipeService.findOneByName(REC_A);
      if(!recipeA){ throw new Error("recipe not found"); }
  
@@ -115,6 +115,41 @@ describe('recipe ingredient service', () => {
      expect(result?.unit.id).toEqual(unit.id);
  
      testSubRecId = result?.id as number;
+  });
+
+  it('should FAIL create recipe ingredient (inventoryItem and sub recipe)', async() => {
+    const recipeA = await recipeService.findOneByName(REC_A);
+    if(!recipeA){ throw new Error("recipe not found"); }
+
+    const item = await inventoryItemService.findOneByName(FOOD_B);
+    if(!item){ throw new Error("inventory item not found"); }
+
+    const subRec = await recipeService.findOneByName(REC_E);
+     if(!subRec){ throw new Error("inventory item not found"); }
+
+    const unit = await unitOfMeasureService.findOneByName(FL_OUNCE);
+    if(!unit){ throw new Error("unit of measure not found"); }
+
+    const dto = plainToInstance(CreateRecipeIngredientDto, {
+      mode: 'create',
+      recipeId: recipeA.id,
+      inventoryItemId: item.id,
+      subRecipeIngredientId: subRec.id,
+      quantity: 1,
+      unitOfMeasureId: unit.id,
+    });
+
+    try{
+      await validateOrReject(dto);
+      const result = await ingredientService.create(dto);
+      expect(result).toBeNull();
+    } catch(errors){
+      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
+        expect(errors).not.toBeNull();
+      } else {
+        throw errors
+      }
+    }
   });
 
   it('should find ingredient by id', async() => {
@@ -193,6 +228,32 @@ describe('recipe ingredient service', () => {
 
     expect(result).not.toBeNull();
     expect(result?.unit.id).toEqual(newUnit.id);
+  });
+
+  it('should FAIL update inventoryItemID and subRecipe', async() => {
+    const newRec = await recipeService.findOneByName(REC_E);
+    if(!newRec){ throw new Error("inventory item not found"); }
+
+    const newItem = await inventoryItemService.findOneByName(FOOD_B);
+    if(!newItem){ throw new Error("inventory item not found"); }
+
+    const dto = plainToInstance(UpdateRecipeIngredientDto, {
+      mode: 'update',
+      subRecipeIngredientId: newRec.id,
+      inventoryItemId: newItem.id
+    });
+
+    try{
+      await validateOrReject(dto);
+      const result = await ingredientService.update(testIngredId, dto);
+      expect(result).toBeNull()
+    } catch (errors){
+      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
+        expect(errors).not.toBeNull();
+      } else {
+        throw errors
+      }
+    }
   });
 
   it('should get all ingredients', async () => {
