@@ -41,8 +41,8 @@ describe('recipe category controller', () => {
     });
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeCategoryDto) => {
-      const existIdx = categories.findIndex(cat => cat.name === dto.name);
-      if(!existIdx){ return null; }
+      const existIdx = categories.findIndex(cat => cat.id === id);
+      if(existIdx === -1){ return null; }
 
       if(dto.name){
         categories[existIdx].name = dto.name;
@@ -55,7 +55,7 @@ describe('recipe category controller', () => {
       return categories.find(cat => cat.name === name) || null;
     });
 
-    jest.spyOn(service, "findAll").mockResolvedValue(categories);
+    jest.spyOn(service, "findAll").mockResolvedValue({ items: categories });
 
     jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
       return categories.find(cat => cat.id === id) || null;
@@ -107,7 +107,7 @@ describe('recipe category controller', () => {
   it('should find all a recipe category', async () => {
     const results = await controller.findAll();
     expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.items.length).toBeGreaterThan(0);
   });
 
   it('should update a recipe category', async () => {

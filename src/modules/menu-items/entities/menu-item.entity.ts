@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
+import { MenuItemComponent } from "./menu-item-component.entity";
 
 /**
  * An item that is a literal product to be sold. 
@@ -95,11 +96,8 @@ export class MenuItem {
     @Column({ default: false })
     isParbake: boolean;
 
-    /**
-     * The list of MenuItems, their size, and quantity associated with the order.
-     */
-    //@OneToMany(() => OrderMenuItem, onOrder => onOrder.menuItem, { nullable: true })
-    //onOrder?: OrderMenuItem[] | null;
+    @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true })
+    container?: MenuItemComponent[];
 
     /**
      * The date the order is inserted into the database. 

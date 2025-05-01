@@ -96,8 +96,10 @@ export class InventoryAreaTestUtil {
         await this.inventoryItemTestUtil.initInventoryItemSizeTestDatabase(testContext);
 
         const results: InventoryAreaItem[] = [];
-        const counts = await this.countService.findAll(["inventoryArea"]);
-        const items = await this.inventoryItemService.findAll(["sizes"]);
+        const countsRequest = await this.countService.findAll({ relations: ["inventoryArea"]});
+        const counts = countsRequest.items;
+        const itemsRequest = await this.inventoryItemService.findAll({ relations: ["sizes"] });
+        const items = itemsRequest.items;
         let itemPtr = 0;
 
         for(let i = 0; i < counts.length; i++){

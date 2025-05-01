@@ -58,8 +58,8 @@ describe('recipe sub category controller', () => {
     });
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeSubCategoryDto) => {
-      const existIdx = subCategories.findIndex(subCat => subCat.name === dto.name);
-      if(!existIdx){ return null; }
+      const existIdx = subCategories.findIndex(subCat => subCat.id === id);
+      if(existIdx === -1){ return null; }
 
       if(dto.name){
         subCategories[existIdx].name = dto.name;
@@ -85,7 +85,7 @@ describe('recipe sub category controller', () => {
       return subCategories.find(subCat => subCat.parentCategory.name === catName && subCat.name === subName) || null;
     });
 
-    jest.spyOn(service, "findAll").mockResolvedValue(subCategories);
+    jest.spyOn(service, "findAll").mockResolvedValue({ items: subCategories });
 
     jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
       return subCategories.find(subCat => subCat.id === id) || null;
@@ -141,7 +141,7 @@ describe('recipe sub category controller', () => {
   it('should find all a sub-category', async () => {
     const results = await controller.findAll();
     expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.items.length).toBeGreaterThan(0);
   });
 
   it('should update a sub-category', async () => {

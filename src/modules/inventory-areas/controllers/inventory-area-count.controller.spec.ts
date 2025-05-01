@@ -90,7 +90,7 @@ describe('inventory area count controller', () => {
             return toUpdate;
         });
     
-        jest.spyOn(countService, "findAll").mockResolvedValue(areaCounts);
+        jest.spyOn(countService, "findAll").mockResolvedValue({items: areaCounts});
     
         jest.spyOn(countService, "findOne").mockImplementation(async (id: number) => {
             return areaCounts.find(count => count.id === id) || null;
@@ -117,7 +117,7 @@ describe('inventory area count controller', () => {
 
     it('should return all itemCounts', async () => {
         const results = await controller.findAll();
-        expect(results.length).toEqual(areaCounts.length);
+        expect(results.items.length).toEqual(areaCounts.length);
     });
     
     it('should return an inventory count by id', async () => {

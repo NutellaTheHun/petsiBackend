@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -14,6 +14,8 @@ export class RoleService extends ServiceBase<Role> {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepo: Repository<Role>,
+
+    @Inject(forwardRef(() => RoleBuilder))
     private readonly roleBuilder: RoleBuilder,
   ){ super(roleRepo)}
 

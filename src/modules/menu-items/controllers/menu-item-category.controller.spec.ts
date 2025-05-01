@@ -40,7 +40,7 @@ describe('menu item category controller', () => {
         return category;
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue(categories);
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: categories });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
       return categories.filter(cat => ids.findIndex(id => id === cat.id) !== -1);

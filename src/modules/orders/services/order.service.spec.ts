@@ -410,9 +410,9 @@ describe('order service', () => {
         const results = await orderService.findAll();
 
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(9);
+        expect(results.items.length).toEqual(9);
 
-        testIds = results.slice(0,3).map(o => o.id);
+        testIds = results.items.slice(0,3).map(o => o.id);
     });
 
     it('should find orders by list of ids', async () => {

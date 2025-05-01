@@ -76,7 +76,7 @@ describe('Inventory Item Vendor Controller', () => {
       return vendors[index];
     });
 
-    jest.spyOn(vendorService, "findAll").mockResolvedValue(vendors);
+    jest.spyOn(vendorService, "findAll").mockResolvedValue( {items: vendors} );
 
     jest.spyOn(vendorService, "findOne").mockImplementation(async (id: number) => {
       return vendors.find(unit => unit.id === id) || null;
@@ -116,7 +116,7 @@ describe('Inventory Item Vendor Controller', () => {
 
   it('should return all vendors', async () => {
     const results = await controller.findAll();
-    expect(results.length).toEqual(vendors.length);
+    expect(results.items.length).toEqual(vendors.length);
   });
   
   it('should return a vendor by id', async () => {

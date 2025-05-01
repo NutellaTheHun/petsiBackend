@@ -41,7 +41,7 @@ describe('TemplatesController', () => {
       return template;
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue(templates);
+    jest.spyOn(service, 'findAll').mockResolvedValue({items: templates });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
       return templates.filter(temp => ids.findIndex(id => id === temp.id) !== -1);

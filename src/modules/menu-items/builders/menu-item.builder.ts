@@ -1,11 +1,14 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
+import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { MenuItemComponentBuilder } from "./menu-item-component.builder";
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem>{
@@ -15,6 +18,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
         @Inject(forwardRef(() => MenuItemCategoryService))
         private readonly categoryService: MenuItemCategoryService,
+
+        @Inject(forwardRef(() => MenuItemComponentBuilder))
+        private readonly componentBuilder: MenuItemComponentBuilder,
 
         private readonly sizeService: MenuItemSizeService,
     ){ super(MenuItem); }
@@ -91,6 +97,14 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
+    public containerByBuilderAfter(containerId: number, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            containerId,
+        }));
+        return this.setPropAfterBuild(this.componentBuilder.buildManyDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+    }
+
     public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {
         this.reset();
 
@@ -129,6 +143,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.categoryId){
             this.categorybyId(dto.categoryId);
         }
+        //if(dto.containerComponentDtos){
+            //this.containerByBuilderAfter(this.entity.id, dto.containerComponentDtos);
+        //}
         
         return this.build();
     }
@@ -171,6 +188,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
         if(dto.categoryId !== undefined){
             this.categorybyId(dto.categoryId);
+        }
+        if(dto.containerComponentDtos){
+            this.containerByBuilderAfter(this.entity.id, dto.containerComponentDtos);
         }
 
         return this.build();

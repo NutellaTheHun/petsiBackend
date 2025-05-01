@@ -1,7 +1,7 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { CreateMenuItemComponentDto } from "./create-menu-item-component.dto";
 
 export class CreateMenuItemDto {
-
     @IsString()
     @IsOptional()
     readonly squareCatalogId?: string;
@@ -52,8 +52,7 @@ export class CreateMenuItemDto {
     @IsOptional()
     readonly isParbake: boolean;
 
-    @IsArray()
-    @IsNumber()
-    @IsPositive({ each: true})
-    readonly orderMenuItemIds: number[] = [];
+    //@IsOptional()
+    //@IsArray()
+    //readonly containerComponentDtos: CreateMenuItemComponentDto[];
 }

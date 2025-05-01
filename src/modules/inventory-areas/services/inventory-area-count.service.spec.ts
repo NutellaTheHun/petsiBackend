@@ -158,7 +158,7 @@ describe('Inventory area item count service', () => {
     it('should get all area counts', async () => {
         const results = await countService.findAll()
         expect(results).not.toBeNull();
-        expect(results.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
+        expect(results.items.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
     });
 
     it('should get area counts by id', async () => {
@@ -172,12 +172,16 @@ describe('Inventory area item count service', () => {
     });
 
     it('should update area count with (created) counted items, with pre-existing sizes and created sizes', async () => {
-        const items = await itemService.findAll(['sizes']);
+        const itemsRequest = await itemService.findAll({relations: ['sizes']});
+        const items = itemsRequest.items;
         if(!items){ throw new Error("items is null"); }
 
-        const packages = await packageService.findAll();
+        const packagesRequest = await packageService.findAll();
+        const packages = packagesRequest.items;
         if(!packages){ throw new Error("packages is null"); }
-        const units = await measureService.findAll();
+
+        const unitsRequest = await measureService.findAll();
+        const units = unitsRequest.items;
         if(!units){ throw new Error("units is null"); }
 
         if(!items[0].sizes){ throw new Error("first item's sizes is null"); }

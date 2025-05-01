@@ -75,9 +75,9 @@ describe('LabelsService', () => {
     const results = await typeService.findAll();
 
     expect(results).not.toBeNull();
-    expect(results.length).toEqual(5);
+    expect(results.items.length).toEqual(5);
 
-    testIds = results.slice(0,3).map(type => type.id);
+    testIds = results.items.slice(0,3).map(type => type.id);
   });
 
   it('should find types by list of ids', async () => {

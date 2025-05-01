@@ -46,11 +46,13 @@ export class TemplateTestingUtil {
         await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
         await this.initTemplateTestDatabase(testContext);
 
-        const items = await this.menuItemService.findAll();
+        const itemsRequest = await this.menuItemService.findAll();
+        const items = itemsRequest.items;
         if(!items){ throw new Error(); }
         let itemIdx = 0;
         
-        const templates = await this.templateService.findAll();
+        const templatesRequest = await this.templateService.findAll();
+        const templates = templatesRequest.items;
         if(!templates){ throw new Error();}
 
         const results: TemplateMenuItem[] = [];

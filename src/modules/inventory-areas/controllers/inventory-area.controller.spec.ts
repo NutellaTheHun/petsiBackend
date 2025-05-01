@@ -102,7 +102,7 @@ describe('inventory area controller', () => {
             return toUpdate;
         });
     
-        jest.spyOn(areaService, "findAll").mockResolvedValue(areas);
+        jest.spyOn(areaService, "findAll").mockResolvedValue({items: areas});
     
         jest.spyOn(areaService, "findOne").mockImplementation(async (id: number) => {
             return areas.find(area => area.id === id) || null;
@@ -136,7 +136,7 @@ describe('inventory area controller', () => {
 
     it('should return all areas', async () => {
         const result = await controller.findAll();
-        expect(result.length).toEqual(areas.length);
+        expect(result.items.length).toEqual(areas.length);
     });
     
     it('should return an area by id', async () => {
@@ -161,12 +161,14 @@ describe('inventory area controller', () => {
 
         const newCount =  { inventoryArea: toUpdate, countDate: new Date() } as InventoryAreaCount;
         newCount.id = countId++;
-
+        if(!toUpdate.inventoryCounts){
+            toUpdate.inventoryCounts = [];
+        }
         toUpdate?.inventoryCounts.push(newCount);
 
         const result = await controller.update(toUpdate?.id, toUpdate);
         expect(result).not.toBeNull();
-        expect(result?.inventoryCounts.length).toEqual(toUpdate.inventoryCounts.length);
+        expect(result?.inventoryCounts?.length).toEqual(toUpdate.inventoryCounts.length);
     });
     
     it('should fail to update an area (doesnt exist)', async () => {

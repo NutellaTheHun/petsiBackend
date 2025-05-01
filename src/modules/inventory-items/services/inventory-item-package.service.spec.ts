@@ -80,10 +80,10 @@ describe('Inventory Item Package Service', () => {
   it('should insert default packages and get all inventory item packages', async () => {
     const results = await packageService.findAll();
 
-    expect(results.length).toBeGreaterThan(3);
+    expect(results.items.length).toBeGreaterThan(3);
 
     // for future testing
-    testIds = [results[0].id, results[1].id, results[2].id];
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
   });
 
   it('should get inventory item packages from a list of ids', async () => {

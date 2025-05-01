@@ -7,10 +7,13 @@ import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
 import { RecipeService } from './recipe.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { REC_A } from '../utils/constants';
-import { FOOD_A, OTHER_A } from '../../inventory-items/utils/constants';
-import { FL_OUNCE, MILLILITER } from '../../unit-of-measure/utils/constants';
+import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
+import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
+import { FL_OUNCE, GALLON, MILLILITER } from '../../unit-of-measure/utils/constants';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
+import { NotFoundException } from '@nestjs/common';
+import { validateOrReject, ValidationError } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
@@ -21,8 +24,11 @@ describe('recipe ingredient service', () => {
   let inventoryItemService: InventoryItemService;
   let unitOfMeasureService: UnitOfMeasureService;
 
-  let testId: number;
+  let testIngredId: number;
+  let testSubRecId: number;
   let testIds: number[];
+  let testRecipeId: number;
+
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
@@ -41,44 +47,11 @@ describe('recipe ingredient service', () => {
     await dbTestContext.executeCleanupFunctions();
   });
 
-  /**
-   * recipe: Recipe
-   *  - If the recipe is deleted, the ingredient should also be deleted
-   * 
-   * inventoryItem: InventoryItem
-   *  - If the item is deleted, the ingredient is also deleted
-   * 
-   * subRecipeIngredient: Recipe
-   *  - If the subRecipe is deleted, the ingredient is also deleted
-   * 
-   * unit: Unit Of Measure:
-   *  - If the unit of measure is deleted, also delete the ingredient (cant delete units of measure rn)
-   */
-
-  // Create a ingredient with inventory item
-
-  // Create a ingredient with a sub recipe
-
-  // Update recipe
-  // - old one loses reference
-  // - new on gains reference
-
-  // Update inventory item
-
-  // Update subRecipe
-
-  // update quantity
-
-  // update unit of measure
-
-  //
-
   it('should be defined', () => {
     expect(ingredientService).toBeDefined();
   });
-  /*
-  it('should create an ingredient', async () => {
-    // recipeA - ingredients already [ (FOOD_A, 0.5, OUNCE), (DRY_A, 1.0, POUND) ]
+
+  it('should create recipe ingredient (inventoryItem)', async() => {
     const recipeA = await recipeService.findOneByName(REC_A);
     if(!recipeA){ throw new Error("recipe not found"); }
 
@@ -89,6 +62,8 @@ describe('recipe ingredient service', () => {
     if(!unit){ throw new Error("unit of measure not found"); }
 
     const dto = {
+      mode: 'create',
+      recipeId: recipeA.id,
       inventoryItemId: item.id,
       quantity: 1,
       unitOfMeasureId: unit.id,
@@ -102,43 +77,191 @@ describe('recipe ingredient service', () => {
     expect(result?.quantity).toEqual(1);
     expect(result?.unit.id).toEqual(unit.id);
 
-    testId = result?.id as number;
-  });*/
+    testIngredId = result?.id as number;
+    testRecipeId = recipeA.id;
+  });
 
-  /*
-  it('should update an ingredient', async () => {
-    const toUpdate = await ingredientService.findOne(testId);
-    if(!toUpdate){ throw new Error("ingredient to update is null"); }
+  it('should be referenced in recipe query', async() => {
+    const testRecipe = await recipeService.findOne(testRecipeId, ['ingredients']);
+    if(!testRecipe){ throw new NotFoundException(); }
 
-    const updateUnit = await unitOfMeasureService.findOneByName(MILLILITER);
-    if(!updateUnit){ throw new Error("unit of measure not found"); }
+    expect(testRecipe.ingredients?.findIndex(ingred => ingred.id === testIngredId)).not.toEqual(-1);
+  });
+
+  it('should create recipe ingredient (subRecipeIngredient', async() => {
+     const recipeA = await recipeService.findOneByName(REC_A);
+     if(!recipeA){ throw new Error("recipe not found"); }
+ 
+     const subRec = await recipeService.findOneByName(REC_C);
+     if(!subRec){ throw new Error("inventory item not found"); }
+ 
+     const unit = await unitOfMeasureService.findOneByName(FL_OUNCE);
+     if(!unit){ throw new Error("unit of measure not found"); }
+ 
+     const dto = {
+       mode: 'create',
+       recipeId: recipeA.id,
+       subRecipeIngredientId: subRec.id,
+       quantity: 1,
+       unitOfMeasureId: unit.id,
+     } as CreateRecipeIngredientDto;
+ 
+     const result = await ingredientService.create(dto);
+     expect(result).not.toBeNull();
+     expect(result?.id).not.toBeNull();
+     expect(result?.recipe?.id).toEqual(recipeA.id);
+     expect(result?.subRecipeIngredient?.id).toEqual(subRec.id);
+     expect(result?.quantity).toEqual(1);
+     expect(result?.unit.id).toEqual(unit.id);
+ 
+     testSubRecId = result?.id as number;
+  });
+
+  it('should FAIL create recipe ingredient (inventoryItem and sub recipe)', async() => {
+    const recipeA = await recipeService.findOneByName(REC_A);
+    if(!recipeA){ throw new Error("recipe not found"); }
+
+    const item = await inventoryItemService.findOneByName(FOOD_B);
+    if(!item){ throw new Error("inventory item not found"); }
+
+    const subRec = await recipeService.findOneByName(REC_E);
+     if(!subRec){ throw new Error("inventory item not found"); }
+
+    const unit = await unitOfMeasureService.findOneByName(FL_OUNCE);
+    if(!unit){ throw new Error("unit of measure not found"); }
+
+    const dto = plainToInstance(CreateRecipeIngredientDto, {
+      mode: 'create',
+      recipeId: recipeA.id,
+      inventoryItemId: item.id,
+      subRecipeIngredientId: subRec.id,
+      quantity: 1,
+      unitOfMeasureId: unit.id,
+    });
+
+    try{
+      await validateOrReject(dto);
+      const result = await ingredientService.create(dto);
+      expect(result).toBeNull();
+    } catch(errors){
+      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
+        expect(errors).not.toBeNull();
+      } else {
+        throw errors
+      }
+    }
+  });
+
+  it('should find ingredient by id', async() => {
+    const result = await ingredientService.findOne(testIngredId);
+    expect(result).not.toBeNull();
+  });
+
+  it('should update inventoryItem', async() => {
+    const newItem = await inventoryItemService.findOneByName(DRY_A);
+    if(!newItem){ throw new Error("inventory item not found"); }
 
     const dto = {
-      quantity: 3,
-      unitOfMeasureId: updateUnit.id,
+      mode: 'update',
+      inventoryItemId: newItem.id,
     } as UpdateRecipeIngredientDto;
 
-    const result = await ingredientService.update(toUpdate.id, dto);
+    const result = await ingredientService.update(testSubRecId, dto);
+
     expect(result).not.toBeNull();
-    expect(result?.quantity).toEqual(3);
-    expect(result?.unit.id).toEqual(updateUnit.id);
-  });*/
+    expect(result?.inventoryItem?.id).toEqual(newItem.id);
+  });
 
-  /*
-  it('should remove an ingredient', async () => {
-    const removal = await ingredientService.remove(testId);
-    expect(removal).toBeTruthy();
+  it('should lose subRecipeIngredient reference', async() => {
+    const result = await ingredientService.findOne(testSubRecId, ['inventoryItem', 'subRecipeIngredient']);
+    expect(result).not.toBeNull();
 
-    const verify = await ingredientService.findOne(testId);
-    expect(verify).toBeNull();
-  });*/
+    expect(result?.inventoryItem).not.toBeNull();
+    expect(result?.subRecipeIngredient).toBeNull();
+  });
+
+  it('should update subRecipeIngredient', async() => {
+    const newRec = await recipeService.findOneByName(REC_C);
+    if(!newRec){ throw new Error("inventory item not found"); }
+
+    const dto = {
+      mode: 'update',
+      subRecipeIngredientId: newRec.id,
+    } as UpdateRecipeIngredientDto;
+
+    const result = await ingredientService.update(testIngredId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.subRecipeIngredient?.id).toEqual(newRec.id);
+  });
+
+  it('should lose ingredient reference', async() => {
+    const result = await ingredientService.findOne(testIngredId, ['inventoryItem', 'subRecipeIngredient']);
+    expect(result).not.toBeNull();
+
+    expect(result?.inventoryItem).toBeNull();
+    expect(result?.subRecipeIngredient).not.toBeNull();
+  });
+
+  it('should update quantity', async() => {
+    const dto = {
+      mode: 'update',
+      quantity: 10,
+    } as UpdateRecipeIngredientDto;
+
+    const result = await ingredientService.update(testIngredId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.quantity).toEqual(10);
+  });
+
+  it('should update unit of measure', async() => {
+    const newUnit = await unitOfMeasureService.findOneByName(GALLON);
+    if(!newUnit){ throw new Error("unit of measure not found"); }
+
+    const dto = {
+      mode: 'update',
+      unitOfMeasureId: newUnit.id,
+    } as UpdateRecipeIngredientDto;
+
+    const result = await ingredientService.update(testIngredId, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.unit.id).toEqual(newUnit.id);
+  });
+
+  it('should FAIL update inventoryItemID and subRecipe', async() => {
+    const newRec = await recipeService.findOneByName(REC_E);
+    if(!newRec){ throw new Error("inventory item not found"); }
+
+    const newItem = await inventoryItemService.findOneByName(FOOD_B);
+    if(!newItem){ throw new Error("inventory item not found"); }
+
+    const dto = plainToInstance(UpdateRecipeIngredientDto, {
+      mode: 'update',
+      subRecipeIngredientId: newRec.id,
+      inventoryItemId: newItem.id
+    });
+
+    try{
+      await validateOrReject(dto);
+      const result = await ingredientService.update(testIngredId, dto);
+      expect(result).toBeNull()
+    } catch (errors){
+      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
+        expect(errors).not.toBeNull();
+      } else {
+        throw errors
+      }
+    }
+  });
 
   it('should get all ingredients', async () => {
     const expected = await testingUtil.getTestRecipeIngredientEntities(dbTestContext);
 
-    const results = await ingredientService.findAll();
-    expect(results.length).toEqual(expected.length);
-    testIds = [ results[0].id, results[1].id, results[2].id ];
+    const results = await ingredientService.findAll({ limit: 15 });
+    expect(results.items.length).toEqual(expected.length + 2);
+    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
   });
 
   it('should get ingredients by list of ids', async () => {
@@ -162,5 +285,56 @@ describe('recipe ingredient service', () => {
     // 2 ingredients use FOOD_A from getTestRecipeIngredientEntities() 
     const results = await ingredientService.findByInventoryItemName(FOOD_A);
     expect(results.length).toEqual(2);
+  });
+
+  it('should remove recipe ingredient', async() => {
+    const removal = await ingredientService.remove(testSubRecId);
+    expect(removal).toBeTruthy();
+
+    const verify = await ingredientService.findOne(testSubRecId);
+    expect(verify).toBeNull();
+  });
+
+  it('should not be referenced in recipe query', async() => {
+    const testRecipe = await recipeService.findOne(testRecipeId, ['ingredients']);
+    if(!testRecipe){ throw new NotFoundException(); }
+
+    expect(testRecipe.ingredients?.findIndex(ingred => ingred.id === testSubRecId)).toEqual(-1);
+  });
+
+  it('should delete ingredient when deleting recipe', async () => {
+    const expected = await recipeService.findOneByName(REC_B, ["ingredients"]);
+    if(!expected){ throw new Error("recipe B not found"); }
+    if(!expected.ingredients){ throw new Error("recipe B ingredients are null"); }
+
+    const ids = (await ingredientService.findByRecipeName(REC_B)).map(ingred => ingred.id);
+    
+    await recipeService.remove(expected.id);
+
+    const verify = await ingredientService.findEntitiesById(ids);
+    expect(verify.length).toEqual(0);
+  });
+
+  it('should delete ingredient when deleting inventory item', async () => {
+    const item = await inventoryItemService.findOneByName(FOOD_A);
+    if(!item){ throw new NotFoundException(); }
+
+    const ids = (await ingredientService.findByInventoryItemName(FOOD_A)).map(ingred => ingred.id);
+    
+    await inventoryItemService.remove(item.id);
+
+    const verify = await ingredientService.findEntitiesById(ids);
+    expect(verify.length).toEqual(0);
+  });
+
+  it('should delete ingredient when deleting subRecipe', async () => {
+    const ingredient = await ingredientService.findOne(testIngredId, ['subRecipeIngredient']);
+    if(!ingredient){ throw new NotFoundException(); }
+    if(!ingredient.subRecipeIngredient){ throw new Error();}
+
+    await recipeService.remove(ingredient.subRecipeIngredient?.id);
+
+    const verify = await ingredientService.findOne(testIngredId);
+    expect(verify).toBeNull();
   });
 });

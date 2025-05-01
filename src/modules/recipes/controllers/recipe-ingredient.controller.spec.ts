@@ -130,7 +130,7 @@ describe('recipe ingredient controller', () => {
       return ingredients.filter(ingred => ingred.recipe.name === name) || null;
     });
 
-    jest.spyOn(service, "findAll").mockResolvedValue(ingredients);
+    jest.spyOn(service, "findAll").mockResolvedValue({ items: ingredients });
 
     jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
       return ingredients.find(ingred => ingred.id === id) || null;
@@ -180,7 +180,7 @@ describe('recipe ingredient controller', () => {
   it('should find all a recipe ingredient', async () => {
     const results = await controller.findAll();
     expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
+    expect(results.items.length).toBeGreaterThan(0);
   });
 
   it('should update a recipe ingredient', async () => {

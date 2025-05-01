@@ -90,9 +90,9 @@ describe('Inventory area service', () => {
         const testAreas = await testingUtil.getTestInventoryAreaEntities(dbTestContext);
 
         const results = await service.findAll();
-        expect(results.length).toEqual(testAreas.length);
+        expect(results.items.length).toEqual(testAreas.length);
 
-        testIds = [ results[0].id, results[1].id, results[2].id ];
+        testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
     });
 
     it('should get a list of areas by IDs', async () => {

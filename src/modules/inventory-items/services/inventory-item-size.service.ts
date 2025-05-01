@@ -14,6 +14,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @InjectRepository(InventoryItemSize)
         private readonly sizeRepo: Repository<InventoryItemSize>,
 
+        @Inject(forwardRef(() => InventoryItemSizeBuilder))
         private readonly sizeBuilder: InventoryItemSizeBuilder,
 
         @Inject(forwardRef(() => InventoryItemService))

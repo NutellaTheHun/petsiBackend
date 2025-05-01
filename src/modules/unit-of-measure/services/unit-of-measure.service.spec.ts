@@ -205,10 +205,10 @@ describe('UnitOfMeasureService', () => {
   it('should get all units of measure', async () => {
     const expected = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
 
-    const results = await unitService.findAll();
-    expect(results.length).toEqual(expected.length);
+    const results = await unitService.findAll({ limit: 20 });
+    expect(results.items.length).toEqual(expected.length);
 
-    testIds = [ results[0].id, results[1].id, results[2].id ];
+    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
   });
 
   it('should get units of measure by list of ids', async () => {

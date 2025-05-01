@@ -27,7 +27,7 @@ describe('Inventory Item Size Controller', () => {
   let units: UnitOfMeasure[];
   let unitId = 1;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
 
     controller = module.get<InventoryItemSizeController>(InventoryItemSizeController);
@@ -106,7 +106,7 @@ describe('Inventory Item Size Controller', () => {
       return sizes[index];
     });
 
-    jest.spyOn(service, "findAll").mockResolvedValue(sizes);
+    jest.spyOn(service, "findAll").mockResolvedValue( {items: sizes} );
 
     jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
       return sizes.find(unit => unit.id === id) || null;
@@ -150,7 +150,7 @@ describe('Inventory Item Size Controller', () => {
 
   it('should return all sizes', async () => {
     const results = await controller.findAll();
-    expect(results.length).toEqual(sizes.length);
+    expect(results.items.length).toEqual(sizes.length);
   });
   
   it('should return a size by id', async () => {

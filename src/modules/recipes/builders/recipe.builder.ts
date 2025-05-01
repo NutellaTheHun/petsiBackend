@@ -25,8 +25,10 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         @Inject(forwardRef(() => RecipeSubCategoryService))
         private readonly subCategoryService: RecipeSubCategoryService,
 
-        private readonly unitService: UnitOfMeasureService,
+        @Inject(forwardRef(() => RecipeIngredientBuilder))
         private readonly ingredientBuilder: RecipeIngredientBuilder,
+
+        private readonly unitService: UnitOfMeasureService,
         private readonly menuItemService: MenuItemService,
     ){ super(Recipe); }
 

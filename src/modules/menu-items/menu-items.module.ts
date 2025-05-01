@@ -13,6 +13,10 @@ import { MenuItemBuilder } from './builders/menu-item.builder';
 import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
 import { MenuItemController } from './controllers/menu-item.controller';
 import { MenuItemCategoryService } from './services/menu-item-category.service';
+import { MenuItemComponent } from './entities/menu-item-component.entity';
+import { MenuItemComponentController } from './controllers/menu-item-component.controller';
+import { MenuItemComponentService } from './services/menu-item-component.service';
+import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
 
 @Module({
   imports: [
@@ -20,6 +24,7 @@ import { MenuItemCategoryService } from './services/menu-item-category.service';
       MenuItemCategory,
       MenuItemSize,
       MenuItem,
+      MenuItemComponent,
     ])
   ],
 
@@ -27,16 +32,19 @@ import { MenuItemCategoryService } from './services/menu-item-category.service';
     MenuItemCategoryController,
     MenuItemSizeController,
     MenuItemController,
+    MenuItemComponentController,
   ],
 
   providers: [
     MenuItemCategoryService,
     MenuItemSizeService,
     MenuItemService,
+    MenuItemComponentService,
 
     MenuItemCategoryBuilder,
     MenuItemSizeBuilder,
     MenuItemBuilder,
+    MenuItemComponentBuilder,
 
     MenuItemTestingUtil,
   ],
@@ -45,6 +53,7 @@ import { MenuItemCategoryService } from './services/menu-item-category.service';
     MenuItemCategoryService,
     MenuItemSizeService,
     MenuItemService,
+    MenuItemComponentService,
 
     MenuItemTestingUtil,
   ]

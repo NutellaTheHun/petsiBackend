@@ -41,7 +41,7 @@ describe('menu item controller', () => {
       return item;
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue(items);
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: items });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
       return items.filter(item => ids.findIndex(id => id === item.id) !== -1);
@@ -121,7 +121,7 @@ describe('menu item controller', () => {
     const result = await controller.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull()
+    expect(result?.id).not.toBeNull();
     expect(result?.name).toEqual("updateTestItem");
   });
 

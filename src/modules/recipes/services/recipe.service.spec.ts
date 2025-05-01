@@ -94,8 +94,11 @@ describe('recipe service', () => {
     const salesAmount = 10.99;
     const costAmount = 5.99
 
-    const ingredientItems = await invItemService.findAll();
-    const ingredientMeasureUnits = await unitOfMeasureService.findAll();
+    const ingredientItemsRequest = await invItemService.findAll();
+    const ingredientItems = ingredientItemsRequest.items;
+
+    const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
+    const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
     const ingredientDtos = testingUtil.createRecipeIngredientDtos(
       ingredientItems.map(i => i.id).slice(0,3), 
@@ -170,8 +173,11 @@ describe('recipe service', () => {
     const testIngredients = await ingredientService.findEntitiesById(testRecipe.ingredients.map(i => i.id), ['inventoryItem', 'subRecipeIngredient', 'unit'])
     if(!testIngredients){ throw new error("recipe ingredients is null")}
 
-    const ingredientItems = await invItemService.findAll();
-    const ingredientMeasureUnits = await unitOfMeasureService.findAll();
+    const ingredientItemsRequest = await invItemService.findAll();
+    const ingredientItems = ingredientItemsRequest.items;
+
+    const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
+    const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
     const createIngredDtos = testingUtil.createRecipeIngredientDtos(
       ingredientItems.map(i => i.id).slice(3,7), 
@@ -749,8 +755,8 @@ describe('recipe service', () => {
 
     const results = await recipeService.findAll();
 
-    expect(results.length).toEqual(expected.length);
-    testIds = [ results[0].id, results[1].id, results[2].id, ]
+    expect(results.items.length).toEqual(expected.length);
+    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id, ]
   });
 
   it('should get recipes by list of ids', async () => {

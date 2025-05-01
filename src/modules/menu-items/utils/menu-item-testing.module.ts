@@ -9,6 +9,8 @@ import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemsModule } from "../menu-items.module";
+import { MenuItemComponentController } from "../controllers/menu-item-component.controller";
+import { MenuItemComponent } from "../entities/menu-item-component.entity";
 
 export async function getMenuItemTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -18,11 +20,13 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
                 MenuItemCategory,
                 MenuItemSize,
                 MenuItem,
+                MenuItemComponent,
             ]),
             TypeOrmModule.forFeature([
                 MenuItemCategory,
                 MenuItemSize,
                 MenuItem,
+                MenuItemComponent,
             ]),
             MenuItemsModule
         ],
@@ -31,6 +35,7 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
             MenuItemCategoryController,
             MenuItemSizeController,
             MenuItemController,
+            MenuItemComponentController,
         ],
 
         providers: [],

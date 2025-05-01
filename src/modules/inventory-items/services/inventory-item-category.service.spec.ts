@@ -83,9 +83,9 @@ describe('Inventory Item Category Service', () => {
 
     const results = await service.findAll();
 
-    expect(results.length).toEqual(categories.length);
+    expect(results.items.length).toEqual(categories.length);
 
-    testIds = [results[0].id, results[1].id, results[2].id];
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
   });
 
   it('should get a inventory item category by name', async () => {

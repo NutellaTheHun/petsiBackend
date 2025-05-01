@@ -65,8 +65,8 @@ describe('Inventory Item Vendor Service', () => {
     const vendors = await testingUtil.getTestInventoryItemVendorEntities(dbTestContext);
     const results = await vendorService.findAll();
 
-    expect(results.length).toEqual(vendors.length);
-    testIds = [results[0].id, results[1].id, results[2].id];
+    expect(results.items.length).toEqual(vendors.length);
+    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
   });
 
   it('should get a vendor by name', async () => {

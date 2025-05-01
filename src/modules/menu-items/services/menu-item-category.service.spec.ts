@@ -4,7 +4,6 @@ import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryService } from "./menu-item-category.service";
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import exp from "constants";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 
 describe('menu item category service', () => {
@@ -69,9 +68,9 @@ describe('menu item category service', () => {
 
     it('should find all categories', async () => {
         const results = await categoryService.findAll();
-        expect(results.length).toEqual(5);
+        expect(results.items.length).toEqual(5);
 
-        testIds = results.slice(0,3).map(cat => cat.id);
+        testIds = results.items.slice(0,3).map(cat => cat.id);
     });
 
     it('should find categories by a list of ids', async () => {
