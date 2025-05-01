@@ -10,5 +10,6 @@ export class UpdateRecipeIngredientDto extends BaseRecipeIngredientDto{
     readonly id: number;
 
     @Validate(IfInventoryItemOrSubRecipe)
-    validateIngredientSubRecipeIds() {}
+    private readonly _ingredientValidator = true;
+    //validateIngredientSubRecipeIds() {}
 }

@@ -121,7 +121,7 @@ describe('menu item controller', () => {
     const result = await controller.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull()
+    expect(result?.id).not.toBeNull();
     expect(result?.name).toEqual("updateTestItem");
   });
 

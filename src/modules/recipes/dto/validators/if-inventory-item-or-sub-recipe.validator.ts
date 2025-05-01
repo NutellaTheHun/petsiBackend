@@ -2,7 +2,7 @@ import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments 
 
 @ValidatorConstraint({ name: 'IfInventoryItemOrSubRecipe', async: false })
 export class IfInventoryItemOrSubRecipe implements ValidatorConstraintInterface {
-  validate(value: any, args: ValidationArguments) {
+  validate(_: any, args: ValidationArguments) {
     const object = args.object as any;
 
     if(!object.inventoryItemId && !object.subRecipeIngredientId){ return true; }

@@ -6,6 +6,10 @@ import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
+import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { MenuItemComponentBuilder } from "./menu-item-component.builder";
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem>{
@@ -15,6 +19,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
         @Inject(forwardRef(() => MenuItemCategoryService))
         private readonly categoryService: MenuItemCategoryService,
+
+        @Inject(forwardRef(() => MenuItemComponentBuilder))
+        private readonly componentBuilder: MenuItemComponentBuilder,
 
         private readonly sizeService: MenuItemSizeService,
     ){ super(MenuItem); }
@@ -89,6 +96,14 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public categorybyName(name: string): this {
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
+    }
+
+    public containerByBuilderAfter(containerId: number, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+        const enrichedDtos = dtos.map( dto => ({
+            ...dto,
+            containerId,
+        }));
+        return this.setPropAfterBuild(this.componentBuilder.buildManyDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
     }
 
     public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {

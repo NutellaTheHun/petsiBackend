@@ -97,7 +97,7 @@ export class MenuItem {
     isParbake: boolean;
 
     @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true })
-    components?: MenuItemComponent[];
+    container?: MenuItemComponent[];
 
     /**
      * The date the order is inserted into the database. 

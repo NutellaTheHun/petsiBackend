@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ServiceBase } from "../../../base/service-base";
 import { MenuItemComponent } from "../entities/menu-item-component.entity";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -12,6 +12,8 @@ export class MenuItemComponentService extends ServiceBase<MenuItemComponent> {P
     constructor(
         @InjectRepository(MenuItemComponent)
         private readonly componentRepo: Repository<MenuItemComponent>,
+
+        @Inject(forwardRef(() => MenuItemComponentBuilder))
         private readonly componentBuilder: MenuItemComponentBuilder,
     ){ super(componentRepo); }
 

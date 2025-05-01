@@ -2,7 +2,7 @@ import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments 
 
 @ValidatorConstraint({ name: 'InventoryItemOrSubRecipe', async: false })
 export class InventoryItemOrSubRecipe implements ValidatorConstraintInterface {
-  validate(value: any, args: ValidationArguments) {
+  validate(_: any, args: ValidationArguments) {
     const object = args.object as any;
     
     const hasInventoryItem = !!object.inventoryItemId;
