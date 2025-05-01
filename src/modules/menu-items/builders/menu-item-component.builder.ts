@@ -96,7 +96,7 @@ export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> {
     public async buildManyDto(parentContainer: MenuItem, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): Promise<MenuItemComponent[]> {
         const results: MenuItemComponent[] = [];
         for(const dto of dtos){
-            if(dto.mode === 'create'){
+            if(dto.mode === 'create'){    
                 results.push( await this.buildCreateDto(dto));
             } else {
                 const comp = await this.componentService.findOne(dto.id, ['container', 'item', 'size']);
