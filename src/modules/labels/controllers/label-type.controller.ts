@@ -7,8 +7,8 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Controller('label-types')
 export class LabelTypeController extends ControllerBase<LabelType>{
-  constructor(
-    labelTypeService: LabelTypeService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache
-  ) { super(labelTypeService, cacheManager); }
+    constructor(
+      labelTypeService: LabelTypeService,
+      @Inject(CACHE_MANAGER) cacheManager: Cache
+    ) { super(labelTypeService, cacheManager); }
 }

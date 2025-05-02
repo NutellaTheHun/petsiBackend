@@ -1,4 +1,4 @@
-import { forwardRef, Inject, NotFoundException, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -7,8 +7,8 @@ import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builde
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaService } from "./inventory-area.service";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
+import { InventoryAreaService } from "./inventory-area.service";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(

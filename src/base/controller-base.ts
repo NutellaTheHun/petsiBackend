@@ -44,7 +44,9 @@ export class ControllerBase<T extends ObjectLiteral> {
       sortOrder,
     });
 
-    await this.cacheManager.set(cacheKey, result, 60_000);
+    const safeResult = JSON.parse(JSON.stringify(result));
+
+    await this.cacheManager.set(cacheKey, safeResult, 60_000);
 
     return result;
     /*return await this.entityService.findAll({
@@ -66,7 +68,8 @@ export class ControllerBase<T extends ObjectLiteral> {
     const result =  await this.entityService.findOne(id);
 
     if(result){ 
-      await this.cacheManager.set(cacheKey, result, 60_000);
+      const safeResult = JSON.parse(JSON.stringify(result));
+      await this.cacheManager.set(cacheKey, safeResult, 60_000);
     }
     
     return result;
