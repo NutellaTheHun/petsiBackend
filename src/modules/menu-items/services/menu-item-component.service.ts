@@ -15,7 +15,7 @@ export class MenuItemComponentService extends ServiceBase<MenuItemComponent> {P
 
         @Inject(forwardRef(() => MenuItemComponentBuilder))
         private readonly componentBuilder: MenuItemComponentBuilder,
-    ){ super(componentRepo); }
+    ){ super(componentRepo, 'MenuItemComponentService'); }
 
     async create(dto: CreateMenuItemComponentDto): Promise<MenuItemComponent | null> {
         const category = await this.componentBuilder.buildCreateDto(dto);

@@ -1,11 +1,11 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { CreateTemplateDto } from '../dto/create-template.dto';
-import { UpdateTemplateDto } from '../dto/update-template.dto';
-import { ServiceBase } from '../../../base/service-base';
-import { Template } from '../entities/template.entity';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ServiceBase } from '../../../base/service-base';
 import { TemplateBuilder } from '../builders/template.builder';
+import { CreateTemplateDto } from '../dto/create-template.dto';
+import { UpdateTemplateDto } from '../dto/update-template.dto';
+import { Template } from '../entities/template.entity';
 
 @Injectable()
 export class TemplateService extends ServiceBase<Template>{
@@ -14,7 +14,7 @@ export class TemplateService extends ServiceBase<Template>{
       private readonly templateRepo: Repository<Template>,
 
       private readonly templateBuilder: TemplateBuilder,
-    ){ super(templateRepo); }
+    ){ super(templateRepo, 'TemplateService'); }
 
     async create(dto: CreateTemplateDto): Promise<Template | null> {
         const exist = await this.findOneByName(dto.name);

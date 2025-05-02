@@ -20,6 +20,7 @@ import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
 import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
 import { RecipeTestUtil } from './utils/recipe-test.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RecipeTestUtil } from './utils/recipe-test.util';
     UnitOfMeasureModule,
     InventoryItemsModule,
     MenuItemsModule,
+    CacheModule.register(),
   ],
   controllers: [
     RecipeController,

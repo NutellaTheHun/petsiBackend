@@ -17,6 +17,7 @@ import { MenuItemComponent } from './entities/menu-item-component.entity';
 import { MenuItemComponentController } from './controllers/menu-item-component.controller';
 import { MenuItemComponentService } from './services/menu-item-component.service';
 import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { MenuItemComponentBuilder } from './builders/menu-item-component.builder
       MenuItemSize,
       MenuItem,
       MenuItemComponent,
-    ])
+    ]),
+    CacheModule.register(),
   ],
 
   controllers: [

@@ -14,7 +14,7 @@ export class MenuItemService extends ServiceBase<MenuItem> {
         private readonly itemRepo: Repository<MenuItem>,
 
         private readonly itemBuilder: MenuItemBuilder,
-    ){ super(itemRepo); }
+    ){ super(itemRepo, 'MenuItemService'); }
 
     async create(dto: CreateMenuItemDto): Promise<MenuItem | null> {
         const exist = await this.findOneByName(dto.name);

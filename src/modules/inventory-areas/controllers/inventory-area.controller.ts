@@ -8,7 +8,7 @@ import { CACHE_MANAGER } from "@nestjs/cache-manager";
 @Controller('inventory-area')
 export class InventoryAreaController extends ControllerBase<InventoryArea> {
     constructor(
-        /*private readonly */areaService: InventoryAreaService,
+        areaService: InventoryAreaService,
         @Inject(CACHE_MANAGER) cacheManager: Cache
     ){ super(areaService, cacheManager); }
 }

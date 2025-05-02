@@ -6,11 +6,13 @@ import { RoleController } from './controllers/role.controller';
 import { Role } from './entities/role.entities';
 import { RoleService } from './services/role.service';
 import { RoleTestUtil } from './utils/role-test.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Role]),
     forwardRef(() => UserModule),
+    CacheModule.register(),
   ],
   controllers: [RoleController,],
   providers: [RoleService, RoleBuilder, RoleTestUtil],

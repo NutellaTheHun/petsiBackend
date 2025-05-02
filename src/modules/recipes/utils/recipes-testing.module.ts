@@ -10,6 +10,7 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MenuItemsModule } from "../../menu-items/menu-items.module";
+import { CacheModule } from "@nestjs/cache-manager";
 
 export async function getRecipeTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -31,6 +32,7 @@ export async function getRecipeTestingModule(): Promise<TestingModule> {
             UnitOfMeasure,
             InventoryItemsModule,
             MenuItemsModule,
+            CacheModule.register(),
         ],
         controllers: [
             

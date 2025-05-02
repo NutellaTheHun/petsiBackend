@@ -8,7 +8,7 @@ import { Cache } from "cache-manager";
 @Controller('inventory-item')
 export class InventoryItemController extends ControllerBase<InventoryItem> {
     constructor(
-        /*private readonly */itemService: InventoryItemService,
+        itemService: InventoryItemService,
         @Inject(CACHE_MANAGER) cacheManager: Cache
     ){ super(itemService, cacheManager); }
 }

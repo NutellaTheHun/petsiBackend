@@ -25,7 +25,6 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
     return category;
   }
 
-  //async findOneByName(categoryName: string, relations?: string[]): Promise<UnitCategory | null> {
   async findOneByName(categoryName: string, relations?: Array<keyof UnitCategory>): Promise<UnitCategory | null> {
     return this.categoryRepo.findOne({ where: { name: categoryName }, relations });
   }
