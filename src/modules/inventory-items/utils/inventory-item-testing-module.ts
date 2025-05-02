@@ -14,6 +14,7 @@ import { UnitOfMeasureModule } from "../../unit-of-measure/unit-of-measure.modul
 import { InventoryItemController } from "../controllers/inventory-item.controller";
 import { InventoryItemVendorController } from "../controllers/inventory-item-vendor.controller";
 import { InventoryItemsModule } from "../inventory-items.module";
+import { CacheModule } from "@nestjs/cache-manager";
 
 export async function getInventoryItemTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -35,6 +36,7 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
             ]),
             UnitOfMeasureModule,
             InventoryItemsModule,
+            CacheModule.register(),
     ],
 
     controllers: [

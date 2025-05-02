@@ -14,7 +14,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
     private readonly itemRepo: Repository<InventoryItem>,
 
     private readonly itemBuilder: InventoryItemBuilder,
-  ){ super(itemRepo)}
+  ){ super(itemRepo, 'InventoryItemService')}
 
   async create(createDto: CreateInventoryItemDto): Promise<InventoryItem | null> {
     const exist = await this.findOneByName(createDto.name);

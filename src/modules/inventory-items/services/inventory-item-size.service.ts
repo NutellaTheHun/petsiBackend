@@ -19,7 +19,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
 
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(sizeRepo); }
+    ){ super(sizeRepo, 'InventoryItemSizeService'); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
         if(!createDto.inventoryItemId){ throw new Error("inventory id required"); }

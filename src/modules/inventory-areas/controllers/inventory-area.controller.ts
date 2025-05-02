@@ -1,15 +1,14 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaService } from "../services/inventory-area.service";
+import { Cache } from "cache-manager";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 
-/**
- * Create: (name: string)
- * Update: (name: string,  inventoryCountIds: number[])
- */
 @Controller('inventory-area')
 export class InventoryAreaController extends ControllerBase<InventoryArea> {
     constructor(
-        private readonly areaService: InventoryAreaService
-    ){ super(areaService); }
+        /*private readonly */areaService: InventoryAreaService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache
+    ){ super(areaService, cacheManager); }
 }

@@ -1,10 +1,15 @@
 import { ObjectLiteral } from "typeorm";
 import { ServiceBase } from "./service-base";
-import { Body, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 
 export class ControllerBase<T extends ObjectLiteral> {
   constructor(
-    private readonly entityService: ServiceBase<T>
+    private readonly entityService: ServiceBase<T>,
+
+    @Inject(CACHE_MANAGER) 
+    private readonly cacheManager: Cache
   ) {}
 
   @Post()
@@ -20,18 +25,52 @@ export class ControllerBase<T extends ObjectLiteral> {
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
   ): Promise<{items: T[], nextCursor?: string }> {
-    return await this.entityService.findAll({
+    const cacheKey = `${this.entityService.cacheKeyPrefix}-findAll-${JSON.stringify({
+      relations,
+      limit,
+      cursor,
+      sortBy,
+      sortOrder
+    })}`;
+
+    const cached = await this.cacheManager.get<{ items: T[], nextCursor?: string }>(cacheKey);
+    if (cached) return cached;
+
+    const result = await this.entityService.findAll({
       relations,
       limit,
       cursor,
       sortBy,
       sortOrder,
     });
+
+    await this.cacheManager.set(cacheKey, result, 60_000);
+
+    return result;
+    /*return await this.entityService.findAll({
+      relations,
+      limit,
+      cursor,
+      sortBy,
+      sortOrder,
+    });*/
   }
 
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<T | null> {
-    return await this.entityService.findOne(id);
+    const cacheKey = `${this.entityService.cacheKeyPrefix}-findOne-${id}`;
+
+    const cached = await this.cacheManager.get<T>(cacheKey);
+    if(cached) return cached;
+
+    const result =  await this.entityService.findOne(id);
+
+    if(result){ 
+      await this.cacheManager.set(cacheKey, result, 60_000);
+    }
+    
+    return result;
+    //return await this.entityService.findOne(id);
   }
 
   @Patch(':id')

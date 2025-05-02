@@ -23,7 +23,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
         private readonly areaCountBuilder: InventoryAreaCountBuilder,
-    ){ super(areaCountRepo); }
+    ){ super(areaCountRepo, 'InventoryAreaCountService'); }
 
     /**
      * Creates an InventoryCount, required prexisting AreaId present, is created before inventoryItemCounts are

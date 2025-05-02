@@ -4,9 +4,10 @@ export class ServiceBase<T extends ObjectLiteral> {
   
   constructor(
     private readonly entityRepo: Repository<T>,
+    public cacheKeyPrefix: string,
   ){}
 
-  
+
   async create(createDto: any): Promise<any | null>{
     // gets overridden by concrete implementations
   }

@@ -23,7 +23,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         private readonly countService: InventoryAreaCountService,
 
         private readonly itemService: InventoryItemService,
-    ){ super(itemCountRepo); }
+    ){ super(itemCountRepo, 'InventoryAreaItemService'); }
 
     /**
      * - InventoryItemSize property can be either created or a pre-existing entity on this create call.
