@@ -14,7 +14,7 @@ export class AuthService {
 
     async signIn(username: string, rawPass: string): Promise<{ access_token: string, roles: string[] }> {
         const user = await this.userService.findOneByName(username, ["roles"]);
-        if(!user){ throw new UnauthorizedException('Invalid username or password'); }// check if this wil suffice
+        if(!user){ throw new UnauthorizedException('Invalid username or password'); }// check if this will suffice
         
         if (!(await isPassHashMatch(rawPass, user.password))){
             throw new UnauthorizedException('Invalid username or password');

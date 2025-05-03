@@ -9,10 +9,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
 import { UnitCategoryBuilder } from './builders/unit-category.builder';
 import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UnitOfMeasure, UnitCategory]),
+    CacheModule.register(),
   ],
 
   providers: [

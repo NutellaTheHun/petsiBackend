@@ -20,10 +20,11 @@ describe('inventory area controller', () => {
     let idToRemove: number;
 
     beforeAll(async () => {
-        //const module: TestingModule = await getInventoryAreasTestingModule();
+        const module: TestingModule = await getInventoryAreasTestingModule();
         
         // Was getting a circular dependency problem with the above testing module that works for everything else?
-        const module: TestingModule = await Test.createTestingModule({
+        
+        /*const module: TestingModule = await Test.createTestingModule({
             controllers: [InventoryAreaController],
             providers: [
                 {
@@ -38,7 +39,7 @@ describe('inventory area controller', () => {
                     },
                 },
             ],
-        }).compile();
+        }).compile();*/
         controller = module.get<InventoryAreaController>(InventoryAreaController);
         areaService = module.get<InventoryAreaService>(InventoryAreaService);
 

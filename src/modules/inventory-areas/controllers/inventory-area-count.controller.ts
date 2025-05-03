@@ -1,16 +1,14 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 
-/**
- * Create: (inventoryAreaId: number)
- * Update: (inventoryAreaId: number, inventoryAreaItemIds: number[]) 
- * note: inserting inventoryAreaItems automatically updates the inventoryAreaCount
- */
 @Controller('inventory-area-count')
 export class InventoryAreaCountController extends ControllerBase<InventoryAreaCount> {
     constructor(
-        private readonly areaCountService: InventoryAreaCountService,
-    ) { super(areaCountService); }
+        areaCountService: InventoryAreaCountService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache
+    ) { super(areaCountService, cacheManager); }
 }

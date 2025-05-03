@@ -7,6 +7,7 @@ import { ConfigModule } from "@nestjs/config";
 import { User } from "../../users/entities/user.entities";
 import { RoleModule } from "../role.module";
 import { UserModule } from "../../users/user.module";
+import { CacheModule } from "@nestjs/cache-manager";
 
 
 export async function getRoleTestingModule(): Promise<TestingModule> {
@@ -17,6 +18,7 @@ export async function getRoleTestingModule(): Promise<TestingModule> {
             TypeOrmModule.forFeature([User, Role]),
             UserModule,
             RoleModule,
+            CacheModule.register(),
           ],
           controllers: [RoleController],
           providers: [],

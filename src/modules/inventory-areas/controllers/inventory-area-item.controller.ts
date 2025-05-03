@@ -1,17 +1,20 @@
-import { Body, Controller, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Inject, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { Cache } from "cache-manager";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 
 @Controller('inventory-area-item')
 export class InventoryAreaItemController extends ControllerBase<InventoryAreaItem> {
     constructor(
         private readonly itemCountService: InventoryAreaItemService,
         private readonly itemSizeService: InventoryItemSizeService,
-    ){ super(itemCountService); }
+        @Inject(CACHE_MANAGER) cacheManager: Cache
+    ){ super(itemCountService, cacheManager); }
 
     /**
      * 

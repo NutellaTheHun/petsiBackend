@@ -11,6 +11,7 @@ import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemsModule } from "../menu-items.module";
 import { MenuItemComponentController } from "../controllers/menu-item-component.controller";
 import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { CacheModule } from "@nestjs/cache-manager";
 
 export async function getMenuItemTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -28,7 +29,8 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
                 MenuItem,
                 MenuItemComponent,
             ]),
-            MenuItemsModule
+            MenuItemsModule,
+            CacheModule.register(),
         ],
 
         controllers: [

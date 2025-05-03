@@ -22,20 +22,20 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
         @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly itemCountService: InventoryAreaItemService,
         
-        private readonly areaService: InventoryAreaService,
+        //private readonly areaService: InventoryAreaService,
 
         private readonly itemService: InventoryItemService,
         private readonly sizeService: InventoryItemSizeService,
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryAreaItem); }
 
-    public inventoryAreaById(id: number): this {
+   /* public inventoryAreaById(id: number): this {
         return this.setPropById(this.areaService.findOne.bind(this.areaService), 'inventoryArea', id);
     }
 
     public inventoryAreaByName(name: string): this {
         return this.setPropByName(this.areaService.findOne.bind(this.areaService), 'inventoryArea', name);
-    }
+    }*/
 
     public inventoryItemById(id: number): this {
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'item', id);
@@ -78,9 +78,9 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
             this.entity.areaCount = parentCount;
         }
         
-        if(dto.inventoryAreaId){
+        /*if(dto.inventoryAreaId){
            this.inventoryAreaById(dto.inventoryAreaId);
-        }
+        }*/
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
@@ -109,9 +109,9 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
         if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
         }
-        if(dto.inventoryAreaId){
+        /*if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
-        }
+        }*/
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
@@ -139,7 +139,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>{
             if(dto.mode === 'create'){
                 results.push(await this.buildCreateDto(parentCount, dto))
             } else {
-                const countedItem = await this.itemCountService.findOne(dto.id, ['areaCount', 'inventoryArea', 'item', 'size'])
+                const countedItem = await this.itemCountService.findOne(dto.id, ['areaCount', 'item', 'size'])
                 if(!countedItem){ throw new Error("counted item is null"); }
                 results.push(await this.buildUpdateDto(countedItem, dto));
             }

@@ -7,14 +7,26 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { UnitOfMeasureModule } from "../unit-of-measure.module";
 import { UnitOfMeasureController } from "../controllers/unit-of-measure.controller";
 import { UnitCategoryController } from "../controllers/unit-category.controller";
+import { CacheModule } from "@nestjs/cache-manager";
 
 export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
             ConfigModule.forRoot({ isGlobal: true }),
-            TypeORMPostgresTestingModule([UnitOfMeasure, UnitCategory]),
-            TypeOrmModule.forFeature([UnitOfMeasure, UnitCategory]),
+
+            TypeORMPostgresTestingModule([
+              UnitOfMeasure, 
+              UnitCategory,
+            ]),
+
+            TypeOrmModule.forFeature([
+              UnitOfMeasure,
+              UnitCategory,
+            ]),
+
             UnitOfMeasureModule,
+            
+            CacheModule.register(),
           ],
           controllers: [UnitOfMeasureController, UnitCategoryController],
           providers: [],

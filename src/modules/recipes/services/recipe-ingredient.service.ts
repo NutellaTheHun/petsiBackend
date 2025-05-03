@@ -18,7 +18,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
         private readonly inventoryItemService: InventoryItemService,
-    ){ super(ingredientRepo); }
+    ){ super(ingredientRepo, 'RecipeIngredientService'); }
 
     /**
      * A recipe ingredient cannot reference both an inventory item and subRecipeIngredient, only one.

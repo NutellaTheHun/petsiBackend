@@ -10,6 +10,7 @@ import { LabelType } from './entities/label-type.entity';
 import { LabelTypeController } from './controllers/label-type.controller';
 import { LabelTypeService } from './services/label-type.service';
 import { LabelTypeBuilder } from './builders/label-type.builder';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LabelTypeBuilder } from './builders/label-type.builder';
       LabelType,
     ]),
     MenuItemsModule,
+    CacheModule.register(),
   ],
 
   controllers: [

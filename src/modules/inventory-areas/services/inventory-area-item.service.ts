@@ -1,4 +1,4 @@
-import { forwardRef, Inject, NotFoundException, NotImplementedException } from "@nestjs/common";
+import { forwardRef, Inject, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -7,23 +7,24 @@ import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builde
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaService } from "./inventory-area.service";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
+import { InventoryAreaService } from "./inventory-area.service";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(
         @InjectRepository(InventoryAreaItem)
         private readonly itemCountRepo: Repository<InventoryAreaItem>,
 
+        @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
-        private readonly inventoryAreaService: InventoryAreaService,
+        //private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
 
         private readonly itemService: InventoryItemService,
-    ){ super(itemCountRepo); }
+    ){ super(itemCountRepo, 'InventoryAreaItemService'); }
 
     /**
      * - InventoryItemSize property can be either created or a pre-existing entity on this create call.
@@ -59,7 +60,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         return await this.itemCountRepo.save(toUpdate);
     }
 
-    async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
+    /*async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const area = await this.inventoryAreaService.findOneByName(name);
         if(!area){ throw new Error('inventory area not found'); }
 
@@ -67,7 +68,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
             where: { inventoryArea: { name: name } }, 
             relations
         });
-    }
+    }*/
 
     async findByItemName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const item = await this.itemService.findOneByName(name);

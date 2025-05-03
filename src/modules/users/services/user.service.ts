@@ -13,7 +13,7 @@ export class UserService extends ServiceBase<User> {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly userBuilder: UserBuilder,
-  ){ super(userRepo); }
+  ){ super(userRepo, 'UserService'); }
 
   async create(createUserDto: CreateUserDto) {
     const alreadyExists = await this.findOneByName(createUserDto.username);

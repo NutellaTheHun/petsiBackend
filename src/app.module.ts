@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OrdersModule } from './modules/orders/orders.module';
@@ -18,17 +18,38 @@ import { RoleModule } from './modules/roles/role.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from './modules/roles/guards/role.guard';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { ThrottlerGuard, ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [ 
     ConfigModule.forRoot({ isGlobal: true }),
+
     TypeORMPostgresModule([]),
+
+    CacheModule.register(),
+
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
+        throttlers: [
+          {
+            ttl: config.get('THROTTLE_TTL') || 60000,
+            limit: config.get('THROTTLE_LIMIT') || 10,
+          }
+        ]
+      }),
+      inject: [ConfigService],
+    }),
+
     OrdersModule, MenuItemsModule, TemplatesModule, 
     LabelsModule, AuthModule, InventoryAreasModule, 
     InventoryItemsModule, RecipesModule, UnitOfMeasureModule,
     UserModule, RoleModule,
   ],
+
   controllers: [AppController],
+
   providers: [
     AppService,
     {
@@ -38,7 +59,12 @@ import { AuthGuard } from './modules/auth/guards/auth.guard';
     {
       provide: APP_GUARD,
       useClass: RoleGuard,
-    },],
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
+  ],
 })
 export class AppModule {
   constructor(private dataSource: DataSource){}

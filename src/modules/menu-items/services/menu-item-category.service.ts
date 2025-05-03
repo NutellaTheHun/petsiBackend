@@ -13,7 +13,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
-    ){ super(categoryRepo); }
+    ){ super(categoryRepo, 'MenuItemCategoryService'); }
 
     async create(dto: CreateMenuItemCategoryDto): Promise<MenuItemCategory | null> {
         const exists = await this.findOneByName(dto.name);

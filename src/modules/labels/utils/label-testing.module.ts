@@ -8,6 +8,7 @@ import { MenuItemsModule } from "../../menu-items/menu-items.module";
 import { LabelController } from "../controllers/label.controller";
 import { LabelType } from "../entities/label-type.entity";
 import { LabelTypeController } from "../controllers/label-type.controller";
+import { CacheModule } from "@nestjs/cache-manager";
 
 export async function getLabelsTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -23,6 +24,7 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
             ]),
             LabelsModule,
             MenuItemsModule,
+            CacheModule.register(),
         ],
         
         controllers: [

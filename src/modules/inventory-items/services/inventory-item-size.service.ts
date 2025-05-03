@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -19,7 +19,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
 
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(sizeRepo); }
+    ){ super(sizeRepo, 'InventoryItemSizeService'); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
         if(!createDto.inventoryItemId){ throw new Error("inventory id required"); }

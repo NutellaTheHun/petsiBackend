@@ -1,13 +1,16 @@
-import { Controller } from "@nestjs/common";
+import { Controller, Inject } from "@nestjs/common";
 import { ControllerBase } from "../../../base/controller-base";
 import { Roles } from "../../../util/decorators/PublicRole";
 import { Order } from "../entities/order.entity";
 import { OrderService } from "../services/order.service";
+import { Cache } from "cache-manager";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 
 @Controller('order')
 @Roles("staff")
 export class OrderController extends ControllerBase<Order>{
   constructor(
-    private readonly orderService: OrderService
-  ) { super(orderService); }
+    orderService: OrderService, 
+    @Inject(CACHE_MANAGER) cacheManager: Cache
+  ) { super(orderService, cacheManager); }
 }

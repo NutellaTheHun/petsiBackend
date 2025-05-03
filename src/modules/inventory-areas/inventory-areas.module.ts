@@ -14,6 +14,7 @@ import { InventoryAreaCountService } from './services/inventory-area-count.servi
 import { InventoryAreaItemService } from './services/inventory-area-item.service';
 import { InventoryAreaService } from './services/inventory-area.service';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
       InventoryAreaCount,
       InventoryAreaItem
     ]),
-    InventoryItemsModule
+    InventoryItemsModule,
+    CacheModule.register(),
   ],
   controllers: [
     InventoryAreaController,

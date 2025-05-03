@@ -10,6 +10,7 @@ import { TemplateMenuItemService } from './services/template-menu-item.service';
 import { TemplateBuilder } from './builders/template.builder';
 import { TemplateMenuItemBuilder } from './builders/template-menu-item.builder';
 import { TemplateTestingUtil } from './utils/template-testing.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TemplateTestingUtil } from './utils/template-testing.util';
       TemplateMenuItem,
     ]),
     MenuItemsModule,
+    CacheModule.register(),
   ],
   controllers: [
     TemplateController,

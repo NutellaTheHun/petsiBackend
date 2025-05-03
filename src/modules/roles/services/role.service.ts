@@ -17,7 +17,7 @@ export class RoleService extends ServiceBase<Role> {
 
     @Inject(forwardRef(() => RoleBuilder))
     private readonly roleBuilder: RoleBuilder,
-  ){ super(roleRepo)}
+  ){ super(roleRepo, 'RoleService')}
 
   async create(dto: CreateRoleDto): Promise<Role | null> {
     const alreadyExists = await this.findOneByName(dto.name);

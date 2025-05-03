@@ -22,6 +22,7 @@ import { InventoryItemPackageBuilder } from './builders/inventory-item-package.b
 import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder';
 import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.builder';
 import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [ 
@@ -34,6 +35,7 @@ import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
     ]),
     
     UnitOfMeasureModule,
+    CacheModule.register(),
   ],
 
   controllers: [
