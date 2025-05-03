@@ -29,7 +29,7 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
    * If the value is null, its current value remains, and is not involved in the current update call.
    */
   async update(id: number, updateDto: UpdateInventoryItemDto): Promise<InventoryItem | null>{
-    const toUpdate = await this.findOne(id);
+    const toUpdate = await this.findOne(id, ['category', 'sizes', 'vendor']);
     if(!toUpdate){ return null; }
 
     const updated = await this.itemBuilder.buildUpdateDto(toUpdate, updateDto);

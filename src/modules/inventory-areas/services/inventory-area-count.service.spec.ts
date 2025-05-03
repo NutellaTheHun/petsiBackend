@@ -221,12 +221,12 @@ describe('Inventory area item count service', () => {
     });
 
     it('should query newly counted items from itemCountService', async () => {
-        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', 'inventoryArea', 'size', 'item']);
+        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', /*'inventoryArea',*/ 'size', 'item']);
         if(!results){ throw new Error("results is null"); }
         
         for(const item of results){
             expect(item.areaCount).not.toBeNull();
-            expect(item.inventoryArea).not.toBeNull();
+            //expect(item.inventoryArea).not.toBeNull();
             expect(item.item).not.toBeNull();
             expect(item.size).not.toBeNull();
         }
@@ -465,7 +465,7 @@ describe('Inventory area item count service', () => {
         if(!item.sizes){ throw new Error("item sizes is null"); }
         const createAreaItemDto = {
             mode: 'create',
-            inventoryAreaId: testAreaId,
+            //inventoryAreaId: testAreaId,
             areaCountId: testCountId,
             unitAmount: 100,
             measureAmount: 200,

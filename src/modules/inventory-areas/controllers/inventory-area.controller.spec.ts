@@ -23,6 +23,7 @@ describe('inventory area controller', () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         
         // Was getting a circular dependency problem with the above testing module that works for everything else?
+        
         /*const module: TestingModule = await Test.createTestingModule({
             controllers: [InventoryAreaController],
             providers: [

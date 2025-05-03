@@ -15,9 +15,10 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         @InjectRepository(InventoryAreaItem)
         private readonly itemCountRepo: Repository<InventoryAreaItem>,
 
+        @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
-        private readonly inventoryAreaService: InventoryAreaService,
+        //private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
@@ -59,7 +60,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         return await this.itemCountRepo.save(toUpdate);
     }
 
-    async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
+    /*async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const area = await this.inventoryAreaService.findOneByName(name);
         if(!area){ throw new Error('inventory area not found'); }
 
@@ -67,7 +68,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
             where: { inventoryArea: { name: name } }, 
             relations
         });
-    }
+    }*/
 
     async findByItemName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const item = await this.itemService.findOneByName(name);

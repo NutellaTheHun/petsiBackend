@@ -108,7 +108,7 @@ export class InventoryAreaTestUtil {
             const sizeA = itemA.sizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                .inventoryAreaById(counts[i].inventoryArea.id)
+                //.inventoryAreaById(counts[i].inventoryArea.id)
                 .areaCountById(counts[i].id)
                 .inventoryItemById(itemA.id)
                 .sizeById(sizeA.id)
@@ -122,7 +122,7 @@ export class InventoryAreaTestUtil {
             const sizeB = itemB.sizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                .inventoryAreaById(counts[i].inventoryArea.id)
+                //.inventoryAreaById(counts[i].inventoryArea.id)
                 .areaCountById(counts[i].id)
                 .inventoryItemById(itemB.id)
                 .sizeById(sizeB.id)

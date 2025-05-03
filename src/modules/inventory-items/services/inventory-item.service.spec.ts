@@ -318,6 +318,7 @@ describe('Inventory Item Service', () => {
     const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
     if(!item){ throw new NotFoundException(); }
     if(!item.sizes){ throw new Error("item sizes are null"); }
+    
     const sizes = await sizeService.findEntitiesById(item.sizes.map(size => size.id), ['item','measureUnit','packageType']);
     if(!sizes){ throw new Error("queried sizes are null"); }
 

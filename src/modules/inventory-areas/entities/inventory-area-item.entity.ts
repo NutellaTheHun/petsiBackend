@@ -17,8 +17,8 @@ export class InventoryAreaItem {
     /**
      * The area the inventory item was counted
      */
-    @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
-    inventoryArea: InventoryArea;
+    //@ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
+    //inventoryArea: InventoryArea;
 
     /**
      * Reference to the inventory count when this item is counted.

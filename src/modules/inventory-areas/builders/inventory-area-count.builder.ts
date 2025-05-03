@@ -12,6 +12,7 @@ import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
     constructor(
+        @Inject(forwardRef(() => InventoryAreaService))
         private readonly areaService: InventoryAreaService,
         
         @Inject(forwardRef(() => InventoryAreaItemService))
