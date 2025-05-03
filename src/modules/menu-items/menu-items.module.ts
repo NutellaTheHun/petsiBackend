@@ -18,6 +18,7 @@ import { MenuItemComponentController } from './controllers/menu-item-component.c
 import { MenuItemComponentService } from './services/menu-item-component.service';
 import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       MenuItemComponent,
     ]),
     CacheModule.register(),
+    LoggerModule,
   ],
 
   controllers: [

@@ -7,14 +7,16 @@ import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
 
 @Controller('inventory-area-item')
 export class InventoryAreaItemController extends ControllerBase<InventoryAreaItem> {
     constructor(
         private readonly itemCountService: InventoryAreaItemService,
         private readonly itemSizeService: InventoryItemSizeService,
-        @Inject(CACHE_MANAGER) cacheManager: Cache
-    ){ super(itemCountService, cacheManager); }
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        @Inject(Logger)logger: Logger,
+    ){ super(itemCountService, cacheManager, logger); }
 
     /**
      * 

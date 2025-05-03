@@ -11,6 +11,7 @@ import { LabelTypeController } from './controllers/label-type.controller';
 import { LabelTypeService } from './services/label-type.service';
 import { LabelTypeBuilder } from './builders/label-type.builder';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ]),
     MenuItemsModule,
     CacheModule.register(),
+    LoggerModule,
   ],
 
   controllers: [

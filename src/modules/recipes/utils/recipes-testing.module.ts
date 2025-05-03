@@ -11,6 +11,7 @@ import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPo
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { MenuItemsModule } from "../../menu-items/menu-items.module";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getRecipeTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -33,6 +34,9 @@ export async function getRecipeTestingModule(): Promise<TestingModule> {
             InventoryItemsModule,
             MenuItemsModule,
             CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
         ],
         controllers: [
             

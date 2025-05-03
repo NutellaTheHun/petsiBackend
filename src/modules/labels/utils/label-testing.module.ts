@@ -9,6 +9,7 @@ import { LabelController } from "../controllers/label.controller";
 import { LabelType } from "../entities/label-type.entity";
 import { LabelTypeController } from "../controllers/label-type.controller";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getLabelsTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -25,6 +26,9 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
             LabelsModule,
             MenuItemsModule,
             CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
         ],
         
         controllers: [

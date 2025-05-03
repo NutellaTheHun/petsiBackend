@@ -8,6 +8,7 @@ import { TypeORMPostgresTestingModule } from '../../typeorm/configs/TypeORMPostg
 import { UserBuilder } from './builders/user.builder';
 import { UserTestUtil } from './utils/user-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     TypeOrmModule.forFeature([User]),
     forwardRef(() => RoleModule),
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [UserController,],
   providers: [UserService, UserBuilder, UserTestUtil],

@@ -11,6 +11,7 @@ import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreasModule } from "../inventory-areas.module";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -28,7 +29,12 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
             ]),
             InventoryItemsModule,
             InventoryAreasModule,
+            
             CacheModule.register(),
+
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
         ],
         controllers: [
             InventoryAreaController,

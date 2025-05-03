@@ -20,6 +20,7 @@ import { RoleGuard } from './modules/roles/guards/role.guard';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { ThrottlerGuard, ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [ 
@@ -40,6 +41,19 @@ import { CacheModule } from '@nestjs/cache-manager';
         ]
       }),
       inject: [ConfigService],
+    }),
+
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+          },
+        },
+      },
     }),
 
     OrdersModule, MenuItemsModule, TemplatesModule, 

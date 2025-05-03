@@ -15,6 +15,7 @@ import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
 import { OrderTestingUtil } from './utils/order-testing.util';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 
 @Module({
@@ -26,6 +27,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ]),
     MenuItemsModule,
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [
     OrderController,

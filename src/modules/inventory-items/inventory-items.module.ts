@@ -23,6 +23,7 @@ import { InventoryItemSizeBuilder } from './builders/inventory-item-size.builder
 import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.builder';
 import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [ 
@@ -36,6 +37,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     
     UnitOfMeasureModule,
     CacheModule.register(),
+    LoggerModule,
   ],
 
   controllers: [

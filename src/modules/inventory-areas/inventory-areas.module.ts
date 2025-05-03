@@ -15,6 +15,7 @@ import { InventoryAreaItemService } from './services/inventory-area-item.service
 import { InventoryAreaService } from './services/inventory-area.service';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ]),
     InventoryItemsModule,
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [
     InventoryAreaController,

@@ -21,6 +21,7 @@ import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
 import { RecipeTestUtil } from './utils/recipe-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     InventoryItemsModule,
     MenuItemsModule,
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [
     RecipeController,

@@ -11,6 +11,7 @@ import { TemplateBuilder } from './builders/template.builder';
 import { TemplateMenuItemBuilder } from './builders/template-menu-item.builder';
 import { TemplateTestingUtil } from './utils/template-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     ]),
     MenuItemsModule,
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [
     TemplateController,

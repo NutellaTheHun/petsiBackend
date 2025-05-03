@@ -7,12 +7,14 @@ import { Role } from './entities/role.entities';
 import { RoleService } from './services/role.service';
 import { RoleTestUtil } from './utils/role-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Role]),
     forwardRef(() => UserModule),
     CacheModule.register(),
+    LoggerModule,
   ],
   controllers: [RoleController,],
   providers: [RoleService, RoleBuilder, RoleTestUtil],

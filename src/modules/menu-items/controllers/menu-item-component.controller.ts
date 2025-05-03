@@ -5,12 +5,15 @@ import { MenuItemComponent } from "../entities/menu-item-component.entity";
 import { MenuItemComponentService } from "../services/menu-item-component.service";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
+
 
 @Controller('menu-item-component')
 @Roles("staff")
 export class MenuItemComponentController extends ControllerBase<MenuItemComponent>{
   constructor(
     componentService: MenuItemComponentService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache
-  ) { super(componentService, cacheManager); }
+    @Inject(CACHE_MANAGER) cacheManager: Cache,
+    @Inject(Logger)logger: Logger,
+  ) { super(componentService, cacheManager, logger); }
 }

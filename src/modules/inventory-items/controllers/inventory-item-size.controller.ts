@@ -4,11 +4,13 @@ import { ControllerBase } from "../../../base/controller-base";
 import { Controller, Inject } from "@nestjs/common";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
 
 @Controller('inventory-item-size')
 export class InventoryItemSizeController extends ControllerBase<InventoryItemSize> {
     constructor(
       sizeService: InventoryItemSizeService,
-      @Inject(CACHE_MANAGER) cacheManager: Cache
-    ){ super(sizeService, cacheManager); }
+      @Inject(CACHE_MANAGER) cacheManager: Cache,
+      @Inject(Logger)logger: Logger,
+    ){ super(sizeService, cacheManager, logger); }
 }

@@ -1,21 +1,25 @@
 import { ObjectLiteral } from "typeorm";
 import { ServiceBase } from "./service-base";
-import { Body, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Delete, Get, HttpCode, HttpStatus, Inject, OnModuleInit, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Cache } from "cache-manager";
 import { stringify, parse } from 'flatted';
 import { invalidateFindAllCache, trackFindAllKey } from "../util/cache.util";
+import { Logger } from "nestjs-pino";
+import { ModuleRef } from "@nestjs/core";
 
 export class ControllerBase<T extends ObjectLiteral> {
   constructor(
-    private readonly entityService: ServiceBase<T>,
-
+    protected readonly entityService: ServiceBase<T>,
     @Inject(CACHE_MANAGER) 
-    private readonly cacheManager: Cache
+    private readonly cacheManager: Cache,
+
+    private readonly logger: Logger,
   ) {}
 
   @Post()
   async create(@Body() createDto: any): Promise<T | null> {
+    this.logger.log('POST / called');
     return await this.entityService.create(createDto);
   }
 

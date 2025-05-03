@@ -15,6 +15,7 @@ import { InventoryItemController } from "../controllers/inventory-item.controlle
 import { InventoryItemVendorController } from "../controllers/inventory-item-vendor.controller";
 import { InventoryItemsModule } from "../inventory-items.module";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getInventoryItemTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -37,6 +38,9 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
             UnitOfMeasureModule,
             InventoryItemsModule,
             CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
     ],
 
     controllers: [

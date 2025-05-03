@@ -5,12 +5,14 @@ import { User } from '../entities/user.entities';
 import { UserService } from '../services/user.service';
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Logger } from "nestjs-pino";
 
 @Controller('users')
 @Roles("admin")
 export class UserController extends ControllerBase<User> {
   constructor(
     userService: UserService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache
-  ) { super(userService, cacheManager); }
+    @Inject(CACHE_MANAGER) cacheManager: Cache,
+    @Inject(Logger)logger: Logger,
+  ) { super(userService, cacheManager, logger); }
 }

@@ -5,12 +5,14 @@ import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
 
 Controller('menu-item-size')
 @Roles("staff")
 export class MenuItemSizeController extends ControllerBase<MenuItemSize>{
   constructor(
     sizeService: MenuItemSizeService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache
-  ) { super(sizeService, cacheManager); }
+    @Inject(CACHE_MANAGER) cacheManager: Cache,
+    @Inject(Logger)logger: Logger,
+  ) { super(sizeService, cacheManager, logger); }
 }

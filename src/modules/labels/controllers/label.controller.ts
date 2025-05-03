@@ -4,11 +4,13 @@ import { Label } from '../entities/label.entity';
 import { LabelService } from '../services/label.service';
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Logger } from "nestjs-pino";
 
 @Controller('labels')
 export class LabelController extends ControllerBase<Label>{
     constructor(
       private readonly labelService: LabelService,
-      @Inject(CACHE_MANAGER) cacheManager: Cache
-    ) { super(labelService, cacheManager); }
+      @Inject(CACHE_MANAGER) cacheManager: Cache,
+      @Inject(Logger)logger: Logger,
+    ) { super(labelService, cacheManager, logger); }
 }

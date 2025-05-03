@@ -4,11 +4,14 @@ import { InventoryItemVendorService } from "../services/inventory-item-vendor.se
 import { ControllerBase } from "../../../base/controller-base";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
+
 
 @Controller('inventory-item-vendor')
 export class InventoryItemVendorController extends ControllerBase<InventoryItemVendor> {
     constructor(
         vendorService: InventoryItemVendorService,
-        @Inject(CACHE_MANAGER) cacheManager: Cache
-    ){ super(vendorService, cacheManager); }
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        @Inject(Logger)logger: Logger,
+    ){ super(vendorService, cacheManager, logger); }
 }

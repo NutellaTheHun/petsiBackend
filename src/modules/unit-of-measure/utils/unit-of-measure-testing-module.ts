@@ -8,6 +8,7 @@ import { UnitOfMeasureModule } from "../unit-of-measure.module";
 import { UnitOfMeasureController } from "../controllers/unit-of-measure.controller";
 import { UnitCategoryController } from "../controllers/unit-category.controller";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -27,6 +28,10 @@ export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
             UnitOfMeasureModule,
             
             CacheModule.register(),
+
+            LoggerModule.forRoot({
+              pinoHttp: { transport: { target: 'pino-pretty' } }
+          }),
           ],
           controllers: [UnitOfMeasureController, UnitCategoryController],
           providers: [],

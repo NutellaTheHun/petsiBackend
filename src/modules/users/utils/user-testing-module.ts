@@ -8,6 +8,7 @@ import { Role } from "../../roles/entities/role.entities";
 import { UserModule } from "../user.module";
 import { RoleModule } from "../../roles/role.module";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
 
 export async function getUserTestingModule(): Promise<TestingModule> {
      return await Test.createTestingModule({
@@ -18,6 +19,9 @@ export async function getUserTestingModule(): Promise<TestingModule> {
                 UserModule,
                 RoleModule,
                 CacheModule.register(),
+                LoggerModule.forRoot({
+                  pinoHttp: { transport: { target: 'pino-pretty' } }
+              }),
               ],
               controllers: [UserController],
               providers: [],

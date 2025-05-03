@@ -10,11 +10,13 @@ import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
 import { UnitCategoryBuilder } from './builders/unit-category.builder';
 import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([UnitOfMeasure, UnitCategory]),
     CacheModule.register(),
+    LoggerModule,
   ],
 
   providers: [

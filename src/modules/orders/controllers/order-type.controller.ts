@@ -5,12 +5,14 @@ import { OrderType } from "../entities/order-type.entity";
 import { OrderTypeService } from "../services/order-type.service";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Logger } from "nestjs-pino";
 
 @Controller('order-type')
 @Roles("staff")
 export class OrderTypeController extends ControllerBase<OrderType>{
   constructor(
     orderTypeService: OrderTypeService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache
-  ) { super(orderTypeService, cacheManager); }
+    @Inject(CACHE_MANAGER) cacheManager: Cache,
+    @Inject(Logger)logger: Logger,
+  ) { super(orderTypeService, cacheManager, logger); }
 }
