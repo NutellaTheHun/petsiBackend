@@ -1,4 +1,4 @@
-export class BuilderBase<T> {
+export abstract class BuilderBase<T> {
     protected entity: T;
     protected buildQueue: (() => Promise<void>)[];
 
@@ -108,4 +108,8 @@ export class BuilderBase<T> {
         this.entity = toUpdate;
         return this;
     }
+
+    public abstract buildCreateDto(dto: any): Promise<T>;
+
+    public abstract buildUpdateDto(toUpdate: T, dto: any): Promise<T>;
 }

@@ -30,8 +30,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
      * created/assigned. InventoryItemCounts are assigned in a following update call.
      */
     async create(createDto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount | null> {
-        if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
-        
         const count = await this.areaCountBuilder.buildCreateDto(createDto);
         return await this.areaCountRepo.save(count);
     }
@@ -44,7 +42,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         if(!toUpdate){ return null; }
 
         await this.areaCountBuilder.buildUpdateDto(toUpdate, updateDto);
-        return await this.areaCountRepo.save(toUpdate); 
+        return await this.areaCountRepo.save(toUpdate);
     }
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {

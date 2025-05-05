@@ -1,16 +1,16 @@
-import { ObjectLiteral } from "typeorm";
-import { ServiceBase } from "./service-base";
-import { Body, Delete, Get, HttpCode, HttpStatus, Inject, OnModuleInit, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Body, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { Cache } from "cache-manager";
-import { stringify, parse } from 'flatted';
-import { invalidateFindAllCache, trackFindAllKey } from "../util/cache.util";
+import { parse, stringify } from 'flatted';
 import { Logger } from "nestjs-pino";
-import { ModuleRef } from "@nestjs/core";
+import { ObjectLiteral } from "typeorm";
+import { invalidateFindAllCache, trackFindAllKey } from "../util/cache.util";
+import { ServiceBase } from "./service-base";
 
 export class ControllerBase<T extends ObjectLiteral> {
   constructor(
     protected readonly entityService: ServiceBase<T>,
+    
     @Inject(CACHE_MANAGER) 
     private readonly cacheManager: Cache,
 
