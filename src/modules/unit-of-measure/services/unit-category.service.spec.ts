@@ -8,6 +8,7 @@ import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 
 describe('UnitCategoryService', () => {
@@ -55,8 +56,8 @@ describe('UnitCategoryService', () => {
       name: "testCategory",
     } as CreateUnitCategoryDto;
 
-    const result = await categoryService.create(dto);
-    expect(result).toBeNull();
+
+    await expect(categoryService.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should find one category', async () => {
@@ -88,8 +89,7 @@ describe('UnitCategoryService', () => {
       name: "updateName"
     } as UpdateUnitCategoryDto;
 
-    const result = await categoryService.update(0, dto);
-    expect(result).toBeNull();
+    await expect(categoryService.update(0, dto)).rejects.toThrow(NotFoundException);
   })
 
   it('should update category name', async () => {

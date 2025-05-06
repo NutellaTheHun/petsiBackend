@@ -1,45 +1,20 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { TemplateMenuItemBuilder } from '../builders/template-menu-item.builder';
-import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
-import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
-import { TemplateService } from './template.service';
 import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
 export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
   constructor(
     @InjectRepository(TemplateMenuItem)
-    private readonly itemRepo: Repository<TemplateMenuItem>,
+    itemRepo: Repository<TemplateMenuItem>,
 
     @Inject(forwardRef(() => TemplateMenuItemBuilder))
-    private readonly itemBuilder: TemplateMenuItemBuilder,
+    itemBuilder: TemplateMenuItemBuilder,
 
     validator: TemplateMenuItemValidator,
-
-    @Inject(forwardRef(() => TemplateService))
-    private readonly templateService: TemplateService,
   ){ super(itemRepo, itemBuilder, validator, 'TemplateMenuItemService'); }
-
-  async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem | null> {
-    //const parentTemplate = await this.templateService.findOne(dto.templateId);
-    //if(!parentTemplate){ throw new NotFoundException(); }
-
-    const item = await this.itemBuilder.buildCreateDto(/*parentTemplate, */dto);
-    return await this.itemRepo.save(item);
-  }
-      
-  /**
-  * Uses Repository.Save(), not Repository.Update
-  */
-  async update(id: number, dto: UpdateTemplateMenuItemDto): Promise<TemplateMenuItem | null> {
-    const toUpdate = await this.findOne(id);
-    if(!toUpdate){ return null; }
-
-    await this.itemBuilder.buildUpdateDto(toUpdate, dto);
-    return await this.itemRepo.save(toUpdate);
-  }
 }

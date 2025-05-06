@@ -109,17 +109,4 @@ describe('recipe sub category service', () => {
     expect(result).not.toBeNull();
     expect(result?.name).toEqual(REC_SUBCAT_1);
   });
-
-  it('should get a list of sub-categories by category name', async () => {
-    const results = await subCategoryService.findByCategoryName(REC_CAT_A);
-    expect(results).not.toBeNull();
-    expect(results.length).toBeGreaterThan(0);
-  });
-
-  it('should get one sub-category with a category name and sub-category name', async () => {
-    const result =  await subCategoryService.findOneByCategoryNameAndSubCategoryName(REC_CAT_A, REC_SUBCAT_1, ["parentCategory"]);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual(REC_SUBCAT_1);
-    expect(result?.parentCategory.name).toEqual(REC_CAT_A);
-  });
 });

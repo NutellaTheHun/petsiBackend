@@ -133,12 +133,10 @@ describe('Inventory area count service', () => {
         const toUpdate = await countService.findOne(testCountId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        const result = await countService.update(
+        await expect(countService.update(
             0, 
             { inventoryAreaId: newArea.id } as UpdateInventoryAreaCountDto
-        );
-
-        expect(result).toBeNull();
+        )).rejects.toThrow(NotFoundException);
     });
 
     it('should find area counts by area', async () => {

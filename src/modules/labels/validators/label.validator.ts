@@ -12,6 +12,13 @@ export class LabelValidator extends ValidatorBase<Label> {
     ){ super(repo); }
 
     public async validateCreate(dto: any): Promise<string | null> {
+        const exists = await this.repo.findOne({ 
+            where: {
+                menuItem: { id: dto.menuItemId},
+                type: { id: dto.typeId}
+            }
+        });
+        if(exists){ return 'menuItem / labelType combination already exists'; }
         return null;
     }
     public async validateUpdate(dto: any): Promise<string | null> {

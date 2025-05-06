@@ -1,8 +1,8 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { ValidatorBase } from "../../../base/validator-base";
-import { InventoryArea } from "../entities/inventory-area.entity";
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
+import { ValidatorBase } from "../../../base/validator-base";
+import { InventoryArea } from "../entities/inventory-area.entity";
 
 @Injectable()
 export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
@@ -14,7 +14,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
     public async validateCreate(dto: any): Promise<string | null> {
         const exists = await this.areaRepo.findOne({ where: { name: dto.name }});
         if(exists) { 
-            return 'Inventory Area already exists'; 
+            return 'Inventory area already exists'; 
         }
         return null;
     }

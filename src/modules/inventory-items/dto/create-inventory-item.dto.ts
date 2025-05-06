@@ -16,5 +16,5 @@ export class CreateInventoryItemDto {
 
     @IsOptional()
     @IsArray()
-    itemSizeDtos?: CreateInventoryItemSizeDto[];
+    readonly itemSizeDtos?: CreateInventoryItemSizeDto[];
 }

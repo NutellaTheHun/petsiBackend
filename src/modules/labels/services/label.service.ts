@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateLabelDto } from '../dto/create-label.dto';
-import { UpdateLabelDto } from '../dto/update-label.dto';
-import { ServiceBase } from '../../../base/service-base';
-import { Label } from '../entities/label.entity';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ServiceBase } from '../../../base/service-base';
 import { LabelBuilder } from '../builders/label.builder';
+import { Label } from '../entities/label.entity';
 import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
@@ -13,31 +11,9 @@ export class LabelService extends ServiceBase<Label>{
   constructor(
     @InjectRepository(Label)
     private readonly labelRepo: Repository<Label>,
-    private readonly labelBuilder: LabelBuilder,
+    labelBuilder: LabelBuilder,
     validator: LabelValidator,
   ){ super(labelRepo, labelBuilder, validator, 'LabelService'); }
-
-  async create(dto: CreateLabelDto): Promise<Label | null> {
-      const exists = await this.labelRepo.findOne({ 
-        where: {
-        menuItem: { id: dto.menuItemId},
-        type: { id: dto.typeId}
-        }
-      });
-      if(exists){ return null; }
-
-      const item = await this.labelBuilder.buildCreateDto(dto);
-      return await this.labelRepo.save(item);
-  }
-  
-  async update(id: number, dto: UpdateLabelDto): Promise<Label | null> {
-      const toUpdate = await this.findOne(id);
-      if(!toUpdate){ return null; }
-
-      await this.labelBuilder.buildUpdateDto(toUpdate, dto);
-      
-      return await this.labelRepo.save(toUpdate);
-  }
 
   async findByMenuItemId(itemId: number, relations?: Array<keyof Label>): Promise<Label[]> {
     return await this.labelRepo.find({

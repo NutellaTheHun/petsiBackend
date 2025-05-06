@@ -5,7 +5,7 @@ import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -47,9 +47,8 @@ describe('Inventory area service', () => {
 
     it('should fail to create an area (already exists)', async () => {
         const area = { name: testAreaName } as CreateInventoryAreaDto;
-        const result = await service.create(area);
 
-        expect(result).rejects.toThrow(BadRequestException);
+        await expect(service.create(area)).rejects.toThrow(BadRequestException);
     });
 
     it('should update an area', async () => {
@@ -64,10 +63,8 @@ describe('Inventory area service', () => {
 
     it('should fail to update an area (doesnt exist)', async () => {
         const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
-
-        const result = await service.update(0, toUpdate);
-
-        expect(result).toBeNull();
+        
+        await expect(service.update(0, toUpdate)).rejects.toThrow(NotFoundException);
     });
 
     it('should find one by name', async () => {

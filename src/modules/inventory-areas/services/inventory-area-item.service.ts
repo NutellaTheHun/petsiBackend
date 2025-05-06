@@ -20,7 +20,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
         validator: InventoryAreaItemValidator,
-        //private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
@@ -61,16 +60,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         await this.itemCountBuilder.buildUpdateDto(toUpdate, dto);
         return await this.itemCountRepo.save(toUpdate);
     }
-
-    /*async findByAreaName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
-        const area = await this.inventoryAreaService.findOneByName(name);
-        if(!area){ throw new Error('inventory area not found'); }
-
-        return await this.itemCountRepo.find({ 
-            where: { inventoryArea: { name: name } }, 
-            relations
-        });
-    }*/
 
     async findByItemName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const item = await this.itemService.findOneByName(name);

@@ -3,11 +3,6 @@ import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inv
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
 export class BaseInventoryAreaItemDto {
-        //@IsNumber()
-        //@IsPositive()
-        //@IsNotEmpty()
-        //readonly inventoryAreaId: number;
-
         @IsNumber()
         @IsPositive()
         @IsOptional()

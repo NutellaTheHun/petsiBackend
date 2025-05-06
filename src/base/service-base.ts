@@ -1,7 +1,7 @@
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
 import { BuilderBase } from "./builder-base";
 import { ValidatorBase } from "./validator-base";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
   
@@ -22,18 +22,17 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     return await this.entityRepo.save(entity);
   }
 
-  async insertEntity(entity: T): Promise<T | null> {
-    return await this.entityRepo.save(entity);
-  }
-  
-  async insertEntities(entities: T[]): Promise<T[] | null> {
-      const results: T[]  = [];
-      for(const entity of entities){
-          results.push(
-            await this.entityRepo.save(entity)
-          );
-      }
-      return results;
+  async update(id: number, updateDto: any): Promise<any | null> {
+    const error = await this.validator.validateUpdate(updateDto);
+    if(error){ 
+      throw new BadRequestException(error);
+    }
+
+    const toUpdate = await this.findOne(id) // handle relations, // autoLoad relation Ids?
+    if(!toUpdate){ throw new NotFoundException(); }
+
+    await this.builder.buildUpdateDto(toUpdate, updateDto);
+    return await this.entityRepo.save(toUpdate);
   }
 
   async findAll( options?: {
@@ -107,21 +106,22 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         relations: relations as string[] });
   }
 
-  async update(id: number, updateDto: any): Promise<any | null> {
-    const error = await this.validator.validateCreate(updateDto);
-    if(error){ 
-      throw new BadRequestException(error);
-    }
-
-    const toUpdate = await this.findOne(id) // handle relations, // autoLoad relation Ids?
-    if(!toUpdate){ return null; } // ???
-
-    await this.builder.buildUpdateDto(toUpdate, updateDto);
-    return await this.entityRepo.save(toUpdate);
-  }
-
   async remove(id: number): Promise<Boolean> {
     return (await this.entityRepo.delete(id)).affected !== 0;
+  }
+
+  async insertEntity(entity: T): Promise<T | null> {
+    return await this.entityRepo.save(entity);
+  }
+  
+  async insertEntities(entities: T[]): Promise<T[] | null> {
+      const results: T[]  = [];
+      for(const entity of entities){
+          results.push(
+            await this.entityRepo.save(entity)
+          );
+      }
+      return results;
   }
 
   getQueryBuilder(): QueryBuilder<T> {

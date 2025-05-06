@@ -9,5 +9,5 @@ export class UpdateInventoryAreaDto {
     @IsNumber({}, { each: true})
     @IsPositive()
     @IsOptional()
-    readonly inventoryCountIds: number[] = [];
+    readonly inventoryCountIds: number[];
 }

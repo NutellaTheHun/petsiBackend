@@ -219,6 +219,9 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
         for(const category of categories) {
+            const exists = await this.categoryService.findOneByName(category.name);
+            if(exists){ continue; }
+
             await this.categoryService.create(
                 { name: category.name } as CreateInventoryItemCategoryDto
         )}
@@ -228,6 +231,9 @@ export class InventoryItemTestingUtil {
         const items = await this.getTestInventoryItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemTestDatabase());
         for(const item of items){
+            const exists = await this.itemService.findOneByName(item.name);
+            if(exists){ continue; }
+
             await this.itemService.create({
                     name: item.name,
                     inventoryItemCategoryId: item.category?.id,

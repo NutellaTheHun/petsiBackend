@@ -12,6 +12,10 @@ export class UserValidator extends ValidatorBase<User> {
     ){ super(repo); }
 
     public async validateCreate(dto: any): Promise<string | null> {
+        const exists = await this.repo.findOne({ where: { username: dto.username }});
+        if(exists) { 
+            return `User with name ${dto.username} already exists`; 
+        }
         return null;
     }
     public async validateUpdate(dto: any): Promise<string | null> {

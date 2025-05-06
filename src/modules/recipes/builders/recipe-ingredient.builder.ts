@@ -102,32 +102,19 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         return await this.build();
     }
 
-    /*
-    public async buildManyCreateDto(parentRecipe: Recipe, dtos: CreateRecipeIngredientDto[]): Promise<RecipeIngredient[]> {
-        const results: RecipeIngredient[] = [];
-        for(const dto of dtos){
-            results.push( await this.buildCreateDto(parentRecipe, dto))
-        }
-        return results;
-    }*/
-
     public async buildUpdateDto(toUpdate: RecipeIngredient, dto: UpdateRecipeIngredientDto): Promise<RecipeIngredient> {
         this.reset();
         this.updateEntity(toUpdate);
         
         if(dto.inventoryItemId){
-            if(this.entity.subRecipeIngredient){
-                this.entity.subRecipeIngredient = null;
-            }
+            this.entity.subRecipeIngredient = null;
             this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
         if(dto.subRecipeIngredientId){
-            if(this.entity.inventoryItem){
-                this.entity.inventoryItem = null;
-            }
+            this.entity.inventoryItem = null;
             this.subRecipeById(dto.subRecipeIngredientId);
         }
         if(dto.unitOfMeasureId){
