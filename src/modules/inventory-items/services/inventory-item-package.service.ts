@@ -6,6 +6,7 @@ import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.
 import { CreateInventoryItemPackageDto } from '../dto/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemPackageValidator } from '../validators/inventory-item-package.validator';
 
 @Injectable()
 export class InventoryItemPackageService extends ServiceBase<InventoryItemPackage> {
@@ -13,7 +14,8 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
         @InjectRepository(InventoryItemPackage)
         private readonly packageRepo: Repository<InventoryItemPackage>,
         private readonly packageBuilder: InventoryItemPackageBuilder,
-    ){ super(packageRepo, packageBuilder, 'InventoryItemPackageService'); }
+        validator: InventoryItemPackageValidator,
+    ){ super(packageRepo, packageBuilder, validator, 'InventoryItemPackageService'); }
 
     async create(createDto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage | null> {
         const exists = await this.findOneByName(createDto.name);

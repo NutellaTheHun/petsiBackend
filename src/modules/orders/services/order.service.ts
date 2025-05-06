@@ -6,6 +6,7 @@ import { Order } from "../entities/order.entity";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { UpdateOrderDto } from "../dto/update-order.dto";
 import { OrderBuilder } from "../builders/order.builder";
+import { OrderValidator } from "../validators/order.validator";
 
 @Injectable()
 export class OrderService extends ServiceBase<Order> {
@@ -15,7 +16,9 @@ export class OrderService extends ServiceBase<Order> {
         
         @Inject(forwardRef(() => OrderBuilder))
         private readonly orderBuilder: OrderBuilder,
-    ){ super(orderRepo, orderBuilder, 'OrderService')}
+        
+        validator: OrderValidator,
+    ){ super(orderRepo, orderBuilder, validator, 'OrderService')}
 
     async create(dto: CreateOrderDto): Promise<Order | null> {
         const order = await this.orderBuilder.buildCreateDto(dto);

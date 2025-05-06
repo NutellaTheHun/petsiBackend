@@ -6,6 +6,7 @@ import { OrderType } from "../entities/order-type.entity";
 import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
 import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
 import { OrderTypeBuilder } from "../builders/order-type.builder";
+import { OrderTypeValidator } from "../validators/order-type.validator";
 
 @Injectable()
 export class OrderTypeService extends ServiceBase<OrderType> {
@@ -13,7 +14,8 @@ export class OrderTypeService extends ServiceBase<OrderType> {
         @InjectRepository(OrderType)
         private readonly orderTypeRepo: Repository<OrderType>,
         private readonly typeBuilder: OrderTypeBuilder,
-    ){ super(orderTypeRepo, typeBuilder, 'OrderTypeService')}
+        validator: OrderTypeValidator,
+    ){ super(orderTypeRepo, typeBuilder, validator, 'OrderTypeService')}
 
     async create(dto: CreateOrderTypeDto): Promise<OrderType | null> {
         const exists = await this.findOneByName(dto.name);

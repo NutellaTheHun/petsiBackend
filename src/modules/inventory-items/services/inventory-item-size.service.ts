@@ -7,6 +7,7 @@ import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dt
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemService } from './inventory-item.service';
+import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
@@ -17,9 +18,11 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @Inject(forwardRef(() => InventoryItemSizeBuilder))
         private readonly sizeBuilder: InventoryItemSizeBuilder,
 
+        validator: InventoryItemSizeValidator,
+
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(sizeRepo, sizeBuilder, 'InventoryItemSizeService'); }
+    ){ super(sizeRepo, sizeBuilder, validator, 'InventoryItemSizeService'); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
         if(!createDto.inventoryItemId){ throw new Error("inventory id required"); }

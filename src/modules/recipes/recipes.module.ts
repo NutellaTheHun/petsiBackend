@@ -22,6 +22,10 @@ import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder
 import { RecipeTestUtil } from './utils/recipe-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { RecipeValidator } from './validators/recipe.valdiator';
+import { RecipeIngredientValidator } from './validators/recipe-ingredient.validator';
+import { RecipeCategoryValidator } from './validators/recipe-category.validator';
+import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.validator';
 
 @Module({
   imports: [
@@ -53,6 +57,11 @@ import { LoggerModule } from 'nestjs-pino';
     RecipeIngredientBuilder,
     RecipeCategoryBuilder,
     RecipeSubCategoryBuilder,
+
+    RecipeValidator,
+    RecipeIngredientValidator,
+    RecipeCategoryValidator,
+    RecipeSubCategoryValidator,
 
     RecipeTestUtil,
   ],

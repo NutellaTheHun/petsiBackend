@@ -24,6 +24,11 @@ import { InventoryItemVendorBuilder } from './builders/inventory-item-vendor.bui
 import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { InventoryItemValidator } from './validators/inventory-item.entity';
+import { InventoryItemCategoryValidator } from './validators/inventory-item-category.validator';
+import { InventoryItemPackageValidator } from './validators/inventory-item-package.validator';
+import { InventoryItemSizeValidator } from './validators/inventory-item-size.validator';
+import { InventoryItemVendorValidator } from './validators/inventory-item-vendor.validator';
 
 @Module({
   imports: [ 
@@ -60,6 +65,12 @@ import { LoggerModule } from 'nestjs-pino';
     InventoryItemPackageBuilder,
     InventoryItemSizeBuilder,
     InventoryItemVendorBuilder,
+
+    InventoryItemValidator,
+    InventoryItemCategoryValidator,
+    InventoryItemPackageValidator,
+    InventoryItemSizeValidator,
+    InventoryItemVendorValidator,
 
     InventoryItemTestingUtil
   ],

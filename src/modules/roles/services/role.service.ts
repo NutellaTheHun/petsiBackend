@@ -6,6 +6,7 @@ import { RoleBuilder } from '../builders/role.builder';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entities';
+import { RoleValidator } from '../validators/role.validator';
 
 
 @Injectable()
@@ -17,7 +18,8 @@ export class RoleService extends ServiceBase<Role> {
 
     @Inject(forwardRef(() => RoleBuilder))
     private readonly roleBuilder: RoleBuilder,
-  ){ super(roleRepo, roleBuilder, 'RoleService'); }
+    validator: RoleValidator,
+  ){ super(roleRepo, roleBuilder, validator, 'RoleService'); }
 
   async create(dto: CreateRoleDto): Promise<Role | null> {
     const alreadyExists = await this.findOneByName(dto.name);

@@ -8,6 +8,7 @@ import { RoleService } from './services/role.service';
 import { RoleTestUtil } from './utils/role-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { RoleValidator } from './validators/role.validator';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { LoggerModule } from 'nestjs-pino';
     LoggerModule,
   ],
   controllers: [RoleController,],
-  providers: [RoleService, RoleBuilder, RoleTestUtil],
+  providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil],
   exports: [RoleService, RoleTestUtil],
 })
 export class RoleModule {}

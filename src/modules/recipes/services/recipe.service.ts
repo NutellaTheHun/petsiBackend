@@ -5,13 +5,15 @@ import { RecipeBuilder } from "../builders/recipe.builder";
 import { CreateRecipeDto } from "../dto/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/update-recipe-dto";
 import { Recipe } from "../entities/recipe.entity";
+import { RecipeValidator } from "../validators/recipe.valdiator";
 
 export class RecipeService extends ServiceBase<Recipe>{
     constructor(
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
         private readonly recipeBuilder: RecipeBuilder,
-    ){ super(recipeRepo, recipeBuilder, 'RecipeService'); }
+        validator: RecipeValidator,
+    ){ super(recipeRepo, recipeBuilder, validator, 'RecipeService'); }
 
     async create(dto: CreateRecipeDto): Promise<Recipe | null> {
         const exists = await this.findOneByName(dto.name);

@@ -6,6 +6,7 @@ import { InventoryItemCategoryBuilder } from '../builders/inventory-item-categor
 import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemCategoryValidator } from '../validators/inventory-item-category.validator';
 
 @Injectable()
 export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategory> {
@@ -13,7 +14,8 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
         @InjectRepository(InventoryItemCategory)
         private readonly categoryRepo: Repository<InventoryItemCategory>,
         private readonly categoryBuilder: InventoryItemCategoryBuilder,
-    ){ super(categoryRepo, categoryBuilder, 'InventoryItemCategoryService'); }
+        validator: InventoryItemCategoryValidator,
+    ){ super(categoryRepo, categoryBuilder, validator, 'InventoryItemCategoryService'); }
 
     async create(createDto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory | null> {
         const exists = await this.findOneByName(createDto.name);

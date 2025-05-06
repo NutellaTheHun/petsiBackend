@@ -6,6 +6,7 @@ import { TemplateBuilder } from '../builders/template.builder';
 import { CreateTemplateDto } from '../dto/create-template.dto';
 import { UpdateTemplateDto } from '../dto/update-template.dto';
 import { Template } from '../entities/template.entity';
+import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
 export class TemplateService extends ServiceBase<Template>{
@@ -14,7 +15,8 @@ export class TemplateService extends ServiceBase<Template>{
       private readonly templateRepo: Repository<Template>,
 
       private readonly templateBuilder: TemplateBuilder,
-    ){ super(templateRepo, templateBuilder, 'TemplateService'); }
+      validator: TemplateValidator
+    ){ super(templateRepo, templateBuilder, validator, 'TemplateService'); }
 
     async create(dto: CreateTemplateDto): Promise<Template | null> {
         const exist = await this.findOneByName(dto.name);

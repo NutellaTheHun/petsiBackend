@@ -6,6 +6,7 @@ import { Repository } from "typeorm";
 import { MenuItemComponentBuilder } from "../builders/menu-item-component.builder";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { MenuItemComponentValidator } from "../validators/menu-item-component.validator";
 
 @Injectable()
 export class MenuItemComponentService extends ServiceBase<MenuItemComponent> {P
@@ -15,7 +16,9 @@ export class MenuItemComponentService extends ServiceBase<MenuItemComponent> {P
 
         @Inject(forwardRef(() => MenuItemComponentBuilder))
         private readonly componentBuilder: MenuItemComponentBuilder,
-    ){ super(componentRepo, componentBuilder, 'MenuItemComponentService'); }
+
+        validator: MenuItemComponentValidator,
+    ){ super(componentRepo, componentBuilder, validator, 'MenuItemComponentService'); }
 
     async create(dto: CreateMenuItemComponentDto): Promise<MenuItemComponent | null> {
         const category = await this.componentBuilder.buildCreateDto(dto);

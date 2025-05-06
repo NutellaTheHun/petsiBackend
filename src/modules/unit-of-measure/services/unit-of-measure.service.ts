@@ -7,6 +7,7 @@ import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureValidator } from '../validators/unit-of-measure.validator';
 
 @Injectable()
 export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
@@ -14,7 +15,8 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     @InjectRepository(UnitOfMeasure)
     private readonly unitRepo: Repository<UnitOfMeasure>,
     private readonly unitBuilder: UnitOfMeasureBuilder,
-  ){ super(unitRepo, unitBuilder, 'UnitOfMeasureService'); }
+    validator: UnitOfMeasureValidator
+  ){ super(unitRepo, unitBuilder, validator, 'UnitOfMeasureService'); }
 
   async create(createDto: CreateUnitOfMeasureDto): Promise<UnitOfMeasure | null> {
     const alreadyExists = await this.unitRepo.findOne({ where: { name: createDto.name }});

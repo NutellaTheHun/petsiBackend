@@ -6,6 +6,7 @@ import { UnitCategoryBuilder } from '../builders/unit-category.builder';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UnitCategory } from '../entities/unit-category.entity';
+import { UnitCategoryValidator } from '../validators/unit-category.validator';
 
 @Injectable()
 export class UnitCategoryService extends ServiceBase<UnitCategory> {
@@ -13,7 +14,8 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
       @InjectRepository(UnitCategory)
       private readonly categoryRepo: Repository<UnitCategory>,
       private readonly categoryBuilder: UnitCategoryBuilder,
-  ){ super(categoryRepo, categoryBuilder, 'UnitCategoryService'); }
+      validator: UnitCategoryValidator,
+  ){ super(categoryRepo, categoryBuilder, validator, 'UnitCategoryService'); }
   
   async create(createDto: CreateUnitCategoryDto): Promise<UnitCategory | null> {
     const exists = await this.categoryRepo.findOne({ where: { name: createDto.name }});

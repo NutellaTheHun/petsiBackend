@@ -6,6 +6,7 @@ import { LabelTypeBuilder } from '../builders/label-type.builder';
 import { CreateLabelTypeDto } from '../dto/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
+import { LabelTypeValidator } from '../validators/label-type.validator';
 
 @Injectable()
 export class LabelTypeService extends ServiceBase<LabelType>{
@@ -13,7 +14,8 @@ export class LabelTypeService extends ServiceBase<LabelType>{
     @InjectRepository(LabelType)
     private readonly typeRepo: Repository<LabelType>,
     private readonly typeBuilder: LabelTypeBuilder,
-  ){ super(typeRepo, typeBuilder, 'LabelTypeService'); }
+    validator: LabelTypeValidator,
+  ){ super(typeRepo, typeBuilder, validator, 'LabelTypeService'); }
 
   async create(dto: CreateLabelTypeDto): Promise<LabelType | null> {
       const item = await this.typeBuilder.buildCreateDto(dto);

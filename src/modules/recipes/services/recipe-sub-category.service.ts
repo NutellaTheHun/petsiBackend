@@ -7,16 +7,18 @@ import { CreateRecipeSubCategoryDto } from "../dto/create-recipe-sub-category.dt
 import { UpdateRecipeSubCategoryDto } from "../dto/update-recipe-sub-category.dto";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 import { RecipeCategoryService } from "./recipe-category.service";
+import { RecipeSubCategoryValidator } from "../validators/recipe-sub-category.validator";
 
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     constructor(
         @InjectRepository(RecipeSubCategory)
         private readonly subCategoryRepo: Repository<RecipeSubCategory>,
         private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
+        validator: RecipeSubCategoryValidator,
 
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-    ){ super(subCategoryRepo, subCategoryBuilder, 'RecipeSubCategoryService'); }
+    ){ super(subCategoryRepo, subCategoryBuilder, validator, 'RecipeSubCategoryService'); }
 
     /**
      * Requires a name and a recipe ID for parent

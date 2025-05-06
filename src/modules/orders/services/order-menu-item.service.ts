@@ -7,6 +7,7 @@ import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
 import { OrderMenuItemBuilder } from "../builders/order-menu-item.builder";
 import { OrderService } from "./order.service";
+import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
 
 @Injectable()
 export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
@@ -19,7 +20,9 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
 
         @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
-    ){ super(orderItemRepo, itemBuilder, 'OrderMenuItemService')}
+
+        validator: OrderMenuItemValidator,
+    ){ super(orderItemRepo, itemBuilder, validator, 'OrderMenuItemService')}
 
     async create(dto: CreateOrderMenuItemDto): Promise<OrderMenuItem | null> {
         //const parentOrder = await this.orderService.findOne(dto.orderId);

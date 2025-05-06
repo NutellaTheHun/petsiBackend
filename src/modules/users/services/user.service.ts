@@ -6,6 +6,7 @@ import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
 import { UserBuilder } from '../builders/user.builder';
+import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
 export class UserService extends ServiceBase<User> {
@@ -13,7 +14,8 @@ export class UserService extends ServiceBase<User> {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
     private readonly userBuilder: UserBuilder,
-  ){ super(userRepo, userBuilder, 'UserService'); }
+    validator: UserValidator,
+  ){ super(userRepo, userBuilder, validator, 'UserService'); }
 
   async create(createUserDto: CreateUserDto) {
     const alreadyExists = await this.findOneByName(createUserDto.username);

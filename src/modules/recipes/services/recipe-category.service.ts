@@ -5,13 +5,15 @@ import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import { CreateRecipeCategoryDto } from "../dto/create-recipe-category.dto";
 import { UpdateRecipeCategoryDto } from "../dto/update-recipe-category.dto";
 import { RecipeCategory } from "../entities/recipe-category.entity";
+import { RecipeCategoryValidator } from "../validators/recipe-category.validator";
 
 export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
     constructor(
         @InjectRepository(RecipeCategory)
         private readonly categoryRepo: Repository<RecipeCategory>,
         private readonly categoryBuilder: RecipeCategoryBuilder,
-    ){ super(categoryRepo, categoryBuilder, 'RecipeCategoryService'); }
+        validator: RecipeCategoryValidator,
+    ){ super(categoryRepo, categoryBuilder, validator, 'RecipeCategoryService'); }
 
     /**
      * Creates a recipe category, with no sub-categories and no recipes

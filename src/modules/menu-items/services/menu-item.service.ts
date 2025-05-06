@@ -6,15 +6,16 @@ import { MenuItemBuilder } from "../builders/menu-item.builder";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
+import { MenuItemValidator } from "../validators/menu-item.validator";
 
 @Injectable()
 export class MenuItemService extends ServiceBase<MenuItem> {
     constructor(
         @InjectRepository(MenuItem)
         private readonly itemRepo: Repository<MenuItem>,
-
         private readonly itemBuilder: MenuItemBuilder,
-    ){ super(itemRepo, itemBuilder, 'MenuItemService'); }
+        validator: MenuItemValidator,
+    ){ super(itemRepo, itemBuilder, validator, 'MenuItemService'); }
 
     async create(dto: CreateMenuItemDto): Promise<MenuItem | null> {
         const exist = await this.findOneByName(dto.name);

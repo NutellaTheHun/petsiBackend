@@ -6,6 +6,7 @@ import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.bu
 import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItemVendorValidator } from '../validators/inventory-item-vendor.validator';
 
 @Injectable()
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>{
@@ -13,7 +14,8 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         @InjectRepository(InventoryItemVendor)
         private readonly vendorRepo: Repository<InventoryItemVendor>,
         private readonly vendorBuilder: InventoryItemVendorBuilder,
-    ){ super(vendorRepo, vendorBuilder, 'InventoryItemVendorService')}
+        validator: InventoryItemVendorValidator,
+    ){ super(vendorRepo, vendorBuilder, validator, 'InventoryItemVendorService')}
 
     async create(createDto: CreateInventoryItemVendorDto): Promise<InventoryItemVendor | null> {
         const exists = await this.findOneByName(createDto.name);

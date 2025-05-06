@@ -12,6 +12,8 @@ import { TemplateMenuItemBuilder } from './builders/template-menu-item.builder';
 import { TemplateTestingUtil } from './utils/template-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { TemplateValidator } from './validators/template.validator';
+import { TemplateMenuItemValidator } from './validators/template-menu-item.validator';
 
 @Module({
   imports: [
@@ -33,6 +35,9 @@ import { LoggerModule } from 'nestjs-pino';
 
     TemplateBuilder,
     TemplateMenuItemBuilder,
+
+    TemplateValidator,
+    TemplateMenuItemValidator,
 
     TemplateTestingUtil,
   ],

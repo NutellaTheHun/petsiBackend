@@ -16,6 +16,9 @@ import { OrderTestingUtil } from './utils/order-testing.util';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { OrderTypeValidator } from './validators/order-type.validator';
+import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
+import { OrderValidator } from './validators/order.validator';
 
 
 @Module({
@@ -42,6 +45,10 @@ import { LoggerModule } from 'nestjs-pino';
     OrderBuilder,
     OrderTypeBuilder,
     OrderMenuItemBuilder,
+
+    OrderValidator,
+    OrderTypeValidator,
+    OrderMenuItemValidator,
 
     OrderTestingUtil,
   ],

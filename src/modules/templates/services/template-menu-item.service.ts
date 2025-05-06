@@ -7,6 +7,7 @@ import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto'
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { TemplateService } from './template.service';
+import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
 export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
@@ -17,9 +18,11 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
     @Inject(forwardRef(() => TemplateMenuItemBuilder))
     private readonly itemBuilder: TemplateMenuItemBuilder,
 
+    validator: TemplateMenuItemValidator,
+
     @Inject(forwardRef(() => TemplateService))
     private readonly templateService: TemplateService,
-  ){ super(itemRepo, itemBuilder, 'TemplateMenuItemService'); }
+  ){ super(itemRepo, itemBuilder, validator, 'TemplateMenuItemService'); }
 
   async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem | null> {
     //const parentTemplate = await this.templateService.findOne(dto.templateId);

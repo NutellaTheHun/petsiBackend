@@ -6,6 +6,7 @@ import { Label } from '../entities/label.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LabelBuilder } from '../builders/label.builder';
+import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
 export class LabelService extends ServiceBase<Label>{
@@ -13,7 +14,8 @@ export class LabelService extends ServiceBase<Label>{
     @InjectRepository(Label)
     private readonly labelRepo: Repository<Label>,
     private readonly labelBuilder: LabelBuilder,
-  ){ super(labelRepo, labelBuilder, 'LabelService'); }
+    validator: LabelValidator,
+  ){ super(labelRepo, labelBuilder, validator, 'LabelService'); }
 
   async create(dto: CreateLabelDto): Promise<Label | null> {
       const exists = await this.labelRepo.findOne({ 

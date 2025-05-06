@@ -11,6 +11,8 @@ import { UnitCategoryBuilder } from './builders/unit-category.builder';
 import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { UnitCategoryValidator } from './validators/unit-category.validator';
+import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
 @Module({
   imports: [
@@ -25,6 +27,9 @@ import { LoggerModule } from 'nestjs-pino';
 
     UnitOfMeasureBuilder,
     UnitCategoryBuilder,
+
+    UnitCategoryValidator,
+    UnitOfMeasureValidator,
 
     UnitOfMeasureTestingUtil,
   ],

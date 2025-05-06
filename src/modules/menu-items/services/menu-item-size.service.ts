@@ -6,6 +6,7 @@ import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
+import { MenuItemSizeValidator } from "../validators/menu-item-size.validator";
 
 @Injectable()
 export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
@@ -13,7 +14,8 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
         @InjectRepository(MenuItemSize)
         private readonly sizeRepo: Repository<MenuItemSize>,
         private readonly sizeBuilder: MenuItemSizeBuilder,
-    ){ super(sizeRepo, sizeBuilder, 'MenuItemSizeService'); }
+        validator: MenuItemSizeValidator,
+    ){ super(sizeRepo, sizeBuilder, validator, 'MenuItemSizeService'); }
 
     async create(dto: CreateMenuItemSizeDto): Promise<MenuItemSize | null> {
         const exists = await this.findOneByName(dto.name);

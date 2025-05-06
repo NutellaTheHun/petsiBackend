@@ -19,6 +19,10 @@ import { MenuItemComponentService } from './services/menu-item-component.service
 import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { MenuItemCategoryValidator } from './validators/menu-item-category.validator';
+import { MenuItemComponentValidator } from './validators/menu-item-component.validator';
+import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
+import { MenuItemValidator } from './validators/menu-item.validator';
 
 @Module({
   imports: [
@@ -49,6 +53,11 @@ import { LoggerModule } from 'nestjs-pino';
     MenuItemSizeBuilder,
     MenuItemBuilder,
     MenuItemComponentBuilder,
+
+    MenuItemCategoryValidator,
+    MenuItemComponentValidator,
+    MenuItemSizeValidator,
+    MenuItemValidator,
 
     MenuItemTestingUtil,
   ],

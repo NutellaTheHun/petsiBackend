@@ -8,17 +8,19 @@ import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { RecipeService } from "./recipe.service";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { RecipeIngredientValidator } from "../validators/recipe-ingredient.validator";
 
 export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
     constructor(
         @InjectRepository(RecipeIngredient)
         private readonly ingredientRepo: Repository<RecipeIngredient>,
         private readonly ingredientBuilder: RecipeIngredientBuilder,
+        validator: RecipeIngredientValidator,
 
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
         private readonly inventoryItemService: InventoryItemService,
-    ){ super(ingredientRepo, ingredientBuilder, 'RecipeIngredientService'); }
+    ){ super(ingredientRepo, ingredientBuilder, validator, 'RecipeIngredientService'); }
 
     /**
      * A recipe ingredient cannot reference both an inventory item and subRecipeIngredient, only one.

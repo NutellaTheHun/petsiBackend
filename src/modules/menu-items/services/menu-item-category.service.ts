@@ -6,6 +6,7 @@ import { MenuItemCategoryBuilder } from "../builders/menu-item-category.builder"
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { MenuItemCategoryValidator } from "../validators/menu-item-category.validator";
 
 @Injectable()
 export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
@@ -13,7 +14,8 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
-    ){ super(categoryRepo, categoryBuilder, 'MenuItemCategoryService'); }
+        validator: MenuItemCategoryValidator,
+    ){ super(categoryRepo, categoryBuilder, validator, 'MenuItemCategoryService'); }
 
     async create(dto: CreateMenuItemCategoryDto): Promise<MenuItemCategory | null> {
         const exists = await this.findOneByName(dto.name);

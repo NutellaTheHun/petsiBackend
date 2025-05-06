@@ -12,6 +12,8 @@ import { LabelTypeService } from './services/label-type.service';
 import { LabelTypeBuilder } from './builders/label-type.builder';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { LabelValidator } from './validators/label.validator';
+import { LabelTypeValidator } from './validators/label-type.validator';
 
 @Module({
   imports: [
@@ -35,6 +37,9 @@ import { LoggerModule } from 'nestjs-pino';
 
     LabelBuilder,
     LabelTypeBuilder,
+
+    LabelValidator,
+    LabelTypeValidator,
 
     LabelTestingUtil,
   ],

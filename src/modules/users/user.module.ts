@@ -9,6 +9,7 @@ import { UserBuilder } from './builders/user.builder';
 import { UserTestUtil } from './utils/user-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { UserValidator } from './validators/user.validator';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { LoggerModule } from 'nestjs-pino';
     LoggerModule,
   ],
   controllers: [UserController,],
-  providers: [UserService, UserBuilder, UserTestUtil],
+  providers: [UserService, UserBuilder, UserValidator, UserTestUtil],
   exports: [UserService, UserTestUtil]
 })
 export class UserModule {}
