@@ -15,7 +15,7 @@ export class OrderService extends ServiceBase<Order> {
         
         @Inject(forwardRef(() => OrderBuilder))
         private readonly orderBuilder: OrderBuilder,
-    ){ super(orderRepo, 'OrderService')}
+    ){ super(orderRepo, orderBuilder, 'OrderService')}
 
     async create(dto: CreateOrderDto): Promise<Order | null> {
         const order = await this.orderBuilder.buildCreateDto(dto);

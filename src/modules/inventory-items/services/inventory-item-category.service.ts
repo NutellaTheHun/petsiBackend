@@ -13,7 +13,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
         @InjectRepository(InventoryItemCategory)
         private readonly categoryRepo: Repository<InventoryItemCategory>,
         private readonly categoryBuilder: InventoryItemCategoryBuilder,
-    ){ super(categoryRepo, 'InventoryItemCategoryService'); }
+    ){ super(categoryRepo, categoryBuilder, 'InventoryItemCategoryService'); }
 
     async create(createDto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory | null> {
         const exists = await this.findOneByName(createDto.name);

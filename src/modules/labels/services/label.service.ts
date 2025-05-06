@@ -13,7 +13,7 @@ export class LabelService extends ServiceBase<Label>{
     @InjectRepository(Label)
     private readonly labelRepo: Repository<Label>,
     private readonly labelBuilder: LabelBuilder,
-  ){ super(labelRepo, 'LabelService'); }
+  ){ super(labelRepo, labelBuilder, 'LabelService'); }
 
   async create(dto: CreateLabelDto): Promise<Label | null> {
       const exists = await this.labelRepo.findOne({ 

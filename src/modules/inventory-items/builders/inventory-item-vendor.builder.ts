@@ -26,10 +26,7 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
         if(dto.name){
             this.name(dto.name);
         }
-        /*if(dto.inventoryItemIds){
-            this.inventoryItemsByIds(dto.inventoryItemIds);
-        }*/
-
+        
         return await this.build();
     }
 

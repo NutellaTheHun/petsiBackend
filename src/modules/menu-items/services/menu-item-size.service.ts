@@ -13,7 +13,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
         @InjectRepository(MenuItemSize)
         private readonly sizeRepo: Repository<MenuItemSize>,
         private readonly sizeBuilder: MenuItemSizeBuilder,
-    ){ super(sizeRepo, 'MenuItemSizeService'); }
+    ){ super(sizeRepo, sizeBuilder, 'MenuItemSizeService'); }
 
     async create(dto: CreateMenuItemSizeDto): Promise<MenuItemSize | null> {
         const exists = await this.findOneByName(dto.name);

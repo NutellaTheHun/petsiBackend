@@ -19,13 +19,13 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
 
     @Inject(forwardRef(() => TemplateService))
     private readonly templateService: TemplateService,
-  ){ super(itemRepo, 'TemplateMenuItemService'); }
+  ){ super(itemRepo, itemBuilder, 'TemplateMenuItemService'); }
 
   async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem | null> {
-    const parentTemplate = await this.templateService.findOne(dto.templateId);
-    if(!parentTemplate){ throw new NotFoundException(); }
+    //const parentTemplate = await this.templateService.findOne(dto.templateId);
+    //if(!parentTemplate){ throw new NotFoundException(); }
 
-    const item = await this.itemBuilder.buildCreateDto(parentTemplate, dto);
+    const item = await this.itemBuilder.buildCreateDto(/*parentTemplate, */dto);
     return await this.itemRepo.save(item);
   }
       

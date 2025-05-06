@@ -13,7 +13,7 @@ export class OrderTypeService extends ServiceBase<OrderType> {
         @InjectRepository(OrderType)
         private readonly orderTypeRepo: Repository<OrderType>,
         private readonly typeBuilder: OrderTypeBuilder,
-    ){ super(orderTypeRepo, 'OrderTypeService')}
+    ){ super(orderTypeRepo, typeBuilder, 'OrderTypeService')}
 
     async create(dto: CreateOrderTypeDto): Promise<OrderType | null> {
         const exists = await this.findOneByName(dto.name);

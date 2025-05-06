@@ -14,7 +14,7 @@ export class TemplateService extends ServiceBase<Template>{
       private readonly templateRepo: Repository<Template>,
 
       private readonly templateBuilder: TemplateBuilder,
-    ){ super(templateRepo, 'TemplateService'); }
+    ){ super(templateRepo, templateBuilder, 'TemplateService'); }
 
     async create(dto: CreateTemplateDto): Promise<Template | null> {
         const exist = await this.findOneByName(dto.name);

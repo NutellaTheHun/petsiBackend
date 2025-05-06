@@ -14,7 +14,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
     @InjectRepository(UnitOfMeasure)
     private readonly unitRepo: Repository<UnitOfMeasure>,
     private readonly unitBuilder: UnitOfMeasureBuilder,
-  ){ super(unitRepo, 'UnitOfMeasureService'); }
+  ){ super(unitRepo, unitBuilder, 'UnitOfMeasureService'); }
 
   async create(createDto: CreateUnitOfMeasureDto): Promise<UnitOfMeasure | null> {
     const alreadyExists = await this.unitRepo.findOne({ where: { name: createDto.name }});

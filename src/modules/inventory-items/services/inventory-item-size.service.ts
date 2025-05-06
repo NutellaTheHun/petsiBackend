@@ -19,7 +19,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
 
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(sizeRepo, 'InventoryItemSizeService'); }
+    ){ super(sizeRepo, sizeBuilder, 'InventoryItemSizeService'); }
 
     async create(createDto: CreateInventoryItemSizeDto): Promise<InventoryItemSize | null> {
         if(!createDto.inventoryItemId){ throw new Error("inventory id required"); }
@@ -32,9 +32,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         });
         if(exists){ return null; }
 
-        const parentItem = await this.itemService.findOne(createDto.inventoryItemId);
-        if(!parentItem){ throw new NotFoundException(); }
-        const itemSize = await this.sizeBuilder.buildCreateDto(parentItem, createDto);
+        //const parentItem = await this.itemService.findOne(createDto.inventoryItemId);
+        //if(!parentItem){ throw new NotFoundException(); }
+        const itemSize = await this.sizeBuilder.buildCreateDto(/*parentItem, */createDto);
         return await this.sizeRepo.save(itemSize);
     }
       

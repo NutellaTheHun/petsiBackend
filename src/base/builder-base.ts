@@ -75,7 +75,6 @@ export abstract class BuilderBase<T> {
             if(!result){ 
                 throw new Error('property value to set is null');
             }
-            //(this.entity as any)[prop] = result;
             (this.entity as any)[prop] = Array.isArray(result) ? [...result] : result;
         });
         return this;
@@ -110,6 +109,5 @@ export abstract class BuilderBase<T> {
     }
 
     public abstract buildCreateDto(dto: any): Promise<T>;
-
     public abstract buildUpdateDto(toUpdate: T, dto: any): Promise<T>;
 }

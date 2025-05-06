@@ -1,15 +1,20 @@
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
+import { BuilderBase } from "./builder-base";
 
-export class ServiceBase<T extends ObjectLiteral> {
+export abstract class ServiceBase<T extends ObjectLiteral> {
   
   constructor(
     private readonly entityRepo: Repository<T>,
+    private readonly builder: BuilderBase<T>,
     public cacheKeyPrefix: string,
   ){}
 
 
-  async create(createDto: any): Promise<any | null>{
-    // gets overridden by concrete implementations
+  public async create(createDto: any): Promise<any | null>{
+    if(!this.isValidToCreate(createDto)){ return null; }
+
+    const entity = await this.builder.buildCreateDto(createDto); //handle parent
+    return await this.entityRepo.save(entity);
   }
 
   async insertEntity(entity: T): Promise<T | null> {
@@ -97,8 +102,12 @@ export class ServiceBase<T extends ObjectLiteral> {
         relations: relations as string[] });
   }
 
-  async update(id: number, updateTDto: any): Promise<any | null> {
-    // gets overridden by concrete implementations
+  async update(id: number, updateDto: any): Promise<any | null> {
+    const toUpdate = await this.findOne(id) // handle relations
+    if(!toUpdate){ return null; }
+
+    await this.builder.buildUpdateDto(toUpdate, updateDto);
+    return await this.entityRepo.save(toUpdate);
   }
 
   async remove(id: number): Promise<Boolean> {
@@ -107,5 +116,9 @@ export class ServiceBase<T extends ObjectLiteral> {
 
   getQueryBuilder(): QueryBuilder<T> {
     return this.entityRepo.createQueryBuilder();
+  }
+
+  protected async isValidToCreate(dto: any): Promise<boolean> {
+    return true;
   }
 }

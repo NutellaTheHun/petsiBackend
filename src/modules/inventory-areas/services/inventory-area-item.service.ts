@@ -24,7 +24,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         private readonly countService: InventoryAreaCountService,
 
         private readonly itemService: InventoryItemService,
-    ){ super(itemCountRepo, 'InventoryAreaItemService'); }
+    ){ super(itemCountRepo, itemCountBuilder, 'InventoryAreaItemService'); }
 
     /**
      * - InventoryItemSize property can be either created or a pre-existing entity on this create call.
@@ -33,10 +33,10 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
      * - Requires the parent inventoryAreaCount and InventoryArea entities to already exist
      */
     async create(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
-        const parentInventoryCount = await this.countService.findOne(dto.areaCountId as number)
-        if(!parentInventoryCount){ throw new NotFoundException(); }
+        //const parentInventoryCount = await this.countService.findOne(dto.areaCountId as number)
+        //if(!parentInventoryCount){ throw new NotFoundException(); }
         
-        const countedItem = await this.itemCountBuilder.buildCreateDto(parentInventoryCount, dto);
+        const countedItem = await this.itemCountBuilder.buildCreateDto(/*parentInventoryCount, */dto);
         return this.itemCountRepo.save(countedItem);
     }
 

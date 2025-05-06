@@ -19,7 +19,7 @@ import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-co
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 
-describe('Inventory area item count service', () => {
+describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
     let dbTestContext: DatabaseTestContext;
 
@@ -204,7 +204,7 @@ describe('Inventory area item count service', () => {
         const item_c = { itemId: items[2].id, sizeDto }
 
         const itemCountDtos = testingUtil.createInventoryAreaItemDtos(
-            testAreaId,
+            //testAreaId,
             testCountId,
             [ item_a, item_b, item_c],
         );

@@ -13,7 +13,7 @@ export class LabelTypeService extends ServiceBase<LabelType>{
     @InjectRepository(LabelType)
     private readonly typeRepo: Repository<LabelType>,
     private readonly typeBuilder: LabelTypeBuilder,
-  ){ super(typeRepo, 'LabelTypeService'); }
+  ){ super(typeRepo, typeBuilder, 'LabelTypeService'); }
 
   async create(dto: CreateLabelTypeDto): Promise<LabelType | null> {
       const item = await this.typeBuilder.buildCreateDto(dto);

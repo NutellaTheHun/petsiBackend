@@ -18,17 +18,17 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
         private readonly inventoryItemService: InventoryItemService,
-    ){ super(ingredientRepo, 'RecipeIngredientService'); }
+    ){ super(ingredientRepo, ingredientBuilder, 'RecipeIngredientService'); }
 
     /**
      * A recipe ingredient cannot reference both an inventory item and subRecipeIngredient, only one.
      * Should be checked at controller level
      */
     async create(dto: CreateRecipeIngredientDto): Promise<RecipeIngredient | null> {
-        const parentRecipe = await this.recipeService.findOne(dto.recipeId);
-        if(!parentRecipe){ throw new NotFoundException(); }
+        //const parentRecipe = await this.recipeService.findOne(dto.recipeId);
+        //if(!parentRecipe){ throw new NotFoundException(); }
 
-        const ingredient = await this.ingredientBuilder.buildCreateDto(parentRecipe, dto);
+        const ingredient = await this.ingredientBuilder.buildCreateDto(/*parentRecipe, */dto);
         return await this.ingredientRepo.save(ingredient);
     }
     

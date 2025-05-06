@@ -8,9 +8,10 @@ import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderService } from "../services/order.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { Order } from "../entities/order.entity";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
 
 @Injectable()
-export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
+export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
     constructor(
         @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
@@ -46,7 +47,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
         return this.setProp('quantity', amount);
     }
 
-    public async buildCreateDto(parentOrder: Order, dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
+    public async buildCreateDto(dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
         this.reset();
 
         if(dto.menuItemId){
@@ -55,10 +56,27 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
         if(dto.menuItemSizeId){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        /*if(dto.orderId){
+        if(dto.orderId){
             this.orderById(dto.orderId);
-        }*/
+        }
+        if(dto.quantity){
+            this.quantity(dto.quantity);
+        }
+        
+        return await this.build();
+    }
+
+    public async buildChildCreateDto(parentOrder: Order, dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
+        this.reset();
+
         this.entity.order = parentOrder;
+
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.menuItemSizeId){
+            this.menuItemSizeById(dto.menuItemSizeId);
+        }
 
         if(dto.quantity){
             this.quantity(dto.quantity);
@@ -94,7 +112,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem>{
         const results: OrderMenuItem[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){
-                results.push( await this.buildCreateDto(parentOrder, dto));
+                results.push(await this.buildChildCreateDto(parentOrder, dto));
             } else {
                 const item = await this.orderItemService.findOne(dto.id, ['menuItem', 'order', 'size']);
                 if(!item){ throw new Error("orderMenuItem not found"); }

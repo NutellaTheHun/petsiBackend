@@ -2,7 +2,6 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { InventoryAreaCount } from "./inventory-area-count.entity";
-import { InventoryArea } from "./inventory-area.entity";
 
 /**
  * A single item within the process of an inventory count,
@@ -13,12 +12,6 @@ import { InventoryArea } from "./inventory-area.entity";
 export class InventoryAreaItem {
     @PrimaryGeneratedColumn()
     id: number
-
-    /**
-     * The area the inventory item was counted
-     */
-    //@ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
-    //inventoryArea: InventoryArea;
 
     /**
      * Reference to the inventory count when this item is counted.

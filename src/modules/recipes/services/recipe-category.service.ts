@@ -11,7 +11,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
         @InjectRepository(RecipeCategory)
         private readonly categoryRepo: Repository<RecipeCategory>,
         private readonly categoryBuilder: RecipeCategoryBuilder,
-    ){ super(categoryRepo, 'RecipeCategoryService'); }
+    ){ super(categoryRepo, categoryBuilder, 'RecipeCategoryService'); }
 
     /**
      * Creates a recipe category, with no sub-categories and no recipes

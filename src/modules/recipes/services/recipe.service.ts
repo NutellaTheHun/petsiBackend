@@ -11,7 +11,7 @@ export class RecipeService extends ServiceBase<Recipe>{
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
         private readonly recipeBuilder: RecipeBuilder,
-    ){ super(recipeRepo, 'RecipeService'); }
+    ){ super(recipeRepo, recipeBuilder, 'RecipeService'); }
 
     async create(dto: CreateRecipeDto): Promise<Recipe | null> {
         const exists = await this.findOneByName(dto.name);

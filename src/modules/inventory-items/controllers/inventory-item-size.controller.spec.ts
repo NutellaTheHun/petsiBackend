@@ -87,11 +87,11 @@ describe('Inventory Item Size Controller', () => {
       const index = sizes.findIndex(unit => unit.id === id);
       if (index === -1) return null;
 
-      if(updateDto.inventoryItemId){
+      /*if(updateDto.inventoryItemId){
         const item = items.find(i => i.id === updateDto.inventoryItemId);
         if(!item){ throw new Error("item is null"); }
         sizes[index].item = item;
-      }
+      }*/
       if(updateDto.inventoryPackageTypeId){
         const pkg = packages.find(p => p.id === updateDto.inventoryPackageTypeId);
         if(!pkg){ throw new Error("package is null"); }

@@ -13,7 +13,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
         @InjectRepository(InventoryItemVendor)
         private readonly vendorRepo: Repository<InventoryItemVendor>,
         private readonly vendorBuilder: InventoryItemVendorBuilder,
-    ){ super(vendorRepo, 'InventoryItemVendorService')}
+    ){ super(vendorRepo, vendorBuilder, 'InventoryItemVendorService')}
 
     async create(createDto: CreateInventoryItemVendorDto): Promise<InventoryItemVendor | null> {
         const exists = await this.findOneByName(createDto.name);

@@ -7,9 +7,10 @@ import { UpdateTemplateMenuItemDto } from "../dto/update-template-menu-item.dto"
 import { Template } from "../entities/template.entity";
 import { TemplateMenuItemService } from "../services/template-menu-item.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
 
 @Injectable()
-export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
+export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> implements IBuildChildDto<Template, TemplateMenuItem>{
     constructor(
         @Inject(forwardRef(() => TemplateService))
         private readonly templateService: TemplateService,
@@ -43,8 +44,29 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
         return this.setPropByName(this.templateService.findOneByName.bind(this.templateService), 'template', name);
     }
 
-    public async buildCreateDto(parentTemplate: Template, dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
+    public async buildCreateDto(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
         this.reset();
+
+        if(dto.templateId){
+            this.templateById(dto.templateId);
+        }
+        if(dto.displayName){
+            this.displayName(dto.displayName);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+            this.tablePosIndex(dto.tablePosIndex);
+        }
+        
+        return this.build();
+    }
+
+    public async buildChildCreateDto(parentTemplate: Template, dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
+        this.reset();
+
+        this.entity.template = parentTemplate;
 
         if(dto.displayName){
             this.displayName(dto.displayName);
@@ -55,11 +77,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
         if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
             this.tablePosIndex(dto.tablePosIndex);
         }
-        if(dto.templateId){
-            this.templateById(dto.templateId); // ?
-        }
-        this.entity.template = parentTemplate; // ?
-        
+       
         return this.build();
     }
 
@@ -87,7 +105,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
         const results: TemplateMenuItem[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){
-                results.push( await this.buildCreateDto(parentTemplate, dto));
+                results.push( await this.buildChildCreateDto(parentTemplate, dto));
             } else {
                 const item = await this.templateItemService.findOne(dto.id);
                 if(!item){ throw new Error("recipe ingredient not found"); }

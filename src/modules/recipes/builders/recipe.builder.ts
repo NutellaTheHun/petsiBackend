@@ -15,7 +15,6 @@ import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe>{
     constructor(
-        
         @Inject(forwardRef(() => RecipeIngredientService))
         private readonly ingredientService: RecipeIngredientService,
         

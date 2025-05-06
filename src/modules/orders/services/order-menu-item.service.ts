@@ -19,13 +19,13 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
 
         @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
-    ){ super(orderItemRepo, 'OrderMenuItemService')}
+    ){ super(orderItemRepo, itemBuilder, 'OrderMenuItemService')}
 
     async create(dto: CreateOrderMenuItemDto): Promise<OrderMenuItem | null> {
-        const parentOrder = await this.orderService.findOne(dto.orderId);
-        if(!parentOrder){ throw new NotFoundException(); }
+        //const parentOrder = await this.orderService.findOne(dto.orderId);
+        //if(!parentOrder){ throw new NotFoundException(); }
         
-        const oType = await this.itemBuilder.buildCreateDto(parentOrder, dto);
+        const oType = await this.itemBuilder.buildCreateDto(/*parentOrder,*/ dto);
         return await this.orderItemRepo.save(oType);
     }
 

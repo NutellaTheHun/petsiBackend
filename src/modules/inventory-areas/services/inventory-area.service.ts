@@ -15,7 +15,7 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
         @Inject(forwardRef(() => InventoryAreaBuilder))
         private readonly areaBuilder: InventoryAreaBuilder,
         
-    ) { super(areaRepo, 'InventoryAreaService'); }
+    ) { super(areaRepo, areaBuilder, 'InventoryAreaService'); }
 
     async create(createDto: CreateInventoryAreaDto): Promise<InventoryArea | null> {
         const exists = await this.findOneByName(createDto.name);

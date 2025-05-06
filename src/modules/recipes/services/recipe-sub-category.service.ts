@@ -16,7 +16,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
 
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-    ){ super(subCategoryRepo, 'RecipeSubCategoryService'); }
+    ){ super(subCategoryRepo, subCategoryBuilder, 'RecipeSubCategoryService'); }
 
     /**
      * Requires a name and a recipe ID for parent

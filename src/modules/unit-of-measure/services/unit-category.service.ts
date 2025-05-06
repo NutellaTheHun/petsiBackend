@@ -13,7 +13,7 @@ export class UnitCategoryService extends ServiceBase<UnitCategory> {
       @InjectRepository(UnitCategory)
       private readonly categoryRepo: Repository<UnitCategory>,
       private readonly categoryBuilder: UnitCategoryBuilder,
-  ){ super(categoryRepo, 'UnitCategoryService'); }
+  ){ super(categoryRepo, categoryBuilder, 'UnitCategoryService'); }
   
   async create(createDto: CreateUnitCategoryDto): Promise<UnitCategory | null> {
     const exists = await this.categoryRepo.findOne({ where: { name: createDto.name }});
