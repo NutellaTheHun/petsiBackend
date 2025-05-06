@@ -5,6 +5,7 @@ import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { BadRequestException } from "@nestjs/common";
 
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -48,7 +49,7 @@ describe('Inventory area service', () => {
         const area = { name: testAreaName } as CreateInventoryAreaDto;
         const result = await service.create(area);
 
-        expect(result).toBeNull();
+        expect(result).rejects.toThrow(BadRequestException);
     });
 
     it('should update an area', async () => {

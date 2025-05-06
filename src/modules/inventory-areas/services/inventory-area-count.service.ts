@@ -6,6 +6,7 @@ import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.buil
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -23,7 +24,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
         private readonly areaCountBuilder: InventoryAreaCountBuilder,
-    ){ super(areaCountRepo, areaCountBuilder, 'InventoryAreaCountService'); }
+
+        validator: InventoryAreaCountValidator,
+    ){ super(areaCountRepo, areaCountBuilder, validator, 'InventoryAreaCountService'); }
 
     /**
      * Creates an InventoryCount, required prexisting AreaId present, is created before inventoryItemCounts are

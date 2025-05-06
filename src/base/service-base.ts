@@ -1,19 +1,24 @@
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
 import { BuilderBase } from "./builder-base";
+import { ValidatorBase } from "./validator-base";
+import { BadRequestException } from "@nestjs/common";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
   
   constructor(
     private readonly entityRepo: Repository<T>,
     private readonly builder: BuilderBase<T>,
+    protected readonly validator: ValidatorBase<T>,
     public cacheKeyPrefix: string,
   ){}
 
-
   public async create(createDto: any): Promise<any | null>{
-    if(!this.isValidToCreate(createDto)){ return null; }
+    const error = await this.validator.validateCreate(createDto);
+    if(error){ 
+      throw new BadRequestException(error);
+    }
 
-    const entity = await this.builder.buildCreateDto(createDto); //handle parent
+    const entity = await this.builder.buildCreateDto(createDto);
     return await this.entityRepo.save(entity);
   }
 
@@ -103,8 +108,13 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
   }
 
   async update(id: number, updateDto: any): Promise<any | null> {
-    const toUpdate = await this.findOne(id) // handle relations
-    if(!toUpdate){ return null; }
+    const error = await this.validator.validateCreate(updateDto);
+    if(error){ 
+      throw new BadRequestException(error);
+    }
+
+    const toUpdate = await this.findOne(id) // handle relations, // autoLoad relation Ids?
+    if(!toUpdate){ return null; } // ???
 
     await this.builder.buildUpdateDto(toUpdate, updateDto);
     return await this.entityRepo.save(toUpdate);
@@ -116,9 +126,5 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
 
   getQueryBuilder(): QueryBuilder<T> {
     return this.entityRepo.createQueryBuilder();
-  }
-
-  protected async isValidToCreate(dto: any): Promise<boolean> {
-    return true;
   }
 }

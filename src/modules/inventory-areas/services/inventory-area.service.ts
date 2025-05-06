@@ -6,6 +6,7 @@ import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { forwardRef, Inject } from "@nestjs/common";
+import { InventoryAreaValidator } from "../validators/inventory-area.validator";
 
 export class InventoryAreaService extends ServiceBase<InventoryArea> {
     constructor(
@@ -14,17 +15,19 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
         
         @Inject(forwardRef(() => InventoryAreaBuilder))
         private readonly areaBuilder: InventoryAreaBuilder,
-        
-    ) { super(areaRepo, areaBuilder, 'InventoryAreaService'); }
 
+        validator: InventoryAreaValidator,
+        
+    ) { super(areaRepo, areaBuilder, validator, 'InventoryAreaService'); }
+    /*
     async create(createDto: CreateInventoryAreaDto): Promise<InventoryArea | null> {
         const exists = await this.findOneByName(createDto.name);
         if(exists) { return null; }
 
         const area = await this.areaBuilder.buildCreateDto(createDto);
         return await this.areaRepo.save(area);
-    }
-    
+    }*/
+ 
     /**
     * Uses Repository.Save(), not Repository.Update()
     */

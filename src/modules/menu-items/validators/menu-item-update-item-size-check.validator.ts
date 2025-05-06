@@ -1,6 +1,6 @@
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
 
-@ValidatorConstraint({ name: 'MenuItemMenuItemSizeCheck', async: false })
+@ValidatorConstraint({ name: 'MenuItemMenuItemSizeCheck', async: true })
 export class MenuItemUpdateItemSizeCheck implements ValidatorConstraintInterface {
     validate(_: any, args: ValidationArguments){
         const object = args.object as any;

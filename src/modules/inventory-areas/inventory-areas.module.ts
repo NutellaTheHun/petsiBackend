@@ -16,6 +16,9 @@ import { InventoryAreaService } from './services/inventory-area.service';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerModule } from 'nestjs-pino';
+import { InventoryAreaValidator } from './validators/inventory-area.validator';
+import { InventoryAreaCountValidator } from './validators/inventory-area-count.validator';
+import { InventoryAreaItemValidator } from './validators/inventory-area-item.validator';
 
 @Module({
   imports: [
@@ -41,6 +44,10 @@ import { LoggerModule } from 'nestjs-pino';
     InventoryAreaBuilder,
     InventoryAreaCountBuilder,
     InventoryAreaItemBuilder,
+
+    InventoryAreaValidator,
+    InventoryAreaCountValidator,
+    InventoryAreaItemValidator,
 
     InventoryAreaTestUtil,
   ],

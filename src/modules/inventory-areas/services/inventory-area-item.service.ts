@@ -9,6 +9,7 @@ import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-co
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaService } from "./inventory-area.service";
+import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(
@@ -18,13 +19,14 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
+        validator: InventoryAreaItemValidator,
         //private readonly inventoryAreaService: InventoryAreaService,
 
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
 
         private readonly itemService: InventoryItemService,
-    ){ super(itemCountRepo, itemCountBuilder, 'InventoryAreaItemService'); }
+    ){ super(itemCountRepo, itemCountBuilder, validator, 'InventoryAreaItemService'); }
 
     /**
      * - InventoryItemSize property can be either created or a pre-existing entity on this create call.
