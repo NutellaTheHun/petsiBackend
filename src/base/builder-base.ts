@@ -12,11 +12,43 @@ export abstract class BuilderBase<T> {
 
     constructor(private entityConstructor: new () => T){ this.reset(); }
 
+    public abstract buildCreateDto(dto: any): Promise<T>;
+
+    public abstract buildUpdateDto(toUpdate: T, dto: any): Promise<T>;
+
     public reset(): this {
         this.entity = new this.entityConstructor();
         this.buildQueue = [];
         this.afterQueue = [];
         return this;
+    }
+
+    public updateEntity(toUpdate: T): this {
+        this.entity = toUpdate;
+        return this;
+    }
+
+    public async build(): Promise<T> {
+        for(const task of this.buildQueue){
+            await task();
+        }
+        
+        if(this.afterQueue.length == 0){
+            const result = this.entity;
+            this.reset();
+            return result;
+        }
+
+        return await this.ThenAfter();
+    }
+
+    public async ThenAfter(): Promise<T>{
+        for(const task of this.afterQueue){
+            await task();
+        }
+        const result = this.entity;
+        this.reset();
+        return result;
     }
 
     protected setPropById<K extends keyof T>(
@@ -79,35 +111,4 @@ export abstract class BuilderBase<T> {
         });
         return this;
     }
-
-    public async build(): Promise<T> {
-        for(const task of this.buildQueue){
-            await task();
-        }
-        
-        if(this.afterQueue.length == 0){
-            const result = this.entity;
-            this.reset();
-            return result;
-        }
-
-        return await this.ThenAfter();
-    }
-
-    public async ThenAfter(): Promise<T>{
-        for(const task of this.afterQueue){
-            await task();
-        }
-        const result = this.entity;
-        this.reset();
-        return result;
-    }
-
-    public updateEntity(toUpdate: T): this {
-        this.entity = toUpdate;
-        return this;
-    }
-
-    public abstract buildCreateDto(dto: any): Promise<T>;
-    public abstract buildUpdateDto(toUpdate: T, dto: any): Promise<T>;
 }

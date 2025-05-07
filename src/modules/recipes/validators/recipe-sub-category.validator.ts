@@ -19,7 +19,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
         }});
 
         if(exists) {
-            return 'sub category for given category already exists';
+            return `sub category for given category with name ${dto.name} already exists`;
         }
 
         return null;

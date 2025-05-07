@@ -14,7 +14,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
     public async validateCreate(dto: any): Promise<string | null> {
         const exists = await this.repo.findOne({ where: { name: dto.name }});
         if(exists) { 
-            return 'Menu item already exists'; 
+            return `Menu item with name ${dto.name} already exists`; 
         }
         return null;
     }

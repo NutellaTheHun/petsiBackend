@@ -24,11 +24,9 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
 
   async update(id: number, updateDto: any): Promise<any | null> {
     const error = await this.validator.validateUpdate(updateDto);
-    if(error){ 
-      throw new BadRequestException(error);
-    }
+    if(error){ throw new BadRequestException(error); }
 
-    const toUpdate = await this.findOne(id) // handle relations, // autoLoad relation Ids?
+    const toUpdate = await this.findOne(id);
     if(!toUpdate){ throw new NotFoundException(); }
 
     await this.builder.buildUpdateDto(toUpdate, updateDto);

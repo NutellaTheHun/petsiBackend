@@ -14,7 +14,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
     public async validateCreate(dto: any): Promise<string | null> {
         const exists = await this.repo.findOne({ where: { name: dto.name }});
         if(exists) { 
-            return 'Recipe category already exists'; 
+            return `Recipe category with name ${dto.name} already exists`; 
         }
         return null;
     }

@@ -14,7 +14,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
     public async validateCreate(dto: any): Promise<string | null> {
         const exists = await this.repo.findOne({ where: { name: dto.name }});
         if(exists) { 
-            return 'Inventory item already exists'; 
+            return `Inventory item with name ${dto.name} already exists`; 
         }
         return null;
     }

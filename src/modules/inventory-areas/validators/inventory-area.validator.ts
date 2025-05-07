@@ -14,7 +14,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
     public async validateCreate(dto: any): Promise<string | null> {
         const exists = await this.areaRepo.findOne({ where: { name: dto.name }});
         if(exists) { 
-            return 'Inventory area already exists'; 
+            return `Inventory with name ${dto.name} already exists`; 
         }
         return null;
     }
