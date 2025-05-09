@@ -340,13 +340,13 @@ describe('Inventory Item Service', () => {
     const updateSizeDtos = [
       {
       mode:'update',
-      id: sizes[0].id,
+      id: item.sizes[0].id,
       unitOfMeasureId: newUnit.id,
       inventoryPackageTypeId: sizes[0].packageType.id,
       } as UpdateInventoryItemSizeDto,
       {
       mode:'update',
-      id: sizes[1].id,
+      id: item.sizes[1].id,
       unitOfMeasureId: sizes[1].measureUnit.id,
       inventoryPackageTypeId: sizes[1].packageType.id,
       } as UpdateInventoryItemSizeDto,
@@ -362,9 +362,8 @@ describe('Inventory Item Service', () => {
 
     expect(result).not.toBeNull();
     expect(result.sizes.length).toEqual(2);
-  });
 
-  it('should reflect updated item size when queried', async () => {
+    // should reflect updated item size when queried
     const updatedSize = await sizeService.findOne(updateItemSizeId, ['measureUnit']);
     if(!updatedSize){ throw new NotFoundException(); }
     expect(updatedSize.measureUnit.id).toEqual(newUnitId);

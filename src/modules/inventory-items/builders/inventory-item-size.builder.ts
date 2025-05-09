@@ -65,10 +65,14 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         return this.build();
     }
 
-    public async buildChildCreateDto(parentItem: InventoryItem, dto: CreateInventoryItemSizeDto): Promise<InventoryItemSize>{
+    public async buildChildCreateDto(_: InventoryItem, dto: CreateInventoryItemSizeDto): Promise<InventoryItemSize>{
         this.reset();
 
-        this.entity.item = parentItem;
+        // When being called in the sequence of:
+        // InventoryAreaCountBuilder -> InventoryAreaItem, the passed parent is not an inventory item, but the inventory area item, 
+        // so effectively is a non-usuable argument, and is not neccessary, as all info is contained within the dto anyway.
+        
+        //this.entity.item = parentItem;
 
         if(dto.inventoryItemId){
             this.InventoryItemById(dto.inventoryItemId);

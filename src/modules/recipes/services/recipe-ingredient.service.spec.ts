@@ -11,7 +11,7 @@ import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
 import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
 import { FL_OUNCE, GALLON, MILLILITER } from '../../unit-of-measure/utils/constants';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
@@ -139,7 +139,8 @@ describe('recipe ingredient service', () => {
       unitOfMeasureId: unit.id,
     });
 
-    try{
+    await expect(ingredientService.create(dto)).rejects.toThrow(BadRequestException);
+    /*try{
       await validateOrReject(dto);
       const result = await ingredientService.create(dto);
       expect(result).toBeNull();
@@ -149,7 +150,7 @@ describe('recipe ingredient service', () => {
       } else {
         throw errors
       }
-    }
+    }*/
   });
 
   it('should find ingredient by id', async() => {

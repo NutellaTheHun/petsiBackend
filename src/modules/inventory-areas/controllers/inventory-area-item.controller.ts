@@ -22,7 +22,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
      * 
      * @param createDto (areaCountId: number, inventoryAreaId: number, InventoryItemId: number, itemSizeId: number, measureAmount: number, unitAmount: number)
      */
-    @Post()
+   /* @Post()
     async create(@Body() createDto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem | null> {
         if(createDto.itemSizeDto && createDto.itemSizeId){
             throw new Error("dto cannot have both a createItemSizeDTO and an itemSizeId");
@@ -30,16 +30,8 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
         if(!createDto.itemSizeDto && !createDto.itemSizeId){
             throw new Error("dto container neither itemSizeCreateDTO or itemSizeId, must have one of either");
         }
-
-        /*if(createDto.itemSizeDto){
-            const newSize = await this.itemSizeService.create(createDto.itemSizeDto);
-            if(!newSize){ throw new Error("new item size is null"); }
-            if(!newSize?.id){ throw new Error("new item size id is null"); }
-
-            createDto = { ...createDto, itemSizeId: newSize?.id } as CreateInventoryAreaItemDto;
-        }*/
         return await this.itemCountService.create(createDto);
-    }
+    }*/
 
     /**
      * 
@@ -47,7 +39,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
      * @param updateDto (areaCountId: number, inventoryAreaId: number, InventoryItemId: number, itemSizeId: number, measureAmount: number, unitAmount: number)
      * note: if the inventoryItem changes, the itemSize must also change
      */
-    @Patch(':id')
+   /* @Patch(':id')
     async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any): Promise<InventoryAreaItem | null> {
         if(updateDto.itemSizeCreateDto && updateDto.itemSizeId){
             throw new Error("dto cannot have both a createItemSizeDTO and an itemSizeId");
@@ -64,5 +56,5 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
             updateDto = { ...updateDto, itemSizeId: newSize?.id } as UpdateInventoryAreaItemDto;
         }
         return await this.itemCountService.update(id, updateDto);
-    }
+    }*/
 }

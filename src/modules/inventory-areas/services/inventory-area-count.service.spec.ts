@@ -1,23 +1,23 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
+import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { BOX_PKG, DRY_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
+import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
+import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { AREA_A, AREA_B } from "../utils/constants";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
-import { InventoryAreaService } from "./inventory-area.service";
-import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
-import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
-import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
-import { NotFoundException } from "@nestjs/common";
-import { BOX_PKG, DRY_B, FOOD_C, OTHER_A, OTHER_PKG } from "../../inventory-items/utils/constants";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
-import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { InventoryAreaService } from "./inventory-area.service";
 
 describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;

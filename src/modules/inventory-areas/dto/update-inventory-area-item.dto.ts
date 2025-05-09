@@ -7,7 +7,6 @@ export class UpdateInventoryAreaItemDto {
 
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
     readonly id: number;
 
     @IsNumber()

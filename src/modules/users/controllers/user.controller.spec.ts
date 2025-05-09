@@ -7,6 +7,7 @@ import { hashPassword } from '../../auth/utils/hash';
 import { User } from '../entities/user.entities';
 import { USER_A, USER_B, USER_C, USER_D } from '../utils/constants';
 import { UserController } from './user.controller';
+import { BadRequestException } from '@nestjs/common';
 
 describe('User Controller', () => {
   let controller: UserController;
@@ -28,8 +29,8 @@ describe('User Controller', () => {
     users.map(user => user.id = userId++);
 
     jest.spyOn(usersService, "create").mockImplementation(async (createDto : CreateUserDto) => {
-      const exists = users.find(user => user.username === createDto.username)
-      if(exists){ return null; }
+      const exists = users.find(user => user.username === createDto.username);
+      if(exists){ throw new BadRequestException(); }
 
       const user = {
         id: userId++,
@@ -111,8 +112,9 @@ describe('User Controller', () => {
       password: "newPass",
       email: "newEmail@email.com",
     } as CreateUserDto;
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    //const result = await controller.create(dto);
+    //expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it("should update a user", async () => {

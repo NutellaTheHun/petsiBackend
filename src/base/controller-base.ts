@@ -18,8 +18,7 @@ export class ControllerBase<T extends ObjectLiteral> {
   ) {}
 
   @Post()
-  async create(@Body() createDto: any): Promise<T | null> {
-    this.logger.log('POST / called');
+  async create(@Body() createDto: any): Promise<T/* | null*/> {
     return await this.entityService.create(createDto);
   }
 
@@ -76,7 +75,7 @@ export class ControllerBase<T extends ObjectLiteral> {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any): Promise<T | null> {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateDto: any): Promise<T/* | null*/> {
     const updated = await this.entityService.update(id, updateDto);
 
     if(updated){

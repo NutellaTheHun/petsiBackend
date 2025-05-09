@@ -6,7 +6,6 @@ import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryController } from './recipe-sub-category.controller';
-import exp from 'constants';
 
 describe('recipe sub category controller', () => {
   let controller: RecipeSubCategoryController;
@@ -75,14 +74,6 @@ describe('recipe sub category controller', () => {
 
     jest.spyOn(service, "findOneByName").mockImplementation(async (name: string) => {
       return subCategories.find(subCat => subCat.name === name) || null;
-    });
-
-    jest.spyOn(service, "findByCategoryName").mockImplementation(async (name: string) => {
-      return subCategories.filter(subCat => subCat.parentCategory.name === name);
-    });
-
-    jest.spyOn(service, "findOneByCategoryNameAndSubCategoryName").mockImplementation(async (catName: string, subName: string) => {
-      return subCategories.find(subCat => subCat.parentCategory.name === catName && subCat.name === subName) || null;
     });
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: subCategories });

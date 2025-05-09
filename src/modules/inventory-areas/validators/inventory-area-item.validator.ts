@@ -23,6 +23,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         return null;
     }
     public async validateUpdate(dto: any): Promise<string | null> {
+        if(dto.itemSizeId && dto.itemSizeDto){
+            return 'inventory area item update dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
+        }
         return null;
     }
 }

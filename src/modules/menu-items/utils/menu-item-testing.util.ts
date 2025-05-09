@@ -34,6 +34,9 @@ export class MenuItemTestingUtil {
         const results: MenuItemSize[] = [];
 
         for(const name of sizeNames){
+            const exists = await this.sizeService.findOneByName(name);
+            if(exists){ continue; }
+
             results.push(
                 await this.sizeBuilder.reset()
                     .name(name)
@@ -60,6 +63,9 @@ export class MenuItemTestingUtil {
         const results: MenuItemCategory[] = [];
 
         for(const name of categoryNames){
+            const exists = await this.categoryService.findOneByName(name);
+            if(exists){ continue; }
+
             results.push(
                 await this.categoryBuilder.reset()
                     .name(name)
@@ -99,6 +105,9 @@ export class MenuItemTestingUtil {
         const results: MenuItem[] = [];
 
         for(const itemName of itemNames){
+            const exists = await this.itemService.findOneByName(itemName);
+            if(exists){ continue; }
+            
             results.push(
                 await this.itemBuilder.reset()
                     .categorybyId(categoryIds[catIdx++ % categoryIds.length])
