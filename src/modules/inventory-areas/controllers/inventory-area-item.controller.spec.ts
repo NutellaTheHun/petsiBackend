@@ -1,7 +1,7 @@
 import { NotImplementedException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";

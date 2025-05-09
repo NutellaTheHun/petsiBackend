@@ -10,20 +10,20 @@ export class UpdateOrderDto{
     readonly squareOrderId?: string;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
     readonly orderTypeId: number
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     readonly recipient: string;
 
     @IsDate()
-    @IsNotEmpty()
+   @IsOptional()
     readonly fulfillmentDate: Date;
 
     @IsString()
-    @IsNotEmpty()
+    @IsOptional()
     readonly fulfillmentType: string;
 
     @IsString()

@@ -10,10 +10,6 @@ export class CreateTemplateDto {
     @IsOptional()
     readonly isPie: boolean;
 
-    /*@IsArray()
-    @IsNumber({}, { each: true})
-    @IsPositive({ each: true})
-    readonly templateItemIds: number[] = [];*/
     @IsOptional()
     @IsArray()
     itemDtos?: CreateTemplateMenuItemDto[];

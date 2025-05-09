@@ -1,5 +1,5 @@
 import { Controller, Inject } from '@nestjs/common';
-import { Role } from '../entities/role.entities';
+import { Role } from '../entities/role.entity';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ControllerBase } from '../../../base/controller-base';
 import { RoleService } from '../services/role.service';

@@ -1,5 +1,5 @@
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 
 export function InventoryAreaItemUnionResolver(obj: any) {
     if (obj?.mode === 'update') return UpdateInventoryAreaItemDto;

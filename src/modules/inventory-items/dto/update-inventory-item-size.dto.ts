@@ -1,5 +1,4 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
-import { BaseInventoryItemSizeDto } from "./base-inventory-item-size.dto";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
 export class UpdateInventoryItemSizeDto{
     readonly mode: 'update' = 'update';

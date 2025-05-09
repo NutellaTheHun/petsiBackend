@@ -4,7 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "../entities/user.entities";
 import { UserController } from "../controllers/user.controller";
 import { ConfigModule } from "@nestjs/config";
-import { Role } from "../../roles/entities/role.entities";
+import { Role } from "../../roles/entities/role.entity";
 import { UserModule } from "../user.module";
 import { RoleModule } from "../../roles/role.module";
 import { CacheModule } from "@nestjs/cache-manager";

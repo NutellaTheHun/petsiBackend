@@ -1,10 +1,9 @@
-
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { RecipeIngredient } from "./recipe-ingredient.entity";
-import { RecipeCategory } from "./recipe-category.entity";
-import { RecipeSubCategory } from "./recipe-sub-category.entity";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { RecipeCategory } from "./recipe-category.entity";
+import { RecipeIngredient } from "./recipe-ingredient.entity";
+import { RecipeSubCategory } from "./recipe-sub-category.entity";
 
 @Entity()
 export class Recipe{
@@ -15,7 +14,7 @@ export class Recipe{
      * - If the recipe references a MenuItem, the recipe's name will be the MenuItem's name. Like "Apple Crumb Pie", or "Triple Berry Scone"
      * - If the recipe isIngredient is marked true, the name is user entered. Like "Apple Mix", or "Ganache"
      */
-    @Column()
+    @Column({ unique: true })
     name: string
 
     /** 

@@ -15,7 +15,7 @@ import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
 import { NotFoundException } from "@nestjs/common";
 import { BOX_PKG, DRY_B, FOOD_C, OTHER_A, OTHER_PKG } from "../../inventory-items/utils/constants";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 

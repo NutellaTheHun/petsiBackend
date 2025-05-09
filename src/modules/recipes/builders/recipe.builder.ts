@@ -140,7 +140,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
 
         if(dto.menuItemId){
-            await this.menuItemById(dto.menuItemId);
+            this.menuItemById(dto.menuItemId);
         }
 
         if(dto.name){
@@ -196,7 +196,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.isIngredient(dto.isIngredient);
         }
         if(dto.menuItemId !== undefined){
-            await this.menuItemById(dto.menuItemId);
+            this.menuItemById(dto.menuItemId);
         }
         if(dto.name){
             this.name(dto.name);

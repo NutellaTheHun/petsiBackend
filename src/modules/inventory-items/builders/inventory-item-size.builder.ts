@@ -89,9 +89,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         this.reset();
         this.updateEntity(toUpdate);
 
-        /*if(dto.inventoryItemId){
-            this.InventoryItemById(dto.inventoryItemId);
-        }*/
         if(dto.inventoryPackageTypeId){
             this.packageById(dto.inventoryPackageTypeId);
         }

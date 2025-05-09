@@ -6,7 +6,7 @@ import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 
 @Injectable()
@@ -52,11 +52,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        /*
-        if(dto.inventoryItemCountIds){
-            this.countedItemsById(dto.inventoryItemCountIds);
-        }
-        */
+
         return await this.build();
     }
 
@@ -67,10 +63,6 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        /*
-        if(dto.inventoryItemCountIds){
-            this.countedItemsById(dto.inventoryItemCountIds);
-        }*/
         if(dto.itemCountDtos){
             this.countedItemsByBuilderAfter(this.entity.id, dto.itemCountDtos);
         }

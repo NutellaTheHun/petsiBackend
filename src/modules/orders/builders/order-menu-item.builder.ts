@@ -77,7 +77,6 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.menuItemSizeId){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
@@ -91,16 +90,10 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
-            if(!dto.menuItemSizeId){
-                throw new Error();
-            }
         }
         if(dto.menuItemSizeId){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        /*if(dto.orderId){
-            this.orderById(dto.orderId);
-        }*/
         if(dto.quantity){
             this.quantity(dto.quantity);
         }

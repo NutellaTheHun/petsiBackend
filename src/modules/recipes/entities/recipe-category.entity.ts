@@ -7,7 +7,7 @@ export class RecipeCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
     @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory)

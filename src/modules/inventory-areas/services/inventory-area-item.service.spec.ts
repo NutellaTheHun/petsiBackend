@@ -5,7 +5,7 @@ import { DRY_A, DRY_B, FOOD_A, FOOD_B, FOOD_C, OTHER_A, OTHER_B } from "../../in
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { AREA_A, AREA_B } from "../utils/constants";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";

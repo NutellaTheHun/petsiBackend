@@ -94,9 +94,6 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
             this.tablePosIndex(dto.tablePosIndex);
         }
-        /*if(dto.templateId){
-            this.templateById(dto.templateId);
-        }*/
 
         return this.build();
     }

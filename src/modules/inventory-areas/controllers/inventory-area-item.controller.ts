@@ -2,7 +2,7 @@ import { Body, Controller, Inject, Param, ParseIntPipe, Patch, Post } from "@nes
 import { ControllerBase } from "../../../base/controller-base";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { Cache } from "cache-manager";

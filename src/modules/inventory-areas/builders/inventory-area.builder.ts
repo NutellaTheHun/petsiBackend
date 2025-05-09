@@ -27,11 +27,6 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
             this.name(dto.name);
         }
 
-        /*
-        if(dto.inventoryCountIds){
-            this.inventoryCountsById(dto.inventoryCountIds);
-        }
-        */
         return await this.build();
     }
 

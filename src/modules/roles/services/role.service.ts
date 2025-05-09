@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { RoleBuilder } from '../builders/role.builder';
-import { Role } from '../entities/role.entities';
+import { Role } from '../entities/role.entity';
 import { RoleValidator } from '../validators/role.validator';
 
 

@@ -74,12 +74,6 @@ export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> {
         this.reset();
         this.updateEntity(toUpdate);
 
-        if(dto.containerId){
-            this.containerById(dto.containerId);
-        }
-        if(dto.containerSizeId){
-            this.containerSizeById(dto.containerSizeId);
-        }
         if(dto.menuItemId){
             this.itemById(dto.menuItemId);
         }

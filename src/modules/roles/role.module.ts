@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from '../users/user.module';
 import { RoleBuilder } from './builders/role.builder';
 import { RoleController } from './controllers/role.controller';
-import { Role } from './entities/role.entities';
+import { Role } from './entities/role.entity';
 import { RoleService } from './services/role.service';
 import { RoleTestUtil } from './utils/role-test.util';
 import { CacheModule } from '@nestjs/cache-manager';

@@ -10,7 +10,7 @@ export class InventoryItemCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
     /**

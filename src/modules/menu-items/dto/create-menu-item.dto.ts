@@ -22,7 +22,7 @@ export class CreateMenuItemDto {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    readonly searchNames?: string[] = [];
+    readonly searchNames?: string[];
 
     @IsOptional()
     @IsNumber()
@@ -42,7 +42,8 @@ export class CreateMenuItemDto {
     @IsArray()
     @IsNumber({},{ each: true})
     @IsPositive({ each: true})
-    readonly validSizeIds: number[] = [];
+    @IsNotEmpty()
+    readonly validSizeIds: number[];
 
     @IsBoolean()
     @IsOptional()

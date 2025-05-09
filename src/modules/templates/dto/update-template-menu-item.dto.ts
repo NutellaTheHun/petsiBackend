@@ -1,10 +1,28 @@
-import { IsNumber, IsPositive } from 'class-validator';
-import { BaseTemplateMenuItemDto } from './base-template-menu-item.dto';
+import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
-export class UpdateTemplateMenuItemDto extends BaseTemplateMenuItemDto {
+export class UpdateTemplateMenuItemDto {
     readonly mode: 'update' = 'update';
 
     @IsPositive()
     @IsNumber()
     readonly id: number;
+
+    @IsString()
+    @IsOptional()
+    readonly displayName: string;
+
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly menuItemId: number;
+
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly tablePosIndex: number;
+
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly templateId: number;
 }

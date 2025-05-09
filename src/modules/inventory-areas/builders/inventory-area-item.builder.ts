@@ -3,10 +3,9 @@ import { BuilderBase } from "../../../base/builder-base";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { InventoryAreaService } from "../services/inventory-area.service";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
@@ -61,6 +60,11 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         return this.setPropById(this.countService.findOne.bind(this.countService), 'areaCount', id);
     }
 
+    /**
+     * - Called when an inventory area item is being created as a property of a parent entity that is actively being 
+     * created or updated (containing nested dtos).
+     * - Passes the reference of the parent because the parent entity might not be in the database yet. 
+     */
     public async buildChildCreateDto(parentCount: InventoryAreaCount, dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
         this.reset();
 
@@ -103,7 +107,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
             this.unitAmount(dto.unitAmount);
         }
 
-        // a counted item's size can either be created on the fly, or a pre-existing item size
+        // a counted item's size can be created either on the fly, or a pre-existing item size
         if(dto.itemSizeDto){
             this.sizeByBuilderAfter(dto.inventoryItemId, dto.itemSizeDto);
         }

@@ -12,6 +12,7 @@ export class CreateRecipeDto {
     readonly menuItemId?: number;
 
     @IsBoolean()
+    @IsOptional()
     readonly isIngredient: boolean;
 
     @IsNumber()
@@ -35,12 +36,12 @@ export class CreateRecipeDto {
     readonly servingSizeUnitOfMeasureId: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
     readonly salesPrice: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
     readonly cost: number;
 

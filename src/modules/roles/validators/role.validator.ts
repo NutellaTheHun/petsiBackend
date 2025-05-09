@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { Role } from "../entities/role.entities";
+import { Role } from "../entities/role.entity";
 
 @Injectable()
 export class RoleValidator extends ValidatorBase<Role> {

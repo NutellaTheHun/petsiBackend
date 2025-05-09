@@ -34,12 +34,6 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
         if(dto.name){
             this.name(dto.name);
         }
-        if(dto.recipeIds){
-            this.recipesById(dto.recipeIds);
-        }
-        if(dto.subCategoryIds){
-            this.subCategoriesById(dto.subCategoryIds);
-        }
 
         return this.build();
     }

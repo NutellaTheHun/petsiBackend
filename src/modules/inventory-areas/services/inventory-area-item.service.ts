@@ -5,7 +5,7 @@ import { ServiceBase } from "../../../base/service-base";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaService } from "./inventory-area.service";

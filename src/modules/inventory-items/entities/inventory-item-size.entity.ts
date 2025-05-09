@@ -20,7 +20,7 @@ export class InventoryItemSize {
      * - Not a database entity. From UnitOfMeasureModule
      * - Selected from pre-existing options.
      */
-    @ManyToOne(() => UnitOfMeasure)
+    @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
     measureUnit: UnitOfMeasure;
 
     /**

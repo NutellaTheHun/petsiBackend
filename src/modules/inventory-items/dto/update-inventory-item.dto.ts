@@ -13,15 +13,15 @@ export class UpdateInventoryItemDto {
     @IsPositive()
     @IsOptional()
     readonly inventoryItemCategoryId: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly vendorId: number;
     
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => RecipeIngredientUnionResolver)
     readonly sizeDtos?: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[];
-
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    readonly vendorId: number;
 }

@@ -1,14 +1,27 @@
-import { IsNumber, IsPositive, Validate } from "class-validator";
-import { BaseMenuItemComponentDto } from "./base-menu-item-component.dto";
-import { MenuItemUpdateItemSizeCheck } from "../validators/menu-item-update-item-size-check.validator";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class UpdateMenuItemComponentDto extends BaseMenuItemComponentDto {
+export class UpdateMenuItemComponentDto {
     readonly mode: 'update' = 'update';
 
     @IsNumber()
     @IsPositive()
     readonly id: number;
 
-    @Validate(MenuItemUpdateItemSizeCheck)
-    private readonly mustHaveItemSizeWhenMenuItemChanges = true;
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly menuItemId: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly menuItemSizeId: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly quantity: number;
+
+    //@Validate(MenuItemUpdateItemSizeCheck)
+    //private readonly mustHaveItemSizeWhenMenuItemChanges = true;
 }
