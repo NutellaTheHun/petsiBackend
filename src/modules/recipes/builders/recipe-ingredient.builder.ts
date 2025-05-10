@@ -136,7 +136,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
             if(dto.mode === 'create'){
                 results.push( await this.buildChildCreateDto(parentRecipe, dto));
             } else {
-                const ingred = await this.ingredientService.findOne(dto.id, ['inventoryItem', 'recipe', 'subRecipeIngredient', 'unit']);
+                const ingred = await this.ingredientService.findOne(dto.id);
                 if(!ingred){ throw new Error("recipe ingredient not found"); }
                 results.push( await this.buildUpdateDto(ingred, dto));
             }

@@ -107,7 +107,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
             if(dto.mode === 'create'){
                 results.push(await this.buildChildCreateDto(parentOrder, dto));
             } else {
-                const item = await this.orderItemService.findOne(dto.id, ['menuItem', 'order', 'size']);
+                const item = await this.orderItemService.findOne(dto.id);
                 if(!item){ throw new Error("orderMenuItem not found"); }
                 results.push( await this.buildUpdateDto(item, dto));
             }

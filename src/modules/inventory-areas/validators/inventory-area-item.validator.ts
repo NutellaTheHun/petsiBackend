@@ -26,6 +26,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         if(dto.itemSizeId && dto.itemSizeDto){
             return 'inventory area item update dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
         }
+        if(dto.inventoryItemId && !dto.itemSizeId && !dto.itemSizeDto){
+            return 'updating inventory item must be accompanied by updated sizing';
+        }
         return null;
     }
 }

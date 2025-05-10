@@ -158,7 +158,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
             if(dto.mode === 'create'){
                 results.push(await this.buildChildCreateDto(parentCount, dto))
             } else {
-                const countedItem = await this.itemCountService.findOne(dto.id, ['areaCount', 'item', 'size'])
+                const countedItem = await this.itemCountService.findOne(dto.id);
                 if(!countedItem){ throw new Error("counted item is null"); }
                 results.push(await this.buildUpdateDto(countedItem, dto));
             }

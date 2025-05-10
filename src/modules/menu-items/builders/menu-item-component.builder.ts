@@ -114,7 +114,7 @@ export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> {
             if(dto.mode === 'create'){    
                 results.push( await this.buildChildCreateDto(parentContainer, dto));
             } else {
-                const comp = await this.componentService.findOne(dto.id, ['container', 'item', 'size']);
+                const comp = await this.componentService.findOne(dto.id);
                 if(!comp){ throw new NotFoundException(); }
                 results.push( await this.buildUpdateDto(comp, dto));
             }

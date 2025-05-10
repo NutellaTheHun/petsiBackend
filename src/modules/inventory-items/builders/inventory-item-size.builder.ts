@@ -113,9 +113,9 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         const results: InventoryItemSize[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){
-                results.push( await this.buildChildCreateDto(parentItem, dto))
+                results.push( await this.buildChildCreateDto(parentItem, dto));
             } else {
-                const size = await this.sizeService.findOne(dto.id, ['item', 'measureUnit', 'packageType']);
+                const size = await this.sizeService.findOne(dto.id);
                 if(!size){ throw new Error("item size not found"); }
                 results.push(await this.buildUpdateDto(size, dto));
             }
@@ -128,8 +128,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
             return await this.buildChildCreateDto(parentItem, dto);
         }
         
-        const size = await this.sizeService.findOne(dto.id, ['item', 'measureUnit', 'packageType']);
+        const size = await this.sizeService.findOne(dto.id);
         if(!size){ throw new Error("item size not found"); }
-        return await this.buildUpdateDto(size, dto)
+        return await this.buildUpdateDto(size, dto);
     }
 }

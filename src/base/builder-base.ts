@@ -1,4 +1,3 @@
-import { Result } from "postcss";
 
 export abstract class BuilderBase<T> {
     protected entity: T;
