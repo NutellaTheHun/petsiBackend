@@ -34,12 +34,12 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
     }
 
-    public countedItemsByBuilderAfter(areaCountId: number, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
+    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
-            areaCountId,
+            areaCountId: parent.id,
         }));
-        return this.setPropAfterBuild(this.itemCountBuilder.buildManyDto.bind(this.itemCountBuilder), 'items', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.itemCountBuilder.buildManyChildDto.bind(this.itemCountBuilder), 'items', parent, enrichedDtos);
     }
 
     /**
@@ -64,7 +64,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
             this.inventoryAreaById(dto.inventoryAreaId);
         }
         if(dto.itemCountDtos){
-            this.countedItemsByBuilderAfter(this.entity.id, dto.itemCountDtos);
+            // Requires passing the parent if the area-count update requires creating a new area-item
+            this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
 
         return await this.build();

@@ -34,12 +34,12 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'sizes', ids);
     }
 
-    public sizesByBuilderAfter(inventoryItemId: number, dtos: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[]): this {
+    public sizesByBuilder(inventoryItemId: number, dtos: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             inventoryItemId
         }));
-        return this.setPropAfterBuild(this.itemSizeBuilder.buildManyDto.bind(this.itemSizeBuilder), 'sizes', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.itemSizeBuilder.buildManyDto.bind(this.itemSizeBuilder), 'sizes', this.entity, enrichedDtos);
     }
     
     public categoryById(id: number): this {
@@ -74,7 +74,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
             this.name(dto.name);
         }
         if(dto.itemSizeDtos){
-            this.sizesByBuilderAfter(this.entity.id, dto.itemSizeDtos);
+            this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
         if(dto.vendorId){
             this.vendorById(dto.vendorId);
@@ -94,7 +94,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
             this.name(dto.name);
         }
         if(dto.sizeDtos){
-            this.sizesByBuilderAfter(this.entity.id, dto.sizeDtos);
+            this.sizesByBuilder(this.entity.id, dto.sizeDtos);
         }
         if(dto.vendorId !== undefined){
             this.vendorById(dto.vendorId);

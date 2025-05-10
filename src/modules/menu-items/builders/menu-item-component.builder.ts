@@ -48,6 +48,27 @@ export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> {
         return this.setProp('quantity', amount);
     }
 
+    public async buildChildCreateDto(parentContainer: MenuItem, dto: CreateMenuItemComponentDto): Promise<MenuItemComponent> {
+        this.reset();
+
+        this.entity.container = parentContainer;
+        
+        if(dto.containerSizeId){
+            this.containerSizeById(dto.containerSizeId);
+        }
+        if(dto.menuItemId){
+            this.itemById(dto.menuItemId);
+        }
+        if(dto.menuItemSizeId){
+            this.sizeById(dto.menuItemSizeId);
+        }
+        if(dto.quantity){
+            this.quantity(dto.quantity);
+        }
+
+        return this.build();
+    }
+
     public async buildCreateDto(dto: CreateMenuItemComponentDto): Promise<MenuItemComponent> {
         this.reset();
 
@@ -91,7 +112,7 @@ export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> {
         const results: MenuItemComponent[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){    
-                results.push( await this.buildCreateDto(dto));
+                results.push( await this.buildChildCreateDto(parentContainer, dto));
             } else {
                 const comp = await this.componentService.findOne(dto.id, ['container', 'item', 'size']);
                 if(!comp){ throw new NotFoundException(); }

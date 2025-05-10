@@ -21,7 +21,4 @@ export class UpdateMenuItemComponentDto {
     @IsPositive()
     @IsOptional()
     readonly quantity: number;
-
-    //@Validate(MenuItemUpdateItemSizeCheck)
-    //private readonly mustHaveItemSizeWhenMenuItemChanges = true;
 }

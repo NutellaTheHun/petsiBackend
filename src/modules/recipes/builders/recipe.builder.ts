@@ -54,12 +54,12 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return this.setPropsByIds(this.ingredientService.findEntitiesById.bind(this.ingredientService), 'ingredients', ids);
     }
 
-    public ingredientsByBuilderAfter(recipeId: number, dtos: (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
+    public ingredientsByBuilder(recipeId: number, dtos: (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             recipeId,
         }));
-        return this.setPropAfterBuild(this.ingredientBuilder.buildManyDto.bind(this.ingredientBuilder), 'ingredients', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.ingredientBuilder.buildManyDto.bind(this.ingredientBuilder), 'ingredients', this.entity, enrichedDtos);
     }
 
     public batchResultQuantity(amount: number): this {
@@ -164,8 +164,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
 
         if(dto.ingredientDtos){
-            this.ingredientsByBuilderAfter(this.entity.id, dto.ingredientDtos);
-        }
+            this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
+        } 
 
         return await this.build();
     }
@@ -214,7 +214,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             this.subCategoryById(dto.subCategoryId);
         }
         if(dto.ingredientDtos){
-            this.ingredientsByBuilderAfter(this.entity.id, dto.ingredientDtos);
+            this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
         }
 
         return await this.build();

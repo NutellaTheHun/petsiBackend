@@ -1,20 +1,17 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { DRY_A, DRY_B, FOOD_A, FOOD_B, FOOD_C, OTHER_A, OTHER_B } from "../../inventory-items/utils/constants";
-import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
+import { DRY_A, FOOD_A, FOOD_B, FOOD_C } from "../../inventory-items/utils/constants";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { AREA_A, AREA_B } from "../utils/constants";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
 import { InventoryAreaService } from "./inventory-area.service";
-import { NotFoundException } from "@nestjs/common";
-import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 
 describe('Inventory area item service', () => {
     let module: TestingModule;
@@ -58,9 +55,6 @@ describe('Inventory area item service', () => {
     });
 
     it('should create an item', async () => {
-        /*const area = await areaService.findOneByName(AREA_A);
-        if(!area){ throw new NotFoundException(); }*/
-
         const counts = await countService.findByAreaName(AREA_A);
         if(!counts){ throw new NotFoundException(); }
         if(!counts[0]) throw new Error("area a counts is empty");
@@ -70,7 +64,6 @@ describe('Inventory area item service', () => {
         if(!item.sizes){ throw new Error("item sizes is null"); }
 
         const dto = {
-            //inventoryAreaId: area.id,
             areaCountId: counts[0].id,
             inventoryItemId: item.id,
             unitAmount: 1,
@@ -82,7 +75,6 @@ describe('Inventory area item service', () => {
 
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull();
-        //expect(result?.inventoryArea.id).toEqual(area.id);
         expect(result?.areaCount.id).toEqual(counts[0].id);
         expect(result?.item.id).toEqual(item.id);
         expect(result?.size.id).toEqual(item.sizes[0].id);
@@ -99,19 +91,6 @@ describe('Inventory area item service', () => {
 
         expect(count.items?.findIndex(item => item.id === testId)).not.toEqual(-1);
     });
-
-    /*it('should update an item (inventory area)', async () => {
-        const newArea = await areaService.findOneByName(AREA_B);
-        if(!newArea){ throw new NotFoundException(); }
-
-        const dto = {
-            inventoryAreaId: newArea.id,
-        } as UpdateInventoryAreaItemDto;
-
-        const result = await areaItemService.update(testId, dto);
-        expect(result).not.toBeNull();
-        expect(result?.inventoryArea.id).toEqual(newArea.id);
-    });*/
 
     it('should update an item (inventory area count)', async () => {
         const newCounts = await countService.findByAreaName(AREA_B);
@@ -184,8 +163,7 @@ describe('Inventory area item service', () => {
             measureAmount: 2,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await areaItemService.update(0, dto);
-        expect(result).toBeNull();
+        await expect(areaItemService.update(0, dto)).rejects.toThrow(NotFoundException);
     });
 
     it('should get all items', async () => {
@@ -201,13 +179,7 @@ describe('Inventory area item service', () => {
         expect(results).not.toBeNull();
         expect(results.length).toEqual(testIds.length);
     });
-
-    /*it('should get items by area name', async () => {
-        const results = await areaItemService.findByAreaName(AREA_B);
-        expect(results).not.toBeNull();
-        expect(results.length).toBeGreaterThan(0);
-    });*/
-
+    
     it('should get area items by InventoryItem name', async () => {
         const results = await areaItemService.findByItemName(FOOD_B);
         expect(results).not.toBeNull();
@@ -278,18 +250,4 @@ describe('Inventory area item service', () => {
         const verify = await areaItemService.findOne(areaItem.id);
         expect(verify).toBeNull(); 
     });
-
-    // if the inventory area is deleted, the inv area item count should be deleted
-   /* it('should delete area items when it\'s referenced inventoryArea is deleted', async () => {
-        const areaItems = await areaItemService.findByItemName(FOOD_A, ['inventoryArea']);
-        if(!areaItems){ throw new NotFoundException(); }
-
-        const areaItem = areaItems[0];
-        
-        const removal = await areaService.remove(areaItem.inventoryArea.id);
-        if(!removal){ throw new Error("inventory area removal failed"); }
-
-        const verify = await areaItemService.findOne(areaItem.id);
-        expect(verify).toBeNull(); 
-    });*/
 });

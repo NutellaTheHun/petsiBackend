@@ -37,6 +37,9 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     }
 
     public unitAmount(amount: number): this {
+        if(amount === 0){
+            return this.setProp('unitAmount', 1);
+        }
         return this.setProp('unitAmount', amount);
     }
 
@@ -48,12 +51,12 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'size', id);
     }
 
-    public sizeByBuilderAfter(inventoryItemId: number, dto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)): this {
+    public sizeByBuilder(inventoryItemId: number, dto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)): this {
         const enrichedDto = {
             ...dto,
             inventoryItemId,
         }
-        return this.setPropAfterBuild(this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder), 'size', this.entity, enrichedDto)
+        return this.setPropByBuilder(this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder), 'size', this.entity, enrichedDto);
     }
 
     public areaCountById(id: number): this {
@@ -82,7 +85,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
 
         // a counted item's size can either be created on the fly, or a pre-existing item size
         if(dto.itemSizeDto){
-            this.sizeByBuilderAfter(dto.inventoryItemId, dto.itemSizeDto);
+            this.sizeByBuilder(dto.inventoryItemId, dto.itemSizeDto);
         }
         else if(dto.itemSizeId){
             this.sizeById(dto.itemSizeId);
@@ -103,13 +106,16 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
         }
+
         if(dto.unitAmount){
             this.unitAmount(dto.unitAmount);
+        } else {
+            this.unitAmount(1); // defauilt amount
         }
 
         // a counted item's size can be created either on the fly, or a pre-existing item size
         if(dto.itemSizeDto){
-            this.sizeByBuilderAfter(dto.inventoryItemId, dto.itemSizeDto);
+            this.sizeByBuilder(dto.inventoryItemId, dto.itemSizeDto);
         }
         else if(dto.itemSizeId){
             this.sizeById(dto.itemSizeId);
@@ -137,7 +143,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
 
         // a counted item's size can either be created on the fly, updated on the fly, or a pre-existing item size
         if(dto.itemSizeDto){
-            this.sizeByBuilderAfter(dto.inventoryItemId/*this.entity.id*/, dto.itemSizeDto);
+            this.sizeByBuilder(dto.inventoryItemId, dto.itemSizeDto);
         }
         else if(dto.itemSizeId){
             this.sizeById(dto.itemSizeId);
@@ -146,7 +152,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         return await this.build();
     }
 
-    public async buildManyDto(parentCount: InventoryAreaCount, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): Promise<InventoryAreaItem[]> {
+    public async buildManyChildDto(parentCount: InventoryAreaCount, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): Promise<InventoryAreaItem[]> {
         const results: InventoryAreaItem[] = [];
         for(const dto of dtos){
             if(dto.mode === 'create'){

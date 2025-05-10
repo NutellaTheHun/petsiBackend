@@ -1,14 +1,8 @@
+import { Result } from "postcss";
+
 export abstract class BuilderBase<T> {
     protected entity: T;
     protected buildQueue: (() => Promise<void>)[];
-
-    /**
-     * - Queue for functions to execute after build() is run,
-     * - For example the creation of child entities might require the parent's id, 
-     *   so we build the object, then after we create its children.
-     * - Is called from build(), after all tasks in afterQueue are executed.
-     */  
-    protected afterQueue: (() => Promise<void>)[];
 
     constructor(private entityConstructor: new () => T){ this.reset(); }
 
@@ -19,7 +13,6 @@ export abstract class BuilderBase<T> {
     public reset(): this {
         this.entity = new this.entityConstructor();
         this.buildQueue = [];
-        this.afterQueue = [];
         return this;
     }
 
@@ -30,20 +23,6 @@ export abstract class BuilderBase<T> {
 
     public async build(): Promise<T> {
         for(const task of this.buildQueue){
-            await task();
-        }
-        
-        if(this.afterQueue.length == 0){
-            const result = this.entity;
-            this.reset();
-            return result;
-        }
-
-        return await this.ThenAfter();
-    }
-
-    public async ThenAfter(): Promise<T>{
-        for(const task of this.afterQueue){
             await task();
         }
         const result = this.entity;
@@ -101,8 +80,8 @@ export abstract class BuilderBase<T> {
         return this;
     }
 
-    protected setPropAfterBuild<K extends keyof T>(func: (entity: T, args: any) => Promise<any>, prop: K, entity: T, args: any): this {
-        this.afterQueue.push(async () => {
+    protected setPropByBuilder<K extends keyof T>(func: (entity: T, args: any) => Promise<any>, prop: K, entity: T, args: any): this {
+        this.buildQueue.push(async () => {
             const result = await func(entity, args);
             if(!result){ 
                 throw new Error('property value to set is null');

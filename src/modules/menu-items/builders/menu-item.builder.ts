@@ -97,12 +97,12 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerByBuilderAfter(containerId: number, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+    public containerByBuilder(containerId: number, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             containerId,
         }));
-        return this.setPropAfterBuild(this.componentBuilder.buildManyDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.componentBuilder.buildManyDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
     }
 
     public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {
@@ -143,9 +143,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.categoryId){
             this.categorybyId(dto.categoryId);
         }
-        //if(dto.containerComponentDtos){
-            //this.containerByBuilderAfter(this.entity.id, dto.containerComponentDtos);
-        //}
+        if(dto.containerComponentDtos){
+            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        }
         
         return this.build();
     }
@@ -190,7 +190,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
             this.categorybyId(dto.categoryId);
         }
         if(dto.containerComponentDtos){
-            this.containerByBuilderAfter(this.entity.id, dto.containerComponentDtos);
+            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
         }
 
         return this.build();

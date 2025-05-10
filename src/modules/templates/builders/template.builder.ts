@@ -22,12 +22,12 @@ export class TemplateBuilder extends BuilderBase<Template> {
         return this.setProp('isPie', val);
     }
 
-    public itemsByBuilderAfter(templateId: number, dtos: (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[]): this {
+    public itemsByBuilder(templateId: number, dtos: (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[]): this {
         const enrichedDtos = dtos.map(dto => ({
             ...dto,
             templateId
         }));
-        return this.setPropAfterBuild(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'templateItems', this.entity, enrichedDtos)
+        return this.setPropByBuilder(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'templateItems', this.entity, enrichedDtos)
     }
 
     public async buildCreateDto(dto: CreateTemplateDto): Promise<Template> {
@@ -40,7 +40,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
             this.name(dto.name);
         }
         if(dto.itemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.itemDtos);
+            this.itemsByBuilder(this.entity.id, dto.itemDtos);
         }    
         
         return this.build();
@@ -57,7 +57,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
             this.name(dto.name);
         }
         if(dto.itemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.itemDtos);
+            this.itemsByBuilder(this.entity.id, dto.itemDtos);
         }    
 
         return this.build();

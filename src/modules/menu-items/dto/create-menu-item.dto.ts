@@ -53,7 +53,7 @@ export class CreateMenuItemDto {
     @IsOptional()
     readonly isParbake: boolean;
 
-    //@IsOptional()
-    //@IsArray()
-    //readonly containerComponentDtos: CreateMenuItemComponentDto[];
+    @IsOptional()
+    @IsArray()
+    readonly containerComponentDtos: CreateMenuItemComponentDto[];
 }

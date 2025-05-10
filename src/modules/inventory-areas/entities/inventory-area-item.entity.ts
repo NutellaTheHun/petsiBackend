@@ -31,6 +31,7 @@ export class InventoryAreaItem {
 
     /**
      * Represents the amount of units per measuredQuantity and size, for instances of multi pack items.
+     * - Default value of 1. Shouldn't be 0.
      * - example: 6 pack of 28oz can of evaporated milk (the 6 is the unit quantity)
      * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
      * - NOT FINAL: Most likely controlled by a isMultiPack bool on the buisness logic side?

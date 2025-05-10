@@ -73,12 +73,12 @@ export class OrderBuilder extends BuilderBase<Order>{
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
     }
 
-    public itemsByBuilderAfter(orderId: number, dtos: (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
+    public itemsByBuilder(orderId: number, dtos: (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             orderId,
         }));
-        return this.setPropAfterBuild(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
     }
 
     public async buildCreateDto(dto: CreateOrderDto): Promise<Order> {
@@ -106,7 +106,7 @@ export class OrderBuilder extends BuilderBase<Order>{
             this.note(dto.note);
         }
         if(dto.orderMenuItemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.orderMenuItemDtos)
+            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
         }
         if(dto.orderTypeId){
             this.orderTypeById(dto.orderTypeId);
@@ -150,7 +150,7 @@ export class OrderBuilder extends BuilderBase<Order>{
             this.note(dto.note);
         }
         if(dto.orderMenuItemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.orderMenuItemDtos)
+            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
         }
         if(dto.orderTypeId){
             this.orderTypeById(dto.orderTypeId);

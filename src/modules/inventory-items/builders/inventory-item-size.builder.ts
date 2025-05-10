@@ -67,11 +67,14 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
 
     public async buildChildCreateDto(_: InventoryItem, dto: CreateInventoryItemSizeDto): Promise<InventoryItemSize>{
         this.reset();
+        /*
+         When being called in the sequence of:
+         InventoryAreaCountBuilder -> InventoryAreaItem, the passed parent is not an inventory item, but the inventory area item, 
+         so effectively is a non-usuable argument, and is not neccessary, as all info is contained within the dto anyway.
 
-        // When being called in the sequence of:
-        // InventoryAreaCountBuilder -> InventoryAreaItem, the passed parent is not an inventory item, but the inventory area item, 
-        // so effectively is a non-usuable argument, and is not neccessary, as all info is contained within the dto anyway.
-        
+         this is the single edge case that the builder base method setPropAfterBuild() doesnt work perfectly for this parent/child 
+         assignment relationship, as setPropAfterBuild expected the parent entity, which is not the case in this instance.
+        */
         //this.entity.item = parentItem;
 
         if(dto.inventoryItemId){
