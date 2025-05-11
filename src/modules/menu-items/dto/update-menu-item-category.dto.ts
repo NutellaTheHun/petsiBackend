@@ -1,12 +1,14 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
 export class UpdateMenuItemCategoryDto {
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    @IsOptional()
+    readonly name?: string;
 
     @IsArray()
     @IsPositive({ each: true})
     @IsNumber({}, { each: true})
-    readonly menuItemIds: number[];
+    @IsOptional()
+    readonly menuItemIds?: number[];
 }

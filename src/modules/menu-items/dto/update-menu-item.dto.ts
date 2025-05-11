@@ -1,8 +1,8 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
-import { CreateMenuItemComponentDto } from './create-menu-item-component.dto';
-import { UpdateMenuItemComponentDto } from './update-menu-item-component.dto';
-import { MenuItemComponentUnionResolver } from '../utils/menu-item-component-union-resolver';
 import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { MenuItemComponentUnionResolver } from '../utils/menu-item-component-union-resolver';
+import { CreateChildMenuItemComponentDto } from './create-child-menu-item-component.dto';
+import { UpdateChildMenuItemComponentDto } from './update-child-menu-item-component.dto';
 
 export class UpdateMenuItemDto {
     @IsString()
@@ -21,7 +21,7 @@ export class UpdateMenuItemDto {
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsOptional()
     @IsArray()
@@ -47,19 +47,19 @@ export class UpdateMenuItemDto {
     @IsNumber({},{ each: true})
     @IsPositive({ each: true})
     @IsOptional()
-    readonly validSizeIds: number[];
+    readonly validSizeIds?: number[];
 
     @IsBoolean()
     @IsOptional()
-    readonly isPOTM: boolean;
+    readonly isPOTM?: boolean;
 
     @IsBoolean()
     @IsOptional()
-    readonly isParbake: boolean;
+    readonly isParbake?: boolean;
 
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => MenuItemComponentUnionResolver)
-    readonly containerComponentDtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[];
+    readonly containerComponentDtos?: (CreateChildMenuItemComponentDto | UpdateChildMenuItemComponentDto)[];
 }

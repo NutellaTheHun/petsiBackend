@@ -4,13 +4,15 @@ import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
+import { InventoryAreaValidator } from "../validators/inventory-area.validator";
 
 @Injectable()
 export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
     constructor(
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
-    ){ super(InventoryArea); }
+        validator: InventoryAreaValidator,
+    ){ super(InventoryArea, validator); }
 
     public name(name: string): this {
         return this.setProp('name', name);
@@ -20,6 +22,21 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
         return this.setPropsByIds(this.countService.findEntitiesById.bind(this.countService), 'inventoryCounts', ids);
     }
 
+    protected async createEntity(dto: CreateInventoryAreaDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateInventoryAreaDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.inventoryCountIds){
+            this.inventoryCountsById(dto.inventoryCountIds);
+        }
+    }
+/*
     public async buildCreateDto(dto: CreateInventoryAreaDto): Promise<InventoryArea> {
         this.reset();
 
@@ -32,7 +49,7 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
 
     public async buildUpdateDto(toUpdate: InventoryArea, dto: UpdateInventoryAreaDto): Promise<InventoryArea> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
@@ -42,5 +59,5 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
         }
 
         return await this.build();
-    }
+    }*/
 }

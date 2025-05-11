@@ -10,6 +10,7 @@ import { InventoryItemPackage } from "../entities/inventory-item-package.entity"
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { BAG_PKG, PACKAGE_PKG, BOX_PKG, OTHER_PKG, CONTAINER_PKG, CAN_PKG } from "../utils/constants";
+import { BadRequestException } from "@nestjs/common";
 
 describe('Inventory Item Size Controller', () => {
   let controller: InventoryItemSizeController;
@@ -108,7 +109,8 @@ describe('Inventory Item Size Controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue( {items: sizes} );
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return sizes.find(unit => unit.id === id) || null;
     });
 
@@ -159,8 +161,9 @@ describe('Inventory Item Size Controller', () => {
   });
   
   it('should fail to return a size (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a size', async () => {

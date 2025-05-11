@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { CreateTemplateMenuItemDto } from "./create-template-menu-item.dto";
+import { CreateChildTemplateMenuItemDto } from "./create-child-template-menu-item.dto";
 
 export class CreateTemplateDto {
     @IsString()
@@ -12,5 +12,5 @@ export class CreateTemplateDto {
 
     @IsOptional()
     @IsArray()
-    itemDtos?: CreateTemplateMenuItemDto[];
+    itemDtos?: CreateChildTemplateMenuItemDto[];
 }

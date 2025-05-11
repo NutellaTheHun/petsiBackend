@@ -6,6 +6,7 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { getTestTemplateNames } from '../utils/constants';
 import { CreateTemplateDto } from '../dto/create-template.dto';
 import { UpdateTemplateDto } from '../dto/update-template.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('TemplatesController', () => {
   let controller: TemplateController;
@@ -47,7 +48,8 @@ describe('TemplatesController', () => {
       return templates.filter(temp => ids.findIndex(id => id === temp.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return templates.find(temp => temp.id === id) || null;
     });
 
@@ -109,8 +111,9 @@ describe('TemplatesController', () => {
     });
   
     it('should fail find template by id (not exist)', async () => {
-      const result = await controller.findOne(0);
-      expect(result).toBeNull();
+      //const result = await controller.findOne(0);
+      //expect(result).toBeNull();
+      await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
     });
   
     it('should update template name', async () => {

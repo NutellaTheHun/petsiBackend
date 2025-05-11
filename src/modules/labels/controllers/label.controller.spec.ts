@@ -6,6 +6,7 @@ import { LabelController } from './label.controller';
 import { getTestImageUrls } from '../utils/constants';
 import { CreateLabelDto } from '../dto/create-label.dto';
 import { UpdateLabelDto } from '../dto/update-label.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('Label  Controller', () => {
   let controller: LabelController;
@@ -44,7 +45,8 @@ describe('Label  Controller', () => {
       return labels.filter(label => ids.findIndex(id => id === label.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return labels.find(label => label.id === id) || null;
     });
 
@@ -104,8 +106,9 @@ describe('Label  Controller', () => {
   });
 
   it('should fail find label by id (not exist)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should update label url', async () => {

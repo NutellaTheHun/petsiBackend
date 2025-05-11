@@ -2,13 +2,14 @@ import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
-export class CreateInventoryAreaItemDto {
-    //readonly mode: 'create' = 'create';
-
-    @IsNumber()
-    @IsPositive()
-    @IsNotEmpty()
-    readonly areaCountId: number;
+/**
+ * This DTO is used when creating an inventory-area-item through the update of an inventory area count.
+ * - Compared to the base createDto, the child version:
+ * - Includes the mode of "create/update",
+ * - Excludes the areaCount id field, as in this context the area-count isn't in the db yet so no id.
+ */
+export class CreateChildInventoryAreaItemDto {
+    readonly mode: 'create' = 'create';
 
     @IsNumber()
     @IsPositive()

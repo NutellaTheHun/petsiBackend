@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
 export class CreateMenuItemComponentDto {
-    readonly mode: 'create' = 'create';
+    //readonly mode: 'create' = 'create';
 
     @IsNumber()
     @IsPositive()

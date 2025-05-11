@@ -4,13 +4,31 @@ import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-cat
 import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemService } from "../services/inventory-item.service";
+import { InventoryItemCategoryValidator } from "../validators/inventory-item-category.validator";
 
 @Injectable()
 export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCategory> {
+    
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(InventoryItemCategory); }
+        validator: InventoryItemCategoryValidator,
+    ){ super(InventoryItemCategory, validator); }
+
+    protected async createEntity(dto: CreateInventoryItemCategoryDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateInventoryItemCategoryDto): Promise<void> {
+         if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.inventoryItemIds){
+            this.inventoryItemsById(dto.inventoryItemIds);
+        }
+    }
 
     public name(name: string): this {
         return this.setProp('name', name);
@@ -19,7 +37,7 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
     public inventoryItemsById(ids: number[]): this {
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService),'items', ids);
     }
-
+/*
     public async buildCreateDto(dto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
         this.reset();
 
@@ -32,7 +50,7 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
 
     public async buildUpdateDto(toUpdate: InventoryItemCategory, dto: UpdateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
@@ -42,5 +60,5 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
         }
 
         return await this.build();
-    }
+    }*/
 }

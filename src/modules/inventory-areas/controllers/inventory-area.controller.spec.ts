@@ -7,6 +7,7 @@ import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "../utils/constants";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaController } from "./inventory-area.controller";
+import { BadRequestException } from "@nestjs/common";
 
 
 describe('inventory area controller', () => {
@@ -105,7 +106,8 @@ describe('inventory area controller', () => {
     
         jest.spyOn(areaService, "findAll").mockResolvedValue({items: areas});
     
-        jest.spyOn(areaService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(areaService, "findOne").mockImplementation(async (id?: number) => {
+            if(!id){ throw new Error(); }
             return areas.find(area => area.id === id) || null;
         });
     
@@ -153,7 +155,7 @@ describe('inventory area controller', () => {
     
     it('should fail to return an area (bad id, returns null)', async () => {
         const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(Error);
     });
     
     it('should update an area', async () => {

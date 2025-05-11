@@ -4,12 +4,29 @@ import { Role } from "../entities/role.entity";
 import { UserService } from "../../users/services/user.service";
 import { CreateRoleDto } from "../dto/create-role.dto";
 import { UpdateRoleDto } from "../dto/update-role.dto";
+import { RoleValidator } from "../validators/role.validator";
 
 export class RoleBuilder extends BuilderBase<Role>{
     constructor(
         @Inject(forwardRef(() => UserService))
         private readonly userService: UserService,
-    ){ super(Role); }
+        validator: RoleValidator,
+    ){ super(Role, validator); }
+
+    protected async createEntity(dto: CreateRoleDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateRoleDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.userIds){
+            this.users(dto.userIds);
+        };
+    }
 
     public name(name: string): this {
         return this.setProp('name', name);
@@ -18,7 +35,7 @@ export class RoleBuilder extends BuilderBase<Role>{
     public users(ids: number[]): this {
         return this.setPropsByIds(this.userService.findEntitiesById.bind(this.userService), 'users', ids);
     }
-
+/*
     public async buildCreateDto(dto: CreateRoleDto): Promise<Role> {
         this.reset();
 
@@ -31,7 +48,7 @@ export class RoleBuilder extends BuilderBase<Role>{
 
     public async buildUpdateDto(toUpdate: Role, dto: UpdateRoleDto): Promise<Role> {
         this.reset()
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
@@ -41,5 +58,5 @@ export class RoleBuilder extends BuilderBase<Role>{
         }
 
         return this.build();
-    }
+    }*/
 }

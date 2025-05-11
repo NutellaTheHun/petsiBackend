@@ -5,6 +5,7 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryController } from './recipe-category.controller';
+import { BadRequestException } from '@nestjs/common';
 
 describe('recipe category controller', () => {
   let controller: RecipeCategoryController;
@@ -57,7 +58,8 @@ describe('recipe category controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: categories });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return categories.find(cat => cat.id === id) || null;
     });
 
@@ -100,8 +102,9 @@ describe('recipe category controller', () => {
   });
 
   it('should fail find one a recipe category', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should find all a recipe category', async () => {

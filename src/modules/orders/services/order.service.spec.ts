@@ -14,6 +14,7 @@ import { item_a, item_b } from "../../menu-items/utils/constants";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
 import { OrderMenuItemService } from "./order-menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
+import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
 
 describe('order service', () => {
     let orderService: OrderService;
@@ -102,7 +103,7 @@ describe('order service', () => {
 
         const fulfillDate = new Date();
 
-        const itemDtos = await testingUtil.getCreateOrderMenuItemDtos(3);
+        const itemDtos = await testingUtil.getCreateChildOrderMenuItemDtos(3);
         const dto = {
             squareOrderId: "testSQrId2",
             orderTypeId: type.id,
@@ -321,7 +322,7 @@ describe('order service', () => {
             menuItemId: itemB.id,
             menuItemSizeId: itemB.validSizes[0].id,
             quantity: 10,
-        }] as CreateOrderMenuItemDto[];
+        }] as CreateChildOrderMenuItemDto[];
 
         const orderDto = {
             orderMenuItemDtos: cDtos

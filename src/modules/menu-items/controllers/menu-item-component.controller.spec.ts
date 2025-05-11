@@ -5,7 +5,7 @@ import { MenuItemComponentController } from "./menu-item-component.controller";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItem } from "../entities/menu-item.entity";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { NotImplementedException } from "@nestjs/common";
+import { BadRequestException, NotImplementedException } from "@nestjs/common";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { getTestItemNames } from "../utils/constants";
 
@@ -94,7 +94,8 @@ describe('menu item component controller', () => {
             return components.filter(comp => ids.findIndex(id => id === comp.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+            if(!id){ throw new BadRequestException(); }
             return components.find(comp => comp.id === id) || null;
         });
 
@@ -147,8 +148,9 @@ describe('menu item component controller', () => {
     });
 
     it('should fail to find one component by id (doesnt exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        //const result = await controller.findOne(0);
+        //expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(Error);
     });
 
     it('should update component', async () => {

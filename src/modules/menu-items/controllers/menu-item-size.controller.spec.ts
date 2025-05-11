@@ -7,7 +7,7 @@ import { MenuItemService } from "../services/menu-item.service";
 import { getTestSizeNames } from "../utils/constants";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
-import { NotImplementedException } from "@nestjs/common";
+import { BadRequestException, NotImplementedException } from "@nestjs/common";
 
 describe('menu item size controller', () => {
   let controller: MenuItemSizeController;
@@ -48,7 +48,8 @@ describe('menu item size controller', () => {
       return sizes.filter(size => ids.findIndex(id => id === size.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return sizes.find(size => size.id === id) || null;
     });
 
@@ -110,8 +111,9 @@ describe('menu item size controller', () => {
    });
  
    it('should fail find size by id (not exist)', async () => {
-     const result = await controller.findOne(0);
-     expect(result).toBeNull();
+     //const result = await controller.findOne(0);
+     //expect(result).toBeNull();
+     await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
    });
  
    it('should update size name', async () => {

@@ -1,10 +1,12 @@
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
-export class BaseTemplateMenuItemDto {
+export class CreateChildTemplateMenuItemDto {
+        readonly mode: 'create' = 'create';
+
         @IsString()
         @IsNotEmpty()
         readonly displayName: string;
-    
+
         @IsNumber()
         @IsNotEmpty()
         @IsPositive()
@@ -14,9 +16,4 @@ export class BaseTemplateMenuItemDto {
         @IsNotEmpty()
         @IsPositive()
         readonly tablePosIndex: number;
-    
-        @IsNumber()
-        @IsNotEmpty()
-        @IsPositive()
-        readonly templateId: number;
 }

@@ -1,4 +1,4 @@
-import { NotImplementedException } from "@nestjs/common";
+import { BadRequestException, NotImplementedException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
@@ -39,7 +39,8 @@ describe('inventory area item controller', () => {
      
         jest.spyOn(itemCountService, "findAll").mockResolvedValue( {items: itemCounts} );
     
-        jest.spyOn(itemCountService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(itemCountService, "findOne").mockImplementation(async (id?: number) => {
+            if(!id){ throw new BadRequestException(); }
             throw new NotImplementedException();
         });
     

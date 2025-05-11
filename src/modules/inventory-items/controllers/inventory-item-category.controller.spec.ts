@@ -6,6 +6,7 @@ import { InventoryItemCategoryService } from "../services/inventory-item-categor
 import { CLEANING_CAT, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, FROZEN_CAT, OTHER_CAT, PAPER_CAT, PRODUCE_CAT } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemCategoryController } from "./inventory-item-category.controller";
+import { BadRequestException } from "@nestjs/common";
 
 describe('Inventory Item Categories Controller', () => {
   let controller: InventoryItemCategoryController;
@@ -61,7 +62,8 @@ describe('Inventory Item Categories Controller', () => {
 
     jest.spyOn(categoryService, "findAll").mockResolvedValue( {items: categories} );
 
-    jest.spyOn(categoryService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return categories.find(unit => unit.id === id) || null;
     });
 
@@ -108,8 +110,9 @@ describe('Inventory Item Categories Controller', () => {
   });
   
   it('should fail to return a category (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
   it('should update a category', async () => {

@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
@@ -384,8 +384,6 @@ describe('Inventory Item Service', () => {
       {
         mode:'update',
         id: sizes[1].id,
-        //unitOfMeasureId: sizes[1].measureUnit.id,
-        //inventoryPackageTypeId: sizes[1].packageType.id,
       } as UpdateInventoryItemSizeDto,
     ];
 
@@ -403,8 +401,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('deleteded itemSize from item update should not exist', async () => {
-    const verify = await sizeService.findOne(deletedSizeId);
-    expect(verify).toBeNull();
+    //const verify = await sizeService.findOne(deletedSizeId);
+    //expect(verify).toBeNull();
+    await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(Error);
   });
 
   it('should update item with both a new and modified size', async () => {

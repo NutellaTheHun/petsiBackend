@@ -6,6 +6,7 @@ import { InventoryItemPackageService } from "../services/inventory-item-package.
 import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemPackageController } from "./inventory-item-package.controller";
+import { BadRequestException } from "@nestjs/common";
 
 describe('Inventory Item Packages Controller', () => {
   let controller: InventoryItemPackageController;
@@ -59,7 +60,8 @@ describe('Inventory Item Packages Controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue( {items: packages} );
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return packages.find(unit => unit.id === id) || null;
     });
 
@@ -106,8 +108,9 @@ describe('Inventory Item Packages Controller', () => {
   });
   
   it('should fail to return a package (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a package', async () => {

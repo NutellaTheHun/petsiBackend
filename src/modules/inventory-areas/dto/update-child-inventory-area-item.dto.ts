@@ -1,19 +1,26 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
-export class CreateInventoryAreaItemDto {
-    //readonly mode: 'create' = 'create';
+export class UpdateChildInventoryAreaItemDto {
+    readonly mode: 'update' = 'update';
+
+    /**
+     * Is used only when the area-item is being updated through an update of an inventory-area-count
+     */
+    @IsNumber()
+    @IsPositive()
+    readonly id: number;
 
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly areaCountId: number;
+    @IsOptional()
+    readonly areaCountId?: number;
 
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly inventoryItemId: number;
+    @IsOptional()
+    readonly inventoryItemId?: number;
 
     @IsNumber()
     @IsPositive()
@@ -22,8 +29,8 @@ export class CreateInventoryAreaItemDto {
 
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly measureAmount: number;
+    @IsOptional()
+    readonly measureAmount?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 

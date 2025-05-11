@@ -5,13 +5,45 @@ import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
 import { hashPassword } from "../../auth/utils/hash";
 import { RoleService } from "../../roles/services/role.service";
+import { UserValidator } from "../validators/user.validator";
 
 @Injectable()
 export class UserBuilder extends BuilderBase<User> {
     constructor(
         @Inject(forwardRef(() => RoleService))
         private readonly rolesService: RoleService,
-    ){ super(User); }
+        validator: UserValidator,
+    ){ super(User, validator); }
+
+    protected async createEntity(dto: CreateUserDto): Promise<void> {
+        if(dto.email){
+            this.email(dto.email);
+        }
+        if(dto.password){
+            this.password( await hashPassword(dto.password) );
+        }
+        if(dto.roleIds){
+            this.roles(dto.roleIds);
+        }
+        if(dto.username){
+            this.username(dto.username);
+        }
+    }
+    
+    protected async updateEntity(dto: UpdateUserDto): Promise<void> {
+        if(dto.email){
+            this.email(dto.email);
+        }
+        if(dto.password){
+            this.password( await hashPassword(dto.password) );
+        }
+        if(dto.roleIds){
+            this.roles(dto.roleIds);
+        }
+        if(dto.username){
+            this.username(dto.username);
+        }
+    }
 
     public username(name: string): this {
         return this.setProp('username', name);
@@ -31,7 +63,7 @@ export class UserBuilder extends BuilderBase<User> {
     public roles(ids: number[]): this {
         return this.setPropsByIds(this.rolesService.findEntitiesById.bind(this.rolesService), 'roles', ids);
     }
-
+/*
     public async buildCreateDto(dto: CreateUserDto): Promise<User> {
         this.reset();
 
@@ -53,7 +85,7 @@ export class UserBuilder extends BuilderBase<User> {
 
     public async buildUpdateDto(toUpdate: User, dto: UpdateUserDto): Promise<User> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.email){
             this.email(dto.email);
@@ -69,5 +101,5 @@ export class UserBuilder extends BuilderBase<User> {
         }
 
         return this.build();
-    }
+    }*/
 }

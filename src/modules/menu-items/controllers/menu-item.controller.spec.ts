@@ -6,6 +6,7 @@ import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemService } from "../services/menu-item.service";
 import { getTestItemNames } from "../utils/constants";
 import { MenuItemController } from "./menu-item.controller";
+import { BadRequestException } from "@nestjs/common";
 
 describe('menu item controller', () => {
   let controller: MenuItemController;
@@ -47,7 +48,8 @@ describe('menu item controller', () => {
       return items.filter(item => ids.findIndex(id => id === item.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return items.find(item => item.id === id) || null;
     });
 
@@ -109,8 +111,9 @@ describe('menu item controller', () => {
   });
 
   it('should fail find item by id (not exist)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should update item name', async () => {

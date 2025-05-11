@@ -1,13 +1,17 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
 export class UpdateInventoryAreaItemDto {
-    readonly mode: 'update' = 'update';
+    //readonly mode: 'update' = 'update';
 
-    @IsNumber()
+    /**
+     * Is used only when the area-item is being updated through an update of an inventory-area-count
+     */
+    /*@IsNumber()
     @IsPositive()
-    readonly id: number;
+    @IsOptional()
+    readonly id?: number;*/
 
     @IsNumber()
     @IsPositive()
@@ -17,17 +21,17 @@ export class UpdateInventoryAreaItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly inventoryItemId: number;
+    readonly inventoryItemId?: number;
 
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly unitAmount: number;
+    readonly unitAmount?: number;
 
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly measureAmount: number;
+    readonly measureAmount?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 
@@ -39,7 +43,7 @@ export class UpdateInventoryAreaItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly itemSizeId: number;
+    readonly itemSizeId?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 
@@ -49,5 +53,5 @@ export class UpdateInventoryAreaItemDto {
      *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
      */
     @IsOptional()
-    readonly itemSizeDto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto);
+    readonly itemSizeDto?: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto);
 }

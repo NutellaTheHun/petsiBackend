@@ -6,6 +6,7 @@ import { UnitCategoryService } from '../services/unit-category.service';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { BadRequestException } from '@nestjs/common';
 
 describe('UnitCategoryController', () => {
   let controller: UnitCategoryController;
@@ -55,7 +56,8 @@ describe('UnitCategoryController', () => {
     
         jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
     
-        jest.spyOn(categoryService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+          if(!id){ throw new BadRequestException(); }
           return categories.find(unit => unit.id === id) || null;
         });
     
@@ -104,8 +106,9 @@ describe('UnitCategoryController', () => {
   });
   
   it('should fail to return a category (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a category', async () => {

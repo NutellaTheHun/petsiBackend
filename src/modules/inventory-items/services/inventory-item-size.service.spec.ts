@@ -158,25 +158,6 @@ describe('Inventory Item Size Service', () => {
     expect(results.length).toEqual(testIds.length);
   });
 
-  // Currently cant delete entities referencing units of measure
-  /*
-  // If a unit is deleted, the itemSizes are also deleted.
-  it('should delete a unit of measurement and delete the item size', async () => {
-    const item = await itemService.findOneByName(FOOD_A, ['sizes']);
-    if(!item){ throw new NotFoundException(); }
-    if(!item.sizes){ throw new Error("item sizes is empty"); }
-    if(item.sizes.length < 2){ throw new Error("food A should have 2 items"); }
-
-    const size = await sizeService.findOne(item.sizes[0].id, ['measureUnit']);
-    if(!size){ throw new NotFoundException(); }
-
-    const removal = await unitService.remove(size?.measureUnit.id);
-    if(!removal){ throw new Error("unit of measure removal failed"); }
-
-    const verify = await sizeService.findOne(item.sizes[0].id);
-    expect(verify).toBeNull();
-  });*/
-
   // If a package is deleted, the itemSizes are also deleted.
   it('should delete a package and delete the item size', async () => {
     const item = await itemService.findOneByName(DRY_A, ['sizes']);

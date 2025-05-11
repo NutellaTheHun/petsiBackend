@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
+import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
@@ -8,6 +8,7 @@ import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { MenuItemValidator } from "../validators/menu-item.validator";
 import { MenuItemComponentBuilder } from "./menu-item-component.builder";
 
 @Injectable()
@@ -23,7 +24,90 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         private readonly componentBuilder: MenuItemComponentBuilder,
 
         private readonly sizeService: MenuItemSizeService,
-    ){ super(MenuItem); }
+        validator: MenuItemValidator,
+    ){ super(MenuItem, validator); }
+
+    protected async createEntity(dto: CreateMenuItemDto): Promise<void> {
+        if(dto.squareCatalogId){
+            this.squareCatalogId(dto.squareCatalogId);
+        }
+        if(dto.squareCategoryId){
+            this.squareCategoryId(dto.squareCategoryId);
+        }
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.searchNames){
+            this.searchNames(dto.searchNames);
+        }
+        if(dto.isPOTM){
+            this.isPOTM(dto.isPOTM);
+        }
+        if(dto.isParbake){
+            this.isParbake(dto.isParbake);
+        }
+
+        // Entities
+        if(dto.validSizeIds){
+            this.validSizesById(dto.validSizeIds);
+        }
+        if(dto.veganOptionMenuId){
+            this.veganOptionById(dto.veganOptionMenuId);
+        }
+        if(dto.takeNBakeOptionMenuId){
+            this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
+        }
+        if(dto.veganTakeNBakeOptionMenuId){
+            this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
+        }
+        if(dto.categoryId){
+            this.categorybyId(dto.categoryId);
+        }
+        if(dto.containerComponentDtos){
+            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateMenuItemDto): Promise<void> {
+        if(dto.squareCatalogId){
+            this.squareCatalogId(dto.squareCatalogId);
+        }
+        if(dto.squareCategoryId){
+            this.squareCategoryId(dto.squareCategoryId);
+        }
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.searchNames){
+            this.searchNames(dto.searchNames);
+        }
+        if(dto.isPOTM){
+            this.isPOTM(dto.isPOTM);
+        }
+        if(dto.isParbake){
+            this.isParbake(dto.isParbake);
+        }
+
+        // Entities
+        if(dto.validSizeIds){
+            this.validSizesById(dto.validSizeIds);
+        }
+        if(dto.veganOptionMenuId !== undefined){
+            this.veganOptionById(dto.veganOptionMenuId);
+        }
+        if(dto.takeNBakeOptionMenuId !== undefined){
+            this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
+        }
+        if(dto.veganTakeNBakeOptionMenuId !== undefined){
+            this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
+        }
+        if(dto.categoryId !== undefined){
+            this.categorybyId(dto.categoryId);
+        }
+        if(dto.containerComponentDtos){
+            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        }
+    }
 
     public squareCatalogId(catalogId: string): this {
         return this.setProp('squareCatalogId', catalogId);
@@ -97,15 +181,15 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerByBuilder(containerId: number, dtos: (CreateMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+    public containerByBuilder(containerId: number, dtos: (CreateChildMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             containerId,
         }));
-        return this.setPropByBuilder(this.componentBuilder.buildManyDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
     }
 
-    public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {
+    /*public async buildCreateDto(dto: CreateMenuItemDto): Promise<MenuItem> {
         this.reset();
 
         if(dto.squareCatalogId){
@@ -152,7 +236,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public async buildUpdateDto(toUpdate: MenuItem, dto: UpdateMenuItemDto): Promise<MenuItem> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.squareCatalogId){
             this.squareCatalogId(dto.squareCatalogId);
@@ -194,5 +278,5 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
 
         return this.build();
-    }
+    }*/
 }

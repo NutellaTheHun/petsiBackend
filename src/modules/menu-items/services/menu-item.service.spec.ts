@@ -13,6 +13,7 @@ import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dt
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { MenuItemComponentService } from "./menu-item-component.service";
 import { UpdateUnitCategoryDto } from "../../unit-of-measure/dto/update-unit-category.dto";
+import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
 
 describe('menu item service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -478,7 +479,7 @@ describe('menu item service', () => {
         const compDtos = [
             {
                 mode: 'create',
-                containerId: containerItem.id,
+                //containerId: containerItem.id,
                 containerSizeId: containerItem.validSizes[0].id,
                 menuItemId: compItemA.id,
                 menuItemSizeId: compItemA.validSizes[0].id,
@@ -486,13 +487,13 @@ describe('menu item service', () => {
             },
             {
                 mode: 'create',
-                containerId: containerItem.id,
+                //containerId: containerItem.id,
                 containerSizeId: containerItem.validSizes[0].id,
                 menuItemId: compItemB.id,
                 menuItemSizeId: compItemB.validSizes[0].id,
                 quantity: 1
             },
-        ] as CreateMenuItemComponentDto[];
+        ] as CreateChildMenuItemComponentDto[];
 
         const uDto = {
             containerComponentDtos: compDtos,

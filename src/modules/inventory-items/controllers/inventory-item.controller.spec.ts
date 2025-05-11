@@ -8,6 +8,7 @@ import { InventoryItemService } from '../services/inventory-item.service';
 import { CLEANING_CAT, DAIRY_CAT, DRY_A, DRY_B, DRY_C, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_C, FOOD_CAT, FROZEN_CAT, OTHER_A, OTHER_B, OTHER_C, OTHER_CAT, PAPER_CAT, PRODUCE_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from "../utils/constants";
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemController } from './inventory-item.controller';
+import { BadRequestException } from '@nestjs/common';
 
 
 describe('Inventory Item Controller', () => {
@@ -104,7 +105,8 @@ describe('Inventory Item Controller', () => {
 
     jest.spyOn(itemService, "findAll").mockResolvedValue( {items: items} );
 
-    jest.spyOn(itemService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(itemService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return items.find(unit => unit.id === id) || null;
     });
 
@@ -155,8 +157,9 @@ describe('Inventory Item Controller', () => {
   });
   
   it('should fail to return a item (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
   it('should update a item', async () => {

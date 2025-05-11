@@ -1,13 +1,53 @@
+import { ObjectLiteral } from "typeorm";
+import { ValidatorBase } from "./validator-base";
+import { BadRequestException } from "@nestjs/common";
 
-export abstract class BuilderBase<T> {
+export abstract class BuilderBase<T extends ObjectLiteral> {
     protected entity: T;
     protected buildQueue: (() => Promise<void>)[];
 
-    constructor(private entityConstructor: new () => T){ this.reset(); }
+    constructor(
+        private entityConstructor: new () => T,
+        private readonly validator?: ValidatorBase<T>,
+    ){ this.reset(); }
 
-    public abstract buildCreateDto(dto: any): Promise<T>;
+    protected abstract createEntity(dto: any): Promise<void>;
+    protected abstract updateEntity(dto: any): Promise<void>;
 
-    public abstract buildUpdateDto(toUpdate: T, dto: any): Promise<T>;
+    public async buildCreateDto(dto: any): Promise<T>{
+        await this.validateCreateDto(dto);
+
+        this.reset();
+
+        await this.createEntity(dto);
+
+        return await this.build();
+    }
+
+    public async buildUpdateDto(toUpdate: T, dto: any): Promise<T>{
+        await this.validateUpdateDto(dto);
+
+        this.reset();
+        this.setEntity(toUpdate)
+
+        await this.updateEntity(dto);
+
+        return await this.build();
+    }
+
+    protected async validateCreateDto(dto: any): Promise<void> {
+        if (this.validator) {
+            const error = await this.validator.validateCreate(dto);
+            if (error) throw new BadRequestException(error);
+        }
+    }
+
+    protected async validateUpdateDto(dto: any): Promise<void> {
+        if (this.validator) {
+            const error = await this.validator.validateUpdate(dto);
+            if (error) throw new BadRequestException(error);
+        }
+    }
 
     public reset(): this {
         this.entity = new this.entityConstructor();
@@ -15,7 +55,7 @@ export abstract class BuilderBase<T> {
         return this;
     }
 
-    public updateEntity(toUpdate: T): this {
+    public setEntity(toUpdate: T): this {
         this.entity = toUpdate;
         return this;
     }

@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
 import { CreateRecipeDto } from "../dto/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/update-recipe-dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
@@ -10,6 +10,7 @@ import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
+import { RecipeValidator } from "../validators/recipe.valdiator";
 import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
 
 @Injectable()
@@ -29,7 +30,103 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
         private readonly unitService: UnitOfMeasureService,
         private readonly menuItemService: MenuItemService,
-    ){ super(Recipe); }
+        validator: RecipeValidator,
+    ){ super(Recipe, validator); }
+
+    protected async createEntity(dto: CreateRecipeDto): Promise<void> {
+        if(dto.batchResultQuantity){
+            this.batchResultQuantity(dto.batchResultQuantity);
+        }
+
+        if(dto.batchResultUnitOfMeasureId){
+            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        }
+
+        if(dto.categoryId){
+            this.categoryById(dto.categoryId);
+        }
+
+        if(dto.cost){
+            this.cost(dto.cost);
+        }
+
+        if(dto.isIngredient){
+            this.isIngredient(dto.isIngredient);
+        }
+
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+
+        if(dto.name){
+            this.name(dto.name);
+        }
+
+        if(dto.salesPrice){
+            this.salesPrice(dto.salesPrice);
+        }
+
+        if(dto.servingSizeQuantity){
+            this.servingSizeQuantity(dto.servingSizeQuantity);
+        }
+
+        if(dto.servingSizeUnitOfMeasureId){
+            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        }
+
+        if(dto.subCategoryId){
+            this.subCategoryById(dto.subCategoryId);
+        }
+
+        if(dto.ingredientDtos){
+            this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateRecipeDto): Promise<void> {
+        if(dto.batchResultQuantity){
+            this.batchResultQuantity(dto.batchResultQuantity);
+        }
+        if(dto.batchResultUnitOfMeasureId){
+            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        }
+        if(dto.categoryId !== undefined){
+            this.categoryById(dto.categoryId);
+
+            if(dto.subCategoryId !== undefined){
+                this.subCategoryById(dto.subCategoryId);
+            } else {
+                this.subCategoryById(0);
+            }
+        }
+        if(dto.cost){
+            this.cost(dto.cost);
+        }
+        if(dto.isIngredient){
+            this.isIngredient(dto.isIngredient);
+        }
+        if(dto.menuItemId !== undefined){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.salesPrice){
+            this.salesPrice(dto.salesPrice);
+        }
+        if(dto.servingSizeQuantity){
+            this.servingSizeQuantity(dto.servingSizeQuantity);
+        }
+        if(dto.servingSizeUnitOfMeasureId){
+            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        }
+        if(dto.subCategoryId !== undefined){
+            this.subCategoryById(dto.subCategoryId);
+        }
+        if(dto.ingredientDtos){
+            this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
+        }
+    }
 
     public name(name: string): this {
         return this.setProp('name', name);
@@ -54,7 +151,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return this.setPropsByIds(this.ingredientService.findEntitiesById.bind(this.ingredientService), 'ingredients', ids);
     }
 
-    public ingredientsByBuilder(recipeId: number, dtos: (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
+    public ingredientsByBuilder(recipeId: number, dtos: (CreateChildRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             recipeId,
@@ -115,7 +212,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     public subCategoryByName(name: string): this {
         return this.setPropByName(this.subCategoryService.findOneByName.bind(this.subCategoryService), 'subCategory', name);
     }
-
+/*
     public async buildCreateDto(dto: CreateRecipeDto): Promise<Recipe> {
         this.reset();
 
@@ -172,7 +269,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
     public async buildUpdateDto(toUpdate: Recipe, dto: UpdateRecipeDto): Promise<Recipe> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
@@ -218,5 +315,5 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
 
         return await this.build();
-    }
+    }*/
 }

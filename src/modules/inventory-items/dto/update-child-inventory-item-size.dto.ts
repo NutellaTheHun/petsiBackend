@@ -1,14 +1,14 @@
 import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class UpdateInventoryItemSizeDto{
-    //readonly mode: 'update' = 'update';
+export class UpdateChildInventoryItemSizeDto{
+    readonly mode: 'update' = 'update';
 
     /**
      * Used when updating and inventory item, and through this object is updating an item-size
      */
-    /*@IsNumber()
+    @IsNumber()
     @IsPositive()
-    readonly id?: number;*/
+    readonly id: number;
 
     @IsNumber()
     @IsPositive()

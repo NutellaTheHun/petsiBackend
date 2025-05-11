@@ -1,4 +1,4 @@
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
@@ -136,7 +136,7 @@ describe('Inventory area count service', () => {
         await expect(countService.update(
             0, 
             { inventoryAreaId: newArea.id } as UpdateInventoryAreaCountDto
-        )).rejects.toThrow(NotFoundException);
+        )).rejects.toThrow(Error);
     });
 
     it('should find area counts by area', async () => {

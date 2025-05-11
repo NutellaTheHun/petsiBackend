@@ -8,6 +8,7 @@ import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountController } from "./inventory-area-count.controller";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { BadRequestException } from "@nestjs/common";
 
 describe('inventory area count controller', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -92,7 +93,8 @@ describe('inventory area count controller', () => {
     
         jest.spyOn(countService, "findAll").mockResolvedValue({items: areaCounts});
     
-        jest.spyOn(countService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(countService, "findOne").mockImplementation(async (id?: number) => {
+            if(!id){ throw new BadRequestException(); }
             return areaCounts.find(count => count.id === id) || null;
         });
     
@@ -126,8 +128,9 @@ describe('inventory area count controller', () => {
     });
     
     it('should fail to return an inventory count (bad id, returns null)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        //const result = await controller.findOne(0);
+        //expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
     });
     
     it('should update an inventory count', async () => {

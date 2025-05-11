@@ -6,6 +6,7 @@ import { LabelTypeService } from '../services/label-type.service';
 import { getTestLabelTypeNames } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTypeController } from './label-type.controller';
+import { BadRequestException } from '@nestjs/common';
 
 describe('Label  Controller', () => {
   let controller: LabelTypeController;
@@ -49,7 +50,8 @@ describe('Label  Controller', () => {
       }
     );
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
         return types.find(type => type.id === id) || null;
       }
     );
@@ -115,8 +117,9 @@ describe('Label  Controller', () => {
   });
 
   it('should fail find label type by id (not exist)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
 
   it('should update label type name', async () => {

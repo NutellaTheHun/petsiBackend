@@ -2,7 +2,7 @@ import { TestingModule } from '@nestjs/testing';
 import { RecipeIngredientController } from './recipe-ingredient.controller';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { NotImplementedException } from '@nestjs/common';
+import { BadRequestException, NotImplementedException } from '@nestjs/common';
 import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
@@ -132,7 +132,8 @@ describe('recipe ingredient controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: ingredients });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return ingredients.find(ingred => ingred.id === id) || null;
     });
 
@@ -173,8 +174,9 @@ describe('recipe ingredient controller', () => {
   });
 
   it('should fail find one a recipe ingredient', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should find all a recipe ingredient', async () => {

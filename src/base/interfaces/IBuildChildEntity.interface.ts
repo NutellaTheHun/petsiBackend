@@ -12,4 +12,5 @@
      */
 export interface IBuildChildDto<Parent = any, Child = any> {
     buildChildCreateDto(parentItem: Parent, dto: any): Promise<Child>;
+    buildChildEntity(dto: any): Promise<void>;
 }

@@ -8,6 +8,8 @@ import { InventoryAreaService } from "../services/inventory-area.service";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
+import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
+import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
@@ -20,7 +22,25 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
 
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
-    ){ super(InventoryAreaCount); }
+
+        validator: InventoryAreaCountValidator,
+    ){ super(InventoryAreaCount, validator); }
+
+    protected async createEntity(dto: CreateInventoryAreaCountDto): Promise<void> {
+        if(dto.inventoryAreaId){
+            this.inventoryAreaById(dto.inventoryAreaId);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateInventoryAreaCountDto): Promise<void> {
+        if(dto.inventoryAreaId){
+            this.inventoryAreaById(dto.inventoryAreaId);
+        }
+        if(dto.itemCountDtos){
+            // Requires passing the parent when the area-count update requires creating a new area-item
+            this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
+        }
+    }
 
     public inventoryAreaById(id: number): this {
         return this.setPropById(this.areaService.findOne.bind(this.areaService), 'inventoryArea', id);
@@ -34,7 +54,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
     }
 
-    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
+    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             areaCountId: parent.id,
@@ -46,6 +66,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
      * @param dto Must have an inventoryAreaId, WARNING: inventoryItemCountIds are not used in creation. Only in updates.
      * @returns 
      */
+    /*
     public async buildCreateDto(dto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
 
@@ -54,11 +75,11 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         }
 
         return await this.build();
-    }
-
+    }*/
+/*
     public async buildUpdateDto(toUpdate: InventoryAreaCount, dto: UpdateInventoryAreaCountDto): Promise<InventoryAreaCount> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
@@ -69,5 +90,5 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         }
 
         return await this.build();
-    }
+    }*/
 }

@@ -6,6 +6,7 @@ import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryController } from './recipe-sub-category.controller';
+import { BadRequestException } from '@nestjs/common';
 
 describe('recipe sub category controller', () => {
   let controller: RecipeSubCategoryController;
@@ -78,8 +79,10 @@ describe('recipe sub category controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: subCategories });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return subCategories.find(subCat => subCat.id === id) || null;
+      
     });
 
     jest.spyOn(service, "remove").mockImplementation(async (id: number) => {
@@ -125,8 +128,9 @@ describe('recipe sub category controller', () => {
   });
 
   it('should fail find one a sub-category', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
 
   it('should find all a sub-category', async () => {

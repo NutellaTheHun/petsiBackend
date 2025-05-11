@@ -1,14 +1,14 @@
 import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class UpdateMenuItemComponentDto {
-    //readonly mode: 'update' = 'update';
+export class UpdateChildMenuItemComponentDto {
+    readonly mode: 'update' = 'update';
 
     /**
      * Used when building as a child
      */
-    /*@IsNumber()
+    @IsNumber()
     @IsPositive()
-    readonly id?: number;*/
+    readonly id: number;
 
     @IsNumber()
     @IsPositive()

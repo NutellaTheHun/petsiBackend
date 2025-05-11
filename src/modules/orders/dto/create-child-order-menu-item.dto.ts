@@ -1,12 +1,7 @@
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
-export class CreateOrderMenuItemDto {
-    //readonly mode: 'create' = 'create';
-
-    @IsNumber()
-    @IsNotEmpty()
-    @IsPositive()
-    readonly orderId: number;
+export class CreateChildOrderMenuItemDto {
+    readonly mode: 'create' = 'create';
 
     @IsNumber()
     @IsNotEmpty()

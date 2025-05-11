@@ -12,6 +12,7 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { CreateChildTemplateMenuItemDto } from '../dto/create-child-template-menu-item.dto';
 
 describe('Template Service', () => {
   let templateService: TemplateService;
@@ -123,7 +124,7 @@ describe('Template Service', () => {
         menuItemId: itemB.id,
         tablePosIndex: 1,
       }
-    ] as CreateTemplateMenuItemDto[];
+    ] as CreateChildTemplateMenuItemDto[];
 
     const dto = {
       itemDtos: itemDtos,

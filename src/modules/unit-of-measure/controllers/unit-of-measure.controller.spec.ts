@@ -6,6 +6,7 @@ import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { GALLON, LITER, MILLILITER, FL_OUNCE, QUART } from '../utils/constants';
+import { BadRequestException } from '@nestjs/common';
 
 describe('UnitOfMeasureController', () => {
   let controller: UnitOfMeasureController;
@@ -65,7 +66,8 @@ describe('UnitOfMeasureController', () => {
 
     jest.spyOn(unitService, "findAll").mockResolvedValue({ items: units });
 
-    jest.spyOn(unitService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(unitService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return units.find(unit => unit.id === id) || null;
     });
 
@@ -113,8 +115,9 @@ describe('UnitOfMeasureController', () => {
   });
   
   it('should fail to return a unit (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a unit', async () => {

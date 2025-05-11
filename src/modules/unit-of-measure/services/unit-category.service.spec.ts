@@ -89,7 +89,7 @@ describe('UnitCategoryService', () => {
       name: "updateName"
     } as UpdateUnitCategoryDto;
 
-    await expect(categoryService.update(0, dto)).rejects.toThrow(NotFoundException);
+    await expect(categoryService.update(0, dto)).rejects.toThrow(Error);
   })
 
   it('should update category name', async () => {

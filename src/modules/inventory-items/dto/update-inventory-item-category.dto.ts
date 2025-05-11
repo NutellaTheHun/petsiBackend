@@ -3,11 +3,11 @@ import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-valid
 export class UpdateInventoryItemCategoryDto {
     @IsString()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsArray()
     @IsPositive({ each: true})
     @IsNumber({}, { each: true})
     @IsOptional()
-    readonly inventoryItemIds: number[];
+    readonly inventoryItemIds?: number[];
 }

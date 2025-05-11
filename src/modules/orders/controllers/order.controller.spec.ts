@@ -7,6 +7,7 @@ import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderController } from "./order.controller";
+import { BadRequestException } from "@nestjs/common";
 
 describe('order controller', () => {
     let controller: OrderController;
@@ -57,7 +58,8 @@ describe('order controller', () => {
             return orders.filter(order => ids.findIndex(id => id === order.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+            if(!id){ throw new Error(); }
             return orders.find(order => order.id === id) || null;
         });
 

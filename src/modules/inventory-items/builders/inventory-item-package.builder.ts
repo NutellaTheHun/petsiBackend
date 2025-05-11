@@ -3,16 +3,30 @@ import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-pack
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
 import { BuilderBase } from "../../../base/builder-base";
+import { InventoryItemPackageValidator } from "../validators/inventory-item-package.validator";
 
 @Injectable()
 export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackage> {
-    constructor(){  super(InventoryItemPackage); }
+    constructor(
+        validator: InventoryItemPackageValidator,
+    ){ super(InventoryItemPackage, validator); }
+
+    protected async createEntity(dto: CreateInventoryItemPackageDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+    protected async updateEntity(dto: UpdateInventoryItemPackageDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
 
     public name(name: string): this {
         return this.setProp('name', name);
     }
 
-    public async buildCreateDto(dto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage> {
+    /*public async buildCreateDto(dto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage> {
         this.reset();
 
         if(dto.name){
@@ -24,12 +38,12 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
 
     public async buildUpdateDto(itemPackage: InventoryItemPackage, dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
         this.reset();
-        this.updateEntity(itemPackage);
+        this.setEntity(itemPackage);
         
         if(dto.name){
             this.name(dto.name);
         }
 
         return await this.build();
-    }
+    }*/
 }

@@ -4,13 +4,30 @@ import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendo
 import { UpdateInventoryItemVendorDto } from "../dto/update-inventory-item-vendor.dto";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 import { InventoryItemService } from "../services/inventory-item.service";
+import { InventoryItemVendorValidator } from "../validators/inventory-item-vendor.validator";
 
 @Injectable()
 export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>{
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ) { super(InventoryItemVendor); }
+        validator: InventoryItemVendorValidator,
+    ) { super(InventoryItemVendor, validator); }
+
+    protected async createEntity(dto: CreateInventoryItemVendorDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateInventoryItemVendorDto): Promise<void> {
+        if(dto.name){
+            this.name(dto.name);
+        }
+        if(dto.inventoryItemIds){
+            this.inventoryItemsByIds(dto.inventoryItemIds);
+        }
+    }
 
     public name(name: string): this {
         return this.setProp('name', name);
@@ -20,7 +37,7 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
     }
 
-    public async buildCreateDto(dto: CreateInventoryItemVendorDto): Promise<InventoryItemVendor> {
+    /*public async buildCreateDto(dto: CreateInventoryItemVendorDto): Promise<InventoryItemVendor> {
         this.reset();
 
         if(dto.name){
@@ -32,7 +49,7 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
 
     public async buildUpdateDto(toUpdate: InventoryItemVendor, dto: UpdateInventoryItemVendorDto): Promise<InventoryItemVendor> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.name){
             this.name(dto.name);
@@ -42,5 +59,5 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
         }
 
         return await this.build();
-    }
+    }*/
 }

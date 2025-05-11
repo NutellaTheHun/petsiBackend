@@ -5,6 +5,7 @@ import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('template menu item controller', () => {
   let controller: TemplateMenuItemController;
@@ -39,7 +40,8 @@ describe('template menu item controller', () => {
       return items.filter(item => ids.findIndex(id => id === item.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return items.find(item => item.id === id) || null;
     });
 
@@ -89,8 +91,9 @@ describe('template menu item controller', () => {
       });
     
       it('should fail find template item by id (not exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        //const result = await controller.findOne(0);
+        //expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
       });
     
       it('should update template item display name', async () => {

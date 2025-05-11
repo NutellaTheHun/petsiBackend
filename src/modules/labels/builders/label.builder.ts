@@ -5,13 +5,39 @@ import { CreateLabelDto } from "../dto/create-label.dto";
 import { UpdateLabelDto } from "../dto/update-label.dto";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { LabelTypeService } from "../services/label-type.service";
+import { LabelValidator } from "../validators/label.validator";
 
 @Injectable()
 export class LabelBuilder extends BuilderBase<Label> {
     constructor(
         private readonly itemService: MenuItemService,
         private readonly typeService: LabelTypeService,
-    ){ super(Label); }
+        validator: LabelValidator,
+    ){ super(Label, validator); }
+
+    protected async createEntity(dto: CreateLabelDto): Promise<void> {
+        if(dto.imageUrl){
+            this.imageUrl(dto.imageUrl);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.typeId){
+            this.labelTypeById(dto.typeId);
+        }
+    }
+
+    protected async updateEntity(dto: UpdateLabelDto): Promise<void> {
+        if(dto.imageUrl){
+            this.imageUrl(dto.imageUrl);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.typeId){
+            this.labelTypeById(dto.typeId);
+        }
+    }
 
     public menuItemById(id: number): this {
         return this.setPropById(this.itemService.findOne.bind(this.itemService),'menuItem', id);
@@ -32,7 +58,7 @@ export class LabelBuilder extends BuilderBase<Label> {
     public labelTypeByName(name: string): this {
         return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'type', name);
     }
-
+/*
     public async buildCreateDto(dto: CreateLabelDto): Promise<Label> {
         this.reset();
 
@@ -51,7 +77,7 @@ export class LabelBuilder extends BuilderBase<Label> {
 
     public async buildUpdateDto(toUpdate: Label, dto: UpdateLabelDto): Promise<Label> {
         this.reset();
-        this.updateEntity(toUpdate);
+        this.setEntity(toUpdate);
 
         if(dto.imageUrl){
             this.imageUrl(dto.imageUrl);
@@ -64,5 +90,5 @@ export class LabelBuilder extends BuilderBase<Label> {
         }
 
         return this.build();
-    }
+    }*/
 }

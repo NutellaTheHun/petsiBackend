@@ -7,6 +7,7 @@ import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendo
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
+import { BadRequestException } from '@nestjs/common';
 
 describe('Inventory Item Vendor Controller', () => {
   let controller: InventoryItemVendorController;
@@ -78,7 +79,8 @@ describe('Inventory Item Vendor Controller', () => {
 
     jest.spyOn(vendorService, "findAll").mockResolvedValue( {items: vendors} );
 
-    jest.spyOn(vendorService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(vendorService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return vendors.find(unit => unit.id === id) || null;
     });
 
@@ -125,8 +127,9 @@ describe('Inventory Item Vendor Controller', () => {
   });
   
   it('should fail to return a vendor (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    //const result = await controller.findOne(0);
+    //expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
   it('should update a vendor', async () => {

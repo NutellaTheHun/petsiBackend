@@ -6,6 +6,7 @@ import { OrderTypeService } from "../services/order-type.service";
 import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTypeController } from "./order-type.controller";
+import { BadRequestException } from "@nestjs/common";
 
 describe('order type controller', () => {
     let controller: OrderTypeController;
@@ -46,7 +47,8 @@ describe('order type controller', () => {
             return types.filter(type => ids.findIndex(id => id === type.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+            if(!id){ throw new BadRequestException(); }
             return types.find(type => type.id === id) || null;
         });
 
