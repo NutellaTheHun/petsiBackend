@@ -58,8 +58,7 @@ describe('order controller', () => {
             return orders.filter(order => ids.findIndex(id => id === order.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-            if(!id){ throw new Error(); }
+        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
             return orders.find(order => order.id === id) || null;
         });
 

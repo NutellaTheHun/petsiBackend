@@ -106,8 +106,8 @@ describe('inventory area controller', () => {
     
         jest.spyOn(areaService, "findAll").mockResolvedValue({items: areas});
     
-        jest.spyOn(areaService, "findOne").mockImplementation(async (id?: number) => {
-            if(!id){ throw new Error(); }
+        jest.spyOn(areaService, "findOne").mockImplementation(async (id: number) => {
+            //if(!id){ throw new Error(); }
             return areas.find(area => area.id === id) || null;
         });
     
@@ -155,7 +155,8 @@ describe('inventory area controller', () => {
     
     it('should fail to return an area (bad id, returns null)', async () => {
         const result = await controller.findOne(0);
-        await expect(controller.findOne(0)).rejects.toThrow(Error);
+        //await expect(controller.findOne(0)).rejects.toThrow(Error);
+        expect(result).toBeNull();
     });
     
     it('should update an area', async () => {

@@ -17,6 +17,8 @@ import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
+import { CreateChildInventoryItemSizeDto } from '../dto/create-child-inventory-item-size.dto';
+import { UpdateChildInventoryItemSizeDto } from '../dto/update-child-inventory-item-size.dto';
 
 describe('Inventory Item Service', () => {
   let module: TestingModule;
@@ -401,9 +403,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('deleteded itemSize from item update should not exist', async () => {
-    //const verify = await sizeService.findOne(deletedSizeId);
-    //expect(verify).toBeNull();
-    await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(Error);
+    const verify = await sizeService.findOne(deletedSizeId);
+    expect(verify).toBeNull();
+    //await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(Error);
   });
 
   it('should update item with both a new and modified size', async () => {
@@ -439,12 +441,12 @@ describe('Inventory Item Service', () => {
       id: sizes[0].id,
       unitOfMeasureId: sizes[0].measureUnit.id,
       inventoryPackageTypeId: sizes[0].packageType.id,
-      } as UpdateInventoryItemSizeDto,
+      } as UpdateChildInventoryItemSizeDto,
       {
       mode:'create',
       unitOfMeasureId: createUnit.id,
       inventoryPackageTypeId: createPkg.id,
-      } as CreateInventoryItemSizeDto,
+      } as CreateChildInventoryItemSizeDto,
     ]
 
     const updateDto = {

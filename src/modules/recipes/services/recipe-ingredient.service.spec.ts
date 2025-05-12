@@ -244,7 +244,9 @@ describe('recipe ingredient service', () => {
       inventoryItemId: newItem.id
     });
 
-    try{
+    await expect(ingredientService.update(testIngredId, dto)).rejects.toThrow(BadRequestException);
+
+    /*try{
       await validateOrReject(dto);
       const result = await ingredientService.update(testIngredId, dto);
       expect(result).toBeNull()
@@ -254,7 +256,7 @@ describe('recipe ingredient service', () => {
       } else {
         throw errors
       }
-    }
+    }*/
   });
 
   it('should get all ingredients', async () => {

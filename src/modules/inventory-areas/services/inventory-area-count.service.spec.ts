@@ -18,6 +18,8 @@ import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
 import { InventoryAreaService } from "./inventory-area.service";
+import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/update-child-inventory-item-size.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
 
 describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -323,23 +325,26 @@ describe('Inventory area count service', () => {
             mode: 'update',
             id: itemSizeTestId,
             unitOfMeasureId: uom.id,
-        } as UpdateInventoryItemSizeDto;
+            
+        } as UpdateChildInventoryItemSizeDto;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
             itemSizeDto: itemSizeUpdateDto,
-        } as UpdateInventoryAreaItemDto;
+        } as UpdateChildInventoryAreaItemDto;
 
         const theRest = areaCount.items.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
-        } as UpdateInventoryAreaItemDto))
+        } as UpdateChildInventoryAreaItemDto))
 
         const updateAreaCountDto = {
             itemCountDtos: [updateAreaItemDto, ...theRest]
         } as UpdateInventoryAreaCountDto;
 
+        // not updating inventoryItemSize,
+        // not returning relations
         const result = await countService.update(testCountId, updateAreaCountDto);
         if(!result?.items){ throw new Error("results area items is null"); }
 

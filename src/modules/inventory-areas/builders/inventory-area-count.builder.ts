@@ -10,6 +10,7 @@ import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dt
 import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
 import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
@@ -54,7 +55,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'items', ids);
     }
 
-    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateInventoryAreaItemDto)[]): this{
+    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateChildInventoryAreaItemDto)[]): this{
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             areaCountId: parent.id,

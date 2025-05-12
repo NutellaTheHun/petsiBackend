@@ -192,9 +192,9 @@ describe('Inventory area item service', () => {
     });
 
     it('should fail to get one item by id (not found)', async () => {
-        //const result = await areaItemService.findOne(0);
-        //expect(result).toBeNull();
-        await expect( areaItemService.findOne(0)).rejects.toThrow(Error);
+        const result = await areaItemService.findOne(0);
+        expect(result).toBeNull();
+        //await expect( areaItemService.findOne(0)).rejects.toThrow(Error);
     });
 
     it('should remove one item by id', async () => {
@@ -202,7 +202,8 @@ describe('Inventory area item service', () => {
         expect(removal).toBeTruthy();
 
         const verify = await areaItemService.findOne(0);
-        await expect(verify).rejects.toThrow(Error);
+        expect(verify).toBeNull();
+        //await expect(verify).rejects.toThrow(Error);
     });
 
     it('should remove one item by id (not found)', async () => {

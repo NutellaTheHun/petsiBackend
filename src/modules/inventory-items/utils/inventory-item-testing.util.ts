@@ -23,6 +23,7 @@ import { InventoryItemService } from "../services/inventory-item.service";
 import * as CONSTANT from "./constants";
 import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryItemTestingUtil {
@@ -278,8 +279,8 @@ export class InventoryItemTestingUtil {
     /**
      * - Create's inventoryItemSize dtos for create method of an inventory item
      */
-    public createInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[]): CreateInventoryItemSizeDto[] {
-        const results: CreateInventoryItemSizeDto[] = [];
+    public createInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[]): CreateChildInventoryItemSizeDto[] {
+        const results: CreateChildInventoryItemSizeDto[] = [];
         
         let packageIdx = 0;
         let unitIdx = 0;
@@ -291,7 +292,7 @@ export class InventoryItemTestingUtil {
                     mode: 'create',
                     unitOfMeasureId: unitIds[unitIdx++],
                     inventoryPackageTypeId: packageIds[packageIdx++],
-                } as CreateInventoryItemSizeDto
+                } as CreateChildInventoryItemSizeDto
             )
             if(unitIdx === unitIds.length){
                 unitIdx = 0;
@@ -301,8 +302,6 @@ export class InventoryItemTestingUtil {
                 packageIdx = packageIter;
             }
         }
-        
-
         return results;
     }   
 }

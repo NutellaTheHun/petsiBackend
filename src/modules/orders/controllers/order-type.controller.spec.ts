@@ -47,8 +47,8 @@ describe('order type controller', () => {
             return types.filter(type => ids.findIndex(id => id === type.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-            if(!id){ throw new BadRequestException(); }
+        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+            //if(!id){ throw new BadRequestException(); }
             return types.find(type => type.id === id) || null;
         });
 

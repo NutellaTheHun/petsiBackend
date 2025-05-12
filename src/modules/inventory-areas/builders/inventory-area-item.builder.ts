@@ -59,16 +59,11 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     }
 
     protected async updateEntity(dto: UpdateInventoryAreaItemDto): Promise<void> {
-         if(dto.areaCountId){
+        if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
         }
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
-
-            // Depends on inventoryItemId
-            if(dto.itemSizeDto){
-                this.sizeByBuilder(dto.inventoryItemId, dto.itemSizeDto);
-            }
         }
         if(dto.measureAmount){
             this.measureAmount(dto.measureAmount);
@@ -79,10 +74,13 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         if(dto.itemSizeId){
             this.sizeById(dto.itemSizeId);
         }
+        if(dto.itemSizeDto){
+            this.sizeByBuilder(this.entity.item.id, dto.itemSizeDto);
+        }
     }
 
     async buildChildEntity(dto: CreateChildInventoryAreaItemDto): Promise<void> {
-        if(dto.inventoryItemId){
+        if(dto.inventoryItemId){``
             this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.measureAmount){
@@ -119,7 +117,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
             if(dto.mode === 'create'){
                 results.push(await this.buildChildCreateDto(parentCount, dto))
             } else {
-                const countedItem = await this.itemCountService.findOne(dto.id);
+                const countedItem = await this.itemCountService.findOne(dto.id, ['areaCount', 'item', 'size']);
                 if(!countedItem){ throw new Error("counted item is null"); }
                 results.push(await this.buildUpdateDto(countedItem, dto));
             }

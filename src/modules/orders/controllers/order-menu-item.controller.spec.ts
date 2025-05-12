@@ -89,8 +89,8 @@ describe('order menu item controller', () => {
             return orderItems.filter(item => ids.findIndex(id => id === item.id) !== -1);
         });
 
-        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-            if(!id){ throw new Error(); }
+        jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+            //if(!id){ throw new Error(); }
             return orderItems.find(item => item.id === id) || null;
         });
 
@@ -145,9 +145,9 @@ describe('order menu item controller', () => {
     });
     
     it('should fail find order menu item by id (not exist)', async () => {
-        //const result = await controller.findOne(0);
-        //expect(result).toBeNull();
-        await expect(controller.findOne(0)).rejects.toThrow(Error);
+        const result = await controller.findOne(0);
+        expect(result).toBeNull();
+        //await expect(controller.findOne(0)).rejects.toThrow(Error);
     });
     
     it('should update order menu item quantity', async () => {

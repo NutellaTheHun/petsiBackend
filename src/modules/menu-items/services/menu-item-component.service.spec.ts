@@ -5,7 +5,7 @@ import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemComponentService } from "./menu-item-component.service";
 import { MenuItemService } from "./menu-item.service";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { NotFoundException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { item_a, item_b, item_c, item_e, item_f, item_g } from "../utils/constants";
 import { plainToInstance } from "class-transformer";
@@ -131,7 +131,9 @@ describe('menu item component service', () => {
             menuItemId: newItem.id,
         });
 
-        try{
+        await expect(componentService.update(testId, dto)).rejects.toThrow(BadRequestException);
+
+        /*try{
             await validateOrReject(dto);
             const result = await componentService.update(testId, dto);
             expect(result).toBeNull();
@@ -141,7 +143,7 @@ describe('menu item component service', () => {
             } else {
             throw errors
             }
-        }
+        }*/
     });
 
     it('should update component quantity', async () => {
