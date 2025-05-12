@@ -14,13 +14,13 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
         validator: InventoryItemVendorValidator,
     ) { super(InventoryItemVendor, validator); }
 
-    protected async createEntity(dto: CreateInventoryItemVendorDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryItemVendorDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryItemVendorDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -30,7 +30,7 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public inventoryItemsByIds(ids: number[]): this {

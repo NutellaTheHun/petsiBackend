@@ -13,13 +13,13 @@ export class RoleBuilder extends BuilderBase<Role>{
         validator: RoleValidator,
     ){ super(Role, validator); }
 
-    protected async createEntity(dto: CreateRoleDto): Promise<void> {
+    protected createEntity(dto: CreateRoleDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateRoleDto): Promise<void> {
+    protected updateEntity(dto: UpdateRoleDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -29,7 +29,7 @@ export class RoleBuilder extends BuilderBase<Role>{
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public users(ids: number[]): this {

@@ -11,19 +11,19 @@ export class OrderTypeBuilder extends BuilderBase<OrderType>{
         validator: OrderTypeValidator,
     ){ super(OrderType, validator); }
 
-    protected async createEntity(dto: CreateOrderTypeDto): Promise<void> {
+    protected createEntity(dto: CreateOrderTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateOrderTypeDto): Promise<void> {
+    protected updateEntity(dto: UpdateOrderTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 }

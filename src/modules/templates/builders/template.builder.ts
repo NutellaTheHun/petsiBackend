@@ -16,7 +16,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
         validator: TemplateValidator,
     ){ super(Template, validator); }
 
-    protected async createEntity(dto: CreateTemplateDto): Promise<void> {
+    protected createEntity(dto: CreateTemplateDto): void {
         if(dto.isPie){
             this.isPie(dto.isPie);
         }
@@ -28,7 +28,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
         } 
     }
 
-    protected async updateEntity(dto: UpdateTemplateDto): Promise<void> {
+    protected updateEntity(dto: UpdateTemplateDto): void {
         if(dto.isPie){
             this.isPie(dto.isPie);
         }
@@ -41,11 +41,11 @@ export class TemplateBuilder extends BuilderBase<Template> {
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public isPie(val: boolean): this {
-        return this.setProp('isPie', val);
+        return this.setPropByVal('isPie', val);
     }
 
     public itemsByBuilder(templateId: number, dtos: (CreateChildTemplateMenuItemDto | UpdateTemplateMenuItemDto)[]): this {

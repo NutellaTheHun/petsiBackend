@@ -15,12 +15,12 @@ export class UserBuilder extends BuilderBase<User> {
         validator: UserValidator,
     ){ super(User, validator); }
 
-    protected async createEntity(dto: CreateUserDto): Promise<void> {
+    protected createEntity(dto: CreateUserDto): void {
         if(dto.email){
             this.email(dto.email);
         }
         if(dto.password){
-            this.password( await hashPassword(dto.password) );
+            this.password(dto.password);
         }
         if(dto.roleIds){
             this.roles(dto.roleIds);
@@ -30,12 +30,12 @@ export class UserBuilder extends BuilderBase<User> {
         }
     }
     
-    protected async updateEntity(dto: UpdateUserDto): Promise<void> {
+    protected updateEntity(dto: UpdateUserDto): void {
         if(dto.email){
             this.email(dto.email);
         }
         if(dto.password){
-            this.password( await hashPassword(dto.password) );
+            this.password(dto.password);
         }
         if(dto.roleIds){
             this.roles(dto.roleIds);
@@ -46,18 +46,18 @@ export class UserBuilder extends BuilderBase<User> {
     }
 
     public username(name: string): this {
-        return this.setProp('username', name);
+        return this.setPropByVal('username', name);
     }
 
     public email(email: string): this {
-        return this.setProp('email', email);
+        return this.setPropByVal('email', email);
     }
     /**
      * - DOES NOT HASH PASSWORD
      * - Is Hashed in buildCreateDto() and buildUpdateDto();
      */
     public password(password: string): this {
-        return this.setProp('password', password);
+        return this.setPropByFn(hashPassword, 'password', password);
     }
     
     public roles(ids: number[]): this {

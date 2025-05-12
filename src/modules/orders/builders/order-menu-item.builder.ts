@@ -27,7 +27,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         validator: OrderMenuItemValidator,
     ){ super(OrderMenuItem, validator); }
     
-    protected async createEntity(dto: CreateOrderMenuItemDto): Promise<void> {
+    protected createEntity(dto: CreateOrderMenuItemDto): void {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
@@ -42,7 +42,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         }
     }
 
-    protected async updateEntity(dto: UpdateOrderMenuItemDto): Promise<void> {
+    protected updateEntity(dto: UpdateOrderMenuItemDto): void {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
@@ -54,7 +54,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         }
     }
     
-    async buildChildEntity(dto: CreateChildOrderMenuItemDto): Promise<void> {
+    buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
@@ -73,7 +73,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
 
         this.entity.order = parentOrder;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
     }
@@ -113,6 +113,6 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
     }
 
     public quantity(amount: number){
-        return this.setProp('quantity', amount);
+        return this.setPropByVal('quantity', amount);
     }
 }

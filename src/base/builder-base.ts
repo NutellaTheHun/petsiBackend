@@ -11,15 +11,15 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         private readonly validator?: ValidatorBase<T>,
     ){ this.reset(); }
 
-    protected abstract createEntity(dto: any): Promise<void>;
-    protected abstract updateEntity(dto: any): Promise<void>;
+    protected abstract createEntity(dto: any): void;
+    protected abstract updateEntity(dto: any): void;
 
     public async buildCreateDto(dto: any): Promise<T>{
         await this.validateCreateDto(dto);
 
         this.reset();
 
-        await this.createEntity(dto);
+        this.createEntity(dto);
 
         return await this.build();
     }
@@ -30,7 +30,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         this.reset();
         this.setEntity(toUpdate)
 
-        await this.updateEntity(dto);
+        this.updateEntity(dto);
 
         return await this.build();
     }
@@ -114,8 +114,26 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         return this;
     }
 
-    protected setProp<K extends keyof T>(prop: K, value: T[K]): this {
+    protected setPropByVal<K extends keyof T>(prop: K, value: T[K]): this {
         this.entity[prop] = value;
+        return this;
+    }
+
+    /**
+     * Takes a function with 1 argument.
+     * @param func 
+     * @param prop 
+     * @param arg 
+     * @returns 
+     */
+    protected setPropByFn<K extends keyof T>(func: (arg: any) => Promise<any>, prop: K, arg: any): this {
+        this.buildQueue.push(async () => {
+            const result = await func(arg);
+            if(!result){
+                throw new Error('return value is null');
+            }
+            (this.entity as any)[prop] = result;
+        });
         return this;
     }
 

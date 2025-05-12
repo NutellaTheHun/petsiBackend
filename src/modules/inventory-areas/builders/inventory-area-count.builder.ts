@@ -25,13 +25,13 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         validator: InventoryAreaCountValidator,
     ){ super(InventoryAreaCount, validator); }
 
-    protected async createEntity(dto: CreateInventoryAreaCountDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryAreaCountDto): void{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryAreaCountDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryAreaCountDto): void{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }

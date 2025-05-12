@@ -19,13 +19,13 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
         validator: RecipeCategoryValidator,
     ){ super(RecipeCategory, validator); }
 
-    protected async createEntity(dto: CreateRecipeCategoryDto): Promise<void> {
+    protected createEntity(dto: CreateRecipeCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateRecipeCategoryDto): Promise<void> {
+    protected updateEntity(dto: UpdateRecipeCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -38,7 +38,7 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public subCategoriesById(ids: number[]): this {

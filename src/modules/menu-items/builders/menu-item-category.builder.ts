@@ -14,20 +14,20 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
         validator: MenuItemCategoryValidator,
     ){ super(MenuItemCategory, validator); }
 
-    protected async createEntity(dto: CreateMenuItemCategoryDto): Promise<void> {
+    protected createEntity(dto: CreateMenuItemCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateMenuItemCategoryDto): Promise<void> {
+    protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public menuItemsById(ids: number[]): this {

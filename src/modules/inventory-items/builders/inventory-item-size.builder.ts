@@ -28,7 +28,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         private readonly unitService: UnitOfMeasureService,
     ){ super(InventoryItemSize, validator); }
 
-    protected async createEntity(dto: CreateInventoryItemSizeDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryItemSizeDto): void {
         if(dto.inventoryItemId){
             this.InventoryItemById(dto.inventoryItemId);
         }
@@ -40,10 +40,20 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryItemSizeDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
         if(dto.inventoryPackageTypeId){
             this.packageById(dto.inventoryPackageTypeId);
         }
+        if(dto.unitOfMeasureId){
+            this.unitOfMeasureById(dto.unitOfMeasureId);
+        }
+    }
+
+    buildChildEntity(dto: CreateChildInventoryItemSizeDto): void {
+        if(dto.inventoryPackageTypeId){
+            this.packageById(dto.inventoryPackageTypeId);
+        }
+        
         if(dto.unitOfMeasureId){
             this.unitOfMeasureById(dto.unitOfMeasureId);
         }
@@ -65,19 +75,9 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         
         this.entity.item = parentItem;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
-    }
-
-    async buildChildEntity(dto: CreateChildInventoryItemSizeDto): Promise<void> {
-        if(dto.inventoryPackageTypeId){
-            this.packageById(dto.inventoryPackageTypeId);
-        }
-        
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
-        }
     }
 
     /**

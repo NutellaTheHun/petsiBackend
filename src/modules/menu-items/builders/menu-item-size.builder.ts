@@ -12,19 +12,19 @@ export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
         validator: MenuItemSizeValidator,
     ){ super(MenuItemSize, validator); }
 
-    protected async createEntity(dto: CreateMenuItemSizeDto): Promise<void> {
+    protected createEntity(dto: CreateMenuItemSizeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateMenuItemSizeDto): Promise<void> {
+    protected updateEntity(dto: UpdateMenuItemSizeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 }

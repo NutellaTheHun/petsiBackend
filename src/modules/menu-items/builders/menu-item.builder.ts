@@ -27,7 +27,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         validator: MenuItemValidator,
     ){ super(MenuItem, validator); }
 
-    protected async createEntity(dto: CreateMenuItemDto): Promise<void> {
+    protected createEntity(dto: CreateMenuItemDto): void {
         if(dto.squareCatalogId){
             this.squareCatalogId(dto.squareCatalogId);
         }
@@ -68,7 +68,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
     }
 
-    protected async updateEntity(dto: UpdateMenuItemDto): Promise<void> {
+    protected updateEntity(dto: UpdateMenuItemDto): void {
         if(dto.squareCatalogId){
             this.squareCatalogId(dto.squareCatalogId);
         }
@@ -110,27 +110,27 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public squareCatalogId(catalogId: string): this {
-        return this.setProp('squareCatalogId', catalogId);
+        return this.setPropByVal('squareCatalogId', catalogId);
     }
 
     public squareCategoryId(categoryId: string): this {
-        return this.setProp('squareCategoryId', categoryId);
+        return this.setPropByVal('squareCategoryId', categoryId);
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public searchNames(names: string[]): this {
-        return this.setProp('searchNames', names);
+        return this.setPropByVal('searchNames', names);
     }
 
     public isPOTM(val: boolean): this {
-        return this.setProp('isPOTM', val);
+        return this.setPropByVal('isPOTM', val);
     }
 
     public isParbake(val: boolean): this {
-        return this.setProp('isParbake', val);
+        return this.setPropByVal('isParbake', val);
     }
 
     public validSizesById(ids: number[]): this {
@@ -139,7 +139,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public veganOptionById(id: number): this {
         if(id === 0){
-            return this.setProp('veganOption', null);
+            return this.setPropByVal('veganOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganOption', id);
     }
@@ -150,7 +150,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public takeNBakeOptionById(id: number): this {
         if(id === 0){
-            return this.setProp('takeNBakeOption', null)
+            return this.setPropByVal('takeNBakeOption', null)
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'takeNBakeOption', id);
     }
@@ -161,7 +161,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public veganTakeNBakeOptionById(id: number): this {
         if(id === 0){
-            return this.setProp('veganTakeNBakeOption', null);
+            return this.setPropByVal('veganTakeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganTakeNBakeOption', id);
     }
@@ -172,7 +172,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
     public categorybyId(id: number): this {
         if(id === 0){
-            return this.setProp('category', null);
+            return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }

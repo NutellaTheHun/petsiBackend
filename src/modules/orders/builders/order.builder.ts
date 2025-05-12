@@ -24,7 +24,7 @@ export class OrderBuilder extends BuilderBase<Order>{
         validator: OrderValidator,
     ){ super(Order, validator); }
 
-    protected async createEntity(dto: CreateOrderDto): Promise<void> {
+    protected createEntity(dto: CreateOrderDto): void {
         if(dto.deliveryAddress){
             this.deliveryAddress(dto.deliveryAddress);
         }
@@ -63,7 +63,7 @@ export class OrderBuilder extends BuilderBase<Order>{
         }
     }
 
-    protected async updateEntity(dto: UpdateOrderDto): Promise<void> {
+    protected updateEntity(dto: UpdateOrderDto): void {
         if(dto.deliveryAddress){
             this.deliveryAddress(dto.deliveryAddress);
         }
@@ -103,7 +103,7 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public squareOrderId(squareId: string): this {
-        return this.setProp('squareOrderId', squareId);
+        return this.setPropByVal('squareOrderId', squareId);
     }
 
     public orderTypeById(id: number): this {
@@ -115,39 +115,39 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public recipient(name: string): this {
-        return this.setProp('recipient', name);
+        return this.setPropByVal('recipient', name);
     }
 
     public fulfillmentDate(date: Date): this {
-        return this.setProp('fulfillmentDate', date);
+        return this.setPropByVal('fulfillmentDate', date);
     }
 
     public fulfillmentType(type: string): this {
-        return this.setProp('fulfillmentType', type);
+        return this.setPropByVal('fulfillmentType', type);
     }
 
     public deliveryAddress(address: string): this {
-        return this.setProp('deliveryAddress', address);
+        return this.setPropByVal('deliveryAddress', address);
     }
 
     public phoneNumber(number: string): this {
-        return this.setProp('phoneNumber', number);
+        return this.setPropByVal('phoneNumber', number);
     }
 
     public email(email: string): this {
-        return this.setProp('email', email);
+        return this.setPropByVal('email', email);
     }
 
     public note(note: string): this {
-        return this.setProp('note', note);
+        return this.setPropByVal('note', note);
     }
 
     public isFrozen(val: boolean): this {
-        return this.setProp('isFrozen', val);
+        return this.setPropByVal('isFrozen', val);
     }
 
     public isWeekly(val: boolean): this {
-        return this.setProp('isWeekly', val);
+        return this.setPropByVal('isWeekly', val);
     }
 
     public itemsById(ids: number[]): this {

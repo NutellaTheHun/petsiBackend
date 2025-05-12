@@ -28,7 +28,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         validator: RecipeIngredientValidator,
     ){ super(RecipeIngredient, validator); }
 
-    protected async createEntity(dto: CreateRecipeIngredientDto): Promise<void> {
+    protected createEntity(dto: CreateRecipeIngredientDto): void {
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
@@ -46,7 +46,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         }
     }
 
-    protected async updateEntity(dto: UpdateRecipeIngredientDto): Promise<void> {
+    protected updateEntity(dto: UpdateRecipeIngredientDto): void {
         if(dto.inventoryItemId){
             this.entity.subRecipeIngredient = null;
             this.inventoryItemById(dto.inventoryItemId);
@@ -63,7 +63,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         }
     }
 
-    async buildChildEntity(dto: CreateChildRecipeIngredientDto): Promise<void> {
+    buildChildEntity(dto: CreateChildRecipeIngredientDto): void {
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
@@ -85,7 +85,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
 
         this.entity.recipe = parent;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
     }
@@ -135,7 +135,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
     }
 
     public quantity(amount: number): this {
-        return this.setProp('quantity', amount);
+        return this.setPropByVal('quantity', amount);
     }
 
     public unitOfMeasureById(id: number): this {

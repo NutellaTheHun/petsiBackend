@@ -27,7 +27,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         validator: InventoryItemValidator,
     ){ super(InventoryItem, validator); }
 
-    protected async createEntity(dto: any): Promise<void> {
+    protected createEntity(dto: any): void {
         if(dto.inventoryItemCategoryId){
             this.categoryById(dto.inventoryItemCategoryId)
         }
@@ -42,7 +42,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         }
     }
 
-    protected async updateEntity(dto: any): Promise<void> {
+    protected updateEntity(dto: any): void {
         if(dto.inventoryItemCategoryId !== undefined){
             this.categoryById(dto.inventoryItemCategoryId);
         }
@@ -58,7 +58,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public sizesByIds(ids: number[]): this {
@@ -75,7 +75,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     
     public categoryById(id: number): this {
         if(id === 0){
-            return this.setProp('category', null);
+            return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
@@ -86,7 +86,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
     public vendorById(id: number): this {
         if(id === 0){
-            return this.setProp('vendor', null);
+            return this.setPropByVal('vendor', null);
         }
         return this.setPropById(this.vendorService.findOne.bind(this.vendorService), 'vendor', id);
     }

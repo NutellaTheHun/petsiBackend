@@ -24,7 +24,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         validator: TemplateMenuItemValidator,
     ){ super(TemplateMenuItem, validator); }
 
-    protected async createEntity(dto: CreateTemplateMenuItemDto): Promise<void> {
+    protected createEntity(dto: CreateTemplateMenuItemDto): void {
         if(dto.templateId){
             this.templateById(dto.templateId);
         }
@@ -39,7 +39,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         }
     }
 
-    protected async updateEntity(dto: UpdateTemplateMenuItemDto): Promise<void> {
+    protected updateEntity(dto: UpdateTemplateMenuItemDto): void {
         if(dto.displayName){
             this.displayName(dto.displayName);
         }
@@ -51,7 +51,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         }
     }
     
-    async buildChildEntity(dto: CreateChildTemplateMenuItemDto): Promise<void> {
+    buildChildEntity(dto: CreateChildTemplateMenuItemDto): void {
         if(dto.displayName){
             this.displayName(dto.displayName);
         }
@@ -69,7 +69,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
 
         this.entity.template = parent;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
     }
@@ -89,7 +89,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
     }
 
     public displayName(name: string): this {
-        return this.setProp('displayName', name);
+        return this.setPropByVal('displayName', name);
     }
 
     public menuItemById(id: number): this {
@@ -101,7 +101,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
     }
 
     public tablePosIndex(pos: number): this {
-        return this.setProp('tablePosIndex', pos);
+        return this.setPropByVal('tablePosIndex', pos);
     }
 
     public templateById(id: number): this {

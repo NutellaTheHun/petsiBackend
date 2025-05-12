@@ -14,7 +14,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         validator: UnitOfMeasureValidator,
     ){ super(UnitOfMeasure, validator); }
     
-    protected async createEntity(dto: CreateUnitOfMeasureDto): Promise<void> {
+    protected createEntity(dto: CreateUnitOfMeasureDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -29,7 +29,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         }
     }
 
-    protected async updateEntity(dto: UpdateUnitOfMeasureDto): Promise<void> {
+    protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -45,16 +45,16 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public abbreviation(abr: string): this {
-        return this.setProp('abbreviation', abr);
+        return this.setPropByVal('abbreviation', abr);
     }
 
     public categoryById(id: number): this {
         if(id === 0){
-            return this.setProp('category', null);
+            return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
@@ -64,6 +64,6 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     }
 
     public conversionFactor(value: string): this{
-        return this.setProp('conversionFactorToBase', value);
+        return this.setPropByVal('conversionFactorToBase', value);
     }
 }

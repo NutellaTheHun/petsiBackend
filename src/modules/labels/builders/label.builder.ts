@@ -15,7 +15,7 @@ export class LabelBuilder extends BuilderBase<Label> {
         validator: LabelValidator,
     ){ super(Label, validator); }
 
-    protected async createEntity(dto: CreateLabelDto): Promise<void> {
+    protected createEntity(dto: CreateLabelDto): void {
         if(dto.imageUrl){
             this.imageUrl(dto.imageUrl);
         }
@@ -27,7 +27,7 @@ export class LabelBuilder extends BuilderBase<Label> {
         }
     }
 
-    protected async updateEntity(dto: UpdateLabelDto): Promise<void> {
+    protected updateEntity(dto: UpdateLabelDto): void {
         if(dto.imageUrl){
             this.imageUrl(dto.imageUrl);
         }
@@ -48,7 +48,7 @@ export class LabelBuilder extends BuilderBase<Label> {
     }
 
     public imageUrl(url: string): this {
-        return this.setProp('imageUrl', url);
+        return this.setPropByVal('imageUrl', url);
     }
 
     public labelTypeById(id: number): this {

@@ -14,26 +14,26 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
         validator: InventoryAreaValidator,
     ){ super(InventoryArea, validator); }
 
-    public name(name: string): this {
-        return this.setProp('name', name);
-    }
-
-    public inventoryCountsById(ids: number[]): this {
-        return this.setPropsByIds(this.countService.findEntitiesById.bind(this.countService), 'inventoryCounts', ids);
-    }
-
-    protected async createEntity(dto: CreateInventoryAreaDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryAreaDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryAreaDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryAreaDto): void {
         if(dto.name){
             this.name(dto.name);
         }
         if(dto.inventoryCountIds){
             this.inventoryCountsById(dto.inventoryCountIds);
         }
+    }
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public inventoryCountsById(ids: number[]): this {
+        return this.setPropsByIds(this.countService.findEntitiesById.bind(this.countService), 'inventoryCounts', ids);
     }
 }

@@ -15,13 +15,13 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
         validator: InventoryItemCategoryValidator,
     ){ super(InventoryItemCategory, validator); }
 
-    protected async createEntity(dto: CreateInventoryItemCategoryDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryItemCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryItemCategoryDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryItemCategoryDto): void {
          if(dto.name){
             this.name(dto.name);
         }
@@ -31,7 +31,7 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public inventoryItemsById(ids: number[]): this {

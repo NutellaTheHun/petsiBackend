@@ -33,7 +33,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         validator: RecipeValidator,
     ){ super(Recipe, validator); }
 
-    protected async createEntity(dto: CreateRecipeDto): Promise<void> {
+    protected createEntity(dto: CreateRecipeDto): void {
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
@@ -83,7 +83,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         }
     }
 
-    protected async updateEntity(dto: UpdateRecipeDto): Promise<void> {
+    protected updateEntity(dto: UpdateRecipeDto): void {
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
@@ -129,12 +129,12 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
     
     public menuItemById(id: number): this {
         if(id === 0){
-            return this.setProp('menuItem', null);
+            return this.setPropByVal('menuItem', null);
         }
         return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'menuItem',id);
     }
@@ -144,7 +144,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public isIngredient(value: boolean): this {
-        return this.setProp('isIngredient', value);
+        return this.setPropByVal('isIngredient', value);
     }
 
     public ingredientsById(ids: number[]): this {
@@ -160,7 +160,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public batchResultQuantity(amount: number): this {
-        return this.setProp('batchResultQuantity', amount);
+        return this.setPropByVal('batchResultQuantity', amount);
     }
 
     public batchResultUnitOfMeasureById(id: number): this {
@@ -172,7 +172,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public servingSizeQuantity(amount: number): this {
-        return this.setProp('servingSizeQuantity', amount);
+        return this.setPropByVal('servingSizeQuantity', amount);
     }
 
     public servingUnitOfMeasureById(id: number): this {
@@ -184,16 +184,16 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public salesPrice(amount: number): this {
-        return this.setProp('salesPrice', amount);
+        return this.setPropByVal('salesPrice', amount);
     }
 
     public cost(amount: number): this {
-        return this.setProp('cost', amount);
+        return this.setPropByVal('cost', amount);
     }
 
     public categoryById(id: number): this {
         if(id === 0){
-            return this.setProp('category', null);
+            return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
     }
@@ -204,7 +204,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
     public subCategoryById(id: number): this {
         if(id === 0){
-            return this.setProp('subCategory', null);
+            return this.setPropByVal('subCategory', null);
         }
         return this.setPropById(this.subCategoryService.findOne.bind(this.subCategoryService), 'subCategory', id);
     }

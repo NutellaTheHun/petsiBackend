@@ -11,18 +11,18 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
         validator: InventoryItemPackageValidator,
     ){ super(InventoryItemPackage, validator); }
 
-    protected async createEntity(dto: CreateInventoryItemPackageDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryItemPackageDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
-    protected async updateEntity(dto: UpdateInventoryItemPackageDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryItemPackageDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 }

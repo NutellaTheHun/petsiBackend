@@ -14,7 +14,7 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
         validator: UnitCategoryValidator,
     ){ super(UnitCategory, validator); }
 
-    protected async createEntity(dto: CreateUnitCategoryDto): Promise<void> {
+    protected createEntity(dto: CreateUnitCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -26,7 +26,7 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
         }
     }
 
-    protected async updateEntity(dto: UpdateUnitCategoryDto): Promise<void> {
+    protected updateEntity(dto: UpdateUnitCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -39,7 +39,7 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
     }
 
     public name(name: string): this{
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 
     public unitsById(ids: number[]): this{

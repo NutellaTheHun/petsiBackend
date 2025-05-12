@@ -26,7 +26,7 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
         validator: MenuItemComponentValidator,
     ){ super(MenuItemComponent, validator); }
     
-    protected async createEntity(dto: CreateMenuItemComponentDto): Promise<void> {
+    protected createEntity(dto: CreateMenuItemComponentDto): void {
         if(dto.containerId){
             this.containerById(dto.containerId);
         }
@@ -44,7 +44,7 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
         }
     }
 
-    protected async updateEntity(dto: UpdateMenuItemComponentDto): Promise<void> {
+    protected updateEntity(dto: UpdateMenuItemComponentDto): void {
         if(dto.menuItemId){
             this.itemById(dto.menuItemId);
         }
@@ -56,7 +56,7 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
         }
     }
 
-    async buildChildEntity(dto: CreateChildMenuItemComponentDto): Promise<void> {
+    buildChildEntity(dto: CreateChildMenuItemComponentDto): void {
         if(dto.containerSizeId){
             this.containerSizeById(dto.containerSizeId);
         }
@@ -78,7 +78,7 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
 
         this.entity.container = parent;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
     }
@@ -122,6 +122,6 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
     }
 
     public quantity(amount: number): this{
-        return this.setProp('quantity', amount);
+        return this.setPropByVal('quantity', amount);
     }
 }

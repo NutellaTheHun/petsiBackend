@@ -9,19 +9,19 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
         validator: LabelTypeValidator,
     ){ super(LabelType, validator); }
 
-    protected async createEntity(dto: CreateLabelTypeDto): Promise<void> {
+    protected createEntity(dto: CreateLabelTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
-    protected async updateEntity(dto: UpdateLabelTypeDto): Promise<void> {
+    protected updateEntity(dto: UpdateLabelTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
     }
 
     public name(name: string): this {
-        return this.setProp('name', name);
+        return this.setPropByVal('name', name);
     }
 }

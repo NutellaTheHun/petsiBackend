@@ -32,7 +32,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryAreaItem, validator); }
 
-    protected async createEntity(dto: CreateInventoryAreaItemDto): Promise<void> {
+    protected createEntity(dto: CreateInventoryAreaItemDto): void {
         if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
         }
@@ -58,7 +58,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         }
     }
 
-    protected async updateEntity(dto: UpdateInventoryAreaItemDto): Promise<void> {
+    protected updateEntity(dto: UpdateInventoryAreaItemDto): void {
         if(dto.areaCountId){
             this.areaCountById(dto.areaCountId);
         }
@@ -79,7 +79,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         }
     }
 
-    async buildChildEntity(dto: CreateChildInventoryAreaItemDto): Promise<void> {
+    buildChildEntity(dto: CreateChildInventoryAreaItemDto): void {
         if(dto.inventoryItemId){``
             this.inventoryItemById(dto.inventoryItemId);
         }
@@ -106,7 +106,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
 
         this.entity.areaCount = parentCount;
 
-        await this.buildChildEntity(dto);
+        this.buildChildEntity(dto);
 
         return await this.build();
     }
@@ -135,13 +135,13 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
 
     public unitAmount(amount: number): this {
         if(amount === 0){
-            return this.setProp('unitAmount', 1);
+            return this.setPropByVal('unitAmount', 1);
         }
-        return this.setProp('unitAmount', amount);
+        return this.setPropByVal('unitAmount', amount);
     }
 
     public measureAmount(amount: number): this {
-        return this.setProp('measureAmount', amount);
+        return this.setPropByVal('measureAmount', amount);
     }
 
     public sizeById(id: number): this {
