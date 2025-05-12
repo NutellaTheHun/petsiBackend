@@ -1,12 +1,6 @@
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateTemplateMenuItemDto {
-    //readonly mode: 'update' = 'update';
-
-    /*@IsPositive()
-    @IsNumber()
-    readonly id: number;*/
-
     @IsString()
     @IsOptional()
     readonly displayName?: string;

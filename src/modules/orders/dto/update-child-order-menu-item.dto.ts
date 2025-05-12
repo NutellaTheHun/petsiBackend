@@ -1,10 +1,11 @@
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateChildOrderMenuItemDto {
     readonly mode: 'update' = 'update';
 
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly id: number;
 
     @IsNumber()

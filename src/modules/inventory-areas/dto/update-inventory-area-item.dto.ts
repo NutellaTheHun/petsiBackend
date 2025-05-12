@@ -3,16 +3,6 @@ import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inv
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
 export class UpdateInventoryAreaItemDto {
-    //readonly mode: 'update' = 'update';
-
-    /**
-     * Is used only when the area-item is being updated through an update of an inventory-area-count
-     */
-    /*@IsNumber()
-    @IsPositive()
-    @IsOptional()
-    readonly id?: number;*/
-
     @IsNumber()
     @IsPositive()
     @IsOptional()

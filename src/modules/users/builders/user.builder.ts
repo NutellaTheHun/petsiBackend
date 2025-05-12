@@ -63,43 +63,4 @@ export class UserBuilder extends BuilderBase<User> {
     public roles(ids: number[]): this {
         return this.setPropsByIds(this.rolesService.findEntitiesById.bind(this.rolesService), 'roles', ids);
     }
-/*
-    public async buildCreateDto(dto: CreateUserDto): Promise<User> {
-        this.reset();
-
-        if(dto.email){
-            this.email(dto.email);
-        }
-        if(dto.password){
-            this.password( await hashPassword(dto.password) );
-        }
-        if(dto.roleIds){
-            this.roles(dto.roleIds);
-        }
-        if(dto.username){
-            this.username(dto.username);
-        }
-
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: User, dto: UpdateUserDto): Promise<User> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.email){
-            this.email(dto.email);
-        }
-        if(dto.password){
-            this.password( await hashPassword(dto.password) );
-        }
-        if(dto.roleIds){
-            this.roles(dto.roleIds);
-        }
-        if(dto.username){
-            this.username(dto.username);
-        }
-
-        return this.build();
-    }*/
 }

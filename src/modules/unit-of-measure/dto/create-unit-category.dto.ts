@@ -9,7 +9,7 @@ export class CreateUnitCategoryDto{
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })
     @IsOptional()
-    readonly unitOfMeasureIds: number[];
+    readonly unitOfMeasureIds?: number[];
 
     @IsNumber()
     @IsPositive()

@@ -3,11 +3,11 @@ import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-valid
 export class UpdateRoleDto {
     @IsString()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsArray()
     @IsNumber({}, { each: true})
     @IsPositive({ each: true})
     @IsOptional()
-    readonly userIds: number[];
+    readonly userIds?: number[];
 }

@@ -35,28 +35,4 @@ export class RoleBuilder extends BuilderBase<Role>{
     public users(ids: number[]): this {
         return this.setPropsByIds(this.userService.findEntitiesById.bind(this.userService), 'users', ids);
     }
-/*
-    public async buildCreateDto(dto: CreateRoleDto): Promise<Role> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: Role, dto: UpdateRoleDto): Promise<Role> {
-        this.reset()
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.userIds){
-            this.users(dto.userIds);
-        }
-
-        return this.build();
-    }*/
 }

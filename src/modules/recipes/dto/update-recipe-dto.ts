@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateNested } from "class-validator";
 import { RecipeIngredientUnionResolver } from "../utils/recipe-ingredient-union-resolver";
 import { CreateChildRecipeIngredientDto } from "./create-child-recipe-ingredient.dto";
-import { UpdateChildRecipeIngredientDto } from "./update-child-recipe-ingedient.dto copy";
+import { UpdateChildRecipeIngredientDto } from "./update-child-recipe-ingedient.dto";
 
 export class UpdateRecipeDto{
     @IsString()

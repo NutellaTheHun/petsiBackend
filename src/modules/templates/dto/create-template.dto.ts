@@ -8,7 +8,7 @@ export class CreateTemplateDto {
 
     @IsBoolean()
     @IsOptional()
-    readonly isPie: boolean;
+    readonly isPie?: boolean;
 
     @IsOptional()
     @IsArray()

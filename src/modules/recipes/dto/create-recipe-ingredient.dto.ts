@@ -1,8 +1,6 @@
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 
 export class CreateRecipeIngredientDto {
-    //readonly mode: 'create' = 'create';
-
     @IsNumber()
     @IsNotEmpty()
     readonly quantity: number;

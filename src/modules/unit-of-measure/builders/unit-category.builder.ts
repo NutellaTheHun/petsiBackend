@@ -53,37 +53,4 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
     public async baseUnitByName(name: string): Promise<this> {
         return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'baseUnit', name);
     }
-/*
-    public async buildCreateDto(dto: CreateUnitCategoryDto): Promise<UnitCategory> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.baseUnitId){
-            this.baseUnitById(dto.baseUnitId);
-        }
-        if(dto.unitOfMeasureIds){
-            this.unitsById(dto.unitOfMeasureIds);
-        }
-
-        return await this.build();
-    }*/
-/*
-    public async buildUpdateDto(toUpdate: UnitCategory, dto: UpdateUnitCategoryDto): Promise<UnitCategory> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.baseUnitId){
-            this.baseUnitById(dto.baseUnitId);
-        }
-        if(dto.unitOfMeasureIds){
-            this.unitsById(dto.unitOfMeasureIds);
-        }
-
-        return await this.build();
-    }*/
 }

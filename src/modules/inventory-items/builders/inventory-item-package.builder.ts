@@ -25,25 +25,4 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
     public name(name: string): this {
         return this.setProp('name', name);
     }
-
-    /*public async buildCreateDto(dto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(itemPackage: InventoryItemPackage, dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
-        this.reset();
-        this.setEntity(itemPackage);
-        
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }*/
 }

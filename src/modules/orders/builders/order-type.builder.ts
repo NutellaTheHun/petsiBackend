@@ -26,25 +26,4 @@ export class OrderTypeBuilder extends BuilderBase<OrderType>{
     public name(name: string): this {
         return this.setProp('name', name);
     }
-/*
-    public async buildCreateDto(dto: CreateOrderTypeDto): Promise<OrderType> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(otype: OrderType, dto: UpdateOrderTypeDto): Promise<OrderType> {
-        this.reset();
-        this.setEntity(otype);
-        
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }*/
 }

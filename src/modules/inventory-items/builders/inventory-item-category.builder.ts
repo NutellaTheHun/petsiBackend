@@ -37,28 +37,4 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
     public inventoryItemsById(ids: number[]): this {
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService),'items', ids);
     }
-/*
-    public async buildCreateDto(dto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        
-        return await this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: InventoryItemCategory, dto: UpdateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryItemIds){
-            this.inventoryItemsById(dto.inventoryItemIds);
-        }
-
-        return await this.build();
-    }*/
 }

@@ -3,17 +3,17 @@ import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-valid
 export class UpdateRecipeCategoryDto{
     @IsString()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
     @IsOptional()
-    readonly subCategoryIds: number[];
+    readonly subCategoryIds?: number[];
 
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true})
     @IsOptional()
-    readonly recipeIds: number[];
+    readonly recipeIds?: number[];
 }

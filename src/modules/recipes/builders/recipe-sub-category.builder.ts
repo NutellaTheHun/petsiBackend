@@ -57,37 +57,4 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory>{
     public recipesById(ids: number[]): this {
         return this.setPropsByIds(this.recipeService.findEntitiesById.bind(this.recipeService), 'recipes', ids);
     }
-
-    /*public async buildCreateDto(dto: CreateRecipeSubCategoryDto): Promise<RecipeSubCategory> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.parentCategoryId){
-            this.parentCategoryById(dto.parentCategoryId);
-        }
-        if(dto.recipeIds){
-            this.recipesById(dto.recipeIds);
-        }
-
-        return await this.build();
-    }*/
-
-    /*public async buildUpdateDto(toUpdate: RecipeSubCategory, dto: UpdateRecipeSubCategoryDto): Promise<RecipeSubCategory> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.parentCategoryId){
-            this.parentCategoryById(dto.parentCategoryId);
-        }
-        if(dto.recipeIds){
-            this.recipesById(dto.recipeIds);
-        }
-
-        return await this.build();
-    }*/
 }

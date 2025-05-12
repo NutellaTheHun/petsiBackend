@@ -58,37 +58,4 @@ export class LabelBuilder extends BuilderBase<Label> {
     public labelTypeByName(name: string): this {
         return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'type', name);
     }
-/*
-    public async buildCreateDto(dto: CreateLabelDto): Promise<Label> {
-        this.reset();
-
-        if(dto.imageUrl){
-            this.imageUrl(dto.imageUrl);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
-        }
-        
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: Label, dto: UpdateLabelDto): Promise<Label> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.imageUrl){
-            this.imageUrl(dto.imageUrl);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
-        }
-
-        return this.build();
-    }*/
 }

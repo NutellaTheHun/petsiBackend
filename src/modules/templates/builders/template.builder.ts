@@ -55,37 +55,4 @@ export class TemplateBuilder extends BuilderBase<Template> {
         }));
         return this.setPropByBuilder(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'templateItems', this.entity, enrichedDtos)
     }
-
-    /*public async buildCreateDto(dto: CreateTemplateDto): Promise<Template> {
-        this.reset();
-
-        if(dto.isPie){
-            this.isPie(dto.isPie);
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.itemDtos){
-            this.itemsByBuilder(this.entity.id, dto.itemDtos);
-        }    
-        
-        return this.build();
-    }*/
-/*
-    public async buildUpdateDto(toUpdate: Template, dto: UpdateTemplateDto): Promise<Template> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.isPie){
-            this.isPie(dto.isPie);
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.itemDtos){
-            this.itemsByBuilder(this.entity.id, dto.itemDtos);
-        }    
-
-        return this.build();
-    }*/
 }

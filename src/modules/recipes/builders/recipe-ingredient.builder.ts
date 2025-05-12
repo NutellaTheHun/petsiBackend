@@ -5,7 +5,7 @@ import { InventoryItemService } from "../../inventory-items/services/inventory-i
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { UpdateChildRecipeIngredientDto } from "../dto/update-child-recipe-ingedient.dto copy";
+import { UpdateChildRecipeIngredientDto } from "../dto/update-child-recipe-ingedient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { Recipe } from "../entities/recipe.entity";
@@ -145,69 +145,4 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
     public unitOfMeasureByName(name: string): this {
         return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'unit', name);
     }
-
-    /*public async buildChildCreateDto(parentRecipe: Recipe, dto: CreateRecipeIngredientDto): Promise<RecipeIngredient>{
-        this.reset();
-
-        this.entity.recipe = parentRecipe;
-
-        if(dto.inventoryItemId){
-            this.inventoryItemById(dto.inventoryItemId);
-        }
-        if(dto.quantity){
-            this.quantity(dto.quantity);
-        }
-        if(dto.subRecipeIngredientId){
-            this.subRecipeById(dto.subRecipeIngredientId);
-        }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
-        }
-
-        return await this.build();
-    }
-
-    public async buildCreateDto( dto: CreateRecipeIngredientDto): Promise<RecipeIngredient>{
-        this.reset();
-
-        if(dto.inventoryItemId){
-            this.inventoryItemById(dto.inventoryItemId);
-        }
-        if(dto.quantity){
-            this.quantity(dto.quantity);
-        }
-        if(dto.recipeId){
-            this.recipeById(dto.recipeId);
-        } 
-        if(dto.subRecipeIngredientId){
-            this.subRecipeById(dto.subRecipeIngredientId);
-        }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: RecipeIngredient, dto: UpdateRecipeIngredientDto): Promise<RecipeIngredient> {
-        this.reset();
-        this.setEntity(toUpdate);
-        
-        if(dto.inventoryItemId){
-            this.entity.subRecipeIngredient = null;
-            this.inventoryItemById(dto.inventoryItemId);
-        }
-        if(dto.quantity){
-            this.quantity(dto.quantity);
-        }
-        if(dto.subRecipeIngredientId){
-            this.entity.inventoryItem = null;
-            this.subRecipeById(dto.subRecipeIngredientId);
-        }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
-        }
-
-        return await this.build();
-    }*/
 }

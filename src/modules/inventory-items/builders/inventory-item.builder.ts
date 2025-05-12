@@ -1,15 +1,13 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
 import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
-import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
-import { InventoryItemSizeBuilder } from "./inventory-item-size.builder";
 import { InventoryItemValidator } from "../validators/inventory-item.validator";
+import { InventoryItemSizeBuilder } from "./inventory-item-size.builder";
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
@@ -96,43 +94,4 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     public vendorByName(name: string): this {
         return this.setPropByName(this.vendorService.findOneByName.bind(this.vendorService), 'vendor', name);
     }
-
-    /*public async buildCreateDto(dto: CreateInventoryItemDto): Promise<InventoryItem> {
-        this.reset();
-
-        if(dto.inventoryItemCategoryId){
-            this.categoryById(dto.inventoryItemCategoryId)
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.itemSizeDtos){
-            this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
-        }
-        if(dto.vendorId){
-            this.vendorById(dto.vendorId);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: InventoryItem, dto: UpdateInventoryItemDto): Promise<InventoryItem> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.inventoryItemCategoryId !== undefined){
-            this.categoryById(dto.inventoryItemCategoryId);
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.sizeDtos){
-            this.sizesByBuilder(this.entity.id, dto.sizeDtos);
-        }
-        if(dto.vendorId !== undefined){
-            this.vendorById(dto.vendorId);
-        }
-
-        return await this.build();
-    }*/
 }

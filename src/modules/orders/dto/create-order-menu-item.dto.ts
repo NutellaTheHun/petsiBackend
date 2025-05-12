@@ -1,8 +1,6 @@
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
 export class CreateOrderMenuItemDto {
-    //readonly mode: 'create' = 'create';
-
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

@@ -1,16 +1,14 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
-import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
-import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
-import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
+import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
@@ -62,34 +60,4 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         }));
         return this.setPropByBuilder(this.itemCountBuilder.buildManyChildDto.bind(this.itemCountBuilder), 'items', parent, enrichedDtos);
     }
-
-    /**
-     * @param dto Must have an inventoryAreaId, WARNING: inventoryItemCountIds are not used in creation. Only in updates.
-     * @returns 
-     */
-    /*
-    public async buildCreateDto(dto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount> {
-        this.reset();
-
-        if(dto.inventoryAreaId){
-            this.inventoryAreaById(dto.inventoryAreaId);
-        }
-
-        return await this.build();
-    }*/
-/*
-    public async buildUpdateDto(toUpdate: InventoryAreaCount, dto: UpdateInventoryAreaCountDto): Promise<InventoryAreaCount> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.inventoryAreaId){
-            this.inventoryAreaById(dto.inventoryAreaId);
-        }
-        if(dto.itemCountDtos){
-            // Requires passing the parent if the area-count update requires creating a new area-item
-            this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
-        }
-
-        return await this.build();
-    }*/
 }

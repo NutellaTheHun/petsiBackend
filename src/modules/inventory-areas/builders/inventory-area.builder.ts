@@ -36,28 +36,4 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
             this.inventoryCountsById(dto.inventoryCountIds);
         }
     }
-/*
-    public async buildCreateDto(dto: CreateInventoryAreaDto): Promise<InventoryArea> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: InventoryArea, dto: UpdateInventoryAreaDto): Promise<InventoryArea> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryCountIds){
-            this.inventoryCountsById(dto.inventoryCountIds);
-        }
-
-        return await this.build();
-    }*/
 }

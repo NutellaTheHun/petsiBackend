@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsPositive } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
@@ -10,6 +10,7 @@ export class UpdateChildInventoryAreaItemDto {
      */
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly id: number;
 
     @IsNumber()

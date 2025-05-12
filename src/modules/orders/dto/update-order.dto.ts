@@ -12,19 +12,19 @@ export class UpdateOrderDto{
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly orderTypeId: number
+    readonly orderTypeId?: number
 
     @IsString()
     @IsOptional()
-    readonly recipient: string;
+    readonly recipient?: string;
 
     @IsDate()
    @IsOptional()
-    readonly fulfillmentDate: Date;
+    readonly fulfillmentDate?: Date;
 
     @IsString()
     @IsOptional()
-    readonly fulfillmentType: string;
+    readonly fulfillmentType?: string;
 
     @IsString()
     @IsOptional()
@@ -44,11 +44,11 @@ export class UpdateOrderDto{
 
     @IsBoolean()
     @IsOptional()
-    readonly isFrozen: boolean;
+    readonly isFrozen?: boolean;
 
     @IsBoolean()
     @IsOptional()
-    readonly isWeekly: boolean;
+    readonly isWeekly?: boolean;
 
     @IsOptional()
     @IsArray()

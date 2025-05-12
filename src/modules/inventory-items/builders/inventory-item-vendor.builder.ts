@@ -36,28 +36,4 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     public inventoryItemsByIds(ids: number[]): this {
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
     }
-
-    /*public async buildCreateDto(dto: CreateInventoryItemVendorDto): Promise<InventoryItemVendor> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        
-        return await this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: InventoryItemVendor, dto: UpdateInventoryItemVendorDto): Promise<InventoryItemVendor> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryItemIds){
-            this.inventoryItemsByIds(dto.inventoryItemIds);
-        }
-
-        return await this.build();
-    }*/
 }

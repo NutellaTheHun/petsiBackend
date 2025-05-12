@@ -3,13 +3,13 @@ import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-valid
 export class UpdateUnitCategoryDto {
     @IsString()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })
     @IsOptional()
-    readonly unitOfMeasureIds: number[];
+    readonly unitOfMeasureIds?: number[];
 
     @IsNumber()
     @IsPositive()

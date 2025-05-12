@@ -48,31 +48,4 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     public recipesById(ids: number[]): this {
         return this.setPropsByIds(this.recipeService.findEntitiesById.bind(this.recipeService), 'recipes', ids);
     }
-/*
-    public async buildCreateDto(dto: CreateRecipeCategoryDto): Promise<RecipeCategory> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return this.build();
-    }*/
-/*
-    public async buildUpdateDto(toUpdate: RecipeCategory, dto: UpdateRecipeCategoryDto): Promise<RecipeCategory> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.recipeIds){
-            this.recipesById(dto.recipeIds);
-        }
-        if(dto.subCategoryIds){
-            this.subCategoriesById(dto.subCategoryIds);
-        }
-
-        return this.build();
-    }*/
 }

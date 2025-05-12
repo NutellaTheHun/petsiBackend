@@ -3,8 +3,6 @@ import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inv
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 
 export class CreateInventoryAreaItemDto {
-    //readonly mode: 'create' = 'create';
-
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()

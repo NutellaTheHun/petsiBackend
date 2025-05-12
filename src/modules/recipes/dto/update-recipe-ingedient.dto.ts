@@ -1,12 +1,6 @@
 import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
 export class UpdateRecipeIngredientDto {
-    //readonly mode: 'update' = 'update';
-
-    /*@IsNumber()
-    @IsPositive()
-    readonly id: number;*/
-
     @IsNumber()
     @IsOptional()
     readonly quantity?: number;

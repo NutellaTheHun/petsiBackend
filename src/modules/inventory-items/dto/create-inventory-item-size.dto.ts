@@ -1,8 +1,6 @@
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
 export class CreateInventoryItemSizeDto {
-    //readonly mode: 'create' = 'create';
-
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()

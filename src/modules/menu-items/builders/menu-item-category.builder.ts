@@ -33,25 +33,4 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
     public menuItemsById(ids: number[]): this {
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
     }
-/*
-    public async buildCreateDto(dto: CreateMenuItemCategoryDto): Promise<MenuItemCategory> {
-        this.reset();
-        
-        if(dto.name){
-            this.name(dto.name);
-        }
-  
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: MenuItemCategory, dto: UpdateMenuItemCategoryDto): Promise<MenuItemCategory> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return this.build();
-    }*/
 }

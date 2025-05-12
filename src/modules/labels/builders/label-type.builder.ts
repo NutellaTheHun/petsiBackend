@@ -23,26 +23,5 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
 
     public name(name: string): this {
         return this.setProp('name', name);
-    } 
-/*
-    public async buildCreateDto(dto: CreateLabelTypeDto): Promise<LabelType> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return this.build();
     }
-
-    public async buildUpdateDto(toUpdate: LabelType, dto: UpdateLabelTypeDto): Promise<LabelType> {
-        this.reset();
-        this.setEntity(toUpdate);
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-        
-        return this.build();
-    }*/
 }
