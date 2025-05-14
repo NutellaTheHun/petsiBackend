@@ -1,13 +1,21 @@
+import { HttpStatus } from "@nestjs/common";
 import { ObjectLiteral } from "typeorm";
+import { AppLogger } from "../modules/app-logging/app-logger";
+import { AppHttpException } from "../util/exceptions/AppHttpException";
+import { DTO_VALIDATION_FAIL, ENTITY_NOT_FOUND } from "../util/exceptions/error_constants";
+import { RequestContextService } from "../modules/request-context/RequestContextService";
 import { ValidatorBase } from "./validator-base";
-import { BadRequestException } from "@nestjs/common";
 
 export abstract class BuilderBase<T extends ObjectLiteral> {
+    
     protected entity: T;
     protected buildQueue: (() => Promise<void>)[];
 
     constructor(
         private entityConstructor: new () => T,
+        public builderPrefix: string,
+        private readonly requestContextService: RequestContextService,
+        private readonly logger: AppLogger,
         private readonly validator?: ValidatorBase<T>,
     ){ this.reset(); }
 
@@ -36,16 +44,54 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     }
 
     protected async validateCreateDto(dto: any): Promise<void> {
+        const requestId = this.requestContextService.getRequestId();
+
         if (this.validator) {
             const error = await this.validator.validateCreate(dto);
-            if (error) throw new BadRequestException(error);
+            if(error){
+                const err = new AppHttpException(
+                    `${this.builderPrefix}: create dto validation failed`,
+                    HttpStatus.BAD_REQUEST,
+                    DTO_VALIDATION_FAIL,
+                    { error }
+                );
+
+                this.logger.logError(
+                    this.builderPrefix,
+                    requestId,
+                    'VALIDATE CREATE DTO',
+                    err,
+                    { requestId }
+                );
+
+                throw err;
+            }
         }
     }
 
     protected async validateUpdateDto(dto: any): Promise<void> {
+        const requestId = this.requestContextService.getRequestId();
+
         if (this.validator) {
             const error = await this.validator.validateUpdate(dto);
-            if (error) throw new BadRequestException(error);
+            if(error){
+                const err = new AppHttpException(
+                    `${this.builderPrefix}: update dto validation failed`,
+                    HttpStatus.BAD_REQUEST,
+                    DTO_VALIDATION_FAIL,
+                    { error }
+                );
+
+                this.logger.logError(
+                    this.builderPrefix,
+                    requestId,
+                    'VALIDATE UPDATE DTO',
+                    err,
+                    { requestId }
+                );
+
+                throw err;
+            }
         }
     }
 
@@ -70,14 +116,33 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     }
 
     protected setPropById<K extends keyof T>(
+        
         findById: (id: number) => Promise<any>,
         prop: K,
         id: number,
     ): this {
+        // Get requestId
+        const requestId = this.requestContextService.getRequestId();
+
         this.buildQueue.push(async () => {
             const result = await findById(id);
             if(!result){ 
-                throw new Error(`Entity not found for ID: ${id}`); 
+                const err = new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with id ${id} not found`,
+                    HttpStatus.BAD_REQUEST,
+                    ENTITY_NOT_FOUND,
+                    { id }
+                ); 
+
+                this.logger.logError(
+                    this.builderPrefix,
+                    requestId,
+                    'Set Prop By Id',
+                    err,
+                    { requestId }
+                );
+
+                throw err;
             }
             this.entity[prop] = result;
         });
@@ -89,10 +154,28 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         prop: K,
         ids: number[],
     ): this {
+        // Get requestId
+        const requestId = this.requestContextService.getRequestId();
+
         this.buildQueue.push(async () => {
             const results = await findByIds(ids);
             if(!results){ 
-                throw new Error(`Entity not found within IDs: ${ids}`); 
+                const err = new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with multiple ids not found`,
+                    HttpStatus.BAD_REQUEST,
+                    ENTITY_NOT_FOUND,
+                    { ids }
+                );
+
+                this.logger.logError(
+                    this.builderPrefix,
+                    requestId,
+                    'Set Prop By Ids',
+                    err,
+                    { requestId }
+                );
+
+                throw err;  
             }
             this.entity[prop] = results;
         });
@@ -107,7 +190,12 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         this.buildQueue.push(async () => {
             const result = await findByName(name);
             if(!result){ 
-                throw new Error(`Entity not found for name: ${name}`)
+                throw new AppHttpException(
+                    `${this.builderPrefix}: ${prop.toString()} with name ${name} not found`,
+                    HttpStatus.BAD_REQUEST,
+                    ENTITY_NOT_FOUND,
+                    { name }
+                );
             };
             (this.entity as any)[prop] = result; 
         });
@@ -130,19 +218,16 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         this.buildQueue.push(async () => {
             const result = await func(arg);
             if(!result){
-                throw new Error('return value is null');
+                throw new Error('returned function value is null');
             }
             (this.entity as any)[prop] = result;
         });
         return this;
     }
 
-    protected setPropByBuilder<K extends keyof T>(func: (entity: T, args: any) => Promise<any>, prop: K, entity: T, args: any): this {
+    protected setPropByBuilder<K extends keyof T>(builderFunc: (entity: T, args: any) => Promise<any>, prop: K, entity: T, args: any): this {
         this.buildQueue.push(async () => {
-            const result = await func(entity, args);
-            if(!result){ 
-                throw new Error('property value to set is null');
-            }
+            const result = await builderFunc(entity, args);
             (this.entity as any)[prop] = Array.isArray(result) ? [...result] : result;
         });
         return this;

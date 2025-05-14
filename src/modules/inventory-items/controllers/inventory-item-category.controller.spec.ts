@@ -1,4 +1,5 @@
 import { TestingModule } from "@nestjs/testing";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
 import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
@@ -6,7 +7,6 @@ import { InventoryItemCategoryService } from "../services/inventory-item-categor
 import { CLEANING_CAT, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, FROZEN_CAT, OTHER_CAT, PAPER_CAT, PRODUCE_CAT } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemCategoryController } from "./inventory-item-category.controller";
-import { BadRequestException } from "@nestjs/common";
 
 describe('Inventory Item Categories Controller', () => {
   let controller: InventoryItemCategoryController;
@@ -95,8 +95,7 @@ describe('Inventory Item Categories Controller', () => {
       name: "testCategory",
     } as CreateInventoryItemCategoryDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all categories', async () => {
@@ -110,8 +109,6 @@ describe('Inventory Item Categories Controller', () => {
   });
   
   it('should fail to return a category (bad id, returns null)', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
@@ -132,8 +129,7 @@ describe('Inventory Item Categories Controller', () => {
     const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a category', async () => {

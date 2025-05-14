@@ -1,7 +1,8 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/update-child-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
@@ -10,6 +11,7 @@ import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-mea
 import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
 import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { AREA_A, AREA_B } from "../utils/constants";
@@ -18,8 +20,6 @@ import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
 import { InventoryAreaService } from "./inventory-area.service";
-import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/update-child-inventory-item-size.dto";
-import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
 
 describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -204,7 +204,6 @@ describe('Inventory area count service', () => {
         const item_c = { itemId: items[2].id, sizeDto }
 
         const itemCountDtos = testingUtil.createInventoryAreaItemDtos(
-            //testAreaId,
             testCountId,
             [ item_a, item_b, item_c],
         );
@@ -221,12 +220,11 @@ describe('Inventory area count service', () => {
     });
 
     it('should query newly counted items from itemCountService', async () => {
-        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', /*'inventoryArea',*/ 'size', 'item']);
+        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', 'size', 'item']);
         if(!results){ throw new Error("results is null"); }
         
         for(const item of results){
             expect(item.areaCount).not.toBeNull();
-            //expect(item.inventoryArea).not.toBeNull();
             expect(item.item).not.toBeNull();
             expect(item.size).not.toBeNull();
         }
@@ -343,8 +341,6 @@ describe('Inventory area count service', () => {
             itemCountDtos: [updateAreaItemDto, ...theRest]
         } as UpdateInventoryAreaCountDto;
 
-        // not updating inventoryItemSize,
-        // not returning relations
         const result = await countService.update(testCountId, updateAreaCountDto);
         if(!result?.items){ throw new Error("results area items is null"); }
 
@@ -468,7 +464,6 @@ describe('Inventory area count service', () => {
         if(!item.sizes){ throw new Error("item sizes is null"); }
         const createAreaItemDto = {
             mode: 'create',
-            //inventoryAreaId: testAreaId,
             areaCountId: testCountId,
             unitAmount: 100,
             measureAmount: 200,

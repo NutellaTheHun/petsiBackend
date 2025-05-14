@@ -7,6 +7,7 @@ import { getTestCategoryNames } from "../utils/constants";
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 import { BadRequestException } from "@nestjs/common";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('menu item category controller', () => {
   let controller: MenuItemCategoryController;
@@ -99,9 +100,7 @@ describe('menu item category controller', () => {
        name: "testCategory",
      } as CreateMenuItemCategoryDto;
      
-     const result = await controller.create(dto);
- 
-     expect(result).toBeNull();
+     await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
    });
  
    it('should find category by id', async () => {
@@ -110,8 +109,6 @@ describe('menu item category controller', () => {
    });
  
    it('should fail find category by id (not exist)', async () => {
-     //const result = await controller.findOne(0);
-     //expect(result).toBeNull();
       await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
    });
  
@@ -132,9 +129,7 @@ describe('menu item category controller', () => {
        name: "updateTestCategory",
      } as UpdateMenuItemCategoryDto;
  
-     const result = await controller.update(0, dto);
- 
-     expect(result).toBeNull();
+     await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
    });
  
    it('should remove category', async () => {

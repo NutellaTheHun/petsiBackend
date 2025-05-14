@@ -11,7 +11,7 @@ export class RecipeSubCategory{
     @Column({ nullable: false })
     name: string;
 
-    @ManyToOne(() => RecipeCategory, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => RecipeCategory, { nullable: true, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentCategory: RecipeCategory;
 
     @OneToMany(() => Recipe, (recipe) => recipe.subCategory)

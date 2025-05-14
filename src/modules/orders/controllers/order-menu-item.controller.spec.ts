@@ -1,17 +1,16 @@
 import { TestingModule } from "@nestjs/testing";
-import { getRecipeTestingModule } from "../../recipes/utils/recipes-testing.module";
-import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderMenuItemController } from "./order-menu-item.controller";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
-import { Order } from "../entities/order.entity";
-import { OrderType } from "../entities/order-type.entity";
-import { getTestOrderTypeNames } from "../utils/constants";
-import { getTestItemNames } from "../../menu-items/utils/constants";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
+import { getTestItemNames } from "../../menu-items/utils/constants";
+import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { OrderMenuItem } from "../entities/order-menu-item.entity";
+import { OrderType } from "../entities/order-type.entity";
+import { Order } from "../entities/order.entity";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
-import { BadRequestException } from "@nestjs/common";
+import { OrderMenuItemController } from "./order-menu-item.controller";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('order menu item controller', () => {
     let controller: OrderMenuItemController;
@@ -90,7 +89,6 @@ describe('order menu item controller', () => {
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            //if(!id){ throw new Error(); }
             return orderItems.find(item => item.id === id) || null;
         });
 
@@ -147,7 +145,6 @@ describe('order menu item controller', () => {
     it('should fail find order menu item by id (not exist)', async () => {
         const result = await controller.findOne(0);
         expect(result).toBeNull();
-        //await expect(controller.findOne(0)).rejects.toThrow(Error);
     });
     
     it('should update order menu item quantity', async () => {
@@ -167,9 +164,7 @@ describe('order menu item controller', () => {
         quantity: 2,
         } as UpdateOrderMenuItemDto;
     
-        const result = await controller.update(0, dto);
-    
-        expect(result).toBeNull();
+        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
     });
     
     it('should remove order menu item', async () => {

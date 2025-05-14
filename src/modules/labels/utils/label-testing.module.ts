@@ -10,11 +10,16 @@ import { LabelType } from "../entities/label-type.entity";
 import { LabelTypeController } from "../controllers/label-type.controller";
 import { CacheModule } from "@nestjs/cache-manager";
 import { LoggerModule } from "nestjs-pino";
+import { AppLoggingModule } from "../../app-logging/app-logging.module";
+import { RequestContextModule } from "../../request-context/request-context.module";
+import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 export async function getLabelsTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({ isGlobal: true }),
+
             TypeORMPostgresTestingModule([
                 Label,
                 LabelType,
@@ -23,12 +28,16 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
                 Label,
                 LabelType,
             ]),
+
             LabelsModule,
             MenuItemsModule,
+            
             CacheModule.register(),
             LoggerModule.forRoot({
                 pinoHttp: { transport: { target: 'pino-pretty' } }
             }),
+            AppLoggingModule,
+            RequestContextModule,
         ],
         
         controllers: [
@@ -37,4 +46,7 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
         ],
 
         providers: [],
-    }).compile();}
+})
+.overrideProvider(RequestContextService)
+.useClass(TestRequestContextService)
+.compile()};

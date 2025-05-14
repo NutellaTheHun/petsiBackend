@@ -7,6 +7,7 @@ import { MenuItemService } from "../services/menu-item.service";
 import { getTestItemNames } from "../utils/constants";
 import { MenuItemController } from "./menu-item.controller";
 import { BadRequestException } from "@nestjs/common";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('menu item controller', () => {
   let controller: MenuItemController;
@@ -100,9 +101,7 @@ describe('menu item controller', () => {
       name: "testItem",
     } as CreateMenuItemDto;
     
-    const result = await controller.create(dto);
-
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find item by id', async () => {
@@ -111,8 +110,6 @@ describe('menu item controller', () => {
   });
 
   it('should fail find item by id (not exist)', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
@@ -133,9 +130,7 @@ describe('menu item controller', () => {
       name: "updateTestItem",
     } as UpdateMenuItemDto;
 
-    const result = await controller.update(0, dto);
-
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove item', async () => {

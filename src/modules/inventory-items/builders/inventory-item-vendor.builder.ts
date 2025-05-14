@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendor.dto";
 import { UpdateInventoryItemVendorDto } from "../dto/update-inventory-item-vendor.dto";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
@@ -11,8 +13,11 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
+        
         validator: InventoryItemVendorValidator,
-    ) { super(InventoryItemVendor, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) { super(InventoryItemVendor, 'InventoryItemVendorBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemVendorDto): void {
         if(dto.name){

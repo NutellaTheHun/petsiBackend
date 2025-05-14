@@ -9,30 +9,39 @@ import { UnitOfMeasureController } from "../controllers/unit-of-measure.controll
 import { UnitCategoryController } from "../controllers/unit-category.controller";
 import { CacheModule } from "@nestjs/cache-manager";
 import { LoggerModule } from "nestjs-pino";
+import { AppLoggingModule } from "../../app-logging/app-logging.module";
+import { RequestContextModule } from "../../request-context/request-context.module";
+import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
-            ConfigModule.forRoot({ isGlobal: true }),
+      ConfigModule.forRoot({ isGlobal: true }),
 
-            TypeORMPostgresTestingModule([
-              UnitOfMeasure, 
-              UnitCategory,
-            ]),
+      TypeORMPostgresTestingModule([
+        UnitOfMeasure, 
+        UnitCategory,
+      ]),
 
-            TypeOrmModule.forFeature([
-              UnitOfMeasure,
-              UnitCategory,
-            ]),
+      TypeOrmModule.forFeature([
+        UnitOfMeasure,
+        UnitCategory,
+      ]),
 
-            UnitOfMeasureModule,
-            
-            CacheModule.register(),
+      UnitOfMeasureModule,
+      
+      CacheModule.register(),
 
-            LoggerModule.forRoot({
-              pinoHttp: { transport: { target: 'pino-pretty' } }
-          }),
-          ],
-          controllers: [UnitOfMeasureController, UnitCategoryController],
-          providers: [],
-}).compile()};
+      LoggerModule.forRoot({
+        pinoHttp: { transport: { target: 'pino-pretty' } }
+      }),
+      AppLoggingModule,
+      RequestContextModule,
+      ],
+    controllers: [UnitOfMeasureController, UnitCategoryController],
+    providers: [],
+})
+.overrideProvider(RequestContextService)
+.useClass(TestRequestContextService)
+.compile()};

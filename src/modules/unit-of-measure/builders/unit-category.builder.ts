@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateUnitCategoryDto } from "../dto/create-unit-category.dto";
 import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
 import { UnitCategory } from "../entities/unit-category.entity";
@@ -11,8 +13,13 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
     constructor(
         @Inject(forwardRef(() => UnitOfMeasureService)) 
         private readonly unitService: UnitOfMeasureService,
+
         validator: UnitCategoryValidator,
-    ){ super(UnitCategory, validator); }
+
+        requestContextService: RequestContextService,
+        
+        logger: AppLogger,
+    ){ super(UnitCategory, 'UnitCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUnitCategoryDto): void {
         if(dto.name){

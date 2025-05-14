@@ -1,14 +1,14 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
+import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
-import { OUNCE, POUND, UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { OUNCE, POUND, VOLUME } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
-import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 
 describe('UnitCategoryService', () => {
@@ -56,8 +56,7 @@ describe('UnitCategoryService', () => {
       name: "testCategory",
     } as CreateUnitCategoryDto;
 
-
-    await expect(categoryService.create(dto)).rejects.toThrow(BadRequestException);
+    await expect(categoryService.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find one category', async () => {

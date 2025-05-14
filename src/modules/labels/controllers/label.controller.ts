@@ -1,16 +1,18 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Controller, Inject } from '@nestjs/common';
+import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { AppLogger } from '../../app-logging/app-logger';
 import { Label } from '../entities/label.entity';
 import { LabelService } from '../services/label.service';
-import { Cache } from "cache-manager";
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Logger } from "nestjs-pino";
 
 @Controller('labels')
 export class LabelController extends ControllerBase<Label>{
     constructor(
-      private readonly labelService: LabelService,
+      labelService: LabelService,
       @Inject(CACHE_MANAGER) cacheManager: Cache,
-      @Inject(Logger)logger: Logger,
-    ) { super(labelService, cacheManager, logger); }
+      logger: AppLogger,
+      requestContextService: RequestContextService,
+    ) { super(labelService, cacheManager, 'LabelController', requestContextService, logger); }
 }

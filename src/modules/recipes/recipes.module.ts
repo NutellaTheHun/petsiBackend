@@ -1,31 +1,32 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Recipe } from './entities/recipe.entity';
-import { RecipeCategory } from './entities/recipe-category.entity';
-import { RecipeService } from './services/recipe.service';
-import { RecipeSubCategory } from './entities/recipe-sub-category.entity';
-import { RecipeIngredient } from './entities/recipe-ingredient.entity';
-import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
+import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
-import { RecipeController } from './controllers/recipe.controller';
-import { RecipeCategoryController } from './controllers/recipe-category.controller';
-import { RecipeSubCategoryController } from './controllers/recipe-sub-category.controller';
-import { RecipeIngredientController } from './controllers/recipe-ingredient.controller';
-import { RecipeCategoryService } from './services/recipe-category.service';
-import { RecipeSubCategoryService } from './services/recipe-sub-category.service';
-import { RecipeIngredientService } from './services/recipe-ingredient.service';
-import { RecipeBuilder } from './builders/recipe.builder';
-import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
+import { RequestContextModule } from '../request-context/request-context.module';
+import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
+import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
+import { RecipeBuilder } from './builders/recipe.builder';
+import { RecipeCategoryController } from './controllers/recipe-category.controller';
+import { RecipeIngredientController } from './controllers/recipe-ingredient.controller';
+import { RecipeSubCategoryController } from './controllers/recipe-sub-category.controller';
+import { RecipeController } from './controllers/recipe.controller';
+import { RecipeCategory } from './entities/recipe-category.entity';
+import { RecipeIngredient } from './entities/recipe-ingredient.entity';
+import { RecipeSubCategory } from './entities/recipe-sub-category.entity';
+import { Recipe } from './entities/recipe.entity';
+import { RecipeCategoryService } from './services/recipe-category.service';
+import { RecipeIngredientService } from './services/recipe-ingredient.service';
+import { RecipeSubCategoryService } from './services/recipe-sub-category.service';
+import { RecipeService } from './services/recipe.service';
 import { RecipeTestUtil } from './utils/recipe-test.util';
-import { CacheModule } from '@nestjs/cache-manager';
-import { LoggerModule } from 'nestjs-pino';
-import { RecipeValidator } from './validators/recipe.valdiator';
-import { RecipeIngredientValidator } from './validators/recipe-ingredient.validator';
 import { RecipeCategoryValidator } from './validators/recipe-category.validator';
+import { RecipeIngredientValidator } from './validators/recipe-ingredient.validator';
 import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.validator';
+import { RecipeValidator } from './validators/recipe.valdiator';
 
 @Module({
   imports: [
@@ -39,7 +40,8 @@ import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.val
     InventoryItemsModule,
     MenuItemsModule,
     CacheModule.register(),
-    LoggerModule,
+    AppLoggingModule,
+    RequestContextModule,
   ],
   controllers: [
     RecipeController,

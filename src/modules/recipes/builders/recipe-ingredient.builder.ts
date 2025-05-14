@@ -1,7 +1,9 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
@@ -15,7 +17,6 @@ import { RecipeIngredientValidator } from "../validators/recipe-ingredient.valid
 
 @Injectable()
 export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> implements IBuildChildDto<Recipe, RecipeIngredient>{
-    
     constructor(
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
@@ -26,7 +27,9 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         private readonly itemService: InventoryItemService,
         private readonly unitService: UnitOfMeasureService,
         validator: RecipeIngredientValidator,
-    ){ super(RecipeIngredient, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(RecipeIngredient, 'RecipeIngredientBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeIngredientDto): void {
         if(dto.inventoryItemId){

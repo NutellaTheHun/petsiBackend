@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
@@ -194,7 +194,6 @@ describe('Inventory area item service', () => {
     it('should fail to get one item by id (not found)', async () => {
         const result = await areaItemService.findOne(0);
         expect(result).toBeNull();
-        //await expect( areaItemService.findOne(0)).rejects.toThrow(Error);
     });
 
     it('should remove one item by id', async () => {
@@ -203,7 +202,6 @@ describe('Inventory area item service', () => {
 
         const verify = await areaItemService.findOne(0);
         expect(verify).toBeNull();
-        //await expect(verify).rejects.toThrow(Error);
     });
 
     it('should remove one item by id (not found)', async () => {

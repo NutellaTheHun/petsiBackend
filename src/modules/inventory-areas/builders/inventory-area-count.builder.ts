@@ -9,6 +9,9 @@ import { InventoryAreaItemService } from "../services/inventory-area-item.servic
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
 import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { ModuleRef } from "@nestjs/core";
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
@@ -22,8 +25,12 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
+        logger: AppLogger,
+
         validator: InventoryAreaCountValidator,
-    ){ super(InventoryAreaCount, validator); }
+
+        requestContextService: RequestContextService,
+    ){ super(InventoryAreaCount, 'InventoryAreaCountBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaCountDto): void{
         if(dto.inventoryAreaId){

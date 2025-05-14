@@ -1,8 +1,6 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/create-inventory-item-package.dto';
-import { UpdateInventoryItemPackageDto } from '../dto/update-inventory-item-package.dto';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';

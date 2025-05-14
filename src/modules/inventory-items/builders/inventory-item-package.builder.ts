@@ -1,15 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
-import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
+import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
+import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
+import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemPackageValidator } from "../validators/inventory-item-package.validator";
 
 @Injectable()
 export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackage> {
     constructor(
         validator: InventoryItemPackageValidator,
-    ){ super(InventoryItemPackage, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(InventoryItemPackage, 'InventoryItemPackageBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemPackageDto): void {
         if(dto.name){

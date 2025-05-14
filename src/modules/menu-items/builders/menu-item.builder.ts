@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
@@ -24,8 +26,11 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         private readonly componentBuilder: MenuItemComponentBuilder,
 
         private readonly sizeService: MenuItemSizeService,
+        
         validator: MenuItemValidator,
-    ){ super(MenuItem, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
         if(dto.squareCatalogId){

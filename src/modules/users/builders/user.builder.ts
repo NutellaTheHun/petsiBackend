@@ -1,10 +1,12 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { User } from "../entities/user.entities";
+import { hashPassword } from "../../auth/utils/hash";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { RoleService } from "../../roles/services/role.service";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
-import { hashPassword } from "../../auth/utils/hash";
-import { RoleService } from "../../roles/services/role.service";
+import { User } from "../entities/user.entities";
 import { UserValidator } from "../validators/user.validator";
 
 @Injectable()
@@ -12,8 +14,12 @@ export class UserBuilder extends BuilderBase<User> {
     constructor(
         @Inject(forwardRef(() => RoleService))
         private readonly rolesService: RoleService,
+
         validator: UserValidator,
-    ){ super(User, validator); }
+        
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(User, 'UserBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUserDto): void {
         if(dto.email){

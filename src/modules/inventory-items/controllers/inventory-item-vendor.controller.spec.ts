@@ -1,13 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
-import { InventoryItemVendorController } from './inventory-item-vendor.controller';
-import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { CreateInventoryItemVendorDto } from '../dto/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
+import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 import { VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
-import { BadRequestException } from '@nestjs/common';
+import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemVendorController } from './inventory-item-vendor.controller';
 
 describe('Inventory Item Vendor Controller', () => {
   let controller: InventoryItemVendorController;
@@ -112,8 +112,7 @@ describe('Inventory Item Vendor Controller', () => {
       name: "testVendor",
     } as CreateInventoryItemVendorDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all vendors', async () => {
@@ -127,8 +126,6 @@ describe('Inventory Item Vendor Controller', () => {
   });
   
   it('should fail to return a vendor (bad id, returns null)', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
@@ -149,8 +146,7 @@ describe('Inventory Item Vendor Controller', () => {
     const toUpdate = await vendorService.findOneByName("UPDATED_testVendor");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a vendor', async () => {

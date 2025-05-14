@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { Label } from "../entities/label.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateLabelDto } from "../dto/create-label.dto";
 import { UpdateLabelDto } from "../dto/update-label.dto";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { Label } from "../entities/label.entity";
 import { LabelTypeService } from "../services/label-type.service";
 import { LabelValidator } from "../validators/label.validator";
 
@@ -13,7 +15,9 @@ export class LabelBuilder extends BuilderBase<Label> {
         private readonly itemService: MenuItemService,
         private readonly typeService: LabelTypeService,
         validator: LabelValidator,
-    ){ super(Label, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(Label, 'LabelBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateLabelDto): void {
         if(dto.imageUrl){

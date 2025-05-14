@@ -1,4 +1,4 @@
-import { Test, TestingModule } from "@nestjs/testing";
+import { TestingModule } from "@nestjs/testing";
 import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
@@ -7,8 +7,7 @@ import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "../utils/constants";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaController } from "./inventory-area.controller";
-import { BadRequestException } from "@nestjs/common";
-
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('inventory area controller', () => {
     let controller: InventoryAreaController;
@@ -23,24 +22,6 @@ describe('inventory area controller', () => {
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         
-        // Was getting a circular dependency problem with the above testing module that works for everything else?
-        
-        /*const module: TestingModule = await Test.createTestingModule({
-            controllers: [InventoryAreaController],
-            providers: [
-                {
-                    provide: InventoryAreaService,
-                    useValue: {
-                        create: jest.fn(),
-                        findOneByName: jest.fn(),
-                        update: jest.fn(),
-                        findAll: jest.fn(),
-                        findOne: jest.fn(),
-                        remove: jest.fn(),
-                    },
-                },
-            ],
-        }).compile();*/
         controller = module.get<InventoryAreaController>(InventoryAreaController);
         areaService = module.get<InventoryAreaService>(InventoryAreaService);
 
@@ -107,7 +88,6 @@ describe('inventory area controller', () => {
         jest.spyOn(areaService, "findAll").mockResolvedValue({items: areas});
     
         jest.spyOn(areaService, "findOne").mockImplementation(async (id: number) => {
-            //if(!id){ throw new Error(); }
             return areas.find(area => area.id === id) || null;
         });
     
@@ -133,8 +113,7 @@ describe('inventory area controller', () => {
     
     it('should fail to create an area (already exists)', async () => {
         const dto = { name: "testArea" } as CreateInventoryAreaDto;
-        const result = await controller.create(dto);
-        expect(result).toBeNull();
+        await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
     });
 
     it('should return all areas', async () => {
@@ -146,16 +125,9 @@ describe('inventory area controller', () => {
         const result = await controller.findOne(1);
         expect(result).not.toBeNull();
     });
-
-    /*
-    it('should return an area by name', async () => {
-        const result = await controller.findOneByName(AREA_A);
-        expect(result).not.toBeNull();
-    });*/
     
     it('should fail to return an area (bad id, returns null)', async () => {
         const result = await controller.findOne(0);
-        //await expect(controller.findOne(0)).rejects.toThrow(Error);
         expect(result).toBeNull();
     });
     
@@ -179,8 +151,7 @@ describe('inventory area controller', () => {
         const toUpdate = await areaService.findOneByName(AREA_A);
         if(!toUpdate?.id){ throw new Error('area id is null'); }
 
-        const result = await controller.update(0, toUpdate);
-        expect(result).toBeNull();
+        await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
     });
     
     it('should remove an area', async () => {

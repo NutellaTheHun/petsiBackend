@@ -7,6 +7,7 @@ import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemPackageController } from "./inventory-item-package.controller";
 import { BadRequestException } from "@nestjs/common";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('Inventory Item Packages Controller', () => {
   let controller: InventoryItemPackageController;
@@ -93,8 +94,7 @@ describe('Inventory Item Packages Controller', () => {
       name: "testpackage",
     } as CreateInventoryItemPackageDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all packages', async () => {
@@ -108,8 +108,6 @@ describe('Inventory Item Packages Controller', () => {
   });
   
   it('should fail to return a package (bad id, returns null)', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
@@ -131,8 +129,7 @@ describe('Inventory Item Packages Controller', () => {
     const toUpdate = await service.findOneByName("UPDATED_testpackage");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a package', async () => {
@@ -147,5 +144,4 @@ describe('Inventory Item Packages Controller', () => {
     const result = await controller.remove(0);
     expect(result).toBeFalsy();
   });
-  
 });

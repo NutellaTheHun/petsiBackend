@@ -1,17 +1,17 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitCategoryService } from '../../unit-of-measure/services/unit-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
-import { BAG_PKG, BOX_PKG, CAN_PKG, DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../utils/constants';
+import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
+import { BOX_PKG, CAN_PKG, DRY_A, FOOD_A, OTHER_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemService } from './inventory-item.service';
-import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
-import { NotFoundException } from '@nestjs/common';
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
@@ -205,5 +205,4 @@ describe('Inventory Item Size Service', () => {
 
     expect(item.sizes.findIndex(size => size.id === testId)).toEqual(-1);
   });
-
 });

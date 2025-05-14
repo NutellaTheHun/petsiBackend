@@ -1,11 +1,12 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
-import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
+import { CreateChildInventoryItemSizeDto } from '../dto/create-child-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
+import { UpdateChildInventoryItemSizeDto } from '../dto/update-child-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
@@ -17,8 +18,6 @@ import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
-import { CreateChildInventoryItemSizeDto } from '../dto/create-child-inventory-item-size.dto';
-import { UpdateChildInventoryItemSizeDto } from '../dto/update-child-inventory-item-size.dto';
 
 describe('Inventory Item Service', () => {
   let module: TestingModule;
@@ -405,7 +404,6 @@ describe('Inventory Item Service', () => {
   it('deleteded itemSize from item update should not exist', async () => {
     const verify = await sizeService.findOne(deletedSizeId);
     expect(verify).toBeNull();
-    //await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(Error);
   });
 
   it('should update item with both a new and modified size', async () => {

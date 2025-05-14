@@ -9,10 +9,4 @@ export class UpdateRecipeSubCategoryDto {
     @IsOptional()
     @IsPositive()
     readonly parentCategoryId?: number;
-
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true })
-    @IsOptional()
-    readonly recipeIds?: number[];
 }

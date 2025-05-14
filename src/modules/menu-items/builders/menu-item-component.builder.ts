@@ -1,16 +1,18 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
+import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
+import { UpdateChildMenuItemComponentDto } from "../dto/update-child-menu-item-component.dto";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { MenuItemComponent } from "../entities/menu-item-component.entity";
-import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemComponentService } from "../services/menu-item-component.service";
+import { MenuItemSizeService } from "../services/menu-item-size.service";
+import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemComponentValidator } from "../validators/menu-item-component.validator";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
-import { UpdateChildMenuItemComponentDto } from "../dto/update-child-menu-item-component.dto";
 
 @Injectable()
 export class MenuItemComponentBuilder extends BuilderBase<MenuItemComponent> 
@@ -24,7 +26,9 @@ implements IBuildChildDto<MenuItem, MenuItemComponent> {
 
         private readonly itemSizeService: MenuItemSizeService,
         validator: MenuItemComponentValidator,
-    ){ super(MenuItemComponent, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(MenuItemComponent, 'MenuItemComponentBuilder', requestContextService, logger, validator); }
     
     protected createEntity(dto: CreateMenuItemComponentDto): void {
         if(dto.containerId){

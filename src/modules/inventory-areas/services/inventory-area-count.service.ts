@@ -2,6 +2,8 @@ import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
@@ -22,9 +24,10 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
         areaCountBuilder: InventoryAreaCountBuilder,
-
+        logger: AppLogger,
         validator: InventoryAreaCountValidator,
-    ){ super(areaCountRepo, areaCountBuilder, validator, 'InventoryAreaCountService'); }
+        requestContextService: RequestContextService,
+    ){ super(areaCountRepo, areaCountBuilder, validator, 'InventoryAreaCountService', requestContextService, logger); }
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
         return await this.areaCountRepo.find({ 

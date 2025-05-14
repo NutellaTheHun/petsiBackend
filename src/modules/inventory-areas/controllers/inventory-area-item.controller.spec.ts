@@ -24,10 +24,6 @@ describe('inventory area item controller', () => {
         jest.spyOn(itemCountService, "create").mockImplementation(async (createDto: CreateInventoryAreaItemDto) => {
             throw new NotImplementedException();
         });
-            
-        /*jest.spyOn(itemCountService, "findByAreaName").mockImplementation(async (name: string) => {
-            throw new NotImplementedException();
-        });*/
 
         jest.spyOn(itemCountService, "findByItemName").mockImplementation(async (name: string) => {
             throw new NotImplementedException();
@@ -68,11 +64,6 @@ describe('inventory area item controller', () => {
     it('should return an item count by id', async () => {
 
     });
-
-    /*
-    it('should return an item count by name', async () => {
-
-    });*/
     
     it('should fail to return an item count (bad id, returns null)', async () => {
 

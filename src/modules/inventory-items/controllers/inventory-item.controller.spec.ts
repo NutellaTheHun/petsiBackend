@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
@@ -8,7 +9,6 @@ import { InventoryItemService } from '../services/inventory-item.service';
 import { CLEANING_CAT, DAIRY_CAT, DRY_A, DRY_B, DRY_C, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_C, FOOD_CAT, FROZEN_CAT, OTHER_A, OTHER_B, OTHER_C, OTHER_CAT, PAPER_CAT, PRODUCE_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from "../utils/constants";
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemController } from './inventory-item.controller';
-import { BadRequestException } from '@nestjs/common';
 
 
 describe('Inventory Item Controller', () => {
@@ -142,8 +142,7 @@ describe('Inventory Item Controller', () => {
       vendorId: 1,
     } as CreateInventoryItemDto;
 
-    const result = await controller.create(dto)
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all items', async () => {
@@ -157,8 +156,6 @@ describe('Inventory Item Controller', () => {
   });
   
   it('should fail to return a item (bad id, returns null)', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
@@ -179,8 +176,7 @@ describe('Inventory Item Controller', () => {
     const toUpdate = await itemService.findOneByName("UPDATED_testItem");
     if(!toUpdate){ throw new Error("item to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a item', async () => {

@@ -1,5 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
@@ -7,10 +9,11 @@ import { MenuItemSizeValidator } from "../validators/menu-item-size.validator";
 
 @Injectable()
 export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
-
     constructor(
         validator: MenuItemSizeValidator,
-    ){ super(MenuItemSize, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemSizeDto): void {
         if(dto.name){

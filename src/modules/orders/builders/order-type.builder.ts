@@ -1,15 +1,19 @@
 import { Injectable } from "@nestjs/common";
-import { OrderType } from "../entities/order-type.entity";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
 import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
+import { OrderType } from "../entities/order-type.entity";
 import { OrderTypeValidator } from "../validators/order-type.validator";
 
 @Injectable()
 export class OrderTypeBuilder extends BuilderBase<OrderType>{
     constructor(
         validator: OrderTypeValidator,
-    ){ super(OrderType, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(OrderType, 'OrderTypeBuilder',  requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateOrderTypeDto): void {
         if(dto.name){

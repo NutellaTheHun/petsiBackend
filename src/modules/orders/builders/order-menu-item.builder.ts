@@ -12,6 +12,9 @@ import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { ModuleRef } from "@nestjs/core";
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
@@ -25,7 +28,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
         validator: OrderMenuItemValidator,
-    ){ super(OrderMenuItem, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
     
     protected createEntity(dto: CreateOrderMenuItemDto): void {
         if(dto.menuItemId){

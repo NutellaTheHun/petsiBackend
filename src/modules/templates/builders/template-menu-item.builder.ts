@@ -1,6 +1,8 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { CreateChildTemplateMenuItemDto } from "../dto/create-child-template-menu-item.dto";
 import { CreateTemplateMenuItemDto } from "../dto/create-template-menu-item.dto";
@@ -12,6 +14,7 @@ import { TemplateMenuItemService } from "../services/template-menu-item.service"
 import { TemplateService } from "../services/template.service";
 import { TemplateMenuItemValidator } from "../validators/template-menu-item.validator";
 
+
 @Injectable()
 export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> implements IBuildChildDto<Template, TemplateMenuItem>{
     constructor(
@@ -22,7 +25,9 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
 
         private menuItemService: MenuItemService,
         validator: TemplateMenuItemValidator,
-    ){ super(TemplateMenuItem, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(TemplateMenuItem, 'TemplateMenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateTemplateMenuItemDto): void {
         if(dto.templateId){

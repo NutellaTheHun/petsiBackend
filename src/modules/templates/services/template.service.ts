@@ -5,6 +5,9 @@ import { ServiceBase } from '../../../base/service-base';
 import { TemplateBuilder } from '../builders/template.builder';
 import { Template } from '../entities/template.entity';
 import { TemplateValidator } from '../validators/template.validator';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { ModuleRef } from '@nestjs/core';
+import { AppLogger } from '../../app-logging/app-logger';
 
 @Injectable()
 export class TemplateService extends ServiceBase<Template>{
@@ -13,8 +16,10 @@ export class TemplateService extends ServiceBase<Template>{
       private readonly templateRepo: Repository<Template>,
 
       templateBuilder: TemplateBuilder,
-      validator: TemplateValidator
-    ){ super(templateRepo, templateBuilder, validator, 'TemplateService'); }
+      validator: TemplateValidator,
+      requestContextService: RequestContextService,
+      logger: AppLogger,
+    ){ super(templateRepo, templateBuilder, validator, 'TemplateService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof Template>): Promise<Template | null> {
         return await this.templateRepo.findOne({ where: { name: name }, relations: relations });

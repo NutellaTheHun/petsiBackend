@@ -7,6 +7,7 @@ import { getTestTemplateNames } from '../utils/constants';
 import { CreateTemplateDto } from '../dto/create-template.dto';
 import { UpdateTemplateDto } from '../dto/update-template.dto';
 import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('TemplatesController', () => {
   let controller: TemplateController;
@@ -100,9 +101,7 @@ describe('TemplatesController', () => {
         name: "testTemplate",
       } as CreateTemplateDto;
       
-      const result = await controller.create(dto);
-  
-      expect(result).toBeNull();
+      await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
     });
   
     it('should find template by id', async () => {
@@ -111,8 +110,6 @@ describe('TemplatesController', () => {
     });
   
     it('should fail find template by id (not exist)', async () => {
-      //const result = await controller.findOne(0);
-      //expect(result).toBeNull();
       await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
     });
   
@@ -133,9 +130,7 @@ describe('TemplatesController', () => {
         name: "updateTemplateName",
       } as UpdateTemplateDto;
   
-      const result = await controller.update(0, dto);
-  
-      expect(result).toBeNull();
+      await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
     });
   
     it('should remove template', async () => {

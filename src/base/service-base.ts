@@ -1,7 +1,11 @@
+import { HttpStatus } from "@nestjs/common";
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
+import { AppLogger } from "../modules/app-logging/app-logger";
+import { AppHttpException } from "../util/exceptions/AppHttpException";
+import { DTO_VALIDATION_FAIL } from "../util/exceptions/error_constants";
+import { RequestContextService } from "../modules/request-context/RequestContextService";
 import { BuilderBase } from "./builder-base";
 import { ValidatorBase } from "./validator-base";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
   
@@ -10,26 +14,92 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     private readonly builder: BuilderBase<T>,
     protected readonly validator: ValidatorBase<T>,
     public cacheKeyPrefix: string,
+    private readonly requestContextService: RequestContextService,
+    private logger: AppLogger,
   ){}
 
-  public async create(createDto: any): Promise<any | null>{
+  public async create(createDto: any): Promise<T | null>{
+    // Get requestId
+    const requestId = this.requestContextService.getRequestId();
+
+    // validate DTO
     const error = await this.validator.validateCreate(createDto);
     if(error){ 
-      throw new BadRequestException(error);
+      const err = new AppHttpException(
+        `${this.cacheKeyPrefix}: create dto validation failed`,
+        HttpStatus.BAD_REQUEST,
+        DTO_VALIDATION_FAIL,
+        { error }
+      );
+
+      this.logger.logError(
+        this.cacheKeyPrefix,
+        requestId,
+        'CREATE',
+        err,
+        { requestId }
+      );
+
+      throw err;
     }
 
+    // create entity
     const entity = await this.builder.buildCreateDto(createDto);
+
+    // save in DB
     return await this.entityRepo.save(entity);
   }
 
-  async update(id: number, updateDto: any): Promise<any | null> {
+  async update(id: number, updateDto: any): Promise<T | null> {
+    // Get requestId
+    const requestId = this.requestContextService.getRequestId();
+
+    // validate DTO
     const error = await this.validator.validateUpdate(updateDto);
-    if(error){ throw new BadRequestException(error); }
+    if(error){ 
+      const err = new AppHttpException(
+        `${this.cacheKeyPrefix}: update dto validation failed`,
+        HttpStatus.BAD_REQUEST,
+        DTO_VALIDATION_FAIL,
+        { error }
+      );
 
+      this.logger.logError(
+        this.cacheKeyPrefix,
+        requestId,
+        'UPDATE',
+        err,
+        { requestId, id }
+      );
+
+      throw err; 
+    }
+
+    // retrieve entity from DB
     const toUpdate = await this.findOne(id);
-    if(!toUpdate){ throw new NotFoundException(); }
+    if(!toUpdate){ 
+        const err = new AppHttpException(
+        `${this.cacheKeyPrefix}: entity to update not found id: ${id}`,
+        HttpStatus.BAD_REQUEST,
+        DTO_VALIDATION_FAIL,
+        { error }
+      );
 
+      this.logger.logError(
+        this.cacheKeyPrefix,
+        requestId,
+        'UPDATE',
+        err,
+        { requestId, id }
+      );
+
+      throw err;
+    }
+
+    //update DTO
     await this.builder.buildUpdateDto(toUpdate, updateDto);
+
+    //Save in DB
     return await this.entityRepo.save(toUpdate);
   }
 
@@ -40,13 +110,17 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC'; 
   }): Promise<{items: T[], nextCursor?: string}> {
+    // Get requestId
+    const requestId = this.requestContextService.getRequestId();
 
+    // Set options with default settings
     options = {
       limit: 10,
       sortOrder: 'ASC',
       ...options,
     }
 
+    // Start query with query builder
     const query = this.entityRepo.createQueryBuilder('entity');
 
     if(options.relations){
@@ -70,8 +144,10 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
       query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
     }
 
+    // run query
     const results = await query.getMany();
 
+    // handle cursor
     let nextCursor: string | undefined;
     if(options.limit){
       if(results.length > options.limit){
@@ -79,7 +155,16 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
       }
     }
+
+    this.logger.logAction(
+      this.cacheKeyPrefix,
+      requestId,
+      'FIND_ALL',
+      'REQUEST',
+      { requestId, message: `${results.length} entities queried` }
+    );
     
+    // return result and cursor
     return {
       items: results,
       nextCursor,
@@ -87,21 +172,52 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
   }
 
   async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T | null> {
+    // Get requestId
+    const requestId = this.requestContextService.getRequestId();
+
     const combinedRelations = [
       ...(relations?.map(r => r.toString()) ?? []),
       ...(childRelations ?? []),
     ];
 
-    return await this.entityRepo.findOne({ 
+    // run query and return
+    const result = await this.entityRepo.findOne({ 
         where: { id } as unknown as FindOptionsWhere<T>, 
         relations: combinedRelations,
     });
+
+    if(!result){
+      this.logger.logAction(
+        this.cacheKeyPrefix,
+        requestId,
+        'FIND_ONE',
+        'REQUEST',
+        { requestId, id, message: `no entity found with id: ${id}`}
+      );
+    }
+
+    return result
   }
 
   async findEntitiesById( ids: number[], relations?: Array<keyof T>): Promise<T[]> {
-    return await this.entityRepo.find({ 
+    // Get requestId
+    const requestId = this.requestContextService.getRequestId();
+
+    // run query and return
+    const result = await this.entityRepo.find({ 
         where: { id: In(ids) } as unknown as FindOptionsWhere<T>, 
-        relations: relations as string[] });
+        relations: relations as string[] 
+    });
+
+    this.logger.logAction(
+      this.cacheKeyPrefix,
+      requestId,
+      'FIND_ENTITIES_BY_ID',
+      'REQUEST',
+      { requestId, message: `${result.length} entities queried` }
+    );
+
+    return result
   }
 
   async remove(id: number): Promise<Boolean> {

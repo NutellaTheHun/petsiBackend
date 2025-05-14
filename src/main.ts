@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
+import { GlobalHttpExceptionFilter } from './util/exceptions/global-http-exception-filter';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule,
@@ -9,9 +11,18 @@ async function bootstrap() {
     { bufferLogs: true, } // optional, buffers logs until logger is initialized
   );
 
+  const config = new DocumentBuilder()
+  .setTitle('PetsiBackend')
+  .build();
+
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
+
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
   
   app.useLogger(app.get(Logger));
+
+  app.useGlobalFilters(new GlobalHttpExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3000);
 }

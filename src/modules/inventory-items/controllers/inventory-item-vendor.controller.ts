@@ -5,13 +5,16 @@ import { ControllerBase } from "../../../base/controller-base";
 import { Cache } from "cache-manager";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Logger } from "nestjs-pino";
-
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { ModuleRef } from '@nestjs/core';
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Controller('inventory-item-vendor')
 export class InventoryItemVendorController extends ControllerBase<InventoryItemVendor> {
     constructor(
         vendorService: InventoryItemVendorService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        @Inject(Logger)logger: Logger,
-    ){ super(vendorService, cacheManager, logger); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ){ super(vendorService, cacheManager, 'InventoryItemVendorController', requestContextService, logger); }
 }

@@ -1,20 +1,19 @@
-import { TestingModule } from "@nestjs/testing";
-import { getOrdersTestingModule } from "../utils/order-testing.module";
-import { OrderTestingUtil } from "../utils/order-testing.util";
-import { OrderService } from "./order.service";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { OrderTypeService } from "./order-type.service";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { TYPE_A, TYPE_B, TYPE_C, TYPE_D } from "../utils/constants";
 import { NotFoundException } from "@nestjs/common";
-import { UpdateOrderDto } from "../dto/update-order.dto";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
+import { TestingModule } from "@nestjs/testing";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { item_a, item_b } from "../../menu-items/utils/constants";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
-import { OrderMenuItemService } from "./order-menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
+import { CreateOrderDto } from "../dto/create-order.dto";
+import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { UpdateOrderDto } from "../dto/update-order.dto";
+import { TYPE_A, TYPE_B, TYPE_C, TYPE_D } from "../utils/constants";
+import { getOrdersTestingModule } from "../utils/order-testing.module";
+import { OrderTestingUtil } from "../utils/order-testing.util";
+import { OrderMenuItemService } from "./order-menu-item.service";
+import { OrderTypeService } from "./order-type.service";
+import { OrderService } from "./order.service";
 
 describe('order service', () => {
     let orderService: OrderService;
@@ -402,10 +401,6 @@ describe('order service', () => {
         const item = await orderItemService.findOne(deletedItemId);
         expect(item).toBeNull();
     })
-
-    /*it('should add, modify, and remove items', async () => {
-
-    });*/
 
     it('should find all orders', async () => {
         const results = await orderService.findAll();

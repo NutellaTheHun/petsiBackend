@@ -1,13 +1,14 @@
+import { BadRequestException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { MenuItemComponent } from "../entities/menu-item-component.entity";
-import { MenuItemComponentService } from "../services/menu-item-component.service";
-import { MenuItemComponentController } from "./menu-item-component.controller";
-import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
-import { MenuItem } from "../entities/menu-item.entity";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { BadRequestException, NotImplementedException } from "@nestjs/common";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { MenuItem } from "../entities/menu-item.entity";
+import { MenuItemComponentService } from "../services/menu-item-component.service";
 import { getTestItemNames } from "../utils/constants";
+import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
+import { MenuItemComponentController } from "./menu-item-component.controller";
 
 describe('menu item component controller', () => {
     let controller: MenuItemComponentController;
@@ -148,8 +149,6 @@ describe('menu item component controller', () => {
     });
 
     it('should fail to find one component by id (doesnt exist)', async () => {
-        //const result = await controller.findOne(0);
-        //expect(result).toBeNull();
         await expect(controller.findOne(0)).rejects.toThrow(Error);
     });
 
@@ -171,9 +170,7 @@ describe('menu item component controller', () => {
         quantity: 20,
         } as UpdateMenuItemComponentDto;
 
-        const result = await controller.update(0, dto);
-
-        expect(result).toBeNull();
+        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
     });
 
     it('should find all components', async () => {

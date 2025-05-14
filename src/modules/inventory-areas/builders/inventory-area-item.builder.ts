@@ -15,22 +15,26 @@ import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.inter
 import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
 import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
 import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { ModuleRef } from "@nestjs/core";
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> 
 implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     constructor(
+        requestContextService: RequestContextService,
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
 
         @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly itemCountService: InventoryAreaItemService,
-
+        logger: AppLogger,
         validator: InventoryAreaItemValidator,
         private readonly itemService: InventoryItemService,
         private readonly sizeService: InventoryItemSizeService,
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
-    ){ super(InventoryAreaItem, validator); }
+    ){ super(InventoryAreaItem, 'InventoryAreaItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaItemDto): void {
         if(dto.areaCountId){

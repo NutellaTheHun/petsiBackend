@@ -767,8 +767,4 @@ describe('recipe service', () => {
       expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
     }
   });
-
-  it('should find ingredients where isIngredient is true', async () => {
-    
-  });
 });

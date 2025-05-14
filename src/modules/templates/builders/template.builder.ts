@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateChildTemplateMenuItemDto } from "../dto/create-child-template-menu-item.dto";
 import { CreateTemplateDto } from "../dto/create-template.dto";
 import { UpdateTemplateMenuItemDto } from "../dto/update-template-menu-item.dto";
@@ -14,7 +16,9 @@ export class TemplateBuilder extends BuilderBase<Template> {
         @Inject(forwardRef(() => TemplateMenuItemBuilder))
         private readonly itemBuilder: TemplateMenuItemBuilder,
         validator: TemplateValidator,
-    ){ super(Template, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(Template, 'TemplateBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateTemplateDto): void {
         if(dto.isPie){

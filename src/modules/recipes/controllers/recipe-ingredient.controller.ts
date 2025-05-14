@@ -1,16 +1,19 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Controller, Inject } from '@nestjs/common';
+import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { Cache } from "cache-manager";
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Logger } from "nestjs-pino";
+import { AppLogger } from '../../app-logging/app-logger';
+
 
 @Controller('recipe-ingredient')
 export class RecipeIngredientController extends ControllerBase<RecipeIngredient>{
     constructor(
         ingredientService: RecipeIngredientService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
-        @Inject(Logger)logger: Logger,
-    ){ super(ingredientService, cacheManager, logger); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ){ super(ingredientService, cacheManager, 'RecipeIngredientController', requestContextService, logger); }
 }

@@ -9,6 +9,7 @@ import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing
 import { InventoryAreaCountController } from "./inventory-area-count.controller";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { BadRequestException } from "@nestjs/common";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('inventory area count controller', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -128,8 +129,6 @@ describe('inventory area count controller', () => {
     });
     
     it('should fail to return an inventory count (bad id, returns null)', async () => {
-        //const result = await controller.findOne(0);
-        //expect(result).toBeNull();
         await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
     });
     
@@ -145,9 +144,7 @@ describe('inventory area count controller', () => {
     
     it('should fail to update an inventory count (doesnt exist)', async () => {
         const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
-
-        const result = await controller.update(0, uDto);
-        expect(result).toBeNull();
+        await expect(controller.update(0, uDto)).rejects.toThrow(AppHttpException);
     });
     
     it('should remove an inventory count', async () => {

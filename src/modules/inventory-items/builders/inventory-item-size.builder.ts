@@ -12,6 +12,9 @@ import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.inter
 import { InventoryItemSizeValidator } from "../validators/inventory-item-size.validator";
 import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 import { UpdateChildInventoryItemSizeDto } from "../dto/update-child-inventory-item-size.dto";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { ModuleRef } from '@nestjs/core';
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> implements IBuildChildDto<InventoryItem, InventoryItemSize>{
@@ -26,7 +29,9 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         validator: InventoryItemSizeValidator,
         private readonly packageService: InventoryItemPackageService,
         private readonly unitService: UnitOfMeasureService,
-    ){ super(InventoryItemSize, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(InventoryItemSize, 'InventoryItemSizeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemSizeDto): void {
         if(dto.inventoryItemId){

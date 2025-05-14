@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -6,7 +7,6 @@ import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeSubCategoryController } from './recipe-sub-category.controller';
-import { BadRequestException } from '@nestjs/common';
 
 describe('recipe sub category controller', () => {
   let controller: RecipeSubCategoryController;
@@ -118,8 +118,7 @@ describe('recipe sub category controller', () => {
       parentCategoryId: categories[0].id
     } as CreateRecipeSubCategoryDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException)
   });
 
   it('should find one a sub-category', async () => {
@@ -128,8 +127,6 @@ describe('recipe sub category controller', () => {
   });
 
   it('should fail find one a sub-category', async () => {
-    //const result = await controller.findOne(0);
-    //expect(result).toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
 
@@ -157,8 +154,7 @@ describe('recipe sub category controller', () => {
       parentCategoryId: categories[1].id
     } as UpdateRecipeSubCategoryDto;
 
-    const result = await controller.update(0, dto);
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove a sub-category', async () => {

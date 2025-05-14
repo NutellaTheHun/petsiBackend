@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
@@ -30,8 +32,11 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
         private readonly unitService: UnitOfMeasureService,
         private readonly menuItemService: MenuItemService,
+        
         validator: RecipeValidator,
-    ){ super(Recipe, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(Recipe, 'RecipeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeDto): void {
         if(dto.batchResultQuantity){

@@ -112,8 +112,7 @@ describe('User Controller', () => {
       password: "newPass",
       email: "newEmail@email.com",
     } as CreateUserDto;
-    //const result = await controller.create(dto);
-    //expect(result).toBeNull();
+    
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 

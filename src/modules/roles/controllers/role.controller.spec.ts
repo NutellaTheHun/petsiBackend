@@ -7,6 +7,7 @@ import { Role } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../users/utils/constants';
 import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('Role Controller', () => {
   let controller: RoleController;
@@ -88,7 +89,6 @@ describe('Role Controller', () => {
   });
 
   it("should not return one role (bad id)", async () => {
-    //await expect(controller.findOne(0)).resolves.toBeNull();
     await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
@@ -100,8 +100,7 @@ describe('Role Controller', () => {
 
   it("should fail to create a role (non-unique name)", async () => {
     const dto = { name: "newRole" } as Role;
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it("should update a role", async () => {

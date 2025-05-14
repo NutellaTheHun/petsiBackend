@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
@@ -22,7 +24,9 @@ export class OrderBuilder extends BuilderBase<Order>{
         private readonly itemBuilder: OrderMenuItemBuilder,
 
         validator: OrderValidator,
-    ){ super(Order, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super( Order, 'OrderBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateOrderDto): void {
         if(dto.deliveryAddress){

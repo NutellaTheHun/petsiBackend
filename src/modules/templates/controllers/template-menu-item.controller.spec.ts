@@ -6,6 +6,7 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
 import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('template menu item controller', () => {
   let controller: TemplateMenuItemController;
@@ -91,8 +92,6 @@ describe('template menu item controller', () => {
       });
     
       it('should fail find template item by id (not exist)', async () => {
-        //const result = await controller.findOne(0);
-        //expect(result).toBeNull();
         await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
       });
     
@@ -113,9 +112,7 @@ describe('template menu item controller', () => {
           displayName: "update displayName",
         } as UpdateTemplateMenuItemDto;
     
-        const result = await controller.update(0, dto);
-    
-        expect(result).toBeNull();
+        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
       });
     
       it('should remove template item', async () => {

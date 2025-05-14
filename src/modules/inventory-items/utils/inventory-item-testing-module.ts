@@ -16,6 +16,10 @@ import { InventoryItemVendorController } from "../controllers/inventory-item-ven
 import { InventoryItemsModule } from "../inventory-items.module";
 import { CacheModule } from "@nestjs/cache-manager";
 import { LoggerModule } from "nestjs-pino";
+import { AppLoggingModule } from "../../app-logging/app-logging.module";
+import { RequestContextModule } from "../../request-context/request-context.module";
+import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 export async function getInventoryItemTestingModule(): Promise<TestingModule> {
   return await Test.createTestingModule({
@@ -41,6 +45,8 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
             LoggerModule.forRoot({
                 pinoHttp: { transport: { target: 'pino-pretty' } }
             }),
+            AppLoggingModule,
+            RequestContextModule,
     ],
 
     controllers: [
@@ -53,4 +59,6 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
 
     providers: [],
 
-}).compile()};
+}).overrideProvider(RequestContextService)
+  .useClass(TestRequestContextService)
+  .compile()};

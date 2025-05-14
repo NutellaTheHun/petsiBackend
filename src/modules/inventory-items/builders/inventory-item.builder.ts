@@ -1,5 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
 import { InventoryItem } from "../entities/inventory-item.entity";
@@ -25,7 +27,9 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
         validator: InventoryItemValidator,
-    ){ super(InventoryItem, validator); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: any): void {
         if(dto.inventoryItemCategoryId){
