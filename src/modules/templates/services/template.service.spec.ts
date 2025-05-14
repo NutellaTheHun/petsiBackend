@@ -1,17 +1,17 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
+import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { CreateChildTemplateMenuItemDto } from '../dto/create-child-template-menu-item.dto';
+import { CreateTemplateDto } from '../dto/create-template.dto';
+import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
+import { UpdateTemplateDto } from '../dto/update-template.dto';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemService } from './template-menu-item.service';
 import { TemplateService } from './template.service';
-import { CreateTemplateDto } from '../dto/create-template.dto';
-import { UpdateTemplateDto } from '../dto/update-template.dto';
-import { NotFoundException } from '@nestjs/common';
-import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
-import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
-import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
-import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 
 describe('Template Service', () => {
   let templateService: TemplateService;
@@ -123,7 +123,7 @@ describe('Template Service', () => {
         menuItemId: itemB.id,
         tablePosIndex: 1,
       }
-    ] as CreateTemplateMenuItemDto[];
+    ] as CreateChildTemplateMenuItemDto[];
 
     const dto = {
       itemDtos: itemDtos,

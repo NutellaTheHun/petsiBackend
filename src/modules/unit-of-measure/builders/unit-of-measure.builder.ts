@@ -1,46 +1,27 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/update-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { UnitCategoryService } from "../services/unit-category.service";
+import { UnitOfMeasureValidator } from "../validators/unit-of-measure.validator";
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     constructor(
         @Inject(forwardRef(() => UnitCategoryService))
         private readonly categoryService: UnitCategoryService,
-    ){ super(UnitOfMeasure); }
+
+        validator: UnitOfMeasureValidator,
+
+        requestContextService: RequestContextService,
+        
+        logger: AppLogger,
+    ){ super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
     
-    public name(name: string): this {
-        return this.setProp('name', name);
-    }
-
-    public abbreviation(abr: string): this {
-        return this.setProp('abbreviation', abr);
-    }
-
-    public categoryById(id: number): this {
-        if(id === 0){
-            return this.setProp('category', null);
-        }
-        return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
-    }
-
-    public categoryByName(name: string): this {
-        return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
-    }
-
-    public conversionFactor(value: string): this{
-        return this.setProp('conversionFactorToBase', value);
-    }
-
-    /**
-     * If no category is given, default category is "no category"
-     */
-    public async buildCreateDto(dto: CreateUnitOfMeasureDto): Promise<UnitOfMeasure> {
-        this.reset();
-
+    protected createEntity(dto: CreateUnitOfMeasureDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -53,14 +34,9 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
         }
-
-        return await this.build();
     }
 
-    public async buildUpdateDto(toUpdate: UnitOfMeasure, dto: UpdateUnitOfMeasureDto): Promise<UnitOfMeasure> {
-        this.reset();
-        this.updateEntity(toUpdate);
-
+    protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -73,7 +49,28 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
         }
-        
-        return await this.build();
+    }
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public abbreviation(abr: string): this {
+        return this.setPropByVal('abbreviation', abr);
+    }
+
+    public categoryById(id: number): this {
+        if(id === 0){
+            return this.setPropByVal('category', null);
+        }
+        return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
+    }
+
+    public categoryByName(name: string): this {
+        return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
+    }
+
+    public conversionFactor(value: string): this{
+        return this.setPropByVal('conversionFactorToBase', value);
     }
 }

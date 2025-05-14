@@ -11,6 +11,11 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { MenuItemsModule } from "../../menu-items/menu-items.module";
 import { CacheModule } from "@nestjs/cache-manager";
+import { LoggerModule } from "nestjs-pino";
+import { AppLoggingModule } from "../../app-logging/app-logging.module";
+import { RequestContextModule } from "../../request-context/request-context.module";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
 
 export async function getOrdersTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -29,6 +34,11 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
             MenuItemsModule,
             OrdersModule,
             CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
+            AppLoggingModule,
+            RequestContextModule,            
         ],
 
         controllers: [
@@ -38,4 +48,7 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
         ],
 
         providers: [],
-    }).compile();}
+})
+.overrideProvider(RequestContextService)
+.useClass(TestRequestContextService)
+.compile()};

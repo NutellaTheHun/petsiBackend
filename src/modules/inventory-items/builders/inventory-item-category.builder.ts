@@ -1,50 +1,44 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
 import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemService } from "../services/inventory-item.service";
+import { InventoryItemCategoryValidator } from "../validators/inventory-item-category.validator";
+import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCategory> {
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-    ){ super(InventoryItemCategory); }
 
-    public name(name: string): this {
-        return this.setProp('name', name);
-    }
+        validator: InventoryItemCategoryValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super( InventoryItemCategory, 'InventoryItemCategoryBuilder', requestContextService, logger, validator); }
 
-    public inventoryItemsById(ids: number[]): this {
-        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService),'items', ids);
-    }
-
-    public async buildCreateDto(dto: CreateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
-        this.reset();
-
+    protected createEntity(dto: CreateInventoryItemCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
-        
-        /*if(dto.inventoryItemIds){
-            this.inventoryItemsById(dto.inventoryItemIds);
-        }*/
-
-        return await this.build();
     }
 
-    public async buildUpdateDto(toUpdate: InventoryItemCategory, dto: UpdateInventoryItemCategoryDto): Promise<InventoryItemCategory> {
-        this.reset();
-        this.updateEntity(toUpdate);
-
-        if(dto.name){
+    protected updateEntity(dto: UpdateInventoryItemCategoryDto): void {
+         if(dto.name){
             this.name(dto.name);
         }
         if(dto.inventoryItemIds){
             this.inventoryItemsById(dto.inventoryItemIds);
         }
+    }
 
-        return await this.build();
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
+    }
+
+    public inventoryItemsById(ids: number[]): this {
+        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService),'items', ids);
     }
 }

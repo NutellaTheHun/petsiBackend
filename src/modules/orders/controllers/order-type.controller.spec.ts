@@ -1,4 +1,5 @@
 import { TestingModule } from "@nestjs/testing";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
 import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
 import { OrderType } from "../entities/order-type.entity";
@@ -97,9 +98,7 @@ describe('order type controller', () => {
         name: "testType",
         } as CreateOrderTypeDto;
         
-        const result = await controller.create(dto);
-    
-        expect(result).toBeNull();
+        await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
     });
     
     it('should find order type by id', async () => {
@@ -129,9 +128,7 @@ describe('order type controller', () => {
         name: "updateTestType",
         } as UpdateOrderTypeDto;
     
-        const result = await controller.update(0, dto);
-    
-        expect(result).toBeNull();
+        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
     });
     
     it('should remove order type', async () => {

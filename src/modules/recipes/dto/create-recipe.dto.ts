@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
-import { CreateRecipeIngredientDto } from "./create-recipe-ingredient.dto";
+import { CreateChildRecipeIngredientDto } from "./create-child-recipe-ingredient.dto";
 
 export class CreateRecipeDto {
     @IsString()
@@ -12,7 +12,8 @@ export class CreateRecipeDto {
     readonly menuItemId?: number;
 
     @IsBoolean()
-    readonly isIngredient: boolean;
+    @IsOptional()
+    readonly isIngredient?: boolean;
 
     @IsNumber()
     @IsPositive()
@@ -35,14 +36,14 @@ export class CreateRecipeDto {
     readonly servingSizeUnitOfMeasureId: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
-    readonly salesPrice: number;
+    readonly salesPrice?: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
-    readonly cost: number;
+    readonly cost?: number;
 
     @IsNumber()
     @IsOptional()
@@ -56,5 +57,5 @@ export class CreateRecipeDto {
 
     @IsOptional()
     @IsArray()
-    ingredientDtos?: CreateRecipeIngredientDto[];
+    ingredientDtos?: CreateChildRecipeIngredientDto[];
 }

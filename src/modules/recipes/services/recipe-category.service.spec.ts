@@ -4,6 +4,11 @@ import { CreateRecipeCategoryDto } from '../dto/create-recipe-category.dto';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
+import { UpdateRecipeCategoryDto } from '../dto/update-recipe-category.dto';
+import { CreateChildRecipeSubCategoryDto } from '../dto/create-child-recipe-sub-category.dto';
+import { RecipeSubCategoryService } from './recipe-sub-category.service';
+import { NotFoundException } from '@nestjs/common';
+import { UpdateChildRecipeSubCategoryDto } from '../dto/update-child-recipe-sub-category.dto copy';
 
 describe('recipe category service', () => {
   let categoryService: RecipeCategoryService;
@@ -12,6 +17,12 @@ describe('recipe category service', () => {
 
   let testId: number;
   let testIds: number[];
+
+  let recipeSubCategoryService;
+  let testRecSubCatId: number;
+  let testSubCatIds: number[];
+  let modifiedSubCatId: number;
+  let removedSubCatId: number;
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
@@ -24,6 +35,7 @@ describe('recipe category service', () => {
     await testUtil.initRecipeIngredientTestingDatabase(dbTestContext);
 
     categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
+    recipeSubCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
   });
 
   afterAll(async () => {
@@ -62,13 +74,13 @@ describe('recipe category service', () => {
     expect(result?.id).not.toBeNull();
   });
   
-  it('should update a recipe category', async () => {
+  it('should update recipe category name', async () => {
     const toUpdate = await categoryService.findOne(testId);
     if(!toUpdate){ throw new Error("category to update not found"); }
 
     const updateDto = {
       name: "updatedCategoryName",
-    }
+    } as UpdateRecipeCategoryDto;
 
     const result = await categoryService.update(toUpdate.id, updateDto);
     expect(result).not.toBeNull();
@@ -114,5 +126,111 @@ describe('recipe category service', () => {
 
     expect(result.recipes).not.toBeNull();
     expect(result.recipes.length).toBeGreaterThan(0);
+  });
+
+  it('should create a recipe category with subCategories', async () => {
+    const subCatDtoOne = {
+      mode: 'create',
+      name: "subCatOne",
+    } as CreateChildRecipeSubCategoryDto;
+
+    const subCatDtoTwo = {
+      mode: 'create',
+      name: "subCatTwo",
+    } as CreateChildRecipeSubCategoryDto;
+
+    const subCatDtoThree = {
+      mode: 'create',
+      name: "subCatThree",
+    } as CreateChildRecipeSubCategoryDto;
+
+    const createCategoryDto = {
+      name: "category with subCats",
+      subCategoryDtos: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
+    } as CreateRecipeCategoryDto;
+
+    const result = await categoryService.create(createCategoryDto);
+    if(!result){ throw new Error();}
+    if(!result.subCategories){ throw new Error();}
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual("category with subCats");
+    expect(result?.subCategories?.length).toEqual(3);
+
+    testRecSubCatId = result?.id as number;
+    testSubCatIds = result.subCategories.map(subCat => subCat.id);
+  });
+
+  it('should query the sub-categories', async () => {
+    const result = await recipeSubCategoryService.findEntitiesById(testSubCatIds);
+    expect(result.length).toEqual(3);
+  });
+
+  it('should modify a subCategory', async () => {
+    const category = await categoryService.findOne(testRecSubCatId, ['subCategories']);
+    if(!category){ throw new NotFoundException(); }
+    if(!category.subCategories){ throw new Error(); }
+
+    modifiedSubCatId = category.subCategories[0].id
+
+    const updateSubCatDto = {
+      mode: 'update',
+      id: modifiedSubCatId,
+      name: "UPDATED SUBCAT",
+    } as UpdateChildRecipeSubCategoryDto;
+
+    const theRest = category.subCategories.slice(1).map(subCat => ({
+      mode: 'update',
+      id: subCat.id,
+    }) as UpdateChildRecipeSubCategoryDto);
+
+    const updateCategoryDto = {
+      subCategoryDtos: [updateSubCatDto, ...theRest],
+    } as UpdateRecipeCategoryDto;
+
+    const result = await categoryService.update(testRecSubCatId, updateCategoryDto);
+    if(!result){ throw new Error(); }
+    if(!result.subCategories){ throw new Error(); }
+
+    expect(result).not.toBeNull();
+    expect(result.subCategories.length).toEqual(3);
+    for(const subCat of result.subCategories){
+      if(subCat.id === modifiedSubCatId){
+        expect(subCat.name).toEqual("UPDATED SUBCAT");
+      }
+    }
+  });
+
+  it('should query modified sub-category', async () => {
+    const result = await recipeSubCategoryService.findOne(modifiedSubCatId);
+    expect(result.name).toEqual("UPDATED SUBCAT");
+  });
+
+  it('should remove a subCategory', async () => {
+  const category = await categoryService.findOne(testRecSubCatId, ['subCategories']);
+    if(!category){ throw new NotFoundException(); }
+    if(!category.subCategories){ throw new Error(); }
+
+    removedSubCatId = category.subCategories[0].id
+
+    const theRest = category.subCategories.slice(1).map(subCat => ({
+      mode: 'update',
+      id: subCat.id,
+    }) as UpdateChildRecipeSubCategoryDto);
+
+    const updateCategoryDto = {
+      subCategoryDtos: theRest,
+    } as UpdateRecipeCategoryDto;
+
+    const result = await categoryService.update(testRecSubCatId, updateCategoryDto);
+    if(!result){ throw new Error(); }
+    if(!result.subCategories){ throw new Error(); }
+    expect(result).not.toBeNull();
+    expect(result.subCategories.length).toEqual(2);
+    expect(result.subCategories.findIndex(subCat => subCat.id === removedSubCatId)).toEqual(-1);
+  });
+
+  it('should not query the removed subCategory', async () => {
+    const verify = await recipeSubCategoryService.findOne(removedSubCatId);
+    expect(verify).toBeNull();
   });
 });

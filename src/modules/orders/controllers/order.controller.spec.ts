@@ -1,4 +1,5 @@
 import { TestingModule } from "@nestjs/testing";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { UpdateOrderDto } from "../dto/update-order.dto";
 import { OrderType } from "../entities/order-type.entity";
@@ -131,9 +132,7 @@ describe('order controller', () => {
             deliveryAddress: "test",
         } as UpdateOrderDto;
     
-        const result = await controller.update(0, dto);
-    
-        expect(result).toBeNull();
+        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
     });
     
     it('should remove order', async () => {

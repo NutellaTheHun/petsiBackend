@@ -1,15 +1,15 @@
+import { BadRequestException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { RecipeIngredientController } from './recipe-ingredient.controller';
-import { getRecipeTestingModule } from '../utils/recipes-testing.module';
-import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { NotImplementedException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import exp from 'constants';
+import { RecipeIngredientService } from '../services/recipe-ingredient.service';
+import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeIngredientController } from './recipe-ingredient.controller';
 
 describe('recipe ingredient controller', () => {
   let controller: RecipeIngredientController;
@@ -132,7 +132,8 @@ describe('recipe ingredient controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: ingredients });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return ingredients.find(ingred => ingred.id === id) || null;
     });
 
@@ -173,8 +174,7 @@ describe('recipe ingredient controller', () => {
   });
 
   it('should fail find one a recipe ingredient', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should find all a recipe ingredient', async () => {
@@ -206,8 +206,8 @@ describe('recipe ingredient controller', () => {
       quantity: 4,
       unitOfMeasureId: units[3].id,
     } as CreateRecipeIngredientDto;
-    const result = await controller.update(0, dto);
-    expect(result).toBeNull();
+
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove a recipe ingredient', async () => {

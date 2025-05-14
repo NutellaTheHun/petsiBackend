@@ -1,10 +1,13 @@
-import { IsNumber, IsPositive } from "class-validator";
-import { BaseInventoryItemSizeDto } from "./base-inventory-item-size.dto";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class UpdateInventoryItemSizeDto extends BaseInventoryItemSizeDto{
-    readonly mode: 'update' = 'update';
+export class UpdateInventoryItemSizeDto{
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly unitOfMeasureId?: number;
 
     @IsNumber()
     @IsPositive()
-    readonly id: number;
+    @IsOptional()
+    readonly inventoryPackageTypeId?: number;
 }

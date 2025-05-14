@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { LabelType } from "./label-type.entity";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 
@@ -7,6 +7,7 @@ import { MenuItem } from "../../menu-items/entities/menu-item.entity";
  * and any future labels required. Holds URLs to remote storage holding the images.
  */
 @Entity()
+@Unique(['menuItem', 'imageUrl', 'type'])
 export class Label {
     @PrimaryGeneratedColumn()
     id: number;
@@ -26,6 +27,6 @@ export class Label {
     /**
      * A label type for categories like: "4x2", "2x1", or "ingredient label"
      */
-    @ManyToOne(() => LabelType, {nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => LabelType, {nullable: true, onDelete: 'SET NULL' })
     type: LabelType;
 }

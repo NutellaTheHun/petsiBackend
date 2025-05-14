@@ -1,6 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { UserService } from '../../users/services/user.service';
 import { isPassHashMatch } from '../utils/hash';
 
@@ -10,6 +12,8 @@ export class AuthService {
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
         private readonly configSerivce: ConfigService,
+        private readonly requestContextService: RequestContextService,
+        private readonly logger: AppLogger,
     ){}
 
     async signIn(username: string, rawPass: string): Promise<{ access_token: string, roles: string[] }> {

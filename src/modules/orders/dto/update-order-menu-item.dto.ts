@@ -1,10 +1,18 @@
-import { IsNumber, IsPositive } from 'class-validator';
-import { BaseOrderMenuItemDto } from './base-order-menu-item.dto';
+import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
-export class UpdateOrderMenuItemDto extends BaseOrderMenuItemDto {
-    readonly mode: 'update' = 'update';
+export class UpdateOrderMenuItemDto {
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly menuItemId?: number
 
     @IsNumber()
+    @IsOptional()
     @IsPositive()
-    readonly id: number;
+    readonly menuItemSizeId?: number
+
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly quantity?: number
 }

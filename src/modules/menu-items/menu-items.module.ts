@@ -1,23 +1,29 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { MenuItem } from './entities/menu-item.entity';
-import { MenuItemCategoryController } from './controllers/menu-item-category.controller';
-import { MenuItemSizeController } from './controllers/menu-item-size.controller';
-import { MenuItemService } from './services/menu-item.service';
-import { MenuItemSizeService } from './services/menu-item-size.service';
-import { MenuItemCategory } from './entities/menu-item-category.entity';
-import { MenuItemSize } from './entities/menu-item-size.entity';
+import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
+import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
 import { MenuItemSizeBuilder } from './builders/menu-item-size.builder';
 import { MenuItemBuilder } from './builders/menu-item.builder';
-import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
-import { MenuItemController } from './controllers/menu-item.controller';
-import { MenuItemCategoryService } from './services/menu-item-category.service';
-import { MenuItemComponent } from './entities/menu-item-component.entity';
+import { MenuItemCategoryController } from './controllers/menu-item-category.controller';
 import { MenuItemComponentController } from './controllers/menu-item-component.controller';
+import { MenuItemSizeController } from './controllers/menu-item-size.controller';
+import { MenuItemController } from './controllers/menu-item.controller';
+import { MenuItemCategory } from './entities/menu-item-category.entity';
+import { MenuItemComponent } from './entities/menu-item-component.entity';
+import { MenuItemSize } from './entities/menu-item-size.entity';
+import { MenuItem } from './entities/menu-item.entity';
+import { MenuItemCategoryService } from './services/menu-item-category.service';
 import { MenuItemComponentService } from './services/menu-item-component.service';
-import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
-import { CacheModule } from '@nestjs/cache-manager';
+import { MenuItemSizeService } from './services/menu-item-size.service';
+import { MenuItemService } from './services/menu-item.service';
+import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
+import { MenuItemCategoryValidator } from './validators/menu-item-category.validator';
+import { MenuItemComponentValidator } from './validators/menu-item-component.validator';
+import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
+import { MenuItemValidator } from './validators/menu-item.validator';
 
 @Module({
   imports: [
@@ -28,6 +34,8 @@ import { CacheModule } from '@nestjs/cache-manager';
       MenuItemComponent,
     ]),
     CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
   ],
 
   controllers: [
@@ -47,6 +55,11 @@ import { CacheModule } from '@nestjs/cache-manager';
     MenuItemSizeBuilder,
     MenuItemBuilder,
     MenuItemComponentBuilder,
+
+    MenuItemCategoryValidator,
+    MenuItemComponentValidator,
+    MenuItemSizeValidator,
+    MenuItemValidator,
 
     MenuItemTestingUtil,
   ],

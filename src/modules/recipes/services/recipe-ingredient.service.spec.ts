@@ -1,19 +1,19 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
+import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
+import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { FL_OUNCE, GALLON } from '../../unit-of-measure/utils/constants';
+import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
+import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from './recipe-ingredient.service';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { RecipeTestUtil } from '../utils/recipe-test.util';
-import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
 import { RecipeService } from './recipe.service';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
-import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
-import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
-import { FL_OUNCE, GALLON, MILLILITER } from '../../unit-of-measure/utils/constants';
-import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
-import { NotFoundException } from '@nestjs/common';
-import { validateOrReject, ValidationError } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
@@ -139,17 +139,7 @@ describe('recipe ingredient service', () => {
       unitOfMeasureId: unit.id,
     });
 
-    try{
-      await validateOrReject(dto);
-      const result = await ingredientService.create(dto);
-      expect(result).toBeNull();
-    } catch(errors){
-      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
-        expect(errors).not.toBeNull();
-      } else {
-        throw errors
-      }
-    }
+    await expect(ingredientService.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find ingredient by id', async() => {
@@ -243,17 +233,7 @@ describe('recipe ingredient service', () => {
       inventoryItemId: newItem.id
     });
 
-    try{
-      await validateOrReject(dto);
-      const result = await ingredientService.update(testIngredId, dto);
-      expect(result).toBeNull()
-    } catch (errors){
-      if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
-        expect(errors).not.toBeNull();
-      } else {
-        throw errors
-      }
-    }
+    await expect(ingredientService.update(testIngredId, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should get all ingredients', async () => {
@@ -282,7 +262,6 @@ describe('recipe ingredient service', () => {
   });
 
   it('should get a list of ingredients by inventoryItemName?', async () => {
-    // 2 ingredients use FOOD_A from getTestRecipeIngredientEntities() 
     const results = await ingredientService.findByInventoryItemName(FOOD_A);
     expect(results.length).toEqual(2);
   });

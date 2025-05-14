@@ -100,7 +100,7 @@ describe('recipe service', () => {
     const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
     const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
-    const ingredientDtos = testingUtil.createRecipeIngredientDtos(
+    const ingredientDtos = testingUtil.createChildRecipeIngredientDtos(
       ingredientItems.map(i => i.id).slice(0,3), 
       [], 
       ingredientMeasureUnits.map(u => u.id).slice(0,3), 
@@ -179,7 +179,7 @@ describe('recipe service', () => {
     const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
     const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
-    const createIngredDtos = testingUtil.createRecipeIngredientDtos(
+    const createIngredDtos = testingUtil.createChildRecipeIngredientDtos(
       ingredientItems.map(i => i.id).slice(3,7), 
       [],
       ingredientMeasureUnits.map(u => u.id).slice(0,3), 
@@ -766,9 +766,5 @@ describe('recipe service', () => {
     for(const result of results){
       expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
     }
-  });
-
-  it('should find ingredients where isIngredient is true', async () => {
-    
   });
 });

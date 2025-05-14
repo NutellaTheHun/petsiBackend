@@ -18,6 +18,7 @@ import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-me
 import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeTestUtil {
@@ -358,8 +359,8 @@ export class RecipeTestUtil {
      * - creates ingredients from inventoryItem ids array, then subRecipe ids array.
      * - will loop through inventoryItems and subRecipes if size of quantites array is larger than the combined length of items and subRecipes
      */
-    public createRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateRecipeIngredientDto[]{
-        const results: CreateRecipeIngredientDto[] = [];
+    public createChildRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateChildRecipeIngredientDto[]{
+        const results: CreateChildRecipeIngredientDto[] = [];
 
         let itemIndex = 0;
         let subRecipeIndex = 0;
@@ -371,7 +372,7 @@ export class RecipeTestUtil {
                     inventoryItemId: itemIds[itemIndex++],
                     unitOfMeasureId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
-                } as CreateRecipeIngredientDto);
+                } as CreateChildRecipeIngredientDto);
             }
             else if(subRecipeIndex < subRecipeIds.length){
                 results.push({
@@ -379,7 +380,7 @@ export class RecipeTestUtil {
                     subRecipeIngredientId: subRecipeIds[i - itemIds.length-1],
                     unitOfMeasureId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
-                } as CreateRecipeIngredientDto);
+                } as CreateChildRecipeIngredientDto);
             }
             else{
                 itemIndex = 0;
@@ -390,7 +391,7 @@ export class RecipeTestUtil {
                     inventoryItemId: itemIds[itemIndex++],
                     unitOfMeasureId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
-                } as CreateRecipeIngredientDto);
+                } as CreateChildRecipeIngredientDto);
             }
         }
         return results;

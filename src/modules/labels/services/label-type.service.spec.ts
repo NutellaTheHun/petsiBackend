@@ -6,7 +6,7 @@ import { LabelTypeService } from './label-type.service';
 import { CreateLabelTypeDto } from '../dto/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
 
-describe('LabelsService', () => {
+describe('Label type Service', () => {
   let typeService: LabelTypeService;
   let testingUtil: LabelTestingUtil;
   let dbTestContext: DatabaseTestContext;

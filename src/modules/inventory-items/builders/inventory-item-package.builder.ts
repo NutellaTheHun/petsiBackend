@@ -1,35 +1,32 @@
 import { Injectable } from "@nestjs/common";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
-import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
 import { BuilderBase } from "../../../base/builder-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
+import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
+import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
+import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
+import { InventoryItemPackageValidator } from "../validators/inventory-item-package.validator";
 
 @Injectable()
 export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackage> {
-    constructor(){  super(InventoryItemPackage); }
+    constructor(
+        validator: InventoryItemPackageValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(InventoryItemPackage, 'InventoryItemPackageBuilder', requestContextService, logger, validator); }
+
+    protected createEntity(dto: CreateInventoryItemPackageDto): void {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
+    protected updateEntity(dto: UpdateInventoryItemPackageDto): void {
+        if(dto.name){
+            this.name(dto.name);
+        }
+    }
 
     public name(name: string): this {
-        return this.setProp('name', name);
-    }
-
-    public async buildCreateDto(dto: CreateInventoryItemPackageDto): Promise<InventoryItemPackage> {
-        this.reset();
-
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(itemPackage: InventoryItemPackage, dto: UpdateInventoryItemPackageDto): Promise<InventoryItemPackage> {
-        this.reset();
-        this.updateEntity(itemPackage);
-        
-        if(dto.name){
-            this.name(dto.name);
-        }
-
-        return await this.build();
+        return this.setPropByVal('name', name);
     }
 }

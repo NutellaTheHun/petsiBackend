@@ -9,7 +9,7 @@ export class OrderType{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
     @OneToMany(() => Order, (order) => order.type, { nullable: true })

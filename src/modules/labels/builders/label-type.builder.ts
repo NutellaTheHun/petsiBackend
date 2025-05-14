@@ -1,33 +1,33 @@
+import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateLabelTypeDto } from "../dto/create-label-type.dto";
 import { UpdateLabelTypeDto } from "../dto/update-label-type.dto";
 import { LabelType } from "../entities/label-type.entity";
+import { LabelTypeValidator } from "../validators/label-type.validator";
 
+@Injectable()
 export class LabelTypeBuilder extends BuilderBase<LabelType> {
-    constructor(){ super(LabelType); }
+    constructor(
+        validator: LabelTypeValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(LabelType, 'LabelTypeBuilder', requestContextService, logger, validator); }
 
-    public name(name: string): this {
-        return this.setProp('name', name);
-    } 
-
-    public async buildCreateDto(dto: CreateLabelTypeDto): Promise<LabelType> {
-        this.reset();
-
+    protected createEntity(dto: CreateLabelTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
-
-        return this.build();
     }
 
-    public async buildUpdateDto(toUpdate: LabelType, dto: UpdateLabelTypeDto): Promise<LabelType> {
-        this.reset();
-        this.updateEntity(toUpdate);
-
+    protected updateEntity(dto: UpdateLabelTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
-        
-        return this.build();
+    }
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
 }

@@ -16,7 +16,7 @@ export class InventoryArea{
      * Name of a physical location that stores inventory items.
      * Such as a walk-in or a dry storage area.
      */
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
     /**

@@ -1,10 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { UnitCategory } from "./unit-category.entity";
 
-// requires categories to exist first,
-// then add units
-// then can set categories baseUnit
 @Entity()
+@Unique(['name', 'abbreviation'])
 export class UnitOfMeasure {
     @PrimaryGeneratedColumn()   
     id: number;
@@ -12,7 +10,7 @@ export class UnitOfMeasure {
     @Column({ unique: true, nullable: false })
     name: string;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     abbreviation: string;
 
     @ManyToOne(() => UnitCategory, (category) => category.units, { nullable: true, onDelete: 'SET NULL', cascade: true })

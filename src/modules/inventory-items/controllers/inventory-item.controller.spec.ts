@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
@@ -104,7 +105,8 @@ describe('Inventory Item Controller', () => {
 
     jest.spyOn(itemService, "findAll").mockResolvedValue( {items: items} );
 
-    jest.spyOn(itemService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(itemService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return items.find(unit => unit.id === id) || null;
     });
 
@@ -140,8 +142,7 @@ describe('Inventory Item Controller', () => {
       vendorId: 1,
     } as CreateInventoryItemDto;
 
-    const result = await controller.create(dto)
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all items', async () => {
@@ -155,8 +156,7 @@ describe('Inventory Item Controller', () => {
   });
   
   it('should fail to return a item (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
   
   it('should update a item', async () => {
@@ -176,8 +176,7 @@ describe('Inventory Item Controller', () => {
     const toUpdate = await itemService.findOneByName("UPDATED_testItem");
     if(!toUpdate){ throw new Error("item to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a item', async () => {

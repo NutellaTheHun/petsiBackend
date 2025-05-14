@@ -1,5 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { AppLogger } from '../../app-logging/app-logger';
 import { Public } from '../../../util/decorators/PublicLogin';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { SignInDto } from '../dto/sign-in.dto';
 import { AuthService } from '../services/auth.service';
 
@@ -7,6 +9,8 @@ import { AuthService } from '../services/auth.service';
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
+        private readonly requestContextService: RequestContextService,
+        private readonly logger: AppLogger,
     ) {}
 
     @HttpCode(HttpStatus.OK)

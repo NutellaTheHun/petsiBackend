@@ -5,11 +5,11 @@ export class UpdateInventoryItemVendorDto{
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    readonly name: string;
+    readonly name?: string;
 
     @IsArray()
     @IsPositive({ each: true})
     @IsNumber({}, { each: true})
     @IsOptional()
-    readonly inventoryItemIds: number[];
+    readonly inventoryItemIds?: number[];
 }

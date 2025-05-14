@@ -9,9 +9,9 @@ export class InventoryItemVendor {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
     @OneToMany(() => InventoryItem, (item) => item.vendor, { nullable: false })
     items: InventoryItem[];
-} 
+}

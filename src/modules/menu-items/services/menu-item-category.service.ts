@@ -2,34 +2,27 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemCategoryBuilder } from "../builders/menu-item-category.builder";
-import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { MenuItemCategoryValidator } from "../validators/menu-item-category.validator";
 
 @Injectable()
 export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
-        private readonly categoryBuilder: MenuItemCategoryBuilder,
-    ){ super(categoryRepo, 'MenuItemCategoryService'); }
 
-    async create(dto: CreateMenuItemCategoryDto): Promise<MenuItemCategory | null> {
-        const exists = await this.findOneByName(dto.name);
-        if(exists){ return null; }
+        @Inject(forwardRef(() => MenuItemCategoryBuilder))
+        categoryBuilder: MenuItemCategoryBuilder,
 
-        const category = await this.categoryBuilder.buildCreateDto(dto);
-        return await this.categoryRepo.save(category);
-    }
+        validator: MenuItemCategoryValidator,
 
-    async update(id: number, dto: UpdateMenuItemCategoryDto): Promise<MenuItemCategory | null> {
-        const toUpdate = await this.findOne(id);
-        if(!toUpdate) { return null; }
+        requestContextService: RequestContextService,
 
-        await this.categoryBuilder.buildUpdateDto(toUpdate, dto);
-        return await this.categoryRepo.save(toUpdate);
-    }
+        logger: AppLogger,
+    ){ super(categoryRepo, categoryBuilder, validator, 'MenuItemCategoryService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof MenuItemCategory>): Promise<MenuItemCategory | null> {
         return await this.categoryRepo.findOne({ where: { name: name }, relations: relations });

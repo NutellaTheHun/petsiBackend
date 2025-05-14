@@ -1,10 +1,11 @@
 import { TestingModule } from "@nestjs/testing";
-import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
-import { InventoryAreaService } from "./inventory-area.service";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
+import { InventoryAreaService } from "./inventory-area.service";
 
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -46,9 +47,8 @@ describe('Inventory area service', () => {
 
     it('should fail to create an area (already exists)', async () => {
         const area = { name: testAreaName } as CreateInventoryAreaDto;
-        const result = await service.create(area);
 
-        expect(result).toBeNull();
+        await expect(service.create(area)).rejects.toThrow(AppHttpException);
     });
 
     it('should update an area', async () => {
@@ -63,10 +63,8 @@ describe('Inventory area service', () => {
 
     it('should fail to update an area (doesnt exist)', async () => {
         const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
-
-        const result = await service.update(0, toUpdate);
-
-        expect(result).toBeNull();
+        
+        await expect(service.update(0, toUpdate)).rejects.toThrow(AppHttpException);
     });
 
     it('should find one by name', async () => {

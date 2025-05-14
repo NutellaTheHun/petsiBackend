@@ -1,6 +1,9 @@
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
+import { RequestContextModule } from '../request-context/request-context.module';
 import { InventoryAreaCountBuilder } from './builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from './builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from './builders/inventory-area.builder';
@@ -14,7 +17,9 @@ import { InventoryAreaCountService } from './services/inventory-area-count.servi
 import { InventoryAreaItemService } from './services/inventory-area-item.service';
 import { InventoryAreaService } from './services/inventory-area.service';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
-import { CacheModule } from '@nestjs/cache-manager';
+import { InventoryAreaCountValidator } from './validators/inventory-area-count.validator';
+import { InventoryAreaItemValidator } from './validators/inventory-area-item.validator';
+import { InventoryAreaValidator } from './validators/inventory-area.validator';
 
 @Module({
   imports: [
@@ -25,6 +30,8 @@ import { CacheModule } from '@nestjs/cache-manager';
     ]),
     InventoryItemsModule,
     CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
   ],
   controllers: [
     InventoryAreaController,
@@ -39,6 +46,10 @@ import { CacheModule } from '@nestjs/cache-manager';
     InventoryAreaBuilder,
     InventoryAreaCountBuilder,
     InventoryAreaItemBuilder,
+
+    InventoryAreaValidator,
+    InventoryAreaCountValidator,
+    InventoryAreaItemValidator,
 
     InventoryAreaTestUtil,
   ],

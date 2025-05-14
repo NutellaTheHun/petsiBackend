@@ -1,17 +1,47 @@
 import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { Label } from "../entities/label.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateLabelDto } from "../dto/create-label.dto";
 import { UpdateLabelDto } from "../dto/update-label.dto";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { Label } from "../entities/label.entity";
 import { LabelTypeService } from "../services/label-type.service";
+import { LabelValidator } from "../validators/label.validator";
 
 @Injectable()
 export class LabelBuilder extends BuilderBase<Label> {
     constructor(
         private readonly itemService: MenuItemService,
         private readonly typeService: LabelTypeService,
-    ){ super(Label); }
+        validator: LabelValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(Label, 'LabelBuilder', requestContextService, logger, validator); }
+
+    protected createEntity(dto: CreateLabelDto): void {
+        if(dto.imageUrl){
+            this.imageUrl(dto.imageUrl);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.typeId){
+            this.labelTypeById(dto.typeId);
+        }
+    }
+
+    protected updateEntity(dto: UpdateLabelDto): void {
+        if(dto.imageUrl){
+            this.imageUrl(dto.imageUrl);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.typeId){
+            this.labelTypeById(dto.typeId);
+        }
+    }
 
     public menuItemById(id: number): this {
         return this.setPropById(this.itemService.findOne.bind(this.itemService),'menuItem', id);
@@ -22,7 +52,7 @@ export class LabelBuilder extends BuilderBase<Label> {
     }
 
     public imageUrl(url: string): this {
-        return this.setProp('imageUrl', url);
+        return this.setPropByVal('imageUrl', url);
     }
 
     public labelTypeById(id: number): this {
@@ -31,38 +61,5 @@ export class LabelBuilder extends BuilderBase<Label> {
 
     public labelTypeByName(name: string): this {
         return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'type', name);
-    }
-
-    public async buildCreateDto(dto: CreateLabelDto): Promise<Label> {
-        this.reset();
-
-        if(dto.imageUrl){
-            this.imageUrl(dto.imageUrl);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
-        }
-        
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: Label, dto: UpdateLabelDto): Promise<Label> {
-        this.reset();
-        this.updateEntity(toUpdate);
-
-        if(dto.imageUrl){
-            this.imageUrl(dto.imageUrl);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
-        }
-
-        return this.build();
     }
 }

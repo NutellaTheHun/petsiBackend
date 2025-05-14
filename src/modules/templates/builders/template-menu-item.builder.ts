@@ -1,15 +1,22 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { TemplateMenuItem } from "../entities/template-menu-item.entity";
-import { TemplateService } from "../services/template.service";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { CreateChildTemplateMenuItemDto } from "../dto/create-child-template-menu-item.dto";
 import { CreateTemplateMenuItemDto } from "../dto/create-template-menu-item.dto";
+import { UpdateChildTemplateMenuItemDto } from "../dto/update-child-template-menu-item.dto";
 import { UpdateTemplateMenuItemDto } from "../dto/update-template-menu-item.dto";
+import { TemplateMenuItem } from "../entities/template-menu-item.entity";
 import { Template } from "../entities/template.entity";
 import { TemplateMenuItemService } from "../services/template-menu-item.service";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { TemplateService } from "../services/template.service";
+import { TemplateMenuItemValidator } from "../validators/template-menu-item.validator";
+
 
 @Injectable()
-export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
+export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> implements IBuildChildDto<Template, TemplateMenuItem>{
     constructor(
         @Inject(forwardRef(() => TemplateService))
         private readonly templateService: TemplateService,
@@ -17,10 +24,77 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
         private readonly templateItemService: TemplateMenuItemService,
 
         private menuItemService: MenuItemService,
-    ){ super(TemplateMenuItem); }
+        validator: TemplateMenuItemValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(TemplateMenuItem, 'TemplateMenuItemBuilder', requestContextService, logger, validator); }
+
+    protected createEntity(dto: CreateTemplateMenuItemDto): void {
+        if(dto.templateId){
+            this.templateById(dto.templateId);
+        }
+        if(dto.displayName){
+            this.displayName(dto.displayName);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+            this.tablePosIndex(dto.tablePosIndex);
+        }
+    }
+
+    protected updateEntity(dto: UpdateTemplateMenuItemDto): void {
+        if(dto.displayName){
+            this.displayName(dto.displayName);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+            this.tablePosIndex(dto.tablePosIndex);
+        }
+    }
+    
+    buildChildEntity(dto: CreateChildTemplateMenuItemDto): void {
+        if(dto.displayName){
+            this.displayName(dto.displayName);
+        }
+        if(dto.menuItemId){
+            this.menuItemById(dto.menuItemId);
+        }
+        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+            this.tablePosIndex(dto.tablePosIndex);
+        }
+    }
+
+    async buildChildCreateDto(parent: Template, dto: CreateChildTemplateMenuItemDto): Promise<TemplateMenuItem> {
+        await this.validateCreateDto(dto);
+        this.reset();
+
+        this.entity.template = parent;
+
+        this.buildChildEntity(dto);
+
+        return await this.build();
+    }
+
+    public async buildManyDto(parentTemplate: Template, dtos: (CreateChildTemplateMenuItemDto | UpdateChildTemplateMenuItemDto)[]): Promise<TemplateMenuItem[]> {
+        const results: TemplateMenuItem[] = [];
+        for(const dto of dtos){
+            if(dto.mode === 'create'){
+                results.push( await this.buildChildCreateDto(parentTemplate, dto));
+            } else {
+                const item = await this.templateItemService.findOne(dto.id);
+                if(!item){ throw new Error("recipe ingredient not found"); }
+                results.push( await this.buildUpdateDto(item, dto));
+            }
+        }
+        return results;
+    }
 
     public displayName(name: string): this {
-        return this.setProp('displayName', name);
+        return this.setPropByVal('displayName', name);
     }
 
     public menuItemById(id: number): this {
@@ -32,7 +106,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     }
 
     public tablePosIndex(pos: number): this {
-        return this.setProp('tablePosIndex', pos);
+        return this.setPropByVal('tablePosIndex', pos);
     }
 
     public templateById(id: number): this {
@@ -41,59 +115,5 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
     public templateByName(name: string): this {
         return this.setPropByName(this.templateService.findOneByName.bind(this.templateService), 'template', name);
-    }
-
-    public async buildCreateDto(parentTemplate: Template, dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
-        this.reset();
-
-        if(dto.displayName){
-            this.displayName(dto.displayName);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
-            this.tablePosIndex(dto.tablePosIndex);
-        }
-        if(dto.templateId){
-            this.templateById(dto.templateId); // ?
-        }
-        this.entity.template = parentTemplate; // ?
-        
-        return this.build();
-    }
-
-    public async buildUpdateDto(toUpdate: TemplateMenuItem, dto: UpdateTemplateMenuItemDto): Promise<TemplateMenuItem> {
-        this.reset();
-        this.updateEntity(toUpdate);
-
-        if(dto.displayName){
-            this.displayName(dto.displayName);
-        }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
-        }
-        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
-            this.tablePosIndex(dto.tablePosIndex);
-        }
-        /*if(dto.templateId){
-            this.templateById(dto.templateId);
-        }*/
-
-        return this.build();
-    }
-
-    public async buildManyDto(parentTemplate: Template, dtos: (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[]): Promise<TemplateMenuItem[]> {
-        const results: TemplateMenuItem[] = [];
-        for(const dto of dtos){
-            if(dto.mode === 'create'){
-                results.push( await this.buildCreateDto(parentTemplate, dto));
-            } else {
-                const item = await this.templateItemService.findOne(dto.id);
-                if(!item){ throw new Error("recipe ingredient not found"); }
-                results.push( await this.buildUpdateDto(item, dto));
-            }
-        }
-        return results;
     }
 }

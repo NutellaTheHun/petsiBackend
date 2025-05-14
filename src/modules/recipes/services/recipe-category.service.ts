@@ -1,40 +1,26 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
-import { CreateRecipeCategoryDto } from "../dto/create-recipe-category.dto";
-import { UpdateRecipeCategoryDto } from "../dto/update-recipe-category.dto";
 import { RecipeCategory } from "../entities/recipe-category.entity";
+import { RecipeCategoryValidator } from "../validators/recipe-category.validator";
+import { forwardRef, Inject } from "@nestjs/common";
 
 export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
     constructor(
         @InjectRepository(RecipeCategory)
         private readonly categoryRepo: Repository<RecipeCategory>,
-        private readonly categoryBuilder: RecipeCategoryBuilder,
-    ){ super(categoryRepo, 'RecipeCategoryService'); }
 
-    /**
-     * Creates a recipe category, with no sub-categories and no recipes
-     * - sub-categories and recipes are assigned in Update()
-     */
-    async create(createDto: CreateRecipeCategoryDto): Promise<RecipeCategory | null> {
-        const exists = await this.findOneByName(createDto.name);
-        if(exists) { return null; }
+        @Inject(forwardRef(() => RecipeCategoryBuilder))
+        categoryBuilder: RecipeCategoryBuilder,
 
-        const category = await this.categoryBuilder.buildCreateDto(createDto);
-        return await this.categoryRepo.save(category);
-    }
-
-    /**
-    * Uses Repository.Save(), Not Repository.Update()
-    */
-    async update(id: number, updateDto: UpdateRecipeCategoryDto): Promise< RecipeCategory | null> {
-        const toUpdate = await this.findOne(id);
-        if(!toUpdate){ return null; }
+        validator: RecipeCategoryValidator,
         
-        await this.categoryBuilder.buildUpdateDto(toUpdate, updateDto);
-        return await this.categoryRepo.save(toUpdate);
-    }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super(categoryRepo, categoryBuilder, validator, 'RecipeCategoryService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof RecipeCategory>): Promise<RecipeCategory | null> {
         return await this.categoryRepo.findOne({ where: { name: name}, relations });

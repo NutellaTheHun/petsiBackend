@@ -1,15 +1,15 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
+import { plainToInstance } from "class-transformer";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
+import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
+import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { item_a, item_b, item_c, item_e, item_f, item_g } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemComponentService } from "./menu-item-component.service";
 import { MenuItemService } from "./menu-item.service";
-import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { NotFoundException } from "@nestjs/common";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
-import { item_a, item_b, item_c, item_e, item_f, item_g } from "../utils/constants";
-import { plainToInstance } from "class-transformer";
-import { validateOrReject, ValidationError } from "class-validator";
 
 describe('menu item component service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -28,7 +28,6 @@ describe('menu item component service', () => {
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
 
-        // ItemF: {itemA, itemB}, ItemG: {ItemC, ItemD}s
         await testingUtil.initMenuItemComponentTestDatabase(dbTestContext);
 
         componentService = module.get<MenuItemComponentService>(MenuItemComponentService);
@@ -131,17 +130,7 @@ describe('menu item component service', () => {
             menuItemId: newItem.id,
         });
 
-        try{
-            await validateOrReject(dto);
-            const result = await componentService.update(testId, dto);
-            expect(result).toBeNull();
-        } catch(errors){
-            if (Array.isArray(errors) && errors.every(e => e instanceof ValidationError)) {
-            expect(errors).not.toBeNull();
-            } else {
-            throw errors
-            }
-        }
+        await expect(componentService.update(testId, dto)).rejects.toThrow(AppHttpException);
     });
 
     it('should update component quantity', async () => {

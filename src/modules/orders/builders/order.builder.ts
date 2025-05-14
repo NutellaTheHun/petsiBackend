@@ -1,12 +1,15 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { Order } from "../entities/order.entity";
-import { OrderTypeService } from "../services/order-type.service";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
+import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
 import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { UpdateOrderDto } from "../dto/update-order.dto";
+import { Order } from "../entities/order.entity";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { OrderTypeService } from "../services/order-type.service";
+import { OrderValidator } from "../validators/order.validator";
 import { OrderMenuItemBuilder } from "./order-menu-item.builder";
 
 @Injectable()
@@ -19,10 +22,92 @@ export class OrderBuilder extends BuilderBase<Order>{
 
         @Inject(forwardRef(() => OrderMenuItemBuilder))
         private readonly itemBuilder: OrderMenuItemBuilder,
-    ){ super(Order); }
+
+        validator: OrderValidator,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ){ super( Order, 'OrderBuilder', requestContextService, logger, validator); }
+
+    protected createEntity(dto: CreateOrderDto): void {
+        if(dto.deliveryAddress){
+            this.deliveryAddress(dto.deliveryAddress);
+        }
+        if(dto.email){
+            this.email(dto.email);
+        }
+        if(dto.fulfillmentDate){
+            this.fulfillmentDate(dto.fulfillmentDate);
+        }
+        if(dto.fulfillmentType){
+            this.fulfillmentType(dto.fulfillmentType);
+        }
+        if(dto.isFrozen){
+            this.isFrozen(dto.isFrozen);
+        }
+        if(dto.isWeekly){
+            this.isWeekly(dto.isWeekly);
+        }
+        if(dto.note){
+            this.note(dto.note);
+        }
+        if(dto.orderMenuItemDtos){
+            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
+        }
+        if(dto.orderTypeId){
+            this.orderTypeById(dto.orderTypeId);
+        }
+        if(dto.phoneNumber){
+            this.phoneNumber(dto.phoneNumber);
+        }
+        if(dto.recipient){
+            this.recipient(dto.recipient);
+        }
+        if(dto.squareOrderId){
+            this.squareOrderId(dto.squareOrderId);
+        }
+    }
+
+    protected updateEntity(dto: UpdateOrderDto): void {
+        if(dto.deliveryAddress){
+            this.deliveryAddress(dto.deliveryAddress);
+        }
+        if(dto.email){
+            this.email(dto.email);
+        }
+        if(dto.fulfillmentDate){
+            this.fulfillmentDate(dto.fulfillmentDate);
+        }
+        if(dto.fulfillmentType){
+            this.fulfillmentType(dto.fulfillmentType);
+        }
+        if(dto.isFrozen){
+            this.isFrozen(dto.isFrozen);
+        }
+        if(dto.isWeekly){
+            this.isWeekly(dto.isWeekly);
+        }
+        if(dto.note){
+            this.note(dto.note);
+        }
+        if(dto.orderMenuItemDtos){
+            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
+        }
+        if(dto.orderTypeId){
+            this.orderTypeById(dto.orderTypeId);
+        }
+        if(dto.phoneNumber){
+            this.phoneNumber(dto.phoneNumber);
+        }
+        if(dto.recipient){
+            this.recipient(dto.recipient);
+        }
+        if(dto.squareOrderId){
+            this.squareOrderId(dto.squareOrderId);
+        }
+    }
 
     public squareOrderId(squareId: string): this {
-        return this.setProp('squareOrderId', squareId);
+        return this.setPropByVal('squareOrderId', squareId);
     }
 
     public orderTypeById(id: number): this {
@@ -34,137 +119,50 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public recipient(name: string): this {
-        return this.setProp('recipient', name);
+        return this.setPropByVal('recipient', name);
     }
 
     public fulfillmentDate(date: Date): this {
-        return this.setProp('fulfillmentDate', date);
+        return this.setPropByVal('fulfillmentDate', date);
     }
 
     public fulfillmentType(type: string): this {
-        return this.setProp('fulfillmentType', type);
+        return this.setPropByVal('fulfillmentType', type);
     }
 
     public deliveryAddress(address: string): this {
-        return this.setProp('deliveryAddress', address);
+        return this.setPropByVal('deliveryAddress', address);
     }
 
     public phoneNumber(number: string): this {
-        return this.setProp('phoneNumber', number);
+        return this.setPropByVal('phoneNumber', number);
     }
 
     public email(email: string): this {
-        return this.setProp('email', email);
+        return this.setPropByVal('email', email);
     }
 
     public note(note: string): this {
-        return this.setProp('note', note);
+        return this.setPropByVal('note', note);
     }
 
     public isFrozen(val: boolean): this {
-        return this.setProp('isFrozen', val);
+        return this.setPropByVal('isFrozen', val);
     }
 
     public isWeekly(val: boolean): this {
-        return this.setProp('isWeekly', val);
+        return this.setPropByVal('isWeekly', val);
     }
 
     public itemsById(ids: number[]): this {
         return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
     }
 
-    public itemsByBuilderAfter(orderId: number, dtos: (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
+    public itemsByBuilder(orderId: number, dtos: (CreateChildOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             orderId,
         }));
-        return this.setPropAfterBuild(this.itemBuilder.buildManyDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
-    }
-
-    public async buildCreateDto(dto: CreateOrderDto): Promise<Order> {
-        this.reset();
-
-        if(dto.deliveryAddress){
-            this.deliveryAddress(dto.deliveryAddress);
-        }
-        if(dto.email){
-            this.email(dto.email);
-        }
-        if(dto.fulfillmentDate){
-            this.fulfillmentDate(dto.fulfillmentDate);
-        }
-        if(dto.fulfillmentType){
-            this.fulfillmentType(dto.fulfillmentType);
-        }
-        if(dto.isFrozen){
-            this.isFrozen(dto.isFrozen);
-        }
-        if(dto.isWeekly){
-            this.isWeekly(dto.isWeekly);
-        }
-        if(dto.note){
-            this.note(dto.note);
-        }
-        if(dto.orderMenuItemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.orderMenuItemDtos)
-        }
-        if(dto.orderTypeId){
-            this.orderTypeById(dto.orderTypeId);
-        }
-        if(dto.phoneNumber){
-            this.phoneNumber(dto.phoneNumber);
-        }
-        if(dto.recipient){
-            this.recipient(dto.recipient);
-        }
-        if(dto.squareOrderId){
-            this.squareOrderId(dto.squareOrderId);
-        }
-
-        return await this.build();
-    }
-
-    public async buildUpdateDto(order: Order, dto: UpdateOrderDto): Promise<Order> {
-        this.reset();
-        this.updateEntity(order);
-        
-        if(dto.deliveryAddress){
-            this.deliveryAddress(dto.deliveryAddress);
-        }
-        if(dto.email){
-            this.email(dto.email);
-        }
-        if(dto.fulfillmentDate){
-            this.fulfillmentDate(dto.fulfillmentDate);
-        }
-        if(dto.fulfillmentType){
-            this.fulfillmentType(dto.fulfillmentType);
-        }
-        if(dto.isFrozen){
-            this.isFrozen(dto.isFrozen);
-        }
-        if(dto.isWeekly){
-            this.isWeekly(dto.isWeekly);
-        }
-        if(dto.note){
-            this.note(dto.note);
-        }
-        if(dto.orderMenuItemDtos){
-            this.itemsByBuilderAfter(this.entity.id, dto.orderMenuItemDtos)
-        }
-        if(dto.orderTypeId){
-            this.orderTypeById(dto.orderTypeId);
-        }
-        if(dto.phoneNumber){
-            this.phoneNumber(dto.phoneNumber);
-        }
-        if(dto.recipient){
-            this.recipient(dto.recipient);
-        }
-        if(dto.squareOrderId){
-            this.squareOrderId(dto.squareOrderId);
-        }
-        
-        return await this.build();
+        return this.setPropByBuilder(this.itemBuilder.buildManyChildDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
     }
 }

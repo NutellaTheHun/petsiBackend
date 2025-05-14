@@ -5,6 +5,8 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryController } from './recipe-category.controller';
+import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('recipe category controller', () => {
   let controller: RecipeCategoryController;
@@ -57,7 +59,8 @@ describe('recipe category controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: categories });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return categories.find(cat => cat.id === id) || null;
     });
 
@@ -90,8 +93,8 @@ describe('recipe category controller', () => {
     const dto = {
       name: "test category"
     } as CreateRecipeCategoryDto;
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find one recipe category', async () => {
@@ -100,8 +103,7 @@ describe('recipe category controller', () => {
   });
 
   it('should fail find one a recipe category', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it('should find all a recipe category', async () => {
@@ -125,8 +127,7 @@ describe('recipe category controller', () => {
       name: "updated test name"
     } as UpdateRecipeCategoryDto;
 
-    const result = await controller.update(0, dto);
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove a recipe category', async () => {

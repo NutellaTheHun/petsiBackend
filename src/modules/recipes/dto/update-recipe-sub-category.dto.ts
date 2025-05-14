@@ -1,4 +1,12 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateRecipeSubCategoryDto } from "./create-recipe-sub-category.dto";
+import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
-export class UpdateRecipeSubCategoryDto extends PartialType(CreateRecipeSubCategoryDto){}
+export class UpdateRecipeSubCategoryDto {
+    @IsString()
+    @IsOptional()
+    readonly name?: string;
+
+    @IsNumber()
+    @IsOptional()
+    @IsPositive()
+    readonly parentCategoryId?: number;
+}

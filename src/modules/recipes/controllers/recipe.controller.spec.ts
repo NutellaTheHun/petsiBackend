@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { CreateRecipeDto } from '../dto/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/update-recipe-dto';
 import { Recipe } from '../entities/recipe.entity';
@@ -73,7 +74,8 @@ describe('recipe controller', () => {
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: recipes });
 
-    jest.spyOn(service, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
       return recipes.find(rec => rec.id === id) || null;
     });
 
@@ -120,8 +122,7 @@ describe('recipe controller', () => {
       cost: 4,
     } as CreateRecipeDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find one a recipe', async () => {
@@ -130,8 +131,7 @@ describe('recipe controller', () => {
   });
 
   it('should fail find one a recipe', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
 
   it('should find all a recipe', async () => {
@@ -168,8 +168,7 @@ describe('recipe controller', () => {
       cost: 8,
     } as UpdateRecipeDto;
 
-    const result = await controller.update(0, dto);
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove a recipe', async () => {

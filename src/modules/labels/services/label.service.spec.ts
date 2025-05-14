@@ -5,13 +5,13 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_g } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/create-label.dto';
 import { UpdateLabelDto } from '../dto/update-label.dto';
-import { type_a, type_b, type_d } from '../utils/constants';
+import { type_b, type_d } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeService } from './label-type.service';
 import { LabelService } from './label.service';
 
-describe('LabelsService', () => {
+describe('Label Service', () => {
   let labelService: LabelService;
   let testingUtil: LabelTestingUtil;
   let dbTestContext: DatabaseTestContext;

@@ -1,13 +1,13 @@
+import { BadRequestException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
+import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { getRecipeTestingModule } from "../../recipes/utils/recipes-testing.module";
-import { MenuItemSize } from "../entities/menu-item-size.entity";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { MenuItemSizeController } from "./menu-item-size.controller";
-import { MenuItemService } from "../services/menu-item.service";
-import { getTestSizeNames } from "../utils/constants";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
-import { NotImplementedException } from "@nestjs/common";
+import { MenuItemSize } from "../entities/menu-item-size.entity";
+import { MenuItemSizeService } from "../services/menu-item-size.service";
+import { getTestSizeNames } from "../utils/constants";
+import { MenuItemSizeController } from "./menu-item-size.controller";
 
 describe('menu item size controller', () => {
   let controller: MenuItemSizeController;
@@ -48,7 +48,8 @@ describe('menu item size controller', () => {
       return sizes.filter(size => ids.findIndex(id => id === size.id) !== -1);
     });
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return sizes.find(size => size.id === id) || null;
     });
 
@@ -99,9 +100,7 @@ describe('menu item size controller', () => {
        name: "testItemSize",
      } as CreateMenuItemSizeDto;
      
-     const result = await controller.create(dto);
- 
-     expect(result).toBeNull();
+     await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
    });
  
    it('should find size by id', async () => {
@@ -110,8 +109,7 @@ describe('menu item size controller', () => {
    });
  
    it('should fail find size by id (not exist)', async () => {
-     const result = await controller.findOne(0);
-     expect(result).toBeNull();
+     await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
    });
  
    it('should update size name', async () => {
@@ -131,9 +129,7 @@ describe('menu item size controller', () => {
        name: "updateTestItemSize",
      } as UpdateMenuItemSizeDto;
  
-     const result = await controller.update(0, dto);
- 
-     expect(result).toBeNull();
+     await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
    });
  
    it('should remove size', async () => {

@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { OrderMenuItemUnionResolver } from '../utils/order-menu-item-union-resolver';
-import { CreateOrderMenuItemDto } from './create-order-menu-item.dto';
-import { UpdateOrderMenuItemDto } from './update-order-menu-item.dto';
+import { CreateChildOrderMenuItemDto } from './create-child-order-menu-item.dto';
+import { UpdateChildOrderMenuItemDto } from './update-child-order-menu-item.dto';
 
 export class UpdateOrderDto{
     @IsString()
@@ -10,21 +10,21 @@ export class UpdateOrderDto{
     readonly squareOrderId?: string;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
-    readonly orderTypeId: number
+    readonly orderTypeId?: number
 
     @IsString()
-    @IsNotEmpty()
-    readonly recipient: string;
+    @IsOptional()
+    readonly recipient?: string;
 
     @IsDate()
-    @IsNotEmpty()
-    readonly fulfillmentDate: Date;
+   @IsOptional()
+    readonly fulfillmentDate?: Date;
 
     @IsString()
-    @IsNotEmpty()
-    readonly fulfillmentType: string;
+    @IsOptional()
+    readonly fulfillmentType?: string;
 
     @IsString()
     @IsOptional()
@@ -44,15 +44,15 @@ export class UpdateOrderDto{
 
     @IsBoolean()
     @IsOptional()
-    readonly isFrozen: boolean;
+    readonly isFrozen?: boolean;
 
     @IsBoolean()
     @IsOptional()
-    readonly isWeekly: boolean;
+    readonly isWeekly?: boolean;
 
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => OrderMenuItemUnionResolver)
-    orderMenuItemDtos?: (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[];
+    orderMenuItemDtos?: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[];
 }

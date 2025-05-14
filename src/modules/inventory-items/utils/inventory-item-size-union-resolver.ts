@@ -1,7 +1,7 @@
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/update-child-inventory-item-size.dto";
 
 export function InventoryItemSizeUnionResolver(obj: any) {
-    if (obj?.mode === 'update') return UpdateInventoryItemSizeDto;
-    return CreateInventoryItemSizeDto;
+    if (obj?.mode === 'update') return UpdateChildInventoryItemSizeDto;
+    return CreateChildInventoryItemSizeDto;
 }

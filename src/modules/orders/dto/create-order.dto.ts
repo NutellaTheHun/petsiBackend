@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateOrderMenuItemDto } from "./create-order-menu-item.dto";
+import { CreateChildOrderMenuItemDto } from "./create-child-order-menu-item.dto";
 
 export class CreateOrderDto {
     @IsString()
@@ -41,13 +41,13 @@ export class CreateOrderDto {
 
     @IsBoolean()
     @IsOptional()
-    readonly isFrozen: boolean;
+    readonly isFrozen?: boolean;
 
     @IsBoolean()
     @IsOptional()
-    readonly isWeekly: boolean;
+    readonly isWeekly?: boolean;
 
     @IsOptional()
     @IsArray()
-    orderMenuItemDtos?: CreateOrderMenuItemDto[];
+    orderMenuItemDtos?: CreateChildOrderMenuItemDto[];
 }

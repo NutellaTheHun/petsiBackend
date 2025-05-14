@@ -12,8 +12,6 @@ export class MenuItemSize{
     /** 
      * By default, can be "regular", "cutie", "small", "medium", "large" 
      */
-    //@OneToMany(() => MenuItem, (menuItem) => menuItem.validSizes, { nullable: false })
-    //@OneToMany(() => OrderMenuItem, (orderItem) => orderItem.size, { nullable: false })
-    @Column()
+    @Column({ unique: true })
     name: string;
 }

@@ -4,8 +4,9 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
-import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
+import { CreateChildInventoryItemSizeDto } from '../dto/create-child-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
+import { UpdateChildInventoryItemSizeDto } from '../dto/update-child-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
@@ -340,13 +341,13 @@ describe('Inventory Item Service', () => {
     const updateSizeDtos = [
       {
       mode:'update',
-      id: sizes[0].id,
+      id: item.sizes[0].id,
       unitOfMeasureId: newUnit.id,
       inventoryPackageTypeId: sizes[0].packageType.id,
       } as UpdateInventoryItemSizeDto,
       {
       mode:'update',
-      id: sizes[1].id,
+      id: item.sizes[1].id,
       unitOfMeasureId: sizes[1].measureUnit.id,
       inventoryPackageTypeId: sizes[1].packageType.id,
       } as UpdateInventoryItemSizeDto,
@@ -362,9 +363,8 @@ describe('Inventory Item Service', () => {
 
     expect(result).not.toBeNull();
     expect(result.sizes.length).toEqual(2);
-  });
 
-  it('should reflect updated item size when queried', async () => {
+    // should reflect updated item size when queried
     const updatedSize = await sizeService.findOne(updateItemSizeId, ['measureUnit']);
     if(!updatedSize){ throw new NotFoundException(); }
     expect(updatedSize.measureUnit.id).toEqual(newUnitId);
@@ -385,8 +385,6 @@ describe('Inventory Item Service', () => {
       {
         mode:'update',
         id: sizes[1].id,
-        //unitOfMeasureId: sizes[1].measureUnit.id,
-        //inventoryPackageTypeId: sizes[1].packageType.id,
       } as UpdateInventoryItemSizeDto,
     ];
 
@@ -441,12 +439,12 @@ describe('Inventory Item Service', () => {
       id: sizes[0].id,
       unitOfMeasureId: sizes[0].measureUnit.id,
       inventoryPackageTypeId: sizes[0].packageType.id,
-      } as UpdateInventoryItemSizeDto,
+      } as UpdateChildInventoryItemSizeDto,
       {
       mode:'create',
       unitOfMeasureId: createUnit.id,
       inventoryPackageTypeId: createPkg.id,
-      } as CreateInventoryItemSizeDto,
+      } as CreateChildInventoryItemSizeDto,
     ]
 
     const updateDto = {

@@ -1,42 +1,29 @@
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { RecipeBuilder } from "../builders/recipe.builder";
-import { CreateRecipeDto } from "../dto/create-recipe.dto";
-import { UpdateRecipeDto } from "../dto/update-recipe-dto";
 import { Recipe } from "../entities/recipe.entity";
+import { RecipeValidator } from "../validators/recipe.valdiator";
+import { forwardRef, Inject } from "@nestjs/common";
 
 export class RecipeService extends ServiceBase<Recipe>{
     constructor(
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
-        private readonly recipeBuilder: RecipeBuilder,
-    ){ super(recipeRepo, 'RecipeService'); }
 
-    async create(dto: CreateRecipeDto): Promise<Recipe | null> {
-        const exists = await this.findOneByName(dto.name);
-        if(exists) { return null; }
+        @Inject(forwardRef(() => RecipeBuilder))
+        recipeBuilder: RecipeBuilder,
 
-        const recipe = await this.recipeBuilder.buildCreateDto(dto);
-        return await this.recipeRepo.save(recipe);
-    }
+        validator: RecipeValidator,
+
+        requestContextService: RequestContextService,
         
-    /**
-    * Uses Repository.Save(), not Repository.Update
-    */
-    async update(id: number, updateDto: UpdateRecipeDto): Promise<Recipe | null> {
-        const toUpdate = await this.findOne(id);
-        if(!toUpdate){ return null; }
-
-        await this.recipeBuilder.buildUpdateDto(toUpdate, updateDto);
-        return await this.recipeRepo.save(toUpdate);
-    }
-
+        logger: AppLogger,
+    ){ super(recipeRepo, recipeBuilder, validator, 'RecipeService', requestContextService, logger); }
+    
     async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
         return this.recipeRepo.findOne({ where: {name: name }, relations});
-    }
-
-    async findByIsIngredient(relations?: Array<keyof Recipe>): Promise<Recipe[]> {
-        return this.recipeRepo.find({where: { isIngredient: true }});
     }
 }

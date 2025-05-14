@@ -1,7 +1,6 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
 export class CreateRecipeSubCategoryDto {
-
     @IsString()
     @IsNotEmpty()
     readonly name: string;
@@ -10,15 +9,4 @@ export class CreateRecipeSubCategoryDto {
     @IsNotEmpty()
     @IsPositive()
     readonly parentCategoryId: number;
-
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true })
-    readonly recipeIds: number[] = [];
-}
-
-export function CreateDefaultRecipeSubCategoryDtoValues(){
-    return [
-
-    ];
 }

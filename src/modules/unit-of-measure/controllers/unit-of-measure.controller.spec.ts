@@ -6,6 +6,8 @@ import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { GALLON, LITER, MILLILITER, FL_OUNCE, QUART } from '../utils/constants';
+import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('UnitOfMeasureController', () => {
   let controller: UnitOfMeasureController;
@@ -65,7 +67,8 @@ describe('UnitOfMeasureController', () => {
 
     jest.spyOn(unitService, "findAll").mockResolvedValue({ items: units });
 
-    jest.spyOn(unitService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(unitService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return units.find(unit => unit.id === id) || null;
     });
 
@@ -98,8 +101,7 @@ describe('UnitOfMeasureController', () => {
       name: "testUnit",
     } as CreateUnitOfMeasureDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all units', async () => {
@@ -113,8 +115,7 @@ describe('UnitOfMeasureController', () => {
   });
   
   it('should fail to return a unit (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a unit', async () => {
@@ -134,8 +135,7 @@ describe('UnitOfMeasureController', () => {
     const toUpdate = await unitService.findOneByName("UPDATED_testUnit");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a unit', async () => {

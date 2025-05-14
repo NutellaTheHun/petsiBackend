@@ -1,7 +1,7 @@
-import { NotImplementedException } from "@nestjs/common";
+import { BadRequestException, NotImplementedException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
@@ -24,10 +24,6 @@ describe('inventory area item controller', () => {
         jest.spyOn(itemCountService, "create").mockImplementation(async (createDto: CreateInventoryAreaItemDto) => {
             throw new NotImplementedException();
         });
-            
-        /*jest.spyOn(itemCountService, "findByAreaName").mockImplementation(async (name: string) => {
-            throw new NotImplementedException();
-        });*/
 
         jest.spyOn(itemCountService, "findByItemName").mockImplementation(async (name: string) => {
             throw new NotImplementedException();
@@ -39,7 +35,8 @@ describe('inventory area item controller', () => {
      
         jest.spyOn(itemCountService, "findAll").mockResolvedValue( {items: itemCounts} );
     
-        jest.spyOn(itemCountService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(itemCountService, "findOne").mockImplementation(async (id?: number) => {
+            if(!id){ throw new BadRequestException(); }
             throw new NotImplementedException();
         });
     
@@ -67,11 +64,6 @@ describe('inventory area item controller', () => {
     it('should return an item count by id', async () => {
 
     });
-
-    /*
-    it('should return an item count by name', async () => {
-
-    });*/
     
     it('should fail to return an item count (bad id, returns null)', async () => {
 

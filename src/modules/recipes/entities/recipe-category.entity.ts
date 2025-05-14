@@ -7,10 +7,10 @@ export class RecipeCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
 
-    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory)
+    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, { cascade: true, })
     subCategories?: RecipeSubCategory[] | null;
 
     @OneToMany(() => Recipe, (recipe) => recipe.category)

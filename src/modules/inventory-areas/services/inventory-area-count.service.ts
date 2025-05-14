@@ -2,10 +2,11 @@ import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
-import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -22,30 +23,11 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         private readonly areaCountRepo: Repository<InventoryAreaCount>,
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
-        private readonly areaCountBuilder: InventoryAreaCountBuilder,
-    ){ super(areaCountRepo, 'InventoryAreaCountService'); }
-
-    /**
-     * Creates an InventoryCount, required prexisting AreaId present, is created before inventoryItemCounts are
-     * created/assigned. InventoryItemCounts are assigned in a following update call.
-     */
-    async create(createDto: CreateInventoryAreaCountDto): Promise<InventoryAreaCount | null> {
-        if(!createDto.inventoryAreaId){ throw new Error('Inventory Count must have an inventory area id'); }
-        
-        const count = await this.areaCountBuilder.buildCreateDto(createDto);
-        return await this.areaCountRepo.save(count);
-    }
-
-    /**
-     * Uses Repository.Save(), NOT UPDATE()
-     */
-    async update(id: number, updateDto: UpdateInventoryAreaCountDto): Promise< InventoryAreaCount | null> {
-        const toUpdate = await this.findOne(id);
-        if(!toUpdate){ return null; }
-
-        await this.areaCountBuilder.buildUpdateDto(toUpdate, updateDto);
-        return await this.areaCountRepo.save(toUpdate); 
-    }
+        areaCountBuilder: InventoryAreaCountBuilder,
+        logger: AppLogger,
+        validator: InventoryAreaCountValidator,
+        requestContextService: RequestContextService,
+    ){ super(areaCountRepo, areaCountBuilder, validator, 'InventoryAreaCountService', requestContextService, logger); }
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
         return await this.areaCountRepo.find({ 

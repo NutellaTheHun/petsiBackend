@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { RecipeCategory } from "./recipe-category.entity";
 import { Recipe } from "./recipe.entity";
 
 @Entity()
+@Unique(['name', 'parentCategory'])
 export class RecipeSubCategory{
     @PrimaryGeneratedColumn()
     id: number;
@@ -10,7 +11,7 @@ export class RecipeSubCategory{
     @Column({ nullable: false })
     name: string;
 
-    @ManyToOne(() => RecipeCategory, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => RecipeCategory, { nullable: true, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentCategory: RecipeCategory;
 
     @OneToMany(() => Recipe, (recipe) => recipe.subCategory)

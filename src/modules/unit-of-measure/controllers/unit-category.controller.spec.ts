@@ -6,6 +6,8 @@ import { UnitCategoryService } from '../services/unit-category.service';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('UnitCategoryController', () => {
   let controller: UnitCategoryController;
@@ -55,7 +57,8 @@ describe('UnitCategoryController', () => {
     
         jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
     
-        jest.spyOn(categoryService, "findOne").mockImplementation(async (id: number) => {
+        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+          if(!id){ throw new BadRequestException(); }
           return categories.find(unit => unit.id === id) || null;
         });
     
@@ -89,8 +92,7 @@ describe('UnitCategoryController', () => {
       name: "testCategory",
     } as CreateUnitCategoryDto;
 
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should return all categories', async () => {
@@ -104,8 +106,7 @@ describe('UnitCategoryController', () => {
   });
   
   it('should fail to return a category (bad id, returns null)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
   
   it('should update a category', async () => {
@@ -121,9 +122,8 @@ describe('UnitCategoryController', () => {
   it('should fail to update a category (doesnt exist)', async () => {
     const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
-
-    const result = await controller.update(0, toUpdate);
-    expect(result).toBeNull();
+    
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
   });
   
   it('should remove a category', async () => {

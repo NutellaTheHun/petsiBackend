@@ -2,37 +2,28 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
+import { MenuItemSizeValidator } from "../validators/menu-item-size.validator";
 
 @Injectable()
 export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
     constructor(
         @InjectRepository(MenuItemSize)
         private readonly sizeRepo: Repository<MenuItemSize>,
-        private readonly sizeBuilder: MenuItemSizeBuilder,
-    ){ super(sizeRepo, 'MenuItemSizeService'); }
 
-    async create(dto: CreateMenuItemSizeDto): Promise<MenuItemSize | null> {
-        const exists = await this.findOneByName(dto.name);
-        if(exists){ return null; }
+        sizeBuilder: MenuItemSizeBuilder,
 
-        const packageType = await this.sizeBuilder.buildCreateDto(dto);
-        return await this.sizeRepo.save(packageType);
-    }
+        validator: MenuItemSizeValidator,
 
-    async update(id: number, dto: UpdateMenuItemSizeDto): Promise<MenuItemSize | null> {
-        const toUpdate = await this.findOne(id);
-        if(!toUpdate){ return null }
-
-        await this.sizeBuilder.buildUpdateDto(toUpdate, dto);
+        requestContextService: RequestContextService,
         
-        return await this.sizeRepo.save(toUpdate);
-    }
+        logger: AppLogger,
+    ){ super(sizeRepo, sizeBuilder, validator, 'MenuItemSizeService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof MenuItemSize>): Promise<MenuItemSize | null> {
-            return await this.sizeRepo.findOne({ where: { name: name }, relations });
+        return await this.sizeRepo.findOne({ where: { name: name }, relations });
     }
 }

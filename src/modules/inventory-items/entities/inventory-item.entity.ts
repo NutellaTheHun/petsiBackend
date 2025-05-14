@@ -11,16 +11,8 @@ export class InventoryItem{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false })
+    @Column({ unique: true, nullable: false })
     name: string;
-
-    /**
-     * Pre-existing item sizes, (combination of package type and unit of measurement)
-     * - Can be created explicitly through updating InventoryItem, 
-     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
-     */
-    @OneToMany(() => InventoryItemSize, size => size.item, { cascade: true, /*orphanedRowAction: 'delete'*/ })
-    sizes?: InventoryItemSize[] | null;
 
     /**
      * - categories must be pre-existing, or null  (cannot create a new category when making a new item)
@@ -42,4 +34,12 @@ export class InventoryItem{
         onDelete: 'SET NULL'  
     })
     vendor?: InventoryItemVendor | null;
+
+     /**
+     * Pre-existing item sizes, (combination of package type and unit of measurement)
+     * - Can be created explicitly through updating InventoryItem, 
+     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
+     */
+    @OneToMany(() => InventoryItemSize, size => size.item, { cascade: true })
+    sizes?: InventoryItemSize[] | null;
 }

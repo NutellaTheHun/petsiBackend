@@ -1,43 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
-import { User } from '../entities/user.entities';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { AppLogger } from '../../app-logging/app-logger';
 import { UserBuilder } from '../builders/user.builder';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { User } from '../entities/user.entities';
+import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
 export class UserService extends ServiceBase<User> {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-    private readonly userBuilder: UserBuilder,
-  ){ super(userRepo, 'UserService'); }
+
+    @Inject(forwardRef(() => UserBuilder))
+    userBuilder: UserBuilder,
+    
+    validator: UserValidator,
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ){ super(userRepo, userBuilder, validator, 'UserService', requestContextService, logger); }
 
   async create(createUserDto: CreateUserDto) {
-    const alreadyExists = await this.findOneByName(createUserDto.username);
-    if(alreadyExists){ return null; }
-
-    const user = await this.userBuilder.buildCreateDto(createUserDto);
-
-    const result = await this.userRepo.save(user);
-    result.password = "";
-    return result;
+    const user = await super.create(createUserDto) as User;
+    user.password = "";
+    return user;
   }
 
   async findOneByName(username: string, relations?: Array<keyof User>): Promise<User | null> {
     return await this.userRepo.findOne({where : { username: username }, relations: relations });
-  }
-
-  /**
-   * Users Repository.Save(), not Repository.Update()
-   */
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    const toUpdate = await this.findOne(id);
-    if(!toUpdate){ return null; }
-
-    const user = await this.userBuilder.buildUpdateDto(toUpdate, updateUserDto);
-    return await this.userRepo.save(user);
   }
 }

@@ -1,25 +1,24 @@
-import { IsNumber, IsOptional, IsPositive } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class BaseRecipeIngredientDto {
+export class CreateChildRecipeIngredientDto {
+    readonly mode: 'create' = 'create';
+
     @IsNumber()
-    @IsPositive()
+    @IsNotEmpty()
     readonly quantity: number;
-  
+    
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly unitOfMeasureId: number;
-  
+    
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly inventoryItemId?: number;
-  
+    
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly subRecipeIngredientId?: number;
-
-    @IsNumber()
-    @IsPositive()
-    readonly recipeId: number;
 }

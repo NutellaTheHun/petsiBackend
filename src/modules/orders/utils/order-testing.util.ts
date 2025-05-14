@@ -10,6 +10,7 @@ import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderTypeService } from "../services/order-type.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "./constants";
+import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
 
 @Injectable()
 export class OrderTestingUtil {
@@ -146,12 +147,12 @@ export class OrderTestingUtil {
         await this.orderService.getQueryBuilder().delete().execute();
     }
 
-    public async getCreateOrderMenuItemDtos(amount: number): Promise<CreateOrderMenuItemDto[]> {
+    public async getCreateChildOrderMenuItemDtos(amount: number): Promise<CreateChildOrderMenuItemDto[]> {
         const itemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
         const items = itemsRequest.items
         if(!items){ throw new Error(); }
         
-        const results: CreateOrderMenuItemDto[] = [];
+        const results: CreateChildOrderMenuItemDto[] = [];
         for(let i = 0; i < amount; i++)
         {
             const item = items[i % items.length];
@@ -163,7 +164,7 @@ export class OrderTestingUtil {
                 menuItemId: item.id,
                 quantity: 1,
                 menuItemSizeId: item.validSizes[0].id,
-            } as CreateOrderMenuItemDto);
+            } as CreateChildOrderMenuItemDto);
         }
         
         return results;

@@ -1,17 +1,12 @@
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { CreateChildRecipeSubCategoryDto } from "./create-child-recipe-sub-category.dto";
 
 export class CreateRecipeCategoryDto {
     @IsString()
     @IsNotEmpty()
     readonly name: string;
 
+    @IsOptional()
     @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true})
-    readonly subCategoryIds: number[] = [];
-
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true})
-    readonly recipeIds: number[] = [];
+    subCategoryDtos?: CreateChildRecipeSubCategoryDto[];
 }

@@ -1,23 +1,25 @@
-import { IsNumber, IsPositive } from "class-validator";
+import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
-export class BaseMenuItemComponentDto { 
-    @IsNumber()
-    @IsPositive()
-    readonly containerId: number; // menuItem
+export class CreateChildMenuItemComponentDto {
+    readonly mode: 'create' = 'create';
 
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly containerSizeId: number; // menuItem
 
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly menuItemId: number;
 
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly menuItemSizeId: number;
 
     @IsNumber()
     @IsPositive()
+    @IsNotEmpty()
     readonly quantity: number;
 }

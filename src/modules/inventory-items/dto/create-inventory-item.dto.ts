@@ -1,5 +1,5 @@
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateInventoryItemSizeDto } from "./create-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "./create-child-inventory-item-size.dto";
 
 export class CreateInventoryItemDto {
     @IsString()
@@ -8,13 +8,15 @@ export class CreateInventoryItemDto {
 
     @IsNumber()
     @IsPositive()
-    readonly inventoryItemCategoryId: number;
+    @IsOptional()
+    readonly inventoryItemCategoryId?: number;
 
     @IsNumber()
     @IsPositive()
-    readonly vendorId: number;
+    @IsOptional()
+    readonly vendorId?: number;
 
     @IsOptional()
     @IsArray()
-    itemSizeDtos?: CreateInventoryItemSizeDto[];
+    readonly itemSizeDtos?: CreateChildInventoryItemSizeDto[];
 }

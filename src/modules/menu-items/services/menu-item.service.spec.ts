@@ -1,18 +1,17 @@
 import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
+import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
 import { CAT_BLUE, CAT_GREEN, CAT_RED, item_a, item_b, item_c } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryService } from "./menu-item-category.service";
+import { MenuItemComponentService } from "./menu-item-component.service";
 import { MenuItemSizeService } from "./menu-item-size.service";
 import { MenuItemService } from "./menu-item.service";
-import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
-import { MenuItemComponentService } from "./menu-item-component.service";
-import { UpdateUnitCategoryDto } from "../../unit-of-measure/dto/update-unit-category.dto";
 
 describe('menu item service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -478,7 +477,6 @@ describe('menu item service', () => {
         const compDtos = [
             {
                 mode: 'create',
-                containerId: containerItem.id,
                 containerSizeId: containerItem.validSizes[0].id,
                 menuItemId: compItemA.id,
                 menuItemSizeId: compItemA.validSizes[0].id,
@@ -486,13 +484,12 @@ describe('menu item service', () => {
             },
             {
                 mode: 'create',
-                containerId: containerItem.id,
                 containerSizeId: containerItem.validSizes[0].id,
                 menuItemId: compItemB.id,
                 menuItemSizeId: compItemB.validSizes[0].id,
                 quantity: 1
             },
-        ] as CreateMenuItemComponentDto[];
+        ] as CreateChildMenuItemComponentDto[];
 
         const uDto = {
             containerComponentDtos: compDtos,

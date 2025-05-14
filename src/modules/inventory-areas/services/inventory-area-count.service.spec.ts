@@ -1,25 +1,27 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/update-child-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
+import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { BOX_PKG, DRY_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
+import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
+import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
+import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
 import { AREA_A, AREA_B } from "../utils/constants";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
-import { InventoryAreaService } from "./inventory-area.service";
-import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
-import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
-import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
-import { NotFoundException } from "@nestjs/common";
-import { BOX_PKG, DRY_B, FOOD_C, OTHER_A, OTHER_PKG } from "../../inventory-items/utils/constants";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item-count.dto";
-import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { InventoryAreaService } from "./inventory-area.service";
 
-describe('Inventory area item count service', () => {
+describe('Inventory area count service', () => {
     let testingUtil: InventoryAreaTestUtil;
     let dbTestContext: DatabaseTestContext;
 
@@ -133,12 +135,10 @@ describe('Inventory area item count service', () => {
         const toUpdate = await countService.findOne(testCountId)
         if(!toUpdate){ throw new Error('inventory count to update not found'); }
 
-        const result = await countService.update(
+        await expect(countService.update(
             0, 
             { inventoryAreaId: newArea.id } as UpdateInventoryAreaCountDto
-        );
-
-        expect(result).toBeNull();
+        )).rejects.toThrow(Error);
     });
 
     it('should find area counts by area', async () => {
@@ -204,7 +204,6 @@ describe('Inventory area item count service', () => {
         const item_c = { itemId: items[2].id, sizeDto }
 
         const itemCountDtos = testingUtil.createInventoryAreaItemDtos(
-            testAreaId,
             testCountId,
             [ item_a, item_b, item_c],
         );
@@ -221,12 +220,11 @@ describe('Inventory area item count service', () => {
     });
 
     it('should query newly counted items from itemCountService', async () => {
-        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', /*'inventoryArea',*/ 'size', 'item']);
+        const results = await areaItemService.findEntitiesById(testItemCountIds, ['areaCount', 'size', 'item']);
         if(!results){ throw new Error("results is null"); }
         
         for(const item of results){
             expect(item.areaCount).not.toBeNull();
-            //expect(item.inventoryArea).not.toBeNull();
             expect(item.item).not.toBeNull();
             expect(item.size).not.toBeNull();
         }
@@ -325,18 +323,19 @@ describe('Inventory area item count service', () => {
             mode: 'update',
             id: itemSizeTestId,
             unitOfMeasureId: uom.id,
-        } as UpdateInventoryItemSizeDto;
+            
+        } as UpdateChildInventoryItemSizeDto;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
             itemSizeDto: itemSizeUpdateDto,
-        } as UpdateInventoryAreaItemDto;
+        } as UpdateChildInventoryAreaItemDto;
 
         const theRest = areaCount.items.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
-        } as UpdateInventoryAreaItemDto))
+        } as UpdateChildInventoryAreaItemDto))
 
         const updateAreaCountDto = {
             itemCountDtos: [updateAreaItemDto, ...theRest]
@@ -465,7 +464,6 @@ describe('Inventory area item count service', () => {
         if(!item.sizes){ throw new Error("item sizes is null"); }
         const createAreaItemDto = {
             mode: 'create',
-            //inventoryAreaId: testAreaId,
             areaCountId: testCountId,
             unitAmount: 100,
             measureAmount: 200,

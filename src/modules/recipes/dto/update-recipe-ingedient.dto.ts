@@ -1,15 +1,27 @@
-import { IsNumber, IsPositive, Validate } from "class-validator";
-import { BaseRecipeIngredientDto } from "./base-recipe-ingredient.dto";
-import { IfInventoryItemOrSubRecipe } from "./validators/if-inventory-item-or-sub-recipe.validator";
+import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
-export class UpdateRecipeIngredientDto extends BaseRecipeIngredientDto{
-    readonly mode: 'update' = 'update';
+export class UpdateRecipeIngredientDto {
+    @IsNumber()
+    @IsOptional()
+    readonly quantity?: number;
+    
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly unitOfMeasureId?: number;
+    
+    @IsOptional()
+    @IsNumber()
+    @IsPositive()
+    readonly inventoryItemId?: number;
+    
+    @IsOptional()
+    @IsNumber()
+    @IsPositive()
+    readonly subRecipeIngredientId?: number;
 
     @IsNumber()
     @IsPositive()
-    readonly id: number;
-
-    @Validate(IfInventoryItemOrSubRecipe)
-    private readonly _ingredientValidator = true;
-    //validateIngredientSubRecipeIds() {}
+    @IsOptional()
+    readonly recipeId?: number;
 }

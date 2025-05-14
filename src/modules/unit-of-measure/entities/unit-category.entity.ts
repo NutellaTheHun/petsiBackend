@@ -10,7 +10,7 @@ export class UnitCategory{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     @OneToMany(() => UnitOfMeasure, (unit) => unit.category)

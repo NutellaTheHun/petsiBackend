@@ -6,8 +6,9 @@ import { LabelTypeService } from '../services/label-type.service';
 import { getTestLabelTypeNames } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTypeController } from './label-type.controller';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
-describe('Label  Controller', () => {
+describe('Label type Controller', () => {
   let controller: LabelTypeController;
   let service: LabelTypeService;
 
@@ -49,7 +50,8 @@ describe('Label  Controller', () => {
       }
     );
 
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      if(!id){ throw new Error(); }
         return types.find(type => type.id === id) || null;
       }
     );
@@ -104,9 +106,7 @@ describe('Label  Controller', () => {
       name: "testLabel",
     } as CreateLabelTypeDto;
     
-    const result = await controller.create(dto);
-
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find label type by id', async () => {
@@ -115,8 +115,7 @@ describe('Label  Controller', () => {
   });
 
   it('should fail find label type by id (not exist)', async () => {
-    const result = await controller.findOne(0);
-    expect(result).toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(Error);
   });
 
   it('should update label type name', async () => {
@@ -136,9 +135,7 @@ describe('Label  Controller', () => {
       name: "updateTestLabel",
     } as UpdateLabelTypeDto;
 
-    const result = await controller.update(0, dto);
-
-    expect(result).toBeNull();
+    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
   });
 
   it('should remove label type', async () => {

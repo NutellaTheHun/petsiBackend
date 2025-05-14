@@ -3,9 +3,11 @@ import { RoleController } from './role.controller';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { getRoleTestingModule } from '../utils/role-testing-module';
-import { Role } from '../entities/role.entities';
+import { Role } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../users/utils/constants';
+import { BadRequestException } from '@nestjs/common';
+import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('Role Controller', () => {
   let controller: RoleController;
@@ -57,7 +59,8 @@ describe('Role Controller', () => {
 
     jest.spyOn(roleService, "findAll").mockResolvedValue({ items: roles });
 
-    jest.spyOn(roleService, "findOne").mockImplementation(async (id: number) => {
+    jest.spyOn(roleService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
       return roles.find(role => role.id === id) || null;
     });
     
@@ -86,7 +89,7 @@ describe('Role Controller', () => {
   });
 
   it("should not return one role (bad id)", async () => {
-    await expect(controller.findOne(0)).resolves.toBeNull();
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
   });
 
   it("should create and return a role", async () => {
@@ -97,8 +100,7 @@ describe('Role Controller', () => {
 
   it("should fail to create a role (non-unique name)", async () => {
     const dto = { name: "newRole" } as Role;
-    const result = await controller.create(dto);
-    expect(result).toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
   });
 
   it("should update a role", async () => {

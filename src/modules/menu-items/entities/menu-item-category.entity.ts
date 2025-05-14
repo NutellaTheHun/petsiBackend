@@ -9,7 +9,7 @@ export class MenuItemCategory {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ unique: true })
     name: string;
 
     /**
@@ -17,6 +17,6 @@ export class MenuItemCategory {
      * A MenuItem is added through the BeforeInsert() hook in MenuItem
      * A MenuItem is removed through MenuItem's BeforeRemove() hook.
      */
-    @OneToMany(() => MenuItem, (item) => item.category, {nullable: true})
+    @OneToMany(() => MenuItem, (item) => item.category, { nullable: true })
     items?: MenuItem[] | null;
 }

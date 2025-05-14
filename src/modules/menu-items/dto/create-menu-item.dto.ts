@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateMenuItemComponentDto } from "./create-menu-item-component.dto";
+import { CreateChildMenuItemComponentDto } from "./create-child-menu-item-component.dto";
 
 export class CreateMenuItemDto {
     @IsString()
@@ -22,7 +22,7 @@ export class CreateMenuItemDto {
     @IsOptional()
     @IsArray()
     @IsString({ each: true })
-    readonly searchNames?: string[] = [];
+    readonly searchNames?: string[];
 
     @IsOptional()
     @IsNumber()
@@ -42,17 +42,18 @@ export class CreateMenuItemDto {
     @IsArray()
     @IsNumber({},{ each: true})
     @IsPositive({ each: true})
-    readonly validSizeIds: number[] = [];
+    @IsNotEmpty()
+    readonly validSizeIds: number[];
 
     @IsBoolean()
     @IsOptional()
-    readonly isPOTM: boolean;
+    readonly isPOTM?: boolean;
 
     @IsBoolean()
     @IsOptional()
-    readonly isParbake: boolean;
+    readonly isParbake?: boolean;
 
-    //@IsOptional()
-    //@IsArray()
-    //readonly containerComponentDtos: CreateMenuItemComponentDto[];
+    @IsOptional()
+    @IsArray()
+    readonly containerComponentDtos?: CreateChildMenuItemComponentDto[];
 }
