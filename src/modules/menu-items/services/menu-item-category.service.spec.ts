@@ -5,6 +5,7 @@ import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryService } from "./menu-item-category.service";
 import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
 import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
+import { NotFoundException } from "@nestjs/common";
 
 describe('menu item category service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -85,7 +86,6 @@ describe('menu item category service', () => {
         const removal = await categoryService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await categoryService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(categoryService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 })

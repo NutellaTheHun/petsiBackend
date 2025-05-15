@@ -96,8 +96,7 @@ describe('recipe category service', () => {
     const removal = await categoryService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await categoryService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(categoryService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should find all recipe categories', async () => {
@@ -230,7 +229,6 @@ describe('recipe category service', () => {
   });
 
   it('should not query the removed subCategory', async () => {
-    const verify = await recipeSubCategoryService.findOne(removedSubCatId);
-    expect(verify).toBeNull();
+   await expect(recipeSubCategoryService.findOne(removedSubCatId)).rejects.toThrow(NotFoundException);
   });
 });

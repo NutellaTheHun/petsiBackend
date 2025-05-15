@@ -1,9 +1,8 @@
 import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/create-child-inventory-item-size.dto";
 import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/update-child-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
 import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { BOX_PKG, DRY_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
@@ -200,7 +199,7 @@ describe('Inventory area count service', () => {
             unitOfMeasureId: uom.id,
             inventoryPackageTypeId: pkg.id,
             inventoryItemId: items[2].id,
-        } as CreateInventoryItemSizeDto;
+        } as CreateChildInventoryItemSizeDto;
         const item_c = { itemId: items[2].id, sizeDto }
 
         const itemCountDtos = testingUtil.createInventoryAreaItemDtos(
@@ -367,18 +366,18 @@ describe('Inventory area count service', () => {
             mode: 'update',
             id: itemSizeTestId,
             inventoryPackageTypeId: pkg.id,
-        } as UpdateInventoryItemSizeDto;
+        } as UpdateChildInventoryItemSizeDto;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
             itemSizeDto: itemSizeUpdateDto,
-        } as UpdateInventoryAreaItemDto;
+        } as UpdateChildInventoryAreaItemDto;
 
         const theRest = areaCount.items.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
-        } as UpdateInventoryAreaItemDto))
+        } as UpdateChildInventoryAreaItemDto))
 
         const updateAreaCountDto = {
             itemCountDtos: [updateAreaItemDto, ...theRest]
@@ -410,14 +409,14 @@ describe('Inventory area count service', () => {
             mode: 'update',
             id: itemSizeTestId,
             inventoryItemId: item.id,
-        } as UpdateInventoryItemSizeDto;
+        } as UpdateChildInventoryItemSizeDto;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
             inventoryItemId: item.id,
             itemSizeDto: itemSizeUpdateDto,
-        } as UpdateInventoryAreaItemDto;
+        } as UpdateChildInventoryAreaItemDto;
 
         const theRest = areaCount.items.splice(1).map( areaItem => ({
             mode: 'update',
@@ -492,16 +491,14 @@ describe('Inventory area count service', () => {
     });
 
     it('should update an area count item\'s to not have removed item', async () => {
-        const result = await areaItemService.findOne(deletedAreaItemId);
-        expect(result).toBeNull();
+        await expect(areaItemService.findOne(deletedAreaItemId)).rejects.toThrow(NotFoundException);
     });
 
     it('should remove area count', async () => {
         const result = await countService.remove(testCountId);
         expect(result).toBeTruthy();
 
-        const verify = await countService.findOne(testCountId);
-        expect(verify).toBeNull();
+        await expect(countService.findOne(testCountId)).rejects.toThrow(NotFoundException);
 
         const area = await areaService.findOneByName(AREA_B, ["inventoryCounts"]);
         expect(area?.inventoryCounts?.length).toEqual(1);

@@ -727,8 +727,7 @@ describe('recipe service', () => {
     const removal = await recipeService.remove(removalRecipe?.id);
     expect(removal).toBeTruthy();
 
-    const verify = await recipeService.findOne(removalRecipe?.id);
-    expect(verify).toBeNull();
+    await expect(recipeService.findOne(removalRecipe?.id)).rejects.toThrow(NotFoundException);
   });
 
   it('should delete recipe ingredients', async () => {

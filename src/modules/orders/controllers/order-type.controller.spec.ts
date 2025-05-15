@@ -7,6 +7,7 @@ import { OrderTypeService } from "../services/order-type.service";
 import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTypeController } from "./order-type.controller";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe('order type controller', () => {
     let controller: OrderTypeController;
@@ -30,7 +31,7 @@ describe('order type controller', () => {
 
         jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderTypeDto) => {
             const exists = types.find(category => category.name === dto.name);
-            if(exists){ return null; }
+            if(exists){ throw new BadRequestException(); }
 
             const category = {
                 id: id++,
@@ -48,7 +49,11 @@ describe('order type controller', () => {
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            return types.find(type => type.id === id) || null;
+            const result = types.find(type => type.id === id);
+            if(!result){
+                throw new NotFoundException();
+            }
+            return result;
         });
 
         jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
@@ -65,7 +70,7 @@ describe('order type controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderTypeDto) => {
             const existIdx = types.findIndex(type => type.id === id);
-            if(existIdx === -1){ return null; }
+            if(existIdx === -1){ throw new NotFoundException(); }
 
             if(dto.name){
                 types[existIdx].name = dto.name;
@@ -98,7 +103,7 @@ describe('order type controller', () => {
         name: "testType",
         } as CreateOrderTypeDto;
         
-        await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
     
     it('should find order type by id', async () => {
@@ -107,8 +112,7 @@ describe('order type controller', () => {
     });
     
     it('should fail find order type by id (not exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
     
     it('should update order type name', async () => {
@@ -128,16 +132,15 @@ describe('order type controller', () => {
         name: "updateTestType",
         } as UpdateOrderTypeDto;
     
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
     
     it('should remove order type', async () => {
         const result = await controller.remove(testId);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
     });
     
     it('should fail remove order type (not exist)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

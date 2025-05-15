@@ -8,6 +8,7 @@ import { InventoryItemVendorService } from '../services/inventory-item-vendor.se
 import { VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemVendorController } from './inventory-item-vendor.controller';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('Inventory Item Vendor Controller', () => {
   let controller: InventoryItemVendorController;
@@ -43,7 +44,7 @@ describe('Inventory Item Vendor Controller', () => {
 
     jest.spyOn(vendorService, "create").mockImplementation(async (createDto: CreateInventoryItemVendorDto) => {
       const exists = vendors.find(unit => unit.name === createDto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
@@ -60,7 +61,7 @@ describe('Inventory Item Vendor Controller', () => {
     
     jest.spyOn(vendorService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemVendorDto) => {
       const index = vendors.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
+      if (index === -1) throw new BadRequestException();
 
       if(updateDto.name){
         vendors[index].name = updateDto.name;
@@ -81,12 +82,16 @@ describe('Inventory Item Vendor Controller', () => {
 
     jest.spyOn(vendorService, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new Error(); }
-      return vendors.find(unit => unit.id === id) || null;
+      const result = vendors.find(unit => unit.id === id);
+      if(!result){
+        throw new Error();
+      }
+      return result;
     });
 
     jest.spyOn(vendorService, "remove").mockImplementation( async (id: number) => {
       const index = vendors.findIndex(unit => unit.id === id);
-      if (index === -1) return false;
+      if(index === -1){ throw new NotFoundException(); }
 
       vendors.splice(index,1);
 
@@ -112,7 +117,7 @@ describe('Inventory Item Vendor Controller', () => {
       name: "testVendor",
     } as CreateInventoryItemVendorDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should return all vendors', async () => {
@@ -146,7 +151,7 @@ describe('Inventory Item Vendor Controller', () => {
     const toUpdate = await vendorService.findOneByName("UPDATED_testVendor");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(BadRequestException);
   });
   
   it('should remove a vendor', async () => {
@@ -154,11 +159,10 @@ describe('Inventory Item Vendor Controller', () => {
     if(!toRemove){ throw new Error("unit to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
-  it('should fail to remove a vendor (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+  it('should fail to remove a vendor (id not found)', async () => {
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
   });
 });

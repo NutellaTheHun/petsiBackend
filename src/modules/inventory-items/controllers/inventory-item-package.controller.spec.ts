@@ -6,7 +6,7 @@ import { InventoryItemPackageService } from "../services/inventory-item-package.
 import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemPackageController } from "./inventory-item-package.controller";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('Inventory Item Packages Controller', () => {
@@ -33,7 +33,7 @@ describe('Inventory Item Packages Controller', () => {
 
     jest.spyOn(service, "create").mockImplementation(async (createDto: CreateInventoryItemPackageDto) => {
       const exists = packages.find(unit => unit.name === createDto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
@@ -50,7 +50,7 @@ describe('Inventory Item Packages Controller', () => {
     
     jest.spyOn(service, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemPackageDto) => {
       const index = packages.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
+      if (index === -1) throw new NotFoundException();
 
       if(updateDto.name){
         packages[index].name = updateDto.name;
@@ -63,7 +63,11 @@ describe('Inventory Item Packages Controller', () => {
 
     jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return packages.find(unit => unit.id === id) || null;
+      const result = packages.find(unit => unit.id === id)
+      if(!result){
+        throw new Error();
+      }
+      return result;
     });
 
     jest.spyOn(service, "remove").mockImplementation( async (id: number) => {
@@ -94,7 +98,7 @@ describe('Inventory Item Packages Controller', () => {
       name: "testpackage",
     } as CreateInventoryItemPackageDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should return all packages', async () => {
@@ -129,7 +133,7 @@ describe('Inventory Item Packages Controller', () => {
     const toUpdate = await service.findOneByName("UPDATED_testpackage");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
   });
   
   it('should remove a package', async () => {
@@ -137,11 +141,10 @@ describe('Inventory Item Packages Controller', () => {
     if(!toRemove){ throw new Error("unit to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail to remove a package (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException)
   });
 });

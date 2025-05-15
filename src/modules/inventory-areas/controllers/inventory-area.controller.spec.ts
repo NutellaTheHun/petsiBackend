@@ -8,6 +8,7 @@ import { AREA_A, AREA_B, AREA_C, AREA_D } from "../utils/constants";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaController } from "./inventory-area.controller";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe('inventory area controller', () => {
     let controller: InventoryAreaController;
@@ -55,7 +56,7 @@ describe('inventory area controller', () => {
         
         jest.spyOn(areaService, "create").mockImplementation(async (createDto: CreateInventoryAreaDto) => {
             const exists = areas.findIndex(a => a.name === createDto.name);
-            if(exists !== -1){ return null; }
+            if(exists !== -1){ throw new BadRequestException(); }
 
             const newArea = { name: createDto.name } as InventoryArea;
 
@@ -70,7 +71,7 @@ describe('inventory area controller', () => {
         
         jest.spyOn(areaService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaDto) => {
             const idx = areas.findIndex(a => a.id === id);
-            if(idx === -1){ return null; }
+            if(idx === -1){ throw new NotFoundException(); }
 
             const toUpdate = areas[idx];
             if(updateDto.name){
@@ -88,13 +89,17 @@ describe('inventory area controller', () => {
         jest.spyOn(areaService, "findAll").mockResolvedValue({items: areas});
     
         jest.spyOn(areaService, "findOne").mockImplementation(async (id: number) => {
-            return areas.find(area => area.id === id) || null;
+            const result = areas.find(area => area.id === id)
+            if(!result){
+                throw new NotFoundException();
+            }
+            return result;
         });
     
         jest.spyOn(areaService, "remove").mockImplementation( async (id: number) => {
             
             const index = areas.findIndex(area => area.id === id);
-            if(index === -1) return false;
+            if(index === -1) throw new NotFoundException();
 
             areas.splice(index,1);
             return true;
@@ -113,7 +118,7 @@ describe('inventory area controller', () => {
     
     it('should fail to create an area (already exists)', async () => {
         const dto = { name: "testArea" } as CreateInventoryAreaDto;
-        await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
 
     it('should return all areas', async () => {
@@ -127,8 +132,7 @@ describe('inventory area controller', () => {
     });
     
     it('should fail to return an area (bad id, returns null)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
     });
     
     it('should update an area', async () => {
@@ -151,7 +155,7 @@ describe('inventory area controller', () => {
         const toUpdate = await areaService.findOneByName(AREA_A);
         if(!toUpdate?.id){ throw new Error('area id is null'); }
 
-        await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
     });
     
     it('should remove an area', async () => {
@@ -159,13 +163,12 @@ describe('inventory area controller', () => {
         if(!toRemove){ throw new Error('area to remove is null'); }
         
         const result = await controller.remove(toRemove.id);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
 
         idToRemove = toRemove.id
     });
 
-    it('should fail to remove an area (id not found, returns false)', async () => {
-        const result = await controller.remove(idToRemove);
-        expect(result).toBeFalsy();
+    it('should fail to remove an area (id not found)', async () => {
+        await expect(controller.remove(idToRemove)).rejects.toThrow(NotFoundException);
     });
 });

@@ -5,7 +5,7 @@ import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('template menu item controller', () => {
@@ -43,7 +43,11 @@ describe('template menu item controller', () => {
 
     jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return items.find(item => item.id === id) || null;
+      const result = items.find(item => item.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -56,7 +60,7 @@ describe('template menu item controller', () => {
 
     jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateTemplateMenuItemDto) => {
       const existIdx = items.findIndex(item => item.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.displayName){
         items[existIdx].displayName = dto.displayName;
@@ -112,16 +116,15 @@ describe('template menu item controller', () => {
           displayName: "update displayName",
         } as UpdateTemplateMenuItemDto;
     
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
       });
     
       it('should remove template item', async () => {
         const result = await controller.remove(testId);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
       });
     
       it('should fail remove template item (not exist)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
       });
 });

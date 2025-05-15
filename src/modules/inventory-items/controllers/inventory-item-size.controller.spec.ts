@@ -10,7 +10,7 @@ import { InventoryItemPackage } from "../entities/inventory-item-package.entity"
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { BAG_PKG, PACKAGE_PKG, BOX_PKG, OTHER_PKG, CONTAINER_PKG, CAN_PKG } from "../utils/constants";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('Inventory Item Size Controller', () => {
@@ -69,7 +69,7 @@ describe('Inventory Item Size Controller', () => {
         unit.measureUnit.id === createDto.unitOfMeasureId &&
         unit.packageType.id === createDto.inventoryPackageTypeId
       );
-      if(exists){ return null; }
+      if(exists){ throw new Error(); }
 
       const item = items.find(i => i.id === createDto.inventoryItemId);
       const pkg = packages.find(p => p.id === createDto.inventoryPackageTypeId);
@@ -87,7 +87,7 @@ describe('Inventory Item Size Controller', () => {
     
     jest.spyOn(service, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemSizeDto) => {
       const index = sizes.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
+      if (index === -1) throw new BadRequestException();
 
       if(updateDto.inventoryPackageTypeId){
         const pkg = packages.find(p => p.id === updateDto.inventoryPackageTypeId);
@@ -106,8 +106,11 @@ describe('Inventory Item Size Controller', () => {
     jest.spyOn(service, "findAll").mockResolvedValue( {items: sizes} );
 
     jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
-      if(!id){ throw new BadRequestException(); }
-      return sizes.find(unit => unit.id === id) || null;
+      const result = sizes.find(unit => unit.id === id)
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, "remove").mockImplementation( async (id: number) => {
@@ -142,7 +145,7 @@ describe('Inventory Item Size Controller', () => {
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(Error);
   });
 
   it('should return all sizes', async () => {
@@ -156,7 +159,7 @@ describe('Inventory Item Size Controller', () => {
   });
   
   it('should fail to return a size (bad id, returns null)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+    await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
   });
   
   it('should update a size', async () => {
@@ -179,7 +182,11 @@ describe('Inventory Item Size Controller', () => {
     const toUpdate = await service.findSizesByItemName("FOOD_A");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    const dto = {
+      id: toUpdate[0].id
+    } as UpdateInventoryItemSizeDto
+
+    await expect(controller.update(0, dto)).rejects.toThrow(BadRequestException);
   });
   
   it('should remove a size', async () => {
@@ -190,11 +197,10 @@ describe('Inventory Item Size Controller', () => {
     if(!toRemove){ throw new Error("unit to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail to remove a size (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
   });
 });

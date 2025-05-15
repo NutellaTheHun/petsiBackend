@@ -5,6 +5,7 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { LabelTypeService } from './label-type.service';
 import { CreateLabelTypeDto } from '../dto/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('Label type Service', () => {
   let typeService: LabelTypeService;
@@ -91,7 +92,6 @@ describe('Label type Service', () => {
     const removal = await typeService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await typeService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(typeService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 });

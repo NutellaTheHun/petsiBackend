@@ -138,7 +138,6 @@ describe('Template menu item service', () => {
     const removal = await templateItemService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await templateItemService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(templateItemService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 });

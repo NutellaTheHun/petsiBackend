@@ -6,6 +6,7 @@ import { Recipe } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeController } from './recipe.controller';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('recipe controller', () => {
   let controller: RecipeController;
@@ -30,7 +31,7 @@ describe('recipe controller', () => {
 
     jest.spyOn(service, "create").mockImplementation(async (dto: CreateRecipeDto) => {
       const exists = recipes.find(rec => rec.name === dto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const recipe = {
         id: id++,
@@ -47,7 +48,7 @@ describe('recipe controller', () => {
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeDto) => {
       const existIdx = recipes.findIndex(rec => rec.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.name){
         recipes[existIdx].name = dto.name;
@@ -76,7 +77,11 @@ describe('recipe controller', () => {
 
     jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new Error(); }
-      return recipes.find(rec => rec.id === id) || null;
+      const result = recipes.find(rec => rec.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, "remove").mockImplementation(async (id: number) => {
@@ -122,7 +127,7 @@ describe('recipe controller', () => {
       cost: 4,
     } as CreateRecipeDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should find one a recipe', async () => {
@@ -168,16 +173,15 @@ describe('recipe controller', () => {
       cost: 8,
     } as UpdateRecipeDto;
 
-    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove a recipe', async () => {
     const removal = await controller.remove(testId);
-    expect(removal).toBeTruthy();
+    expect(removal).toBeUndefined();
   });
 
   it('should fail remove a recipe', async () => {
-    const removal = await controller.remove(testId);
-    expect(removal).toBeFalsy();
+    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
   });
 });

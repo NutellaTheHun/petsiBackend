@@ -9,6 +9,7 @@ import { InventoryItemService } from '../services/inventory-item.service';
 import { CLEANING_CAT, DAIRY_CAT, DRY_A, DRY_B, DRY_C, DRYGOOD_CAT, FOOD_A, FOOD_B, FOOD_C, FOOD_CAT, FROZEN_CAT, OTHER_A, OTHER_B, OTHER_C, OTHER_CAT, PAPER_CAT, PRODUCE_CAT, VENDOR_A, VENDOR_B, VENDOR_C } from "../utils/constants";
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemController } from './inventory-item.controller';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 
 describe('Inventory Item Controller', () => {
@@ -66,7 +67,7 @@ describe('Inventory Item Controller', () => {
 
     jest.spyOn(itemService, "create").mockImplementation(async (createDto: CreateInventoryItemDto) => {
       const exists = items.find(unit => unit.name === createDto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       
       const category = categories.find(c => c.id === createDto.inventoryItemCategoryId);
@@ -83,7 +84,7 @@ describe('Inventory Item Controller', () => {
     
     jest.spyOn(itemService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemDto) => {
       const index = items.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
+      if (index === -1) throw new NotFoundException();
 
       const toUpdate = items[index];
 
@@ -107,7 +108,11 @@ describe('Inventory Item Controller', () => {
 
     jest.spyOn(itemService, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new Error(); }
-      return items.find(unit => unit.id === id) || null;
+      const result = items.find(unit => unit.id === id);
+      if(!result){
+        throw new Error();
+      }
+      return result;
     });
 
     jest.spyOn(itemService, "remove").mockImplementation( async (id: number) => {
@@ -142,7 +147,7 @@ describe('Inventory Item Controller', () => {
       vendorId: 1,
     } as CreateInventoryItemDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should return all items', async () => {
@@ -176,7 +181,7 @@ describe('Inventory Item Controller', () => {
     const toUpdate = await itemService.findOneByName("UPDATED_testItem");
     if(!toUpdate){ throw new Error("item to update not found"); }
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
   });
   
   it('should remove a item', async () => {
@@ -184,11 +189,10 @@ describe('Inventory Item Controller', () => {
     if(!toRemove){ throw new Error("item to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail to item a package (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
   });
 });

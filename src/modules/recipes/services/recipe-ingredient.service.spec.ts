@@ -270,8 +270,7 @@ describe('recipe ingredient service', () => {
     const removal = await ingredientService.remove(testSubRecId);
     expect(removal).toBeTruthy();
 
-    const verify = await ingredientService.findOne(testSubRecId);
-    expect(verify).toBeNull();
+    await expect(ingredientService.findOne(testSubRecId)).rejects.toThrow(NotFoundException);
   });
 
   it('should not be referenced in recipe query', async() => {
@@ -313,7 +312,6 @@ describe('recipe ingredient service', () => {
 
     await recipeService.remove(ingredient.subRecipeIngredient?.id);
 
-    const verify = await ingredientService.findOne(testIngredId);
-    expect(verify).toBeNull();
+    await expect(ingredientService.findOne(testIngredId)).rejects.toThrow(NotFoundException);
   });
 });

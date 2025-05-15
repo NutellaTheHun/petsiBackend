@@ -11,6 +11,7 @@ import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderMenuItemController } from "./order-menu-item.controller";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
+import { NotFoundException } from "@nestjs/common";
 
 describe('order menu item controller', () => {
     let controller: OrderMenuItemController;
@@ -89,7 +90,11 @@ describe('order menu item controller', () => {
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            return orderItems.find(item => item.id === id) || null;
+            const result = orderItems.find(item => item.id === id);
+            if(!result){
+                throw new NotFoundException();
+            }
+            return result;
         });
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -102,7 +107,7 @@ describe('order menu item controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderMenuItemDto) => {
             const existIdx = orderItems.findIndex(item => item.id === id);
-            if(existIdx === -1){ return null; }
+            if(existIdx === -1){ throw new NotFoundException(); }
 
             if(dto.menuItemId){
                 const menuItem = items.find(i => i.id === dto.menuItemId);
@@ -143,8 +148,7 @@ describe('order menu item controller', () => {
     });
     
     it('should fail find order menu item by id (not exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
     
     it('should update order menu item quantity', async () => {
@@ -164,16 +168,15 @@ describe('order menu item controller', () => {
         quantity: 2,
         } as UpdateOrderMenuItemDto;
     
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
     
     it('should remove order menu item', async () => {
         const result = await controller.remove(testId);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
     });
     
     it('should fail remove order menu item (not exist)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

@@ -140,7 +140,6 @@ describe('Label Service', () => {
     const removal = await labelService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await labelService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(labelService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 });

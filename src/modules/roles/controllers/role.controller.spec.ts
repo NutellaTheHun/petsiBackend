@@ -5,7 +5,7 @@ import { UpdateRoleDto } from '../dto/update-role.dto';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { Role } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../utils/constants';
 
@@ -31,9 +31,7 @@ describe('Role Controller', () => {
 
     jest.spyOn(roleService, "create").mockImplementation(async (createDto: CreateRoleDto) => {
       const exists = roles.find(role => role.name === createDto.name)
-      if(exists){
-        return null;
-      }
+      if(exists){ throw new BadRequestException(); }
 
       const role = {
         id: roleId++,
@@ -48,7 +46,7 @@ describe('Role Controller', () => {
     
     jest.spyOn(roleService, "update").mockImplementation(async (id: number, updateDto: UpdateRoleDto) => {
       const index = roles.findIndex(role => role.id === id);
-      if(index === -1) return null;
+      if(index === -1){ throw new NotFoundException(); }
 
       if(updateDto.name){
         roles[index].name = updateDto.name;
@@ -61,12 +59,16 @@ describe('Role Controller', () => {
 
     jest.spyOn(roleService, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return roles.find(role => role.id === id) || null;
+      const result = roles.find(role => role.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
     
     jest.spyOn(roleService, "remove").mockImplementation(async (id: number) =>{
       const index = roles.findIndex(role => role.id === id);
-      if (index === -1) return false;
+      if (index === -1) throw new NotFoundException();
 
       roles.splice(index, 1);
 
@@ -100,7 +102,7 @@ describe('Role Controller', () => {
 
   it("should fail to create a role (non-unique name)", async () => {
     const dto = { name: "newRole" } as Role;
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it("should update a role", async () => {
@@ -118,12 +120,11 @@ describe('Role Controller', () => {
   it("should remove a role", async () => {
     const removal = await controller.remove(4);
 
-    await expect(removal).toBeTruthy();
-    await expect(controller.findOne(4)).resolves.toBeNull();
+    await expect(removal).toBeUndefined();
+    await expect(controller.findOne(4)).rejects.toThrow(NotFoundException);
   });
 
   it("should fail to remove a role (bad id)", async () => {
-    const result = await controller.remove(4);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(4)).rejects.toThrow(NotFoundException);
   });
 });

@@ -1,4 +1,4 @@
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
@@ -97,7 +97,11 @@ describe('menu item component controller', () => {
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
             if(!id){ throw new BadRequestException(); }
-            return components.find(comp => comp.id === id) || null;
+            const result = components.find(comp => comp.id === id);
+            if(!result){
+                throw new NotFoundException();
+            }
+            return result;
         });
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -110,7 +114,7 @@ describe('menu item component controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateMenuItemComponentDto) => {
             const existIdx = components.findIndex(comp => comp.id === id);
-            if(existIdx === -1){ return null; }
+            if(existIdx === -1){ throw new NotFoundException(); }
 
             if(dto.menuItemId){
                 const item = items.find(item => item.id === dto.menuItemId);
@@ -170,7 +174,7 @@ describe('menu item component controller', () => {
         quantity: 20,
         } as UpdateMenuItemComponentDto;
 
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
 
     it('should find all components', async () => {
@@ -181,11 +185,10 @@ describe('menu item component controller', () => {
 
     it('should remove component', async () => {
         const removal = await controller.remove(testId);
-        expect(removal).toBeTruthy();
+        expect(removal).toBeUndefined();
     });
 
     it('should fail to remove component (not found)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

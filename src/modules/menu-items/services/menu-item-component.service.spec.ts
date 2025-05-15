@@ -164,8 +164,7 @@ describe('menu item component service', () => {
         const removal = await componentService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await componentService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(componentService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should query menu item without component reference', async () => {

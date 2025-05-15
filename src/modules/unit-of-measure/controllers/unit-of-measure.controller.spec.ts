@@ -6,7 +6,7 @@ import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { GALLON, LITER, MILLILITER, FL_OUNCE, QUART } from '../utils/constants';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('UnitOfMeasureController', () => {
@@ -33,7 +33,7 @@ describe('UnitOfMeasureController', () => {
 
     jest.spyOn(unitService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureDto) => {
       const exists = units.find(unit => unit.name === createDto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: unitId++,
@@ -50,7 +50,8 @@ describe('UnitOfMeasureController', () => {
     
     jest.spyOn(unitService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitOfMeasureDto) => {
       const index = units.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
+      if(index === -1){ throw new NotFoundException(); }
+
 
       if(updateDto.name){
         units[index].name = updateDto.name;
@@ -69,7 +70,11 @@ describe('UnitOfMeasureController', () => {
 
     jest.spyOn(unitService, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return units.find(unit => unit.id === id) || null;
+      const result = units.find(unit => unit.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(unitService, "remove").mockImplementation( async (id: number) => {
@@ -101,7 +106,7 @@ describe('UnitOfMeasureController', () => {
       name: "testUnit",
     } as CreateUnitOfMeasureDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should return all units', async () => {
@@ -135,7 +140,11 @@ describe('UnitOfMeasureController', () => {
     const toUpdate = await unitService.findOneByName("UPDATED_testUnit");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    const dto = {
+      name: "UPDATED_testUnit"
+    } as UpdateUnitOfMeasureDto;
+
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
   
   it('should remove a unit', async () => {
@@ -143,11 +152,10 @@ describe('UnitOfMeasureController', () => {
     if(!toRemove){ throw new Error("unit to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail to remove a unit (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
   });
 });

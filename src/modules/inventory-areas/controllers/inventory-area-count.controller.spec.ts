@@ -8,7 +8,7 @@ import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountController } from "./inventory-area-count.controller";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('inventory area count controller', () => {
@@ -71,7 +71,7 @@ describe('inventory area count controller', () => {
 
         jest.spyOn(countService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaCountDto) => {
             const idx = areaCounts.findIndex(c => c.id === id);
-            if(idx === -1){ return null; }
+            if(idx === -1){ throw new NotFoundException() }
 
             const toUpdate = areaCounts[idx];
             if(updateDto.inventoryAreaId){
@@ -96,12 +96,16 @@ describe('inventory area count controller', () => {
     
         jest.spyOn(countService, "findOne").mockImplementation(async (id?: number) => {
             if(!id){ throw new BadRequestException(); }
-            return areaCounts.find(count => count.id === id) || null;
+            const result = areaCounts.find(count => count.id === id);
+            if(!result){
+                throw new Error();
+            }
+            return result
         });
     
         jest.spyOn(countService, "remove").mockImplementation( async (id: number) => {
             const idx = areaCounts.findIndex(count => count.id === id);
-            if(idx === -1){ return false; }
+            if(idx === -1){ throw new NotFoundException(); }
 
             areaCounts.splice(idx, 1);
             return true;
@@ -144,19 +148,17 @@ describe('inventory area count controller', () => {
     
     it('should fail to update an inventory count (doesnt exist)', async () => {
         const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
-        await expect(controller.update(0, uDto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, uDto)).rejects.toThrow(NotFoundException);
     });
     
     it('should remove an inventory count', async () => {
         const removal = await controller.remove(1);
-        expect(removal).toBeTruthy();
+        expect(removal).toBeUndefined();
 
-        const verify = await controller.findOne(1);
-        expect(verify).toBeNull();
+        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });
 
     it('should fail to remove an inventory count (id not found, returns false)', async () => {
-        const removal = await controller.remove(1);
-        expect(removal).toBeFalsy();
+        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });
 });

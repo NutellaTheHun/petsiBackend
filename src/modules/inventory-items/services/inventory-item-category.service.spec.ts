@@ -6,6 +6,7 @@ import { InventoryItemCategoryService } from './inventory-item-category.service'
 import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { FOOD_CAT } from '../utils/constants';
+import { NotFoundException } from '@nestjs/common';
 
 describe('Inventory Item Category Service', () => {
   let testingUtil: InventoryItemTestingUtil;
@@ -59,8 +60,7 @@ describe('Inventory Item Category Service', () => {
     const removal = await service.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await service.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should insert testing item categories and get all categories', async () => {

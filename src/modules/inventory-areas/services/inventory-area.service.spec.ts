@@ -1,3 +1,4 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
@@ -64,7 +65,7 @@ describe('Inventory area service', () => {
     it('should fail to update an area (doesnt exist)', async () => {
         const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
         
-        await expect(service.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+        await expect(service.update(0, toUpdate)).rejects.toThrow(NotFoundException);
     });
 
     it('should find one by name', async () => {
@@ -80,8 +81,7 @@ describe('Inventory area service', () => {
         const result = await service.remove(testId);
         expect(result).toBeTruthy();
 
-        const verify = await service.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should get ALL areas', async () => {

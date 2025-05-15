@@ -223,8 +223,7 @@ describe('Template Service', () => {
   });
 
   it('should not query removed template item', async() => {
-    const removed = await templateItemService.findOne(deletedItemId);
-    expect(removed).toBeNull();
+    await expect(templateItemService.findOne(deletedItemId)).rejects.toThrow(NotFoundException);
   });
 
   it('should find all templates', async() => {
@@ -253,8 +252,7 @@ describe('Template Service', () => {
     const removal = await templateService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await templateService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(templateService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove template menuItems', async() => {

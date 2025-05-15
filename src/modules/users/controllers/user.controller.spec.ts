@@ -7,7 +7,7 @@ import { hashPassword } from '../../auth/utils/hash';
 import { User } from '../entities/user.entities';
 import { USER_A, USER_B, USER_C, USER_D } from '../utils/constants';
 import { UserController } from './user.controller';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('User Controller', () => {
   let controller: UserController;
@@ -66,7 +66,11 @@ describe('User Controller', () => {
     jest.spyOn(usersService, "findAll").mockResolvedValue({ items: users });
     
     jest.spyOn(usersService, "findOne").mockImplementation(async (id) => {
-      return users.find(user => user.id === id) || null;
+      const result = users.find(user => user.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(usersService, "remove").mockImplementation(async (id: number) => {
@@ -92,8 +96,8 @@ describe('User Controller', () => {
     expect(user).not.toBeNull();
   });
 
-  it("should fail to get one user and return null (bad id/not found)", async () => {
-    await expect(controller.findOne(0)).resolves.toBeNull();
+  it("should fail to get one user (bad id/not found)", async () => {
+    await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
   });
 
   it("should create a user", async () => {
@@ -131,13 +135,12 @@ describe('User Controller', () => {
 
   it("should remove a user by id", async () => {
       const result = await controller.remove(5);
-      expect(result).toBeTruthy();
+      expect(result).toBeUndefined();
 
-      await expect(controller.findOne(5)).resolves.toBeNull();
+      await expect(controller.findOne(5)).rejects.toThrow(NotFoundException);
     });
   
     it("should fail to remove a user (bad id)", async () => {
-      const result = await controller.remove(5);
-      expect(result).toBeFalsy();
+      await expect(controller.remove(5)).rejects.toThrow(NotFoundException);
     });
 });

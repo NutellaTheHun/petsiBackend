@@ -9,6 +9,7 @@ import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { RoleService } from '../../roles/services/role.service';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
+import { NotFoundException } from '@nestjs/common';
 
 describe('User Service', () => {
   let usersService: UserService;
@@ -87,8 +88,7 @@ describe('User Service', () => {
     const removal = await usersService.remove(testId);
     if(!removal){ throw new Error("user removal failed"); }
 
-    const verify = await usersService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(usersService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it("should get all users", async () => {

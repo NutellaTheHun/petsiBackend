@@ -192,16 +192,14 @@ describe('Inventory area item service', () => {
     });
 
     it('should fail to get one item by id (not found)', async () => {
-        const result = await areaItemService.findOne(0);
-        expect(result).toBeNull();
+        await expect(areaItemService.findOne(0)).rejects.toThrow(NotFoundException);
     });
 
     it('should remove one item by id', async () => {
         const removal = await areaItemService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await areaItemService.findOne(0);
-        expect(verify).toBeNull();
+        await expect(areaItemService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should remove one item by id (not found)', async () => {
@@ -219,8 +217,7 @@ describe('Inventory area item service', () => {
         const removal = await sizeService.remove(item.size.id);
         if(!removal){ throw new Error("size removal failed"); }
 
-        const verify = await areaItemService.findOne(item.id);
-        expect(verify).toBeNull();
+        await expect(areaItemService.findOne(item.id)).rejects.toThrow(NotFoundException);
     });
 
     it('should delete area items when it\'s referenced inventoryItem is deleted', async () => {
@@ -232,8 +229,7 @@ describe('Inventory area item service', () => {
         const removal = await itemService.remove(areaItem.item.id);
         if(!removal){ throw new Error("inventory item removal failed"); }
 
-        const verify = await areaItemService.findOne(areaItem.id);
-        expect(verify).toBeNull(); 
+        await expect(areaItemService.findOne(areaItem.id)).rejects.toThrow(NotFoundException);
     });
 
     // if the count is deleted, the inv area item count should be deleted
@@ -247,7 +243,6 @@ describe('Inventory area item service', () => {
         const removal = await countService.remove(areaItem.areaCount.id);
         if(!removal){ throw new Error("inventory count removal failed"); }
 
-        const verify = await areaItemService.findOne(areaItem.id);
-        expect(verify).toBeNull(); 
+        await expect(areaItemService.findOne(areaItem.id)).rejects.toThrow(NotFoundException);
     });
 });

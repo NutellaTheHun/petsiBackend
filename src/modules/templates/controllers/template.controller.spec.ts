@@ -6,7 +6,7 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { getTestTemplateNames } from '../utils/constants';
 import { CreateTemplateDto } from '../dto/create-template.dto';
 import { UpdateTemplateDto } from '../dto/update-template.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('TemplatesController', () => {
@@ -32,7 +32,7 @@ describe('TemplatesController', () => {
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateTemplateDto) => {
       const exists = templates.find(temp => temp.name === dto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const template = {
         id: templateId++,
@@ -50,8 +50,11 @@ describe('TemplatesController', () => {
     });
 
     jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if(!id){ throw new BadRequestException(); }
-      return templates.find(temp => temp.id === id) || null;
+      const result = templates.find(temp => temp.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
@@ -68,7 +71,7 @@ describe('TemplatesController', () => {
 
     jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateTemplateDto) => {
       const existIdx = templates.findIndex(temp => temp.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.name){
         templates[existIdx].name = dto.name;
@@ -101,7 +104,7 @@ describe('TemplatesController', () => {
         name: "testTemplate",
       } as CreateTemplateDto;
       
-      await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+      await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
   
     it('should find template by id', async () => {
@@ -110,7 +113,7 @@ describe('TemplatesController', () => {
     });
   
     it('should fail find template by id (not exist)', async () => {
-      await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+      await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
   
     it('should update template name', async () => {
@@ -130,16 +133,15 @@ describe('TemplatesController', () => {
         name: "updateTemplateName",
       } as UpdateTemplateDto;
   
-      await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+      await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
   
     it('should remove template', async () => {
       const result = await controller.remove(testId);
-      expect(result).toBeTruthy();
+      expect(result).toBeUndefined();
     });
   
     it('should fail remove template (not exist)', async () => {
-      const result = await controller.remove(testId);
-      expect(result).toBeFalsy();
+      await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

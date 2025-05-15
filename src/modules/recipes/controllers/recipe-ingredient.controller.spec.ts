@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
@@ -98,7 +98,7 @@ describe('recipe ingredient controller', () => {
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeIngredientDto) => {
       const existIdx = ingredients.findIndex(ingred => ingred.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.inventoryItemId){
         const item = items.find(item => item.id === dto.inventoryItemId);
@@ -134,7 +134,11 @@ describe('recipe ingredient controller', () => {
 
     jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return ingredients.find(ingred => ingred.id === id) || null;
+      const result = ingredients.find(ingred => ingred.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, "remove").mockImplementation(async (id: number) => {
@@ -207,16 +211,15 @@ describe('recipe ingredient controller', () => {
       unitOfMeasureId: units[3].id,
     } as CreateRecipeIngredientDto;
 
-    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove a recipe ingredient', async () => {
     const removal = await controller.remove(testId);
-    expect(removal).toBeTruthy();
+    expect(removal).toBeUndefined();
   });
 
   it('should fail remove a recipe ingredient', async () => {
-    const removal = await controller.remove(testId);
-    expect(removal).toBeFalsy();
+    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
   });
 });

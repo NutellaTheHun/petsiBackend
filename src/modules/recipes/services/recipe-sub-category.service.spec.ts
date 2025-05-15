@@ -7,6 +7,7 @@ import { RecipeCategoryService } from './recipe-category.service';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
 import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
+import { NotFoundException } from '@nestjs/common';
 
 describe('recipe sub category service', () => {
   let subCategoryService: RecipeSubCategoryService;
@@ -84,8 +85,7 @@ describe('recipe sub category service', () => {
     const removal = await subCategoryService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await subCategoryService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(subCategoryService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should get all sub-categories', async () => {

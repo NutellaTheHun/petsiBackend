@@ -9,6 +9,7 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { NotFoundException } from '@nestjs/common';
 
 
 describe('UnitCategoryService', () => {
@@ -67,8 +68,7 @@ describe('UnitCategoryService', () => {
   });
 
   it('should fail to find one category (doesnt exist)', async () => {
-    const result = await categoryService.findOne(0);
-    expect(result).toBeNull();
+    await expect(categoryService.findOne(0)).rejects.toThrow(NotFoundException);
   });
 
   it('should find one category by name', async () => {
@@ -132,8 +132,7 @@ describe('UnitCategoryService', () => {
     const removal = await categoryService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await categoryService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(categoryService.findOne(testId)).rejects.toThrow(NotFoundException);
   })
 
   it('should fail to remove a category (not found)', async () => {

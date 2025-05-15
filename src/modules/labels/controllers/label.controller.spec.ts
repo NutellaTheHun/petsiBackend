@@ -6,7 +6,7 @@ import { LabelController } from './label.controller';
 import { getTestImageUrls } from '../utils/constants';
 import { CreateLabelDto } from '../dto/create-label.dto';
 import { UpdateLabelDto } from '../dto/update-label.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('Label  Controller', () => {
@@ -48,7 +48,11 @@ describe('Label  Controller', () => {
 
     jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
       if(!id){ throw new BadRequestException(); }
-      return labels.find(label => label.id === id) || null;
+      const result = labels.find(label => label.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -61,7 +65,7 @@ describe('Label  Controller', () => {
 
     jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateLabelDto) => {
       const existIdx = labels.findIndex(label => label.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.imageUrl){
         labels[existIdx].imageUrl = dto.imageUrl;
@@ -115,16 +119,15 @@ describe('Label  Controller', () => {
       imageUrl: "updateTestUrl",
     } as UpdateLabelDto;
 
-    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove label', async () => {
     const result = await controller.remove(testId);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail remove label (not exist)', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
   });
 });

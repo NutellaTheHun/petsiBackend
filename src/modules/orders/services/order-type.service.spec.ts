@@ -1,10 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
+import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderTypeService } from "./order-type.service";
-import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
-import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
 
 describe('order type service', () => {
     let service: OrderTypeService;
@@ -91,7 +92,6 @@ describe('order type service', () => {
         const removal = await service.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await service.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 });

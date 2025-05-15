@@ -685,8 +685,7 @@ describe('menu item service', () => {
         const removal = await itemService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await itemService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(itemService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should remove refence from category', async () => {

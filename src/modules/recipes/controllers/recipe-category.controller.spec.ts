@@ -5,7 +5,7 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryController } from './recipe-category.controller';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('recipe category controller', () => {
@@ -31,7 +31,7 @@ describe('recipe category controller', () => {
 
     jest.spyOn(service, "create").mockImplementation(async (dto: CreateRecipeCategoryDto) => {
       const exists = categories.find(cat => cat.name === dto.name);
-      if(exists){ return null; }
+      if(exists){ throw new BadRequestException(); }
 
       const category = {
         id: id++,
@@ -44,7 +44,7 @@ describe('recipe category controller', () => {
 
     jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeCategoryDto) => {
       const existIdx = categories.findIndex(cat => cat.id === id);
-      if(existIdx === -1){ return null; }
+      if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.name){
         categories[existIdx].name = dto.name;
@@ -60,8 +60,11 @@ describe('recipe category controller', () => {
     jest.spyOn(service, "findAll").mockResolvedValue({ items: categories });
 
     jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
-      if(!id){ throw new BadRequestException(); }
-      return categories.find(cat => cat.id === id) || null;
+      const result = categories.find(cat => cat.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
     });
 
     jest.spyOn(service, "remove").mockImplementation(async (id: number) => {
@@ -94,7 +97,7 @@ describe('recipe category controller', () => {
       name: "test category"
     } as CreateRecipeCategoryDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should find one recipe category', async () => {
@@ -103,7 +106,7 @@ describe('recipe category controller', () => {
   });
 
   it('should fail find one a recipe category', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+    await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
   });
 
   it('should find all a recipe category', async () => {
@@ -127,16 +130,15 @@ describe('recipe category controller', () => {
       name: "updated test name"
     } as UpdateRecipeCategoryDto;
 
-    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove a recipe category', async () => {
     const removal = await controller.remove(testId);
-    expect(removal).toBeTruthy();
+    expect(removal).toBeUndefined();
   });
 
   it('should fail remove a recipe category', async () => {
-    const removal = await controller.remove(testId);
-    expect(removal).toBeFalsy();
+    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
   });
 });

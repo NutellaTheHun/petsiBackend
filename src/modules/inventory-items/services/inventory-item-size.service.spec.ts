@@ -170,8 +170,7 @@ describe('Inventory Item Size Service', () => {
     const removal = await packageService.remove(size?.packageType.id);
     if(!removal){ throw new Error("unit of measure removal failed"); }
 
-    const verify = await sizeService.findOne(item.sizes[0].id);
-    expect(verify).toBeNull();
+    await expect(sizeService.findOne(item.sizes[0].id)).rejects.toThrow(NotFoundException);
   });
 
   // If a item is deleted, the itemSizes are also deleted.
@@ -186,16 +185,14 @@ describe('Inventory Item Size Service', () => {
     const removal = await itemService.remove(size?.item.id);
     if(!removal){ throw new Error("unit of measure removal failed"); }
 
-    const verify = await sizeService.findOne(item.sizes[0].id);
-    expect(verify).toBeNull();
+    await expect(sizeService.findOne(item.sizes[0].id)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove a inventory item size', async () => {
     const removal = await sizeService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await sizeService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(sizeService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should query inventoryItem with removed size not present', async () => {

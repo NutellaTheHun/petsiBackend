@@ -6,6 +6,7 @@ import { getRoleTestingModule } from '../utils/role-testing-module';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { ROLE_ADMIN } from '../utils/constants';
+import { NotFoundException } from '@nestjs/common';
 
 
 describe('Role Service', () => {
@@ -60,8 +61,7 @@ describe('Role Service', () => {
     const removal = await roleService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await roleService.findOne(testId);
-    expect(verify).toBeFalsy();
+    await expect(roleService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it("should retrieve all roles", async () => {

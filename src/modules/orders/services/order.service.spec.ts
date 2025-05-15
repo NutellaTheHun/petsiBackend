@@ -398,8 +398,7 @@ describe('order service', () => {
     });
 
     it('should truly remove deleted orderMenuItem', async () => {
-        const item = await orderItemService.findOne(deletedItemId);
-        expect(item).toBeNull();
+        await expect(orderItemService.findOne(deletedItemId)).rejects.toThrow(NotFoundException);
     })
 
     it('should find all orders', async () => {
@@ -429,8 +428,7 @@ describe('order service', () => {
         const removal = await orderService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await orderService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(orderService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should remove orderMenuItems', async () => {

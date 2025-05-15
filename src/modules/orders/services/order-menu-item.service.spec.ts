@@ -147,8 +147,7 @@ describe('order menu item service', () => {
         const removal = await orderItemService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await orderItemService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(orderItemService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 
     it('should update order query to not contain deleted item', async () => {

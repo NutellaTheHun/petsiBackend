@@ -8,6 +8,7 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitCategoryService } from './unit-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('UnitOfMeasureService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
@@ -191,8 +192,7 @@ describe('UnitOfMeasureService', () => {
     const removal = await unitService.remove(testId);
     expect(removal).toBeTruthy();
     
-    const verify = await unitService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(unitService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('new category should lose reference to unit of measure', async () => {

@@ -8,6 +8,7 @@ import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderController } from "./order.controller";
+import { NotFoundException } from "@nestjs/common";
 
 describe('order controller', () => {
     let controller: OrderController;
@@ -59,7 +60,11 @@ describe('order controller', () => {
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            return orders.find(order => order.id === id) || null;
+            const result = orders.find(order => order.id === id);
+            if(!result){
+                throw new NotFoundException();
+            }
+            return result;
         });
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -72,7 +77,7 @@ describe('order controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderDto) => {
             const existIdx = orders.findIndex(order => order.id === id);
-            if(existIdx === -1){ return null; }
+            if(existIdx === -1){ throw new NotFoundException(); }
 
             if(dto.orderTypeId){
                 const oType = types.find(t => t.id === dto.orderTypeId);
@@ -111,8 +116,7 @@ describe('order controller', () => {
     });
     
     it('should fail find order by id (not exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
     
     it('should update order quantity', async () => {
@@ -132,16 +136,15 @@ describe('order controller', () => {
             deliveryAddress: "test",
         } as UpdateOrderDto;
     
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
     
     it('should remove order', async () => {
         const result = await controller.remove(testId);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
     });
     
     it('should fail remove order (not exist)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

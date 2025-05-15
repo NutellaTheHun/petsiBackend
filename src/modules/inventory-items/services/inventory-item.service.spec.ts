@@ -402,8 +402,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('deleteded itemSize from item update should not exist', async () => {
-    const verify = await sizeService.findOne(deletedSizeId);
-    expect(verify).toBeNull();
+    await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(NotFoundException);
   });
 
   it('should update item with both a new and modified size', async () => {

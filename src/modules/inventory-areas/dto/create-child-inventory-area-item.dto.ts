@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/create-child-inventory-item-size.dto";
 
 /**
  * This DTO is used when creating an inventory-area-item through the update of an inventory area count.
@@ -53,8 +53,8 @@ export class CreateChildInventoryAreaItemDto {
      */
     @ApiProperty({ 
         description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is null, itemSizeId must be populated.',
-        type: [CreateInventoryItemSizeDto],
+        type: [CreateChildInventoryItemSizeDto],
      })
     @IsOptional()
-    readonly itemSizeDto?: (CreateInventoryItemSizeDto);
+    readonly itemSizeDto?: (CreateChildInventoryItemSizeDto);
 }

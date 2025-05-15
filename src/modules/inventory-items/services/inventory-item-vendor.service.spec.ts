@@ -6,6 +6,7 @@ import { VENDOR_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemVendorService } from './inventory-item-vendor.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('Inventory Item Vendor Service', () => {
   let testingUtil: InventoryItemTestingUtil;
@@ -57,8 +58,7 @@ describe('Inventory Item Vendor Service', () => {
     const removal = await vendorService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await vendorService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(vendorService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should get all vendors', async () => {

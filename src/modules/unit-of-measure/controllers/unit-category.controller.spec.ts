@@ -6,7 +6,7 @@ import { UnitCategoryService } from '../services/unit-category.service';
 import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
 import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
 import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('UnitCategoryController', () => {
@@ -28,48 +28,52 @@ describe('UnitCategoryController', () => {
     categories.map(category => category.id = id++);
 
     jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitCategoryDto) => {
-          const exists = categories.find(unit => unit.name === createDto.name);
-          if(exists){ return null; }
-    
-          const unit = {
-            id: id++,
-            name: createDto.name,
-          } as UnitCategory;
+      const exists = categories.find(unit => unit.name === createDto.name);
+      if(exists){ throw new BadRequestException(); }
 
-          categories.push(unit);
-          return unit;
-        });
+      const unit = {
+        id: id++,
+        name: createDto.name,
+      } as UnitCategory;
+
+      categories.push(unit);
+      return unit;
+    });
+
+    jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
+      return categories.find(unit => unit.name === name) || null;
+    });
     
-        jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
-          return categories.find(unit => unit.name === name) || null;
-        });
-        
-        jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitCategoryDto) => {
-          const index = categories.findIndex(unit => unit.id === id);
-          if (index === -1) return null;
-          
-          if(updateDto.name){
-            categories[index].name = updateDto.name;
-          }
-    
-          return categories[index];
-        });
-    
-        jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
-    
-        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
-          if(!id){ throw new BadRequestException(); }
-          return categories.find(unit => unit.id === id) || null;
-        });
-    
-        jest.spyOn(categoryService, "remove").mockImplementation( async (id: number) => {
-          const index = categories.findIndex(unit => unit.id === id);
-          if (index === -1) return false;
-    
-          categories.splice(index,1);
-    
-          return true;
-        });
+    jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitCategoryDto) => {
+      const index = categories.findIndex(unit => unit.id === id);
+      if(index === -1){ throw new NotFoundException(); }
+      
+      if(updateDto.name){
+        categories[index].name = updateDto.name;
+      }
+
+      return categories[index];
+    });
+
+    jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
+
+    jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+      if(!id){ throw new BadRequestException(); }
+      const result = categories.find(unit => unit.id === id);
+      if(!result){
+        throw new NotFoundException();
+      }
+      return result;
+    });
+
+    jest.spyOn(categoryService, "remove").mockImplementation( async (id: number) => {
+      const index = categories.findIndex(unit => unit.id === id);
+      if (index === -1){ throw new NotFoundException(); } 
+
+      categories.splice(index,1);
+
+      return true;
+    });
     
   });
 
@@ -92,7 +96,7 @@ describe('UnitCategoryController', () => {
       name: "testCategory",
     } as CreateUnitCategoryDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should return all categories', async () => {
@@ -123,7 +127,7 @@ describe('UnitCategoryController', () => {
     const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
     
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
   });
   
   it('should remove a category', async () => {
@@ -131,11 +135,10 @@ describe('UnitCategoryController', () => {
     if(!toRemove){ throw new Error("unit to remove not found"); }
 
     const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
+    expect(result).toBeUndefined();
   });
 
   it('should fail to remove a category (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
   });
 });

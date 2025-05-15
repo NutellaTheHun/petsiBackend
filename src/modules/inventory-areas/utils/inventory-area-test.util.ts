@@ -15,6 +15,8 @@ import { InventoryAreaItemService } from "../services/inventory-area-item.servic
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
 import e from "express";
+import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/create-child-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryAreaTestUtil {
@@ -203,46 +205,32 @@ export class InventoryAreaTestUtil {
 
     public createInventoryAreaItemDtos(
        /* inventoryAreaId: number,*/ areaCountId: number, 
-        itemConfigs: {itemId: number, itemSizeId?: number, sizeDto?: CreateInventoryItemSizeDto}[]
+        itemConfigs: {itemId: number, itemSizeId?: number, sizeDto?: CreateChildInventoryItemSizeDto}[]
     ){
         let unitAmount = 1;
         let measureAmount = 1;
-        const results: CreateInventoryAreaItemDto[] = [];
+        const results: CreateChildInventoryAreaItemDto[] = [];
 
         for(const item of itemConfigs){
             if(item.sizeDto){
                 results.push({
                     mode: 'create',
-                    //inventoryAreaId,
-                    areaCountId,
                     unitAmount: unitAmount++,
                     measureAmount: measureAmount++,
                     inventoryItemId: item.itemId,
                     //itemSizeId: item.itemSizeId,
                     itemSizeDto: item.sizeDto
-                } as CreateInventoryAreaItemDto)
+                } as CreateChildInventoryAreaItemDto)
             } else {
                 results.push({
                     mode: 'create',
-                    //inventoryAreaId,
-                    areaCountId,
                     unitAmount: unitAmount++,
                     measureAmount: measureAmount++,
                     inventoryItemId: item.itemId,
                     itemSizeId: item.itemSizeId,
                     //itemSizeDto: item.sizeDto
-                } as CreateInventoryAreaItemDto)
+                } as CreateChildInventoryAreaItemDto)
             }
-           /* results.push({
-                mode: 'create',
-                //inventoryAreaId,
-                areaCountId,
-                unitAmount: unitAmount++,
-                measureAmount: measureAmount++,
-                inventoryItemId: item.itemId,
-                itemSizeId: item.itemSizeId,
-                itemSizeDto: item.sizeDto
-            } as CreateInventoryAreaItemDto)*/
         }
         return results;
     }

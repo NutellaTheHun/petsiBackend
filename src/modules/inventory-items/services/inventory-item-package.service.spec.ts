@@ -4,6 +4,7 @@ import { CreateInventoryItemPackageDto } from '../dto/create-inventory-item-pack
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('Inventory Item Package Service', () => {
   let testingUtil: InventoryItemTestingUtil;
@@ -66,8 +67,7 @@ describe('Inventory Item Package Service', () => {
     const removal = await packageService.remove(testId);
     expect(removal).toBeTruthy();
 
-    const verify = await packageService.findOne(testId);
-    expect(verify).toBeNull();
+    await expect(packageService.findOne(testId)).rejects.toThrow(NotFoundException);
   });
 
   it('should fail to remove item package(not found)', async () => {

@@ -5,6 +5,7 @@ import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemSizeService } from "./menu-item-size.service";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { NotFoundException } from "@nestjs/common";
 
 describe('menu item size service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -86,7 +87,6 @@ describe('menu item size service', () => {
         const removal = await sizeService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await sizeService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(sizeService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 });
