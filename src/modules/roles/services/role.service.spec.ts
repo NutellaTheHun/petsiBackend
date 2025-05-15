@@ -5,7 +5,7 @@ import { RoleTestUtil } from '../utils/role-test.util';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
-import { ROLE_ADMIN } from '../../users/utils/constants';
+import { ROLE_ADMIN } from '../utils/constants';
 
 
 describe('Role Service', () => {

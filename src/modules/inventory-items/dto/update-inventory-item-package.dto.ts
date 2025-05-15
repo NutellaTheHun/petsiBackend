@@ -1,4 +1,9 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateInventoryItemPackageDto } from "./create-inventory-item-package.dto";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsString } from "class-validator";
 
-export class UpdateInventoryItemPackageDto extends PartialType(CreateInventoryItemPackageDto){}
+export class UpdateInventoryItemPackageDto {
+    @ApiProperty({ example: 'Box, Can, Container, Bag', description: 'Name for Inventory-Item-Package entity.' })
+    @IsString()
+    @IsOptional()
+    readonly name?: string;
+}

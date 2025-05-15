@@ -1,13 +1,21 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Controller, Inject } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { Roles } from '../../../util/decorators/PublicRole';
+import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PaginatedResult } from '../../../base/paginated-result';
+import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
 
-
+@ApiTags('Recipe Ingredient')
+@ApiBearerAuth('access-token')
+@Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('recipe-ingredient')
 export class RecipeIngredientController extends ControllerBase<RecipeIngredient>{
     constructor(
@@ -16,4 +24,56 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
         logger: AppLogger,
         requestContextService: RequestContextService,
     ){ super(ingredientService, cacheManager, 'RecipeIngredientController', requestContextService, logger); }
+
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Creates a Recipe Ingredient' })
+    @ApiCreatedResponse({ description: 'Recipe Ingredient successfully created', type: RecipeIngredient })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiBody({ type: CreateRecipeIngredientDto })
+    async create(@Body() dto: CreateRecipeIngredientDto): Promise<RecipeIngredient> {
+        return super.create(dto);
+    }
+
+    @Patch(':id')
+    @ApiOperation({ summary: 'Updates a Recipe Ingredient' })
+    @ApiOkResponse({ description: 'Recipe Ingredient successfully updated', type: RecipeIngredient })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiNotFoundResponse({ description: 'Recipe Ingredient to update not found.' })
+    @ApiBody({ type: UpdateRecipeIngredientDto })
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRecipeIngredientDto): Promise<RecipeIngredient> {
+        return super.update(id, dto);
+    }
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Removes a Recipe Ingredient' })
+    @ApiNoContentResponse({ description: 'Recipe Ingredient successfully removed' })
+    @ApiNotFoundResponse({ description: 'Recipe Ingredient not found' })
+    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return super.remove(id);
+    }
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves an array of Recipe Ingredients' })
+    @ApiOkResponse({ type: PaginatedResult<RecipeIngredient> })
+    async findAll(
+        @Query('relations') relations?: string[],
+        @Query('limit') limit?: number,
+        @Query('offset') cursor?: string,
+        @Query('sortBy') sortBy?: string,
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+    ): Promise<PaginatedResult<RecipeIngredient>> {
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+    }
+
+    @Get(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves one Recipe Ingredient' })
+    @ApiOkResponse({ description: 'Recipe Ingredient found', type: RecipeIngredient })
+    @ApiNotFoundResponse({ description: 'Recipe Ingredient not found' })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<RecipeIngredient> {
+        return super.findOne(id);
+    }
 }

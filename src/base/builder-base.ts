@@ -43,6 +43,9 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         return await this.build();
     }
 
+    /**
+     * Throws AppHttpException if validation fails with error description
+     */
     protected async validateCreateDto(dto: any): Promise<void> {
         const requestId = this.requestContextService.getRequestId();
 

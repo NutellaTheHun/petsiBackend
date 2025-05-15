@@ -1,15 +1,21 @@
-import { Controller, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { Roles } from '../../../util/decorators/PublicRole';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
-import { Cache } from "cache-manager";
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Logger } from "nestjs-pino";
-import { RequestContextService } from '../../request-context/RequestContextService';
-import { ModuleRef } from '@nestjs/core';
-import { AppLogger } from '../../app-logging/app-logger';
+import { PaginatedResult } from '../../../base/paginated-result';
+import { CreateRecipeDto } from '../dto/create-recipe.dto';
+import { UpdateRecipeDto } from '../dto/update-recipe-dto';
 
-
+@ApiTags('Recipe')
+@ApiBearerAuth('access-token')
+@Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('recipe')
 export class RecipeController extends ControllerBase<Recipe>{
     constructor(
@@ -18,4 +24,56 @@ export class RecipeController extends ControllerBase<Recipe>{
         logger: AppLogger,
         requestContextService: RequestContextService,
     ){ super(recipeService, cacheManager, 'RecipeController', requestContextService, logger); }
+
+    @Post()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Creates a Recipe' })
+    @ApiCreatedResponse({ description: 'Recipe successfully created', type: Recipe })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiBody({ type: CreateRecipeDto })
+    async create(@Body() dto: CreateRecipeDto): Promise<Recipe> {
+        return super.create(dto);
+    }
+
+    @Patch(':id')
+    @ApiOperation({ summary: 'Updates a Recipe' })
+    @ApiOkResponse({ description: 'Recipe successfully updated', type: Recipe })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiNotFoundResponse({ description: 'Recipe to update not found.' })
+    @ApiBody({ type: UpdateRecipeDto })
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRecipeDto): Promise<Recipe> {
+        return super.update(id, dto);
+    }
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Removes a Recipe' })
+    @ApiNoContentResponse({ description: 'Recipe successfully removed' })
+    @ApiNotFoundResponse({ description: 'Recipe not found' })
+    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return super.remove(id);
+    }
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves an array of Recipes' })
+    @ApiOkResponse({ type: PaginatedResult<Recipe> })
+    async findAll(
+    @Query('relations') relations?: string[],
+    @Query('limit') limit?: number,
+    @Query('offset') cursor?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+    ): Promise<PaginatedResult<Recipe>> {
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+    }
+
+    @Get(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves one Recipe' })
+    @ApiOkResponse({ description: 'Recipe found', type: Recipe })
+    @ApiNotFoundResponse({ description: 'Recipe not found' })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<Recipe> {
+        return super.findOne(id);
+    }
 }

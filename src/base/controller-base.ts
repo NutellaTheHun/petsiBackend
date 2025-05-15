@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Body, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { Cache } from "cache-manager";
 import { parse, stringify } from 'flatted';
 import { ObjectLiteral } from "typeorm";
@@ -143,7 +143,7 @@ export class ControllerBase<T extends ObjectLiteral> {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<T | null> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<T> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -195,6 +195,7 @@ export class ControllerBase<T extends ObjectLiteral> {
       'SUCCESS',
       { requestId }
     );
+
     return result;
   }
 
@@ -260,7 +261,7 @@ export class ControllerBase<T extends ObjectLiteral> {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<Boolean> {
+  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -275,26 +276,35 @@ export class ControllerBase<T extends ObjectLiteral> {
     // Remove from db
     const removal = await this.entityService.remove(id);
     
-    // invalidate findOne and findAll cache
+    // if successfully removed, invalidate findOne and findAll cache
     if(removal) {
       this.logger.logAction(
         this.controllerPrefix,
         requestId,
         'REMOVE',
         'CACHE INVALIDATED',
-      )
+      );
       const singleCacheKey = `${this.entityService.cacheKeyPrefix}-findOne-${id}`;
       await this.cacheManager.del(singleCacheKey);
       await invalidateFindAllCache(this.entityService.cacheKeyPrefix, this.cacheManager);
+
+      // if removal failed, log error and throw NotFoundException.
+    } else { 
+      this.logger.logAction(
+        this.controllerPrefix,
+        requestId,
+        'REMOVE',
+        'FAIL',
+      );
+      throw new NotFoundException(`Entity with ID ${id} not found or already deleted`);
     }
 
     // Return result
     this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'REMOVE',
-        'SUCCESS',
-      )
-    return removal;
+      this.controllerPrefix,
+      requestId,
+      'REMOVE',
+      'SUCCESS',
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { HttpStatus } from "@nestjs/common";
+import { HttpStatus, NotFoundException } from "@nestjs/common";
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
 import { AppLogger } from "../modules/app-logging/app-logger";
 import { AppHttpException } from "../util/exceptions/AppHttpException";
@@ -6,6 +6,7 @@ import { DTO_VALIDATION_FAIL } from "../util/exceptions/error_constants";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
 import { BuilderBase } from "./builder-base";
 import { ValidatorBase } from "./validator-base";
+import { PaginatedResult } from "./paginated-result";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
   
@@ -18,7 +19,10 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     private logger: AppLogger,
   ){}
 
-  public async create(createDto: any): Promise<T | null>{
+  /**
+   * @returns The created entity or throws AppHttpException from validation errors.
+   */
+  public async create(createDto: any): Promise<T>{
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -50,7 +54,10 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     return await this.entityRepo.save(entity);
   }
 
-  async update(id: number, updateDto: any): Promise<T | null> {
+  /**
+   * @returns Updated entity or throws AppHttpException if validation fails, or NotFoundException if the supplied ID doesn't aquire an entity.
+   */
+  async update(id: number, updateDto: any): Promise<T> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -78,20 +85,20 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     // retrieve entity from DB
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ 
-        const err = new AppHttpException(
-        `${this.cacheKeyPrefix}: entity to update not found id: ${id}`,
-        HttpStatus.BAD_REQUEST,
-        DTO_VALIDATION_FAIL,
-        { error }
-      );
+      const err = new AppHttpException(
+      `${this.cacheKeyPrefix}: entity to update not found id: ${id}`,
+      HttpStatus.BAD_REQUEST,
+      DTO_VALIDATION_FAIL,
+      { error }
+    );
 
-      this.logger.logError(
-        this.cacheKeyPrefix,
-        requestId,
-        'UPDATE',
-        err,
-        { requestId, id }
-      );
+    this.logger.logError(
+      this.cacheKeyPrefix,
+      requestId,
+      'UPDATE',
+      err,
+      { requestId, id }
+    );
 
       throw err;
     }
@@ -109,7 +116,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     cursor?: string;
     sortBy?: string;
     sortOrder?: 'ASC' | 'DESC'; 
-  }): Promise<{items: T[], nextCursor?: string}> {
+  }): Promise</*{items: T[], nextCursor?: string}*/PaginatedResult<T>> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -168,10 +175,13 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     return {
       items: results,
       nextCursor,
-    };
+    } as PaginatedResult<T>;
   }
 
-  async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T | null> {
+  /**
+   * @returns Entity or throws NotFoundException
+   */
+  async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -194,9 +204,10 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         'REQUEST',
         { requestId, id, message: `no entity found with id: ${id}`}
       );
+      throw new NotFoundException();
     }
 
-    return result
+    return result;
   }
 
   async findEntitiesById( ids: number[], relations?: Array<keyof T>): Promise<T[]> {

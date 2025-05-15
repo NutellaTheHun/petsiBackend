@@ -4,10 +4,11 @@ import { RoleTestUtil } from '../../roles/utils/role-test.util';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserService } from './user.service';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF, USER_A } from '../utils/constants';
+import { USER_A } from '../utils/constants';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { RoleService } from '../../roles/services/role.service';
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
 
 describe('User Service', () => {
   let usersService: UserService;

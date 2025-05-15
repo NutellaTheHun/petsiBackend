@@ -17,10 +17,28 @@ export class AuthService {
     ){}
 
     async signIn(username: string, rawPass: string): Promise<{ access_token: string, roles: string[] }> {
+        const requestId = this.requestContextService.getRequestId();
+
         const user = await this.userService.findOneByName(username, ["roles"]);
-        if(!user){ throw new UnauthorizedException('Invalid username or password'); }// check if this will suffice
+        if(!user){ 
+            this.logger.logAction(
+                'Authentication',
+                requestId,
+                'SIGN IN',
+                'FAIL',
+                { requestId }
+            );
+            throw new UnauthorizedException('Invalid username or password'); 
+        }// check if this will suffice
         
         if (!(await isPassHashMatch(rawPass, user.password))){
+             this.logger.logAction(
+                'Authentication',
+                requestId,
+                'SIGN IN',
+                'FAIL',
+                { requestId }
+            );
             throw new UnauthorizedException('Invalid username or password');
         }
 

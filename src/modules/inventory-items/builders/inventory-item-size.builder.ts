@@ -1,20 +1,19 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/update-child-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { InventoryItemPackageService } from "../services/inventory-item-package.service";
-import { InventoryItemService } from "../services/inventory-item.service";
 import { InventoryItem } from "../entities/inventory-item.entity";
+import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { InventoryItemService } from "../services/inventory-item.service";
 import { InventoryItemSizeValidator } from "../validators/inventory-item-size.validator";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
-import { UpdateChildInventoryItemSizeDto } from "../dto/update-child-inventory-item-size.dto";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { ModuleRef } from '@nestjs/core';
-import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
 export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> implements IBuildChildDto<InventoryItem, InventoryItemSize>{

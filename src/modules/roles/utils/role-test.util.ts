@@ -1,9 +1,9 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { RoleBuilder } from "../builders/role.builder";
+import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { RoleBuilder } from "../builders/role.builder";
 import { Role } from "../entities/role.entity";
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../users/utils/constants";
 import { RoleService } from "../services/role.service";
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "./constants";
 
 @Injectable()
 export class RoleTestUtil {

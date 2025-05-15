@@ -5,9 +5,9 @@ import { UpdateRoleDto } from '../dto/update-role.dto';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { Role } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../users/utils/constants';
 import { BadRequestException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../utils/constants';
 
 describe('Role Controller', () => {
   let controller: RoleController;

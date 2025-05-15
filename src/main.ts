@@ -13,6 +13,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
   .setTitle('PetsiBackend')
+  .setDescription('Petsi CRUD API documentation')
+  .addBearerAuth()
+  .setVersion('1.0')
   .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
