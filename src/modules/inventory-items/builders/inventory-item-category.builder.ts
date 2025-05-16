@@ -29,9 +29,6 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
          if(dto.name){
             this.name(dto.name);
         }
-        if(dto.inventoryItemIds){
-            this.inventoryItemsById(dto.inventoryItemIds);
-        }
     }
 
     public name(name: string): this {

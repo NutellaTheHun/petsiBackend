@@ -6,11 +6,4 @@ export class UpdateOrderTypeDto {
     @IsString()
     @IsOptional()
     readonly name?: string;
-
-    @ApiProperty({ description: 'An array of Order ids who fall under the referencing Order-Type' })
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true})
-    @IsOptional()
-    readonly orderIds?: number[];
 }

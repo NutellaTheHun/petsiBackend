@@ -4,7 +4,7 @@ import { Public } from '../../../util/decorators/PublicLogin';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { SignInDto } from '../dto/sign-in.dto';
 import { AuthService } from '../services/auth.service';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { AuthResponseDto } from '../dto/auth-response.dto';
 
 @ApiTags('Authentication')
@@ -17,8 +17,8 @@ export class AuthController {
     ) {}
 
     @ApiOperation({ summary: 'Sign in and receive a JWT token and user roles.' })
-    @ApiResponse({ status: 200, description: 'Sign in successful.', type: AuthResponseDto })
-    @ApiResponse({ status: 401, description: 'Invalid username or password.' })
+    @ApiOkResponse({ description: 'Sign in successful.', type: AuthResponseDto })
+    @ApiUnauthorizedResponse({ description: 'Invalid credentials.'  })
     @HttpCode(HttpStatus.OK)
     @Post('login')
     @Public()  

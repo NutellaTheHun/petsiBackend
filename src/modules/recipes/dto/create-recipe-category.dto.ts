@@ -8,9 +8,10 @@ export class CreateRecipeCategoryDto {
     @IsNotEmpty()
     readonly name: string;
 
-    @ApiProperty({ description: 'Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent Recipe-Category with child Recipe-Sub-Category entities.',
+    @ApiProperty({ 
+        description: 'Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent Recipe-Category with child Recipe-Sub-Category entities.',
         type: [CreateChildRecipeSubCategoryDto]
-     })
+    })
     @IsOptional()
     @IsArray()
     subCategoryDtos?: CreateChildRecipeSubCategoryDto[];

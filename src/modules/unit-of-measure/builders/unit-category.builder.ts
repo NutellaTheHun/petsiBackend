@@ -28,9 +28,6 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
         if(dto.baseUnitId){
             this.baseUnitById(dto.baseUnitId);
         }
-        if(dto.unitOfMeasureIds){
-            this.unitsById(dto.unitOfMeasureIds);
-        }
     }
 
     protected updateEntity(dto: UpdateUnitCategoryDto): void {
@@ -39,9 +36,6 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
         }
         if(dto.baseUnitId){
             this.baseUnitById(dto.baseUnitId);
-        }
-        if(dto.unitOfMeasureIds){
-            this.unitsById(dto.unitOfMeasureIds);
         }
     }
 

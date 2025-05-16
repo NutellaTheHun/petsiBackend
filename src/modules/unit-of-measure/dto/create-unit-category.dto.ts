@@ -7,13 +7,6 @@ export class CreateUnitCategoryDto{
     @IsNotEmpty()
     readonly name: string;
 
-    @ApiProperty({ description: 'Id of Unit-of-Measure entities under the Unit-Category.' })
-    @IsArray()
-    @IsNumber({}, { each: true })
-    @IsPositive({ each: true })
-    @IsOptional()
-    readonly unitOfMeasureIds?: number[];
-
     @ApiProperty({ description: 'The Unit-Of-Measure entity that all Unit-of-Measure entities under the category convert to as part of conversions.' })
     @IsNumber()
     @IsPositive()
