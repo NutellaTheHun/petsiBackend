@@ -2,7 +2,7 @@ import { TestingModule } from "@nestjs/testing";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { UpdateOrderDto } from "../dto/update-order.dto";
-import { OrderType } from "../entities/order-type.entity";
+import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "../utils/constants";
@@ -15,7 +15,7 @@ describe('order controller', () => {
     let service: OrderService;
 
     let orders: Order[] = [];
-    let types: OrderType[];
+    let types: OrderCategory[];
 
     let testId: number;
 
@@ -30,7 +30,7 @@ describe('order controller', () => {
         types = typeNames.map(name => ({
             id: typeId++,
             name: name,
-        }) as OrderType);
+        }) as OrderCategory);
 
         let orderId = 1;
         for(let i = 0; i < 3; i++){

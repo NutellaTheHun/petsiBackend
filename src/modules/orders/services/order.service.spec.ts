@@ -12,7 +12,7 @@ import { TYPE_A, TYPE_B, TYPE_C, TYPE_D } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderMenuItemService } from "./order-menu-item.service";
-import { OrderTypeService } from "./order-type.service";
+import { OrderCategoryService } from "./order-category.service";
 import { OrderService } from "./order.service";
 
 describe('order service', () => {
@@ -20,7 +20,7 @@ describe('order service', () => {
     let testingUtil: OrderTestingUtil;
     let dbTestContext: DatabaseTestContext;
 
-    let typeService: OrderTypeService;
+    let typeService: OrderCategoryService;
     let orderItemService: OrderMenuItemService;
 
     let menuItemService: MenuItemService;
@@ -42,7 +42,7 @@ describe('order service', () => {
         await testingUtil.initOrderTestDatabase(dbTestContext);
 
         orderService = module.get<OrderService>(OrderService);
-        typeService = module.get<OrderTypeService>(OrderTypeService);
+        typeService = module.get<OrderCategoryService>(OrderCategoryService);
         orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
 
         menuItemService = module.get<MenuItemService>(MenuItemService);

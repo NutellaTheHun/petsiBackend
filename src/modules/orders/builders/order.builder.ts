@@ -8,14 +8,14 @@ import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
 import { UpdateOrderDto } from "../dto/update-order.dto";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderTypeService } from "../services/order-type.service";
+import { OrderCategoryService } from "../services/order-category.service";
 import { OrderValidator } from "../validators/order.validator";
 import { OrderMenuItemBuilder } from "./order-menu-item.builder";
 
 @Injectable()
 export class OrderBuilder extends BuilderBase<Order>{
     constructor(
-        private readonly typeService: OrderTypeService,
+        private readonly typeService: OrderCategoryService,
 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly itemService: OrderMenuItemService,

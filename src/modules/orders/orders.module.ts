@@ -5,20 +5,20 @@ import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
-import { OrderTypeBuilder } from './builders/order-type.builder';
+import { OrderCategoryBuilder } from './builders/order-category.builder';
 import { OrderBuilder } from './builders/order.builder';
 import { OrderMenuItemController } from './controllers/order-menu-item.controller';
-import { OrderTypeController } from './controllers/order-type.controller';
+import { OrderCategoryController } from './controllers/order-category.controller';
 import { OrderController } from './controllers/order.controller';
 import { OrderMenuItem } from './entities/order-menu-item.entity';
-import { OrderType } from './entities/order-type.entity';
+import { OrderCategory } from './entities/order-category.entity';
 import { Order } from './entities/order.entity';
 import { OrderMenuItemService } from './services/order-menu-item.service';
-import { OrderTypeService } from './services/order-type.service';
+import { OrderCategoryService } from './services/order-category.service';
 import { OrderService } from './services/order.service';
 import { OrderTestingUtil } from './utils/order-testing.util';
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
-import { OrderTypeValidator } from './validators/order-type.validator';
+import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderValidator } from './validators/order.validator';
 
 
@@ -26,7 +26,7 @@ import { OrderValidator } from './validators/order.validator';
   imports:[
     TypeOrmModule.forFeature([
       Order,
-      OrderType,
+      OrderCategory,
       OrderMenuItem,
     ]),
     MenuItemsModule,
@@ -36,27 +36,27 @@ import { OrderValidator } from './validators/order.validator';
   ],
   controllers: [
     OrderController,
-    OrderTypeController,
+    OrderCategoryController,
     OrderMenuItemController,
   ],
   providers: [
     OrderService,
-    OrderTypeService,
+    OrderCategoryService,
     OrderMenuItemService,
 
     OrderBuilder,
-    OrderTypeBuilder,
+    OrderCategoryBuilder,
     OrderMenuItemBuilder,
 
     OrderValidator,
-    OrderTypeValidator,
+    OrderCategoryValidator,
     OrderMenuItemValidator,
 
     OrderTestingUtil,
   ],
   exports: [
     OrderService,
-    OrderTypeService,
+    OrderCategoryService,
     OrderMenuItemService,
   ]
 })

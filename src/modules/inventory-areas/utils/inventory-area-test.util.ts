@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/create-child-inventory-item-size.dto";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { InventoryAreaBuilder } from "../builders/inventory-area.builder";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
@@ -14,9 +14,6 @@ import { InventoryAreaCountService } from "../services/inventory-area-count.serv
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
 import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
-import e from "express";
-import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
-import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/create-child-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryAreaTestUtil {
@@ -111,12 +108,10 @@ export class InventoryAreaTestUtil {
             const sizeA = itemA.sizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                //.inventoryAreaById(counts[i].inventoryArea.id)
                 .areaCountById(counts[i].id)
                 .inventoryItemById(itemA.id)
                 .sizeById(sizeA.id)
                 .unitAmount(1)
-                .measureAmount(1)
                 .build()
             );
 
@@ -125,12 +120,10 @@ export class InventoryAreaTestUtil {
             const sizeB = itemB.sizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                //.inventoryAreaById(counts[i].inventoryArea.id)
                 .areaCountById(counts[i].id)
                 .inventoryItemById(itemB.id)
                 .sizeById(sizeB.id)
                 .unitAmount(1)
-                .measureAmount(1)
                 .build()
             );
         }

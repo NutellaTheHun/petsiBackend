@@ -5,14 +5,14 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { CreateUnitOfMeasureDto } from "../dto/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/update-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
-import { UnitCategoryService } from "../services/unit-category.service";
+import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";
 import { UnitOfMeasureValidator } from "../validators/unit-of-measure.validator";
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     constructor(
-        @Inject(forwardRef(() => UnitCategoryService))
-        private readonly categoryService: UnitCategoryService,
+        @Inject(forwardRef(() => UnitOfMeasureCategoryService))
+        private readonly categoryService: UnitOfMeasureCategoryService,
 
         validator: UnitOfMeasureValidator,
 

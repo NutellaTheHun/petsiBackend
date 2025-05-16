@@ -81,7 +81,7 @@ describe('Inventory Item Service', () => {
   // create
   it('should create an inventory-item (Default Category and Vendor)', async () => {
     const dto = {
-      name: "test item default vend/cat"
+      name: "test item default vend/cat",
     } as CreateInventoryItemDto;
     const result = await itemService.create(dto);
 
@@ -120,11 +120,11 @@ describe('Inventory Item Service', () => {
     // measureIds
     const measureIds = (await measureService.findAll()).items.map(unit => unit.id).slice(0,2);
 
-
-    const sizeDtos = testingUtil.createInventoryItemSizeDtos(
+    const sizeDtos = testingUtil.createChildInventoryItemSizeDtos(
       2,
       packageIds,
-      measureIds
+      measureIds,
+      [9.99, 12],
     );
 
     const cat = await categoryService.findOneByName(DRYGOOD_CAT);
@@ -138,6 +138,7 @@ describe('Inventory Item Service', () => {
       itemSizeDtos: sizeDtos,
       vendorId: vend.id,
       inventoryItemCategoryId: cat.id,
+      
     } as CreateInventoryItemDto;
 
     const result = await itemService.create(itemDto);
@@ -149,6 +150,7 @@ describe('Inventory Item Service', () => {
     for(const size of result.sizes){
       expect(measureIds.findIndex(id => id === size.measureUnit.id)).not.toEqual(-1);
       expect(packageIds.findIndex(id => id === size.packageType.id)).not.toEqual(-1);
+      expect(["9.99", "12"]).toContain(size.cost);
     }
 
     invItemSizesTestId = result?.id as number;
@@ -305,7 +307,7 @@ describe('Inventory Item Service', () => {
     const result = await itemService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.vendor).toBeNull();;
+    expect(result?.vendor).toBeNull();
   });
 
   it('old vendor should loose reference to item', async () => {
@@ -344,13 +346,14 @@ describe('Inventory Item Service', () => {
       id: item.sizes[0].id,
       unitOfMeasureId: newUnit.id,
       inventoryPackageTypeId: sizes[0].packageType.id,
-      } as UpdateInventoryItemSizeDto,
+      cost: 12.50,
+      } as UpdateChildInventoryItemSizeDto,
       {
       mode:'update',
       id: item.sizes[1].id,
       unitOfMeasureId: sizes[1].measureUnit.id,
       inventoryPackageTypeId: sizes[1].packageType.id,
-      } as UpdateInventoryItemSizeDto,
+      } as UpdateChildInventoryItemSizeDto,
     ]
 
     const updateDto = {
@@ -368,6 +371,8 @@ describe('Inventory Item Service', () => {
     const updatedSize = await sizeService.findOne(updateItemSizeId, ['measureUnit']);
     if(!updatedSize){ throw new NotFoundException(); }
     expect(updatedSize.measureUnit.id).toEqual(newUnitId);
+    
+    expect(updatedSize.cost).toEqual("12.50");
   });
 
   it('should update inventory item with removed item size', async () => {
@@ -385,7 +390,7 @@ describe('Inventory Item Service', () => {
       {
         mode:'update',
         id: sizes[1].id,
-      } as UpdateInventoryItemSizeDto,
+      } as UpdateChildInventoryItemSizeDto,
     ];
 
     const updateDto = {
@@ -401,7 +406,7 @@ describe('Inventory Item Service', () => {
     expect(result.sizes[0].id).toEqual(savedSizeId);
   });
 
-  it('deleteded itemSize from item update should not exist', async () => {
+  it('deleted itemSize from item update should not exist', async () => {
     await expect(sizeService.findOne(deletedSizeId)).rejects.toThrow(NotFoundException);
   });
 
@@ -434,15 +439,17 @@ describe('Inventory Item Service', () => {
 
     const sizeDtos = [
       {
-      mode:'update',
-      id: sizes[0].id,
-      unitOfMeasureId: sizes[0].measureUnit.id,
-      inventoryPackageTypeId: sizes[0].packageType.id,
+        mode:'update',
+        id: sizes[0].id,
+        unitOfMeasureId: sizes[0].measureUnit.id,
+        inventoryPackageTypeId: sizes[0].packageType.id,
       } as UpdateChildInventoryItemSizeDto,
       {
-      mode:'create',
-      unitOfMeasureId: createUnit.id,
-      inventoryPackageTypeId: createPkg.id,
+        mode:'create',
+        unitOfMeasureId: createUnit.id,
+        inventoryPackageTypeId: createPkg.id,
+        cost: 7.01,
+        measureAmount: 1,
       } as CreateChildInventoryItemSizeDto,
     ]
 

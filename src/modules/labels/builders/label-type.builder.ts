@@ -19,15 +19,35 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
         if(dto.name){
             this.name(dto.name);
         }
+        if(dto.labelLength){
+            this.labelLength(dto.labelLength);
+        }
+        if(dto.labelWidth){
+            this.labelWidth(dto.labelWidth);
+        }
     }
 
     protected updateEntity(dto: UpdateLabelTypeDto): void {
         if(dto.name){
             this.name(dto.name);
         }
+        if(dto.labelLength){
+            this.labelLength(dto.labelLength);
+        }
+        if(dto.labelWidth){
+            this.labelWidth(dto.labelWidth);
+        }
     }
 
     public name(name: string): this {
         return this.setPropByVal('name', name);
+    }
+
+    public labelWidth(val: number): this {
+        return this.setPropByVal('labelWidth', val);
+    }
+
+    public labelLength(val: number): this {
+        return this.setPropByVal('labelLength', val);
     }
 }

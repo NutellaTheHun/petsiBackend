@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemValidator } from '../validators/inventory-item.validator';
-import { RequestContextService } from '../../request-context/RequestContextService';
-import { ModuleRef } from '@nestjs/core';
-import { AppLogger } from '../../app-logging/app-logger';
 
 @Injectable()
 export class InventoryItemService extends ServiceBase<InventoryItem> {

@@ -31,7 +31,7 @@ export class InventoryAreaItem {
     item: InventoryItem;
 
     /**
-     * Represents the amount of units per measuredQuantity and size, for instances of multi pack items.
+     * Represents the amount of units per size.measuredQuantity by size.measureUnit, for instances of multi pack items.
      * - Default value of 1. Shouldn't be 0.
      * - example: 6(unitAmount) pack of 28oz can of evaporated milk
      * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
@@ -39,14 +39,6 @@ export class InventoryAreaItem {
     @Column({ type: 'int', nullable: true })
     unitAmount?: number | null;
 
-    /**
-     * Represents the quantity associated with the unit of measure
-     * - example: 6 pack of 28(measureAmount)oz can of evaporated milk
-     * - Example: 10(measureAmount) lb of flour
-     */
-    @Column({ nullable: false })
-    measureAmount: number;
-    
     /**
      * The size of the {@link InventoryItem } counted. 
      * 

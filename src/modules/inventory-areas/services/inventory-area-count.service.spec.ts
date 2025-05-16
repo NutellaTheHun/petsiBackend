@@ -199,6 +199,8 @@ describe('Inventory area count service', () => {
             unitOfMeasureId: uom.id,
             inventoryPackageTypeId: pkg.id,
             inventoryItemId: items[2].id,
+            cost: 12,
+            measureAmount: 1,
         } as CreateChildInventoryItemSizeDto;
         const item_c = { itemId: items[2].id, sizeDto }
 
@@ -266,46 +268,6 @@ describe('Inventory area count service', () => {
         const result = await areaItemService.findOne(updateItemTestId);
         expect(result).not.toBeNull();
         expect(result?.unitAmount).toEqual(10);
-    });
-
-    it('should update an area count item\'s measure amount', async () => {
-        const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
-        if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
-
-        updateItemTestId = areaCount.items[0].id;
-
-        const updateAreaItemDto = {
-            mode: 'update',
-            id: updateItemTestId,
-            measureAmount: 10,
-        } as UpdateInventoryAreaItemDto;
-
-        const theRest = areaCount.items.splice(1).map( areaItem => ({
-            mode: 'update',
-            id: areaItem.id
-        } as UpdateInventoryAreaItemDto))
-
-        const updateAreaCountDto = {
-            itemCountDtos: [updateAreaItemDto, ...theRest]
-        } as UpdateInventoryAreaCountDto;
-
-        const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
-
-        expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
-        for(const item of result?.items){
-            if(item.id === updateItemTestId){
-                expect(item.measureAmount).toEqual(10);
-            }
-        }
-    });
-
-    it('should update measure amount of queried area item', async () => {
-        const result = await areaItemService.findOne(updateItemTestId);
-        expect(result).not.toBeNull();
-        expect(result?.measureAmount).toEqual(10);
     });
 
     it('should update an area count item\'s size unit of measure', async () => {

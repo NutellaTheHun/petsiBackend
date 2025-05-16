@@ -5,21 +5,21 @@ import { ControllerBase } from "../../../base/controller-base";
 import { Roles } from "../../../util/decorators/PublicRole";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { OrderType } from "../entities/order-type.entity";
-import { OrderTypeService } from "../services/order-type.service";
+import { OrderCategory } from "../entities/order-category.entity";
+import { OrderCategoryService } from "../services/order-category.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
-import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
+import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
 import { PaginatedResult } from "../../../base/paginated-result";
 
-@ApiTags('Order Type')
+@ApiTags('Order Category')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-@Controller('order-type')
-export class OrderTypeController extends ControllerBase<OrderType>{
+@Controller('order-category')
+export class OrderCategoryController extends ControllerBase<OrderCategory>{
   constructor(
-    orderTypeService: OrderTypeService,
+    orderTypeService: OrderCategoryService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -28,20 +28,20 @@ export class OrderTypeController extends ControllerBase<OrderType>{
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Order Type' })
-  @ApiCreatedResponse({ description: 'Order Type successfully created', type: OrderType })
+  @ApiCreatedResponse({ description: 'Order Type successfully created', type: OrderCategory })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateOrderTypeDto })
-  async create(@Body() dto: CreateOrderTypeDto): Promise<OrderType> {
+  @ApiBody({ type: CreateOrderCategoryDto })
+  async create(@Body() dto: CreateOrderCategoryDto): Promise<OrderCategory> {
       return super.create(dto);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Updates a Order Type' })
-  @ApiOkResponse({ description: 'Order Type successfully updated', type: OrderType })
+  @ApiOkResponse({ description: 'Order Type successfully updated', type: OrderCategory })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
   @ApiNotFoundResponse({ description: 'Order Type to update not found.' })
-  @ApiBody({ type: UpdateOrderTypeDto })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderTypeDto): Promise<OrderType> {
+  @ApiBody({ type: UpdateOrderCategoryDto })
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderCategoryDto): Promise<OrderCategory> {
       return super.update(id, dto);
   }
 
@@ -57,23 +57,23 @@ export class OrderTypeController extends ControllerBase<OrderType>{
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieves an array of Order Types' })
-  @ApiOkResponse({ type: PaginatedResult<OrderType> })
+  @ApiOkResponse({ type: PaginatedResult<OrderCategory> })
   async findAll(
       @Query('relations') relations?: string[],
       @Query('limit') limit?: number,
       @Query('offset') cursor?: string,
       @Query('sortBy') sortBy?: string,
       @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
-  ): Promise<PaginatedResult<OrderType>> {
+  ): Promise<PaginatedResult<OrderCategory>> {
       return super.findAll(relations, limit, cursor, sortBy, sortOrder);
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieves one Order Type' })
-  @ApiOkResponse({ description: 'Order Type found', type: OrderType })
+  @ApiOkResponse({ description: 'Order Type found', type: OrderCategory })
   @ApiNotFoundResponse({ description: 'Order Type not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderType> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderCategory> {
       return super.findOne(id);
   }
 }

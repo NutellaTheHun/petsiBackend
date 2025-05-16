@@ -1,42 +1,42 @@
 import { TestingModule } from "@nestjs/testing";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
-import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
-import { OrderType } from "../entities/order-type.entity";
-import { OrderTypeService } from "../services/order-type.service";
+import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
+import { OrderCategory } from "../entities/order-category.entity";
+import { OrderCategoryService } from "../services/order-category.service";
 import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
-import { OrderTypeController } from "./order-type.controller";
+import { OrderCategoryController } from "./order-category.controller";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 
-describe('order type controller', () => {
-    let controller: OrderTypeController;
-    let service: OrderTypeService;
-    let types: OrderType[];
+describe('order category controller', () => {
+    let controller: OrderCategoryController;
+    let service: OrderCategoryService;
+    let types: OrderCategory[];
 
     let testId: number;
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
         
-        controller = module.get<OrderTypeController>(OrderTypeController);
-        service = module.get<OrderTypeService>(OrderTypeService);
+        controller = module.get<OrderCategoryController>(OrderCategoryController);
+        service = module.get<OrderCategoryService>(OrderCategoryService);
 
         const typeNames = getTestOrderTypeNames()
         let id = 1;
         types = typeNames.map(name => ({
             id: id++,
             name: name,
-        }) as OrderType);
+        }) as OrderCategory);
 
-        jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderTypeDto) => {
+        jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderCategoryDto) => {
             const exists = types.find(category => category.name === dto.name);
             if(exists){ throw new BadRequestException(); }
 
             const category = {
                 id: id++,
                 name: dto.name,
-            } as OrderType;
+            } as OrderCategory;
         
             types.push(category);
             return category;
@@ -68,7 +68,7 @@ describe('order type controller', () => {
             return true;
         });
 
-        jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderTypeDto) => {
+        jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderCategoryDto) => {
             const existIdx = types.findIndex(type => type.id === id);
             if(existIdx === -1){ throw new NotFoundException(); }
 
@@ -87,7 +87,7 @@ describe('order type controller', () => {
     it('should create a order type', async () => {
         const dto = {
         name: "testType",
-        } as CreateOrderTypeDto;
+        } as CreateOrderCategoryDto;
     
         const result = await controller.create(dto);
     
@@ -101,7 +101,7 @@ describe('order type controller', () => {
     it('should fail to create a order type (already exists)', async () => {
         const dto = {
         name: "testType",
-        } as CreateOrderTypeDto;
+        } as CreateOrderCategoryDto;
         
         await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
@@ -118,7 +118,7 @@ describe('order type controller', () => {
     it('should update order type name', async () => {
         const dto = {
         name: "updateTestType",
-        } as UpdateOrderTypeDto;
+        } as UpdateOrderCategoryDto;
     
         const result = await controller.update(testId, dto);
     
@@ -130,7 +130,7 @@ describe('order type controller', () => {
     it('should fail update order type name (not exist)', async () => {
         const dto = {
         name: "updateTestType",
-        } as UpdateOrderTypeDto;
+        } as UpdateOrderCategoryDto;
     
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });

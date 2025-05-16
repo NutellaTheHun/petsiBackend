@@ -1,12 +1,12 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
-import { UnitCategory } from "./unit-category.entity";
+import { UnitOfMeasureCategory } from "./unit-of-measure-category.entity";
 
 /**
  * The size denotion of a given unit quantity across Recipe costing and Inventory Management.
  * 
  * Units of measurement like: "Pounds", "Gallons", "ea"
  * 
- * Governed by {@link UnitCategory } to enforce proper conversions, such as "Weight", "Volume", "Unit".
+ * Governed by {@link UnitOfMeasureCategory } to enforce proper conversions, such as "Weight", "Volume", "Unit".
  */
 @Entity()
 @Unique(['name', 'abbreviation'])
@@ -27,12 +27,12 @@ export class UnitOfMeasure {
     abbreviation: string;
 
     /**
-     * The {@link UnitCategory} of the unit of measurement, such as "Weight", "Volume", "unit"
+     * The {@link UnitOfMeasureCategory} of the unit of measurement, such as "Weight", "Volume", "unit"
      * 
      * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
      */
-    @ManyToOne(() => UnitCategory, (category) => category.units, { nullable: true, onDelete: 'SET NULL', cascade: true })
-    category?: UnitCategory | null;
+    @ManyToOne(() => UnitOfMeasureCategory, (category) => category.units, { nullable: true, onDelete: 'SET NULL', cascade: true })
+    category?: UnitOfMeasureCategory | null;
 
     /**
      * The conversion value to the specified category property's baseUnit.

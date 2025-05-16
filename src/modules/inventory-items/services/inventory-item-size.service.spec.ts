@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { UnitCategoryService } from '../../unit-of-measure/services/unit-category.service';
+import { UnitOfMeasureCategoryService } from '../../unit-of-measure/services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/create-inventory-item-size.dto';
@@ -20,7 +20,7 @@ describe('Inventory Item Size Service', () => {
   let sizeService: InventoryItemSizeService;
 
   let unitService: UnitOfMeasureService;
-  let unitCategoryService: UnitCategoryService;
+  let unitCategoryService: UnitOfMeasureCategoryService;
   let packageService: InventoryItemPackageService;
   let itemService: InventoryItemService;
 
@@ -41,7 +41,7 @@ describe('Inventory Item Size Service', () => {
     sizeService = module.get<InventoryItemSizeService>(InventoryItemSizeService);
 
     packageService = module.get<InventoryItemPackageService>(InventoryItemPackageService);
-    unitCategoryService = module.get<UnitCategoryService>(UnitCategoryService);
+    unitCategoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
     itemService = module.get<InventoryItemService>(InventoryItemService);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
   });
@@ -68,11 +68,15 @@ describe('Inventory Item Size Service', () => {
       unitOfMeasureId: unit?.id,
       inventoryPackageTypeId: packageType?.id,
       inventoryItemId: item?.id,
+      cost: 5,
+      measureAmount: 1,
     } as CreateInventoryItemSizeDto;
     const result = await sizeService.create(sizeDto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
+    expect(result.cost).toEqual("5");
+    expect(result?.measureAmount).toEqual(1);
     testId = result?.id as number;
     testItemId = item.id;
   });
@@ -95,6 +99,16 @@ describe('Inventory Item Size Service', () => {
     const results = await sizeService.findSizesByItemName(FOOD_A);
     expect(results).not.toBeNull();
     expect(results?.findIndex(size => size.id === testId)).not.toEqual(-1);
+  });
+
+  it('should update an item (measure amount)', async () => {
+      const dto = {
+          measureAmount: 2,
+      } as UpdateInventoryItemSizeDto;
+
+      const result = await sizeService.update(testId, dto);
+      expect(result).not.toBeNull();
+      expect(result?.measureAmount).toEqual(2);
   });
 
   it('should update size unit of measure', async () => {
@@ -124,6 +138,15 @@ describe('Inventory Item Size Service', () => {
 
     testPkgId = pkg.id;
   });
+
+  it('should update cost', async () => {
+    const dto = {
+      cost: 12.47,
+    } as UpdateInventoryItemSizeDto;
+
+    const result = await sizeService.update(testId, dto);
+    expect(result.cost).toEqual("12.47");
+  })
 
   it('should retain all updated properties', async () => {
     const verify = await sizeService.findOne(testId, ['item', 'measureUnit', 'packageType']);

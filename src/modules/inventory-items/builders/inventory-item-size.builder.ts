@@ -42,6 +42,12 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         if(dto.unitOfMeasureId){
             this.unitOfMeasureById(dto.unitOfMeasureId);
         }
+        if(dto.cost){
+            this.costByValue(dto.cost);
+        }
+        if(dto.measureAmount){
+            this.measureAmount(dto.measureAmount);
+        }
     }
 
     protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
@@ -51,15 +57,26 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         if(dto.unitOfMeasureId){
             this.unitOfMeasureById(dto.unitOfMeasureId);
         }
+        if(dto.cost){
+            this.costByValue(dto.cost);
+        }
+        if(dto.measureAmount){
+            this.measureAmount(dto.measureAmount);
+        }
     }
 
     buildChildEntity(dto: CreateChildInventoryItemSizeDto): void {
         if(dto.inventoryPackageTypeId){
             this.packageById(dto.inventoryPackageTypeId);
         }
-        
         if(dto.unitOfMeasureId){
             this.unitOfMeasureById(dto.unitOfMeasureId);
+        }
+        if(dto.cost){
+            this.costByValue(dto.cost);
+        }
+        if(dto.measureAmount){
+            this.measureAmount(dto.measureAmount);
         }
     }
 
@@ -138,5 +155,13 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
 
     public InventoryItemByName(name: string): this {
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'item', name);
+    }
+
+    public costByValue(val: number): this {
+        return this.setPropByVal('cost', String(val));
+    }
+
+    public measureAmount(amount: number): this {
+        return this.setPropByVal('measureAmount', amount);
     }
 }

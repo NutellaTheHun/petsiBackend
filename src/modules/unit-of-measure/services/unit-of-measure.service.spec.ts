@@ -6,7 +6,7 @@ import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
-import { UnitCategoryService } from './unit-category.service';
+import { UnitOfMeasureCategoryService } from './unit-of-measure-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
 import { NotFoundException } from '@nestjs/common';
 
@@ -14,7 +14,7 @@ describe('UnitOfMeasureService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
   let dbTestContext: DatabaseTestContext;
   let unitService: UnitOfMeasureService;
-  let categoryService: UnitCategoryService;
+  let categoryService: UnitOfMeasureCategoryService;
 
   let testId: number;
   let testIds: number[]
@@ -27,7 +27,7 @@ describe('UnitOfMeasureService', () => {
       await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
 
       unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-      categoryService = module.get<UnitCategoryService>(UnitCategoryService);
+      categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
     });
   
     afterAll(async () => {

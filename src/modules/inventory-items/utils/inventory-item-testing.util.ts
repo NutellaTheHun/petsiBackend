@@ -1,14 +1,15 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import * as UNIT_CONSTANT from "../../unit-of-measure/utils/constants";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 import { InventoryItemCategoryBuilder } from "../builders/inventory-item-category.builder";
 import { InventoryItemPackageBuilder } from "../builders/inventory-item-package.builder";
 import { InventoryItemSizeBuilder } from "../builders/inventory-item-size.builder";
 import { InventoryItemVendorBuilder } from "../builders/inventory-item-vendor.builder";
 import { InventoryItemBuilder } from "../builders/inventory-item.builder";
+import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
 import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendor.dto";
 import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
@@ -21,9 +22,6 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemService } from "../services/inventory-item.service";
 import * as CONSTANT from "./constants";
-import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryItemTestingUtil {
@@ -252,6 +250,8 @@ export class InventoryItemTestingUtil {
                     unitOfMeasureId: size.measureUnit.id,
                     inventoryPackageTypeId: size.packageType.id,
                     inventoryItemId: size.item.id,
+                    cost: 1,
+                    measureAmount: 1,
                 } as CreateInventoryItemSizeDto 
         )}
     }
@@ -279,12 +279,15 @@ export class InventoryItemTestingUtil {
     /**
      * - Create's inventoryItemSize dtos for create method of an inventory item
      */
-    public createInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[]): CreateChildInventoryItemSizeDto[] {
+    public createChildInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[], costs: number[]): CreateChildInventoryItemSizeDto[] {
         const results: CreateChildInventoryItemSizeDto[] = [];
         
         let packageIdx = 0;
+        let costIdx = 0;
         let unitIdx = 0;
+
         let packageIter = 0;
+        let costIter = 0;
 
         for(let i = 0; i < resultAmount; i++){
             results.push(
@@ -292,6 +295,8 @@ export class InventoryItemTestingUtil {
                     mode: 'create',
                     unitOfMeasureId: unitIds[unitIdx++],
                     inventoryPackageTypeId: packageIds[packageIdx++],
+                    cost: costs[costIter++],
+                    measureAmount: 1
                 } as CreateChildInventoryItemSizeDto
             )
             if(unitIdx === unitIds.length){
@@ -300,6 +305,10 @@ export class InventoryItemTestingUtil {
             if(packageIdx === packageIds.length){
                 packageIter++;
                 packageIdx = packageIter;
+            }
+            if(costIdx === costs.length){
+                costIter++;
+                costIdx = costIter;
             }
         }
         return results;

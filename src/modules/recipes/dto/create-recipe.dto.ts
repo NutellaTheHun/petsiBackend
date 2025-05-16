@@ -44,16 +44,10 @@ export class CreateRecipeDto {
     readonly servingSizeUnitOfMeasureId: number;
 
     @ApiProperty({ description: 'The price of purchasing the serving size amount.' })
-    @IsNumber()
+    @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
     readonly salesPrice?: number;
-
-    @ApiProperty({ description: 'The total cost of the recipe.' })
-    @IsNumber()
-    @IsOptional()
-    @Min(0)
-    readonly cost?: number;
 
     @ApiProperty({ description: 'Id of the Recipe-Category entity' })
     @IsNumber()

@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { RecipeCategory } from "./recipe-category.entity";
@@ -52,6 +52,7 @@ export class Recipe{
      * - 1(batchResultQuantity) unit of Blueberry Pie.
      */
     @Column({ nullable: false })
+    @Check(`"batchResultQuantity" >= 1`)
     batchResultQuantity: number;
 
     /**
@@ -75,6 +76,7 @@ export class Recipe{
      * - 1 loaf could have a serving size of say 8(servingSizeQuantity) units.
      */
     @Column({ nullable: true })
+    @Check(`"servingSizeQuantity" >= 1`)
     servingSizeQuantity?: number;
 
     /**
@@ -91,20 +93,14 @@ export class Recipe{
      * The set price per servingSizeQuantity.
      */
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-    salesPrice?: number;
+    @Check(`"salesPrice" >= 0`)
+    salesPrice?: string;
 
     // sales price per serving calculated
 
     // cost per serving calculated
 
-    /**
-     * The cost of the recipe. Totals the cost of each {@link RecipeIngredient}'s {@link InventoryItem}, descending through subRecipes to the total.
-     * 
-     * This property isn't final, as it might be a purely functional result, 
-     * or the cost might live with either the recipeIngredient or the InventoryItem 
-     */
-    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
-    cost?: number;
+    // cost calculated? getCostFunction()
 
     /**
      * The {@link RecipeCategory}, such as "Pie" or"Pastry"

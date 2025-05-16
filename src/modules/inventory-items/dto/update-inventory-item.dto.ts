@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from "class-validator";
+import { IsArray, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateNested } from "class-validator";
 import { InventoryItemSizeUnionResolver } from "../utils/inventory-item-size-union-resolver";
 import { CreateChildInventoryItemSizeDto } from "./create-child-inventory-item-size.dto";
 import { UpdateChildInventoryItemSizeDto } from "./update-child-inventory-item-size.dto";
@@ -31,4 +31,10 @@ export class UpdateInventoryItemDto {
     @ValidateNested({ each: true })
     @Type(() => InventoryItemSizeUnionResolver)
     readonly sizeDtos?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
+
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @IsOptional()
+    @Min(0)
+    cost?: number;
 }

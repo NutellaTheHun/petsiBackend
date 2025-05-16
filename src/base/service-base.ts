@@ -89,7 +89,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
       `${this.cacheKeyPrefix}: entity to update not found id: ${id}`,
       HttpStatus.BAD_REQUEST,
       DTO_VALIDATION_FAIL,
-      { error }
+      { requestId }
     );
 
     this.logger.logError(

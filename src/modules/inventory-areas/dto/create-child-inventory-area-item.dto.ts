@@ -25,12 +25,6 @@ export class CreateChildInventoryAreaItemDto {
     @IsOptional()
     readonly unitAmount?: number;
 
-    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the quantity of the Inventory-Item with the Item-Size.' })
-    @IsNumber()
-    @IsPositive()
-    @IsNotEmpty()
-    readonly measureAmount: number;
-
     /**
      * -When creating a countedItem (during an inventory count), 
      * an item could assign a pre-existing InventoryItemSize or create a new one.

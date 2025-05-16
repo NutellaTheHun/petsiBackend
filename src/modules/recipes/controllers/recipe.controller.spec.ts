@@ -22,9 +22,9 @@ describe('recipe controller', () => {
     controller = module.get<RecipeController>(RecipeController);
     service = module.get<RecipeService>(RecipeService);
     recipes = [
-      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: 10.00, cost: 5.00} as Recipe,
-      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2, salesPrice: 15, cost: 6 } as Recipe,
-      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3, salesPrice: 20, cost: 7 } as Recipe,
+      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
+      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2, salesPrice: "15" } as Recipe,
+      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3, salesPrice: "20" } as Recipe,
     ];
     id = 1;
     recipes.map(recipe => recipe.id = id++);
@@ -38,8 +38,7 @@ describe('recipe controller', () => {
         name: dto.name,
         batchResultQuantity: dto.batchResultQuantity,
         servingSizeQuantity: dto.servingSizeQuantity,
-        salesPrice: dto.salesPrice,
-        cost: dto.cost,
+        salesPrice: String(dto.salesPrice),
       } as Recipe;
 
       recipes.push(recipe);
@@ -60,10 +59,7 @@ describe('recipe controller', () => {
         recipes[existIdx].servingSizeQuantity = dto.servingSizeQuantity;
       }
       if(dto.salesPrice){
-        recipes[existIdx].salesPrice = dto.salesPrice;
-      }
-      if(dto.cost){
-        recipes[existIdx].cost = dto.cost;
+        recipes[existIdx].salesPrice = String(dto.salesPrice);
       }
 
       return recipes[existIdx];
@@ -103,7 +99,6 @@ describe('recipe controller', () => {
       batchResultQuantity: 1,
       servingSizeQuantity: 2,
       salesPrice: 3,
-      cost: 4,
     } as CreateRecipeDto;
 
     const result = await controller.create(dto);
@@ -112,8 +107,7 @@ describe('recipe controller', () => {
     expect(result?.name).toEqual("testRecipe");
     expect(result?.batchResultQuantity).toEqual(1);
     expect(result?.servingSizeQuantity).toEqual(2);
-    expect(result?.salesPrice).toEqual(3);
-    expect(result?.cost).toEqual(4);
+    expect(result?.salesPrice).toEqual("3");
 
     testId = result?.id as number;
   });
@@ -124,7 +118,6 @@ describe('recipe controller', () => {
       batchResultQuantity: 1,
       servingSizeQuantity: 2,
       salesPrice: 3,
-      cost: 4,
     } as CreateRecipeDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -160,8 +153,7 @@ describe('recipe controller', () => {
     expect(result?.name).toEqual("UPDATE_testRecipe");
     expect(result?.batchResultQuantity).toEqual(5);
     expect(result?.servingSizeQuantity).toEqual(6);
-    expect(result?.salesPrice).toEqual(7);
-    expect(result?.cost).toEqual(8);
+    expect(result?.salesPrice).toEqual("7");
   });
 
   it('should fail update a recipe', async () => {

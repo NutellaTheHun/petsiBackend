@@ -1,14 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from "class-validator";
 
 export class UpdateChildInventoryItemSizeDto{
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Inventory-Item entity.' })
     @IsNotEmpty()
     readonly mode: 'update' = 'update';
 
-    /**
-     * Used when updating and inventory item, and through this object is updating an item-size
-     */
     @ApiProperty({ description: 'Id of Inventory-Item-Size entity to be updated.' })
     @IsNumber()
     @IsPositive()
@@ -26,4 +23,16 @@ export class UpdateChildInventoryItemSizeDto{
     @IsPositive()
     @IsOptional()
     readonly inventoryPackageTypeId?: number;
+
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @IsOptional()
+    @Min(0)
+    cost?: number;
+
+    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly measureAmount?: number;
 }

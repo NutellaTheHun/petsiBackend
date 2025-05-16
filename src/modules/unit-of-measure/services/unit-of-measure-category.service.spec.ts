@@ -1,22 +1,22 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
-import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
-import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
 import { OUNCE, POUND, VOLUME } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
-import { UnitCategoryService } from './unit-category.service';
+import { UnitOfMeasureCategoryService } from './unit-of-measure-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
 import { NotFoundException } from '@nestjs/common';
 
 
-describe('UnitCategoryService', () => {
+describe('UnitOfMeasureCategoryService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
   let dbTestContext: DatabaseTestContext;
 
-  let categoryService: UnitCategoryService;
+  let categoryService: UnitOfMeasureCategoryService;
   let unitService: UnitOfMeasureService;
 
   let testId: number;
@@ -28,7 +28,7 @@ describe('UnitCategoryService', () => {
     testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
     await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
     
-    categoryService = module.get<UnitCategoryService>(UnitCategoryService);
+    categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
     unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
   });
 
@@ -43,7 +43,7 @@ describe('UnitCategoryService', () => {
   it('should create a category', async () => {
     const dto = {
       name: "testCategory",
-    } as CreateUnitCategoryDto;
+    } as CreateUnitOfMeasureCategoryDto;
 
     const result = await categoryService.create(dto);
     expect(result).not.toBeNull();
@@ -55,7 +55,7 @@ describe('UnitCategoryService', () => {
   it('should fail to create a category (already exists)', async () => {
     const dto = {
       name: "testCategory",
-    } as CreateUnitCategoryDto;
+    } as CreateUnitOfMeasureCategoryDto;
 
     await expect(categoryService.create(dto)).rejects.toThrow(AppHttpException);
   });
@@ -86,7 +86,7 @@ describe('UnitCategoryService', () => {
   it('should fail to update category (category not found)', async () => {
     const dto = {
       name: "updateName"
-    } as UpdateUnitCategoryDto;
+    } as UpdateUnitOfMeasureCategoryDto;
 
     await expect(categoryService.update(0, dto)).rejects.toThrow(Error);
   })
@@ -94,7 +94,7 @@ describe('UnitCategoryService', () => {
   it('should update category name', async () => {
     const dto = {
       name: "updateName"
-    } as UpdateUnitCategoryDto;
+    } as UpdateUnitOfMeasureCategoryDto;
 
     const result = await categoryService.update(testId, dto);
     expect(result).not.toBeNull();
@@ -107,7 +107,7 @@ describe('UnitCategoryService', () => {
 
     const dto = {
       baseUnitId: unit?.id,
-    } as UpdateUnitCategoryDto;
+    } as UpdateUnitOfMeasureCategoryDto;
 
     const result = await categoryService.update(testId, dto);
     expect(result).not.toBeNull();

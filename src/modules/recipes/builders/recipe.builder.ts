@@ -42,47 +42,33 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
-
         if(dto.batchResultUnitOfMeasureId){
             this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
         }
-
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
         }
-
-        if(dto.cost){
-            this.cost(dto.cost);
-        }
-
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
         }
-
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
-
         if(dto.name){
             this.name(dto.name);
         }
-
         if(dto.salesPrice){
             this.salesPrice(dto.salesPrice);
         }
-
         if(dto.servingSizeQuantity){
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
-
         if(dto.servingSizeUnitOfMeasureId){
             this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
         }
-
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
         }
-
         if(dto.ingredientDtos){
             this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
         }
@@ -103,9 +89,6 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
             } else {
                 this.subCategoryById(0);
             }
-        }
-        if(dto.cost){
-            this.cost(dto.cost);
         }
         if(dto.isIngredient){
             this.isIngredient(dto.isIngredient);
@@ -189,11 +172,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public salesPrice(amount: number): this {
-        return this.setPropByVal('salesPrice', amount);
-    }
-
-    public cost(amount: number): this {
-        return this.setPropByVal('cost', amount);
+        return this.setPropByVal('salesPrice', String(amount));
     }
 
     public categoryById(id: number): this {

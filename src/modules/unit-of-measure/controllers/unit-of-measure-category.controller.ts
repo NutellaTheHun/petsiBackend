@@ -4,22 +4,22 @@ import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitCategory } from '../entities/unit-category.entity';
-import { UnitCategoryService } from '../services/unit-category.service';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ROLE_MANAGER, ROLE_ADMIN } from '../../roles/utils/constants';
-import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
-import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
 import { PaginatedResult } from '../../../base/paginated-result';
 
-@ApiTags('Unit Category')
+@ApiTags('Unit of Measure Category')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('unit-category')
-export class UnitCategoryController extends ControllerBase<UnitCategory> {
+@Controller('unit-of-measure-category')
+export class UnitOfMeasureCategoryController extends ControllerBase<UnitOfMeasureCategory> {
   constructor(
-    categoryService: UnitCategoryService,
+    categoryService: UnitOfMeasureCategoryService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -28,20 +28,20 @@ export class UnitCategoryController extends ControllerBase<UnitCategory> {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Unit Category' })
-  @ApiCreatedResponse({ description: 'Unit Category successfully created', type: UnitCategory })
+  @ApiCreatedResponse({ description: 'Unit Category successfully created', type: UnitOfMeasureCategory })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateUnitCategoryDto })
-  async create(@Body() dto: CreateUnitCategoryDto): Promise<UnitCategory> {
+  @ApiBody({ type: CreateUnitOfMeasureCategoryDto })
+  async create(@Body() dto: CreateUnitOfMeasureCategoryDto): Promise<UnitOfMeasureCategory> {
     return super.create(dto);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Updates a Unit Category' })
-  @ApiOkResponse({ description: 'Unit Category successfully updated', type: UnitCategory })
+  @ApiOkResponse({ description: 'Unit Category successfully updated', type: UnitOfMeasureCategory })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
   @ApiNotFoundResponse({ description: 'Unit Category to update not found.' })
-  @ApiBody({ type: UpdateUnitCategoryDto })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUnitCategoryDto): Promise<UnitCategory> {
+  @ApiBody({ type: UpdateUnitOfMeasureCategoryDto })
+  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUnitOfMeasureCategoryDto): Promise<UnitOfMeasureCategory> {
     return super.update(id, dto);
   }
 
@@ -57,23 +57,23 @@ export class UnitCategoryController extends ControllerBase<UnitCategory> {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieves an array of Unit Categories' })
-  @ApiOkResponse({ type: PaginatedResult<UnitCategory> })
+  @ApiOkResponse({ type: PaginatedResult<UnitOfMeasureCategory> })
   async findAll(
       @Query('relations') relations?: string[],
       @Query('limit') limit?: number,
       @Query('offset') cursor?: string,
       @Query('sortBy') sortBy?: string,
       @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
-  ): Promise<PaginatedResult<UnitCategory>> {
+  ): Promise<PaginatedResult<UnitOfMeasureCategory>> {
     return super.findAll(relations, limit, cursor, sortBy, sortOrder);
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieves one Unit Category' })
-  @ApiOkResponse({ description: 'Unit Category found', type: UnitCategory })
+  @ApiOkResponse({ description: 'Unit Category found', type: UnitOfMeasureCategory })
   @ApiNotFoundResponse({ description: 'Unit Category not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UnitCategory> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<UnitOfMeasureCategory> {
     return super.findOne(id);
   }
 }

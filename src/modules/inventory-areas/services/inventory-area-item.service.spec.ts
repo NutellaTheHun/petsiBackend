@@ -67,7 +67,6 @@ describe('Inventory area item service', () => {
             areaCountId: counts[0].id,
             inventoryItemId: item.id,
             unitAmount: 1,
-            measureAmount: 1,
             itemSizeId: item.sizes[0].id
         } as CreateInventoryAreaItemDto;
 
@@ -79,7 +78,6 @@ describe('Inventory area item service', () => {
         expect(result?.item.id).toEqual(item.id);
         expect(result?.size.id).toEqual(item.sizes[0].id);
         expect(result?.unitAmount).toEqual(1);
-        expect(result?.measureAmount).toEqual(1);
 
         testId = result?.id as number;
         oldAreaCountId = counts[0].id;
@@ -146,16 +144,6 @@ describe('Inventory area item service', () => {
         const result = await areaItemService.update(testId, dto);
         expect(result).not.toBeNull();
         expect(result?.unitAmount).toEqual(2);
-    });
-
-    it('should update an item (measure amount)', async () => {
-        const dto = {
-            measureAmount: 2,
-        } as UpdateInventoryAreaItemDto;
-
-        const result = await areaItemService.update(testId, dto);
-        expect(result).not.toBeNull();
-        expect(result?.measureAmount).toEqual(2);
     });
 
     it('should fail to update an item (not found)', async () => {

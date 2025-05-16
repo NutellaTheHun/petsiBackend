@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { UnitCategoryBuilder } from "../builders/unit-category.builder";
+import { UnitOfMeasureCategoryBuilder } from "../builders/unit-of-measure-category.builder";
 import { UnitOfMeasureBuilder } from "../builders/unit-of-measure.builder";
-import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
-import { UnitCategory } from "../entities/unit-category.entity";
+import { UpdateUnitOfMeasureCategoryDto } from "../dto/update-unit-of-measure-category.dto";
+import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
-import { UnitCategoryService } from "../services/unit-category.service";
+import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";
 import { UnitOfMeasureService } from "../services/unit-of-measure.service";
 import * as CONSTANTS from "./constants";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
@@ -12,14 +12,14 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 @Injectable()
 export class UnitOfMeasureTestingUtil {
     constructor(
-        private readonly categoryService: UnitCategoryService,
-        private readonly categoryBuilder: UnitCategoryBuilder,
+        private readonly categoryService: UnitOfMeasureCategoryService,
+        private readonly categoryBuilder: UnitOfMeasureCategoryBuilder,
 
         private readonly unitService: UnitOfMeasureService,
         private readonly unitBuilder: UnitOfMeasureBuilder,
     ){ }
 
-    public async getCategoryEntities(testContext: DatabaseTestContext): Promise<UnitCategory[]> {
+    public async getCategoryEntities(testContext: DatabaseTestContext): Promise<UnitOfMeasureCategory[]> {
         return [
             await await this.categoryBuilder.reset()
                 .name(CONSTANTS.UNIT)
@@ -143,7 +143,7 @@ export class UnitOfMeasureTestingUtil {
         const categories = await this.getCategoryEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupUnitCategoryTestDatabase());
 
-        const toInsert: UnitCategory[] = [];
+        const toInsert: UnitOfMeasureCategory[] = [];
         for(const category of categories){
             const exists = await this.categoryService.findOneByName(category.name);
             if(!exists){
@@ -195,7 +195,7 @@ export class UnitOfMeasureTestingUtil {
             {
                 name: category.name,
                 baseUnitId: category.baseUnit.id 
-            } as UpdateUnitCategoryDto
+            } as UpdateUnitOfMeasureCategoryDto
         );
     }
 }

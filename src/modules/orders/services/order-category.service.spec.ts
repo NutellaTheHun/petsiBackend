@@ -1,14 +1,14 @@
 import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateOrderTypeDto } from "../dto/create-order-type.dto";
-import { UpdateOrderTypeDto } from "../dto/update-order-type.dto";
+import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
-import { OrderTypeService } from "./order-type.service";
+import { OrderCategoryService } from "./order-category.service";
 
-describe('order type service', () => {
-    let service: OrderTypeService;
+describe('order category service', () => {
+    let service: OrderCategoryService;
     let testingUtil: OrderTestingUtil;
     let dbTestContext: DatabaseTestContext
 
@@ -21,7 +21,7 @@ describe('order type service', () => {
         dbTestContext = new DatabaseTestContext();
         await testingUtil.initOrderTypeTestDatabase(dbTestContext);
 
-        service = module.get<OrderTypeService>(OrderTypeService);
+        service = module.get<OrderCategoryService>(OrderCategoryService);
     });
 
     afterAll(async () => {
@@ -35,7 +35,7 @@ describe('order type service', () => {
     it('should create an order type', async () => {
         const dto = {
             name: "testType"
-        } as CreateOrderTypeDto;
+        } as CreateOrderCategoryDto;
 
         const result = await service.create(dto);
         expect(result).not.toBeNull();
@@ -63,7 +63,7 @@ describe('order type service', () => {
     it('should update an order type name', async () => {
         const dto = {
             name: "updateTestType"
-        } as UpdateOrderTypeDto;
+        } as UpdateOrderCategoryDto;
 
         const result = await service.update(testId, dto);
         expect(result).not.toBeNull();

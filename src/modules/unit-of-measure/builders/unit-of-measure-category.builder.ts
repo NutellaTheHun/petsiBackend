@@ -2,26 +2,26 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateUnitCategoryDto } from "../dto/create-unit-category.dto";
-import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
-import { UnitCategory } from "../entities/unit-category.entity";
+import { CreateUnitOfMeasureCategoryDto } from "../dto/create-unit-of-measure-category.dto";
+import { UpdateUnitOfMeasureCategoryDto } from "../dto/update-unit-of-measure-category.dto";
+import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { UnitOfMeasureService } from "../services/unit-of-measure.service";
-import { UnitCategoryValidator } from "../validators/unit-category.validator";
+import { UnitOfMeasureCategoryValidator } from "../validators/unit-of-measure-category.validator";
 
 @Injectable()
-export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
+export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCategory>{
     constructor(
         @Inject(forwardRef(() => UnitOfMeasureService)) 
         private readonly unitService: UnitOfMeasureService,
 
-        validator: UnitCategoryValidator,
+        validator: UnitOfMeasureCategoryValidator,
 
         requestContextService: RequestContextService,
         
         logger: AppLogger,
-    ){ super(UnitCategory, 'UnitCategoryBuilder', requestContextService, logger, validator); }
+    ){ super(UnitOfMeasureCategory, 'UnitCategoryBuilder', requestContextService, logger, validator); }
 
-    protected createEntity(dto: CreateUnitCategoryDto): void {
+    protected createEntity(dto: CreateUnitOfMeasureCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }
@@ -30,7 +30,7 @@ export class UnitCategoryBuilder extends BuilderBase<UnitCategory>{
         }
     }
 
-    protected updateEntity(dto: UpdateUnitCategoryDto): void {
+    protected updateEntity(dto: UpdateUnitOfMeasureCategoryDto): void {
         if(dto.name){
             this.name(dto.name);
         }

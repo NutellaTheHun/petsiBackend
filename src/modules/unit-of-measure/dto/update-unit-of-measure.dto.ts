@@ -12,7 +12,7 @@ export class UpdateUnitOfMeasureDto{
     @IsOptional()
     readonly abbreviation?: string;
 
-    @ApiProperty({ description: 'Id of the Unit-Category entity that the Unit-of-Measure falls under.' })
+    @ApiProperty({ description: 'Id of the Unit-of-Measure-Category entity that the Unit-of-Measure falls under.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()

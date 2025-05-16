@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { OrderMenuItem } from "./order-menu-item.entity";
-import { OrderType } from "./order-type.entity";
+import { OrderCategory } from "./order-category.entity";
 
 /**
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
@@ -14,8 +14,8 @@ export class Order {
      * The category of order
      * - Example: "Wholesale", "Special", "Square", "Farmers Market"
      */
-    @ManyToOne(() => OrderType, { nullable: false })
-    type: OrderType;
+    @ManyToOne(() => OrderCategory, { nullable: false })
+    type: OrderCategory;
 
     /**
      * Name of the owner of the order, such as the name of a person or buisness.
@@ -47,7 +47,7 @@ export class Order {
      * Sometimes different from the recipient/owner of the order
      */
     @Column({ nullable: true})
-    fulfillmentContactName: string;
+    fulfillmentContactName?: string;
 
     /**
      * Only required for orders with fulfillment type delivery

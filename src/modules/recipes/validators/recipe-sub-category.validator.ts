@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
+import { CreateRecipeSubCategoryDto } from "../dto/create-recipe-sub-category.dto";
+import { UpdateRecipeCategoryDto } from "../dto/update-recipe-category.dto";
 
 @Injectable()
 export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory> {
@@ -11,7 +13,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
         private readonly repo: Repository<RecipeSubCategory>,
     ){ super(repo); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
+    public async validateCreate(dto: CreateRecipeSubCategoryDto): Promise<string | null> {
         const exists = await this.repo.findOne({ 
             where: {
                 name: dto.name,
@@ -24,7 +26,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
 
         return null;
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
+    public async validateUpdate(dto: UpdateRecipeCategoryDto): Promise<string | null> {
         return null;
     }
 }

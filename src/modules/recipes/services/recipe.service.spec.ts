@@ -92,7 +92,6 @@ describe('recipe service', () => {
     const batchAmount = 1;
     const servingAmonut = 2;
     const salesAmount = 10.99;
-    const costAmount = 5.99
 
     const ingredientItemsRequest = await invItemService.findAll();
     const ingredientItems = ingredientItemsRequest.items;
@@ -114,7 +113,6 @@ describe('recipe service', () => {
       servingSizeQuantity: servingAmonut,
       servingSizeUnitOfMeasureId: servingUnit.id,
       salesPrice: salesAmount,
-      cost: costAmount,
       ingredientDtos: ingredientDtos,
     } as CreateRecipeDto;
 
@@ -126,8 +124,7 @@ describe('recipe service', () => {
     expect(result?.batchResultUnitOfMeasure?.id).toEqual(batchUnit.id);
     expect(result?.servingSizeQuantity).toEqual(servingAmonut);
     expect(result?.servingSizeUnitOfMeasure?.id).toEqual(servingUnit.id);
-    expect(result?.salesPrice).toEqual(salesAmount);
-    expect(result?.cost).toEqual(costAmount);
+    expect(result?.salesPrice).toEqual(String(salesAmount));
     expect(result?.ingredients?.length).toEqual(3);
     
     testId = result?.id as number;
@@ -476,18 +473,7 @@ describe('recipe service', () => {
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.salesPrice).toEqual(updateSalesAmount);
-  });
-
-  it('should update cost', async () => {
-    const updateCostAmount = 8.99;
-    const dto = {
-      cost: updateCostAmount
-    } as UpdateRecipeDto;
-
-    const result = await recipeService.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.cost).toEqual(updateCostAmount);
+    expect(result?.salesPrice).toEqual(String(updateSalesAmount));
   });
 
   it('should set category', async () => {

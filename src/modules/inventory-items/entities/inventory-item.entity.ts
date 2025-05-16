@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Check, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemCategory } from "./inventory-item-category.entity";
 import { InventoryItemSize } from "./inventory-item-size.entity";
 import { InventoryItemVendor } from "./inventory-item-vendor.entity";
@@ -42,7 +42,7 @@ export class InventoryItem{
     vendor?: InventoryItemVendor | null;
 
      /**
-     * The set of sizes the item is recieved, mapping the item to a combination of {@link InventoryItemPackage} and {@link UnitOfMeasure}
+     * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
      * - Can be created explicitly through updating InventoryItem, 
      * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
      */

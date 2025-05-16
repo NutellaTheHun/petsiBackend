@@ -10,6 +10,8 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemValidator } from "../validators/inventory-item.validator";
 import { InventoryItemSizeBuilder } from "./inventory-item-size.builder";
+import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
+import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
@@ -31,7 +33,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         logger: AppLogger,
     ){ super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }
 
-    protected createEntity(dto: any): void {
+    protected createEntity(dto: CreateInventoryItemDto): void {
         if(dto.inventoryItemCategoryId){
             this.categoryById(dto.inventoryItemCategoryId)
         }
@@ -46,7 +48,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         }
     }
 
-    protected updateEntity(dto: any): void {
+    protected updateEntity(dto: UpdateInventoryItemDto): void {
         if(dto.inventoryItemCategoryId !== undefined){
             this.categoryById(dto.inventoryItemCategoryId);
         }

@@ -3,21 +3,21 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
-import { UnitCategoryBuilder } from './builders/unit-category.builder';
+import { UnitOfMeasureCategoryBuilder } from './builders/unit-of-measure-category.builder';
 import { UnitOfMeasureBuilder } from './builders/unit-of-measure.builder';
-import { UnitCategoryController } from './controllers/unit-category.controller';
+import { UnitOfMeasureCategoryController } from './controllers/unit-of-measure-category.controller';
 import { UnitOfMeasureController } from './controllers/unit-of-measure.controller';
-import { UnitCategory } from './entities/unit-category.entity';
+import { UnitOfMeasureCategory } from './entities/unit-of-measure-category.entity';
 import { UnitOfMeasure } from './entities/unit-of-measure.entity';
-import { UnitCategoryService } from './services/unit-category.service';
+import { UnitOfMeasureCategoryService } from './services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from './services/unit-of-measure.service';
 import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
-import { UnitCategoryValidator } from './validators/unit-category.validator';
+import { UnitOfMeasureCategoryValidator } from './validators/unit-of-measure-category.validator';
 import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UnitOfMeasure, UnitCategory]),
+    TypeOrmModule.forFeature([UnitOfMeasure, UnitOfMeasureCategory]),
     CacheModule.register(),
     AppLoggingModule,
     RequestContextModule,
@@ -25,12 +25,12 @@ import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
   providers: [
     UnitOfMeasureService,
-    UnitCategoryService,
+    UnitOfMeasureCategoryService,
 
     UnitOfMeasureBuilder,
-    UnitCategoryBuilder,
+    UnitOfMeasureCategoryBuilder,
 
-    UnitCategoryValidator,
+    UnitOfMeasureCategoryValidator,
     UnitOfMeasureValidator,
 
     UnitOfMeasureTestingUtil,
@@ -38,12 +38,12 @@ import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
   controllers: [
     UnitOfMeasureController, 
-    UnitCategoryController,
+    UnitOfMeasureCategoryController,
   ],
 
   exports: [
     UnitOfMeasureService, 
-    UnitCategoryService,
+    UnitOfMeasureCategoryService,
     
     UnitOfMeasureTestingUtil,
   ]

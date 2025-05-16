@@ -1,12 +1,12 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
-import { UnitCategory } from "../entities/unit-category.entity";
+import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { ConfigModule } from "@nestjs/config";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { UnitOfMeasureModule } from "../unit-of-measure.module";
 import { UnitOfMeasureController } from "../controllers/unit-of-measure.controller";
-import { UnitCategoryController } from "../controllers/unit-category.controller";
+import { UnitOfMeasureCategoryController } from "../controllers/unit-of-measure-category.controller";
 import { CacheModule } from "@nestjs/cache-manager";
 import { LoggerModule } from "nestjs-pino";
 import { AppLoggingModule } from "../../app-logging/app-logging.module";
@@ -21,12 +21,12 @@ export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
 
       TypeORMPostgresTestingModule([
         UnitOfMeasure, 
-        UnitCategory,
+        UnitOfMeasureCategory,
       ]),
 
       TypeOrmModule.forFeature([
         UnitOfMeasure,
-        UnitCategory,
+        UnitOfMeasureCategory,
       ]),
 
       UnitOfMeasureModule,
@@ -39,7 +39,7 @@ export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
       AppLoggingModule,
       RequestContextModule,
       ],
-    controllers: [UnitOfMeasureController, UnitCategoryController],
+    controllers: [UnitOfMeasureController, UnitOfMeasureCategoryController],
     providers: [],
 })
 .overrideProvider(RequestContextService)

@@ -1,40 +1,39 @@
-import { TestingModule } from '@nestjs/testing';
-import { UnitCategoryController } from './unit-category.controller';
-import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
-import { UnitCategory } from '../entities/unit-category.entity';
-import { UnitCategoryService } from '../services/unit-category.service';
-import { CreateUnitCategoryDto } from '../dto/create-unit-category.dto';
-import { UpdateUnitCategoryDto } from '../dto/update-unit-category.dto';
-import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { AppHttpException } from '../../../util/exceptions/AppHttpException';
+import { TestingModule } from '@nestjs/testing';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
+import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureCategoryController } from './unit-of-measure-category.controller';
 
-describe('UnitCategoryController', () => {
-  let controller: UnitCategoryController;
-  let categoryService: UnitCategoryService;
-  let categories: UnitCategory[];
+describe('UnitOfMeasureCategoryController', () => {
+  let controller: UnitOfMeasureCategoryController;
+  let categoryService: UnitOfMeasureCategoryService;
+  let categories: UnitOfMeasureCategory[];
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-    controller = module.get<UnitCategoryController>(UnitCategoryController);
-    categoryService = module.get<UnitCategoryService>(UnitCategoryService);
+    controller = module.get<UnitOfMeasureCategoryController>(UnitOfMeasureCategoryController);
+    categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
 
     categories = [
-      { name: UNIT } as UnitCategory,
-      { name: VOLUME } as UnitCategory,
-      { name: WEIGHT } as UnitCategory,
+      { name: UNIT } as UnitOfMeasureCategory,
+      { name: VOLUME } as UnitOfMeasureCategory,
+      { name: WEIGHT } as UnitOfMeasureCategory,
     ];
     let id = 1;
     categories.map(category => category.id = id++);
 
-    jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitCategoryDto) => {
+    jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
       const exists = categories.find(unit => unit.name === createDto.name);
       if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
         name: createDto.name,
-      } as UnitCategory;
+      } as UnitOfMeasureCategory;
 
       categories.push(unit);
       return unit;
@@ -44,7 +43,7 @@ describe('UnitCategoryController', () => {
       return categories.find(unit => unit.name === name) || null;
     });
     
-    jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitCategoryDto) => {
+    jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
       const index = categories.findIndex(unit => unit.id === id);
       if(index === -1){ throw new NotFoundException(); }
       
@@ -85,7 +84,7 @@ describe('UnitCategoryController', () => {
   it('should create a category', async () => {
     const dto = {
       name: "testCategory",
-    } as CreateUnitCategoryDto;
+    } as CreateUnitOfMeasureCategoryDto;
 
     const result = await controller.create(dto);
     expect(result).not.toBeNull();
@@ -94,7 +93,7 @@ describe('UnitCategoryController', () => {
   it('should fail to create a category (already exists)', async () => {
     const dto = {
       name: "testCategory",
-    } as CreateUnitCategoryDto;
+    } as CreateUnitOfMeasureCategoryDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });

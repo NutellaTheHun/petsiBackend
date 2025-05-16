@@ -3,8 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {

@@ -4,7 +4,7 @@ import { getTestItemNames } from "../../menu-items/utils/constants";
 import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { OrderType } from "../entities/order-type.entity";
+import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { getTestOrderTypeNames } from "../utils/constants";
@@ -19,7 +19,7 @@ describe('order menu item controller', () => {
 
     let orderItems: OrderMenuItem[] = [];
     let orders: Order[] = [];
-    let types: OrderType[];
+    let types: OrderCategory[];
 
     let items: MenuItem[];
 
@@ -36,7 +36,7 @@ describe('order menu item controller', () => {
         types = typeNames.map(name => ({
             id: typeId++,
             name: name,
-        }) as OrderType);
+        }) as OrderCategory);
 
         let orderId = 1;
         for(let i = 0; i < 3; i++){

@@ -43,10 +43,6 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
-        if(dto.measureAmount){
-            this.measureAmount(dto.measureAmount);
-        }
-
         if(dto.unitAmount){
             this.unitAmount(dto.unitAmount);
         } else {
@@ -69,9 +65,6 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
-        if(dto.measureAmount){
-            this.measureAmount(dto.measureAmount);
-        }
         if(dto.unitAmount){
             this.unitAmount(dto.unitAmount);
         }
@@ -86,9 +79,6 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     buildChildEntity(dto: CreateChildInventoryAreaItemDto): void {
         if(dto.inventoryItemId){``
             this.inventoryItemById(dto.inventoryItemId);
-        }
-        if(dto.measureAmount){
-            this.measureAmount(dto.measureAmount);
         }
         if(dto.unitAmount){
             this.unitAmount(dto.unitAmount);
@@ -142,10 +132,6 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
             return this.setPropByVal('unitAmount', 1);
         }
         return this.setPropByVal('unitAmount', amount);
-    }
-
-    public measureAmount(amount: number): this {
-        return this.setPropByVal('measureAmount', amount);
     }
 
     public sizeById(id: number): this {

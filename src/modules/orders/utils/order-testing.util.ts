@@ -4,10 +4,10 @@ import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { OrderType } from "../entities/order-type.entity";
+import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderTypeService } from "../services/order-type.service";
+import { OrderCategoryService } from "../services/order-category.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "./constants";
 import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
@@ -17,7 +17,7 @@ export class OrderTestingUtil {
 
     constructor(
         private readonly orderMenuItemService: OrderMenuItemService,
-        private readonly typeService: OrderTypeService,
+        private readonly typeService: OrderCategoryService,
         private readonly orderService: OrderService,
 
         private readonly menuItemService: MenuItemService,
@@ -25,14 +25,14 @@ export class OrderTestingUtil {
     ){ }
 
     // Order Type
-    public async getTestOrderTypeEntities(testContext: DatabaseTestContext): Promise<OrderType[]>{
+    public async getTestOrderTypeEntities(testContext: DatabaseTestContext): Promise<OrderCategory[]>{
         const names = getTestOrderTypeNames();
-        const results: OrderType[] = [];
+        const results: OrderCategory[] = [];
 
         for(const name of names){
             results.push({
                 name: name,
-            } as OrderType)
+            } as OrderCategory)
         }
 
         return results;
@@ -119,7 +119,6 @@ export class OrderTestingUtil {
 
         for(const name of recipients){
             results.push({
-                squareOrderId: "sqrIdx"+idx,
                 type: orderTypes[otIndex++ % orderTypes.length],
                 recipient: name,
                 fulfillmentDate,

@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
-export class CreateUnitCategoryDto{
+export class CreateUnitOfMeasureCategoryDto{
     @ApiProperty({ example: 'Weight, Volume, Unit', description: 'Name of Unit-Category entity.' })
     @IsString()
     @IsNotEmpty()

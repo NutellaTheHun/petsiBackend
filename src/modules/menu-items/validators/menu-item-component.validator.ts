@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { MenuItemComponent } from "../entities/menu-item-component.entity";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
 
 @Injectable()
 export class MenuItemComponentValidator extends ValidatorBase<MenuItemComponent> {
@@ -12,7 +13,7 @@ export class MenuItemComponentValidator extends ValidatorBase<MenuItemComponent>
         private readonly repo: Repository<MenuItemComponent>,
     ){ super(repo); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
+    public async validateCreate(dto: CreateMenuItemComponentDto): Promise<string | null> {
         return null;
     }
     public async validateUpdate(dto: UpdateMenuItemComponentDto): Promise<string | null> {

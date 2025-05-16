@@ -1,9 +1,9 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { OrderMenuItemController } from "../controllers/order-menu-item.controller";
-import { OrderTypeController } from "../controllers/order-type.controller";
+import { OrderCategoryController } from "../controllers/order-category.controller";
 import { OrderController } from "../controllers/order.controller";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { OrderType } from "../entities/order-type.entity";
+import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrdersModule } from "../orders.module";
 import { ConfigModule } from "@nestjs/config";
@@ -23,12 +23,12 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
             ConfigModule.forRoot({ isGlobal: true }),
             TypeORMPostgresTestingModule([
                 OrderMenuItem,
-                OrderType,
+                OrderCategory,
                 Order,
             ]),
             TypeOrmModule.forFeature([
                 OrderMenuItem,
-                OrderType,
+                OrderCategory,
                 Order,
             ]),
             MenuItemsModule,
@@ -43,7 +43,7 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
 
         controllers: [
             OrderMenuItemController,
-            OrderTypeController,
+            OrderCategoryController,
             OrderController,
         ],
 

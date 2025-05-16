@@ -25,7 +25,9 @@ export class LabelTestingUtil{
 
         for(const name of names){
             results.push({
-                name: name
+                name: name,
+                labelLength: 200,
+                labelWidth: 400,
             } as LabelType);
         }
 

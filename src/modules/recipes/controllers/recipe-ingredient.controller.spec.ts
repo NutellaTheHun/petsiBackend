@@ -36,9 +36,9 @@ describe('recipe ingredient controller', () => {
     service = module.get<RecipeIngredientService>(RecipeIngredientService);
 
     recipes = [
-      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: 10.00, cost: 5.00} as Recipe,
-      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2,salesPrice: 15, cost: 6 } as Recipe,
-      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3,salesPrice: 20, cost: 7 } as Recipe,
+      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
+      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2,salesPrice: "15" } as Recipe,
+      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3,salesPrice: "20 "} as Recipe,
     ];
     recId = 1;
     recipes.map(recipe => recipe.id = recId++);

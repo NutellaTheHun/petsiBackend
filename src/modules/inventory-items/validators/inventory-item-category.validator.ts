@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
+import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
+import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
 
 @Injectable()
 export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategory> {
@@ -11,14 +13,14 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         private readonly repo: Repository<InventoryItemCategory>,
     ){ super(repo); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
+    public async validateCreate(dto: CreateInventoryItemCategoryDto): Promise<string | null> {
         const exists = await this.repo.findOne({ where: { name: dto.name }});
         if(exists) { 
             return `Inventory item with name ${dto.name} already exists`; 
         }
         return null;
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
+    public async validateUpdate(dto: UpdateInventoryItemCategoryDto): Promise<string | null> {
         return null;
     }
 }

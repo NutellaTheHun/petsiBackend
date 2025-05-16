@@ -3,7 +3,7 @@ import { Label } from "./label.entity";
 
 /**
  * Specifies the size of a {@link Label} with a name.
- * - Example: a 4x2 label for wholesale, or a 2x1 cutie label, or a 4x6 pot pie sticker. 
+ * - Example: a 4"x2" label for wholesale, or a 2"x1" cutie label, or a 4"x6" pot pie sticker. 
  */
 @Entity()
 export class LabelType {
@@ -12,4 +12,18 @@ export class LabelType {
 
     @Column({ unique: true, nullable: false })
     name: string;
+
+    /**
+     * In hundreths of an inch.
+     * 400x200(labelLength)
+     */
+    @Column({ nullable: false })
+    labelLength: number;
+
+    /**
+     * In hundreths of an inch.
+     * 400(labelWidth)x200
+     */
+    @Column({ nullable: false })
+    labelWidth: number;
 }
