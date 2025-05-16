@@ -4,73 +4,116 @@ import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.en
 import { RecipeCategory } from "./recipe-category.entity";
 import { RecipeIngredient } from "./recipe-ingredient.entity";
 import { RecipeSubCategory } from "./recipe-sub-category.entity";
+import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 
+/**
+ * The list of {@link RecipeIngredient} and details of yield, cost, and sales price.
+ * 
+ * A Recipe can map to a {@link MenuItem}, or be used in another Recipe. 
+ */
 @Entity()
 export class Recipe{
     @PrimaryGeneratedColumn()
     id: number;
 
-    /**
-     * - If the recipe references a MenuItem, the recipe's name will be the MenuItem's name. Like "Apple Crumb Pie", or "Triple Berry Scone"
-     * - If the recipe isIngredient is marked true, the name is user entered. Like "Apple Mix", or "Ganache"
-     */
     @Column({ unique: true })
     name: string
 
     /** 
-     * The MenuItem that this recipe creates, some recipes are "prep" and are a sub-recipe to another Recipe
-     * - If the MenuItem is deleted, the recipe is also deleted "onDelete: CASCADE" 
+     * The {@link MenuItem} that this recipe produces.
      */
     @OneToOne(() => MenuItem, {nullable: true, onDelete: 'SET NULL'})
     @JoinColumn()
     menuItem?: MenuItem | null;
 
     /*
-    * A recipe with isIngredient set to true doesn't directly make a MenuItem,
-    * but is an ingredient to another recipe.
-    * - Recipe "Apple Mix", is not a direct MenuItem, but is an ingredient to Recipes such as "Classic Apple", "Apple Crumb"
+    * A recipe with isIngredient set to true doesn't directly make a MenuItem, but is an ingredient to another recipe.
+
+    * Recipe "Apple Mix", is not a direct MenuItem, but is an ingredient to Recipes such as "Classic Apple", "Apple Crumb"
     */
     @Column({ default: false })
     isIngredient: boolean;
 
     /**
-     * Is an entity that joins either a Recipe or an InventoryItem representing an ingredient for the parent recipe
-     * - Can be an InventoryItem: almonds sliced, (quantity), (unit of measure)
-     * - Or a Recipe: Apple Mix, (quantity), (unit of measure), 
-     *   where the recipe Apple Mix holds ingredients of other inventory items or other recipes
+     * A list of {@link RecipeIngredient} to make a Recipe. Can reference a {@link InventoryItem} or another recipe as the ingredient.
+     * 
+     * Can be an {@link InventoryItem}: almonds sliced, (quantity), (unit of measure)
+     * 
+     * Or a Recipe: Apple Mix, (quantity), (unit of measure),  
+     * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
     @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true })
     ingredients?: RecipeIngredient[] | null; 
 
+    /**
+     * The total unit amount of the batchResultUnitOfMeaure property produced by the recipe.
+     * - Examples:
+     * - 5(batchResultQuantity) pounds of berry mix
+     * - 1(batchResultQuantity) unit of Blueberry Pie.
+     */
     @Column({ nullable: false })
     batchResultQuantity: number;
 
+    /**
+     * The {@link UnitOfMeasure} that descibes the total yield the recipe produces.
+     * 
+     * - Examples:
+     * - 5 pounds(batchResultUnitOfMeasure) of berry mix
+     * - 1 unit(batchResultUnitOfMeasure) of Blueberry Pie.
+     */
     @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     batchResultUnitOfMeasure?: UnitOfMeasure | null;
 
-    @Column({ nullable: false })
-    servingSizeQuantity: number;
+    /**
+     * A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.
+     * 
+     * When a recipe produces an item(or items) that are sold in pieces of the yield.
+     * 
+     * Example: 
+     * - A recipe for Banana Bread produces a loaf, and is then sold by the slice.
+     * - 1 loaf could have a serving size of say 8(servingSizeQuantity) units.
+     */
+    @Column({ nullable: true })
+    servingSizeQuantity?: number;
 
+    /**
+     * The {@link UnitOfMeasure} that descibes the total sellable portions of the recipes yield.
+     * Example: 
+     * - A recipe for Banana Bread produces a loaf, and is then sold by the slice.
+     * - 1 loaf could have a serving size of say 8 units(servingSizeUnitOfMeasure).
+     */
     @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     servingSizeUnitOfMeasure?: UnitOfMeasure | null;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
-    salesPrice: number = 0;
+    /**
+     * The set price per servingSizeQuantity.
+     */
+    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+    salesPrice?: number;
 
     // sales price per serving calculated
 
     // cost per serving calculated
 
-    @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
-    cost: number = 0;
+    /**
+     * The cost of the recipe. Totals the cost of each {@link RecipeIngredient}'s {@link InventoryItem}, descending through subRecipes to the total.
+     * 
+     * This property isn't final, as it might be a purely functional result, 
+     * or the cost might live with either the recipeIngredient or the InventoryItem 
+     */
+    @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
+    cost?: number;
 
+    /**
+     * The {@link RecipeCategory}, such as "Pie" or"Pastry"
+     */
     @ManyToOne(() => RecipeCategory, (category) => category.recipes, { nullable: true, onDelete: 'SET NULL'})
     category?: RecipeCategory| null;
 
     /**
-     * Can only be a sub-category from the referenced category's property RecipeCategory.subCategories[]
+     * The {@link RecipeSubCategory} of {@link RecipeCategory}, such as "Sweet Pie" or "Savory Pie", of RecipeCategory Pie.
      */
     @ManyToOne(() => RecipeSubCategory, (subCategory) => subCategory.recipes, { nullable: true, onDelete: 'SET NULL' })
     subCategory?: RecipeSubCategory | null;

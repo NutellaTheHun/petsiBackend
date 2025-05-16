@@ -1,6 +1,9 @@
 import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Role } from "../../roles/entities/role.entity";
 
+/**
+ * A set of credentials and list of {@link Role} to control access to features such as order management, recipe costing, and inventory management.
+ */
 @Entity({ name: "app_users" })
 export class User{
     @PrimaryGeneratedColumn()
@@ -21,6 +24,9 @@ export class User{
     @UpdateDateColumn()
     updatedAt: Date;
 
+    /**
+     * List of {@link Role} the user holds.
+     */
     @ManyToMany(() => Role, (role) => role.users, { nullable: true, onDelete: 'CASCADE' })
     roles: Role[];
 }

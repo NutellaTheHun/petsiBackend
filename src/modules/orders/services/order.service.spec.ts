@@ -65,7 +65,6 @@ describe('order service', () => {
         const fulfillDate = new Date();
 
         const dto = {
-            squareOrderId: "testSQrId",
             orderTypeId: type.id,
             recipient: "test recipient",
             fulfillmentDate: fulfillDate,
@@ -76,6 +75,7 @@ describe('order service', () => {
             note: "testNote",
             isFrozen: false,
             isWeekly: false,
+            weeklyFulfillment: "sunday"
         } as CreateOrderDto;
 
         const result = await orderService.create(dto);
@@ -87,10 +87,10 @@ describe('order service', () => {
         expect(result?.fulfillmentType).toEqual("testFufill");
         expect(result?.isFrozen).toEqual(false);
         expect(result?.isWeekly).toEqual(false);
+        expect(result?.weeklyFulfillment).toEqual("sunday");
         expect(result?.note).toEqual("testNote");
         expect(result?.phoneNumber).toEqual("testPhone#");
         expect(result?.recipient).toEqual("test recipient");
-        expect(result?.squareOrderId).toEqual("testSQrId");
         expect(result?.type.id).toEqual(type.id);
 
         testId = result?.id as number;
@@ -104,9 +104,9 @@ describe('order service', () => {
 
         const itemDtos = await testingUtil.getCreateChildOrderMenuItemDtos(3);
         const dto = {
-            squareOrderId: "testSQrId2",
             orderTypeId: type.id,
             recipient: "test recipient2",
+            fulfillmentContactName: "fulfillmentPerson",
             fulfillmentDate: fulfillDate,
             fulfillmentType: "testFufill2",
             deliveryAddress: "testDelAdr2",
@@ -123,6 +123,7 @@ describe('order service', () => {
         expect(result).not.toBeNull();
         expect(result?.deliveryAddress).toEqual("testDelAdr2");
         expect(result?.email).toEqual("testEmail2");
+        expect(result?.fulfillmentContactName).toEqual("fulfillmentPerson");
         expect(result?.fulfillmentDate).toEqual(fulfillDate);
         expect(result?.fulfillmentType).toEqual("testFufill2");
         expect(result?.isFrozen).toEqual(false);
@@ -130,7 +131,6 @@ describe('order service', () => {
         expect(result?.note).toEqual("testNote2");
         expect(result?.phoneNumber).toEqual("testPhone#2");
         expect(result?.recipient).toEqual("test recipient2");
-        expect(result?.squareOrderId).toEqual("testSQrId2");
         expect(result?.type.id).toEqual(type.id);
         expect(result?.items?.length).toEqual(3);
     });
@@ -141,18 +141,7 @@ describe('order service', () => {
         expect(result).not.toBeNull();
     });
 
-    it('should update squareOrderId', async () => {
-        const dto = {
-            squareOrderId: "UPDATE sqrOrdrId",
-        } as UpdateOrderDto;
-
-        const result = await orderService.update(testId, dto);
-
-        expect(result).not.toBeNull();
-        expect(result?.squareOrderId).toEqual("UPDATE sqrOrdrId")
-    });
-
-    it('should update', async () => {
+    it('should update order type', async () => {
         const newType = await typeService.findOneByName(TYPE_C);
         if(!newType){ throw new NotFoundException(); }
 
@@ -212,6 +201,17 @@ describe('order service', () => {
 
         expect(result).not.toBeNull();
         expect(result?.recipient).toEqual("UPDATED recipient");
+    });
+
+    it('should update fulfillmentContact', async () => {
+        const dto = {
+            fulfillmentContactName: "UPDATED fulfillmentContact"
+        } as UpdateOrderDto;
+
+        const result = await orderService.update(testId, dto);
+
+        expect(result).not.toBeNull();
+        expect(result?.fulfillmentContactName).toEqual("UPDATED fulfillmentContact");
     });
 
     it('should update fulfillment date', async () => {
@@ -295,6 +295,16 @@ describe('order service', () => {
         const result = await orderService.update(testId, dto);
         expect(result).not.toBeNull();
         expect(result?.isWeekly).toBeTruthy();
+    });
+
+    it('should update weeklyFulfillment', async () => {
+        const dto = {
+            weeklyFulfillment: "monday",
+        } as UpdateOrderDto;
+
+        const result = await orderService.update(testId, dto);
+        expect(result).not.toBeNull();
+        expect(result?.weeklyFulfillment).toEqual("monday");
     });
 
     it('should add items', async () => {

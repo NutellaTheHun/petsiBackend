@@ -6,11 +6,6 @@ import { UpdateChildOrderMenuItemDto } from './update-child-order-menu-item.dto'
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateOrderDto{
-    @ApiProperty({ description: 'Id of the order from Square\'s orders api representing the referencing Order entity.' })
-    @IsString()
-    @IsOptional()
-    readonly squareOrderId?: string;
-
     @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
     @IsNumber()
     @IsOptional()
@@ -21,6 +16,11 @@ export class UpdateOrderDto{
     @IsString()
     @IsOptional()
     readonly recipient?: string;
+
+    @ApiProperty({ example: 'Jane Doe, Mike', description: 'Name of who is picking up the order or reciving the delivery' })
+    @IsString()
+    @IsOptional()
+    readonly fulfillmentContactName?: string;
 
     @ApiProperty({ description: 'Date the order is to be available or delivered.' })
     @IsDate()
@@ -61,6 +61,11 @@ export class UpdateOrderDto{
     @IsBoolean()
     @IsOptional()
     readonly isWeekly?: boolean;
+
+    @ApiProperty({ description: 'If is weekly, is the day of the week the order is fulfilled' })
+    @IsString()
+    @IsOptional()
+    readonly weeklyFulfillment?: string;
 
     @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
         type: [UpdateChildOrderMenuItemDto]

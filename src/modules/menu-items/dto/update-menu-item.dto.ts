@@ -6,16 +6,6 @@ import { UpdateChildMenuItemComponentDto } from './update-child-menu-item-compon
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateMenuItemDto {
-    @ApiProperty({ description: 'Id of Menu-Item representation from Square\'s catalog api.' })
-    @IsString()
-    @IsOptional()
-    readonly squareCatalogId?: string;
-
-    @ApiProperty({ description: 'Id of Menu-Item-Category representation from Square\'s catalog api.' })
-    @IsString()
-    @IsOptional()
-    readonly squareCategoryId?: string;
-
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
     @IsOptional()
     @IsNumber()
@@ -27,12 +17,6 @@ export class UpdateMenuItemDto {
     @IsNotEmpty()
     @IsOptional()
     readonly name?: string;
-
-    @ApiProperty({ example: 'classic apple pie: clapple, chocolate bourban pecan: cbp, ', description: 'abbrieviated or shorthand terms for menu-items when searching.' })
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    readonly searchNames?: string[];
 
     @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item.' })
     @IsOptional()

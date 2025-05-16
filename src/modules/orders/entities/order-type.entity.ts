@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Order } from "./order.entity";
 
 /**
- * A category of order for filtering/organization such as: "square", "wholesale", "retail", "farmers market", "special", ect.
+ * A category of {@link Order} for filtering/organization such as: "square", "wholesale", "retail", "farmers market", "special", ect.
  */
 @Entity()
 export class OrderType{
@@ -12,6 +12,9 @@ export class OrderType{
     @Column({ unique: true, nullable: false })
     name: string;
 
+    /**
+     * List of {@link Order} falling under the type.
+     */
     @OneToMany(() => Order, (order) => order.type, { nullable: true })
     orders?: Order[] | null;
 }

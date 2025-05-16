@@ -33,17 +33,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
-        if(dto.squareCatalogId){
-            this.squareCatalogId(dto.squareCatalogId);
-        }
-        if(dto.squareCategoryId){
-            this.squareCategoryId(dto.squareCategoryId);
-        }
         if(dto.name){
             this.name(dto.name);
-        }
-        if(dto.searchNames){
-            this.searchNames(dto.searchNames);
         }
         if(dto.isPOTM){
             this.isPOTM(dto.isPOTM);
@@ -74,17 +65,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     protected updateEntity(dto: UpdateMenuItemDto): void {
-        if(dto.squareCatalogId){
-            this.squareCatalogId(dto.squareCatalogId);
-        }
-        if(dto.squareCategoryId){
-            this.squareCategoryId(dto.squareCategoryId);
-        }
         if(dto.name){
             this.name(dto.name);
-        }
-        if(dto.searchNames){
-            this.searchNames(dto.searchNames);
         }
         if(dto.isPOTM){
             this.isPOTM(dto.isPOTM);
@@ -114,20 +96,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
     }
 
-    public squareCatalogId(catalogId: string): this {
-        return this.setPropByVal('squareCatalogId', catalogId);
-    }
-
-    public squareCategoryId(categoryId: string): this {
-        return this.setPropByVal('squareCategoryId', categoryId);
-    }
-
     public name(name: string): this {
         return this.setPropByVal('name', name);
-    }
-
-    public searchNames(names: string[]): this {
-        return this.setPropByVal('searchNames', names);
     }
 
     public isPOTM(val: boolean): this {

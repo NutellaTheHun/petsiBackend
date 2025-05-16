@@ -62,8 +62,11 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.recipient){
             this.recipient(dto.recipient);
         }
-        if(dto.squareOrderId){
-            this.squareOrderId(dto.squareOrderId);
+        if(dto.weeklyFulfillment){
+            this.weeklyFulfillment(dto.weeklyFulfillment);
+        }
+        if(dto.fulfillmentContactName){
+            this.fulfillmentContactName(dto.fulfillmentContactName);
         }
     }
 
@@ -101,13 +104,12 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.recipient){
             this.recipient(dto.recipient);
         }
-        if(dto.squareOrderId){
-            this.squareOrderId(dto.squareOrderId);
+        if(dto.weeklyFulfillment){
+            this.weeklyFulfillment(dto.weeklyFulfillment);
         }
-    }
-
-    public squareOrderId(squareId: string): this {
-        return this.setPropByVal('squareOrderId', squareId);
+        if(dto.fulfillmentContactName){
+            this.fulfillmentContactName(dto.fulfillmentContactName);
+        }
     }
 
     public orderTypeById(id: number): this {
@@ -164,5 +166,13 @@ export class OrderBuilder extends BuilderBase<Order>{
             orderId,
         }));
         return this.setPropByBuilder(this.itemBuilder.buildManyChildDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
+    }
+
+    public weeklyFulfillment(day: string): this {
+        return this.setPropByVal('weeklyFulfillment', day);
+    }
+
+    public fulfillmentContactName(name: string): this {
+        return this.setPropByVal('fulfillmentContactName', name);
     }
 }

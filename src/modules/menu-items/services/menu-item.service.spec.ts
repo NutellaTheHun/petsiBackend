@@ -31,13 +31,7 @@ describe('menu item service', () => {
 
     let containerMenuItemTestId: number;
     let containerComponentModifyTestId: number;
-    let containerComponentRemoveTestId: number;
     let compIds: number[];
-
-    const searchNames = ["name1", "name2", "name3"];
-    const searchNamesMod = ["name1", "UpdateName2", "name3"];
-    const searchNamesDel = ["name1", "UpdateName2"];
-    
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule();
@@ -88,31 +82,6 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("testItem");
     });
 
-    it('should update squareCatalogId', async () => {
-        const dto = {
-            squareCatalogId: "123456"
-        } as UpdateMenuItemDto;
-
-        const result = await itemService.update(testId, dto);
-
-        expect(result).not.toBeNull();
-        expect(result?.name).toEqual("testItem");
-        expect(result?.squareCatalogId).toEqual("123456");
-    });
-
-    it('should update squareCategoryId', async () => {
-        const dto = {
-            squareCategoryId: "abcdef"
-        } as UpdateMenuItemDto;
-
-        const result = await itemService.update(testId, dto);
-
-        expect(result).not.toBeNull();
-        expect(result?.name).toEqual("testItem");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-    });
-
     it('should update name', async () => {
         const dto = {
             name: "updateTestName"
@@ -122,65 +91,6 @@ describe('menu item service', () => {
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-    });
-
-    it('should update searchNames (add)', async () => {
-        const dto = {
-            searchNames: searchNames
-        } as UpdateMenuItemDto;
-
-        const result = await itemService.update(testId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
-
-        expect(result).not.toBeNull();
-        expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        for(const name of result?.searchNames){
-            expect(searchNames.findIndex(sName => sName === name)).not.toEqual(-1);
-        }
-    });
-
-    it('should update searchNames (modify)', async () => {
-        const dto = {
-            searchNames: searchNamesMod
-        } as UpdateMenuItemDto;
-
-        const result = await itemService.update(testId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
-
-        expect(result).not.toBeNull();
-        expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        for(const name of result.searchNames){
-            expect(searchNamesMod.findIndex(sName => sName === name)).not.toEqual(-1);
-        }
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-    });
-
-    it('should update searchNames (remove)', async () => {
-        const dto = {
-            searchNames: searchNamesDel
-        } as UpdateMenuItemDto;
-
-        const result = await itemService.update(testId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
-
-        expect(result).not.toBeNull();
-        expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        for(const name of result.searchNames){
-            expect(searchNamesMod.findIndex(sName => sName === name)).not.toEqual(-1);
-        }
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
     });
 
     it('should update isPOTM', async () => {
@@ -190,15 +100,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
     });
 
@@ -209,15 +113,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
     });
@@ -232,15 +130,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category?.id).toEqual(category.id);
@@ -264,15 +156,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category?.id).toEqual(category.id);
@@ -300,15 +186,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeNull();
@@ -331,15 +211,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -359,15 +233,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -387,15 +255,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -416,15 +278,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -445,15 +301,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new Error(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -568,15 +418,9 @@ describe('menu item service', () => {
     it('should retain all updated properties', async () => {
         const item = await itemService.findOne(testId, ['category', 'takeNBakeOption', 'validSizes', 'veganOption', 'veganTakeNBakeOption']);
         if(!item){ throw new NotFoundException(); }
-        if(!item.searchNames){ throw new Error(); }
 
         expect(item).not.toBeNull();
         expect(item?.name).toEqual("updateTestName");
-        expect(item?.squareCatalogId).toEqual("123456");
-        expect(item?.squareCategoryId).toEqual("abcdef");
-        expect(item.searchNames.length).toEqual(2);
-        expect(item.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(item.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(item.isPOTM).toBeTruthy();
         expect(item.isParbake).toBeTruthy();
         expect(item.category).toBeNull();
@@ -610,15 +454,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new NotFoundException(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -633,15 +471,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new NotFoundException(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();
@@ -656,15 +488,9 @@ describe('menu item service', () => {
 
         const result = await itemService.update(testId, dto);
         if(!result){ throw new NotFoundException(); }
-        if(!result.searchNames){ throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.name).toEqual("updateTestName");
-        expect(result?.squareCatalogId).toEqual("123456");
-        expect(result?.squareCategoryId).toEqual("abcdef");
-        expect(result.searchNames.length).toEqual(2);
-        expect(result.searchNames.findIndex(sName => sName === "name2")).toEqual(-1);
-        expect(result.searchNames.findIndex(sName => sName === "name3")).toEqual(-1);
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
         expect(result.category).toBeUndefined();

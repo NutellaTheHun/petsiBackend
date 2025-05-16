@@ -2,6 +2,19 @@ import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from "typeorm";
 import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItem } from "./menu-item.entity";
 
+/**
+ * When a {@link MenuItem} is a product composed of a set of other {@link MenuItem}
+ * 
+ * Such as a Box of 6 scones, or a Breakfast Pastry Platter
+ * 
+ * A Breakfast Pastry Platter is a defined set of items, with multiple sizes that varies the quantites of inner items.
+ * 
+ * A Box of 6 scones has a defined set of valid MenuItems that can vary in choice, but total to the boxed quantity.
+ * 
+ * For Example, a Box of 6 scones consists of any amount of Lemon Glaze, Triple Berry, or Currant scones totaling to 6.
+ * - Can be { lemon: 6, trip: 0, currant: 0 }
+ * - Can be { lemon: 2, trip: 2, currant: 2 } 
+ */
 @Entity()
 export class MenuItemComponent {
   @PrimaryGeneratedColumn()
@@ -9,31 +22,41 @@ export class MenuItemComponent {
 
   /**
    * The parent menu item, "Box of 6...", "Pastry Breakfast Platter"
-   * - the parent Item has a container reference representing the contents of the container
+   * 
+   * Example:
+   * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
    */
   @ManyToOne(() => MenuItem, (menuItem) => menuItem.container, { onDelete: 'CASCADE' })
   container: MenuItem;
 
   /**
    * The Parent's size for the context of this component.
-   * A Box of 6 muffins with size regular, would only have one variation.
-   * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of components for each (different quantites)
+   * 
+   * A Box of 6 muffins with size regular, would only have one size.
+   * 
+   * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
    */
   @ManyToOne(() => MenuItemSize, { nullable: true })
   containerSize: MenuItemSize | null;
 
   /**
-   * The item the component represents.
+   * The {@link MenuItem} the component represents.
    * - For Example:
-   * - A component of a box of 6 muffins can be "Blueberry Muffin", or "Banana Chocolate Chip Muffin" menuItems
+   * - Box of 6 scones: 
+   * 
+   *          .menuItemComponent[] { lemon(MenuItem): 6, 
+   *                                 trip(MenuItem): 0, 
+   *                                 currant(MenuItem): 0 }
+   * 
    * - Breakfast Pastry Platter could be a Scone MenuItem, or any Muffin MenuItem
    */
   @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   item: MenuItem;
 
   /**
-   * The size of the represented item,
+   * The {@link MenuItemSize} of the represented item,
    * - All pastries are size Regular, sometimes size "mini"
+   * - Pies would me "small", "medium", "large"
    */
   @ManyToOne(() => MenuItemSize, { nullable: true })
   size: MenuItemSize | null;
