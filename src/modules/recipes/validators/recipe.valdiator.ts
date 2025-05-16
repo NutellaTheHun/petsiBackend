@@ -25,7 +25,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             return 'cannot assign a sub-category with a null category';
         }
 
-        if(dto.categoryId && dto.subCategoryId){
+        else if(dto.categoryId && dto.subCategoryId){
             const category = await this.categoryService.findOne(dto.categoryId, ['subCategories']);
             if(!category.subCategories){ throw new Error('subcategories is null'); }
 
@@ -46,7 +46,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             }
         }
 
-        if(!dto.categoryId && dto.subCategoryId){
+        else if(!dto.categoryId && dto.subCategoryId){
             // NEED TO ACCESS RECIPE TO GET CURRENT CATEGORY
             
             //return 'cannot assign a sub-category with a null category';
