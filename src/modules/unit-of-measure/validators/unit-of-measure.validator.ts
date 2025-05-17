@@ -20,7 +20,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateUnitOfMeasureDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateUnitOfMeasureDto): Promise<string | null> {
         return null;
     }
 }

@@ -606,6 +606,7 @@ describe('recipe service', () => {
     if(!cat.subCategories){ throw new Error("recipe sub-category is null"); }
     
     const dto = {
+      categoryId: cat.id,
       subCategoryId: cat.subCategories[0].id,
     } as UpdateRecipeDto;
 

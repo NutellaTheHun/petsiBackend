@@ -20,7 +20,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateTemplateDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateTemplateDto): Promise<string | null> {
         return null;
     }
 }

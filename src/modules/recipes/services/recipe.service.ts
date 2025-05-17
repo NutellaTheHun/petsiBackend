@@ -16,6 +16,7 @@ export class RecipeService extends ServiceBase<Recipe>{
         @Inject(forwardRef(() => RecipeBuilder))
         recipeBuilder: RecipeBuilder,
 
+        @Inject(forwardRef(() => RecipeValidator))
         validator: RecipeValidator,
 
         requestContextService: RequestContextService,

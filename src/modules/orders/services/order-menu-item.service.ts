@@ -17,7 +17,9 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
         @Inject(forwardRef(() => OrderMenuItemBuilder))
         itemBuilder: OrderMenuItemBuilder,
         
+        @Inject(forwardRef(() => OrderMenuItemValidator))
         validator: OrderMenuItemValidator,
+        
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(orderItemRepo, itemBuilder, validator, 'OrderMenuItemService', requestContextService, logger)}

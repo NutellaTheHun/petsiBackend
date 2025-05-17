@@ -20,7 +20,8 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategory> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateOrderCategoryDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateOrderCategoryDto): Promise<string | null> {
         return null;
     }
 }

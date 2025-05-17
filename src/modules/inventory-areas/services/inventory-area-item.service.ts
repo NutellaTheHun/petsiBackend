@@ -17,6 +17,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
         itemCountBuilder: InventoryAreaItemBuilder,
 
+        @Inject(forwardRef(() => InventoryAreaItemValidator))
         validator: InventoryAreaItemValidator,
 
         logger: AppLogger,

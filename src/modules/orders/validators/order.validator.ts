@@ -16,7 +16,8 @@ export class OrderValidator extends ValidatorBase<Order> {
     public async validateCreate(dto: CreateOrderDto): Promise<string | null> {
         return null;
     }
-    public async validateUpdate(dto: UpdateOrderDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateOrderDto): Promise<string | null> {
         return null;
     }
 }

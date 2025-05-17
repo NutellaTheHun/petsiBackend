@@ -16,7 +16,8 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<string | null> {
         return null;
     }
-    public async validateUpdate(dto: UpdateInventoryAreaCountDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateInventoryAreaCountDto): Promise<string | null> {
         return null;
     }
 }

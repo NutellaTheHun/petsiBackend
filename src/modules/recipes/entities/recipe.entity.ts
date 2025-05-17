@@ -12,7 +12,7 @@ import { InventoryItem } from "../../inventory-items/entities/inventory-item.ent
  * A Recipe can map to a {@link MenuItem}, or be used in another Recipe. 
  */
 @Entity()
-export class Recipe{
+export class Recipe {
     @PrimaryGeneratedColumn()
     id: number;
 

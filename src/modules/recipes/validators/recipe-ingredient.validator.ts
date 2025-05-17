@@ -19,7 +19,8 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateRecipeIngredientDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateRecipeIngredientDto): Promise<string | null> {
         if(dto.inventoryItemId && dto.subRecipeIngredientId){
             return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient';
         }

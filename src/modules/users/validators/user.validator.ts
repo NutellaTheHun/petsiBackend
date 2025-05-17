@@ -20,7 +20,8 @@ export class UserValidator extends ValidatorBase<User> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateUserDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateUserDto): Promise<string | null> {
         return null;
     }
 }

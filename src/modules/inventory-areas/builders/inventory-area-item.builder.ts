@@ -1,23 +1,22 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { AppLogger } from "../../app-logging/app-logger";
+import { InventoryItemSizeBuilder } from "../../inventory-items/builders/inventory-item-size.builder";
 import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
 import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/update-inventory-item-size.dto";
-import { InventoryItemSizeBuilder } from "../../inventory-items/builders/inventory-item-size.builder";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
-import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
-import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
+import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { ModuleRef } from "@nestjs/core";
-import { AppLogger } from "../../app-logging/app-logger";
+import { CreateChildInventoryAreaItemDto } from "../dto/create-child-inventory-area-item.dto";
+import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/update-child-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
+import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
+import { InventoryAreaCountService } from "../services/inventory-area-count.service";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
 
 @Injectable()
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> 
@@ -29,6 +28,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
 
         @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly itemCountService: InventoryAreaItemService,
+
         logger: AppLogger,
         validator: InventoryAreaItemValidator,
         private readonly itemService: InventoryItemService,
@@ -77,7 +77,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     }
 
     buildChildEntity(dto: CreateChildInventoryAreaItemDto): void {
-        if(dto.inventoryItemId){``
+        if(dto.inventoryItemId){
             this.inventoryItemById(dto.inventoryItemId);
         }
         if(dto.unitAmount){

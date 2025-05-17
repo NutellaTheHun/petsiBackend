@@ -20,7 +20,8 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateLabelTypeDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateLabelTypeDto): Promise<string | null> {
         return null;
     }
 }

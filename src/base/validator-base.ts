@@ -6,5 +6,5 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
     ){ }
 
     public abstract validateCreate(dto: any): Promise<string| null>;
-    public abstract validateUpdate(dto: any): Promise<string | null>;
+    public abstract validateUpdate(id: number, dto: any): Promise<string | null>;
 }

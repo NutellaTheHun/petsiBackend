@@ -23,7 +23,8 @@ export class LabelValidator extends ValidatorBase<Label> {
         if(exists){ return 'menuItem / labelType combination already exists'; }
         return null;
     }
-    public async validateUpdate(dto: UpdateLabelDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateLabelDto): Promise<string | null> {
         return null;
     }
 }

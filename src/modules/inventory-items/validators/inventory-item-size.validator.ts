@@ -29,7 +29,8 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
         }
         return null;
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: any): Promise<string | null> {
         return null;
     }
 }

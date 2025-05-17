@@ -20,7 +20,8 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateMenuItemSizeDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateMenuItemSizeDto): Promise<string | null> {
         return null;
     }
 }

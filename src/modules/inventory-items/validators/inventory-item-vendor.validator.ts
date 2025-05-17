@@ -21,7 +21,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         return null;
     }
     
-    public async validateUpdate(dto: UpdateInventoryItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryItemDto): Promise<string | null> {
         return null;
     }
 }

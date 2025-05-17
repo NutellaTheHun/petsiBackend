@@ -62,7 +62,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     const requestId = this.requestContextService.getRequestId();
 
     // validate DTO
-    const error = await this.validator.validateUpdate(updateDto);
+    /*const error = await this.validator.validateUpdate(id, updateDto);
     if(error){ 
       const err = new AppHttpException(
         `${this.cacheKeyPrefix}: update dto validation failed`,
@@ -80,7 +80,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
       );
 
       throw err; 
-    }
+    }*/
 
     // retrieve entity from DB
     const toUpdate = await this.findOne(id);

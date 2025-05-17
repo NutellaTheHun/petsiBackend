@@ -16,7 +16,8 @@ export class MenuItemComponentValidator extends ValidatorBase<MenuItemComponent>
     public async validateCreate(dto: CreateMenuItemComponentDto): Promise<string | null> {
         return null;
     }
-    public async validateUpdate(dto: UpdateMenuItemComponentDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateMenuItemComponentDto): Promise<string | null> {
         if(dto.menuItemId && !dto.menuItemSizeId){
             return 'updating menu item must be accompanied by new menuItemSize';
         }

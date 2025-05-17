@@ -20,7 +20,8 @@ export class RoleValidator extends ValidatorBase<Role> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateRoleDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateRoleDto): Promise<string | null> {
         return null;
     }
 }

@@ -20,7 +20,8 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateMenuItemCategoryDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateMenuItemCategoryDto): Promise<string | null> {
         return null;
     }
 }

@@ -33,7 +33,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     }
 
     public async buildUpdateDto(toUpdate: T, dto: any): Promise<T>{
-        await this.validateUpdateDto(dto);
+        await this.validateUpdateDto(toUpdate.id, dto);
 
         this.reset();
         this.setEntity(toUpdate)
@@ -64,7 +64,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
                     requestId,
                     'VALIDATE CREATE DTO',
                     err,
-                    { requestId }
+                    { requestId, error }
                 );
 
                 throw err;
@@ -72,11 +72,11 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
         }
     }
 
-    protected async validateUpdateDto(dto: any): Promise<void> {
+    protected async validateUpdateDto(id: number, dto: any): Promise<void> {
         const requestId = this.requestContextService.getRequestId();
 
         if (this.validator) {
-            const error = await this.validator.validateUpdate(dto);
+            const error = await this.validator.validateUpdate(id, dto);
             if(error){
                 const err = new AppHttpException(
                     `${this.builderPrefix}: update dto validation failed`,
@@ -90,7 +90,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
                     requestId,
                     'VALIDATE UPDATE DTO',
                     err,
-                    { requestId }
+                    { requestId, error, id }
                 );
 
                 throw err;

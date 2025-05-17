@@ -16,7 +16,8 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItem> {
     public async validateCreate(dto: CreateTemplateMenuItemDto): Promise<string | null> {
         return null;
     }
-    public async validateUpdate(dto: UpdateTemplateMenuItemDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateTemplateMenuItemDto): Promise<string | null> {
         return null;
     }
 }

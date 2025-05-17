@@ -20,7 +20,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
         }
         return null;
     }
-    public async validateUpdate(dto: UpdateRecipeCategoryDto): Promise<string | null> {
+    
+    public async validateUpdate(id: number, dto: UpdateRecipeCategoryDto): Promise<string | null> {
         return null;
     }
 }
