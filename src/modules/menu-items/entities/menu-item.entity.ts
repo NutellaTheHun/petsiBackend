@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, Ma
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemComponent } from "./menu-item-component.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
+import { MenuItemComponentOptions } from "./menu-item-component-options.entity";
 
 /**
  * An item that is a product to be sold.
@@ -14,7 +15,7 @@ export class MenuItem {
     /**
      * - Example: "Pie", "Pastry", "Merchandise", "Boxed Pastry", "Catering"
      */
-    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL'})
+    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL', eager: true})
     category?: MenuItemCategory | null;
 
     @Column({ unique: true, nullable: false })
@@ -59,7 +60,7 @@ export class MenuItem {
      * 
      * Some Pastries can be size "mini"
      */
-    @ManyToMany(() => MenuItemSize, { nullable: true })
+    @ManyToMany(() => MenuItemSize, { nullable: true, eager: true })
     @JoinTable()
     validSizes?: MenuItemSize[] | null;
 
@@ -87,8 +88,12 @@ export class MenuItem {
      * 
      * Can have a hard set composition of items per container size, or a range of viable items that are dynamically chosen when ordered.
      */
-    @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true })
+    @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true, eager: true })
     container?: MenuItemComponent[];
+
+    @OneToOne(() => MenuItemComponentOptions, (options) => options.container, { cascade: true, nullable: true, eager: true })
+    @JoinColumn()
+    containerOptions?: MenuItemComponentOptions;
 
     /**
      * The date the order is inserted into the database. 

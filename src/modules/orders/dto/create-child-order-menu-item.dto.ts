@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
+import { CreateChildOrderMenuItemComponentDto } from "./create-child-order-menu-item-component.dto";
 
 export class CreateChildOrderMenuItemDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Order entity.' })
@@ -23,4 +24,11 @@ export class CreateChildOrderMenuItemDto {
     @IsNotEmpty()
     @IsPositive()
     readonly quantity: number
+
+    @ApiProperty({ description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
+        type: [CreateChildOrderMenuItemComponentDto]
+     })
+    @IsArray()
+    @IsOptional()
+    readonly OrderedItemComponentDtos?: CreateChildOrderMenuItemComponentDto[];
 }

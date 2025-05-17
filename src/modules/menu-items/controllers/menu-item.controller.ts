@@ -8,14 +8,14 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemService } from "../services/menu-item.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
-import { ROLE_ADMIN, ROLE_STAFF } from "../../roles/utils/constants";
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { PaginatedResult } from "../../../base/paginated-result";
 import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
 
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_ADMIN)
+@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-size')
 export class MenuItemController extends ControllerBase<MenuItem>{
   constructor(

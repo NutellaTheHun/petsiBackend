@@ -7,7 +7,7 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { ROLE_ADMIN, ROLE_STAFF } from "../../roles/utils/constants";
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { PaginatedResult } from "../../../base/paginated-result";
 import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
@@ -15,7 +15,7 @@ import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 
 @ApiTags('Menu Item Size')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_ADMIN)
+@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-size')
 export class MenuItemSizeController extends ControllerBase<MenuItemSize>{
   constructor(

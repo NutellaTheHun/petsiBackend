@@ -12,6 +12,9 @@ import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemValidator } from "../validators/menu-item.validator";
 import { MenuItemComponentBuilder } from "./menu-item-component.builder";
+import { CreateChildMenuItemComponentOptionsDto } from "../dto/create-child-menu-item-component-options.dto";
+import { UpdateChildMenuItemComponentOptionsDto } from "../dto/update-child-menu-item-component-options.dto";
+import { MenuItemComponentOptionsBuilder } from "./menu-item-component-options.builder";
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem>{
@@ -26,6 +29,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         private readonly componentBuilder: MenuItemComponentBuilder,
 
         private readonly sizeService: MenuItemSizeService,
+
+        private readonly componentOptionsBuilder: MenuItemComponentOptionsBuilder,
         
         validator: MenuItemValidator,
         requestContextService: RequestContextService,
@@ -62,6 +67,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.containerComponentDtos){
             this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
         }
+        if(dto.containerOptionDto){
+
+        }
     }
 
     protected updateEntity(dto: UpdateMenuItemDto): void {
@@ -93,6 +101,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
         if(dto.containerComponentDtos){
             this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        }
+        if(dto.containerOptionDto){
+            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
 
@@ -162,5 +173,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
             containerId,
         }));
         return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+    }
+
+    private containerOptionsByBuilder(containerId: number, dto: (CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto)): this {
+        return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);
     }
 }

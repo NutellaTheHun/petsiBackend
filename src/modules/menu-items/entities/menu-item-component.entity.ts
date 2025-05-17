@@ -21,7 +21,7 @@ export class MenuItemComponent {
   id: number;
 
   /**
-   * The parent menu item, "Box of 6...", "Pastry Breakfast Platter"
+   * The parent {@link MenuItem}, "Box of 6...", "Pastry Breakfast Platter"
    * 
    * Example:
    * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
@@ -30,14 +30,14 @@ export class MenuItemComponent {
   container: MenuItem;
 
   /**
-   * The Parent's size for the context of this component.
+   * The Parent's {@link MenuItemSize} for the context of this component.
    * 
    * A Box of 6 muffins with size regular, would only have one size.
    * 
    * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
    */
-  @ManyToOne(() => MenuItemSize, { nullable: true })
-  containerSize: MenuItemSize | null;
+  @ManyToOne(() => MenuItemSize)
+  containerSize: MenuItemSize;
 
   /**
    * The {@link MenuItem} the component represents.
@@ -58,8 +58,8 @@ export class MenuItemComponent {
    * - All pastries are size Regular, sometimes size "mini"
    * - Pies would me "small", "medium", "large"
    */
-  @ManyToOne(() => MenuItemSize, { nullable: true })
-  size: MenuItemSize | null;
+  @ManyToOne(() => MenuItemSize, /*{ nullable: true }*/)
+  size: MenuItemSize/* | null*/;
 
   @Column({ nullable: false })
   quantity: number;

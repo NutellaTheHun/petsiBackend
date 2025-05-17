@@ -1,6 +1,7 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateChildMenuItemComponentDto } from "./create-child-menu-item-component.dto";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { CreateChildMenuItemComponentOptionsDto } from "./create-child-menu-item-component-options.dto";
+import { CreateChildMenuItemComponentDto } from "./create-child-menu-item-component.dto";
 
 export class CreateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
@@ -55,4 +56,10 @@ export class CreateMenuItemDto {
     @IsOptional()
     @IsArray()
     readonly containerComponentDtos?: CreateChildMenuItemComponentDto[];
+
+    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
+        type: [CreateChildMenuItemComponentOptionsDto]
+    })
+    @IsOptional()
+    readonly containerOptionDto?: CreateChildMenuItemComponentOptionsDto;
 }

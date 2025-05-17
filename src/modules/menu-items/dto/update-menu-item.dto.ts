@@ -4,6 +4,9 @@ import { MenuItemComponentUnionResolver } from '../utils/menu-item-component-uni
 import { CreateChildMenuItemComponentDto } from './create-child-menu-item-component.dto';
 import { UpdateChildMenuItemComponentDto } from './update-child-menu-item-component.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { CreateMenuItemComponentOptionsDto } from './create-menu-item-component-options.dto';
+import { CreateChildMenuItemComponentOptionsDto } from './create-child-menu-item-component-options.dto';
+import { UpdateChildMenuItemComponentOptionsDto } from './update-child-menu-item-component-options.dto';
 
 export class UpdateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
@@ -61,4 +64,10 @@ export class UpdateMenuItemDto {
     @ValidateNested({ each: true })
     @Type(() => MenuItemComponentUnionResolver)
     readonly containerComponentDtos?: (CreateChildMenuItemComponentDto | UpdateChildMenuItemComponentDto)[];
+
+    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
+        type: [UpdateChildMenuItemComponentOptionsDto]
+    })
+    @IsOptional()
+    readonly containerOptionDto?: CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto;
 }

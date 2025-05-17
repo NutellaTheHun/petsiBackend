@@ -8,14 +8,14 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemComponent } from "../entities/menu-item-component.entity";
 import { MenuItemComponentService } from "../services/menu-item-component.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
-import { ROLE_ADMIN, ROLE_STAFF } from "../../roles/utils/constants";
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { PaginatedResult } from "../../../base/paginated-result";
 import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
 import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
 
 @ApiTags('Menu Item Component')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_ADMIN)
+@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-component')
 export class MenuItemComponentController extends ControllerBase<MenuItemComponent>{
   constructor(

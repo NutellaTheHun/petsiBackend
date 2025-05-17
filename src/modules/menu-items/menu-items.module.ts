@@ -24,6 +24,8 @@ import { MenuItemCategoryValidator } from './validators/menu-item-category.valid
 import { MenuItemComponentValidator } from './validators/menu-item-component.validator';
 import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
 import { MenuItemValidator } from './validators/menu-item.validator';
+import { ComponentOption } from './entities/component-option.entity';
+import { MenuItemComponentOptions } from './entities/menu-item-component-options.entity';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { MenuItemValidator } from './validators/menu-item.validator';
       MenuItemSize,
       MenuItem,
       MenuItemComponent,
+      ComponentOption,
+      MenuItemComponentOptions,
     ]),
     CacheModule.register(),
     AppLoggingModule,

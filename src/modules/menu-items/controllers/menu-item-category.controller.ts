@@ -6,7 +6,7 @@ import { ControllerBase } from "../../../base/controller-base";
 import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { ROLE_ADMIN, ROLE_STAFF } from "../../roles/utils/constants";
+import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { PaginatedResult } from "../../../base/paginated-result";
@@ -15,7 +15,7 @@ import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto"
 
 @ApiTags('Menu Item Category')
 @ApiBearerAuth('access-token')
-@Roles(ROLE_STAFF, ROLE_ADMIN)
+@Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-category')
 export class MenuItemCategoryController extends ControllerBase<MenuItemCategory>{
   constructor(
