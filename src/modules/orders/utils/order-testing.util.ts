@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
@@ -10,7 +10,7 @@ import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderCategoryService } from "../services/order-category.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderTypeNames } from "./constants";
-import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
+import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 
 @Injectable()
 export class OrderTestingUtil {

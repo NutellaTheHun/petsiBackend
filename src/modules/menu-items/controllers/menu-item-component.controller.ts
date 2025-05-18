@@ -10,8 +10,8 @@ import { MenuItemComponentService } from "../services/menu-item-component.servic
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
+import { CreateMenuItemComponentDto } from "../dto/menu-item-component/create-menu-item-component.dto";
+import { UpdateMenuItemComponentDto } from "../dto/menu-item-component/update-menu-item-component.dto";
 
 @ApiTags('Menu Item Component')
 @ApiBearerAuth('access-token')

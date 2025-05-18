@@ -1,9 +1,8 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { getRecipeTestingModule } from "../../recipes/utils/recipes-testing.module";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { getTestSizeNames } from "../utils/constants";

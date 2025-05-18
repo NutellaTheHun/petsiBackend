@@ -3,9 +3,9 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemSizeService } from "./menu-item-size.service";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { NotFoundException } from "@nestjs/common";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 
 describe('menu item size service', () => {
     let testingUtil: MenuItemTestingUtil;

@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateChildMenuItemComponentOptionsDto } from "./create-child-menu-item-component-options.dto";
-import { CreateChildMenuItemComponentDto } from "./create-child-menu-item-component.dto";
+import { CreateChildMenuItemComponentDto } from "../menu-item-component/create-child-menu-item-component.dto";
+import { CreateChildMenuItemComponentOptionsDto } from "../menu-item-component-options/create-child-menu-item-component-options.dto";
 
 export class CreateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })

@@ -26,7 +26,7 @@ export class MenuItemComponent {
    * Example:
    * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
    */
-  @ManyToOne(() => MenuItem, (menuItem) => menuItem.container, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MenuItem, (menuItem) => menuItem.container, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   container: MenuItem;
 
   /**
@@ -36,7 +36,7 @@ export class MenuItemComponent {
    * 
    * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
    */
-  @ManyToOne(() => MenuItemSize)
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
   containerSize: MenuItemSize;
 
   /**
@@ -58,7 +58,7 @@ export class MenuItemComponent {
    * - All pastries are size Regular, sometimes size "mini"
    * - Pies would me "small", "medium", "large"
    */
-  @ManyToOne(() => MenuItemSize, /*{ nullable: true }*/)
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
   size: MenuItemSize/* | null*/;
 
   @Column({ nullable: false })

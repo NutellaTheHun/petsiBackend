@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
+import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
 import { OrderCategory } from "../entities/order-category.entity";
 import { OrderCategoryValidator } from "../validators/order-category.validator";
 

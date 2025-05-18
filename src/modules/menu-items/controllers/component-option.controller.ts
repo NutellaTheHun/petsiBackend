@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
@@ -8,8 +8,8 @@ import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { CreateComponentOptionDto } from "../dto/create-component-option.dto";
-import { UpdateComponentOptionDto } from "../dto/update-component-option.dto";
+import { CreateComponentOptionDto } from "../dto/child-component-option/create-component-option.dto";
+import { UpdateComponentOptionDto } from "../dto/child-component-option/update-component-option.dto";
 import { ComponentOption } from "../entities/component-option.entity";
 import { ComponentOptionService } from "../services/component-option.service";
 
@@ -25,14 +25,15 @@ export class ComponentOptionController extends ControllerBase<ComponentOption>{
     requestContextService: RequestContextService,
   ) { super(optionSerivce, cacheManager, 'ComponentOptionController', requestContextService, logger); }
 
-  @Post()
+  /*@Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Menu item container component option (1 rule of the container options determing a valid menuItem and its allowed sizes)' })
   @ApiCreatedResponse({ description: 'Component Option successfully created', type: ComponentOption })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateComponentOptionDto })
+  @ApiBody({ type: CreateComponentOptionDto })*/
   async create(@Body() dto: CreateComponentOptionDto): Promise<ComponentOption> {
-      return super.create(dto);
+      //return super.create(dto);
+      throw new BadRequestException();
   }
 
   @Patch(':id')

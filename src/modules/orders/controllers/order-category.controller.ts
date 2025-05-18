@@ -9,8 +9,8 @@ import { OrderCategory } from "../entities/order-category.entity";
 import { OrderCategoryService } from "../services/order-category.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
+import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
 import { PaginatedResult } from "../../../base/paginated-result";
 
 @ApiTags('Order Category')

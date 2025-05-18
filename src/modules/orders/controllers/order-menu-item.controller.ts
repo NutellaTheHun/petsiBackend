@@ -9,8 +9,8 @@ import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { PaginatedResult } from "../../../base/paginated-result";
 
 @ApiTags('Order Menu Item')

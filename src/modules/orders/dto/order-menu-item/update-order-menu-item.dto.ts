@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildOrderMenuItemComponentDto } from './create-child-order-menu-item-component.dto';
-import { UpdateChildOrderMenuItemComponentDto } from './update-child-order-menu-item-component.dto';
+import { CreateChildOrderMenuItemComponentDto } from '../order-menu-item-component/create-child-order-menu-item-component.dto';
+import { UpdateChildOrderMenuItemComponentDto } from '../order-menu-item-component/update-child-order-menu-item-component.dto';
 
 export class UpdateOrderMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item entity being ordered.' })

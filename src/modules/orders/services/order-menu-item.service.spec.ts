@@ -7,8 +7,8 @@ import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { OrderService } from "./order.service";
 import { item_a, item_b } from "../../menu-items/utils/constants";
 import { NotFoundException } from "@nestjs/common";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 
 describe('order menu item service', () => {
     let orderItemService: OrderMenuItemService;

@@ -1,7 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
 import { getRecipeTestingModule } from "../../recipes/utils/recipes-testing.module";
-import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
-import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
+import { CreateMenuItemDto } from "../dto/menu-item/create-menu-item.dto";
+import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemService } from "../services/menu-item.service";
 import { getTestItemNames } from "../utils/constants";

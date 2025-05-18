@@ -2,15 +2,15 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
+import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderCategoryService } from "../services/order-category.service";
 import { OrderValidator } from "../validators/order.validator";
 import { OrderMenuItemBuilder } from "./order-menu-item.builder";
+import { CreateOrderDto } from "../dto/order/create-order.dto";
+import { UpdateOrderDto } from "../dto/order/update-order.dto";
 
 @Injectable()
 export class OrderBuilder extends BuilderBase<Order>{

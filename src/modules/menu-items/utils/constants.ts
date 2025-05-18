@@ -27,3 +27,11 @@ export const item_g = "item g"
 export function getTestItemNames(): string[] {
     return [ item_a, item_b, item_c, item_d, item_e, item_f, item_g ];
 }
+
+export const item_container_a = "container a";
+export const item_container_b = "container b";
+export const item_container_c = "container c";
+
+export function getItemContainerTestNames(): string[] {
+    return [ item_container_a, item_container_b, item_container_c];
+}

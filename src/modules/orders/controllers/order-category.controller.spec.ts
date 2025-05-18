@@ -1,7 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateOrderCategoryDto } from "../dto/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/update-order-category.dto";
+import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
+import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
 import { OrderCategory } from "../entities/order-category.entity";
 import { OrderCategoryService } from "../services/order-category.service";
 import { getTestOrderTypeNames } from "../utils/constants";

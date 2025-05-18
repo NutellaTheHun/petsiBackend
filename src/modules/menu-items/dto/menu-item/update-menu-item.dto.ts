@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
-import { MenuItemComponentUnionResolver } from '../utils/menu-item-component-union-resolver';
-import { CreateChildMenuItemComponentDto } from './create-child-menu-item-component.dto';
-import { UpdateChildMenuItemComponentDto } from './update-child-menu-item-component.dto';
+import { MenuItemComponentUnionResolver } from '../../utils/menu-item-component-union-resolver';
+import { CreateChildMenuItemComponentDto } from '../menu-item-component/create-child-menu-item-component.dto';
+import { UpdateChildMenuItemComponentDto } from '../menu-item-component/update-child-menu-item-component.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { CreateMenuItemComponentOptionsDto } from './create-menu-item-component-options.dto';
 import { CreateChildMenuItemComponentOptionsDto } from './create-child-menu-item-component-options.dto';

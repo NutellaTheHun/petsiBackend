@@ -1,20 +1,20 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
-import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
-import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-child-menu-item-component-options.dto";
+import { UpdateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-child-menu-item-component-options.dto";
+import { CreateChildMenuItemComponentDto } from "../dto/menu-item-component/create-child-menu-item-component.dto";
+import { UpdateMenuItemComponentDto } from "../dto/menu-item-component/update-menu-item-component.dto";
+import { CreateMenuItemDto } from "../dto/menu-item/create-menu-item.dto";
+import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemValidator } from "../validators/menu-item.validator";
-import { MenuItemComponentBuilder } from "./menu-item-component.builder";
-import { CreateChildMenuItemComponentOptionsDto } from "../dto/create-child-menu-item-component-options.dto";
-import { UpdateChildMenuItemComponentOptionsDto } from "../dto/update-child-menu-item-component-options.dto";
 import { MenuItemComponentOptionsBuilder } from "./menu-item-component-options.builder";
+import { MenuItemComponentBuilder } from "./menu-item-component.builder";
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem>{
@@ -167,15 +167,15 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerByBuilder(containerId: number, dtos: (CreateChildMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+    public containerByBuilder(parentId: number, dtos: (CreateChildMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
-            containerId,
+            containerId: parentId,
         }));
         return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
     }
 
-    private containerOptionsByBuilder(containerId: number, dto: (CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto)): this {
+    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto)): this {
         return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);
     }
 }

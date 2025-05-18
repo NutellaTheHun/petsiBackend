@@ -1,10 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsOptional, IsArray, IsNumber, IsPositive, IsNotEmpty } from "class-validator";
-import { CreateChildComponentOptionDto } from "./create-child-component-option.dto";
+import { IsNumber, IsPositive, IsNotEmpty, IsArray, IsBoolean, IsOptional } from "class-validator";
+import { CreateChildComponentOptionDto } from "./child-component-option/create-child-component-option.dto";
 
-export class CreateChildMenuItemComponentOptionsDto {
-    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Menu-Item entity.' })
-    readonly mode: 'create' = 'create';
+export class UpdateChildMenuItemComponentOptionsDto {
+    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Menu-Item entity with components.' })
+    readonly mode: 'update' = 'update';
+
+    @ApiProperty({ description: 'Id of the Menu-Item-Component-Options to update.' })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly id: number;
 
     @ApiProperty({ 
         example: 'Box of 6 scones is dynamic (can be any combination of the 3 flavors totaling 6). A Breakfast Pastry Platter is not dynamic (Preset assortment of items per size)',
@@ -15,11 +21,12 @@ export class CreateChildMenuItemComponentOptionsDto {
 
     @ApiProperty({ description: 'The list of MenuItems and their sizes that are allowed in the container', type: [CreateChildComponentOptionDto] })
     @IsArray()
-    componentOptionDtos: CreateChildComponentOptionDto[];
+    IsOptional
+    componentOptionDtos?: CreateChildComponentOptionDto[];
 
     @ApiProperty({ description: 'The total size of the container. When ordered, the summation of order-menu-item-components have to equal this value.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    validQuantity: number;
+    @IsOptional()
+    validQuantity?: number;
 }

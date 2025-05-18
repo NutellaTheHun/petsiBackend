@@ -1,82 +1,68 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { getRecipeTestingModule } from "../../recipes/utils/recipes-testing.module";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
-import { MenuItemSize } from "../entities/menu-item-size.entity";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { getTestSizeNames } from "../utils/constants";
-import { MenuItemSizeController } from "./menu-item-size.controller";
+import { CreateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-menu-item-component-options.dto";
+import { UpdateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-menu-item-component-options.dto";
+import { MenuItemComponentOptions } from "../entities/menu-item-component-options.entity";
+import { MenuItemComponentOptionsService } from "../services/menu-item-component-options.service";
+import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
+import { MenuItemComponentOptionsController } from "./menu-item-component-options.controller";
 
 describe('menu item component options controller', () => {
-  let controller: ;
-  let service: MenuItemSizeService;
-  let sizes: MenuItemSize[];
-
-  let testId: number;
+  let controller: MenuItemComponentOptionsController;
+  let service: MenuItemComponentOptionsService;
+  let options: MenuItemComponentOptions[];
 
   beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
+    const module: TestingModule = await getMenuItemTestingModule();
 
-    controller = module.get<MenuItemSizeController>(MenuItemSizeController);
-    service = module.get<MenuItemSizeService>(MenuItemSizeService);
+    controller = module.get<MenuItemComponentOptionsController>(MenuItemComponentOptionsController);
+    service = module.get<MenuItemComponentOptionsService>(MenuItemComponentOptionsService);
 
-    const names = getTestSizeNames();
+    const quanties = [1,2,3,4,5];
     let id = 1;
-    sizes = names.map( name => ({
+    options = quanties.map( quantity => ({
       id: id++,
-      name: name,
-    }) as MenuItemSize);
+      // container: menuItem,
+      // isDynamic,
+      // validComponents:
+      validQuantity: quantity,
+    }) as MenuItemComponentOptions);
 
-    jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemSizeDto) => {
-        const exists = sizes.find(size => size.name === dto.name);
-        if(exists){ throw new BadRequestException(); }
-
-        const size = {
-          id: id++,
-          name: dto.name,
-        } as MenuItemSize;
-  
-        sizes.push(size);
-        return size;
+    jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemComponentOptionsDto) => {
+        throw new BadRequestException();
     });
 
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: sizes });
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: options });
 
     jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
-      return sizes.filter(size => ids.findIndex(id => id === size.id) !== -1);
+      return options.filter(size => ids.findIndex(id => id === size.id) !== -1);
     });
 
     jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      const result = sizes.find(size => size.id === id);
+      const result = options.find(size => size.id === id);
       if(!result){
         throw new NotFoundException();
       }
       return result;
     });
 
-    jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-      return sizes.find(size => size.name === name) || null;
-    });
-
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = sizes.findIndex(size => size.id === id);
+      const index = options.findIndex(size => size.id === id);
       if(index === -1){ return false; }
 
-      sizes.splice(index, 1);
+      options.splice(index, 1);
       return true;
     });
 
-    jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateMenuItemSizeDto) => {
-      const existIdx = sizes.findIndex(size => size.id === id);
+    jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateMenuItemComponentOptionsDto) => {
+      const existIdx = options.findIndex(size => size.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.name){
-        sizes[existIdx].name = dto.name;
+      if(dto.isDynamic){
+        options[existIdx].isDynamic = dto.isDynamic;
       }
 
-      return sizes[existIdx];
+      return options[existIdx];
     });    
   });
 
@@ -84,30 +70,15 @@ describe('menu item component options controller', () => {
       expect(service).toBeDefined();
   });
 
-  it('should create a size', async () => {
+  it('should fail to create menu item component options', async () => {
      const dto = {
-       name: "testItemSize",
-     } as CreateMenuItemSizeDto;
+     } as CreateMenuItemComponentOptionsDto;
  
-     const result = await controller.create(dto);
- 
-     expect(result).not.toBeNull();
-     expect(result?.id).not.toBeNull()
-     expect(result?.name).toEqual("testItemSize");
- 
-     testId = result?.id as number;
-   });
- 
-   it('should fail to create a size (already exists)', async () => {
-     const dto = {
-       name: "testItemSize",
-     } as CreateMenuItemSizeDto;
-     
      await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
    });
  
    it('should find size by id', async () => {
-     const result = await controller.findOne(testId);
+     const result = await controller.findOne(1);
      expect(result).not.toBeNull();
    });
  
@@ -117,30 +88,30 @@ describe('menu item component options controller', () => {
  
    it('should update size name', async () => {
      const dto = {
-       name: "updateTestItemSize",
-     } as UpdateMenuItemSizeDto;
+       isDynamic: true,
+     } as UpdateMenuItemComponentOptionsDto;
  
-     const result = await controller.update(testId, dto);
+     const result = await controller.update(1, dto);
  
      expect(result).not.toBeNull();
      expect(result?.id).not.toBeNull()
-     expect(result?.name).toEqual("updateTestItemSize");
+     expect(result?.isDynamic).toEqual(true);
    });
  
    it('should fail update size name (not exist)', async () => {
      const dto = {
        name: "updateTestItemSize",
-     } as UpdateMenuItemSizeDto;
+     } as UpdateMenuItemComponentOptionsDto;
  
      await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
    });
  
    it('should remove size', async () => {
-     const result = await controller.remove(testId);
+     const result = await controller.remove(1);
      expect(result).toBeUndefined();
    });
  
    it('should fail remove size (not exist)', async () => {
-     await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+     await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
    });
 });

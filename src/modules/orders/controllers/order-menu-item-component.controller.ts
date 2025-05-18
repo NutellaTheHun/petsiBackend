@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
@@ -8,10 +8,10 @@ import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { CreateOrderMenuItemComponentDto } from "../dto/create-order-menu-item-component.dto";
-import { UpdateOrderMenuItemComponentDto } from "../dto/update-order-menu-item-component.dto";
 import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
 import { OrderMenuItemComponentService } from "../services/order-menu-item-component.service";
+import { CreateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-order-menu-item-component.dto";
+import { UpdateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-order-menu-item-component.dto";
 
 @ApiTags('Order Menu Item Component')
 @ApiBearerAuth('access-token')
@@ -25,14 +25,15 @@ export class OrderMenuItemComponentController extends ControllerBase<OrderMenuIt
     requestContextService: RequestContextService,
   ) { super(service, cacheManager, 'OrderMenuItemComponentController', requestContextService, logger); }
   
-  @Post()
+  /*@Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Order Menu Item Component' })
   @ApiCreatedResponse({ description: 'Order Menu Item Component successfully created', type: OrderMenuItemComponent })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateOrderMenuItemComponentDto })
+  @ApiBody({ type: CreateOrderMenuItemComponentDto })*/
   async create(@Body() dto: CreateOrderMenuItemComponentDto): Promise<OrderMenuItemComponent> {
-      return super.create(dto);
+      //return super.create(dto);
+      throw new BadRequestException();
   }
 
   @Patch(':id')

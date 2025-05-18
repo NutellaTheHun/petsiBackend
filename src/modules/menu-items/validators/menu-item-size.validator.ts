@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 
 @Injectable()

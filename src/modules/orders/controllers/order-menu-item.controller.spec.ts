@@ -1,8 +1,8 @@
 import { TestingModule } from "@nestjs/testing";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { getTestItemNames } from "../../menu-items/utils/constants";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";

@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constant
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
+import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
+import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 
 @ApiTags('Menu Item Category')
 @ApiBearerAuth('access-token')

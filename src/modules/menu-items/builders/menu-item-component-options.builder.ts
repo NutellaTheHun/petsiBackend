@@ -1,25 +1,19 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { AppLogger } from "../../app-logging/app-logger";
-import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
-import { MenuItemCategory } from "../entities/menu-item-category.entity";
-import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemCategoryValidator } from "../validators/menu-item-category.validator";
-import { MenuItem } from "../entities/menu-item.entity";
 import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildComponentOptionDto } from "../dto/child-component-option/create-child-component-option.dto";
+import { CreateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-child-menu-item-component-options.dto";
+import { CreateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-menu-item-component-options.dto";
+import { UpdateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-child-menu-item-component-options.dto";
+import { UpdateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-menu-item-component-options.dto";
 import { MenuItemComponentOptions } from "../entities/menu-item-component-options.entity";
-import { CreateMenuItemComponentDto } from "../dto/create-menu-item-component.dto";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
-import { CreateChildMenuItemComponentOptionsDto } from "../dto/create-child-menu-item-component-options.dto";
-import { UpdateChildMenuItemComponentOptionsDto } from "../dto/update-child-menu-item-component-options.dto";
-import { CreateMenuItemComponentOptionsDto } from "../dto/create-menu-item-component-options.dto";
-import { UpdateMenuItemComponentOptionsDto } from "../dto/update-menu-item-component-options.dto";
-import { CreateChildComponentOptionDto } from "../dto/create-child-component-option.dto";
-import { ComponentOptionBuilder } from "./component-option.builder";
+import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemComponentOptionsService } from "../services/menu-item-component-options.service";
+import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemComponentOptionsValidator } from "../validators/menu-item-component-options.validator";
+import { ComponentOptionBuilder } from "./component-option.builder";
 
 @Injectable()
 export class MenuItemComponentOptionsBuilder extends BuilderBase<MenuItemComponentOptions> implements IBuildChildDto<MenuItem, MenuItemComponentOptions>{

@@ -5,15 +5,15 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildOrderMenuItemComponentDto } from "../dto/create-child-order-menu-item-component.dto";
-import { CreateOrderMenuItemComponentDto } from "../dto/create-order-menu-item-component.dto";
-import { UpdateChildOrderMenuItemComponentDto } from "../dto/update-child-order-menu-item-component.dto";
-import { UpdateOrderMenuItemComponentDto } from "../dto/update-order-menu-item-component.dto";
 import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderMenuItemComponentService } from "../services/order-menu-item-component.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderMenuItemComponentValidator } from "../validators/order-menu-item-component.validator";
+import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
+import { CreateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-order-menu-item-component.dto";
+import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
+import { UpdateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-order-menu-item-component.dto";
 
 @Injectable()
 export class OrderMenuItemComponentBuilder extends BuilderBase<OrderMenuItemComponent> implements IBuildChildDto<OrderMenuItem, OrderMenuItemComponent>{

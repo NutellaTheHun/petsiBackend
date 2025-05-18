@@ -1,18 +1,21 @@
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateChildOrderMenuItemDto } from "./create-child-order-menu-item.dto";
-import { ApiProperty } from "@nestjs/swagger";
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
+import { OrderMenuItemUnionResolver } from '../utils/order-menu-item-union-resolver';
+import { CreateChildOrderMenuItemDto } from './order-menu-item/create-child-order-menu-item.dto';
+import { UpdateChildOrderMenuItemDto } from './order-menu-item/update-child-order-menu-item.dto';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class CreateOrderDto {
+export class UpdateOrderDto{
     @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
-    readonly orderTypeId: number
+    readonly orderTypeId?: number
 
     @ApiProperty({ example: 'John Smith, Pepperidge Farms', description: 'Name of the owner of the order' })
     @IsString()
-    @IsNotEmpty()
-    readonly recipient: string;
+    @IsOptional()
+    readonly recipient?: string;
 
     @ApiProperty({ example: 'Jane Doe, Mike', description: 'Name of who is picking up the order or reciving the delivery' })
     @IsString()
@@ -21,13 +24,13 @@ export class CreateOrderDto {
 
     @ApiProperty({ description: 'Date the order is to be available or delivered.' })
     @IsDate()
-    @IsNotEmpty()
-    readonly fulfillmentDate: Date;
+    @IsOptional()
+    readonly fulfillmentDate?: Date;
 
     @ApiProperty({example: 'pickup or delivery', description: 'Method of Order\'s dispersal.' })
     @IsString()
-    @IsNotEmpty()
-    readonly fulfillmentType: string;
+    @IsOptional()
+    readonly fulfillmentType?: string;
 
     @ApiProperty({ description: 'for delivery contact information' })
     @IsString()
@@ -65,9 +68,11 @@ export class CreateOrderDto {
     readonly weeklyFulfillment?: string;
 
     @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
-        type: [CreateChildOrderMenuItemDto]
+        type: [UpdateChildOrderMenuItemDto]
      })
     @IsOptional()
     @IsArray()
-    orderMenuItemDtos?: CreateChildOrderMenuItemDto[];
+    @ValidateNested({ each: true })
+    @Type(() => OrderMenuItemUnionResolver)
+    orderMenuItemDtos?: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[];
 }

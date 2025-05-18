@@ -4,8 +4,8 @@ import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemCategoryController } from "./menu-item-category.controller";
 import { getTestCategoryNames } from "../utils/constants";
-import { CreateMenuItemCategoryDto } from "../dto/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/update-menu-item-category.dto";
+import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
+import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 

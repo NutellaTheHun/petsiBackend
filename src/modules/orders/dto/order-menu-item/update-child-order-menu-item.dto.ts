@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildOrderMenuItemComponentDto } from './create-child-order-menu-item-component.dto';
-import { UpdateChildOrderMenuItemComponentDto } from './update-child-order-menu-item-component.dto';
+import { CreateChildOrderMenuItemComponentDto } from '../order-menu-item-component/create-child-order-menu-item-component.dto';
+import { UpdateChildOrderMenuItemComponentDto } from '../order-menu-item-component/update-child-order-menu-item-component.dto';
 
 export class UpdateChildOrderMenuItemDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Order entity.' })
