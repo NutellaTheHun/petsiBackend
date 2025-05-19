@@ -13,7 +13,7 @@ export class OrderCategoryBuilder extends BuilderBase<OrderCategory>{
         validator: OrderCategoryValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(OrderCategory, 'OrderTypeBuilder',  requestContextService, logger, validator); }
+    ){ super(OrderCategory, 'OrderCategoryBuilder',  requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateOrderCategoryDto): void {
         if(dto.name){

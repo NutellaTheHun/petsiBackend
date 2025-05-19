@@ -10,23 +10,23 @@ export class CreateChildInventoryItemSizeDto {
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
-    readonly unitOfMeasureId: number;
+    readonly measureUnitId: number;
+    
+    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly measureAmount: number;
 
     @ApiProperty({ description: 'Id of Inventory-Item-Package entity.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
-    readonly inventoryPackageTypeId: number;
+    readonly inventoryPackageId: number;
 
     @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsNotEmpty()
     @Min(0)
     cost: number;
-
-    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
-    @IsNumber()
-    @IsPositive()
-    @IsNotEmpty()
-    readonly measureAmount: number;
 }

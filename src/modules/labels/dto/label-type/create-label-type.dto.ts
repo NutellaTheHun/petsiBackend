@@ -5,15 +5,15 @@ export class CreateLabelTypeDto {
     @ApiProperty({ description: 'Name of the Label-Type entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly labelTypeName: string;
 
     @ApiProperty({ description: 'The length of the label type in hundreths of an inch' })
     @IsNumber()
     @IsNotEmpty()
-    readonly labelLength: number;
+    readonly labelTypeLength: number;
 
     @ApiProperty({ description: 'The length of the label type in hundreths of an inch' })
     @IsNumber()
     @IsNotEmpty()
-    readonly labelWidth: number;
+    readonly labelTypeWidth: number;
 }

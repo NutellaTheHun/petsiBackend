@@ -22,6 +22,6 @@ export class LabelTypeService extends ServiceBase<LabelType>{
   ){ super(typeRepo, typeBuilder, validator, 'LabelTypeService', requestContextService, logger); }
 
   async findOneByName(name: string, relations?: Array<keyof LabelType>): Promise<LabelType | null> {
-      return await this.typeRepo.findOne({ where: { name: name }, relations });
+      return await this.typeRepo.findOne({ where: { labelTypeName: name }, relations });
   }
 }

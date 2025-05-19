@@ -35,25 +35,25 @@ describe('Inventory Item Category Service', () => {
 
   it('should create a inventory item category', async () => {
     const dto = { 
-      name: "testCategoryName" 
+      itemCategoryName: "testCategoryName" 
     } as CreateInventoryItemCategoryDto;
 
     const result = await service.create(dto);
     
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual("testCategoryName")
+    expect(result?.categoryName).toEqual("testCategoryName")
 
     testId = result?.id as number;
   });
 
   it('should update a inventory item category', async () => {
     const dto = {
-      name: "UPDATE_NAME"
+      itemCategoryName: "UPDATE_NAME"
     } as UpdateInventoryItemCategoryDto;
     const result = await service.update( testId, dto);
 
-    expect(result?.name).toEqual("UPDATE_NAME");
+    expect(result?.categoryName).toEqual("UPDATE_NAME");
   });
 
   it('should remove a inventory item category', async () => {
@@ -78,7 +78,7 @@ describe('Inventory Item Category Service', () => {
     const result = await service.findOneByName(FOOD_CAT);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(FOOD_CAT);
+    expect(result?.categoryName).toEqual(FOOD_CAT);
   });
 
   it('should get inventory item categories from a list of ids', async () => {

@@ -65,8 +65,8 @@ describe('Inventory Item Size Service', () => {
     if(!item){ throw new Error('inventory item is null'); }
 
     const sizeDto = { 
-      unitOfMeasureId: unit?.id,
-      inventoryPackageTypeId: packageType?.id,
+      measureUnitId: unit?.id,
+      inventoryPackageId: packageType?.id,
       inventoryItemId: item?.id,
       cost: 5,
       measureAmount: 1,
@@ -84,9 +84,9 @@ describe('Inventory Item Size Service', () => {
   it('should update inventoryItem query with new size', async () => {
     const item = await itemService.findOne(testItemId, ['sizes']);
     if(!item){ throw new NotFoundException(); }
-    if(!item.sizes){ throw new Error("sizes is null"); }
+    if(!item.itemSizes){ throw new Error("sizes is null"); }
 
-    expect(item.sizes.findIndex(size => size.id === testId)).not.toEqual(-1);
+    expect(item.itemSizes.findIndex(size => size.id === testId)).not.toEqual(-1);
   });
 
   it('should find item size by id', async () => {
@@ -116,7 +116,7 @@ describe('Inventory Item Size Service', () => {
     if(!unit){ throw new Error('unit of measure to update with is null'); }
 
     const dto = {
-      unitOfMeasureId: unit.id
+      measureUnitId: unit.id
     } as UpdateInventoryItemSizeDto;
     const result = await sizeService.update(testId, dto);
     expect(result).not.toBeNull();
@@ -130,7 +130,7 @@ describe('Inventory Item Size Service', () => {
     if(!pkg){ throw new Error('pacakge to update with is null'); }
 
     const dto = {
-      inventoryPackageTypeId: pkg.id
+      inventoryPackageId: pkg.id
     } as UpdateInventoryItemSizeDto;
     const result = await sizeService.update(testId, dto);
     expect(result).not.toBeNull();
@@ -151,7 +151,7 @@ describe('Inventory Item Size Service', () => {
   it('should retain all updated properties', async () => {
     const verify = await sizeService.findOne(testId, ['item', 'measureUnit', 'packageType']);
     if(!verify){ throw new NotFoundException(); }
-    expect(verify.item.id).toEqual(testItemId);
+    expect(verify.inventoryItem.id).toEqual(testItemId);
     expect(verify.measureUnit.id).toEqual(testUnitMeasureId);
     expect(verify.packageType.id).toEqual(testPkgId);
   });
@@ -185,30 +185,30 @@ describe('Inventory Item Size Service', () => {
   it('should delete a package and delete the item size', async () => {
     const item = await itemService.findOneByName(DRY_A, ['sizes']);
     if(!item){ throw new NotFoundException(); }
-    if(!item.sizes){ throw new Error("item sizes is empty");} 
+    if(!item.itemSizes){ throw new Error("item sizes is empty");} 
     
-    const size = await sizeService.findOne(item.sizes[0].id, ['packageType']);
+    const size = await sizeService.findOne(item.itemSizes[0].id, ['packageType']);
     if(!size){ throw new NotFoundException(); }
 
     const removal = await packageService.remove(size?.packageType.id);
     if(!removal){ throw new Error("unit of measure removal failed"); }
 
-    await expect(sizeService.findOne(item.sizes[0].id)).rejects.toThrow(NotFoundException);
+    await expect(sizeService.findOne(item.itemSizes[0].id)).rejects.toThrow(NotFoundException);
   });
 
   // If a item is deleted, the itemSizes are also deleted.
   it('should delete a item and delete the item size', async () => {
     const item = await itemService.findOneByName(OTHER_A, ['sizes']);
     if(!item){ throw new NotFoundException(); }
-    if(!item.sizes){ throw new Error("item sizes is empty"); }
+    if(!item.itemSizes){ throw new Error("item sizes is empty"); }
 
-    const size = await sizeService.findOne(item.sizes[0].id, ['item']);
+    const size = await sizeService.findOne(item.itemSizes[0].id, ['item']);
     if(!size){ throw new NotFoundException(); }
 
-    const removal = await itemService.remove(size?.item.id);
+    const removal = await itemService.remove(size?.inventoryItem.id);
     if(!removal){ throw new Error("unit of measure removal failed"); }
 
-    await expect(sizeService.findOne(item.sizes[0].id)).rejects.toThrow(NotFoundException);
+    await expect(sizeService.findOne(item.itemSizes[0].id)).rejects.toThrow(NotFoundException);
   });
 
   it('should remove a inventory item size', async () => {
@@ -221,8 +221,8 @@ describe('Inventory Item Size Service', () => {
   it('should query inventoryItem with removed size not present', async () => {
     const item = await itemService.findOne(testItemId, ['sizes']);
     if(!item){ throw new NotFoundException(); }
-    if(!item.sizes){ throw new Error("sizes is null"); }
+    if(!item.itemSizes){ throw new Error("sizes is null"); }
 
-    expect(item.sizes.findIndex(size => size.id === testId)).toEqual(-1);
+    expect(item.itemSizes.findIndex(size => size.id === testId)).toEqual(-1);
   });
 });

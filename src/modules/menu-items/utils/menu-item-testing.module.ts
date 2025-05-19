@@ -9,18 +9,18 @@ import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemsModule } from "../menu-items.module";
-import { MenuItemComponentController } from "../controllers/menu-item-component.controller";
-import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { MenuItemContainerItemController } from "../controllers/menu-item-container-item.controller";
+import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
 import { CacheModule } from "@nestjs/cache-manager";
 import { LoggerModule } from "nestjs-pino";
 import { AppLoggingModule } from "../../app-logging/app-logging.module";
 import { RequestContextModule } from "../../request-context/request-context.module";
 import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { ComponentOption } from "../entities/component-option.entity";
-import { MenuItemComponentOptions } from "../entities/menu-item-component-options.entity";
-import { ComponentOptionController } from "../controllers/component-option.controller";
-import { MenuItemComponentOptionsController } from "../controllers/menu-item-component-options.controller";
+import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
+import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
+import { MenuItemContainerRuleController } from "../controllers/menu-item-container-rule.controller";
+import { MenuItemContainerOptionsController } from "../controllers/menu-item-container-options.controller";
 
 export async function getMenuItemTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -30,17 +30,17 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
                 MenuItemCategory,
                 MenuItemSize,
                 MenuItem,
-                MenuItemComponent,
-                ComponentOption,
-                MenuItemComponentOptions,
+                MenuItemContainerItem,
+                MenuItemContainerRule,
+                MenuItemContainerOptions,
             ]),
             TypeOrmModule.forFeature([
                 MenuItemCategory,
                 MenuItemSize,
                 MenuItem,
-                MenuItemComponent,
-                ComponentOption,
-                MenuItemComponentOptions,
+                MenuItemContainerItem,
+                MenuItemContainerRule,
+                MenuItemContainerOptions,
             ]),
             MenuItemsModule,
             CacheModule.register(),
@@ -55,9 +55,9 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
             MenuItemCategoryController,
             MenuItemSizeController,
             MenuItemController,
-            MenuItemComponentController,
-            ComponentOptionController,
-            MenuItemComponentOptionsController
+            MenuItemContainerItemController,
+            MenuItemContainerRuleController,
+            MenuItemContainerOptionsController
         ],
 
         providers: [],

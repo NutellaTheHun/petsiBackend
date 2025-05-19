@@ -4,23 +4,17 @@ import { CreateChildInventoryItemSizeDto } from "../../../inventory-items/dto/in
 import { UpdateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
 
 export class UpdateInventoryAreaItemDto {
-    @ApiProperty({ description: 'Id for Inventory-Area-Count entity.' })
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    readonly areaCountId?: number;
-
     @ApiProperty({ description: 'Id for Inventory-Item entity.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly inventoryItemId?: number;
+    readonly countedInventoryItemId?: number;
 
     @ApiProperty({ example: '6pk(unit amount) of 28oz(measure amount) can of evaporated milk', description: 'The amount of Inventory-Item per unit.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly unitAmount?: number;
+    readonly countedAmonut?: number;
 
     @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the quantity of the Inventory-Item with the Item-Size.' })
     @IsNumber()
@@ -39,7 +33,7 @@ export class UpdateInventoryAreaItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly itemSizeId?: number;
+    readonly countedItemSizeId?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 
@@ -52,5 +46,5 @@ export class UpdateInventoryAreaItemDto {
         type: [CreateChildInventoryItemSizeDto]
      })
     @IsOptional()
-    readonly itemSizeDto?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto);
+    readonly countedItemSizeDto?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto);
 }

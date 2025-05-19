@@ -16,7 +16,13 @@ export class UpdateChildInventoryItemSizeDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly unitOfMeasureId?: number;
+    readonly measureUnitId?: number;
+
+    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    readonly measureAmount?: number;
 
     @ApiProperty({ description: 'Id of Inventory-Item-Package entity.' })
     @IsNumber()
@@ -29,10 +35,4 @@ export class UpdateChildInventoryItemSizeDto{
     @IsOptional()
     @Min(0)
     cost?: number;
-
-    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    readonly measureAmount?: number;
 }

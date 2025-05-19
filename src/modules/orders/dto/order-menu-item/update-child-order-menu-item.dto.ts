@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildOrderMenuItemComponentDto } from '../order-menu-item-component/create-child-order-menu-item-component.dto';
-import { UpdateChildOrderMenuItemComponentDto } from '../order-menu-item-component/update-child-order-menu-item-component.dto';
+import { CreateChildOrderContainerItemDto } from '../order-container-item/create-child-order-container-item.dto';
+import { UpdateChildOrderContainerItemDto } from '../order-container-item/update-child-order-container-item.dto';
 
 export class UpdateChildOrderMenuItemDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Order entity.' })
@@ -33,9 +33,9 @@ export class UpdateChildOrderMenuItemDto {
     readonly quantity?: number
 
     @ApiProperty({ description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
-        type: [UpdateChildOrderMenuItemComponentDto]
+        type: [UpdateChildOrderContainerItemDto]
     })
     @IsArray()
     @IsOptional()
-    readonly OrderedItemComponentDtos?: (CreateChildOrderMenuItemComponentDto | UpdateChildOrderMenuItemComponentDto)[];
+    readonly OrderedItemComponentDtos?: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[];
 }

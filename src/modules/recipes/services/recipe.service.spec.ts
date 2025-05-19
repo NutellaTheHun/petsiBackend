@@ -212,7 +212,7 @@ describe('recipe service', () => {
     if(!ingreds[0].inventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
 
-    if(ingreds[0].inventoryItem.name === FOOD_A){
+    if(ingreds[0].inventoryItem.itemName === FOOD_A){
       const item = await invItemService.findOneByName(FOOD_B);
       if(!item){ throw new Error("inv item not found"); }
       ingreds[0].inventoryItem = item;

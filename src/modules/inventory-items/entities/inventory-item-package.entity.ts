@@ -12,5 +12,5 @@ export class InventoryItemPackage {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    packageName: string;
 } 

@@ -24,31 +24,31 @@ describe('Inventory Item Vendor Controller', () => {
     vendorService = module.get<InventoryItemVendorService>(InventoryItemVendorService);
 
     vendors = [
-      { name: VENDOR_A } as InventoryItemVendor,
-      { name: VENDOR_B } as InventoryItemVendor,
-      { name: VENDOR_C } as InventoryItemVendor,
+      { vendorName: VENDOR_A } as InventoryItemVendor,
+      { vendorName: VENDOR_B } as InventoryItemVendor,
+      { vendorName: VENDOR_C } as InventoryItemVendor,
     ];
     let id = 1;
     vendors.map(vendor => vendor.id = id++);
 
     items = [
-      { id: 1, name: "FOOD_A",  vendor: vendors[0] } as InventoryItem,
-      { id: 2, name: "DRY_A",   vendor: vendors[0] } as InventoryItem,
-      { id: 3, name: "OTHER_A", vendor: vendors[0] } as InventoryItem,
-      { id: 4, name: "FOOD_B",  vendor: vendors[1] } as InventoryItem,
-      { id: 5, name: "DRY_B",   vendor: vendors[1] } as InventoryItem,
+      { id: 1, itemName: "FOOD_A",  vendor: vendors[0] } as InventoryItem,
+      { id: 2, itemName: "DRY_A",   vendor: vendors[0] } as InventoryItem,
+      { id: 3, itemName: "OTHER_A", vendor: vendors[0] } as InventoryItem,
+      { id: 4, itemName: "FOOD_B",  vendor: vendors[1] } as InventoryItem,
+      { id: 5, itemName: "DRY_B",   vendor: vendors[1] } as InventoryItem,
     ];
 
-    vendors[0].items = [items[0], items[1], items[2]];
-    vendors[1].items = [items[3], items[4]];
+    vendors[0].vendorItems = [items[0], items[1], items[2]];
+    vendors[1].vendorItems = [items[3], items[4]];
 
     jest.spyOn(vendorService, "create").mockImplementation(async (createDto: CreateInventoryItemVendorDto) => {
-      const exists = vendors.find(unit => unit.name === createDto.name);
+      const exists = vendors.find(unit => unit.vendorName === createDto.vendorName);
       if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
-        name: createDto.name,
+        vendorName: createDto.vendorName,
       } as InventoryItemVendor;
 
       vendors.push(unit);
@@ -56,15 +56,15 @@ describe('Inventory Item Vendor Controller', () => {
     });
 
     jest.spyOn(vendorService, "findOneByName").mockImplementation(async (name: string) => {
-      return vendors.find(unit => unit.name === name) || null;
+      return vendors.find(unit => unit.vendorName === name) || null;
     });
     
     jest.spyOn(vendorService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemVendorDto) => {
       const index = vendors.findIndex(unit => unit.id === id);
       if (index === -1) throw new BadRequestException();
 
-      if(updateDto.name){
-        vendors[index].name = updateDto.name;
+      if(updateDto.vendorName){
+        vendors[index].vendorName = updateDto.vendorName;
       }
       if(updateDto.inventoryItemIds){
         const updateItems = [] as InventoryItem[];
@@ -72,7 +72,7 @@ describe('Inventory Item Vendor Controller', () => {
           let item = items.find(i => i.id === id);
           if(item){ updateItems.push(item); }
         }
-        vendors[index].items = updateItems;
+        vendors[index].vendorItems = updateItems;
       }
 
       return vendors[index];
@@ -105,7 +105,7 @@ describe('Inventory Item Vendor Controller', () => {
 
   it('should create a vendor', async () => {
     const dto = {
-      name: "testVendor",
+      vendorName: "testVendor",
     } as CreateInventoryItemVendorDto;
 
     const result = await controller.create(dto);
@@ -114,7 +114,7 @@ describe('Inventory Item Vendor Controller', () => {
   
   it('should fail to create a vendor (already exists)', async () => {
     const dto = {
-      name: "testVendor",
+      vendorName: "testVendor",
     } as CreateInventoryItemVendorDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -139,12 +139,12 @@ describe('Inventory Item Vendor Controller', () => {
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
     const dto = {
-      name: "UPDATED_testVendor"
+      vendorName: "UPDATED_testVendor"
     } as UpdateInventoryItemVendorDto
 
     const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("UPDATED_testVendor")
+    expect(result?.vendorName).toEqual("UPDATED_testVendor")
   });
   
   it('should fail to update a vendor (doesnt exist)', async () => {

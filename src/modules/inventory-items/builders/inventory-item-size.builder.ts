@@ -36,11 +36,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         if(dto.inventoryItemId){
             this.InventoryItemById(dto.inventoryItemId);
         }
-        if(dto.inventoryPackageTypeId){
-            this.packageById(dto.inventoryPackageTypeId);
+        if(dto.inventoryPackageId){
+            this.packageById(dto.inventoryPackageId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.measureUnitId){
+            this.unitOfMeasureById(dto.measureUnitId);
         }
         if(dto.cost){
             this.costByValue(dto.cost);
@@ -51,11 +51,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
     }
 
     protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
-        if(dto.inventoryPackageTypeId){
-            this.packageById(dto.inventoryPackageTypeId);
+        if(dto.inventoryPackageId){
+            this.packageById(dto.inventoryPackageId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.measureUnitId){
+            this.unitOfMeasureById(dto.measureUnitId);
         }
         if(dto.cost){
             this.costByValue(dto.cost);
@@ -66,11 +66,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
     }
 
     buildChildEntity(dto: CreateChildInventoryItemSizeDto): void {
-        if(dto.inventoryPackageTypeId){
-            this.packageById(dto.inventoryPackageTypeId);
+        if(dto.inventoryPackageId){
+            this.packageById(dto.inventoryPackageId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.measureUnitId){
+            this.unitOfMeasureById(dto.measureUnitId);
         }
         if(dto.cost){
             this.costByValue(dto.cost);
@@ -94,7 +94,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
 
         this.reset();
         
-        this.entity.item = parentItem;
+        this.entity.inventoryItem = parentItem;
 
         this.buildChildEntity(dto);
 
@@ -150,11 +150,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
     }
 
     public InventoryItemById(id: number): this {
-        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'item', id);
+        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'inventoryItem', id);
     }
 
     public InventoryItemByName(name: string): this {
-        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'item', name);
+        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'inventoryItem', name);
     }
 
     public costByValue(val: number): this {

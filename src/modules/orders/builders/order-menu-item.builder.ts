@@ -5,8 +5,8 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
-import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
+import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
@@ -16,7 +16,7 @@ import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
-import { OrderMenuItemComponentBuilder } from "./order-menu-item-component.builder";
+import { OrderContainerItemBuilder } from "./order-container-item.builder";
 
 @Injectable()
 export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
@@ -27,8 +27,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
 
-        @Inject(forwardRef(() => OrderMenuItemComponentBuilder))
-        private readonly itemComponentBuilder: OrderMenuItemComponentBuilder,
+        @Inject(forwardRef(() => OrderContainerItemBuilder))
+        private readonly itemComponentBuilder: OrderContainerItemBuilder,
 
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
@@ -136,7 +136,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         return this.setPropByVal('quantity', amount);
     }
 
-    public itemComponentsByBuilder(dtos: (CreateChildOrderMenuItemComponentDto | UpdateChildOrderMenuItemComponentDto)[]): this {
+    public itemComponentsByBuilder(dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): this {
         return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedItemComponents', this.entity, dtos);
     }
 }

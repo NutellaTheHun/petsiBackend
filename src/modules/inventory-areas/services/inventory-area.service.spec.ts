@@ -37,7 +37,7 @@ describe('Inventory area service', () => {
     });
 
     it('should create an area', async () => {
-        const area = { name: testAreaName } as CreateInventoryAreaDto;
+        const area = { areaName: testAreaName } as CreateInventoryAreaDto;
         const result = await service.create(area);
         
         expect(result).not.toBeNull();
@@ -47,23 +47,23 @@ describe('Inventory area service', () => {
     });
 
     it('should fail to create an area (already exists)', async () => {
-        const area = { name: testAreaName } as CreateInventoryAreaDto;
+        const area = { areaName: testAreaName } as CreateInventoryAreaDto;
 
         await expect(service.create(area)).rejects.toThrow(AppHttpException);
     });
 
     it('should update an area', async () => {
-        const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
+        const toUpdate = { areaName: updateTestAreaName } as UpdateInventoryAreaDto;
 
         const result = await service.update(testId, toUpdate);
 
         expect(result).not.toBeNull();
         expect(result?.id).toEqual(testId);
-        expect(result?.name).toEqual(updateTestAreaName);
+        expect(result?.areaName).toEqual(updateTestAreaName);
     });
 
     it('should fail to update an area (doesnt exist)', async () => {
-        const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
+        const toUpdate = { areaName: updateTestAreaName } as UpdateInventoryAreaDto;
         
         await expect(service.update(0, toUpdate)).rejects.toThrow(NotFoundException);
     });
@@ -73,7 +73,7 @@ describe('Inventory area service', () => {
 
         expect(result).not.toBeNull();
         expect(result?.id).toEqual(testId);
-        expect(result?.name).toEqual(updateTestAreaName);
+        expect(result?.areaName).toEqual(updateTestAreaName);
     });
 
 

@@ -16,8 +16,8 @@ import { AppLoggingModule } from "../../app-logging/app-logging.module";
 import { RequestContextModule } from "../../request-context/request-context.module";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
-import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
-import { OrderMenuItemComponentController } from "../controllers/order-menu-item-component.controller";
+import { OrderContainerItem } from "../entities/order-container-item.entity";
+import { OrderContainerItemController } from "../controllers/order-container-item.controller";
 
 export async function getOrdersTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -27,13 +27,13 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
                 OrderMenuItem,
                 OrderCategory,
                 Order,
-                OrderMenuItemComponent,
+                OrderContainerItem,
             ]),
             TypeOrmModule.forFeature([
                 OrderMenuItem,
                 OrderCategory,
                 Order,
-                OrderMenuItemComponent,
+                OrderContainerItem,
             ]),
             MenuItemsModule,
             OrdersModule,
@@ -49,7 +49,7 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
             OrderMenuItemController,
             OrderCategoryController,
             OrderController,
-            OrderMenuItemComponentController,
+            OrderContainerItemController,
         ],
 
         providers: [],

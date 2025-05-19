@@ -17,5 +17,5 @@ export class CreateLabelDto {
     @IsNotEmpty()
     @IsNumber()
     @IsPositive()
-    readonly typeId: number;
+    readonly labelTypeId: number;
 }

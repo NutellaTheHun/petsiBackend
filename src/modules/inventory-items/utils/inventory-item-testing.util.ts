@@ -116,7 +116,7 @@ export class InventoryItemTestingUtil {
         for(const name of this.categoryNames){
             results.push(
                 await this.categoryBuilder.reset()
-                    .name(name)
+                    .categoryName(name)
                     .build()
         )}
         return results;
@@ -195,7 +195,7 @@ export class InventoryItemTestingUtil {
 
         const toInsert: InventoryItemVendor[] = [];
         for(const vendor of vendors){
-            const exists = await this.vendorService.findOneByName(vendor.name);
+            const exists = await this.vendorService.findOneByName(vendor.vendorName);
             if(!exists){ toInsert.push(vendor); }
         }
         await this.vendorService.insertEntities(toInsert);
@@ -207,7 +207,7 @@ export class InventoryItemTestingUtil {
 
         const toInsert: InventoryItemPackage[] = [];
         for(const packaging of defaultPackages){
-            const exists = await this.packageService.findOneByName(packaging.name);
+            const exists = await this.packageService.findOneByName(packaging.packageName);
             if(!exists){ toInsert.push(packaging); }
         }
         await this.packageService.insertEntities(toInsert);
@@ -218,11 +218,11 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
         for(const category of categories) {
-            const exists = await this.categoryService.findOneByName(category.name);
+            const exists = await this.categoryService.findOneByName(category.categoryName);
             if(exists){ continue; }
 
             await this.categoryService.create(
-                { name: category.name } as CreateInventoryItemCategoryDto
+                { itemCategoryName: category.categoryName } as CreateInventoryItemCategoryDto
         )}
     }
 
@@ -230,11 +230,11 @@ export class InventoryItemTestingUtil {
         const items = await this.getTestInventoryItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemTestDatabase());
         for(const item of items){
-            const exists = await this.itemService.findOneByName(item.name);
+            const exists = await this.itemService.findOneByName(item.itemName);
             if(exists){ continue; }
 
             await this.itemService.create({
-                    name: item.name,
+                    itemName: item.itemName,
                     inventoryItemCategoryId: item.category?.id,
                     vendorId: item.vendor?.id, 
                 } as CreateInventoryItemDto
@@ -247,9 +247,9 @@ export class InventoryItemTestingUtil {
 
         for(const size of testingSizes){
             await this.sizeService.create({
-                    unitOfMeasureId: size.measureUnit.id,
-                    inventoryPackageTypeId: size.packageType.id,
-                    inventoryItemId: size.item.id,
+                    measureUnitId: size.measureUnit.id,
+                    inventoryPackageId: size.packageType.id,
+                    inventoryItemId: size.inventoryItem.id,
                     cost: 1,
                     measureAmount: 1,
                 } as CreateInventoryItemSizeDto 
@@ -293,8 +293,8 @@ export class InventoryItemTestingUtil {
             results.push(
                 {
                     mode: 'create',
-                    unitOfMeasureId: unitIds[unitIdx++],
-                    inventoryPackageTypeId: packageIds[packageIdx++],
+                    measureUnitId: unitIds[unitIdx++],
+                    inventoryPackageId: packageIds[packageIdx++],
                     cost: costs[costIter++],
                     measureAmount: 1
                 } as CreateChildInventoryItemSizeDto

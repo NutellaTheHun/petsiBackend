@@ -5,5 +5,5 @@ export class UpdateInventoryItemCategoryDto {
     @ApiProperty({ example: 'Dairy, Dry Goods, Produce', description: 'Name of Inventory-Item-Category entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly itemCategoryName?: string;
 }

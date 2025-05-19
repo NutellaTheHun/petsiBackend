@@ -14,9 +14,9 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateLabelTypeDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { labelTypeName: dto.labelTypeName }});
         if(exists) { 
-            return `Label type with name ${dto.name} already exists`; 
+            return `Label type with name ${dto.labelTypeName} already exists`; 
         }
         return null;
     }

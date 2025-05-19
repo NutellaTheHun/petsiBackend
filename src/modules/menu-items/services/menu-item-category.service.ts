@@ -25,6 +25,6 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
     ){ super(categoryRepo, categoryBuilder, validator, 'MenuItemCategoryService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof MenuItemCategory>): Promise<MenuItemCategory | null> {
-        return await this.categoryRepo.findOne({ where: { name: name }, relations: relations });
+        return await this.categoryRepo.findOne({ where: { categoryName: name }, relations: relations });
     }
 }

@@ -16,38 +16,38 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
     ){ super(LabelType, 'LabelTypeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateLabelTypeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.labelTypeName){
+            this.name(dto.labelTypeName);
         }
-        if(dto.labelLength){
-            this.labelLength(dto.labelLength);
+        if(dto.labelTypeLength){
+            this.labelLength(dto.labelTypeLength);
         }
-        if(dto.labelWidth){
-            this.labelWidth(dto.labelWidth);
+        if(dto.labelTypeWidth){
+            this.labelWidth(dto.labelTypeWidth);
         }
     }
 
     protected updateEntity(dto: UpdateLabelTypeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.labelTypeName){
+            this.name(dto.labelTypeName);
         }
-        if(dto.labelLength){
-            this.labelLength(dto.labelLength);
+        if(dto.labelTypeLength){
+            this.labelLength(dto.labelTypeLength);
         }
-        if(dto.labelWidth){
-            this.labelWidth(dto.labelWidth);
+        if(dto.labelTypeWidth){
+            this.labelWidth(dto.labelTypeWidth);
         }
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('labelTypeName', name);
     }
 
     public labelWidth(val: number): this {
-        return this.setPropByVal('labelWidth', val);
+        return this.setPropByVal('labelTypeWidth', val);
     }
 
     public labelLength(val: number): this {
-        return this.setPropByVal('labelLength', val);
+        return this.setPropByVal('labelTypeLength', val);
     }
 }

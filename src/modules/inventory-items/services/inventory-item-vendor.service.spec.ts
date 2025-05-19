@@ -36,7 +36,7 @@ describe('Inventory Item Vendor Service', () => {
 
   it('should create a vendor', async () => {
     const dto = { 
-      name: "testVendorName" 
+      vendorName: "testVendorName" 
     } as CreateInventoryItemVendorDto;
     const result = await vendorService.create(dto);
 
@@ -47,11 +47,11 @@ describe('Inventory Item Vendor Service', () => {
 
   it('should update a vendor name', async () => {
     const dto = {
-      name: "UPDATE_NAME",
+      vendorName: "UPDATE_NAME",
     } as UpdateInventoryItemVendorDto;
     const result = await vendorService.update( testId, dto);
 
-    expect(result?.name).toEqual("UPDATE_NAME");
+    expect(result?.vendorName).toEqual("UPDATE_NAME");
   });
 
   it('should remove a vendor', async () => {
@@ -72,7 +72,7 @@ describe('Inventory Item Vendor Service', () => {
   it('should get a vendor by name', async () => {
     const result = await vendorService.findOneByName(VENDOR_A);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(VENDOR_A);
+    expect(result?.vendorName).toEqual(VENDOR_A);
   });
 
   it('should get vendor from a list of ids', async () => {

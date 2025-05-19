@@ -17,5 +17,5 @@ export class UpdateLabelDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly typeId?: number;
+    readonly labelTypeId?: number;
 }

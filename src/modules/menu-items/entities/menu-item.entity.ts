@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MenuItemCategory } from "./menu-item-category.entity";
-import { MenuItemComponent } from "./menu-item-component.entity";
+import { MenuItemContainerItem } from "./menu-item-container-item.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
-import { MenuItemComponentOptions } from "./menu-item-component-options.entity";
+import { MenuItemContainerOptions } from "./menu-item-container-options.entity";
 
 /**
  * An item that is a product to be sold.
@@ -88,12 +88,15 @@ export class MenuItem {
      * 
      * Can have a hard set composition of items per container size, or a range of viable items that are dynamically chosen when ordered.
      */
-    @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true, eager: true })
-    container?: MenuItemComponent[];
+    @OneToMany(() => MenuItemContainerItem, (comp) => comp.parentContainer, { cascade: true, eager: true })
+    container?: MenuItemContainerItem[];
 
-    @OneToOne(() => MenuItemComponentOptions, (options) => options.container, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
+    /**
+     * Determines what items are allowed in the container, and their sizes.
+     */
+    @OneToOne(() => MenuItemContainerOptions, (options) => options.parentContainer, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    containerOptions?: MenuItemComponentOptions;
+    containerOptions?: MenuItemContainerOptions;
 
     /**
      * The date the order is inserted into the database. 

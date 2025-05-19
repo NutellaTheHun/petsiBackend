@@ -53,12 +53,12 @@ describe('recipe ingredient controller', () => {
     units.map(unit => unit.id = unitId++);
 
     items = [
-      {name: "ITEM_A" } as InventoryItem,
-      {name: "ITEM_B" } as InventoryItem,
-      {name: "ITEM_C" } as InventoryItem,
-      {name: "ITEM_D" } as InventoryItem,
-      {name: "ITEM_E" } as InventoryItem,
-      {name: "ITEM_F" } as InventoryItem,
+      {itemName: "ITEM_A" } as InventoryItem,
+      {itemName: "ITEM_B" } as InventoryItem,
+      {itemName: "ITEM_C" } as InventoryItem,
+      {itemName: "ITEM_D" } as InventoryItem,
+      {itemName: "ITEM_E" } as InventoryItem,
+      {itemName: "ITEM_F" } as InventoryItem,
     ]; 
     itemId = 1;
     items.map(item => item.id = itemId++);

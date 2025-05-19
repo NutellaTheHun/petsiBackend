@@ -30,7 +30,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         if(!item){ throw new Error('inventory item not found'); }
 
         return await this.itemCountRepo.find({ 
-            where: { item: { id: item.id } }, 
+            where: { countedItem: { id: item.id } }, 
             relations
         });
     }

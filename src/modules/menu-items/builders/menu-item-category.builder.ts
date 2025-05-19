@@ -34,10 +34,10 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('categoryName', name);
     }
 
     public menuItemsById(ids: number[]): this {
-        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
+        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'categoryItems', ids);
     }
 }

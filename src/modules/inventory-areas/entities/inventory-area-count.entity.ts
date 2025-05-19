@@ -29,6 +29,6 @@ export class InventoryAreaCount{
     /**
      * The record of items and their quantites resulting from the inventory count.
      */
-    @OneToMany(() => InventoryAreaItem, (item) => item.areaCount, { cascade: true, nullable: true})
-    items?: InventoryAreaItem[] | null;
+    @OneToMany(() => InventoryAreaItem, (item) => item.parentInventoryCount, { cascade: true, nullable: true})
+    countedItems?: InventoryAreaItem[] | null;
 }

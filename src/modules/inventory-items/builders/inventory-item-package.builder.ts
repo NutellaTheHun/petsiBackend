@@ -16,17 +16,17 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
     ){ super(InventoryItemPackage, 'InventoryItemPackageBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemPackageDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.packageName){
+            this.name(dto.packageName);
         }
     }
     protected updateEntity(dto: UpdateInventoryItemPackageDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.packageName){
+            this.name(dto.packageName);
         }
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('packageName', name);
     }
 }

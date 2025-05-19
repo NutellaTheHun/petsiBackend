@@ -4,7 +4,7 @@ import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { OrderCategory } from "../entities/order-category.entity";
-import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
+import { OrderContainerItem } from "../entities/order-container-item.entity";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { Order } from "../entities/order.entity";
 import { OrderCategoryService } from "../services/order-category.service";
@@ -110,7 +110,7 @@ export class OrderTestingUtil {
             item: menuItems[1],
             itemSize: menuItems[1].validSizes[0],
             quantity: 1,
-        } as OrderMenuItemComponent;
+        } as OrderContainerItem;
 
         if(!menuItems[2].validSizes){ throw new Error(); }
         const comp_b = {
@@ -118,7 +118,7 @@ export class OrderTestingUtil {
             item: menuItems[2],
             itemSize: menuItems[2].validSizes[0],
             quantity: 1,
-        } as OrderMenuItemComponent;
+        } as OrderContainerItem;
 
         parentOrderItem.orderedItemComponents = [comp_a, comp_b];
         results.push(parentOrderItem);

@@ -24,6 +24,6 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     ){ super(categoryRepo, categoryBuilder, validator, 'InventoryItemCategoryService', requestContextService, logger); }
     
     async findOneByName(name: string, relations?: Array<keyof InventoryItemCategory>): Promise<InventoryItemCategory | null> {
-        return await this.categoryRepo.findOne({ where: { name: name }, relations });
+        return await this.categoryRepo.findOne({ where: { categoryName: name }, relations });
     }
 }

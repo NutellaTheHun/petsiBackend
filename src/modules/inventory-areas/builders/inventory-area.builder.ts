@@ -19,22 +19,19 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
     ){ super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.areaName){
+            this.areaName(dto.areaName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaDto): void {
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryCountIds){
-            this.inventoryCountsById(dto.inventoryCountIds);
+        if(dto.areaName){
+            this.areaName(dto.areaName);
         }
     }
 
-    public name(name: string): this {
-        return this.setPropByVal('name', name);
+    public areaName(name: string): this {
+        return this.setPropByVal('areaName', name);
     }
 
     public inventoryCountsById(ids: number[]): this {

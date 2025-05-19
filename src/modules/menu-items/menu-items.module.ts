@@ -4,36 +4,36 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
-import { MenuItemComponentBuilder } from './builders/menu-item-component.builder';
+import { MenuItemContainerItemBuilder } from './builders/menu-item-container-item.builder';
 import { MenuItemSizeBuilder } from './builders/menu-item-size.builder';
 import { MenuItemBuilder } from './builders/menu-item.builder';
 import { MenuItemCategoryController } from './controllers/menu-item-category.controller';
-import { MenuItemComponentController } from './controllers/menu-item-component.controller';
+import { MenuItemContainerItemController } from './controllers/menu-item-container-item.controller';
 import { MenuItemSizeController } from './controllers/menu-item-size.controller';
 import { MenuItemController } from './controllers/menu-item.controller';
 import { MenuItemCategory } from './entities/menu-item-category.entity';
-import { MenuItemComponent } from './entities/menu-item-component.entity';
+import { MenuItemContainerItem } from './entities/menu-item-container-item.entity';
 import { MenuItemSize } from './entities/menu-item-size.entity';
 import { MenuItem } from './entities/menu-item.entity';
 import { MenuItemCategoryService } from './services/menu-item-category.service';
-import { MenuItemComponentService } from './services/menu-item-component.service';
+import { MenuItemContainerItemService } from './services/menu-item-container-item.service';
 import { MenuItemSizeService } from './services/menu-item-size.service';
 import { MenuItemService } from './services/menu-item.service';
 import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
 import { MenuItemCategoryValidator } from './validators/menu-item-category.validator';
-import { MenuItemComponentValidator } from './validators/menu-item-component.validator';
+import { MenuItemContainerItemValidator } from './validators/menu-item-container-item.validator';
 import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
 import { MenuItemValidator } from './validators/menu-item.validator';
-import { ComponentOption } from './entities/component-option.entity';
-import { MenuItemComponentOptions } from './entities/menu-item-component-options.entity';
-import { MenuItemComponentOptionsController } from './controllers/menu-item-component-options.controller';
-import { ComponentOptionController } from './controllers/component-option.controller';
-import { MenuItemComponentOptionsService } from './services/menu-item-component-options.service';
-import { ComponentOptionService } from './services/component-option.service';
-import { MenuItemComponentOptionsBuilder } from './builders/menu-item-component-options.builder';
-import { ComponentOptionBuilder } from './builders/component-option.builder';
-import { ComponentOptionValidator } from './validators/component-option.validator';
-import { MenuItemComponentOptionsValidator } from './validators/menu-item-component-options.validator';
+import { MenuItemContainerRule } from './entities/menu-item-container-rule.entity';
+import { MenuItemContainerOptions } from './entities/menu-item-container-options.entity';
+import { MenuItemContainerOptionsController } from './controllers/menu-item-container-options.controller';
+import { MenuItemContainerRuleController } from './controllers/menu-item-container-rule.controller';
+import { MenuItemContainerOptionsService } from './services/menu-item-container-options.service';
+import { MenuItemContainerRuleService } from './services/menu-item-container-rule.service';
+import { MenuItemContainerOptionsBuilder } from './builders/menu-item-container-options.builder';
+import { MenuItemContainerRuleBuilder } from './builders/menu-item-container-rule.builder';
+import { MenuItemContainerRuleValidator } from './validators/menu-item-container-rule.validator';
+import { MenuItemContainerOptionsValidator } from './validators/menu-item-container-options.validator';
 
 @Module({
   imports: [
@@ -41,9 +41,9 @@ import { MenuItemComponentOptionsValidator } from './validators/menu-item-compon
       MenuItemCategory,
       MenuItemSize,
       MenuItem,
-      MenuItemComponent,
-      ComponentOption,
-      MenuItemComponentOptions,
+      MenuItemContainerItem,
+      MenuItemContainerRule,
+      MenuItemContainerOptions,
     ]),
     CacheModule.register(),
     AppLoggingModule,
@@ -54,32 +54,32 @@ import { MenuItemComponentOptionsValidator } from './validators/menu-item-compon
     MenuItemCategoryController,
     MenuItemSizeController,
     MenuItemController,
-    MenuItemComponentController,
-    MenuItemComponentOptionsController,
-    ComponentOptionController,
+    MenuItemContainerItemController,
+    MenuItemContainerOptionsController,
+    MenuItemContainerRuleController,
   ],
 
   providers: [
     MenuItemCategoryService,
     MenuItemSizeService,
     MenuItemService,
-    MenuItemComponentService,
-    MenuItemComponentOptionsService,
-    ComponentOptionService,
+    MenuItemContainerItemService,
+    MenuItemContainerOptionsService,
+    MenuItemContainerRuleService,
 
     MenuItemCategoryBuilder,
     MenuItemSizeBuilder,
     MenuItemBuilder,
-    MenuItemComponentBuilder,
-    MenuItemComponentOptionsBuilder,
-    ComponentOptionBuilder,
+    MenuItemContainerItemBuilder,
+    MenuItemContainerOptionsBuilder,
+    MenuItemContainerRuleBuilder,
 
     MenuItemCategoryValidator,
-    MenuItemComponentValidator,
+    MenuItemContainerItemValidator,
     MenuItemSizeValidator,
     MenuItemValidator,
-    MenuItemComponentOptionsValidator,
-    ComponentOptionValidator,
+    MenuItemContainerOptionsValidator,
+    MenuItemContainerRuleValidator,
 
     MenuItemTestingUtil,
   ],
@@ -88,9 +88,9 @@ import { MenuItemComponentOptionsValidator } from './validators/menu-item-compon
     MenuItemCategoryService,
     MenuItemSizeService,
     MenuItemService,
-    MenuItemComponentService,
-    MenuItemComponentOptionsService,
-    ComponentOptionService,
+    MenuItemContainerItemService,
+    MenuItemContainerOptionsService,
+    MenuItemContainerRuleService,
 
     MenuItemTestingUtil,
   ]

@@ -111,7 +111,7 @@ describe('Inventory area count service', () => {
 
         expect(result).not.toBeNull();
         expect(result?.inventoryArea.id).toEqual(newArea.id);
-        expect(result?.inventoryArea.name).toEqual(newArea.name);
+        expect(result?.inventoryArea.areaName).toEqual(newArea.areaName);
     });
 
     it('should remove inventoryCount reference from old inventory Area, and update new one', async () => {
@@ -183,11 +183,11 @@ describe('Inventory area count service', () => {
         const units = unitsRequest.items;
         if(!units){ throw new Error("units is null"); }
 
-        if(!items[0].sizes){ throw new Error("first item's sizes is null"); }
-        const item_a = { itemId: items[0].id, itemSizeId: items[0].sizes[0].id }
+        if(!items[0].itemSizes){ throw new Error("first item's sizes is null"); }
+        const item_a = { itemId: items[0].id, itemSizeId: items[0].itemSizes[0].id }
 
-        if(!items[1].sizes){ throw new Error("first item's sizes is null"); }
-        const item_b = { itemId: items[1].id, itemSizeId: items[1].sizes[0].id }
+        if(!items[1].itemSizes){ throw new Error("first item's sizes is null"); }
+        const item_b = { itemId: items[1].id, itemSizeId: items[1].itemSizes[0].id }
 
         const uom = await measureService.findOneByName(POUND);
         if(!uom){ throw new NotFoundException(); }
@@ -196,8 +196,8 @@ describe('Inventory area count service', () => {
 
         const sizeDto = {
             mode: 'create',
-            unitOfMeasureId: uom.id,
-            inventoryPackageTypeId: pkg.id,
+            measureUnitId: uom.id,
+            inventoryPackageId: pkg.id,
             inventoryItemId: items[2].id,
             cost: 12,
             measureAmount: 1,
@@ -215,9 +215,9 @@ describe('Inventory area count service', () => {
 
         const result = await countService.update(testCountId, updateCountDto);
         expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
+        expect(result?.countedItems?.length).toEqual(3);
 
-        testItemCountIds = result?.items?.map(item => item.id) as number[];
+        testItemCountIds = result?.countedItems?.map(item => item.id) as number[];
     });
 
     it('should query newly counted items from itemCountService', async () => {
@@ -225,25 +225,25 @@ describe('Inventory area count service', () => {
         if(!results){ throw new Error("results is null"); }
         
         for(const item of results){
-            expect(item.areaCount).not.toBeNull();
-            expect(item.item).not.toBeNull();
-            expect(item.size).not.toBeNull();
+            expect(item.parentInventoryCount).not.toBeNull();
+            expect(item.countedItem).not.toBeNull();
+            expect(item.countedItemSize).not.toBeNull();
         }
     });
 
     it('should update an area count item\'s unit amount', async () => {
         const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
         if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
+        if(!areaCount.countedItems){ throw new Error("area count's items is null"); }
 
-        updateItemTestId = areaCount.items[0].id;
+        updateItemTestId = areaCount.countedItems[0].id;
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            unitAmount: 10,
+            countedAmonut: 10,
         } as UpdateInventoryAreaItemDto;
 
-        const theRest = areaCount.items.splice(1).map( areaItem => ({
+        const theRest = areaCount.countedItems.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
         } as UpdateInventoryAreaItemDto))
@@ -253,13 +253,13 @@ describe('Inventory area count service', () => {
         } as UpdateInventoryAreaCountDto;
 
         const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
+        if(!result?.countedItems){ throw new Error("results area items is null"); }
 
         expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
-        for(const item of result?.items){
+        expect(result?.countedItems?.length).toEqual(3);
+        for(const item of result?.countedItems){
             if(item.id === updateItemTestId){
-                expect(item.unitAmount).toEqual(10);
+                expect(item.amount).toEqual(10);
             }
         }
     });
@@ -267,33 +267,33 @@ describe('Inventory area count service', () => {
     it('should update unit amount of queried area item', async () => {
         const result = await areaItemService.findOne(updateItemTestId);
         expect(result).not.toBeNull();
-        expect(result?.unitAmount).toEqual(10);
+        expect(result?.amount).toEqual(10);
     });
 
     it('should update an area count item\'s size unit of measure', async () => {
         const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
         if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
+        if(!areaCount.countedItems){ throw new Error("area count's items is null"); }
 
-        updateItemTestId = areaCount.items[0].id;
-        itemSizeTestId = areaCount.items[0].size.id;
+        updateItemTestId = areaCount.countedItems[0].id;
+        itemSizeTestId = areaCount.countedItems[0].countedItemSize.id;
 
         const uom = await measureService.findOneByName(FL_OUNCE);
         if(!uom){ throw new NotFoundException(); }
         const itemSizeUpdateDto = {
             mode: 'update',
             id: itemSizeTestId,
-            unitOfMeasureId: uom.id,
+            measureUnitId: uom.id,
             
         } as UpdateChildInventoryItemSizeDto;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            itemSizeDto: itemSizeUpdateDto,
+            countedItemSizeDto: itemSizeUpdateDto,
         } as UpdateChildInventoryAreaItemDto;
 
-        const theRest = areaCount.items.splice(1).map( areaItem => ({
+        const theRest = areaCount.countedItems.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
         } as UpdateChildInventoryAreaItemDto))
@@ -303,13 +303,13 @@ describe('Inventory area count service', () => {
         } as UpdateInventoryAreaCountDto;
 
         const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
+        if(!result?.countedItems){ throw new Error("results area items is null"); }
 
         expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
-        for(const item of result?.items){
+        expect(result?.countedItems?.length).toEqual(3);
+        for(const item of result?.countedItems){
             if(item.id === updateItemTestId){
-                expect(item.size.measureUnit.name).toEqual(FL_OUNCE);
+                expect(item.countedItemSize.measureUnit.name).toEqual(FL_OUNCE);
             }
         }
     });
@@ -317,10 +317,10 @@ describe('Inventory area count service', () => {
     it('should update an area count item size\'s package', async () => {
         const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
         if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
+        if(!areaCount.countedItems){ throw new Error("area count's items is null"); }
 
-        updateItemTestId = areaCount.items[0].id;
-        itemSizeTestId = areaCount.items[0].size.id;
+        updateItemTestId = areaCount.countedItems[0].id;
+        itemSizeTestId = areaCount.countedItems[0].countedItemSize.id;
 
         const pkg = await packageService.findOneByName(OTHER_PKG);
         if(!pkg){ throw new NotFoundException(); }
@@ -333,10 +333,10 @@ describe('Inventory area count service', () => {
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            itemSizeDto: itemSizeUpdateDto,
+            countedItemSizeDto: itemSizeUpdateDto,
         } as UpdateChildInventoryAreaItemDto;
 
-        const theRest = areaCount.items.splice(1).map( areaItem => ({
+        const theRest = areaCount.countedItems.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
         } as UpdateChildInventoryAreaItemDto))
@@ -346,13 +346,13 @@ describe('Inventory area count service', () => {
         } as UpdateInventoryAreaCountDto;
 
         const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
+        if(!result?.countedItems){ throw new Error("results area items is null"); }
 
         expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
-        for(const item of result?.items){
+        expect(result?.countedItems?.length).toEqual(3);
+        for(const item of result?.countedItems){
             if(item.id === updateItemTestId){
-                expect(item.size.packageType.name).toEqual(OTHER_PKG);
+                expect(item.countedItemSize.packageType.packageName).toEqual(OTHER_PKG);
             }
         }
     });
@@ -360,10 +360,10 @@ describe('Inventory area count service', () => {
     it('should update an area count item\'s inventory item (which means also size)', async () => {
         const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
         if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
+        if(!areaCount.countedItems){ throw new Error("area count's items is null"); }
 
-        updateItemTestId = areaCount.items[0].id;
-        itemSizeTestId = areaCount.items[0].size.id;
+        updateItemTestId = areaCount.countedItems[0].id;
+        itemSizeTestId = areaCount.countedItems[0].countedItemSize.id;
 
         const item = await itemService.findOneByName(FOOD_C);
         if(!item){ throw new NotFoundException(); }
@@ -376,11 +376,11 @@ describe('Inventory area count service', () => {
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            inventoryItemId: item.id,
-            itemSizeDto: itemSizeUpdateDto,
+            countedInventoryItemId: item.id,
+            countedItemSizeDto: itemSizeUpdateDto,
         } as UpdateChildInventoryAreaItemDto;
 
-        const theRest = areaCount.items.splice(1).map( areaItem => ({
+        const theRest = areaCount.countedItems.splice(1).map( areaItem => ({
             mode: 'update',
             id: areaItem.id
         } as UpdateInventoryAreaItemDto))
@@ -390,13 +390,13 @@ describe('Inventory area count service', () => {
         } as UpdateInventoryAreaCountDto;
 
         const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
+        if(!result?.countedItems){ throw new Error("results area items is null"); }
 
         expect(result).not.toBeNull();
-        expect(result?.items?.length).toEqual(3);
-        for(const item of result?.items){
+        expect(result?.countedItems?.length).toEqual(3);
+        for(const item of result?.countedItems){
             if(item.id === updateItemTestId){
-                expect(item.item.name).toEqual(FOOD_C);
+                expect(item.countedItem.itemName).toEqual(FOOD_C);
             }
         }
     });
@@ -404,52 +404,52 @@ describe('Inventory area count service', () => {
     it('should reflect new item for item size when queried', async () => {
         const result = await areaItemService.findOne(updateItemTestId, ['size'], ['size.item']);
         expect(result).not.toBeNull();
-        expect(result?.size.item.name).toEqual(FOOD_C);
+        expect(result?.countedItemSize.inventoryItem.itemName).toEqual(FOOD_C);
     });
 
     it('should update an area count item\'s with creating a new counted item, modifying another item, and removing another item', async () => {
         const areaCount = await countService.findOne(testCountId, ['items'], ['items.size']);
         if(!areaCount){ throw new NotFoundException(); }
-        if(!areaCount.items){ throw new Error("area count's items is null"); }
+        if(!areaCount.countedItems){ throw new Error("area count's items is null"); }
 
-        updateItemTestId = areaCount.items[0].id;
+        updateItemTestId = areaCount.countedItems[0].id;
 
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            unitAmount: 50,
+            countedAmonut: 50,
         } as UpdateInventoryAreaItemDto;
 
         const item = await itemService.findOneByName(DRY_B, ['sizes'])
         if(!item){ throw new NotFoundException(); }
-        if(!item.sizes){ throw new Error("item sizes is null"); }
+        if(!item.itemSizes){ throw new Error("item sizes is null"); }
         const createAreaItemDto = {
             mode: 'create',
-            areaCountId: testCountId,
-            unitAmount: 100,
+            parentInventoryCountId: testCountId,
+            countedAmount: 100,
             measureAmount: 200,
-            inventoryItemId: item.id,
-            itemSizeId: item.sizes[0].id,
+            countedInventoryItemId: item.id,
+            countedItemSizeId: item.itemSizes[0].id,
         } as CreateInventoryAreaItemDto;
 
         const theRest = {
             mode: 'update',
-            id: areaCount.items[1].id
+            id: areaCount.countedItems[1].id
         } as UpdateInventoryAreaItemDto;
 
-        deletedAreaItemId = areaCount.items[2].id;
+        deletedAreaItemId = areaCount.countedItems[2].id;
 
         const updateAreaCountDto = {
             itemCountDtos: [ updateAreaItemDto, createAreaItemDto, theRest]
         } as UpdateInventoryAreaCountDto;
 
         const result = await countService.update(testCountId, updateAreaCountDto);
-        if(!result?.items){ throw new Error("results area items is null"); }
+        if(!result?.countedItems){ throw new Error("results area items is null"); }
         expect(result).not.toBeNull();
-        expect(result.items.length).toEqual(3);
-        expect(result.items.findIndex(item => item.id === deletedAreaItemId)).toEqual(-1);
+        expect(result.countedItems.length).toEqual(3);
+        expect(result.countedItems.findIndex(item => item.id === deletedAreaItemId)).toEqual(-1);
 
-        testItemCountIds = result.items.map(i => i.id);
+        testItemCountIds = result.countedItems.map(i => i.id);
     });
 
     it('should update an area count item\'s to not have removed item', async () => {

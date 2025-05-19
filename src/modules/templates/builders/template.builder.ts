@@ -21,7 +21,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
     ){ super(Template, 'TemplateBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateTemplateDto): void {
-        if(dto.isPie){
+        if(dto.isPie !== undefined){
             this.isPie(dto.isPie);
         }
         if(dto.name){
@@ -33,7 +33,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
     }
 
     protected updateEntity(dto: UpdateTemplateDto): void {
-        if(dto.isPie){
+        if(dto.isPie !== undefined){
             this.isPie(dto.isPie);
         }
         if(dto.name){

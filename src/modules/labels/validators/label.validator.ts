@@ -17,7 +17,7 @@ export class LabelValidator extends ValidatorBase<Label> {
         const exists = await this.repo.findOne({ 
             where: {
                 menuItem: { id: dto.menuItemId},
-                type: { id: dto.typeId}
+                labelType: { id: dto.labelTypeId}
             }
         });
         if(exists){ return 'menuItem / labelType combination already exists'; }

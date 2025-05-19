@@ -20,25 +20,22 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     ) { super(InventoryItemVendor, 'InventoryItemVendorBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemVendorDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.vendorName){
+            this.name(dto.vendorName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryItemIds){
-            this.inventoryItemsByIds(dto.inventoryItemIds);
+        if(dto.vendorName){
+            this.name(dto.vendorName);
         }
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('vendorName', name);
     }
 
-    public inventoryItemsByIds(ids: number[]): this {
-        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
+    public vendorItemsByIds(ids: number[]): this {
+        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'vendorItems', ids);
     }
 }

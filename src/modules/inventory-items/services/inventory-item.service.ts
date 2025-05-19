@@ -20,6 +20,6 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
   ){ super(itemRepo, itemBuilder, validator, 'InventoryItemService', requestContextService, logger)}
 
   async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
-    return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
+    return await this.itemRepo.findOne({ where: { itemName: name }, relations: relations });
   }
 }

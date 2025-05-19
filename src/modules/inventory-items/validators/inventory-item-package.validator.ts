@@ -14,9 +14,9 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     ){ super(repo); }
 
     public async validateCreate(dto: CreateInventoryItemPackageDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { packageName: dto.packageName }});
         if(exists) { 
-            return `Inventory item package with name ${dto.name} already exists`; 
+            return `Inventory item package with name ${dto.packageName} already exists`; 
         }
         return null;
     }

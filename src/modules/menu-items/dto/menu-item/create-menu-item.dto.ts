@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateChildMenuItemComponentDto } from "../menu-item-component/create-child-menu-item-component.dto";
-import { CreateChildMenuItemComponentOptionsDto } from "../menu-item-component-options/create-child-menu-item-component-options.dto";
+import { CreateChildMenuItemContainerItemDto } from "../menu-item-container-item/create-child-menu-item-container-item.dto";
+import { CreateChildMenuItemContainerOptionsDto } from "../menu-item-container-options/create-child-menu-item-container-options.dto";
 
 export class CreateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
@@ -45,21 +45,22 @@ export class CreateMenuItemDto {
     @IsOptional()
     readonly isPOTM?: boolean;
 
-    @ApiProperty({ description: 'Pie requires parbaked shells' })
+    @ApiProperty({ description: 'If pie requires parbaked shells' })
     @IsBoolean()
     @IsOptional()
     readonly isParbake?: boolean;
 
-    @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemComponentDtos', description: 'Array of CreateChildMenuItemComponentDtos. Child dtos are used when creating a parent with child entities.',
-        type: [CreateChildMenuItemComponentDto]
+    @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemContainerItemDtos', 
+        description: 'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
+        type: [CreateChildMenuItemContainerItemDto]
      })
     @IsOptional()
     @IsArray()
-    readonly containerComponentDtos?: CreateChildMenuItemComponentDto[];
+    readonly containerComponentDtos?: CreateChildMenuItemContainerItemDto[];
 
-    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
-        type: [CreateChildMenuItemComponentOptionsDto]
+    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.', 
+        type: [CreateChildMenuItemContainerOptionsDto]
     })
     @IsOptional()
-    readonly containerOptionDto?: CreateChildMenuItemComponentOptionsDto;
+    readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto;
 }

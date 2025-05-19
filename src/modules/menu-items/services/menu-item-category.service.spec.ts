@@ -39,7 +39,7 @@ describe('menu item category service', () => {
 
         const result = await categoryService.create(dto);
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("test category");
+        expect(result?.categoryName).toEqual("test category");
 
         testId = result?.id as number;
     });
@@ -47,14 +47,14 @@ describe('menu item category service', () => {
     it('should find a category by id', async () => {
         const result = await categoryService.findOne(testId);
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("test category");
+        expect(result?.categoryName).toEqual("test category");
     });
 
     it('should find a category by name', async () => {
         const result = await categoryService.findOneByName("test category");
         expect(result).not.toBeNull();
         expect(result?.id).toEqual(testId);
-        expect(result?.name).toEqual("test category");
+        expect(result?.categoryName).toEqual("test category");
     });
 
     it('should update a category name', async () => {
@@ -64,7 +64,7 @@ describe('menu item category service', () => {
 
         const result = await categoryService.update(testId, dto);
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("updated category name");
+        expect(result?.categoryName).toEqual("updated category name");
     });
 
     it('should find all categories', async () => {

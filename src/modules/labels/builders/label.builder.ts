@@ -26,8 +26,8 @@ export class LabelBuilder extends BuilderBase<Label> {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
+        if(dto.labelTypeId){
+            this.labelTypeById(dto.labelTypeId);
         }
     }
 
@@ -38,8 +38,8 @@ export class LabelBuilder extends BuilderBase<Label> {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.typeId){
-            this.labelTypeById(dto.typeId);
+        if(dto.labelTypeId){
+            this.labelTypeById(dto.labelTypeId);
         }
     }
 
@@ -56,10 +56,10 @@ export class LabelBuilder extends BuilderBase<Label> {
     }
 
     public labelTypeById(id: number): this {
-        return this.setPropById(this.typeService.findOne.bind(this.typeService), 'type', id);
+        return this.setPropById(this.typeService.findOne.bind(this.typeService), 'labelType', id);
     }
 
     public labelTypeByName(name: string): this {
-        return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'type', name);
+        return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'labelType', name);
     }
 }

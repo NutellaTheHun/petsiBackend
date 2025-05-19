@@ -27,16 +27,16 @@ describe('Label type Controller', () => {
     const typeNames = getTestLabelTypeNames();
     types = typeNames.map(name => ({
       id: typeId++,
-      name: name,
+      labelTypeName: name,
     }) as LabelType);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateLabelTypeDto) => {
-        const exists = types.find(type => type.name === dto.name);
+        const exists = types.find(type => type.labelTypeName === dto.labelTypeName);
         if(exists){ throw new BadRequestException(); }
 
         const labelType = {
           id: typeId++,
-          name: dto.name,
+          labelTypeName: dto.labelTypeName,
         } as LabelType;
 
         types.push(labelType);
@@ -62,7 +62,7 @@ describe('Label type Controller', () => {
     });
 
     jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-        return types.find(type => type.name === name) || null;
+        return types.find(type => type.labelTypeName === name) || null;
       }
     );
 
@@ -79,8 +79,8 @@ describe('Label type Controller', () => {
         const existIdx = types.findIndex(type => type.id === id);
         if(existIdx === -1){ throw new NotFoundException(); }
 
-        if(dto.name){
-          types[existIdx].name = dto.name;
+        if(dto.labelTypeName){
+          types[existIdx].labelTypeName = dto.labelTypeName;
         }
         
         return types[existIdx];
@@ -94,21 +94,21 @@ describe('Label type Controller', () => {
 
   it('should create a label type', async () => {
     const dto = {
-      name: "testLabel",
+      labelTypeName: "testLabel",
     } as CreateLabelTypeDto;
 
     const result = await controller.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull()
-    expect(result?.name).toEqual("testLabel");
+    expect(result?.labelTypeName).toEqual("testLabel");
 
     testId = result?.id as number;
   });
 
   it('should fail to create a label type (already exists)', async () => {
     const dto = {
-      name: "testLabel",
+      labelTypeName: "testLabel",
     } as CreateLabelTypeDto;
     
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -125,19 +125,19 @@ describe('Label type Controller', () => {
 
   it('should update label type name', async () => {
     const dto = {
-      name: "updateTestLabel",
+      labelTypeName: "updateTestLabel",
     } as UpdateLabelTypeDto;
 
     const result = await controller.update(testId, dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull()
-    expect(result?.name).toEqual("updateTestLabel");
+    expect(result?.labelTypeName).toEqual("updateTestLabel");
   });
 
   it('should fail update label type name (not exist)', async () => {
     const dto = {
-      name: "updateTestLabel",
+      labelTypeName: "updateTestLabel",
     } as UpdateLabelTypeDto;
 
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

@@ -10,11 +10,11 @@ export class InventoryItemVendor {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    vendorName: string;
 
     /**
      * List of all {@link InventoryItem} provided by vendor.
      */
     @OneToMany(() => InventoryItem, (item) => item.vendor, { nullable: false })
-    items: InventoryItem[];
+    vendorItems: InventoryItem[];
 }

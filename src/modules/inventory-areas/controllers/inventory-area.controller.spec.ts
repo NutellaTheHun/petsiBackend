@@ -27,10 +27,10 @@ describe('inventory area controller', () => {
         areaService = module.get<InventoryAreaService>(InventoryAreaService);
 
         areas = [
-            { name: AREA_A } as InventoryArea,
-            { name: AREA_B } as InventoryArea,
-            { name: AREA_C } as InventoryArea,
-            { name: AREA_D } as InventoryArea,
+            { areaName: AREA_A } as InventoryArea,
+            { areaName: AREA_B } as InventoryArea,
+            { areaName: AREA_C } as InventoryArea,
+            { areaName: AREA_D } as InventoryArea,
         ];
         areas.map(area => area.id = areaId++);
 
@@ -55,10 +55,10 @@ describe('inventory area controller', () => {
         areas[3].inventoryCounts = [ areaCounts[6], areaCounts[7] ];
         
         jest.spyOn(areaService, "create").mockImplementation(async (createDto: CreateInventoryAreaDto) => {
-            const exists = areas.findIndex(a => a.name === createDto.name);
+            const exists = areas.findIndex(a => a.areaName === createDto.areaName);
             if(exists !== -1){ throw new BadRequestException(); }
 
-            const newArea = { name: createDto.name } as InventoryArea;
+            const newArea = { areaName: createDto.areaName } as InventoryArea;
 
             newArea.id = areaId++;
             areas.push(newArea);
@@ -66,7 +66,7 @@ describe('inventory area controller', () => {
         });
             
         jest.spyOn(areaService, "findOneByName").mockImplementation(async (name: string) => {
-            return areas.find(a => a.name === name) || null;
+            return areas.find(a => a.areaName === name) || null;
         });
         
         jest.spyOn(areaService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryAreaDto) => {
@@ -74,8 +74,8 @@ describe('inventory area controller', () => {
             if(idx === -1){ throw new NotFoundException(); }
 
             const toUpdate = areas[idx];
-            if(updateDto.name){
-                toUpdate.name = updateDto.name;
+            if(updateDto.areaName){
+                toUpdate.areaName = updateDto.areaName;
             }
             if(updateDto.inventoryCountIds){
                 toUpdate.inventoryCounts = areaCounts.filter(
@@ -111,13 +111,13 @@ describe('inventory area controller', () => {
     });
 
     it('should create an area', async () => {
-        const dto = { name: "testArea" } as CreateInventoryAreaDto;
+        const dto = { areaName: "testArea" } as CreateInventoryAreaDto;
         const result = await controller.create(dto);
         expect(result).not.toBeNull();
     });
     
     it('should fail to create an area (already exists)', async () => {
-        const dto = { name: "testArea" } as CreateInventoryAreaDto;
+        const dto = { areaName: "testArea" } as CreateInventoryAreaDto;
         await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
 

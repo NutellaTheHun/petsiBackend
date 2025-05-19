@@ -34,17 +34,17 @@ describe('Label type Service', () => {
 
   it('should create a type', async () => {
     const dto = {
-      name: "testType",
-      labelLength: 100,
-      labelWidth: 500,
+      labelTypeName: "testType",
+      labelTypeLength: 100,
+      labelTypeWidth: 500,
     } as CreateLabelTypeDto;
 
     const result = await typeService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testType");
-    expect(result?.labelLength).toEqual(100);
-    expect(result?.labelWidth).toEqual(500);
+    expect(result?.labelTypeName).toEqual("testType");
+    expect(result?.labelTypeLength).toEqual(100);
+    expect(result?.labelTypeWidth).toEqual(500);
 
     testId = result?.id as number;
   });
@@ -54,7 +54,7 @@ describe('Label type Service', () => {
     
     expect(result).not.toBeNull();
     expect(result?.id).toEqual(testId);
-    expect(result?.name).toEqual("testType");
+    expect(result?.labelTypeName).toEqual("testType");
   });
 
   it('should find a type by name', async () => {
@@ -62,40 +62,40 @@ describe('Label type Service', () => {
     
     expect(result).not.toBeNull();
     expect(result?.id).toEqual(testId);
-    expect(result?.name).toEqual("testType");
+    expect(result?.labelTypeName).toEqual("testType");
   });
 
   it('should update a type name', async () => {
     const dto = {
-      name: "updateLabelType"
+      labelTypeName: "updateLabelType"
     } as UpdateLabelTypeDto;
 
     const result = await typeService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("updateLabelType");
+    expect(result?.labelTypeName).toEqual("updateLabelType");
   });
 
   it('should update type length', async () => {
     const dto = {
-      labelLength: 6,
+      labelTypeLength: 6,
     } as UpdateLabelTypeDto;
 
     const result = await typeService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.labelLength).toEqual(6);
+    expect(result?.labelTypeLength).toEqual(6);
   });
 
   it('should update type width', async () => {
     const dto = {
-      labelWidth: 9,
+      labelTypeWidth: 9,
     } as UpdateLabelTypeDto;
 
     const result = await typeService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.labelWidth).toEqual(9);
+    expect(result?.labelTypeWidth).toEqual(9);
   });
 
   it('should find all types', async () => {

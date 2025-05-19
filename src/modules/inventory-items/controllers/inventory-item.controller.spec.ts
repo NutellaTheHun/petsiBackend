@@ -32,54 +32,54 @@ describe('Inventory Item Controller', () => {
     itemService = module.get<InventoryItemService>(InventoryItemService);
 
     vendors = [
-      { name: VENDOR_A } as InventoryItemVendor,
-      { name: VENDOR_B } as InventoryItemVendor,
-      { name: VENDOR_C } as InventoryItemVendor,
+      { vendorName: VENDOR_A } as InventoryItemVendor,
+      { vendorName: VENDOR_B } as InventoryItemVendor,
+      { vendorName: VENDOR_C } as InventoryItemVendor,
     ];
     vendors.map(vendor => vendor.id = vendId++);
 
     categories = [
-      { name: CLEANING_CAT } as InventoryItemCategory,
-      { name: DAIRY_CAT } as InventoryItemCategory,
-      { name: DRYGOOD_CAT } as InventoryItemCategory,
-      { name: FOOD_CAT } as InventoryItemCategory,
-      { name: FROZEN_CAT } as InventoryItemCategory,
-      { name: OTHER_CAT } as InventoryItemCategory,
-      { name: PAPER_CAT } as InventoryItemCategory,
-      { name: PRODUCE_CAT } as InventoryItemCategory,
+      { categoryName: CLEANING_CAT } as InventoryItemCategory,
+      { categoryName: DAIRY_CAT } as InventoryItemCategory,
+      { categoryName: DRYGOOD_CAT } as InventoryItemCategory,
+      { categoryName: FOOD_CAT } as InventoryItemCategory,
+      { categoryName: FROZEN_CAT } as InventoryItemCategory,
+      { categoryName: OTHER_CAT } as InventoryItemCategory,
+      { categoryName: PAPER_CAT } as InventoryItemCategory,
+      { categoryName: PRODUCE_CAT } as InventoryItemCategory,
     ];
     categories.map(category => category.id = catId++);
 
     items = [
-      { name: FOOD_A, category: categories[3], vendor: vendors[0] } as InventoryItem,
-      { name: DRY_A, category: categories[2], vendor: vendors[0] } as InventoryItem,
-      { name: OTHER_A, category: categories[5], vendor: vendors[0] } as InventoryItem,
+      { itemName: FOOD_A, category: categories[3], vendor: vendors[0] } as InventoryItem,
+      { itemName: DRY_A, category: categories[2], vendor: vendors[0] } as InventoryItem,
+      { itemName: OTHER_A, category: categories[5], vendor: vendors[0] } as InventoryItem,
 
-      { name: FOOD_B, category: categories[3], vendor: vendors[1] } as InventoryItem,
-      { name: DRY_B, category: categories[2], vendor: vendors[1] } as InventoryItem,
-      { name: OTHER_B, category: categories[5], vendor: vendors[1] } as InventoryItem,
+      { itemName: FOOD_B, category: categories[3], vendor: vendors[1] } as InventoryItem,
+      { itemName: DRY_B, category: categories[2], vendor: vendors[1] } as InventoryItem,
+      { itemName: OTHER_B, category: categories[5], vendor: vendors[1] } as InventoryItem,
     
-      { name: FOOD_C, category: categories[3], vendor: vendors[2] } as InventoryItem,
-      { name: DRY_C, category: categories[2], vendor: vendors[2] } as InventoryItem,
-      { name: OTHER_C, category: categories[5], vendor: vendors[2] } as InventoryItem,
+      { itemName: FOOD_C, category: categories[3], vendor: vendors[2] } as InventoryItem,
+      { itemName: DRY_C, category: categories[2], vendor: vendors[2] } as InventoryItem,
+      { itemName: OTHER_C, category: categories[5], vendor: vendors[2] } as InventoryItem,
     ];
     items.map(item => item.id = itemId++);
 
     jest.spyOn(itemService, "create").mockImplementation(async (createDto: CreateInventoryItemDto) => {
-      const exists = items.find(unit => unit.name === createDto.name);
+      const exists = items.find(unit => unit.itemName === createDto.itemName);
       if(exists){ throw new BadRequestException(); }
 
       
       const category = categories.find(c => c.id === createDto.inventoryItemCategoryId);
       const vendor = vendors.find(v => v.id === createDto.vendorId);
-      const unit = { id: 0, name: createDto.name, vendor, category } as InventoryItem;
+      const unit = { id: 0, itemName: createDto.itemName, vendor, category } as InventoryItem;
       unit.id = itemId++;
       items.push(unit);
       return unit;
     });
 
     jest.spyOn(itemService, "findOneByName").mockImplementation(async (name: string) => {
-      return items.find(unit => unit.name === name) || null;
+      return items.find(unit => unit.itemName === name) || null;
     });
     
     jest.spyOn(itemService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemDto) => {
@@ -97,7 +97,7 @@ describe('Inventory Item Controller', () => {
       if(updateDto.vendorId){
         let vendor = vendors.find(v => v.id === updateDto.vendorId);
       }
-      const updated = { id, name: updateDto.name, vendor, category } as InventoryItem;
+      const updated = { id, itemName: updateDto.itemName, vendor, category } as InventoryItem;
 
       items[index] = updated;
 
@@ -131,7 +131,7 @@ describe('Inventory Item Controller', () => {
 
   it('should create a item', async () => {
     const dto = {
-      name: "testItem",
+      itemName: "testItem",
       inventoryItemCategoryId: 1,
       vendorId: 1,
     } as CreateInventoryItemDto;
@@ -142,7 +142,7 @@ describe('Inventory Item Controller', () => {
   
   it('should fail to create a item (already exists)', async () => {
     const dto = {
-      name: "testItem",
+      itemName: "testItem",
       inventoryItemCategoryId: 1,
       vendorId: 1,
     } as CreateInventoryItemDto;
@@ -169,12 +169,12 @@ describe('Inventory Item Controller', () => {
     if(!toUpdate){ throw new Error("item to update not found"); }
 
     const dto = {
-      name: "UPDATED_testItem",
+      itemName: "UPDATED_testItem",
     } as UpdateInventoryItemDto;
 
     const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("UPDATED_testItem")
+    expect(result?.itemName).toEqual("UPDATED_testItem")
   });
   
   it('should fail to update a item (doesnt exist)', async () => {

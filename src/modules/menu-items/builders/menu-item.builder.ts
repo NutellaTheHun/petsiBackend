@@ -2,10 +2,10 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-child-menu-item-component-options.dto";
-import { UpdateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-child-menu-item-component-options.dto";
-import { CreateChildMenuItemComponentDto } from "../dto/menu-item-component/create-child-menu-item-component.dto";
-import { UpdateMenuItemComponentDto } from "../dto/menu-item-component/update-menu-item-component.dto";
+import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
+import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
+import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
 import { CreateMenuItemDto } from "../dto/menu-item/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
@@ -13,8 +13,8 @@ import { MenuItemCategoryService } from "../services/menu-item-category.service"
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemValidator } from "../validators/menu-item.validator";
-import { MenuItemComponentOptionsBuilder } from "./menu-item-component-options.builder";
-import { MenuItemComponentBuilder } from "./menu-item-component.builder";
+import { MenuItemContainerOptionsBuilder } from "./menu-item-container-options.builder";
+import { MenuItemContainerItemBuilder } from "./menu-item-container-item.builder";
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem>{
@@ -25,13 +25,13 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         @Inject(forwardRef(() => MenuItemCategoryService))
         private readonly categoryService: MenuItemCategoryService,
 
-        @Inject(forwardRef(() => MenuItemComponentBuilder))
-        private readonly componentBuilder: MenuItemComponentBuilder,
+        @Inject(forwardRef(() => MenuItemContainerItemBuilder))
+        private readonly componentBuilder: MenuItemContainerItemBuilder,
 
         private readonly sizeService: MenuItemSizeService,
 
-        @Inject(forwardRef(() => MenuItemComponentOptionsBuilder))
-        private readonly componentOptionsBuilder: MenuItemComponentOptionsBuilder,
+        @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
+        private readonly componentOptionsBuilder: MenuItemContainerOptionsBuilder,
         
         validator: MenuItemValidator,
         requestContextService: RequestContextService,
@@ -42,10 +42,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.name){
             this.name(dto.name);
         }
-        if(dto.isPOTM){
+        if(dto.isPOTM !== undefined){
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake){
+        if(dto.isParbake !== undefined){
             this.isParbake(dto.isParbake);
         }
 
@@ -66,7 +66,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
             this.categorybyId(dto.categoryId);
         }
         if(dto.containerComponentDtos){
-            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+            this.containerItemsByBuilder(this.entity.id, dto.containerComponentDtos);
         }
         if(dto.containerOptionDto){
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
@@ -77,10 +77,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.name){
             this.name(dto.name);
         }
-        if(dto.isPOTM){
+        if(dto.isPOTM !== undefined){
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake){
+        if(dto.isParbake !== undefined){
             this.isParbake(dto.isParbake);
         }
 
@@ -101,7 +101,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
             this.categorybyId(dto.categoryId);
         }
         if(dto.containerComponentDtos){
-            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+            this.containerItemsByBuilder(this.entity.id, dto.containerComponentDtos);
         }
         if(dto.containerOptionDto){
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
@@ -168,7 +168,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerByBuilder(parentId: number, dtos: (CreateChildMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
+    public containerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             containerId: parentId,
@@ -176,7 +176,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
     }
 
-    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto)): this {
+    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto)): this {
         return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);
     }
 }

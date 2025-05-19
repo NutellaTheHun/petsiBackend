@@ -1,11 +1,11 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
 import { MenuItemComponentUnionResolver } from '../../utils/menu-item-component-union-resolver';
-import { CreateChildMenuItemComponentDto } from '../menu-item-component/create-child-menu-item-component.dto';
-import { UpdateChildMenuItemComponentDto } from '../menu-item-component/update-child-menu-item-component.dto';
+import { CreateChildMenuItemContainerItemDto } from '../menu-item-container-item/create-child-menu-item-container-item.dto';
+import { UpdateChildMenuItemContainerItemDto } from '../menu-item-container-item/update-child-menu-item-container-item.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { CreateChildMenuItemComponentOptionsDto } from '../menu-item-component-options/create-child-menu-item-component-options.dto';
-import { UpdateChildMenuItemComponentOptionsDto } from '../menu-item-component-options/update-child-menu-item-component-options.dto';
+import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/create-child-menu-item-container-options.dto';
+import { UpdateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/update-child-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
@@ -55,18 +55,19 @@ export class UpdateMenuItemDto {
     @IsOptional()
     readonly isParbake?: boolean;
 
-    @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemComponentDtos', description: 'Array of CreateChildMenuItemComponentDtos. Child dtos are used when creating a parent with child entities.',
-        type: [UpdateChildMenuItemComponentDto]
+    @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemContainerItemDtos', 
+        description: 'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
+        type: [UpdateChildMenuItemContainerItemDto]
      })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => MenuItemComponentUnionResolver)
-    readonly containerComponentDtos?: (CreateChildMenuItemComponentDto | UpdateChildMenuItemComponentDto)[];
+    readonly containerComponentDtos?: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[];
 
     @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
-        type: [UpdateChildMenuItemComponentOptionsDto]
+        type: [UpdateChildMenuItemContainerOptionsDto]
     })
     @IsOptional()
-    readonly containerOptionDto?: CreateChildMenuItemComponentOptionsDto | UpdateChildMenuItemComponentOptionsDto;
+    readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto;
 }

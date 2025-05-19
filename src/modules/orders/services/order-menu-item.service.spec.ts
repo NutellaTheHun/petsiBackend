@@ -3,16 +3,16 @@ import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { item_a, item_b, item_d, item_f, item_g } from "../../menu-items/utils/constants";
-import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
+import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderMenuItemService } from "./order-menu-item.service";
 import { OrderService } from "./order.service";
-import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
-import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
-import { OrderMenuItemComponentService } from "./order-menu-item-component.service";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
+import { OrderContainerItem } from "../entities/order-container-item.entity";
+import { OrderContainerItemService } from "./order-container-item.service";
 
 describe('order menu item service', () => {
     let orderItemService: OrderMenuItemService;
@@ -20,7 +20,7 @@ describe('order menu item service', () => {
     let dbTestContext: DatabaseTestContext
 
     let orderService: OrderService;
-    let componentService: OrderMenuItemComponentService;
+    let componentService: OrderContainerItemService;
 
     let menuItemService: MenuItemService;
 
@@ -37,7 +37,7 @@ describe('order menu item service', () => {
 
         orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
         orderService = module.get<OrderService>(OrderService);
-        componentService = module.get<OrderMenuItemComponentService>(OrderMenuItemComponentService);
+        componentService = module.get<OrderContainerItemService>(OrderContainerItemService);
 
         menuItemService = module.get<MenuItemService>(MenuItemService);
     });
@@ -179,14 +179,14 @@ describe('order menu item service', () => {
                 componentMenuItemId: itemA.id,
                 componentItemSizeId: itemA.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
+            } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
                 componentMenuItemId: itemB.id,
                 componentItemSizeId: itemB.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
-        ] as CreateChildOrderMenuItemComponentDto[];
+            } as CreateChildOrderContainerItemDto,
+        ] as CreateChildOrderContainerItemDto[];
 
         const orders = await orderService.findAll();
         if(!orders){ throw new Error(); }
@@ -226,12 +226,12 @@ describe('order menu item service', () => {
             componentMenuItemId: itemD.id,
             componentItemSizeId: itemD.validSizes[0].id,
             quantity: 2,
-        } as CreateChildOrderMenuItemComponentDto;
+        } as CreateChildOrderContainerItemDto;
 
         const theRest = toUpdate.orderedItemComponents.map(comp => ({
             mode: 'update',
             id: comp.id,
-        }) as UpdateChildOrderMenuItemComponentDto);
+        }) as UpdateChildOrderContainerItemDto);
 
         const dto = {
             OrderedItemComponentDtos: [cDto, ...theRest],
@@ -251,7 +251,7 @@ describe('order menu item service', () => {
         const theRest = toUpdate.orderedItemComponents.map(comp => ({
             mode: 'update',
             id: comp.id,
-        }) as UpdateChildOrderMenuItemComponentDto);
+        }) as UpdateChildOrderContainerItemDto);
 
         const itemG = await menuItemService.findOneByName(item_g);
         if(!itemG){ throw new Error(); }
@@ -287,7 +287,7 @@ describe('order menu item service', () => {
         const theRest = toUpdate.orderedItemComponents.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
-        }) as UpdateChildOrderMenuItemComponentDto);
+        }) as UpdateChildOrderContainerItemDto);
 
         const removedId = toUpdate.orderedItemComponents[0].id;
 

@@ -6,7 +6,7 @@ export class CreateInventoryItemDto {
     @ApiProperty({ example: 'Evaporated Milk, Sliced Almonds, Large Pie Tins', description: 'Name of Inventory-Item entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly itemName: string;
 
     @ApiProperty({ description: 'Id of Inventory-Item-Category entity.' })
     @IsNumber()

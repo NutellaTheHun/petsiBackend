@@ -45,36 +45,36 @@ describe('Inventory Item Size Controller', () => {
     units.map(unit => unit.id = unitId++);
 
     packages = [
-      { name: BAG_PKG } as InventoryItemPackage,
-      { name: PACKAGE_PKG } as InventoryItemPackage,
-      { name: BOX_PKG } as InventoryItemPackage,
-      { name: OTHER_PKG } as InventoryItemPackage,
-      { name: CONTAINER_PKG } as InventoryItemPackage,
-      { name: CAN_PKG } as InventoryItemPackage,
+      { packageName: BAG_PKG } as InventoryItemPackage,
+      { packageName: PACKAGE_PKG } as InventoryItemPackage,
+      { packageName: BOX_PKG } as InventoryItemPackage,
+      { packageName: OTHER_PKG } as InventoryItemPackage,
+      { packageName: CONTAINER_PKG } as InventoryItemPackage,
+      { packageName: CAN_PKG } as InventoryItemPackage,
     ];
     packages.map(pkg => pkg.id = pkgId++);
 
     items = [
-      { name: "FOOD_A"  } as InventoryItem,
-      { name: "DRY_A"   } as InventoryItem,
-      { name: "OTHER_A" } as InventoryItem,
-      { name: "FOOD_B"  } as InventoryItem,
-      { name: "DRY_B"   } as InventoryItem,
+      { itemName: "FOOD_A"  } as InventoryItem,
+      { itemName: "DRY_A"   } as InventoryItem,
+      { itemName: "OTHER_A" } as InventoryItem,
+      { itemName: "FOOD_B"  } as InventoryItem,
+      { itemName: "DRY_B"   } as InventoryItem,
     ];
     items.map(pkg => pkg.id = itemId++);
 
     jest.spyOn(service, "create").mockImplementation(async (createDto: CreateInventoryItemSizeDto) => {
       const exists = sizes.find(unit => 
-        unit.item.id === createDto.inventoryItemId &&
-        unit.measureUnit.id === createDto.unitOfMeasureId &&
-        unit.packageType.id === createDto.inventoryPackageTypeId
+        unit.inventoryItem.id === createDto.inventoryItemId &&
+        unit.measureUnit.id === createDto.measureUnitId &&
+        unit.packageType.id === createDto.inventoryPackageId
       );
       if(exists){ throw new Error(); }
 
       const item = items.find(i => i.id === createDto.inventoryItemId);
-      const pkg = packages.find(p => p.id === createDto.inventoryPackageTypeId);
-      const measure = units.find(m => m.id === createDto.unitOfMeasureId);
-      const unit = { measureUnit: measure, packageType: pkg, item: item } as InventoryItemSize;
+      const pkg = packages.find(p => p.id === createDto.inventoryPackageId);
+      const measure = units.find(m => m.id === createDto.measureUnitId);
+      const unit = { measureUnit: measure, packageType: pkg, inventoryItem: item } as InventoryItemSize;
 
       unit.id = sizeId++;
       sizes.push(unit);
@@ -82,20 +82,20 @@ describe('Inventory Item Size Controller', () => {
     });
 
     jest.spyOn(service, "findSizesByItemName").mockImplementation(async (name: string, relations?: string[]) => {
-      return sizes.filter(unit => unit.item.name == name);
+      return sizes.filter(unit => unit.inventoryItem.itemName == name);
     });
     
     jest.spyOn(service, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemSizeDto) => {
       const index = sizes.findIndex(unit => unit.id === id);
       if (index === -1) throw new BadRequestException();
 
-      if(updateDto.inventoryPackageTypeId){
-        const pkg = packages.find(p => p.id === updateDto.inventoryPackageTypeId);
+      if(updateDto.inventoryPackageId){
+        const pkg = packages.find(p => p.id === updateDto.inventoryPackageId);
         if(!pkg){ throw new Error("package is null"); }
         sizes[index].packageType = pkg;
       }
-      if(updateDto.unitOfMeasureId){
-        const unit = units.find(m => m.id === updateDto.unitOfMeasureId);
+      if(updateDto.measureUnitId){
+        const unit = units.find(m => m.id === updateDto.measureUnitId);
         if(!unit){ throw new Error("unit is null"); }
         sizes[index].measureUnit = unit;
       }
@@ -129,8 +129,8 @@ describe('Inventory Item Size Controller', () => {
 
   it('should create a size', async () => {
     const dto = {
-      unitOfMeasureId: 1,
-      inventoryPackageTypeId: 1,
+      measureUnitId: 1,
+      inventoryPackageId: 1,
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
@@ -140,8 +140,8 @@ describe('Inventory Item Size Controller', () => {
   
   it('should fail to create a size (already exists)', async () => {
     const dto = {
-      unitOfMeasureId: 1,
-      inventoryPackageTypeId: 1,
+      measureUnitId: 1,
+      inventoryPackageId: 1,
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
@@ -170,7 +170,7 @@ describe('Inventory Item Size Controller', () => {
     if(!toUpdate){ throw new Error("size to update not found"); }
 
     const dto = {
-      inventoryPackageTypeId: packages[1].id
+      inventoryPackageId: packages[1].id
     } as UpdateInventoryItemSizeDto;
     const result = await controller.update(toUpdate.id, dto);
 

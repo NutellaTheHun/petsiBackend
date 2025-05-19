@@ -16,14 +16,14 @@ export class InventoryItem{
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    itemName: string;
 
     /**
      * {@link InventoryItemCategory} for item.
      * 
      * - Example: "Produce", "Dry Goods", "Dairy", "Cleaning Supplies"
      */
-    @ManyToOne(() => InventoryItemCategory, (category) => category.items, {   
+    @ManyToOne(() => InventoryItemCategory, (category) => category.categoryItems, {   
         nullable: true, 
         cascade: true,
         onDelete: 'SET NULL' 
@@ -34,7 +34,7 @@ export class InventoryItem{
      * The supplier of the item.
      * - Example : "Cysco", "Driscols", "Walden Farms"
      */
-    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.items, {       
+    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {       
         nullable: true, 
         cascade: true, 
         onDelete: 'SET NULL'  
@@ -46,6 +46,6 @@ export class InventoryItem{
      * - Can be created explicitly through updating InventoryItem, 
      * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
      */
-    @OneToMany(() => InventoryItemSize, size => size.item, { cascade: true })
-    sizes?: InventoryItemSize[] | null;
+    @OneToMany(() => InventoryItemSize, size => size.inventoryItem, { cascade: true })
+    itemSizes?: InventoryItemSize[] | null;
 }

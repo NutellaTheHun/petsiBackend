@@ -10,11 +10,11 @@ export class MenuItemCategory {
     id: number;
 
     @Column({ unique: true })
-    name: string;
+    categoryName: string;
 
     /**
      * A list of MenuItems with who's category property are set to this instance.
      */
     @OneToMany(() => MenuItem, (item) => item.category, { nullable: true })
-    items?: MenuItem[] | null;
+    categoryItems?: MenuItem[] | null;
 }

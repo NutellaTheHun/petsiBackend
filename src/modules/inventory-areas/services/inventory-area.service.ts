@@ -22,6 +22,6 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
     ) { super(areaRepo, areaBuilder, validator, 'InventoryAreaService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof InventoryArea>): Promise<InventoryArea | null> {
-        return await this.areaRepo.findOne({ where: { name }, relations}); 
+        return await this.areaRepo.findOne({ where: { areaName: name }, relations}); 
     }
 }

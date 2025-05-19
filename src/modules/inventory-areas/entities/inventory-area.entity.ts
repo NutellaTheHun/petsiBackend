@@ -18,7 +18,7 @@ export class InventoryArea {
      * - Such as a "walk-in" or "dry storage".
      */
     @Column({ unique: true, nullable: false })
-    name: string;
+    areaName: string;
 
     /**
     * The record of all inventory counts performed for the inventory area.

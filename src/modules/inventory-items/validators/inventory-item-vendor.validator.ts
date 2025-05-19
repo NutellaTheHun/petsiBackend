@@ -14,9 +14,9 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
     ){ super(repo); }
 
     public async validateCreate(dto: CreateInventoryItemVendorDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { vendorName: dto.vendorName }});
         if(exists) { 
-            return `Inventory item vendor with name ${dto.name} already exists`; 
+            return `Inventory item vendor with name ${dto.vendorName} already exists`; 
         }
         return null;
     }

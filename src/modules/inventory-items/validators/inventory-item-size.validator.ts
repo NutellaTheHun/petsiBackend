@@ -21,7 +21,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
             where: { 
                 measureUnit: { id: dto.unitOfMeasureId },
                 packageType: { id: dto.inventoryPackageTypeId },
-                item: { id: dto.inventoryItemId } 
+                inventoryItem: { id: dto.inventoryItemId } 
             }
         });
         if(exists){ 

@@ -11,19 +11,19 @@ export class LabelType {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    labelTypeName: string;
 
     /**
      * In hundreths of an inch.
      * 400x200(labelLength)
      */
     @Column({ nullable: false })
-    labelLength: number;
+    labelTypeLength: number;
 
     /**
      * In hundreths of an inch.
      * 400(labelWidth)x200
      */
     @Column({ nullable: false })
-    labelWidth: number;
+    labelTypeWidth: number;
 }

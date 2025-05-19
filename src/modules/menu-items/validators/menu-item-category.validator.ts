@@ -14,7 +14,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateMenuItemCategoryDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { categoryName: dto.name }});
         if(exists) { 
             return `Menu item category with name ${dto.name} already exists`; 
         }

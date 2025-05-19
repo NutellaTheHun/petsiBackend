@@ -20,15 +20,15 @@ export class InventoryAreaItem {
      * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
      */
     @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
-    areaCount: InventoryAreaCount;
+    parentInventoryCount: InventoryAreaCount;
 
     /**
-     * The item from the inventory catalog being referenced.
-     * - example: 6 pack of 28oz can of evaporated milk(item.name)
-     * - example: 10 lb flour(item.name)
+     * The {@link InventoryItem} being counted during the {@link InventoryAreaCount}.
+     * - example: 6 pack of 28oz can of evaporated milk(countedItem.name)
+     * - example: 10 lb flour(countedItem.name)
      */
     @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
-    item: InventoryItem;
+    countedItem: InventoryItem;
 
     /**
      * Represents the amount of units per size.measuredQuantity by size.measureUnit, for instances of multi pack items.
@@ -37,7 +37,7 @@ export class InventoryAreaItem {
      * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
      */
     @Column({ type: 'int', nullable: true })
-    unitAmount?: number | null;
+    amount?: number | null;
 
     /**
      * The size of the {@link InventoryItem } counted. 
@@ -48,5 +48,5 @@ export class InventoryAreaItem {
      * Creating new InventoryItemSizes is permitted during the creation of {@link InventoryAreaCount} (selects package and unit type on the fly)
      */
     @ManyToOne(() => InventoryItemSize, { nullable: false, cascade: true, onDelete: 'CASCADE' })
-    size: InventoryItemSize;
+    countedItemSize: InventoryItemSize;
 }

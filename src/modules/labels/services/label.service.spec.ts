@@ -51,7 +51,7 @@ describe('Label Service', () => {
     const dto = {
       menuItemId: item.id,
       imageUrl: "testUrl",
-      typeId: lblType.id,
+      labelTypeId: lblType.id,
     } as CreateLabelDto;
 
     const result = await labelService.create(dto);
@@ -59,7 +59,7 @@ describe('Label Service', () => {
     expect(result).not.toBeNull();
     expect(result?.imageUrl).toEqual("testUrl");
     expect(result?.menuItem.id).toEqual(item.id);
-    expect(result?.type.id).toEqual(lblType.id);
+    expect(result?.labelType.id).toEqual(lblType.id);
 
     testId = result?.id as number;
   });
@@ -111,13 +111,13 @@ describe('Label Service', () => {
     if(!newType){ throw new NotFoundException(); }
 
     const dto = {
-      typeId: newType.id
+      labelTypeId: newType.id
     } as UpdateLabelDto;
 
     const result = await labelService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.type.id).toEqual(newType.id);
+    expect(result?.labelType.id).toEqual(newType.id);
   });
 
   it('should find all labels', async () => {

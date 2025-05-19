@@ -22,6 +22,6 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor>
     ){ super(vendorRepo, vendorBuilder, validator, 'InventoryItemVendorService', requestContextService, logger)}
 
     async findOneByName(name: string, relations?: Array<keyof InventoryItemVendor>): Promise<InventoryItemVendor | null> {
-        return await this.vendorRepo.findOne({ where: { name: name }, relations });
+        return await this.vendorRepo.findOne({ where: { vendorName: name }, relations });
     }
 }

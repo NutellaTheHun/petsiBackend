@@ -44,7 +44,7 @@ export class InventoryAreaTestUtil {
         for(const name of this.areaNames){
             results.push(
                 await this.areaBuilder.reset()
-                    .name(name)
+                    .areaName(name)
                     .build()
             )
         }
@@ -104,26 +104,26 @@ export class InventoryAreaTestUtil {
 
         for(let i = 0; i < counts.length; i++){
             const itemA = items[itemPtr++ % items.length];
-            if(!itemA.sizes){ throw new Error("itemA sizes null"); }
-            const sizeA = itemA.sizes[0];
+            if(!itemA.itemSizes){ throw new Error("itemA sizes null"); }
+            const sizeA = itemA.itemSizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                .areaCountById(counts[i].id)
-                .inventoryItemById(itemA.id)
-                .sizeById(sizeA.id)
-                .unitAmount(1)
+                .parentInventoryCountById(counts[i].id)
+                .countedItemById(itemA.id)
+                .countedItemSizeById(sizeA.id)
+                .amount(1)
                 .build()
             );
 
             const itemB = items[itemPtr++ % items.length];
-            if(!itemB.sizes){ throw new Error("itemA sizes null"); }
-            const sizeB = itemB.sizes[0];
+            if(!itemB.itemSizes){ throw new Error("itemA sizes null"); }
+            const sizeB = itemB.itemSizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                .areaCountById(counts[i].id)
-                .inventoryItemById(itemB.id)
-                .sizeById(sizeB.id)
-                .unitAmount(1)
+                .parentInventoryCountById(counts[i].id)
+                .countedItemById(itemB.id)
+                .countedItemSizeById(sizeB.id)
+                .amount(1)
                 .build()
             );
         }
@@ -142,7 +142,7 @@ export class InventoryAreaTestUtil {
         const toInsert: InventoryArea[] = [];
 
         for(const area of areas){
-            const exists = await this.areaService.findOneByName(area.name);
+            const exists = await this.areaService.findOneByName(area.areaName);
             if(!exists){ toInsert.push(area); }
         }
         await this.areaService.insertEntities(toInsert);
@@ -208,19 +208,19 @@ export class InventoryAreaTestUtil {
             if(item.sizeDto){
                 results.push({
                     mode: 'create',
-                    unitAmount: unitAmount++,
+                    countedAmount: unitAmount++,
                     measureAmount: measureAmount++,
-                    inventoryItemId: item.itemId,
+                    countedInventoryItemId: item.itemId,
                     //itemSizeId: item.itemSizeId,
-                    itemSizeDto: item.sizeDto
+                    countedItemSizeDto: item.sizeDto
                 } as CreateChildInventoryAreaItemDto)
             } else {
                 results.push({
                     mode: 'create',
-                    unitAmount: unitAmount++,
+                    countedAmount: unitAmount++,
                     measureAmount: measureAmount++,
-                    inventoryItemId: item.itemId,
-                    itemSizeId: item.itemSizeId,
+                    countedInventoryItemId: item.itemId,
+                    countedItemSizeId: item.itemSizeId,
                     //itemSizeDto: item.sizeDto
                 } as CreateChildInventoryAreaItemDto)
             }

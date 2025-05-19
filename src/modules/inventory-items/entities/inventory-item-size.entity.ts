@@ -44,8 +44,8 @@ export class InventoryItemSize {
      * 
      * An item can have multiple valid InventoryItemSizes
      */
-    @ManyToOne(() => InventoryItem, (item) => item.sizes, { onDelete: 'CASCADE', orphanedRowAction: 'delete'})
-    item: InventoryItem;
+    @ManyToOne(() => InventoryItem, (item) => item.itemSizes, { onDelete: 'CASCADE', orphanedRowAction: 'delete'})
+    inventoryItem: InventoryItem;
 
     /**
      * The price paid for the item. Used for calculating recipe costs.

@@ -5,5 +5,5 @@ export class CreateInventoryAreaDto {
     @ApiProperty({ example: 'Dry Storage, Walkin, Freezer', description: 'Name of the Inventory-Area.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly areaName: string;
 }

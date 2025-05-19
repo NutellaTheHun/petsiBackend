@@ -35,14 +35,14 @@ describe('Inventory Item Package Service', () => {
 
   it('should create a inventory item package', async () => {
     const dto = { 
-      name: "testPackageName"
+      packageName: "testPackageName"
     } as CreateInventoryItemPackageDto;
     
     const result = await packageService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual("testPackageName");
+    expect(result?.packageName).toEqual("testPackageName");
 
     testId = result?.id as number;
   });
@@ -53,14 +53,14 @@ describe('Inventory Item Package Service', () => {
     }
     const result = await packageService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("update pkg name");
+    expect(result?.packageName).toEqual("update pkg name");
   });
 
   it('should get a package by name', async () => {
     const result = await packageService.findOneByName("update pkg name");
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("update pkg name");
+    expect(result?.packageName).toEqual("update pkg name");
   });
 
   it('should remove a inventory item package', async () => {

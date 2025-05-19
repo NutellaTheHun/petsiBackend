@@ -9,7 +9,7 @@ export class UpdateInventoryItemDto {
     @ApiProperty({ example: 'Evaporated Milk, Sliced Almonds, Large Pie Tins', description: 'Name of Inventory-Item entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly itemName?: string;
 
     @ApiProperty({ description: 'Id of Inventory-Item-Category entity.' })
     @IsNumber()
@@ -30,7 +30,7 @@ export class UpdateInventoryItemDto {
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => InventoryItemSizeUnionResolver)
-    readonly sizeDtos?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
+    readonly itemSizeDtos?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
     @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
     @IsNumber({ maxDecimalPlaces: 2 })

@@ -31,7 +31,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
         return await this.areaCountRepo.find({ 
-            where: { inventoryArea: { name: name } }, 
+            where: { inventoryArea: { areaName: name } }, 
             relations
         });
     }

@@ -6,12 +6,5 @@ export class UpdateInventoryItemVendorDto{
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    readonly name?: string;
-
-    @ApiProperty({ description: 'Array of Inventory-Item ids that are from the vendor.' })
-    @IsArray()
-    @IsPositive({ each: true})
-    @IsNumber({}, { each: true})
-    @IsOptional()
-    readonly inventoryItemIds?: number[];
+    readonly vendorName?: string;
 }

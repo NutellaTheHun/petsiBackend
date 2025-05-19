@@ -37,8 +37,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         if(dto.inventoryItemCategoryId){
             this.categoryById(dto.inventoryItemCategoryId)
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.itemName){
+            this.name(dto.itemName);
         }
         if(dto.itemSizeDtos){
             this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
@@ -52,11 +52,11 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         if(dto.inventoryItemCategoryId !== undefined){
             this.categoryById(dto.inventoryItemCategoryId);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.itemName){
+            this.name(dto.itemName);
         }
-        if(dto.sizeDtos){
-            this.sizesByBuilder(this.entity.id, dto.sizeDtos);
+        if(dto.itemSizeDtos){
+            this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
         if(dto.vendorId !== undefined){
             this.vendorById(dto.vendorId);
@@ -64,11 +64,11 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('itemName', name);
     }
 
     public sizesByIds(ids: number[]): this {
-        return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'sizes', ids);
+        return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'itemSizes', ids);
     }
 
     public sizesByBuilder(inventoryItemId: number, dtos: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[]): this {
@@ -76,7 +76,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
             ...dto,
             inventoryItemId
         }));
-        return this.setPropByBuilder(this.itemSizeBuilder.buildManyChildDto.bind(this.itemSizeBuilder), 'sizes', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.itemSizeBuilder.buildManyChildDto.bind(this.itemSizeBuilder), 'itemSizes', this.entity, enrichedDtos);
     }
     
     public categoryById(id: number): this {

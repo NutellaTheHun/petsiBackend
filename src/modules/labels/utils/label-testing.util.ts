@@ -25,9 +25,9 @@ export class LabelTestingUtil{
 
         for(const name of names){
             results.push({
-                name: name,
-                labelLength: 200,
-                labelWidth: 400,
+                labelTypeName: name,
+                labelTypeLength: 200,
+                labelTypeWidth: 400,
             } as LabelType);
         }
 
@@ -67,7 +67,7 @@ export class LabelTestingUtil{
             results.push({
                 menuItem: items[itemIdx++ % items.length],
                 imageUrl: url,
-                type: types[typeIdx++ % types.length],
+                labelType: types[typeIdx++ % types.length],
             } as Label);
         }
 

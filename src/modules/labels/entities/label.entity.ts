@@ -31,5 +31,5 @@ export class Label {
      * A label type for categories like: "4x2", "2x1", or "ingredient label"
      */
     @ManyToOne(() => LabelType, {nullable: true, onDelete: 'SET NULL' })
-    type: LabelType;
+    labelType: LabelType;
 }

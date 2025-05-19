@@ -14,9 +14,9 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     ){ super(repo); }
 
     public async validateCreate(dto: CreateInventoryItemCategoryDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
         if(exists) { 
-            return `Inventory item with name ${dto.name} already exists`; 
+            return `Inventory item with name ${dto.itemCategoryName} already exists`; 
         }
         return null;
     }

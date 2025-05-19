@@ -5,5 +5,5 @@ export class UpdateInventoryItemPackageDto {
     @ApiProperty({ example: 'Box, Can, Container, Bag', description: 'Name for Inventory-Item-Package entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly packageName?: string;
 }

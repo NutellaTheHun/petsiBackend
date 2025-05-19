@@ -26,16 +26,16 @@ describe('menu item category controller', () => {
     let id = 1;
     categories = names.map( name => ({
       id: id++,
-      name: name
+      categoryName: name
     }) as MenuItemCategory);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemCategoryDto) => {
-        const exists = categories.find(category => category.name === dto.name);
+        const exists = categories.find(category => category.categoryName === dto.name);
         if(exists){ throw new BadRequestException(); }
 
         const category = {
           id: id++,
-          name: dto.name,
+          categoryName: dto.name,
         } as MenuItemCategory;
   
         categories.push(category);
@@ -58,7 +58,7 @@ describe('menu item category controller', () => {
     });
 
     jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-      return categories.find(cat => cat.name === name) || null;
+      return categories.find(cat => cat.categoryName === name) || null;
     });
 
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -74,7 +74,7 @@ describe('menu item category controller', () => {
       if(existIdx === -1){ throw new NotFoundException(); }
 
       if(dto.name){
-        categories[existIdx].name = dto.name;
+        categories[existIdx].categoryName = dto.name;
       }
 
       return categories[existIdx];
@@ -94,7 +94,7 @@ describe('menu item category controller', () => {
  
      expect(result).not.toBeNull();
      expect(result?.id).not.toBeNull()
-     expect(result?.name).toEqual("testCategory");
+     expect(result?.categoryName).toEqual("testCategory");
  
      testId = result?.id as number;
    });
@@ -125,7 +125,7 @@ describe('menu item category controller', () => {
  
      expect(result).not.toBeNull();
      expect(result?.id).not.toBeNull()
-     expect(result?.name).toEqual("updateTestCategory");
+     expect(result?.categoryName).toEqual("updateTestCategory");
    });
  
    it('should fail update category name (not exist)', async () => {

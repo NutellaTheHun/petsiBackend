@@ -20,6 +20,6 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     ){ super(packageRepo, packageBuilder, validator, 'InventoryItemPackageService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof InventoryItemPackage>): Promise<InventoryItemPackage | null> {
-        return await this.packageRepo.findOne({ where: { name: name }, relations });
+        return await this.packageRepo.findOne({ where: { packageName: name }, relations });
     }
 }

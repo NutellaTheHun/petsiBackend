@@ -14,9 +14,9 @@ import { OrderCategoryService } from "./order-category.service";
 import { OrderService } from "./order.service";
 import { CreateOrderDto } from "../dto/order/create-order.dto";
 import { UpdateOrderDto } from "../dto/order/update-order.dto";
-import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
+import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
 import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
-import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
 
 describe('order service', () => {
     let orderService: OrderService;
@@ -478,14 +478,14 @@ describe('order service', () => {
                 componentMenuItemId: itemA.id,
                 componentItemSizeId: itemA.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
+            } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
                 componentMenuItemId: itemB.id,
                 componentItemSizeId: itemB.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
-        ] as CreateChildOrderMenuItemComponentDto[]
+            } as CreateChildOrderContainerItemDto,
+        ] as CreateChildOrderContainerItemDto[]
 
         const compDtos_b = [
             {
@@ -493,14 +493,14 @@ describe('order service', () => {
                 componentMenuItemId: itemC.id,
                 componentItemSizeId: itemC.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
+            } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
                 componentMenuItemId: itemD.id,
                 componentItemSizeId: itemD.validSizes[0].id,
                 quantity: 1,
-            } as CreateChildOrderMenuItemComponentDto,
-        ] as CreateChildOrderMenuItemComponentDto[]
+            } as CreateChildOrderContainerItemDto,
+        ] as CreateChildOrderContainerItemDto[]
 
         const itemE = await menuItemService.findOneByName(item_e);
         if(!itemE){ throw new Error();}
@@ -560,13 +560,13 @@ describe('order service', () => {
             componentMenuItemId: itemG.id,
             componentItemSizeId: itemG.validSizes[0].id,
             quantity: 1,
-        } as CreateChildOrderMenuItemComponentDto;
+        } as CreateChildOrderContainerItemDto;
 
         if(!order.items[0].orderedItemComponents){ throw new Error(); }
         const updateComponentDtos = order.items[0].orderedItemComponents.map(comp => ({
             mode: 'update',
             id: comp.id
-        }) as UpdateChildOrderMenuItemComponentDto);
+        }) as UpdateChildOrderContainerItemDto);
 
         const updateOrderItemDto = {
             mode: 'update',
@@ -612,7 +612,7 @@ describe('order service', () => {
             componentMenuItemId: itemF.id,
             componentItemSizeId: itemF.validSizes[0].id,
             quantity: 2,
-        } as UpdateChildOrderMenuItemComponentDto;
+        } as UpdateChildOrderContainerItemDto;
 
         const moddedCompId = order.items[0].orderedItemComponents[0].id;
         const moddedItemId = order.items[0].id;
@@ -620,7 +620,7 @@ describe('order service', () => {
         const theRestComponents = order.items[0].orderedItemComponents.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
-        }) as UpdateChildOrderMenuItemComponentDto)
+        }) as UpdateChildOrderContainerItemDto)
 
         const updateItemDto = {
             mode: 'update',
@@ -663,7 +663,7 @@ describe('order service', () => {
         const theRestComponents = order.items[0].orderedItemComponents.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
-        }) as UpdateChildOrderMenuItemComponentDto)
+        }) as UpdateChildOrderContainerItemDto)
 
         const removedComp = order.items[0].orderedItemComponents[0].id;
 

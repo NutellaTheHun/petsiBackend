@@ -17,23 +17,17 @@ export class UpdateChildInventoryAreaItemDto {
     @IsNotEmpty()
     readonly id: number;
 
-    @ApiProperty({ description: 'Id of the Area-Count parent entity.' })
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    readonly areaCountId?: number;
-
     @ApiProperty({ description: 'Id for Inventory-Item entity.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly inventoryItemId?: number;
+    readonly countedInventoryItemId?: number;
 
     @ApiProperty({ example: '6pk(unit amount) of 28oz(measure amount) can of evaporated milk', description: 'The amount of Inventory-Item per unit.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly unitAmount?: number;
+    readonly countedAmount?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 
@@ -46,7 +40,7 @@ export class UpdateChildInventoryAreaItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly itemSizeId?: number;
+    readonly countedItemSizeId?: number;
 
     /**
      * -When creating a countedItem (during an inventory count), 
@@ -59,5 +53,5 @@ export class UpdateChildInventoryAreaItemDto {
         type: [UpdateInventoryItemSizeDto]
      })
     @IsOptional()
-    readonly itemSizeDto?: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto);
+    readonly countedItemSizeDto?: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto);
 }

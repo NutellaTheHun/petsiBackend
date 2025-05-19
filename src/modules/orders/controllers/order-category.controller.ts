@@ -23,7 +23,7 @@ export class OrderCategoryController extends ControllerBase<OrderCategory>{
     @Inject(CACHE_MANAGER) cacheManager: Cache,
     logger: AppLogger,
     requestContextService: RequestContextService,
-  ) { super(orderTypeService, cacheManager, 'OrderTypeController', requestContextService, logger); }
+  ) { super(orderTypeService, cacheManager, 'OrderCategoryController', requestContextService, logger); }
   
   @Post()
   @HttpCode(HttpStatus.CREATED)

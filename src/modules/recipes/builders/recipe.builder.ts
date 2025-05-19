@@ -48,7 +48,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
         }
-        if(dto.isIngredient){
+        if(dto.isIngredient !== undefined){
             this.isIngredient(dto.isIngredient);
         }
         if(dto.menuItemId){
@@ -90,7 +90,7 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
                 this.subCategoryById(0);
             }
         }
-        if(dto.isIngredient){
+        if(dto.isIngredient !== undefined){
             this.isIngredient(dto.isIngredient);
         }
         if(dto.menuItemId !== undefined){

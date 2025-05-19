@@ -3,20 +3,20 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemCategoryBuilder } from "../builders/menu-item-category.builder";
 import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
 import { MenuItemBuilder } from "../builders/menu-item.builder";
-import { CreateChildComponentOptionDto } from "../dto/child-component-option/create-child-component-option.dto";
-import { CreateChildMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-child-menu-item-component-options.dto";
-import { CreateChildMenuItemComponentDto } from "../dto/menu-item-component/create-child-menu-item-component.dto";
+import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
+import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
-import { MenuItemComponent } from "../entities/menu-item-component.entity";
+import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
-import { MenuItemComponentService } from "../services/menu-item-component.service";
+import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { getItemContainerTestNames, getTestCategoryNames, getTestItemNames, getTestSizeNames, item_a, item_b, item_c, item_d, item_f, item_g, SIZE_ONE } from "./constants";
-import { MenuItemComponentOptionsService } from "../services/menu-item-component-options.service";
-import { ComponentOptionService } from "../services/component-option.service";
+import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
+import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -30,9 +30,9 @@ export class MenuItemTestingUtil {
         private readonly itemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
         private readonly categoryService: MenuItemCategoryService,
-        private readonly componentService: MenuItemComponentService,
-        private readonly itemcomponentOptionsService: MenuItemComponentOptionsService,
-        private readonly componentOptionService: ComponentOptionService,
+        private readonly componentService: MenuItemContainerItemService,
+        private readonly itemcomponentOptionsService: MenuItemContainerOptionsService,
+        private readonly componentOptionService: MenuItemContainerRuleService,
 
         private readonly itemBuilder: MenuItemBuilder,
         private readonly sizeBuilder: MenuItemSizeBuilder,
@@ -295,7 +295,7 @@ export class MenuItemTestingUtil {
      * @param testContext 
      * @returns 
      */
-    public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemComponent[]>{
+    public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemContainerItem[]>{
         await this.initMenuItemTestDatabase(testContext);
         
         const itemF = await this.itemService.findOneByName(item_f, ['validSizes']);
@@ -325,35 +325,35 @@ export class MenuItemTestingUtil {
 
         const results = [
             {
-                container: itemF,
-                containerSize: itemF.validSizes[0],
-                item: itemA,
-                size: itemA.validSizes[0],
+                parentContainer: itemF,
+                parentContainerSize: itemF.validSizes[0],
+                containedItem: itemA,
+                containedItemsize: itemA.validSizes[0],
                 quantity: 1,
             },
             {
-                container: itemF,
-                containerSize: itemF.validSizes[0],
-                item: itemB,
-                size: itemB.validSizes[0],
+                parentContainer: itemF,
+                parentContainerSize: itemF.validSizes[0],
+                containedItem: itemB,
+                containedItemsize: itemB.validSizes[0],
                 quantity: 1,
             },
 
             {
-                container: itemG,
-                containerSize: itemG.validSizes[0],
-                item: itemC,
-                size: itemC.validSizes[0],
+                parentContainer: itemG,
+                parentContainerSize: itemG.validSizes[0],
+                containedItem: itemC,
+                containedItemsize: itemC.validSizes[0],
                 quantity: 1,
             },
             {
-                container: itemG,
-                containerSize: itemG.validSizes[0],
-                item: itemD,
-                size: itemD.validSizes[0],
+                parentContainer: itemG,
+                parentContainerSize: itemG.validSizes[0],
+                containedItem: itemD,
+                containedItemsize: itemD.validSizes[0],
                 quantity: 1,
             }
-        ] as MenuItemComponent[];
+        ] as MenuItemContainerItem[];
 
         return results;
     }
@@ -405,20 +405,20 @@ export class MenuItemTestingUtil {
                 validMenuItemId: itemA.id,
                 validSizeIds: itemA.validSizes.map(size => size.id),
                 quantity: 2,
-            } as CreateChildComponentOptionDto,
+            } as CreateChildMenuItemContainerRuleDto,
             { 
                 mode: 'create',
                 validMenuItemId: itemB.id,
                 validSizeIds: itemB.validSizes.map(size => size.id),
                 quantity: 2,
-            } as CreateChildComponentOptionDto,
-        ] as CreateChildComponentOptionDto[];
+            } as CreateChildMenuItemContainerRuleDto,
+        ] as CreateChildMenuItemContainerRuleDto[];
         const optionsA = {
             mode: 'create',
             isDynamic: true,
-            componentOptionDtos: componentOptionDtos_A,
+            containerRuleDtos: componentOptionDtos_A,
             validQuantity: 4,
-        } as CreateChildMenuItemComponentOptionsDto;
+        } as CreateChildMenuItemContainerOptionsDto;
 
         const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
         if(!itemC){ throw new Error("item c is null"); }
@@ -432,20 +432,20 @@ export class MenuItemTestingUtil {
                 validMenuItemId: itemC.id,
                 validSizeIds: itemC.validSizes.map(size => size.id),
                 quantity: 3,
-            } as CreateChildComponentOptionDto,
+            } as CreateChildMenuItemContainerRuleDto,
             { 
                 mode: 'create',
                 validMenuItemId: itemD.id,
                 validSizeIds: itemD.validSizes.map(size => size.id),
                 quantity: 3,
-            } as CreateChildComponentOptionDto,
-        ] as CreateChildComponentOptionDto[];
+            } as CreateChildMenuItemContainerRuleDto,
+        ] as CreateChildMenuItemContainerRuleDto[];
         const optionsB = {
             mode: 'create',
              isDynamic: true,
-            componentOptionDtos: componentOptionDtos_B,
+            containerRuleDtos: componentOptionDtos_B,
             validQuantity: 6,
-        } as CreateChildMenuItemComponentOptionsDto;
+        } as CreateChildMenuItemContainerOptionsDto;
 
         const sizeOne = await this.sizeService.findOneByName(SIZE_ONE);
         if(!sizeOne){ throw new Error("size one is null"); }
@@ -456,15 +456,15 @@ export class MenuItemTestingUtil {
                 menuItemId: itemA.id,
                 menuItemSizeId: itemA.validSizes[0].id,
                 quantity: 2,
-            } as CreateChildMenuItemComponentDto,
+            } as CreateChildMenuItemContainerItemDto,
             { 
                 mode: 'create',
                 containerSizeId: sizeOne.id,
                 menuItemId: itemD.id,
                 menuItemSizeId: itemD.validSizes[0].id,
                 quantity: 3,
-            } as CreateChildMenuItemComponentDto,
-        ] as CreateChildMenuItemComponentDto[];
+            } as CreateChildMenuItemContainerItemDto,
+        ] as CreateChildMenuItemContainerItemDto[];
 
         const containerItemNames = getItemContainerTestNames();
         const options = [optionsA, optionsB];
@@ -492,7 +492,7 @@ export class MenuItemTestingUtil {
                 .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                 .name(containerItemNames[2])
                 .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
-                .containerByBuilder(0, menuItemComponentsC)
+                .containerItemsByBuilder(0, menuItemComponentsC)
                 .build()
         );
         

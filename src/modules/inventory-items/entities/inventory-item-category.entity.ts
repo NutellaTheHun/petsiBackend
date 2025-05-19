@@ -11,7 +11,7 @@ export class InventoryItemCategory {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    categoryName: string;
 
     /**
      * Hold reference to all {@link InventoryItem} under it's category.
@@ -19,5 +19,5 @@ export class InventoryItemCategory {
      * Is updated through the creation/modification/deletion of InventoryItems
      */
     @OneToMany(() => InventoryItem, (item) => item.category, { nullable: false })
-    items: InventoryItem[];
+    categoryItems: InventoryItem[];
 }
