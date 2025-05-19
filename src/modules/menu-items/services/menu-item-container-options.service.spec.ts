@@ -5,7 +5,7 @@ import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-
 import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 import { CreateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-menu-item-container-options.dto";
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
-import { item_a } from "../utils/constants";
+import { item_a, item_b } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerOptionsService } from "./menu-item-container-options.service";
@@ -57,19 +57,6 @@ describe('menu item container options service', () => {
     it('should find container options by id', async () => {
         const result = await itemComponentOptionsService.findOne(testId);
         expect(result).not.toBeNull();
-    });
-
-    it('should update isDynamic', async () => {
-        const toUpdate = await itemComponentOptionsService.findOne(testId);
-        const val = toUpdate.isDynamic === true ? false : true;
-
-        const dto = {
-            isDynamic: val,
-        } as UpdateMenuItemContainerOptionsDto;
-
-        const result = await itemComponentOptionsService.update(testId, dto);
-        expect(result).not.toBeNull();
-        expect(result?.isDynamic).toEqual(val);
     });
 
     it('should update container rules (add)', async () => {
@@ -135,7 +122,12 @@ describe('menu item container options service', () => {
             id: comp.id,
        }) as UpdateChildMenuItemContainerRuleDto)
 
-       updateDtos[0].quantity = 100;
+       const newItem = await itemService.findOneByName(item_b, ['validSizes']);
+       if(!newItem){ throw new Error(); }
+       if(!newItem.validSizes){ throw new Error(); }
+
+       updateDtos[0].validMenuItemId = newItem.id;
+       updateDtos[0].validSizeIds = [newItem.validSizes[0].id];
 
         const dto = {
             containerRuleDtos: updateDtos,
@@ -145,7 +137,8 @@ describe('menu item container options service', () => {
         expect(result).not.toBeNull();
         for(const compOption of result.containerRules){
             if(compOption.id === compToModId){
-                expect(compOption.validQuantity).toEqual(100);
+                expect(compOption.validItem.id).toEqual(newItem.id);
+                expect(compOption.validSizes[0].id).toEqual(newItem.validSizes[0].id);
             }
         }
     });

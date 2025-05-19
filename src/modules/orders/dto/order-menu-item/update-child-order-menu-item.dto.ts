@@ -37,5 +37,5 @@ export class UpdateChildOrderMenuItemDto {
     })
     @IsArray()
     @IsOptional()
-    readonly OrderedItemComponentDtos?: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[];
+    readonly orderedItemContainerDtos?: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[];
 }

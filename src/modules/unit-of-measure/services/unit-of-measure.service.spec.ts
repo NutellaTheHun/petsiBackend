@@ -125,7 +125,7 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('category should contain reference to unit of measure', async () => {
-    const weightCategory = await categoryService.findOneByName(WEIGHT, ["units"]);
+    const weightCategory = await categoryService.findOneByName(WEIGHT, ['unitsOfMeasure']);
     if(!weightCategory){ throw new Error("weight category not found"); }
 
     expect(weightCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).not.toEqual(-1);
@@ -147,14 +147,14 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('old category should not have reference to unit of measure', async () => {
-    const weightCategory = await categoryService.findOneByName(WEIGHT, ["units"]);
+    const weightCategory = await categoryService.findOneByName(WEIGHT, ['unitsOfMeasure']);
     if(!weightCategory){ throw new Error("weight category not found"); }
 
     expect(weightCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).toEqual(-1);
   });
 
   it('new category should have reference to unit of measure', async () => {
-    const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
+    const volumeCategory = await categoryService.findOneByName(VOLUME, ['unitsOfMeasure']);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
     expect(volumeCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).not.toEqual(-1);
@@ -196,7 +196,7 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('new category should lose reference to unit of measure', async () => {
-    const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
+    const volumeCategory = await categoryService.findOneByName(VOLUME, ['unitsOfMeasure']);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
     expect(volumeCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).toEqual(-1);
@@ -323,7 +323,7 @@ describe('UnitOfMeasureService', () => {
   });
 
   it('should set unit category to null when deleting category', async () => {
-    const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
+    const volumeCategory = await categoryService.findOneByName(VOLUME, ['unitsOfMeasure']);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
     const testUnitId = volumeCategory.unitsOfMeasure[0].id;

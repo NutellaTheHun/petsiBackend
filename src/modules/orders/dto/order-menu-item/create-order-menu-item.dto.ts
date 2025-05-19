@@ -35,5 +35,5 @@ export class CreateOrderMenuItemDto {
         })
     @IsArray()
     @IsOptional()
-    readonly OrderedItemComponentDtos?: CreateChildOrderContainerItemDto[];
+    readonly orderedItemContainerDtos?: CreateChildOrderContainerItemDto[];
 }

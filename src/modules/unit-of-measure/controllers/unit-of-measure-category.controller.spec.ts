@@ -27,12 +27,12 @@ describe('UnitOfMeasureCategoryController', () => {
     categories.map(category => category.id = id++);
 
     jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
-      const exists = categories.find(unit => unit.categoryName === createDto.name);
+      const exists = categories.find(unit => unit.categoryName === createDto.categoryName);
       if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
-        categoryName: createDto.name,
+        categoryName: createDto.categoryName,
       } as UnitOfMeasureCategory;
 
       categories.push(unit);
@@ -47,8 +47,8 @@ describe('UnitOfMeasureCategoryController', () => {
       const index = categories.findIndex(unit => unit.id === id);
       if(index === -1){ throw new NotFoundException(); }
       
-      if(updateDto.name){
-        categories[index].categoryName = updateDto.name;
+      if(updateDto.categoryName){
+        categories[index].categoryName = updateDto.categoryName;
       }
 
       return categories[index];
@@ -83,7 +83,7 @@ describe('UnitOfMeasureCategoryController', () => {
 
   it('should create a category', async () => {
     const dto = {
-      name: "testCategory",
+      categoryName: "testCategory",
     } as CreateUnitOfMeasureCategoryDto;
 
     const result = await controller.create(dto);
@@ -92,7 +92,7 @@ describe('UnitOfMeasureCategoryController', () => {
   
   it('should fail to create a category (already exists)', async () => {
     const dto = {
-      name: "testCategory",
+      categoryName: "testCategory",
     } as CreateUnitOfMeasureCategoryDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -116,8 +116,12 @@ describe('UnitOfMeasureCategoryController', () => {
     const toUpdate = await categoryService.findOneByName("testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    toUpdate.categoryName = "UPDATED_testCategory";
-    const result = await controller.update(toUpdate.id, toUpdate);
+    //toUpdate.categoryName = "UPDATED_testCategory";
+    const dto = {
+      categoryName: "UPDATED_testCategory"
+    } as UpdateUnitOfMeasureCategoryDto;
+
+    const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
     expect(result?.categoryName).toEqual("UPDATED_testCategory")
   });

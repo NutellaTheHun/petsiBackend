@@ -22,10 +22,6 @@ describe('menu item container rule controller', () => {
     let compId = 1;
     compOptions = quanties.map( quantity => ({
       id: compId++,
-      //parentOption: ,
-      //validItem: ,
-      //validSizes: ,
-      validQuantity: quantity,
     }) as MenuItemContainerRule);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemContainerRuleDto) => {
@@ -58,9 +54,9 @@ describe('menu item container rule controller', () => {
       const existIdx = compOptions.findIndex(size => size.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.quantity){
+      /*if(dto.quantity){
         compOptions[existIdx].validQuantity = dto.quantity;
-      }
+      }*/
 
       return compOptions[existIdx];
     });    
@@ -85,18 +81,6 @@ describe('menu item container rule controller', () => {
  
    it('should fail find size by id (not exist)', async () => {
      await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
-   });
- 
-   it('should update valid quantity', async () => {
-     const dto = {
-       quantity: 8,
-     } as UpdateMenuItemContainerRuleDto;
- 
-     const result = await controller.update(1, dto);
- 
-     expect(result).not.toBeNull();
-     expect(result?.id).not.toBeNull()
-     expect(result?.validQuantity).toEqual(8);
    });
  
    it('should fail update size name (not exist)', async () => {

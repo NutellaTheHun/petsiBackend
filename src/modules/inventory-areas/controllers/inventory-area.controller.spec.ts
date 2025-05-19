@@ -77,11 +77,6 @@ describe('inventory area controller', () => {
             if(updateDto.areaName){
                 toUpdate.areaName = updateDto.areaName;
             }
-            if(updateDto.inventoryCountIds){
-                toUpdate.inventoryCounts = areaCounts.filter(
-                    count => updateDto.inventoryCountIds?.findIndex(
-                        id => id === count.id) !== -1);
-            }
             areas[idx] = toUpdate;
             return toUpdate;
         });

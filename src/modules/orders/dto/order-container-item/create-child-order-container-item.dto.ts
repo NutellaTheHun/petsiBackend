@@ -15,7 +15,7 @@ export class CreateChildOrderContainerItemDto {
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
-    containedItemSizeId: number;
+    containedMenuItemSizeId: number;
 
     @ApiProperty({ description: 'amount of the containedMenuItem / containedItemSize being ordered' })
     @IsNumber()

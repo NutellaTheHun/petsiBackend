@@ -197,7 +197,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('new category should gain reference to item', async () => {
-    const oldCat = await categoryService.findOne(oldCategoryId, ['items']);
+    const oldCat = await categoryService.findOne(oldCategoryId, ['categoryItems']);
     if(!oldCat){ throw new NotFoundException(); }
 
     expect(oldCat.categoryItems.findIndex(item => item.id === testId)).not.toEqual(-1);
@@ -219,14 +219,14 @@ describe('Inventory Item Service', () => {
   });
 
   it('old item category should loose reference to item', async () => {
-    const oldCat = await categoryService.findOne(oldCategoryId, ['items']);
+    const oldCat = await categoryService.findOne(oldCategoryId, ['categoryItems']);
     if(!oldCat){ throw new NotFoundException(); }
 
     expect(oldCat.categoryItems.findIndex(item => item.id === testId)).toEqual(-1);
   });
 
   it('new item category should gain reference to item', async () => {
-    const newCat = await categoryService.findOne(newCategoryId, ['items']);
+    const newCat = await categoryService.findOne(newCategoryId, ['categoryItems']);
     if(!newCat){ throw new NotFoundException(); }
 
     expect(newCat.categoryItems.findIndex(item => item.id === testId)).not.toEqual(-1);
@@ -243,7 +243,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('old item category should loose reference to item', async () => {
-    const newCat = await categoryService.findOne(newCategoryId, ['items']);
+    const newCat = await categoryService.findOne(newCategoryId, ['categoryItems']);
     if(!newCat){ throw new NotFoundException(); }
 
     expect(newCat.categoryItems.findIndex(item => item.id === testId)).toEqual(-1);
@@ -265,7 +265,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('vendor should gain reference to item', async () => {
-    const oldVend = await vendorService.findOne(oldVendorId, ['items']);
+    const oldVend = await vendorService.findOne(oldVendorId, ['vendorItems']);
     if(!oldVend){ throw new NotFoundException(); }
 
     expect(oldVend.vendorItems.findIndex(item => item.id === testId)).not.toEqual(-1);
@@ -287,14 +287,14 @@ describe('Inventory Item Service', () => {
   });
 
   it('old vendor should loose reference to item', async () => {
-    const oldVend = await vendorService.findOne(oldVendorId, ['items']);
+    const oldVend = await vendorService.findOne(oldVendorId, ['vendorItems']);
     if(!oldVend){ throw new NotFoundException(); }
 
     expect(oldVend.vendorItems.findIndex(item => item.id === testId)).toEqual(-1);
   });
 
   it('new vendor should gain reference to item', async () => {
-    const newVend = await vendorService.findOne(newVendorId, ['items']);
+    const newVend = await vendorService.findOne(newVendorId, ['vendorItems']);
     if(!newVend){ throw new NotFoundException(); }
 
     expect(newVend.vendorItems.findIndex(item => item.id === testId)).not.toEqual(-1);
@@ -311,18 +311,18 @@ describe('Inventory Item Service', () => {
   });
 
   it('old vendor should loose reference to item', async () => {
-    const newVend = await vendorService.findOne(newVendorId, ['items']);
+    const newVend = await vendorService.findOne(newVendorId, ['vendorItems']);
     if(!newVend){ throw new NotFoundException(); }
 
     expect(newVend.vendorItems.findIndex(item => item.id === testId)).toEqual(-1);
   });
 
   it('should modify a item size, and item should gain reference to modified size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
     if(!item){ throw new NotFoundException(); }
     if(!item.itemSizes){ throw new Error("item sizes are null"); }
     
-    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['item','measureUnit','packageType']);
+    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['inventoryItem','measureUnit','packageType']);
     if(!sizes){ throw new Error("queried sizes are null"); }
 
     updateItemSizeId = item.itemSizes[0].id;
@@ -376,11 +376,11 @@ describe('Inventory Item Service', () => {
   });
 
   it('should update inventory item with removed item size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
     if(!item){ throw new NotFoundException(); }
     if(!item.itemSizes){ throw new Error("item sizes are null"); }
 
-    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['item','measureUnit','packageType']);
+    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['inventoryItem','measureUnit','packageType']);
     if(!sizes){ throw new Error("queried sizes are null"); }
 
     deletedSizeId = sizes[0].id;
@@ -411,10 +411,10 @@ describe('Inventory Item Service', () => {
   });
 
   it('should update item with both a new and modified size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
     if(!item){ throw new NotFoundException(); }
     if(!item.itemSizes){ throw new Error("item sizes are null"); }
-    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['item','measureUnit','packageType']);
+    const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['inventoryItem','measureUnit','packageType']);
     if(!sizes){ throw new Error("queried sizes are null"); }
 
     updateItemPkgId = item.itemSizes[0].id;
@@ -481,7 +481,7 @@ describe('Inventory Item Service', () => {
 
   // remove
   it('should remove an item', async () => {
-    const itemToRemove = await itemService.findOne(invItemSizesTestId, ['sizes', 'category', 'vendor']);
+    const itemToRemove = await itemService.findOne(invItemSizesTestId, ['itemSizes', 'category', 'vendor']);
     if(!itemToRemove){ throw new NotFoundException(); }
     if(!itemToRemove.itemSizes){ throw new Error("sizes is null"); }
     expect(itemToRemove.itemSizes?.length).toBeGreaterThan(0);
@@ -496,13 +496,13 @@ describe('Inventory Item Service', () => {
   });
 
   it('removed item\'s vendor should lose reference to item', async () => {
-    const vendor = await vendorService.findOne(removalVendorId, ['items']);
+    const vendor = await vendorService.findOne(removalVendorId, ['vendorItems']);
     if(!vendor){ throw new NotFoundException(); }
     expect(vendor.vendorItems.findIndex(item => item.id === removalId)).toEqual(-1);
   });
 
   it('removed item\'s category should lose reference to item', async () => {
-    const category = await categoryService.findOne(removalCategoryId, ['items']);
+    const category = await categoryService.findOne(removalCategoryId, ['categoryItems']);
     if(!category){ throw new NotFoundException(); }
     expect(category.categoryItems.findIndex(item => item.id === removalId)).toEqual(-1);
   });

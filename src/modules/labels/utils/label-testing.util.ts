@@ -10,6 +10,10 @@ import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.ut
 
 @Injectable()
 export class LabelTestingUtil{
+
+    private initLabels = false;
+    private initLabelTypes = false;
+
     constructor(
         private readonly labelService: LabelService,
         private readonly typeService: LabelTypeService,
@@ -35,6 +39,11 @@ export class LabelTestingUtil{
     }
 
     public async initLabelTypeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initLabelTypes){ 
+            return; 
+        }
+        this.initLabelTypes = true;
+
         const types = await this.getTestLabelTypeEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupLabelTypeTestDatabase());
 
@@ -75,6 +84,11 @@ export class LabelTestingUtil{
     }
 
     public async initLabelTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initLabels){ 
+            return; 
+        }
+        this.initLabels = true;
+
         const labels = await this.getTestLabelEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupLabelTestDatabase());
 

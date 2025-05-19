@@ -66,14 +66,6 @@ describe('Inventory Item Vendor Controller', () => {
       if(updateDto.vendorName){
         vendors[index].vendorName = updateDto.vendorName;
       }
-      if(updateDto.inventoryItemIds){
-        const updateItems = [] as InventoryItem[];
-        for(id of updateDto.inventoryItemIds){
-          let item = items.find(i => i.id === id);
-          if(item){ updateItems.push(item); }
-        }
-        vendors[index].vendorItems = updateItems;
-      }
 
       return vendors[index];
     });

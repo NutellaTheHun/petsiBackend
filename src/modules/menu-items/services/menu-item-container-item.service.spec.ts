@@ -10,6 +10,8 @@ import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerItemService } from "./menu-item-container-item.service";
 import { MenuItemService } from "./menu-item.service";
+import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 
 describe('menu item container item service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -42,7 +44,7 @@ describe('menu item container item service', () => {
         expect(menuItemService).toBeDefined();
     });
 
-    it('should create a container item', async () => {
+    it('should fail to create a container item (bad request) then create properly for tests.', async () => {
 
         const parent = await menuItemService.findOneByName(item_a, ['validSizes']);
         if(!parent){ throw new NotFoundException(); }
@@ -60,7 +62,25 @@ describe('menu item container item service', () => {
             quantity: 1,
         } as CreateMenuItemContainerItemDto;
 
-        const result = await componentService.create(dto);
+        await expect(componentService.create(dto)).rejects.toThrow();
+
+        const definedContainerDto = {
+            mode: 'create',
+            parentContainerSizeId: parent.validSizes[0].id,
+            containedMenuItemId: item.id,
+            containedMenuItemSizeId: item.validSizes[0].id,
+            quantity: 1,
+        } as CreateChildMenuItemContainerItemDto;
+
+        const updateItemDto = {
+            definedContainerItemDtos: [definedContainerDto]
+        } as UpdateMenuItemDto;
+
+        const updateResult = await menuItemService.update( parent.id, updateItemDto);
+        if(!updateResult){ throw new Error(); }
+        if(!updateResult.definedContainerItems){ throw new Error(); }
+
+        const result = updateResult.definedContainerItems[0];
 
         expect(result).not.toBeNull();
 
@@ -69,7 +89,7 @@ describe('menu item container item service', () => {
     });
 
     it('should query menu item with container item reference', async () => {
-        const parentItem = await menuItemService.findOne(testParentItemId, ['container']);
+        const parentItem = await menuItemService.findOne(testParentItemId, ['definedContainerItems']);
         if(!parentItem){ throw new NotFoundException(); }
         if(!parentItem.definedContainerItems){ throw new Error(); }
 
@@ -127,7 +147,7 @@ describe('menu item container item service', () => {
 
         const dto = plainToInstance(UpdateMenuItemContainerItemDto, {
             mode: 'update',
-            menuItemId: newItem.id,
+            containedMenuItemId: newItem.id,
         });
 
         await expect(componentService.update(testId, dto)).rejects.toThrow(AppHttpException);
@@ -168,7 +188,7 @@ describe('menu item container item service', () => {
     });
 
     it('should query menu item without container item reference', async () => {
-        const parentItem = await menuItemService.findOne(testParentItemId, ['container']);
+        const parentItem = await menuItemService.findOne(testParentItemId, ['definedContainerItems']);
         if(!parentItem){ throw new NotFoundException(); }
         if(!parentItem.definedContainerItems){ throw new Error(); }
 
@@ -185,7 +205,7 @@ describe('menu item container item service', () => {
         
         await menuItemService.remove(toDelete.id);
 
-        const parentItem = await menuItemService.findOneByName(item_g, ['container']);
+        const parentItem = await menuItemService.findOneByName(item_g, ['definedContainerItems']);
         if(!parentItem){ throw new NotFoundException(); }
         if(!parentItem.definedContainerItems){ throw new Error(); }
 

@@ -139,7 +139,7 @@ describe('Template Service', () => {
   });
 
   it('should query added template items', async() => {
-    const results = await templateItemService.findEntitiesById(addedItemIds, ['template']);
+    const results = await templateItemService.findEntitiesById(addedItemIds, ['parentTemplate']);
     if(!results){ throw new Error(); }
 
     expect(results).not.toBeNull();
@@ -192,7 +192,7 @@ describe('Template Service', () => {
   });
 
   it('should query modified template item', async() => {
-    const modifiedItem = await templateItemService.findOne(modifiedItemId, ['template', 'menuItem']);
+    const modifiedItem = await templateItemService.findOne(modifiedItemId, ['parentTemplate', 'menuItem']);
     if(!modifiedItem){ throw new Error(); }
 
     expect(modifiedItem.displayName).toEqual("update display name");

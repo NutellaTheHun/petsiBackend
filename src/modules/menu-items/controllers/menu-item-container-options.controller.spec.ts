@@ -58,8 +58,8 @@ describe('menu item container options controller', () => {
       const existIdx = options.findIndex(size => size.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.isDynamic){
-        options[existIdx].isDynamic = dto.isDynamic;
+      if(dto.validQuantity){
+        options[existIdx].validQuantity = dto.validQuantity;
       }
 
       return options[existIdx];
@@ -70,48 +70,47 @@ describe('menu item container options controller', () => {
       expect(service).toBeDefined();
   });
 
-  it('should fail to create menu item component options', async () => {
+  it('should fail to create container options', async () => {
      const dto = {
      } as CreateMenuItemContainerOptionsDto;
  
      await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
    });
  
-   it('should find size by id', async () => {
+   it('should find container options by id', async () => {
      const result = await controller.findOne(1);
      expect(result).not.toBeNull();
    });
  
-   it('should fail find size by id (not exist)', async () => {
+   it('should fail to find container options by id (not exist)', async () => {
      await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
    });
  
-   it('should update size name', async () => {
+   it('should update quantity', async () => {
      const dto = {
-       isDynamic: true,
+       validQuantity: 8,
      } as UpdateMenuItemContainerOptionsDto;
  
      const result = await controller.update(1, dto);
  
      expect(result).not.toBeNull();
      expect(result?.id).not.toBeNull()
-     expect(result?.isDynamic).toEqual(true);
+     expect(result?.validQuantity).toEqual(8);
    });
  
-   it('should fail update size name (not exist)', async () => {
+   it('should fail update quantity (not exist)', async () => {
      const dto = {
-       name: "updateTestItemSize",
      } as UpdateMenuItemContainerOptionsDto;
  
      await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
    });
  
-   it('should remove size', async () => {
+   it('should remove container options', async () => {
      const result = await controller.remove(1);
      expect(result).toBeUndefined();
    });
  
-   it('should fail remove size (not exist)', async () => {
+   it('should fail remove container options (not exist)', async () => {
      await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
    });
 });

@@ -1,24 +1,23 @@
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { FL_OUNCE, GALLON, LITER, MILLILITER, QUART } from "../../unit-of-measure/utils/constants";
 import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
+import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
+import { InventoryItemSize } from "../entities/inventory-item-size.entity";
+import { InventoryItem } from "../entities/inventory-item.entity";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
+import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemSizeController } from "./inventory-item-size.controller";
-import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
-import { FL_OUNCE, GALLON, LITER, MILLILITER, QUART } from "../../unit-of-measure/utils/constants";
-import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
-import { InventoryItem } from "../entities/inventory-item.entity";
-import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
-import { BAG_PKG, PACKAGE_PKG, BOX_PKG, OTHER_PKG, CONTAINER_PKG, CAN_PKG } from "../utils/constants";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 
 describe('Inventory Item Size Controller', () => {
   let controller: InventoryItemSizeController;
   let service: InventoryItemSizeService;
 
   let sizes: InventoryItemSize[] = [];
-  let sizeId = 1;
+  let sizeId = 4;
 
   let packages: InventoryItemPackage[];
   let pkgId = 1;
@@ -62,6 +61,27 @@ describe('Inventory Item Size Controller', () => {
       { itemName: "DRY_B"   } as InventoryItem,
     ];
     items.map(pkg => pkg.id = itemId++);
+
+    sizes = [
+      {
+        id: 1,
+        measureUnit: units[0],
+        packageType: packages[0],
+        inventoryItem: items[0],
+      } as InventoryItemSize,
+      {
+        id: 2,
+        measureUnit: units[1],
+        packageType: packages[1],
+        inventoryItem: items[1],
+      } as InventoryItemSize,
+      {
+        id: 3,
+        measureUnit: units[2],
+        packageType: packages[2],
+        inventoryItem: items[2],
+      } as InventoryItemSize,
+    ]
 
     jest.spyOn(service, "create").mockImplementation(async (createDto: CreateInventoryItemSizeDto) => {
       const exists = sizes.find(unit => 
@@ -127,15 +147,14 @@ describe('Inventory Item Size Controller', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a size', async () => {
+  it('should fail to create a size', async () => {
     const dto = {
       measureUnitId: 1,
       inventoryPackageId: 1,
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
   
   it('should fail to create a size (already exists)', async () => {

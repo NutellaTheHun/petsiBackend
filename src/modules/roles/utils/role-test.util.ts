@@ -7,6 +7,9 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "./constants";
 
 @Injectable()
 export class RoleTestUtil {
+
+    private initRoles = false;
+
     constructor(
         private readonly roleService: RoleService,
         private readonly roleBuilder: RoleBuilder,
@@ -27,17 +30,22 @@ export class RoleTestUtil {
     }
 
     public async initRoleTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initRoles){ 
+            return; 
+        }
+        this.initRoles = true;
+
         const roles = await this.getTestUserEntities(testContext);
-        const toInsert: Role[] = [];
+        //const toInsert: Role[] = [];
         
         testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-        for(const role of roles){
+        /*for(const role of roles){
             const exists = await this.roleService.findOneByName(role.roleName);
             if(!exists){ toInsert.push(role); }
-        }
+        }*/
 
-        await this.roleService.insertEntities(toInsert);
+        await this.roleService.insertEntities(/*toInsert*/ roles);
     }
 
     public async cleanupRoleTestingDatabase(): Promise<void> {

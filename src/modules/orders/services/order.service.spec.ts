@@ -348,7 +348,7 @@ describe('order service', () => {
     });
 
     it('should modify items', async () => {
-        const order = await orderService.findOne(testId, ['items']);
+        const order = await orderService.findOne(testId, ['orderedItems']);
         if(!order){ throw new NotFoundException(); }
         if(!order.orderedItems){ throw new NotFoundException(); }
 
@@ -388,7 +388,7 @@ describe('order service', () => {
     })
 
     it('should remove items', async () => {
-        const order = await orderService.findOne(testId, ['items']);
+        const order = await orderService.findOne(testId, ['orderedItems']);
         if(!order){ throw new NotFoundException(); }
         if(!order.orderedItems){ throw new NotFoundException(); }
 
@@ -433,7 +433,7 @@ describe('order service', () => {
     });
 
     it('should remove order', async () => {
-        const toRemove = await orderService.findOne(testId, ['items', 'type']);
+        const toRemove = await orderService.findOne(testId, ['orderedItems', 'orderCategory']);
         if(!toRemove){ throw new NotFoundException(); }
         if(!toRemove.orderedItems){ throw new Error(); }
         
@@ -476,13 +476,13 @@ describe('order service', () => {
             {
                 mode: 'create',
                 containedMenuItemId: itemA.id,
-                containedItemSizeId: itemA.validSizes[0].id,
+                containedMenuItemSizeId: itemA.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
                 containedMenuItemId: itemB.id,
-                containedItemSizeId: itemB.validSizes[0].id,
+                containedMenuItemSizeId: itemB.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
         ] as CreateChildOrderContainerItemDto[]
@@ -491,13 +491,13 @@ describe('order service', () => {
             {
                 mode: 'create',
                 containedMenuItemId: itemC.id,
-                containedItemSizeId: itemC.validSizes[0].id,
+                containedMenuItemSizeId: itemC.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
                 containedMenuItemId: itemD.id,
-                containedItemSizeId: itemD.validSizes[0].id,
+                containedMenuItemSizeId: itemD.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
         ] as CreateChildOrderContainerItemDto[]
@@ -515,14 +515,14 @@ describe('order service', () => {
                 menuItemId: itemE.id,
                 menuItemSizeId: itemE.validSizes[0].id,
                 quantity: 1,
-                orderedItemComponentDtos: compDtos_a,
+                orderedItemContainerDtos: compDtos_a,
             } as CreateChildOrderMenuItemDto,
             {
                 mode: 'create',
                 menuItemId: itemF.id,
                 menuItemSizeId: itemF.validSizes[0].id,
                 quantity: 1,
-                orderedItemComponentDtos: compDtos_b,
+                orderedItemContainerDtos: compDtos_b,
             } as CreateChildOrderMenuItemDto,
         ] as CreateChildOrderMenuItemDto[];
 
@@ -548,7 +548,7 @@ describe('order service', () => {
     });
 
     it('should modify order menu item components (add)', async () => {
-        const order = await orderService.findOne(testOrderCompItemId, ['items']);
+        const order = await orderService.findOne(testOrderCompItemId, ['orderedItems']);
         if(!order){ throw new Error(); }
         if(!order.orderedItems){ throw new Error(); }
 
@@ -558,7 +558,7 @@ describe('order service', () => {
         const createCompDto = {
             mode: 'create',
             containedMenuItemId: itemG.id,
-            containedItemSizeId: itemG.validSizes[0].id,
+            containedMenuItemSizeId: itemG.validSizes[0].id,
             quantity: 1,
         } as CreateChildOrderContainerItemDto;
 
@@ -571,7 +571,7 @@ describe('order service', () => {
         const updateOrderItemDto = {
             mode: 'update',
             id: order.orderedItems[0].id,
-            OrderedItemComponentDtos: [createCompDto, ...updateComponentDtos]
+            orderedItemContainerDtos: [createCompDto, ...updateComponentDtos]
         } as UpdateChildOrderMenuItemDto;
 
         const updatedItemId = order.orderedItems[0].id;
@@ -597,7 +597,7 @@ describe('order service', () => {
     });
 
     it('should modify order menu item components (modify)', async () => {
-        const order = await orderService.findOne(testOrderCompItemId, ['items']);
+        const order = await orderService.findOne(testOrderCompItemId, ['orderedItems']);
         if(!order){ throw new Error(); }
         if(!order.orderedItems){ throw new Error(); }
         if(!order.orderedItems[0].orderedItemComponents){ throw new Error(); }
@@ -610,7 +610,7 @@ describe('order service', () => {
             mode: 'update',
             id: order.orderedItems[0].orderedItemComponents[0].id,
             containedMenuItemId: itemF.id,
-            containedItemSizeId: itemF.validSizes[0].id,
+            containedMenuItemSizeId: itemF.validSizes[0].id,
             quantity: 2,
         } as UpdateChildOrderContainerItemDto;
 
@@ -625,7 +625,7 @@ describe('order service', () => {
         const updateItemDto = {
             mode: 'update',
             id: order.orderedItems[0].id,
-            OrderedItemComponentDtos: [updateComponentDto, ...theRestComponents]
+            orderedItemContainerDtos: [updateComponentDto, ...theRestComponents]
         } as UpdateChildOrderMenuItemDto;
 
         const theRestItems = order.orderedItems.slice(1).map(item => ({
@@ -655,7 +655,7 @@ describe('order service', () => {
     });
 
     it('should modify order menu item components (remove)', async () => {
-        const order = await orderService.findOne(testOrderCompItemId, ['items']);
+        const order = await orderService.findOne(testOrderCompItemId, ['orderedItems']);
         if(!order){ throw new Error(); }
         if(!order.orderedItems){ throw new Error(); }
         if(!order.orderedItems[0].orderedItemComponents){ throw new Error(); }
@@ -670,7 +670,7 @@ describe('order service', () => {
         const updateItemDto = {
             mode: 'update',
             id: order.orderedItems[0].id,
-            OrderedItemComponentDtos: theRestComponents,
+            orderedItemContainerDtos: theRestComponents,
         } as UpdateChildOrderMenuItemDto;
 
         const theRestItems = order.orderedItems.slice(1).map(item => ({

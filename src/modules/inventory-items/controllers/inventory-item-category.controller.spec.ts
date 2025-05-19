@@ -130,10 +130,12 @@ describe('Inventory Item Categories Controller', () => {
   });
   
   it('should fail to update a category (doesnt exist)', async () => {
-    const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
-    if(!toUpdate){ throw new Error("unit to update not found"); }
+    //const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
+    //if(!toUpdate){ throw new Error("unit to update not found"); }
+    const dto = {
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
+    } as UpdateInventoryItemCategoryDto;
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
   });
   
   it('should remove a category', async () => {

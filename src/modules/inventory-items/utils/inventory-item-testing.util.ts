@@ -22,6 +22,7 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemService } from "../services/inventory-item.service";
 import * as CONSTANT from "./constants";
+import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
 
 @Injectable()
 export class InventoryItemTestingUtil {
@@ -56,6 +57,12 @@ export class InventoryItemTestingUtil {
         UNIT_CONSTANT.UNIT, UNIT_CONSTANT.EACH,
     ];
     
+    private initCategory = false;
+    private initPackage = false;
+    private initSize = false;
+    private initVendor = false;
+    private initItem = false;
+
     constructor(
         private readonly vendorService: InventoryItemVendorService,
         private readonly vendorBuilder: InventoryItemVendorBuilder,
@@ -73,7 +80,9 @@ export class InventoryItemTestingUtil {
         private readonly itemBuilder: InventoryItemBuilder,
 
         private readonly unitOfMeasureTestingUtil: UnitOfMeasureTestingUtil
-    ){ }
+    ){
+
+     }
 
     /**
      * Dependencies: 
@@ -173,14 +182,14 @@ export class InventoryItemTestingUtil {
         for(let i = 0; i < this.itemNames.length; i++){
             results.push(
                 await this.sizeBuilder.reset()
-                    .InventoryItemByName(this.itemNames[i])
+                    //.InventoryItemByName(this.itemNames[i])
                     .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .build()
             );
             results.push(
                 await this.sizeBuilder.reset()
-                    .InventoryItemByName(this.itemNames[i])
+                    //.InventoryItemByName(this.itemNames[i])
                     .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .build()
@@ -190,36 +199,51 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemVendorTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initVendor){ 
+            return; 
+        }
+        this.initVendor = true;
+
         const vendors = await this.getTestInventoryItemVendorEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemVendorTestDatabase());
 
-        const toInsert: InventoryItemVendor[] = [];
+        /*const toInsert: InventoryItemVendor[] = [];
         for(const vendor of vendors){
             const exists = await this.vendorService.findOneByName(vendor.vendorName);
             if(!exists){ toInsert.push(vendor); }
-        }
-        await this.vendorService.insertEntities(toInsert);
+        }*/
+        await this.vendorService.insertEntities(/*toInsert*/vendors);
     }
 
     public async initInventoryItemPackageTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initPackage){ 
+            return; 
+        }
+        this.initPackage = true;
+
         const defaultPackages = await this.getTestInventoryItemPackageEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemPackageTestDatabase());
 
-        const toInsert: InventoryItemPackage[] = [];
+        /*const toInsert: InventoryItemPackage[] = [];
         for(const packaging of defaultPackages){
             const exists = await this.packageService.findOneByName(packaging.packageName);
             if(!exists){ toInsert.push(packaging); }
-        }
-        await this.packageService.insertEntities(toInsert);
+        }*/
+        await this.packageService.insertEntities(/*toInsert*/defaultPackages);
     }
 
     public async initInventoryItemCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initCategory){ 
+            return; 
+        }
+        this.initCategory = true;
+
         const categories = await this.getTestInventoryItemCategoryEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
         for(const category of categories) {
-            const exists = await this.categoryService.findOneByName(category.categoryName);
-            if(exists){ continue; }
+            /*const exists = await this.categoryService.findOneByName(category.categoryName);
+            if(exists){ continue; }*/
 
             await this.categoryService.create(
                 { itemCategoryName: category.categoryName } as CreateInventoryItemCategoryDto
@@ -227,25 +251,63 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initItem){ 
+            return; 
+        }
+        this.initItem = true;
+
         const items = await this.getTestInventoryItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemTestDatabase());
+        
         for(const item of items){
-            const exists = await this.itemService.findOneByName(item.itemName);
-            if(exists){ continue; }
+            /*const exists = await this.itemService.findOneByName(item.itemName);
+            if(exists){ continue; }*/
 
             await this.itemService.create({
-                    itemName: item.itemName,
-                    inventoryItemCategoryId: item.category?.id,
-                    vendorId: item.vendor?.id, 
-                } as CreateInventoryItemDto
-        )};
+                itemName: item.itemName,
+                inventoryItemCategoryId: item.category?.id,
+                vendorId: item.vendor?.id,
+            } as CreateInventoryItemDto);
+        };
     }
 
     public async initInventoryItemSizeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        const testingSizes = await this.getTestInventoryItemSizeEntities(testContext);
-        testContext.addCleanupFunction(() => this.cleanupInventoryItemSizeTestDatabase());
+        if(this.initSize){ 
+            return; 
+        }
+        this.initSize = true;
 
-        for(const size of testingSizes){
+        const testingSizes = await this.getTestInventoryItemSizeEntities(testContext);
+        let sizeIdx = 0;
+
+        const itemsRequest = await this.itemService.findAll();
+        const items = itemsRequest.items;
+
+        testContext.addCleanupFunction(() => this.cleanupInventoryItemSizeTestDatabase());
+        for(const item of items){
+            const dto1 = testingSizes[sizeIdx++ % testingSizes.length];
+            const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
+
+            await this.itemService.update(item.id, {
+                itemSizeDtos: [
+                    {
+                        mode: 'create',
+                        measureUnitId: dto1.measureUnit.id,
+                        measureAmount: 1,
+                        inventoryPackageId: dto1.packageType.id,
+                        cost: 1,
+                    } as CreateChildInventoryItemSizeDto,
+                    {
+                        mode: 'create',
+                        measureUnitId: dto2.measureUnit.id,
+                        measureAmount: 1,
+                        inventoryPackageId: dto2.packageType.id,
+                        cost: 1,
+                    } as CreateChildInventoryItemSizeDto
+                ]
+            } as UpdateInventoryItemDto);
+        }
+        /*for(const size of testingSizes){
             await this.sizeService.create({
                     measureUnitId: size.measureUnit.id,
                     inventoryPackageId: size.packageType.id,
@@ -253,7 +315,9 @@ export class InventoryItemTestingUtil {
                     cost: 1,
                     measureAmount: 1,
                 } as CreateInventoryItemSizeDto 
-        )}
+        )}*/
+
+        // updateInventoryItem
     }
 
     public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {

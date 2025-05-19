@@ -28,7 +28,7 @@ export class UpdateChildInventoryItemSizeDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly inventoryPackageTypeId?: number;
+    readonly inventoryPackageId?: number;
 
     @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
     @IsNumber({ maxDecimalPlaces: 2 })

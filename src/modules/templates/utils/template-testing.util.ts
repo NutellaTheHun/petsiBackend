@@ -10,6 +10,10 @@ import { getTestTemplateNames } from "./constants";
 
 @Injectable()
 export class TemplateTestingUtil {
+
+    private initTemplates = false;
+    private initItems = false;
+
     constructor(
         private readonly templateService: TemplateService,
         private readonly templateItemService: TemplateMenuItemService,
@@ -31,6 +35,11 @@ export class TemplateTestingUtil {
     }
 
     public async initTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+        if(this.initTemplates){ 
+            return; 
+        }
+        this.initTemplates = true;
+
         testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
 
         const templates = await this.getTemplateEntities(testContext);
@@ -72,6 +81,11 @@ export class TemplateTestingUtil {
     }
 
     public async initTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+        if(this.initItems){ 
+            return; 
+        }
+        this.initItems = true;
+
         testContext.addCleanupFunction(() => this.cleanupTemplateMenuItemTestDatabase());
 
         const items = await this.getTemplateMenuItemEntities(testContext);

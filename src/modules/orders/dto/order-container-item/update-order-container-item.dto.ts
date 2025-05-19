@@ -12,7 +12,7 @@ export class UpdateOrderContainerItemDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    containedItemSizeId?: number;
+    containedMenuItemSizeId?: number;
 
     @ApiProperty({ description: 'amount of the containedMenuItem / containedItemSize being ordered' })
     @IsNumber()

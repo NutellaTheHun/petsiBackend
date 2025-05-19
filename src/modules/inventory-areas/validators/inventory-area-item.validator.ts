@@ -39,7 +39,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
             return 'updating inventory item must be accompanied by updated sizing';
         }
         else if(dto.countedInventoryItemId && dto.countedItemSizeId){
-            const item = await this.itemService.findOne(dto.countedInventoryItemId, ['sizes']);
+            const item = await this.itemService.findOne(dto.countedInventoryItemId, ['itemSizes']);
             if(!item.itemSizes){ throw new Error('item sizes is null'); }
 
             if(!item.itemSizes.find(size => size.id === dto.countedItemSizeId)){
@@ -48,7 +48,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         }
         else if(dto.countedItemSizeId){
             // NEED TO GET CURRENT INVENTORY ITEM FROM INV AREA ITEM
-            const currentItem = (await this.areaItemService.findOne(id, ['item'], ['item.sizes'])).countedItem
+            const currentItem = (await this.areaItemService.findOne(id, ['countedItem'], ['countedItem.itemSizes'])).countedItem
             if(!currentItem){ throw new Error('current item is null'); }
             if(!currentItem.itemSizes){ throw new Error('sizes are null'); }
 

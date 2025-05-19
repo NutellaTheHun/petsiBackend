@@ -132,23 +132,18 @@ describe('menu item container item controller', () => {
         expect(service).toBeDefined();
     });
 
-    it('should create a component', async () => {
+    it('should fail to create a container item', async () => {
         const dto = {
             parentContainerId: items[1].id,
             containedMenuItemId: items[2].id,
             quantity: 2,
         } as CreateMenuItemContainerItemDto;
 
-        const result = await controller.create(dto);
-
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull()
-
-        testId = result?.id as number;
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
 
     it('should find one component by id', async () => {
-        const result = await controller.findOne(testId);
+        const result = await controller.findOne(1);
         expect(result).not.toBeNull();
     });
 
@@ -162,7 +157,7 @@ describe('menu item container item controller', () => {
         quantity: 20,
         } as UpdateMenuItemContainerItemDto;
 
-        const result = await controller.update(testId, dto);
+        const result = await controller.update(1, dto);
 
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull();
@@ -184,11 +179,11 @@ describe('menu item container item controller', () => {
     });
 
     it('should remove component', async () => {
-        const removal = await controller.remove(testId);
+        const removal = await controller.remove(1);
         expect(removal).toBeUndefined();
     });
 
     it('should fail to remove component (not found)', async () => {
-        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });
 });

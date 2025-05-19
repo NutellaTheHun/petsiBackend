@@ -67,7 +67,7 @@ describe('order container item service', () => {
 
         const dto = {
             containedMenuItemId: itemF.id,
-            containedItemSizeId: itemF.validSizes[0].id,
+            containedMenuItemSizeId: itemF.validSizes[0].id,
         } as UpdateOrderContainerItemDto;
 
         const result = await service.update(testId, dto);

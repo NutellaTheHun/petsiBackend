@@ -6,7 +6,7 @@ import { MenuItem } from "../../menu-items/entities/menu-item.entity";
  * References a {@link menuItem} with a {@link LabelType} and a url to the label image for printing.
  */
 @Entity()
-@Unique(['menuItem', 'imageUrl', 'type'])
+@Unique(['menuItem', 'imageUrl', 'labelType'])
 export class Label {
     @PrimaryGeneratedColumn()
     id: number;

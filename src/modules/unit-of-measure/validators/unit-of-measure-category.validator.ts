@@ -14,9 +14,9 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
     ){ super(repo); }
 
     public async validateCreate(dto: CreateUnitOfMeasureCategoryDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { categoryName: dto.name }});
+        const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
         if(exists) { 
-            return `Unit category with name ${dto.name} already exists`; 
+            return `Unit category with name ${dto.categoryName} already exists`; 
         }
         return null;
     }

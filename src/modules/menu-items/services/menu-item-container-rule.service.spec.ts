@@ -142,17 +142,6 @@ describe('menu item container rule service', () => {
         expect(result?.validSizes.length).toEqual(1);
     });
 
-
-    it('should update validQuantity', async () => {
-        const dto = {
-            quantity: 200
-        } as UpdateMenuItemContainerRuleDto;
-
-        const result = await compOptionService.update(testId, dto);
-        expect(result).not.toBeNull();
-        expect(result?.validQuantity).toEqual(200);
-    });
-
     it('should find container rules by a list of ids', async () => {
         const results = await compOptionService.findEntitiesById(testIds);
         expect(results.length).toEqual(testIds.length);

@@ -45,8 +45,8 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     buildChildEntity(dto: CreateChildOrderContainerItemDto): void {
-        if(dto.containedItemSizeId){
-            this.containedItemSizeById(dto.containedItemSizeId);
+        if(dto.containedMenuItemSizeId){
+            this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
         if(dto.containedMenuItemId){
             this.containedMenuItemById(dto.containedMenuItemId);
@@ -60,8 +60,8 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
      * Depreciated, only created as a child through {@link Order}.
      */
     protected createEntity(dto: CreateOrderContainerItemDto): void {
-        if(dto.containedItemSizeId){
-            this.containedItemSizeById(dto.containedItemSizeId);
+        if(dto.containedMenuItemSizeId){
+            this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
         if(dto.containedMenuItemId){
             this.containedMenuItemById(dto.containedMenuItemId);
@@ -75,8 +75,8 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     protected updateEntity(dto: UpdateOrderContainerItemDto): void {
-        if(dto.containedItemSizeId){
-            this.containedItemSizeById(dto.containedItemSizeId);
+        if(dto.containedMenuItemSizeId){
+            this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
         if(dto.containedMenuItemId){
             this.containedMenuItemById(dto.containedMenuItemId);
@@ -101,7 +101,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     private containedItemSizeById(id: number): this {
-        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'containedItem', id);
+        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'containedItemSize', id);
     }
 
     private containedMenuItemById(id: number): this {

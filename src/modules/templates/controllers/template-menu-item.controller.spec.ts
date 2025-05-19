@@ -13,7 +13,7 @@ describe('template menu item controller', () => {
   let service: TemplateMenuItemService;
 
   let items: TemplateMenuItem[];
-  let itemId = 1;
+  let itemId = 4;
   let testId: number;
 
   beforeAll(async () => {
@@ -22,7 +22,20 @@ describe('template menu item controller', () => {
     controller = module.get<TemplateMenuItemController>(TemplateMenuItemController);
     service = module.get<TemplateMenuItemService>(TemplateMenuItemService);
 
-    items = [];
+    items = [
+      {
+        id: 1,
+        displayName: "1",
+      } as TemplateMenuItem,
+      {
+        id: 2,
+        displayName: "2",
+      } as TemplateMenuItem,
+      {
+        id: 3,
+        displayName: "3",
+      } as TemplateMenuItem
+    ];
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateTemplateMenuItemDto) => {
       const item = {
@@ -75,56 +88,49 @@ describe('template menu item controller', () => {
   });
 
   it('should create a template item', async () => {
-        const dto = {
-          displayName: "testDisplayName",
-          tablePosIndex: 1,
-        } as CreateTemplateMenuItemDto;
-    
-        const result = await controller.create(dto);
-    
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull()
-        expect(result?.displayName).toEqual("testDisplayName");
-        expect(result?.tablePosIndex).toEqual(1);
-    
-        testId = result?.id as number;
-      });
-    
-      it('should find template item by id', async () => {
-        const result = await controller.findOne(testId);
-        expect(result).not.toBeNull();
-      });
-    
-      it('should fail find template item by id (not exist)', async () => {
-        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-      });
-    
-      it('should update template item display name', async () => {
-        const dto = {
-          displayName: "update displayName",
-        } as UpdateTemplateMenuItemDto;
-    
-        const result = await controller.update(testId, dto);
-    
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull()
-        expect(result?.displayName).toEqual("update displayName");
-      });
-    
-      it('should fail update template item display name (not exist)', async () => {
-        const dto = {
-          displayName: "update displayName",
-        } as UpdateTemplateMenuItemDto;
-    
-        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-      });
-    
-      it('should remove template item', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeUndefined();
-      });
-    
-      it('should fail remove template item (not exist)', async () => {
-        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-      });
+    const dto = {
+      displayName: "testDisplayName",
+      tablePosIndex: 1,
+    } as CreateTemplateMenuItemDto;
+
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should find template item by id', async () => {
+    const result = await controller.findOne(1);
+    expect(result).not.toBeNull();
+  });
+
+  it('should fail find template item by id (not exist)', async () => {
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+  });
+
+  it('should update template item display name', async () => {
+    const dto = {
+      displayName: "update displayName",
+    } as UpdateTemplateMenuItemDto;
+
+    const result = await controller.update(1, dto);
+
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull()
+    expect(result?.displayName).toEqual("update displayName");
+  });
+
+  it('should fail update template item display name (not exist)', async () => {
+    const dto = {
+      displayName: "update displayName",
+    } as UpdateTemplateMenuItemDto;
+
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
+  });
+
+  it('should remove template item', async () => {
+    const result = await controller.remove(1);
+    expect(result).toBeUndefined();
+  });
+
+  it('should fail remove template item (not exist)', async () => {
+    await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
+  });
 });

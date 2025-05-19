@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
@@ -11,6 +11,8 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemService } from './template-menu-item.service';
 import { TemplateService } from './template.service';
+import { UpdateTemplateDto } from '../dto/template/update-template.dto';
+import { CreateChildTemplateMenuItemDto } from '../dto/template-menu-item/create-child-template-menu-item.dto';
 
 describe('Template menu item service', () => {
   let templateItemService: TemplateMenuItemService;
@@ -47,7 +49,7 @@ describe('Template menu item service', () => {
     expect(templateItemService).toBeDefined();
   });
 
-  it('should create a template item', async () => {
+  it('should fail to create a template item (bad request) then create properly for future tests', async () => {
     const templateDto = {
       templateName: "testTemplate"
     } as CreateTemplateDto;
@@ -64,7 +66,24 @@ describe('Template menu item service', () => {
       templateId: template?.id
     } as CreateTemplateMenuItemDto;
 
-    const result = await templateItemService.create(dto);
+    await expect(templateItemService.create(dto)).rejects.toThrow(BadRequestException);
+
+    const createItemDto = {
+      mode: 'create',
+      displayName: "test display name",
+      menuItemId: itemD.id,
+      tablePosIndex: 0,
+    } as CreateChildTemplateMenuItemDto
+
+    const updateTemplateDto = {
+      templateItemDtos: [createItemDto]
+    } as UpdateTemplateDto
+
+    const updateResult =  await templateService.update(template.id, updateTemplateDto);
+    if(!updateResult){ throw new Error(); }
+    if(!updateResult.templateItems){ throw new Error(); }
+
+    const result = updateResult.templateItems[0];
     
     expect(result).not.toBeNull();
     expect(result?.displayName).toEqual("test display name");

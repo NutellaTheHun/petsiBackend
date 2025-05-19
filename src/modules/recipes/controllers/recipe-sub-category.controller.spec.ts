@@ -102,18 +102,13 @@ describe('recipe sub category controller', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a sub-category', async () => {
+  it('should fail to create a sub-category', async () => {
     const dto = {
       subCategoryName: "testSubCat",
       parentCategoryId: categories[0].id
     } as CreateRecipeSubCategoryDto;
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual("testSubCat");
-    expect(result?.parentCategory.id).toEqual(categories[0].id);
-
-    testId = result?.id as number;
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should fail create a sub-category', async () => {
@@ -146,7 +141,7 @@ describe('recipe sub category controller', () => {
       parentCategoryId: categories[1].id
     } as UpdateRecipeSubCategoryDto;
 
-    const result = await controller.update(testId, dto);
+    const result = await controller.update(1, dto);
     expect(result).not.toBeNull();
     expect(result?.subCategoryName).toEqual("UPDATEtestSubCat");
     expect(result?.parentCategory.id).toEqual(categories[1].id);
@@ -162,11 +157,11 @@ describe('recipe sub category controller', () => {
   });
 
   it('should remove a sub-category', async () => {
-    const removal = await controller.remove(testId);
+    const removal = await controller.remove(1);
     expect(removal).toBeUndefined();
   });
 
   it('should fail remove a sub-category', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+    await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
   });
 });

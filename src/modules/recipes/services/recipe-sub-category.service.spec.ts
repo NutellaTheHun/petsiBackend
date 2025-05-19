@@ -7,7 +7,9 @@ import { RecipeCategoryService } from './recipe-category.service';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
+import { CreateChildRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-child-recipe-sub-category.dto';
 
 describe('recipe sub category service', () => {
   let subCategoryService: RecipeSubCategoryService;
@@ -36,7 +38,7 @@ describe('recipe sub category service', () => {
     expect(subCategoryService).toBeDefined();
   });
 
-  it('should create a sub-category', async () => {
+  it('should fail to create a sub-category (Bad request) then create properly for future tests', async () => {
     const catC = await categoryService.findOneByName(REC_CAT_C);
     if(!catC){ throw new Error("recipe category C is null"); }
 
@@ -45,7 +47,23 @@ describe('recipe sub category service', () => {
       parentCategoryId: catC.id,
     } as CreateRecipeSubCategoryDto;
 
-    const result = await subCategoryService.create(dto);
+    await expect(subCategoryService.create(dto)).rejects.toThrow(BadRequestException);
+
+    const createSubCatDto = {
+      mode: 'create',
+      subCategoryName: "test sub Cat",
+    } as CreateChildRecipeSubCategoryDto;
+
+    const updateCategoryDto = {
+      subCategoryDtos: [createSubCatDto]
+    } as UpdateRecipeCategoryDto;
+
+    const updateResult = await categoryService.update(catC.id, updateCategoryDto);
+    if(!updateResult){ throw new Error(); }
+    if(!updateResult.subCategories){ throw new Error(); }
+
+    const result = updateResult.subCategories[0];
+
     expect(result).not.toBeNull();
     expect(result?.subCategoryName).toEqual("test sub Cat");
     expect(result?.parentCategory.id).toEqual(catC.id);

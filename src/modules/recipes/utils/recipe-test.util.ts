@@ -1,27 +1,32 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
+import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
+import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
+import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
+import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
+import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
+import { RecipeBuilder } from "../builders/recipe.builder";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { RecipeCategory } from "../entities/recipe-category.entity";
+import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
+import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
+import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";
-import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
-import { RecipeCategory } from "../entities/recipe-category.entity";
-import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
-import { Recipe } from "../entities/recipe.entity";
-import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import * as CONSTANT from "./constants";
-import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
-import { RecipeBuilder } from "../builders/recipe.builder";
-import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
-import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
-import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
-import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
-import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
-import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeTestUtil {
+
+    private initCategory = false;
+    private initSubCategory = false;
+    private initRecipe= false;
+    private initIngredient= false;
+
     constructor(
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
         private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
@@ -267,6 +272,11 @@ export class RecipeTestUtil {
      * - Depends on InventoryItems, UnitOfMeasure, and Recipe, which are initialized beforehand.
      */
     public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void>{
+        if(this.initIngredient){ 
+            return; 
+        }
+        this.initIngredient = true;
+
         testContext.addCleanupFunction(() => this.cleanupRecipeIngredientTestingDatabase());
         await this.ingredientService.insertEntities(
             await this.getTestRecipeIngredientEntities(testContext)
@@ -280,6 +290,11 @@ export class RecipeTestUtil {
      *  -No Dependencies
      */
     public async initRecipeCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initCategory){ 
+            return; 
+        }
+        this.initCategory = true;
+
         const categories = await this.getTestRecipeCategoryEntities(testContext);
         const toInsert: RecipeCategory[] = [];
 
@@ -299,6 +314,11 @@ export class RecipeTestUtil {
      * - Dependent on RecipeCategory entitiy and inserts before.
      */
     public async initRecipeSubCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initSubCategory){ 
+            return; 
+        }
+        this.initSubCategory = true;
+
         const subCategories = await this.getTestRecipeSubCategoryEntities(testContext);
         const toInsert: RecipeSubCategory[] = [];
         
@@ -318,6 +338,11 @@ export class RecipeTestUtil {
      * - Depends on UnitOfMeasure, RecipeCategory, and RecipeSubCategory, which are initalized beforehand
      */
     public async initRecipeTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initRecipe){ 
+            return; 
+        }
+        this.initRecipe = true;
+
         const recipes = await this.getTestRecipeEntities(testContext);
         const toInsert: Recipe[] = [];
         

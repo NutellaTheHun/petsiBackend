@@ -18,7 +18,7 @@ describe('recipe category service', () => {
   let testId: number;
   let testIds: number[];
 
-  let recipeSubCategoryService;
+  let recipeSubCategoryService: RecipeSubCategoryService;
   let testRecSubCatId: number;
   let testSubCatIds: number[];
   let modifiedSubCatId: number;
@@ -201,7 +201,7 @@ describe('recipe category service', () => {
 
   it('should query modified sub-category', async () => {
     const result = await recipeSubCategoryService.findOne(modifiedSubCatId);
-    expect(result.name).toEqual("UPDATED SUBCAT");
+    expect(result.subCategoryName).toEqual("UPDATED SUBCAT");
   });
 
   it('should remove a subCategory', async () => {

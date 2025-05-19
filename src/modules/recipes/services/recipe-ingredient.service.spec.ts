@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -14,6 +14,9 @@ import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from './recipe-ingredient.service';
 import { RecipeService } from './recipe.service';
+import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { CreateChildRecipeIngredientDto } from '../dto/recipe-ingredient/create-child-recipe-ingredient.dto';
+import { UpdateChildRecipeIngredientDto } from '../dto/recipe-ingredient/update-child-recipe-ingedient.dto';
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
@@ -51,9 +54,10 @@ describe('recipe ingredient service', () => {
     expect(ingredientService).toBeDefined();
   });
 
-  it('should create recipe ingredient (inventoryItem)', async() => {
-    const recipeA = await recipeService.findOneByName(REC_A);
+  it('should fail to create recipe ingredient (badRequest), the create properly for future test', async() => {
+    const recipeA = await recipeService.findOneByName(REC_A, ['ingredients']);
     if(!recipeA){ throw new Error("recipe not found"); }
+    if(!recipeA.ingredients){ throw new Error("recipe not found"); }
 
     const item = await inventoryItemService.findOneByName(OTHER_A);
     if(!item){ throw new Error("inventory item not found"); }
@@ -69,7 +73,30 @@ describe('recipe ingredient service', () => {
       quantityMeasurementId: unit.id,
     } as CreateRecipeIngredientDto;
 
-    const result = await ingredientService.create(dto);
+    await expect(ingredientService.create(dto)).rejects.toThrow(BadRequestException);
+
+    const createIngredDto = {
+      mode: 'create',
+      ingredientInventoryItemId: item.id,
+      quantity: 1,
+      quantityMeasurementId: unit.id,
+    } as CreateChildRecipeIngredientDto;
+
+    const theRest = recipeA.ingredients.map(ingred => ({
+      mode: 'update',
+      id: ingred.id,
+    }) as UpdateChildRecipeIngredientDto);
+
+    const updateRecipeDto = {
+      ingredientDtos: [createIngredDto, ...theRest]
+    } as UpdateRecipeDto;
+
+    const updateResult = await recipeService.update(recipeA.id, updateRecipeDto);
+    if(!updateResult){ throw new Error(); }
+    if(!updateResult.ingredients){ throw new Error(); }
+
+    const result = updateResult.ingredients[0];
+
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
     expect(result?.parentRecipe?.id).toEqual(recipeA.id);
@@ -88,9 +115,10 @@ describe('recipe ingredient service', () => {
     expect(testRecipe.ingredients?.findIndex(ingred => ingred.id === testIngredId)).not.toEqual(-1);
   });
 
-  it('should create recipe ingredient (subRecipeIngredient', async() => {
-     const recipeA = await recipeService.findOneByName(REC_A);
+  it('should create recipe ingredient (subRecipeIngredient)', async() => {
+     const recipeA = await recipeService.findOneByName(REC_A, ['ingredients']);
      if(!recipeA){ throw new Error("recipe not found"); }
+     if(!recipeA.ingredients){ throw new Error("recipe not found"); }
  
      const subRec = await recipeService.findOneByName(REC_C);
      if(!subRec){ throw new Error("inventory item not found"); }
@@ -98,23 +126,45 @@ describe('recipe ingredient service', () => {
      const unit = await unitOfMeasureService.findOneByName(FL_OUNCE);
      if(!unit){ throw new Error("unit of measure not found"); }
  
-     const dto = {
-       mode: 'create',
-       parentRecipeId: recipeA.id,
-       ingredientRecipeId: subRec.id,
-       quantity: 1,
-       quantityMeasurementId: unit.id,
-     } as CreateRecipeIngredientDto;
- 
-     const result = await ingredientService.create(dto);
-     expect(result).not.toBeNull();
-     expect(result?.id).not.toBeNull();
-     expect(result?.parentRecipe?.id).toEqual(recipeA.id);
-     expect(result?.ingredientRecipe?.id).toEqual(subRec.id);
-     expect(result?.quantity).toEqual(1);
-     expect(result?.quantityMeasure.id).toEqual(unit.id);
- 
-     testSubRecId = result?.id as number;
+    const dto = {
+      mode: 'create',
+      parentRecipeId: recipeA.id,
+      ingredientRecipeId: subRec.id,
+      quantity: 1,
+      quantityMeasurementId: unit.id,
+    } as CreateRecipeIngredientDto;
+
+    const createIngredDto = {
+      mode: 'create',
+      ingredientRecipeId: subRec.id,
+      quantity: 1,
+      quantityMeasurementId: unit.id,
+    } as CreateChildRecipeIngredientDto;
+
+    const theRest = recipeA.ingredients.map(ingred => ({
+      mode: 'update',
+      id: ingred.id,
+    }) as UpdateChildRecipeIngredientDto);
+
+    const updateRecipeDto = {
+      ingredientDtos: [createIngredDto, ...theRest]
+    } as UpdateRecipeDto;
+    
+
+    const updateResult = await recipeService.update(recipeA.id, updateRecipeDto);
+    if(!updateResult){ throw new Error(); }
+    if(!updateResult.ingredients){ throw new Error(); }
+
+    const result = updateResult.ingredients[0];
+
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.parentRecipe?.id).toEqual(recipeA.id);
+    expect(result?.ingredientRecipe?.id).toEqual(subRec.id);
+    expect(result?.quantity).toEqual(1);
+    expect(result?.quantityMeasure.id).toEqual(unit.id);
+
+    testSubRecId = result?.id as number;
   });
 
   it('should FAIL create recipe ingredient (inventoryItem and sub recipe)', async() => {
@@ -139,7 +189,19 @@ describe('recipe ingredient service', () => {
       unitOfMeasureId: unit.id,
     });
 
-    await expect(ingredientService.create(dto)).rejects.toThrow(AppHttpException);
+    const recIngredDto = {
+      mode: 'create',
+      ingredientInventoryItemId: item.id,
+      ingredientRecipeId: subRec.id,
+      quantity: 1,
+      quantityMeasurementId: unit.id,
+    } as CreateChildRecipeIngredientDto;
+
+    const updateRecipeDto = {
+      ingredientDtos: [ recIngredDto ]
+    } as UpdateRecipeDto
+
+    await expect(recipeService.update(recipeA.id, updateRecipeDto)).rejects.toThrow(AppHttpException);
   });
 
   it('should find ingredient by id', async() => {
@@ -163,7 +225,7 @@ describe('recipe ingredient service', () => {
   });
 
   it('should lose subRecipeIngredient reference', async() => {
-    const result = await ingredientService.findOne(testSubRecId, ['inventoryItem', 'subRecipeIngredient']);
+    const result = await ingredientService.findOne(testSubRecId, ['ingredientInventoryItem', 'ingredientRecipe']);
     expect(result).not.toBeNull();
 
     expect(result?.ingredientInventoryItem).not.toBeNull();
@@ -186,7 +248,7 @@ describe('recipe ingredient service', () => {
   });
 
   it('should lose ingredient reference', async() => {
-    const result = await ingredientService.findOne(testIngredId, ['inventoryItem', 'subRecipeIngredient']);
+    const result = await ingredientService.findOne(testIngredId, ['ingredientInventoryItem', 'ingredientRecipe']);
     expect(result).not.toBeNull();
 
     expect(result?.ingredientInventoryItem).toBeNull();
@@ -233,7 +295,17 @@ describe('recipe ingredient service', () => {
       inventoryItemId: newItem.id
     });
 
-    await expect(ingredientService.update(testIngredId, dto)).rejects.toThrow(AppHttpException);
+    const updateRecIngredDto = {
+      mode: 'update',
+      ingredientRecipeId: newRec.id,
+      ingredientInventoryItemId: newItem.id,
+    } as UpdateChildRecipeIngredientDto;
+
+    const updateRecipeDto = {
+      ingredientDtos: [updateRecIngredDto],
+    } as UpdateRecipeDto
+
+    await expect(recipeService.update(newRec.id, updateRecipeDto)).rejects.toThrow(AppHttpException);
   });
 
   it('should get all ingredients', async () => {
@@ -306,7 +378,7 @@ describe('recipe ingredient service', () => {
   });
 
   it('should delete ingredient when deleting subRecipe', async () => {
-    const ingredient = await ingredientService.findOne(testIngredId, ['subRecipeIngredient']);
+    const ingredient = await ingredientService.findOne(testIngredId, ['ingredientRecipe']);
     if(!ingredient){ throw new NotFoundException(); }
     if(!ingredient.ingredientRecipe){ throw new Error();}
 

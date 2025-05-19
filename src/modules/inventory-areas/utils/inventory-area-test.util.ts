@@ -20,6 +20,10 @@ export class InventoryAreaTestUtil {
 
     private readonly areaNames = [ AREA_A, AREA_B, AREA_C, AREA_D];
 
+    private initCounts = false;
+    private initItems = false;
+    private initAreas = false;
+
     constructor(
         private readonly areaService: InventoryAreaService,
         private readonly areaBuilder: InventoryAreaBuilder,
@@ -98,7 +102,7 @@ export class InventoryAreaTestUtil {
         const results: InventoryAreaItem[] = [];
         const countsRequest = await this.countService.findAll({ relations: ["inventoryArea"]});
         const counts = countsRequest.items;
-        const itemsRequest = await this.inventoryItemService.findAll({ relations: ["sizes"] });
+        const itemsRequest = await this.inventoryItemService.findAll({ relations: ['itemSizes'] });
         const items = itemsRequest.items;
         let itemPtr = 0;
 
@@ -137,15 +141,20 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() to clear database after test
      */
     public async initInventoryAreaTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initAreas){ 
+            return; 
+        }
+        this.initAreas = true;
+
         const areas = await this.getTestInventoryAreaEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaTestDatabase());
         const toInsert: InventoryArea[] = [];
 
-        for(const area of areas){
+        /*for(const area of areas){
             const exists = await this.areaService.findOneByName(area.areaName);
             if(!exists){ toInsert.push(area); }
-        }
-        await this.areaService.insertEntities(toInsert);
+        }*/
+        await this.areaService.insertEntities(/*toInsert*/areas);
     }
 
     /**
@@ -155,6 +164,11 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() for entitiy and its dependencies to clear database after test
      */
     public async initInventoryAreaCountTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initCounts){ 
+            return; 
+        }
+        this.initCounts = true;
+
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaCountTestDatabase());
         await this.countService.insertEntities(
             await this.getTestInventoryAreaCountEntities(testContext)
@@ -169,6 +183,11 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() for entitiy and its dependencies to clear database after test
      */
     public async initInventoryAreaItemCountTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if(this.initItems){ 
+            return; 
+        }
+        this.initItems = true;
+
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaItemCountTestDatabase());
         await this.itemCountService.insertEntities(
             await this.getTestInventoryAreaItemCountEntities(testContext)

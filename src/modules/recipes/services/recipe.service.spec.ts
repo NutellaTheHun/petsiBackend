@@ -167,7 +167,7 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
 
-    const testIngredients = await ingredientService.findEntitiesById(testRecipe.ingredients.map(i => i.id), ['inventoryItem', 'subRecipeIngredient', 'unit'])
+    const testIngredients = await ingredientService.findEntitiesById(testRecipe.ingredients.map(i => i.id), ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure'])
     if(!testIngredients){ throw new error("recipe ingredients is null")}
 
     const ingredientItemsRequest = await invItemService.findAll();
@@ -207,7 +207,7 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
     
-    const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
+    const ingreds = await ingredientService.findByRecipeId(testId, ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure']);
     if(!ingreds){ throw new Error("ingredient is null"); }
     if(!ingreds[0].ingredientInventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
@@ -239,7 +239,7 @@ describe('recipe service', () => {
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
 
-    const verify = await ingredientService.findOne(testIngredientId, ['inventoryItem']);
+    const verify = await ingredientService.findOne(testIngredientId, ['ingredientInventoryItem']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
     if(!verify.ingredientInventoryItem){ throw new Error("ingredient inv item is null"); }
 
@@ -253,7 +253,7 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
     
-    const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
+    const ingreds = await ingredientService.findByRecipeId(testId, ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure']);
     if(!ingreds){ throw new Error("ingredient is null"); }
     if(!ingreds[0].ingredientInventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
@@ -284,7 +284,7 @@ describe('recipe service', () => {
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
 
-    const verify = await ingredientService.findOne(testIngredientId, ['unit']);
+    const verify = await ingredientService.findOne(testIngredientId, ['quantityMeasure']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
     if(!verify.quantityMeasure){ throw new Error("ingredient inv item is null"); }
     
@@ -298,7 +298,7 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
     
-    const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
+    const ingreds = await ingredientService.findByRecipeId(testId, ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure']);
     if(!ingreds){ throw new Error("ingredient is null"); }
     testIngredientId = ingreds[0].id;
 
@@ -339,7 +339,7 @@ describe('recipe service', () => {
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
 
-    const verify = await ingredientService.findOne(testIngredientId, ['subRecipeIngredient']);
+    const verify = await ingredientService.findOne(testIngredientId, ['ingredientRecipe']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
     if(!verify.ingredientRecipe){ throw new Error("ingredient sub recipe is null"); }
     
@@ -353,7 +353,7 @@ describe('recipe service', () => {
     if(!testRecipe){ throw new Error("recipe is null"); }
     if(!testRecipe.ingredients){ throw new Error("recipe ingredients is null"); }
     
-    const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
+    const ingreds = await ingredientService.findByRecipeId(testId, ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure']);
     if(!ingreds){ throw new Error("ingredient is null"); }
     testIngredientId = ingreds[0].id;
 

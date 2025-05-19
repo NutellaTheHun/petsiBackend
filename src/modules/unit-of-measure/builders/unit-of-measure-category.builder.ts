@@ -22,8 +22,8 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
     ){ super(UnitOfMeasureCategory, 'UnitCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUnitOfMeasureCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
         if(dto.baseUnitId){
             this.baseConversionUnitById(dto.baseUnitId);
@@ -31,8 +31,8 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
     }
 
     protected updateEntity(dto: UpdateUnitOfMeasureCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
         if(dto.baseUnitId){
             this.baseConversionUnitById(dto.baseUnitId);

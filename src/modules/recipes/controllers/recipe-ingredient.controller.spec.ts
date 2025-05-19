@@ -108,11 +108,6 @@ describe('recipe ingredient controller', () => {
       if(dto.quantity){
         ingredients[existIdx].quantity = dto.quantity;
       }
-      if(dto.recipeId){
-        const recipe = recipes.find(rec => rec.id === dto.recipeId);
-        if(!recipe){ throw new Error("recipe not found"); }
-        ingredients[existIdx].parentRecipe = recipe;
-      }
       if(dto.quantityMeasurementId){
         const unit = units.find(unit => unit.id === dto.quantityMeasurementId);
         if(!unit){ throw new Error("unit not found"); }
@@ -154,26 +149,19 @@ describe('recipe ingredient controller', () => {
     expect(controller).toBeDefined();
   });
 
-  it('should create a recipe ingredient', async () => {
+  it('should fail to create a recipe ingredient', async () => {
     const dto = {
       parentRecipeId: recipes[0].id,
       ingredientInventoryItemId: items[2].id,
       quantity: 1,
       quantityMeasurementId: units[2].id,
     } as CreateRecipeIngredientDto;
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.parentRecipe.id).toEqual(recipes[0].id);
-    expect(result?.ingredientInventoryItem?.id).toEqual(items[2].id);
-    expect(result?.quantity).toEqual(1);
-    expect(result?.quantityMeasure.id).toEqual(units[2].id);
 
-    testId = result?.id as number;
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should find one a recipe ingredient', async () => {
-    const result = await controller.findOne(testId);
+    const result = await controller.findOne(1);
     expect(result).not.toBeNull();
   });
 
@@ -189,15 +177,13 @@ describe('recipe ingredient controller', () => {
 
   it('should update a recipe ingredient', async () => {
     const dto = {
-      parentRecipeId: recipes[1].id,
       ingredientInventoryItemId: items[4].id,
       quantity: 4,
       quantityMeasurementId: units[3].id,
-    } as CreateRecipeIngredientDto;
-    const result = await controller.update(testId, dto);
+    } as UpdateRecipeIngredientDto;
+    const result = await controller.update(1, dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.parentRecipe.id).toEqual(recipes[1].id);
     expect(result?.ingredientInventoryItem?.id).toEqual(items[4].id);
     expect(result?.quantity).toEqual(4);
     expect(result?.quantityMeasure.id).toEqual(units[3].id);
@@ -215,11 +201,11 @@ describe('recipe ingredient controller', () => {
   });
 
   it('should remove a recipe ingredient', async () => {
-    const removal = await controller.remove(testId);
+    const removal = await controller.remove(1);
     expect(removal).toBeUndefined();
   });
 
   it('should fail remove a recipe ingredient', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+    await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
   });
 });

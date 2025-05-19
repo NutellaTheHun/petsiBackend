@@ -5,6 +5,7 @@ import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-m
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemPackageService } from './inventory-item-package.service';
 import { NotFoundException } from '@nestjs/common';
+import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 
 describe('Inventory Item Package Service', () => {
   let testingUtil: InventoryItemTestingUtil;
@@ -49,8 +50,9 @@ describe('Inventory Item Package Service', () => {
 
   it('should update a package', async () => {
     const dto = {
-      name: "update pkg name"
-    }
+      packageName: "update pkg name"
+    } as UpdateInventoryItemPackageDto;
+
     const result = await packageService.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result?.packageName).toEqual("update pkg name");

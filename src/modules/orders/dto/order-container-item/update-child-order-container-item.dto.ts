@@ -22,7 +22,7 @@ export class UpdateChildOrderContainerItemDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    containedItemSizeId?: number;
+    containedMenuItemSizeId?: number;
 
     @ApiProperty({ description: 'amount of the componentMenuItem / componentItemSize being ordered' })
     @IsNumber()

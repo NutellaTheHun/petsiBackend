@@ -8,7 +8,7 @@ import { Recipe } from "./recipe.entity";
  * Such as "Scone" or "Muffin" within the "Pastry" category.
  */
 @Entity()
-@Unique(['name', 'parentCategory'])
+@Unique(['subCategoryName', 'parentCategory'])
 export class RecipeSubCategory{
     @PrimaryGeneratedColumn()
     id: number;

@@ -54,8 +54,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.OrderedItemComponentDtos){
-            this.itemComponentsByBuilder(dto.OrderedItemComponentDtos);
+        if(dto.orderedItemContainerDtos){
+            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
@@ -69,8 +69,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.OrderedItemComponentDtos){
-            this.itemComponentsByBuilder(dto.OrderedItemComponentDtos);
+        if(dto.orderedItemContainerDtos){
+            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
         }
     }
     
@@ -84,8 +84,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemComponentDtos){
-            this.itemComponentsByBuilder(dto.orderedItemComponentDtos);
+        if(dto.orderedItemContainerDtos){
+            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 

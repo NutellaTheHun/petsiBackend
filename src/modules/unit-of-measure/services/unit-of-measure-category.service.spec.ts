@@ -42,7 +42,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
   it('should create a category', async () => {
     const dto = {
-      name: "testCategory",
+      categoryName: "testCategory",
     } as CreateUnitOfMeasureCategoryDto;
 
     const result = await categoryService.create(dto);
@@ -54,7 +54,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
   it('should fail to create a category (already exists)', async () => {
     const dto = {
-      name: "testCategory",
+      categoryName: "testCategory",
     } as CreateUnitOfMeasureCategoryDto;
 
     await expect(categoryService.create(dto)).rejects.toThrow(AppHttpException);
@@ -85,7 +85,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
   it('should fail to update category (category not found)', async () => {
     const dto = {
-      name: "updateName"
+      categoryName: "updateName"
     } as UpdateUnitOfMeasureCategoryDto;
 
     await expect(categoryService.update(0, dto)).rejects.toThrow(Error);
@@ -93,7 +93,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
   it('should update category name', async () => {
     const dto = {
-      name: "updateName"
+      categoryName: "updateName"
     } as UpdateUnitOfMeasureCategoryDto;
 
     const result = await categoryService.update(testId, dto);
@@ -123,7 +123,7 @@ describe('UnitOfMeasureCategoryService', () => {
     const removal = await unitService.remove(unit.id);
     if(!removal){ throw new Error("unit of measure removal failed"); }
 
-    const category = await categoryService.findOne(testId, ["baseUnit"]);
+    const category = await categoryService.findOne(testId, ['baseConversionUnit']);
     if(!category){ throw new Error("category not found"); }
     expect(category.baseConversionUnit).toBeNull();
   });
@@ -169,10 +169,10 @@ describe('UnitOfMeasureCategoryService', () => {
       { categoryId: newCategory?.id } as UpdateUnitOfMeasureDto
     );
     
-    const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);
+    const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['unitsOfMeasure']);
     expect(verifyNotInOld?.unitsOfMeasure.find(u => u.id == unit.id)).toBeUndefined();
 
-    const verifyInNew = await categoryService.findOne(newCategory.id, ['units']);
+    const verifyInNew = await categoryService.findOne(newCategory.id, ['unitsOfMeasure']);
     expect(verifyInNew?.unitsOfMeasure.find(u => u.id == unit.id)).not.toBeUndefined();
   });
 
@@ -183,7 +183,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
     await unitService.remove(unitToRemove.id);
 
-    const category = await categoryService.findOne(unitToRemove.category.id, ['units']);
+    const category = await categoryService.findOne(unitToRemove.category.id, ['unitsOfMeasure']);
     if(!category) { throw new Error('category not found'); }
 
     expect(category.unitsOfMeasure.findIndex(unit => unit.id == unitToRemove.id)).toEqual(-1);

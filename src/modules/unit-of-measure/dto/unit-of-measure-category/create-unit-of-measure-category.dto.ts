@@ -5,7 +5,7 @@ export class CreateUnitOfMeasureCategoryDto{
     @ApiProperty({ example: 'Weight, Volume, Unit', description: 'Name of Unit-Category entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly categoryName: string;
 
     @ApiProperty({ description: 'The Unit-Of-Measure entity that all Unit-of-Measure entities under the category convert to as part of conversions.' })
     @IsNumber()
