@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -7,6 +7,8 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { OrderMenuItemBuilder } from "../builders/order-menu-item.builder";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { Order } from "../entities/order.entity";
 
 @Injectable()
 export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
@@ -23,4 +25,11 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(orderItemRepo, itemBuilder, validator, 'OrderMenuItemService', requestContextService, logger)}
+
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
+    public async create(dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
+        throw new BadRequestException();
+    }
 }

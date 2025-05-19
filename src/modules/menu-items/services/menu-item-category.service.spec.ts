@@ -34,7 +34,7 @@ describe('menu item category service', () => {
 
     it('should create a category', async () => {
         const dto = {
-            name: "test category"
+            categoryName: "test category"
         } as CreateMenuItemCategoryDto;
 
         const result = await categoryService.create(dto);
@@ -59,7 +59,7 @@ describe('menu item category service', () => {
 
     it('should update a category name', async () => {
         const dto = {
-            name: "updated category name"
+            categoryName: "updated category name"
         } as UpdateMenuItemCategoryDto;
 
         const result = await categoryService.update(testId, dto);

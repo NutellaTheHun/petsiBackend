@@ -13,7 +13,7 @@ export class MenuItemCategory {
     categoryName: string;
 
     /**
-     * A list of MenuItems with who's category property are set to this instance.
+     * A list of {@link MenuItem} with who's {@link MenuItemCategory} property are set to this instance.
      */
     @OneToMany(() => MenuItem, (item) => item.category, { nullable: true })
     categoryItems?: MenuItem[] | null;

@@ -10,11 +10,11 @@ export class OrderCategory{
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    categoryName: string;
 
     /**
      * List of {@link Order} falling under the type.
      */
-    @OneToMany(() => Order, (order) => order.type, { nullable: true })
+    @OneToMany(() => Order, (order) => order.orderCategory, { nullable: true })
     orders?: Order[] | null;
 }

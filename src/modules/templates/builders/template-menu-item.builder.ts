@@ -29,9 +29,12 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         logger: AppLogger,
     ){ super(TemplateMenuItem, 'TemplateMenuItemBuilder', requestContextService, logger, validator); }
 
+    /**
+     * Depreciated, only created as a child through {@link Template}.
+     */
     protected createEntity(dto: CreateTemplateMenuItemDto): void {
         if(dto.templateId){
-            this.templateById(dto.templateId);
+            this.parentTemplateById(dto.templateId);
         }
         if(dto.displayName){
             this.displayName(dto.displayName);
@@ -39,7 +42,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+        if(dto.tablePosIndex !== undefined){
             this.tablePosIndex(dto.tablePosIndex);
         }
     }
@@ -51,7 +54,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0
+        if(dto.tablePosIndex !== undefined){
             this.tablePosIndex(dto.tablePosIndex);
         }
     }
@@ -72,7 +75,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         await this.validateCreateDto(dto);
         this.reset();
 
-        this.entity.template = parent;
+        this.entity.parentTemplate = parent;
 
         this.buildChildEntity(dto);
 
@@ -109,11 +112,11 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         return this.setPropByVal('tablePosIndex', pos);
     }
 
-    public templateById(id: number): this {
-        return this.setPropById(this.templateService.findOne.bind(this.templateService), 'template', id);
+    public parentTemplateById(id: number): this {
+        return this.setPropById(this.templateService.findOne.bind(this.templateService), 'parentTemplate', id);
     }
 
-    public templateByName(name: string): this {
-        return this.setPropByName(this.templateService.findOneByName.bind(this.templateService), 'template', name);
+    public parentTemplateByName(name: string): this {
+        return this.setPropByName(this.templateService.findOneByName.bind(this.templateService), 'parentTemplate', name);
     }
 }

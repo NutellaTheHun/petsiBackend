@@ -15,7 +15,7 @@ export class UpdateChildRecipeSubCategoryDto {
     @ApiProperty({ description: 'Name of the Recipe-Sub-Category entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly subCategoryName?: string;
 
     @ApiProperty({ description: 'Id of the parent Recipe-Category entity.' })
     @IsNumber()

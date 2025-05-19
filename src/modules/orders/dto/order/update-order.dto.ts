@@ -6,11 +6,11 @@ import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-ord
 import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
 
 export class UpdateOrderDto{
-    @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
+    @ApiProperty({ example: 'Order categories such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly orderTypeId?: number
+    readonly orderCategoryId?: number
 
     @ApiProperty({ example: 'John Smith, Pepperidge Farms', description: 'Name of the owner of the order' })
     @IsString()
@@ -74,5 +74,5 @@ export class UpdateOrderDto{
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => OrderMenuItemUnionResolver)
-    orderMenuItemDtos?: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[];
+    orderedMenuItemDtos?: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[];
 }

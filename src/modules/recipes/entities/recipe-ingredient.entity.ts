@@ -16,7 +16,7 @@ export class RecipeIngredient{
      * 
      */
     @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
-    recipe: Recipe;
+    parentRecipe: Recipe;
     
     /**
      * The {@link InventoryItem} that is being used as the ingredient. 
@@ -26,7 +26,7 @@ export class RecipeIngredient{
      * If a RecipeIngredient is referencing the inventoryItem property, the subRecipeIngredient property must be null/undefined.
      */
     @ManyToOne(() => InventoryItem, { nullable: true, onDelete: 'CASCADE' })
-    inventoryItem?: InventoryItem | null;
+    ingredientInventoryItem?: InventoryItem | null;
 
     /**
      * A {@link Recipe} that is used as an ingredient in the parent recipe property.
@@ -38,7 +38,7 @@ export class RecipeIngredient{
      * If a RecipeIngredient is referencing the subRecipeIngredient property, the inventoryItem property must be null/undefined.
      */
     @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
-    subRecipeIngredient?: Recipe | null;
+    ingredientRecipe?: Recipe | null;
 
     /**
      * the amount of the unit property for the referenced inventoryItem/subRecipeIngredient property.
@@ -54,5 +54,5 @@ export class RecipeIngredient{
      * Example: 3 cups({@link UnitOfMeasure}) of Flour
      */
     @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' }) 
-    unit: UnitOfMeasure;
+    quantityMeasure: UnitOfMeasure;
 }

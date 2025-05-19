@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
@@ -12,6 +12,7 @@ import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 import { PaginatedResult } from '../../../base/paginated-result';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
+import { Recipe } from '../entities/recipe.entity';
 
 @ApiTags('Recipe Ingredient')
 @ApiBearerAuth('access-token')
@@ -25,14 +26,18 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
         requestContextService: RequestContextService,
     ){ super(ingredientService, cacheManager, 'RecipeIngredientController', requestContextService, logger); }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Recipe Ingredient' })
     @ApiCreatedResponse({ description: 'Recipe Ingredient successfully created', type: RecipeIngredient })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateRecipeIngredientDto })
+    @ApiBody({ type: CreateRecipeIngredientDto })*/
+    /**
+     * Depreciated, only created as a child through {@link Recipe}.
+     */
     async create(@Body() dto: CreateRecipeIngredientDto): Promise<RecipeIngredient> {
-        return super.create(dto);
+        //return super.create(dto);
+        throw new BadRequestException();
     }
 
     @Patch(':id')

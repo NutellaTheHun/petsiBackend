@@ -18,7 +18,7 @@ export class UpdateMenuItemDto {
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    readonly name?: string;
+    readonly itemName?: string;
 
     @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item.' })
     @IsOptional()
@@ -63,7 +63,7 @@ export class UpdateMenuItemDto {
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => MenuItemComponentUnionResolver)
-    readonly containerComponentDtos?: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[];
+    readonly definedContainerItemDtos?: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[];
 
     @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
         type: [UpdateChildMenuItemContainerOptionsDto]

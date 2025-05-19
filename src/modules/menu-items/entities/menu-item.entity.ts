@@ -19,12 +19,12 @@ export class MenuItem {
     category?: MenuItemCategory | null;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    itemName: string;
 
     /**
-     * A different MenuItem that represents the vegan version of the reference holder.
-     * - Example: MenuItem {Classic Apple Pie}, MenuItem.veganVersion={Vegan Classic Apple} (A literal other MenuItem in the catalog)
-     * - Example: MenuItem {Keylime Pie}, MenuItem.veganOption={null}
+     * A different {@link MenuItem} that represents the vegan version of the reference holder.
+     * - Example: {@link MenuItem} {Classic Apple Pie}, {@link MenuItem}.veganVersion={Vegan Classic Apple} (A literal other {@link MenuItem} in the catalog)
+     * - Example: {@link MenuItem} {Keylime Pie}, {@link MenuItem}.veganOption={null}
      * - Necessary for aggregating the pie and its vegan version together on the BackListPie report (vegan amount denoted with a "V")
      */
     @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL'  })
@@ -32,18 +32,18 @@ export class MenuItem {
     veganOption?: MenuItem | null;
 
     /**
-     * A different MenuItem that represents the takeNBake (and take'n thaw) version of the reference holder.
-     * - Example: MenuItem {Cherry Pie}, MenuItem.takeNBakeOption={Take'n Bake Cherry Pie}
-     * - Example: MenuItem {Bananna Cream Pie}, MenuItem.takeNBakeOption={null}
+     * A different {@link MenuItem} that represents the takeNBake (and take'n thaw) version of the reference holder.
+     * - Example: {@link MenuItem} {Cherry Pie}, {@link MenuItem}.takeNBakeOption={Take'n Bake Cherry Pie}
+     * - Example: {@link MenuItem} {Bananna Cream Pie}, {@link MenuItem}.takeNBakeOption={null}
      */
     @OneToOne(() => MenuItem, {nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     takeNBakeOption?: MenuItem | null;
 
     /**
-     * A different MenuItem that represents the vegan takeNBake (and take'n thaw) version of the reference holder.
-     * - Example: MenuItem {Classic Apple}, MenuItem.veganTakeNBakeOption={Vegan Apple Take'n Bake}
-     * - Example: MenuItem {Bananna Cream Pie}, MenuItem.takeNBakeOption={null}
+     * A different {@link MenuItem} that represents the vegan takeNBake (and take'n thaw) version of the reference holder.
+     * - Example: {@link MenuItem} {Classic Apple}, {@link MenuItem}.veganTakeNBakeOption={Vegan Apple Take'n Bake}
+     * - Example: {@link MenuItem} {Bananna Cream Pie}, {@link MenuItem}.takeNBakeOption={null}
      */
     @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
@@ -80,19 +80,29 @@ export class MenuItem {
     isParbake: boolean;
 
     /**
-     * If the item is a container for other items.
+     * If the item is a container of predetermined list for other items.
      * 
-     * Such as a Box of 6 Muffins,
+     * Such as the Breakfast Pastry Platter,
      * 
-     * of a Breakfast Pastry Platter
+     * Hase a predefined, consistent composition of items per container size.
      * 
-     * Can have a hard set composition of items per container size, or a range of viable items that are dynamically chosen when ordered.
+     * If a {@link MenuItem} references {@link definedContainerItems}, then {@link containerOptions} must be null/undefined
      */
     @OneToMany(() => MenuItemContainerItem, (comp) => comp.parentContainer, { cascade: true, eager: true })
-    container?: MenuItemContainerItem[];
+    definedContainerItems?: MenuItemContainerItem[];
 
     /**
-     * Determines what items are allowed in the container, and their sizes.
+     * If the item is a container where the contents are a variable amount of a selection of items.
+     * 
+     * Such as a Box of 6 Muffins/Scones,
+     * 
+     * The total amount is predetermined/consistent, but the flavors can be any combination of the total amount.
+     * 
+     * Example: A box of 6 muffins could be:
+     * - { blueberry: 6, Corn: 0, banana: 0 }
+     * - { blueberry: 2, Corn: 2, banana: 2 }
+     * 
+     * If a {@link MenuItem} references {@link containerOptions}, then {@link definedContainerItems} must be null/undefined
      */
     @OneToOne(() => MenuItemContainerOptions, (options) => options.parentContainer, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
     @JoinColumn()

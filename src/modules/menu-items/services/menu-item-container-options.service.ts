@@ -8,6 +8,7 @@ import { MenuItemContainerOptionsBuilder } from "../builders/menu-item-container
 import { CreateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 import { MenuItemContainerOptionsValidator } from "../validators/menu-item-container-options.validator";
+import { MenuItem } from "../entities/menu-item.entity";
 
 @Injectable()
 export class MenuItemContainerOptionsService extends ServiceBase<MenuItemContainerOptions> {
@@ -25,6 +26,9 @@ export class MenuItemContainerOptionsService extends ServiceBase<MenuItemContain
         logger: AppLogger,
     ){ super(optionsRepo, optionsBuilder, validator, 'MenuItemComponentOptionsService', requestContextService, logger); }
 
+    /**
+     * Depreciated, only created as a child through {@link MenuItem}.
+     */
     public async create(dto: CreateMenuItemContainerOptionsDto): Promise<MenuItemContainerOptions> {
         throw new BadRequestException();
     }

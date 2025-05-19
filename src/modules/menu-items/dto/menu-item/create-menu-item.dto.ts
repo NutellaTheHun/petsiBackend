@@ -13,7 +13,7 @@ export class CreateMenuItemDto {
     @ApiProperty({ description: 'Name of Menu-Item entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly itemName: string;
 
     @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item.' })
     @IsOptional()
@@ -56,7 +56,7 @@ export class CreateMenuItemDto {
      })
     @IsOptional()
     @IsArray()
-    readonly containerComponentDtos?: CreateChildMenuItemContainerItemDto[];
+    readonly definedContainerItemDtos?: CreateChildMenuItemContainerItemDto[];
 
     @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.', 
         type: [CreateChildMenuItemContainerOptionsDto]

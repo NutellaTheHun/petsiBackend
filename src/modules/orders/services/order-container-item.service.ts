@@ -8,6 +8,7 @@ import { OrderContainerItemBuilder } from "../builders/order-container-item.buil
 import { OrderContainerItem } from "../entities/order-container-item.entity";
 import { OrderContainerItemValidator } from "../validators/order-container-item.validator";
 import { CreateOrderContainerItemDto } from "../dto/order-container-item/create-order-container-item.dto";
+import { Order } from "../entities/order.entity";
 
 @Injectable()
 export class OrderContainerItemService extends ServiceBase<OrderContainerItem> {
@@ -23,6 +24,9 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItem> {
         logger: AppLogger,
     ){ super(repo, typeBuilder, validator, 'OrderMenuItemComponentService', requestContextService, logger)}
 
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
     public async create(dto: CreateOrderContainerItemDto): Promise<OrderContainerItem> {
         throw new BadRequestException();
     }

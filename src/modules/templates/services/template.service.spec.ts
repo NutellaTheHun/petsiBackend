@@ -57,13 +57,13 @@ describe('Template Service', () => {
 
   it('should create a template', async() => {
     const dto = {
-      name: "testTemplate"
+      templateName: "testTemplate"
     } as CreateTemplateDto;
 
     const result = await templateService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testTemplate");
+    expect(result?.templateName).toEqual("testTemplate");
     testId = result?.id as number;
   });
 
@@ -71,26 +71,26 @@ describe('Template Service', () => {
     const result = await templateService.findOne(testId);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testTemplate");
+    expect(result?.templateName).toEqual("testTemplate");
   });
 
   it('should find a template by name', async() => {
     const result = await templateService.findOneByName("testTemplate");
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testTemplate");
+    expect(result?.templateName).toEqual("testTemplate");
     expect(result?.id).toEqual(testId);
   });
 
   it('should update a template name', async() => {
     const dto = {
-      name: "update testTemplate"
+      templateName: "update testTemplate"
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("update testTemplate");
+    expect(result?.templateName).toEqual("update testTemplate");
   });
 
   it('should update a template isPie', async() => {
@@ -126,7 +126,7 @@ describe('Template Service', () => {
     ] as CreateChildTemplateMenuItemDto[];
 
     const dto = {
-      itemDtos: itemDtos,
+      templateItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
@@ -145,7 +145,7 @@ describe('Template Service', () => {
     expect(results).not.toBeNull();
     expect(results.length).toEqual(2);
     for(const item of results){
-      expect(item.template.id).toEqual(testId);
+      expect(item.parentTemplate.id).toEqual(testId);
     }
   });
 
@@ -174,7 +174,7 @@ describe('Template Service', () => {
     }) as UpdateTemplateMenuItemDto);
 
     const dto = {
-      itemDtos: [ uItemDto, ...theRest]
+      templateItemDtos: [ uItemDto, ...theRest]
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
@@ -213,7 +213,7 @@ describe('Template Service', () => {
     }) as UpdateTemplateMenuItemDto);
 
     const dto = {
-      itemDtos: uItemDtos
+      templateItemDtos: uItemDtos
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);

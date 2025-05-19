@@ -27,8 +27,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     ){ super(RecipeCategory, 'RecipeCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
         if(dto.subCategoryDtos){
             this.subCategoriesByBuilder(dto.subCategoryDtos);
@@ -36,8 +36,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     }
 
     protected updateEntity(dto: UpdateRecipeCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
         if(dto.subCategoryDtos){
             this.subCategoriesByBuilder(dto.subCategoryDtos);
@@ -45,7 +45,7 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('categoryName', name);
     }
 
     public subCategoriesByBuilder(dtos: (CreateChildRecipeSubCategoryDto | UpdateChildRecipeSubCategoryDto)[]): this {

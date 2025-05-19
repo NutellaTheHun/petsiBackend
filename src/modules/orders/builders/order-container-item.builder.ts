@@ -45,23 +45,26 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     buildChildEntity(dto: CreateChildOrderContainerItemDto): void {
-        if(dto.componentItemSizeId){
-            this.componentItemSizeById(dto.componentItemSizeId);
+        if(dto.containedItemSizeId){
+            this.containedItemSizeById(dto.containedItemSizeId);
         }
-        if(dto.componentMenuItemId){
-            this.componentMenuItemById(dto.componentMenuItemId);
+        if(dto.containedMenuItemId){
+            this.containedMenuItemById(dto.containedMenuItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
     }
 
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
     protected createEntity(dto: CreateOrderContainerItemDto): void {
-        if(dto.componentItemSizeId){
-            this.componentItemSizeById(dto.componentItemSizeId);
+        if(dto.containedItemSizeId){
+            this.containedItemSizeById(dto.containedItemSizeId);
         }
-        if(dto.componentMenuItemId){
-            this.componentMenuItemById(dto.componentMenuItemId);
+        if(dto.containedMenuItemId){
+            this.containedMenuItemById(dto.containedMenuItemId);
         }
         if(dto.parentOrderMenuItemId){
             this.parentOrderMenuItemById(dto.parentOrderMenuItemId);
@@ -72,11 +75,11 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     protected updateEntity(dto: UpdateOrderContainerItemDto): void {
-        if(dto.componentItemSizeId){
-            this.componentItemSizeById(dto.componentItemSizeId);
+        if(dto.containedItemSizeId){
+            this.containedItemSizeById(dto.containedItemSizeId);
         }
-        if(dto.componentMenuItemId){
-            this.componentMenuItemById(dto.componentMenuItemId);
+        if(dto.containedMenuItemId){
+            this.containedMenuItemById(dto.containedMenuItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
@@ -97,12 +100,12 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
         return results;
     }
 
-    private componentItemSizeById(id: number): this {
-        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'itemSize', id);
+    private containedItemSizeById(id: number): this {
+        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'containedItem', id);
     }
 
-    private componentMenuItemById(id: number): this {
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'item', id);
+    private containedMenuItemById(id: number): this {
+        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'containedItem', id);
     }
 
     private quantity(amount: number): this {

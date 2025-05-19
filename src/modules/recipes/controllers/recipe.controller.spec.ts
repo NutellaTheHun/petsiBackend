@@ -22,20 +22,20 @@ describe('recipe controller', () => {
     controller = module.get<RecipeController>(RecipeController);
     service = module.get<RecipeService>(RecipeService);
     recipes = [
-      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
-      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2, salesPrice: "15" } as Recipe,
-      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3, salesPrice: "20" } as Recipe,
+      { recipeName: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
+      { recipeName: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2, salesPrice: "15" } as Recipe,
+      { recipeName: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3, salesPrice: "20" } as Recipe,
     ];
     id = 1;
     recipes.map(recipe => recipe.id = id++);
 
     jest.spyOn(service, "create").mockImplementation(async (dto: CreateRecipeDto) => {
-      const exists = recipes.find(rec => rec.name === dto.name);
+      const exists = recipes.find(rec => rec.recipeName === dto.recipeName);
       if(exists){ throw new BadRequestException(); }
 
       const recipe = {
         id: id++,
-        name: dto.name,
+        recipeName: dto.recipeName,
         batchResultQuantity: dto.batchResultQuantity,
         servingSizeQuantity: dto.servingSizeQuantity,
         salesPrice: String(dto.salesPrice),
@@ -49,8 +49,8 @@ describe('recipe controller', () => {
       const existIdx = recipes.findIndex(rec => rec.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.name){
-        recipes[existIdx].name = dto.name;
+      if(dto.recipeName){
+        recipes[existIdx].recipeName = dto.recipeName;
       }
       if(dto.batchResultQuantity){
         recipes[existIdx].batchResultQuantity = dto.batchResultQuantity;
@@ -66,7 +66,7 @@ describe('recipe controller', () => {
     });
 
     jest.spyOn(service, "findOneByName").mockImplementation(async (name: string) => {
-      return recipes.find(rec => rec.name === name) || null;
+      return recipes.find(rec => rec.recipeName === name) || null;
     });
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: recipes });
@@ -95,7 +95,7 @@ describe('recipe controller', () => {
 
   it('should create a recipe', async () => {
     const dto = {
-      name: "testRecipe",
+      recipeName: "testRecipe",
       batchResultQuantity: 1,
       servingSizeQuantity: 2,
       salesPrice: 3,
@@ -104,7 +104,7 @@ describe('recipe controller', () => {
     const result = await controller.create(dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual("testRecipe");
+    expect(result?.recipeName).toEqual("testRecipe");
     expect(result?.batchResultQuantity).toEqual(1);
     expect(result?.servingSizeQuantity).toEqual(2);
     expect(result?.salesPrice).toEqual("3");
@@ -114,7 +114,7 @@ describe('recipe controller', () => {
 
   it('should fail create a recipe', async () => {
     const dto = {
-      name: "testRecipe",
+      recipeName: "testRecipe",
       batchResultQuantity: 1,
       servingSizeQuantity: 2,
       salesPrice: 3,
@@ -140,7 +140,7 @@ describe('recipe controller', () => {
 
   it('should update a recipe', async () => {
     const dto = {
-      name: "UPDATE_testRecipe",
+      recipeName: "UPDATE_testRecipe",
       batchResultQuantity: 5,
       servingSizeQuantity: 6,
       salesPrice: 7,
@@ -150,7 +150,7 @@ describe('recipe controller', () => {
     const result = await controller.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual("UPDATE_testRecipe");
+    expect(result?.recipeName).toEqual("UPDATE_testRecipe");
     expect(result?.batchResultQuantity).toEqual(5);
     expect(result?.servingSizeQuantity).toEqual(6);
     expect(result?.salesPrice).toEqual("7");
@@ -158,7 +158,7 @@ describe('recipe controller', () => {
 
   it('should fail update a recipe', async () => {
     const dto = {
-      name: "UPDATE_testRecipe",
+      recipeName: "UPDATE_testRecipe",
       batchResultQuantity: 5,
       servingSizeQuantity: 6,
       salesPrice: 7,

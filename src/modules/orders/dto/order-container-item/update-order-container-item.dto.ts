@@ -6,15 +6,15 @@ export class UpdateOrderContainerItemDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    componentMenuItemId?: number;
+    containedMenuItemId?: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the componentMenuItem' })
+    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    componentItemSizeId?: number;
+    containedItemSizeId?: number;
 
-    @ApiProperty({ description: 'amount of the componentMenuItem / componentItemSize being ordered' })
+    @ApiProperty({ description: 'amount of the containedMenuItem / containedItemSize being ordered' })
     @IsNumber()
     @IsOptional()
     @IsPositive()

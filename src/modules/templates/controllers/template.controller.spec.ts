@@ -27,16 +27,16 @@ describe('TemplatesController', () => {
     const templateNames = getTestTemplateNames();
     templates = templateNames.map(name => ({
       id: templateId++,
-      name: name,
+      templateName: name,
     }) as Template);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateTemplateDto) => {
-      const exists = templates.find(temp => temp.name === dto.name);
+      const exists = templates.find(temp => temp.templateName === dto.templateName);
       if(exists){ throw new BadRequestException(); }
 
       const template = {
         id: templateId++,
-        name: dto.name,
+        templateName: dto.templateName,
       } as Template;
 
       templates.push(template);
@@ -58,7 +58,7 @@ describe('TemplatesController', () => {
     });
 
     jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-      return templates.find(temp => temp.name === name) || null;
+      return templates.find(temp => temp.templateName === name) || null;
     });
 
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -73,8 +73,8 @@ describe('TemplatesController', () => {
       const existIdx = templates.findIndex(temp => temp.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.name){
-        templates[existIdx].name = dto.name;
+      if(dto.templateName){
+        templates[existIdx].templateName = dto.templateName;
       }
 
       return templates[existIdx];
@@ -87,21 +87,21 @@ describe('TemplatesController', () => {
 
   it('should create a template', async () => {
       const dto = {
-        name: "testTemplate",
+        templateName: "testTemplate",
       } as CreateTemplateDto;
   
       const result = await controller.create(dto);
   
       expect(result).not.toBeNull();
       expect(result?.id).not.toBeNull()
-      expect(result?.name).toEqual("testTemplate");
+      expect(result?.templateName).toEqual("testTemplate");
   
       testId = result?.id as number;
     });
   
     it('should fail to create a template (already exists)', async () => {
       const dto = {
-        name: "testTemplate",
+        templateName: "testTemplate",
       } as CreateTemplateDto;
       
       await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -118,19 +118,19 @@ describe('TemplatesController', () => {
   
     it('should update template name', async () => {
       const dto = {
-        name: "updateTemplateName",
+        templateName: "updateTemplateName",
       } as UpdateTemplateDto;
   
       const result = await controller.update(testId, dto);
   
       expect(result).not.toBeNull();
       expect(result?.id).not.toBeNull()
-      expect(result?.name).toEqual("updateTemplateName");
+      expect(result?.templateName).toEqual("updateTemplateName");
     });
   
     it('should fail update template name (not exist)', async () => {
       const dto = {
-        name: "updateTemplateName",
+        templateName: "updateTemplateName",
       } as UpdateTemplateDto;
   
       await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

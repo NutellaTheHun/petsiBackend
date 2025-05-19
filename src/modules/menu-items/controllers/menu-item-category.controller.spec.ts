@@ -30,12 +30,12 @@ describe('menu item category controller', () => {
     }) as MenuItemCategory);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemCategoryDto) => {
-        const exists = categories.find(category => category.categoryName === dto.name);
+        const exists = categories.find(category => category.categoryName === dto.categoryName);
         if(exists){ throw new BadRequestException(); }
 
         const category = {
           id: id++,
-          categoryName: dto.name,
+          categoryName: dto.categoryName,
         } as MenuItemCategory;
   
         categories.push(category);
@@ -73,8 +73,8 @@ describe('menu item category controller', () => {
       const existIdx = categories.findIndex(cat => cat.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.name){
-        categories[existIdx].categoryName = dto.name;
+      if(dto.categoryName){
+        categories[existIdx].categoryName = dto.categoryName;
       }
 
       return categories[existIdx];
@@ -87,7 +87,7 @@ describe('menu item category controller', () => {
 
   it('should create a category', async () => {
      const dto = {
-       name: "testCategory",
+       categoryName: "testCategory",
      } as CreateMenuItemCategoryDto;
  
      const result = await controller.create(dto);
@@ -101,7 +101,7 @@ describe('menu item category controller', () => {
  
    it('should fail to create a category (already exists)', async () => {
      const dto = {
-       name: "testCategory",
+       categoryName: "testCategory",
      } as CreateMenuItemCategoryDto;
      
      await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -118,7 +118,7 @@ describe('menu item category controller', () => {
  
    it('should update category name', async () => {
      const dto = {
-       name: "updateTestCategory",
+       categoryName: "updateTestCategory",
      } as UpdateMenuItemCategoryDto;
  
      const result = await controller.update(testId, dto);
@@ -130,7 +130,7 @@ describe('menu item category controller', () => {
  
    it('should fail update category name (not exist)', async () => {
      const dto = {
-       name: "updateTestCategory",
+       categoryName: "updateTestCategory",
      } as UpdateMenuItemCategoryDto;
  
      await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

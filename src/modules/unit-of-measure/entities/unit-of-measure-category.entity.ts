@@ -21,13 +21,13 @@ export class UnitOfMeasureCategory{
      * "Volume", "Weight", "Unit"
      */
     @Column({ unique: true })
-    name: string;
+    categoryName: string;
 
     /**
      * List of {@link UnitOfMeasure} under the category.
      */
     @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
-    units: UnitOfMeasure[];
+    unitsOfMeasure: UnitOfMeasure[];
 
     /**
      * The selected {@link UnitOfMeasure} that all units in the category convert to for conversions.
@@ -36,5 +36,5 @@ export class UnitOfMeasureCategory{
      */
     @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    baseUnit?: UnitOfMeasure | null;
+    baseConversionUnit?: UnitOfMeasure | null;
 }

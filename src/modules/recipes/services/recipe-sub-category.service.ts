@@ -1,4 +1,4 @@
-import { Inject, forwardRef } from "@nestjs/common";
+import { BadRequestException, Inject, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -7,6 +7,8 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 import { RecipeSubCategoryValidator } from "../validators/recipe-sub-category.validator";
+import { CreateRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-recipe-sub-category.dto";
+import { RecipeCategory } from "../entities/recipe-category.entity";
 
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
     constructor(
@@ -21,7 +23,14 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory>{
         logger: AppLogger,
     ){ super(subCategoryRepo, subCategoryBuilder, validator, 'RecipeSubCategoryService', requestContextService, logger); }
 
+    /**
+     * Depreciated, only created as a child through {@link RecipeCategory}.
+     */
+    public async create(dto: CreateRecipeSubCategoryDto): Promise<RecipeSubCategory> {
+        throw new BadRequestException();
+    }
+
     async findOneByName(name: string, relations?: Array<keyof RecipeSubCategory>): Promise<RecipeSubCategory | null> {
-        return this.subCategoryRepo.findOne({ where: { name: name }, relations });
+        return this.subCategoryRepo.findOne({ where: { subCategoryName: name }, relations });
     }
 }

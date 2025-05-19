@@ -14,14 +14,14 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateRecipeIngredientDto): Promise<string | null> {
-        if(dto.inventoryItemId && dto.subRecipeIngredientId){
+        if(dto.ingredientInventoryItemId && dto.ingredientRecipeId){
             return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient';
         }
         return null;
     }
     
     public async validateUpdate(id: number, dto: UpdateRecipeIngredientDto): Promise<string | null> {
-        if(dto.inventoryItemId && dto.subRecipeIngredientId){
+        if(dto.ingredientInventoryItemId && dto.ingredientRecipeId){
             return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient';
         }
         return null;

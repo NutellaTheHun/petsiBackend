@@ -20,25 +20,18 @@ export class RoleBuilder extends BuilderBase<Role>{
     ){ super(Role, 'RoleBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRoleDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.roleName){
+            this.roleName(dto.roleName);
         }
     }
 
     protected updateEntity(dto: UpdateRoleDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.roleName){
+            this.roleName(dto.roleName);
         }
-        if(dto.userIds){
-            this.users(dto.userIds);
-        };
     }
 
-    public name(name: string): this {
-        return this.setPropByVal('name', name);
-    }
-
-    public users(ids: number[]): this {
-        return this.setPropsByIds(this.userService.findEntitiesById.bind(this.userService), 'users', ids);
+    public roleName(name: string): this {
+        return this.setPropByVal('roleName', name);
     }
 }

@@ -47,7 +47,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
     const result = await categoryService.create(dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
 
     testId = result?.id as number;
   });
@@ -63,7 +63,7 @@ describe('UnitOfMeasureCategoryService', () => {
   it('should find one category', async () => {
     const result = await categoryService.findOne(testId);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
     expect(result?.id).toEqual(testId);
   });
 
@@ -74,7 +74,7 @@ describe('UnitOfMeasureCategoryService', () => {
   it('should find one category by name', async () => {
     const result = await categoryService.findOneByName("testCategory");
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
     expect(result?.id).toEqual(testId);
   });
 
@@ -98,7 +98,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
     const result = await categoryService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("updateName");
+    expect(result?.categoryName).toEqual("updateName");
   })
 
   it('should update category baseUnit', async () => {
@@ -111,9 +111,9 @@ describe('UnitOfMeasureCategoryService', () => {
 
     const result = await categoryService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("updateName");
-    expect(result?.baseUnit?.id).toEqual(unit?.id);
-    expect(result?.baseUnit?.name).toEqual(POUND);
+    expect(result?.categoryName).toEqual("updateName");
+    expect(result?.baseConversionUnit?.id).toEqual(unit?.id);
+    expect(result?.baseConversionUnit?.name).toEqual(POUND);
   })
 
   it('should set baseUnit to null when unit is deleted', async () => {
@@ -125,7 +125,7 @@ describe('UnitOfMeasureCategoryService', () => {
 
     const category = await categoryService.findOne(testId, ["baseUnit"]);
     if(!category){ throw new Error("category not found"); }
-    expect(category.baseUnit).toBeNull();
+    expect(category.baseConversionUnit).toBeNull();
   });
 
   it('should remove a category', async () => {
@@ -170,10 +170,10 @@ describe('UnitOfMeasureCategoryService', () => {
     );
     
     const verifyNotInOld = await categoryService.findOne(oldCategoryId, ['units']);
-    expect(verifyNotInOld?.units.find(u => u.id == unit.id)).toBeUndefined();
+    expect(verifyNotInOld?.unitsOfMeasure.find(u => u.id == unit.id)).toBeUndefined();
 
     const verifyInNew = await categoryService.findOne(newCategory.id, ['units']);
-    expect(verifyInNew?.units.find(u => u.id == unit.id)).not.toBeUndefined();
+    expect(verifyInNew?.unitsOfMeasure.find(u => u.id == unit.id)).not.toBeUndefined();
   });
 
   it('should update category list after removing a unit of measure', async () => {
@@ -186,6 +186,6 @@ describe('UnitOfMeasureCategoryService', () => {
     const category = await categoryService.findOne(unitToRemove.category.id, ['units']);
     if(!category) { throw new Error('category not found'); }
 
-    expect(category.units.findIndex(unit => unit.id == unitToRemove.id)).toEqual(-1);
+    expect(category.unitsOfMeasure.findIndex(unit => unit.id == unitToRemove.id)).toEqual(-1);
   });
 });

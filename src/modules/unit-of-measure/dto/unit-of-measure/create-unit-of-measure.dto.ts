@@ -5,7 +5,7 @@ export class CreateUnitOfMeasureDto {
     @ApiProperty({ example: 'Pound, Kilogram, Gallon, fluid ounce', description: 'Name of the Unit-of-Measure entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly unitName: string;
 
     @ApiProperty({ example: 'UnitOfMeasure: Pound, abbreviation: lb', description: 'abbrieviation of the Unit-of-Measure entity\'s name.' })
     @IsString()

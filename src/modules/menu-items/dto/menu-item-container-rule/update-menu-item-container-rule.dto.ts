@@ -13,10 +13,4 @@ export class UpdateMenuItemContainerRuleDto {
     @IsPositive()
     @IsOptional()
     validSizeIds?: number[];
-
-    @ApiProperty({ description: 'The amount of the menuItem/Size variation.' })
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    quantity?: number;
 }

@@ -26,6 +26,6 @@ export class RoleService extends ServiceBase<Role> {
   ){ super(roleRepo, roleBuilder, validator, 'RoleService', requestContextService, logger); }
 
   async findOneByName(roleName: string, relations?: Array<keyof Role>): Promise<Role | null> {
-    return await this.roleRepo.findOne({ where: { name: roleName }, relations: relations  });
+    return await this.roleRepo.findOne({ where: { roleName: roleName }, relations: relations  });
   }
 }

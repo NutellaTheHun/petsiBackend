@@ -35,6 +35,9 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         if(dto.inventoryAreaId){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
+        if(dto.itemCountDtos){
+            this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
+        }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaCountDto): void{
@@ -42,7 +45,6 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
             this.inventoryAreaById(dto.inventoryAreaId);
         }
         if(dto.itemCountDtos){
-            // Requires passing the parent when the area-count update requires creating a new area-item
             this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
     }

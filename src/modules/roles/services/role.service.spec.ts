@@ -38,23 +38,23 @@ describe('Role Service', () => {
 
   it('should create a role', async () => {
     const dto = {
-      name: testRoleName,
+      roleName: testRoleName,
     } as CreateRoleDto;
     const result = await roleService.create(dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(testRoleName);
+    expect(result?.roleName).toEqual(testRoleName);
 
     testId = result?.id as number;
   });
 
   it("should update a role", async () => {
     const dto = {
-      name: testRoleUpdateName,
+      roleName: testRoleUpdateName,
     } as UpdateRoleDto;
 
     const result = await roleService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(testRoleUpdateName);
+    expect(result?.roleName).toEqual(testRoleUpdateName);
   });
 
   it('should remove a role', async () => {
@@ -87,6 +87,6 @@ describe('Role Service', () => {
   it("should get role by name", async () => {
     const result = await roleService.findOneByName(ROLE_ADMIN);
     expect(result).not.toBeNull();
-    expect(result?.name).toBe(ROLE_ADMIN);
+    expect(result?.roleName).toBe(ROLE_ADMIN);
   });
 });

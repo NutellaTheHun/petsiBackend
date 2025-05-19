@@ -36,9 +36,9 @@ describe('recipe ingredient controller', () => {
     service = module.get<RecipeIngredientService>(RecipeIngredientService);
 
     recipes = [
-      { name: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
-      { name: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2,salesPrice: "15" } as Recipe,
-      { name: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3,salesPrice: "20 "} as Recipe,
+      { recipeName: "REC_A", batchResultQuantity: 1, servingSizeQuantity: 1, salesPrice: "10.00" } as Recipe,
+      { recipeName: "REC_B", batchResultQuantity: 2, servingSizeQuantity: 2,salesPrice: "15" } as Recipe,
+      { recipeName: "REC_C", batchResultQuantity: 3, servingSizeQuantity: 3,salesPrice: "20 "} as Recipe,
     ];
     recId = 1;
     recipes.map(recipe => recipe.id = recId++);
@@ -64,32 +64,32 @@ describe('recipe ingredient controller', () => {
     items.map(item => item.id = itemId++);
 
     ingredients = [
-      { recipe: recipes[0], inventoryItem: items[0], quantity: 1, unit: units[0] } as RecipeIngredient,
-      { recipe: recipes[0], inventoryItem: items[1], quantity: 2, unit: units[1] } as RecipeIngredient,
-      { recipe: recipes[1], inventoryItem: items[2], quantity: 3, unit: units[2] } as RecipeIngredient,
-      { recipe: recipes[1], inventoryItem: items[3], quantity: 4, unit: units[3] } as RecipeIngredient,
-      { recipe: recipes[2], inventoryItem: items[4], quantity: 5, unit: units[0] } as RecipeIngredient,
-      { recipe: recipes[2], inventoryItem: items[5], quantity: 6, unit: units[1] } as RecipeIngredient,
+      { parentRecipe: recipes[0], ingredientInventoryItem: items[0], quantity: 1, quantityMeasure: units[0] } as RecipeIngredient,
+      { parentRecipe: recipes[0], ingredientInventoryItem: items[1], quantity: 2, quantityMeasure: units[1] } as RecipeIngredient,
+      { parentRecipe: recipes[1], ingredientInventoryItem: items[2], quantity: 3, quantityMeasure: units[2] } as RecipeIngredient,
+      { parentRecipe: recipes[1], ingredientInventoryItem: items[3], quantity: 4, quantityMeasure: units[3] } as RecipeIngredient,
+      { parentRecipe: recipes[2], ingredientInventoryItem: items[4], quantity: 5, quantityMeasure: units[0] } as RecipeIngredient,
+      { parentRecipe: recipes[2], ingredientInventoryItem: items[5], quantity: 6, quantityMeasure: units[1] } as RecipeIngredient,
     ];
     ingredId = 1;
     ingredients.map(ingred => ingred.id = ingredId++);
     
     jest.spyOn(service, "create").mockImplementation(async (dto: CreateRecipeIngredientDto) => {
-      const recipe = recipes.find(rec => rec.id === dto.recipeId);
+      const recipe = recipes.find(rec => rec.id === dto.parentRecipeId);
       if(!recipe){ throw new Error("recipe not found"); }
 
-      const item = items.find(item => item.id === dto.inventoryItemId);
+      const item = items.find(item => item.id === dto.ingredientInventoryItemId);
       if(!item){ throw new Error('item not found'); }
 
-      const unit = units.find(unit => unit.id === dto.unitOfMeasureId);
+      const unit = units.find(unit => unit.id === dto.quantityMeasurementId);
       if(!unit){ throw new Error("unit not found"); }
 
       const ingred = {
         id: ingredId++,
-        recipe: recipe,
-        inventoryItem: item,
+        parentRecipe: recipe,
+        ingredientInventoryItem: item,
         quantity: dto.quantity,
-        unit: unit,
+        quantityMeasure: unit,
       } as RecipeIngredient;
 
       ingredients.push(ingred);
@@ -100,10 +100,10 @@ describe('recipe ingredient controller', () => {
       const existIdx = ingredients.findIndex(ingred => ingred.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.inventoryItemId){
-        const item = items.find(item => item.id === dto.inventoryItemId);
+      if(dto.ingredientInventoryItemId){
+        const item = items.find(item => item.id === dto.ingredientInventoryItemId);
         if(!item){ throw new Error('item not found'); }
-        ingredients[existIdx].inventoryItem = item;
+        ingredients[existIdx].ingredientInventoryItem = item;
       }
       if(dto.quantity){
         ingredients[existIdx].quantity = dto.quantity;
@@ -111,23 +111,23 @@ describe('recipe ingredient controller', () => {
       if(dto.recipeId){
         const recipe = recipes.find(rec => rec.id === dto.recipeId);
         if(!recipe){ throw new Error("recipe not found"); }
-        ingredients[existIdx].recipe = recipe;
+        ingredients[existIdx].parentRecipe = recipe;
       }
-      if(dto.unitOfMeasureId){
-        const unit = units.find(unit => unit.id === dto.unitOfMeasureId);
+      if(dto.quantityMeasurementId){
+        const unit = units.find(unit => unit.id === dto.quantityMeasurementId);
         if(!unit){ throw new Error("unit not found"); }
-        ingredients[existIdx].unit = unit;
+        ingredients[existIdx].quantityMeasure = unit;
       }
 
       return ingredients[existIdx];
     });
 
     jest.spyOn(service, "findByRecipeName").mockImplementation(async (name: string) => {
-      return ingredients.filter(ingred => ingred.recipe.name === name) || null;
+      return ingredients.filter(ingred => ingred.parentRecipe.recipeName === name) || null;
     });
 
     jest.spyOn(service, "findByInventoryItemName").mockImplementation(async (name: string) => {
-      return ingredients.filter(ingred => ingred.recipe.name === name) || null;
+      return ingredients.filter(ingred => ingred.parentRecipe.recipeName === name) || null;
     });
 
     jest.spyOn(service, "findAll").mockResolvedValue({ items: ingredients });
@@ -156,18 +156,18 @@ describe('recipe ingredient controller', () => {
 
   it('should create a recipe ingredient', async () => {
     const dto = {
-      recipeId: recipes[0].id,
-      inventoryItemId: items[2].id,
+      parentRecipeId: recipes[0].id,
+      ingredientInventoryItemId: items[2].id,
       quantity: 1,
-      unitOfMeasureId: units[2].id,
+      quantityMeasurementId: units[2].id,
     } as CreateRecipeIngredientDto;
     const result = await controller.create(dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.recipe.id).toEqual(recipes[0].id);
-    expect(result?.inventoryItem?.id).toEqual(items[2].id);
+    expect(result?.parentRecipe.id).toEqual(recipes[0].id);
+    expect(result?.ingredientInventoryItem?.id).toEqual(items[2].id);
     expect(result?.quantity).toEqual(1);
-    expect(result?.unit.id).toEqual(units[2].id);
+    expect(result?.quantityMeasure.id).toEqual(units[2].id);
 
     testId = result?.id as number;
   });
@@ -189,26 +189,26 @@ describe('recipe ingredient controller', () => {
 
   it('should update a recipe ingredient', async () => {
     const dto = {
-      recipeId: recipes[1].id,
-      inventoryItemId: items[4].id,
+      parentRecipeId: recipes[1].id,
+      ingredientInventoryItemId: items[4].id,
       quantity: 4,
-      unitOfMeasureId: units[3].id,
+      quantityMeasurementId: units[3].id,
     } as CreateRecipeIngredientDto;
     const result = await controller.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.recipe.id).toEqual(recipes[1].id);
-    expect(result?.inventoryItem?.id).toEqual(items[4].id);
+    expect(result?.parentRecipe.id).toEqual(recipes[1].id);
+    expect(result?.ingredientInventoryItem?.id).toEqual(items[4].id);
     expect(result?.quantity).toEqual(4);
-    expect(result?.unit.id).toEqual(units[3].id);
+    expect(result?.quantityMeasure.id).toEqual(units[3].id);
   });
 
   it('should fail update a recipe ingredient', async () => {
     const dto = {
-      recipeId: recipes[1].id,
-      inventoryItemId: items[4].id,
+      parentRecipeId: recipes[1].id,
+      ingredientInventoryItemId: items[4].id,
       quantity: 4,
-      unitOfMeasureId: units[3].id,
+      quantityMeasurementId: units[3].id,
     } as CreateRecipeIngredientDto;
 
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

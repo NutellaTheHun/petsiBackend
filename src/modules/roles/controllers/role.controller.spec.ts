@@ -23,19 +23,19 @@ describe('Role Controller', () => {
     roleService = module.get<RoleService>(RoleService);
 
     roles = [
-      { name: ROLE_ADMIN } as Role,
-      { name: ROLE_MANAGER } as Role,
-      { name: ROLE_STAFF } as Role,
+      { roleName: ROLE_ADMIN } as Role,
+      { roleName: ROLE_MANAGER } as Role,
+      { roleName: ROLE_STAFF } as Role,
     ];
     roles.map(role => role.id = roleId++);
 
     jest.spyOn(roleService, "create").mockImplementation(async (createDto: CreateRoleDto) => {
-      const exists = roles.find(role => role.name === createDto.name)
+      const exists = roles.find(role => role.roleName === createDto.roleName)
       if(exists){ throw new BadRequestException(); }
 
       const role = {
         id: roleId++,
-        name: createDto.name,
+        roleName: createDto.roleName,
       } as Role;
 
       roles.push(role);
@@ -48,8 +48,8 @@ describe('Role Controller', () => {
       const index = roles.findIndex(role => role.id === id);
       if(index === -1){ throw new NotFoundException(); }
 
-      if(updateDto.name){
-        roles[index].name = updateDto.name;
+      if(updateDto.roleName){
+        roles[index].roleName = updateDto.roleName;
       }
 
       return roles[index];
@@ -95,13 +95,13 @@ describe('Role Controller', () => {
   });
 
   it("should create and return a role", async () => {
-    const dto = { name: "newRole" } as Role;
+    const dto = { roleName: "newRole" } as Role;
     const result = await controller.create(dto);
     expect(result).not.toBeNull();
   });
 
   it("should fail to create a role (non-unique name)", async () => {
-    const dto = { name: "newRole" } as Role;
+    const dto = { roleName: "newRole" } as Role;
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
@@ -110,7 +110,7 @@ describe('Role Controller', () => {
     if(!toUpdate){ throw new Error('role to update returned null'); } 
 
     const dto = {
-      name: "updatedRole"
+      roleName: "updatedRole"
     } as UpdateRoleDto;
 
     const result = await controller.update(toUpdate.id, dto);

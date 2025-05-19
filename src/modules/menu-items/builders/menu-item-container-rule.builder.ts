@@ -7,14 +7,13 @@ import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-
 import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
 import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 import { UpdateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-menu-item-container-rule.dto";
-import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
-import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
+import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
+import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemContainerRuleValidator } from "../validators/menu-item-container-rule.validator";
-
 @Injectable()
 export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerRule> implements IBuildChildDto<MenuItemContainerOptions, MenuItemContainerRule> {
     constructor(
@@ -48,9 +47,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
     }
 
     buildChildEntity(dto: CreateChildMenuItemContainerRuleDto): void {
-        if(dto.quantity){
-            this.quantity(dto.quantity);
-        }
         if(dto.validMenuItemId){
             this.validMenuItemById(dto.validMenuItemId);
         }
@@ -59,12 +55,12 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
         }
     }
 
+    /**
+     * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
+     */
     protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
         if(dto.parentContainerOptionsId){
             this.parentContainerOptionsById(dto.parentContainerOptionsId);
-        }
-        if(dto.quantity){
-            this.quantity(dto.quantity);
         }
         if(dto.validMenuItemId){
             this.validMenuItemById(dto.validMenuItemId);
@@ -75,9 +71,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerRuleDto): void {
-        if(dto.quantity){
-            this.quantity(dto.quantity);
-        }
         if(dto.validMenuItemId){
             this.validMenuItemById(dto.validMenuItemId);
         }
@@ -110,9 +103,5 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
 
     private validMenuItemSizeByIds(ids: number[]): this {
         return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'validSizes', ids);
-    }
-
-    private quantity(amount: number): this {
-        return this.setPropByVal('validQuantity', amount);
     }
 }

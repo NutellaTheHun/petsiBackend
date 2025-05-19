@@ -31,7 +31,7 @@ describe('menu item container item controller', () => {
         const itemNames = getTestItemNames();
         items = itemNames.map( name => ({
             id: itemId++,
-            name: name,
+            itemName: name,
         }) as MenuItem);
 
         components = [

@@ -30,6 +30,9 @@ implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
         logger: AppLogger,
     ){ super(MenuItemContainerItem, 'MenuItemComponentBuilder', requestContextService, logger, validator); }
     
+    /**
+     * Depreciated, only created as a child through {@link MenuItem}.
+     */
     protected createEntity(dto: CreateMenuItemContainerItemDto): void {
         if(dto.parentContainerId){
             this.parentContainerById(dto.parentContainerId);

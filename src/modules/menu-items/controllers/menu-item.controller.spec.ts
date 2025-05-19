@@ -27,16 +27,16 @@ describe('menu item controller', () => {
     let id = 1;
     items = itemNames.map( name => ({
       id: id++,
-      name: name,
+      itemName: name,
     }) as MenuItem);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemDto) => {
-      const exists = items.find(item => item.name === dto.name);
+      const exists = items.find(item => item.itemName === dto.itemName);
       if(exists){ throw new BadRequestException(); }
 
       const item = {
         id: id++,
-        name: dto.name,
+        itemName: dto.itemName,
       } as MenuItem;
 
       items.push(item);
@@ -59,7 +59,7 @@ describe('menu item controller', () => {
     });
 
     jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-      return items.find(item => item.name === name) || null;
+      return items.find(item => item.itemName === name) || null;
     });
 
     jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -74,8 +74,8 @@ describe('menu item controller', () => {
       const existIdx = items.findIndex(item => item.id === id);
       if(existIdx === -1){ throw new NotFoundException() }
 
-      if(dto.name){
-        items[existIdx].name = dto.name;
+      if(dto.itemName){
+        items[existIdx].itemName = dto.itemName;
       }
 
       return items[existIdx];
@@ -88,21 +88,21 @@ describe('menu item controller', () => {
 
   it('should create a item', async () => {
     const dto = {
-      name: "testItem",
+      itemName: "testItem",
     } as CreateMenuItemDto;
 
     const result = await controller.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull()
-    expect(result?.name).toEqual("testItem");
+    expect(result?.itemName).toEqual("testItem");
 
     testId = result?.id as number;
   });
 
   it('should fail to create a item (already exists)', async () => {
     const dto = {
-      name: "testItem",
+      itemName: "testItem",
     } as CreateMenuItemDto;
     
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
@@ -119,19 +119,19 @@ describe('menu item controller', () => {
 
   it('should update item name', async () => {
     const dto = {
-      name: "updateTestItem",
+      itemName: "updateTestItem",
     } as UpdateMenuItemDto;
 
     const result = await controller.update(testId, dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual("updateTestItem");
+    expect(result?.itemName).toEqual("updateTestItem");
   });
 
   it('should fail update item name (not exist)', async () => {
     const dto = {
-      name: "updateTestItem",
+      itemName: "updateTestItem",
     } as UpdateMenuItemDto;
 
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

@@ -17,10 +17,4 @@ export class CreateChildMenuItemContainerRuleDto {
     @IsPositive()
     @IsNotEmpty()
     validSizeIds: number[];
-
-    @ApiProperty({ description: 'The amount of the menuItem/Size variation.' })
-    @IsNumber()
-    @IsPositive()
-    @IsNotEmpty()
-    quantity: number;
 }

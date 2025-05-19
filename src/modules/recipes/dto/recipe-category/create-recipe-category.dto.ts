@@ -6,7 +6,7 @@ export class CreateRecipeCategoryDto {
     @ApiProperty({ description: 'Name of the Recipe-Category entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly categoryName: string;
 
     @ApiProperty({ 
         description: 'Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent Recipe-Category with child Recipe-Sub-Category entities.',

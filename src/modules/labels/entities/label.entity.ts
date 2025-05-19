@@ -28,7 +28,7 @@ export class Label {
     imageUrl: string;
 
     /**
-     * A label type for categories like: "4x2", "2x1", or "ingredient label"
+     * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
      */
     @ManyToOne(() => LabelType, {nullable: true, onDelete: 'SET NULL' })
     labelType: LabelType;

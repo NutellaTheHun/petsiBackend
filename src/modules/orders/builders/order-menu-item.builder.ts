@@ -38,6 +38,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         logger: AppLogger,
     ){ super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
     
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
     protected createEntity(dto: CreateOrderMenuItemDto): void {
         if(dto.menuItemId){
             this.menuItemById(dto.menuItemId);

@@ -14,9 +14,9 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateMenuItemSizeDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { name: dto.sizeName }});
         if(exists) { 
-            return `Menu item size with name ${dto.name} already exists`; 
+            return `Menu item size with name ${dto.sizeName} already exists`; 
         }
         return null;
     }

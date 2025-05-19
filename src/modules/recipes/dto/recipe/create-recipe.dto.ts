@@ -6,13 +6,13 @@ export class CreateRecipeDto {
     @ApiProperty({ description: 'Name of the Recipe entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly recipeName: string;
 
     @ApiProperty({ example: 'Menu-Item: Chocolate Bourbon Pecan', description: 'Id of the Menu-Item that the recipe produces.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly menuItemId?: number;
+    readonly producedMenuItemId?: number;
 
     @ApiProperty({ example: 'Recipe: Blueberry Mix.', description: 'If the recipe is used as an ingredient.(Not sold directly)' })
     @IsBoolean()
@@ -29,7 +29,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()  
-    readonly batchResultUnitOfMeasureId: number;
+    readonly batchResultMeasurementId: number;
     
     @ApiProperty({ description: 'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.' })
     @IsNumber()
@@ -41,7 +41,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()    
-    readonly servingSizeUnitOfMeasureId: number;
+    readonly servingSizeMeasurementId: number;
 
     @ApiProperty({ description: 'The price of purchasing the serving size amount.' })
     @IsNumber({ maxDecimalPlaces: 2 })

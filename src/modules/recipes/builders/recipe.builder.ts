@@ -42,8 +42,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
-        if(dto.batchResultUnitOfMeasureId){
-            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        if(dto.batchResultMeasurementId){
+            this.batchResultMeasurementById(dto.batchResultMeasurementId);
         }
         if(dto.categoryId){
             this.categoryById(dto.categoryId);
@@ -51,11 +51,11 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.isIngredient !== undefined){
             this.isIngredient(dto.isIngredient);
         }
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
+        if(dto.producedMenuItemId){
+            this.producedMenuItemById(dto.producedMenuItemId);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.recipeName){
+            this.name(dto.recipeName);
         }
         if(dto.salesPrice){
             this.salesPrice(dto.salesPrice);
@@ -63,8 +63,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.servingSizeQuantity){
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
-        if(dto.servingSizeUnitOfMeasureId){
-            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        if(dto.servingSizeMeasurementId){
+            this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
         }
         if(dto.subCategoryId){
             this.subCategoryById(dto.subCategoryId);
@@ -78,8 +78,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.batchResultQuantity){
             this.batchResultQuantity(dto.batchResultQuantity);
         }
-        if(dto.batchResultUnitOfMeasureId){
-            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        if(dto.batchResultMeasurementId){
+            this.batchResultMeasurementById(dto.batchResultMeasurementId);
         }
         if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
@@ -93,11 +93,11 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.isIngredient !== undefined){
             this.isIngredient(dto.isIngredient);
         }
-        if(dto.menuItemId !== undefined){
-            this.menuItemById(dto.menuItemId);
+        if(dto.producedMenuItemId !== undefined){
+            this.producedMenuItemById(dto.producedMenuItemId);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.recipeName){
+            this.name(dto.recipeName);
         }
         if(dto.salesPrice){
             this.salesPrice(dto.salesPrice);
@@ -105,8 +105,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         if(dto.servingSizeQuantity){
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
-        if(dto.servingSizeUnitOfMeasureId){
-            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        if(dto.servingSizeMeasurementId){
+            this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
         }
         if(dto.subCategoryId !== undefined){
             this.subCategoryById(dto.subCategoryId);
@@ -117,18 +117,18 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('recipeName', name);
     }
     
-    public menuItemById(id: number): this {
+    public producedMenuItemById(id: number): this {
         if(id === 0){
-            return this.setPropByVal('menuItem', null);
+            return this.setPropByVal('producedMenuItem', null);
         }
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'menuItem',id);
+        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'producedMenuItem', id);
     }
 
-    public menuItemByName(name: string): this {
-        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'menuItem', name);
+    public producedMenuItemByName(name: string): this {
+        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'producedMenuItem', name);
     }
 
     public isIngredient(value: boolean): this {
@@ -151,24 +151,24 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return this.setPropByVal('batchResultQuantity', amount);
     }
 
-    public batchResultUnitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'batchResultUnitOfMeasure', id);
+    public batchResultMeasurementById(id: number): this {
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'batchResultMeasurement', id);
     }
 
-    public batchResultUnitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'batchResultUnitOfMeasure', name);
+    public batchResultMeasurementByName(name: string): this {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'batchResultMeasurement', name);
     }
 
     public servingSizeQuantity(amount: number): this {
         return this.setPropByVal('servingSizeQuantity', amount);
     }
 
-    public servingUnitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'servingSizeUnitOfMeasure', id);
+    public servingSizeMeasurementById(id: number): this {
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'servingSizeMeasurement', id);
     }
 
-    public servingUnitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'servingSizeUnitOfMeasure', name);
+    public servingSizeMeasurementByName(name: string): this {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'servingSizeMeasurement', name);
     }
 
     public salesPrice(amount: number): this {

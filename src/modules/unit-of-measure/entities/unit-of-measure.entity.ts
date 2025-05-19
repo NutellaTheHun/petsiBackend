@@ -31,7 +31,7 @@ export class UnitOfMeasure {
      * 
      * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
      */
-    @ManyToOne(() => UnitOfMeasureCategory, (category) => category.units, { nullable: true, onDelete: 'SET NULL', cascade: true })
+    @ManyToOne(() => UnitOfMeasureCategory, (category) => category.unitsOfMeasure, { nullable: true, onDelete: 'SET NULL', cascade: true })
     category?: UnitOfMeasureCategory | null;
 
     /**

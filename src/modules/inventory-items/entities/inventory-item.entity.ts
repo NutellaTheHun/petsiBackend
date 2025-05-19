@@ -6,6 +6,7 @@ import { RecipeIngredient } from "../../recipes/entities/recipe-ingredient.entit
 import { InventoryAreaItem } from "../../inventory-areas/entities/inventory-area-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { InventoryItemPackage } from "./inventory-item-package.entity";
+import { InventoryAreaCount } from "../../inventory-areas/entities/inventory-area-count.entity";
 
 /**
  * An element of the inventory catalog, referenced via {@link InventoryAreaItem} for inventory counts, and {@link RecipeIngredient} for recipes. 
@@ -44,7 +45,7 @@ export class InventoryItem{
      /**
      * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
      * - Can be created explicitly through updating InventoryItem, 
-     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
+     * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
      */
     @OneToMany(() => InventoryItemSize, size => size.inventoryItem, { cascade: true })
     itemSizes?: InventoryItemSize[] | null;

@@ -22,8 +22,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     ){ super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
     
     protected createEntity(dto: CreateUnitOfMeasureDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.unitName){
+            this.name(dto.unitName);
         }
         if(dto.abbreviation){
             this.abbreviation(dto.abbreviation);
@@ -37,8 +37,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     }
 
     protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.unitName){
+            this.name(dto.unitName);
         }
         if(dto.abbreviation){
             this.abbreviation(dto.abbreviation);

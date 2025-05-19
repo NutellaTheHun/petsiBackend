@@ -39,8 +39,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.itemName){
+            this.name(dto.itemName);
         }
         if(dto.isPOTM !== undefined){
             this.isPOTM(dto.isPOTM);
@@ -65,8 +65,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.categoryId){
             this.categorybyId(dto.categoryId);
         }
-        if(dto.containerComponentDtos){
-            this.containerItemsByBuilder(this.entity.id, dto.containerComponentDtos);
+        if(dto.definedContainerItemDtos){
+            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
         if(dto.containerOptionDto){
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
@@ -74,8 +74,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     protected updateEntity(dto: UpdateMenuItemDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.itemName){
+            this.name(dto.itemName);
         }
         if(dto.isPOTM !== undefined){
             this.isPOTM(dto.isPOTM);
@@ -100,8 +100,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.categoryId !== undefined){
             this.categorybyId(dto.categoryId);
         }
-        if(dto.containerComponentDtos){
-            this.containerItemsByBuilder(this.entity.id, dto.containerComponentDtos);
+        if(dto.definedContainerItemDtos){
+            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
         if(dto.containerOptionDto){
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
@@ -109,7 +109,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('itemName', name);
     }
 
     public isPOTM(val: boolean): this {
@@ -168,12 +168,12 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[]): this {
+    public definedContainerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             containerId: parentId,
         }));
-        return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'definedContainerItems', this.entity, enrichedDtos);
     }
 
     public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto)): this {

@@ -31,9 +31,12 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
         logger: AppLogger,
     ){ super(RecipeSubCategory, 'RecipeSubCategoryBuilder', requestContextService, logger, validator); }
 
+    /**
+     * Depreciated, only created as a child through {@link RecipeCategory}.
+     */
     protected createEntity(dto: CreateRecipeSubCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.subCategoryName){
+            this.name(dto.subCategoryName);
         }
         if(dto.parentCategoryId){
             this.parentCategoryById(dto.parentCategoryId);
@@ -41,8 +44,8 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
     }
     
     protected updateEntity(dto: UpdateRecipeSubCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.subCategoryName){
+            this.name(dto.subCategoryName);
         }
         if(dto.parentCategoryId){
             this.parentCategoryById(dto.parentCategoryId);
@@ -50,8 +53,8 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
     }
 
     buildChildEntity(dto: CreateChildRecipeSubCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.subCategoryName){
+            this.name(dto.subCategoryName);
         }
     }
 
@@ -82,7 +85,7 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
     }
     
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('subCategoryName', name);
     }
 
     public parentCategoryById(id: number): this {

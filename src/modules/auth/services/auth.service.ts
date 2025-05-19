@@ -49,7 +49,7 @@ export class AuthService {
         //would also need to return users roles for the RoleGuard to work
         return {
             access_token: await this.jwtService.signAsync(payload),
-            roles: user.roles.map( role => role.name),
+            roles: user.roles.map( role => role.roleName),
         };
     }
 

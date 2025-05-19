@@ -14,9 +14,9 @@ export class RoleValidator extends ValidatorBase<Role> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateRoleDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { roleName: dto.roleName }});
         if(exists) { 
-            return `Role with name ${dto.name} already exists`; 
+            return `Role with name ${dto.roleName} already exists`; 
         }
         return null;
     }

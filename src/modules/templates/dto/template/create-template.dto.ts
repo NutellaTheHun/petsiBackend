@@ -6,7 +6,7 @@ export class CreateTemplateDto {
     @ApiProperty({ example: 'Summer Pies, Spring Pastries', description: 'Name of the Template entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly templateName: string;
 
     @ApiProperty({ description: 'If the template displays a list of pies. Templates display either Pies or Pastries.' })
     @IsBoolean()
@@ -18,5 +18,5 @@ export class CreateTemplateDto {
      })
     @IsOptional()
     @IsArray()
-    itemDtos?: CreateChildTemplateMenuItemDto[];
+    templateItemDtos?: CreateChildTemplateMenuItemDto[];
 }

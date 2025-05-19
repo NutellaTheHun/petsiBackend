@@ -5,5 +5,5 @@ export class CreateRoleDto {
     @ApiProperty({ description: 'Name of the Role entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly roleName: string;
 }

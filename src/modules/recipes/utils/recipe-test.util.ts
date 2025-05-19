@@ -52,88 +52,88 @@ export class RecipeTestUtil {
         
         return [
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_A)
+                .ingredientInventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(0.5)
-                .recipeByName(CONSTANT.REC_A)
-                .unitOfMeasureByName(OUNCE)
+                .parentRecipeByName(CONSTANT.REC_A)
+                .quantityUnitOfMeasureByName(OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(DRY_A)
+                .ingredientInventoryItemByName(DRY_A)
                 //.subRecipeByName()
                 .quantity(1.0)
-                .recipeByName(CONSTANT.REC_A)
-                .unitOfMeasureByName(POUND)
+                .parentRecipeByName(CONSTANT.REC_A)
+                .quantityUnitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_B)
+                .ingredientInventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(1.5)
-                .recipeByName(CONSTANT.REC_B)
-                .unitOfMeasureByName(GRAM)
+                .parentRecipeByName(CONSTANT.REC_B)
+                .quantityUnitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_B)
+                .ingredientInventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(2)
-                .recipeByName(CONSTANT.REC_B)
-                .unitOfMeasureByName(FL_OUNCE)
+                .parentRecipeByName(CONSTANT.REC_B)
+                .quantityUnitOfMeasureByName(FL_OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
                 //.inventoryItemByName(DRY_C)
-                .subRecipeByName(CONSTANT.REC_B)
+                .ingredientRecipeByName(CONSTANT.REC_B)
                 .quantity(2.5)
-                .recipeByName(CONSTANT.REC_C)
-                .unitOfMeasureByName(LITER)
+                .parentRecipeByName(CONSTANT.REC_C)
+                .quantityUnitOfMeasureByName(LITER)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_C)
+                .ingredientInventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(2.75)
-                .recipeByName(CONSTANT.REC_C)
-                .unitOfMeasureByName(GALLON)
+                .parentRecipeByName(CONSTANT.REC_C)
+                .quantityUnitOfMeasureByName(GALLON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_B)
+                .ingredientInventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(3)
-                .recipeByName(CONSTANT.REC_D)
-                .unitOfMeasureByName(KILOGRAM)
+                .parentRecipeByName(CONSTANT.REC_D)
+                .quantityUnitOfMeasureByName(KILOGRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_A)
+                .ingredientInventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(3.5)
-                .recipeByName(CONSTANT.REC_D)
-                .unitOfMeasureByName(GRAM)
+                .parentRecipeByName(CONSTANT.REC_D)
+                .quantityUnitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_B)
+                .ingredientInventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(10)
-                .recipeByName(CONSTANT.REC_E)
-                .unitOfMeasureByName(POUND)
+                .parentRecipeByName(CONSTANT.REC_E)
+                .quantityUnitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_C)
+                .ingredientInventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(10.5)
-                .recipeByName(CONSTANT.REC_E)
-                .unitOfMeasureByName(CUP)
+                .parentRecipeByName(CONSTANT.REC_E)
+                .quantityUnitOfMeasureByName(CUP)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(DRY_C)
+                .ingredientInventoryItemByName(DRY_C)
                 //.subRecipeByName()
                 .quantity(10.75)
-                .recipeByName(CONSTANT.REC_F)
-                .unitOfMeasureByName(TABLESPOON)
+                .parentRecipeByName(CONSTANT.REC_F)
+                .quantityUnitOfMeasureByName(TABLESPOON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_A)
+                .ingredientInventoryItemByName(OTHER_A)
                 //.subRecipeByName()
                 .quantity(15)
-                .recipeByName(CONSTANT.REC_F)
-                .unitOfMeasureByName(TEASPOON)
+                .parentRecipeByName(CONSTANT.REC_F)
+                .quantityUnitOfMeasureByName(TEASPOON)
                 .build(),
         ];
     }
@@ -200,8 +200,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
                 .salesPrice(4.99)
-                .servingUnitOfMeasureByName(OUNCE)
-                .batchResultUnitOfMeasureByName(POUND)
+                .servingSizeMeasurementByName(OUNCE)
+                .batchResultMeasurementByName(POUND)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_1)
                 .build(),
@@ -211,8 +211,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
                 .salesPrice(8.99)
-                .servingUnitOfMeasureByName(MILLILITER)
-                .batchResultUnitOfMeasureByName(LITER)
+                .servingSizeMeasurementByName(MILLILITER)
+                .batchResultMeasurementByName(LITER)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_2)
                 .build(),
@@ -222,8 +222,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
                 .salesPrice(12.99)
-                .servingUnitOfMeasureByName(GRAM)
-                .batchResultUnitOfMeasureByName(KILOGRAM)
+                .servingSizeMeasurementByName(GRAM)
+                .batchResultMeasurementByName(KILOGRAM)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .build(),
             await this.recipeBuilder.reset()
@@ -232,8 +232,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
                 .salesPrice(4.99)
-                .servingUnitOfMeasureByName(OUNCE)
-                .batchResultUnitOfMeasureByName(POUND)
+                .servingSizeMeasurementByName(OUNCE)
+                .batchResultMeasurementByName(POUND)
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_3)
                 .build(),
@@ -243,8 +243,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
                 .salesPrice(8.99)
-                .servingUnitOfMeasureByName(MILLILITER)
-                .batchResultUnitOfMeasureByName(LITER)
+                .servingSizeMeasurementByName(MILLILITER)
+                .batchResultMeasurementByName(LITER)
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_4)
                 .build(),
@@ -254,8 +254,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
                 .salesPrice(12.99)
-                .servingUnitOfMeasureByName(GRAM)
-                .batchResultUnitOfMeasureByName(KILOGRAM)
+                .servingSizeMeasurementByName(GRAM)
+                .batchResultMeasurementByName(KILOGRAM)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .build(),
         ];
@@ -286,7 +286,7 @@ export class RecipeTestUtil {
         testContext.addCleanupFunction(() => this.cleanupRecipeCategoryTestingDatabase());
 
         for(const category of categories){
-            const exists = await this.categoryService.findOneByName(category.name);
+            const exists = await this.categoryService.findOneByName(category.categoryName);
             if(!exists){ toInsert.push(category); }
         }
         await this.categoryService.insertEntities(toInsert);
@@ -305,7 +305,7 @@ export class RecipeTestUtil {
         testContext.addCleanupFunction(() => this.cleanupRecipeSubCategoryTestingDatabase());
 
         for(const subCat of subCategories){
-            const exists = await this.subCategoryService.findOneByName(subCat.name);
+            const exists = await this.subCategoryService.findOneByName(subCat.subCategoryName);
             if(!exists){ toInsert.push(subCat); }
         }
 
@@ -324,7 +324,7 @@ export class RecipeTestUtil {
         testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
 
         for(const recipe of recipes){
-            const exists = await this.recipeService.findOneByName(recipe.name);
+            const exists = await this.recipeService.findOneByName(recipe.recipeName);
             if(!exists){ toInsert.push(recipe); }
         }
 
@@ -363,16 +363,16 @@ export class RecipeTestUtil {
             if(itemIndex < itemIds.length){
                 results.push({
                     mode: 'create',
-                    inventoryItemId: itemIds[itemIndex++],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientInventoryItemId: itemIds[itemIndex++],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
             else if(subRecipeIndex < subRecipeIds.length){
                 results.push({
                     mode: 'create',
-                    subRecipeIngredientId: subRecipeIds[i - itemIds.length-1],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientRecipeId: subRecipeIds[i - itemIds.length-1],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
@@ -382,8 +382,8 @@ export class RecipeTestUtil {
 
                 results.push({
                     mode: 'create',
-                    inventoryItemId: itemIds[itemIndex++],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientInventoryItemId: itemIds[itemIndex++],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }

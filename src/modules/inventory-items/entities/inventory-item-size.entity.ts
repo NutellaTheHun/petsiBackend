@@ -26,7 +26,7 @@ export class InventoryItemSize {
     measureAmount: number;
 
     /**
-     * Unit of measurement like "lbs", "oz", "fl oz", "ea."
+     * {@link UnitOfMeasure} like "lbs", "oz", "fl oz", "ea."
      * - example: 6 pack of 28oz(measureUnit) can of evaporated milk
      * - Example: 10 lb(measureUnit) of flour
      */
@@ -34,13 +34,13 @@ export class InventoryItemSize {
     measureUnit: UnitOfMeasure;
 
     /**
-     * Type of package an inventory item is counted in. "Box", "Can", "Bag"
+     * Choice of {@link InventoryItemPackage} an inventory item is counted in. "Box", "Can", "Bag"
      */
     @ManyToOne(() => InventoryItemPackage, { onDelete: 'CASCADE' })
     packageType: InventoryItemPackage;
 
     /**
-     * The parent item that this specific unit of measurement/package type combination refers to.
+     * The parent {@link InventoryItem} that this specific unit of measurement/package type combination refers to.
      * 
      * An item can have multiple valid InventoryItemSizes
      */

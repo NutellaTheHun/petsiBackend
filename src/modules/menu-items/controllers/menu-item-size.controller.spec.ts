@@ -29,12 +29,12 @@ describe('menu item size controller', () => {
     }) as MenuItemSize);
 
     jest.spyOn(service, 'create').mockImplementation(async (dto: CreateMenuItemSizeDto) => {
-        const exists = sizes.find(size => size.name === dto.name);
+        const exists = sizes.find(size => size.name === dto.sizeName);
         if(exists){ throw new BadRequestException(); }
 
         const size = {
           id: id++,
-          name: dto.name,
+          name: dto.sizeName,
         } as MenuItemSize;
   
         sizes.push(size);
@@ -71,8 +71,8 @@ describe('menu item size controller', () => {
       const existIdx = sizes.findIndex(size => size.id === id);
       if(existIdx === -1){ throw new NotFoundException(); }
 
-      if(dto.name){
-        sizes[existIdx].name = dto.name;
+      if(dto.sizeName){
+        sizes[existIdx].name = dto.sizeName;
       }
 
       return sizes[existIdx];
@@ -85,7 +85,7 @@ describe('menu item size controller', () => {
 
   it('should create a size', async () => {
      const dto = {
-       name: "testItemSize",
+       sizeName: "testItemSize",
      } as CreateMenuItemSizeDto;
  
      const result = await controller.create(dto);
@@ -99,7 +99,7 @@ describe('menu item size controller', () => {
  
    it('should fail to create a size (already exists)', async () => {
      const dto = {
-       name: "testItemSize",
+       sizeName: "testItemSize",
      } as CreateMenuItemSizeDto;
      
      await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -116,7 +116,7 @@ describe('menu item size controller', () => {
  
    it('should update size name', async () => {
      const dto = {
-       name: "updateTestItemSize",
+       sizeName: "updateTestItemSize",
      } as UpdateMenuItemSizeDto;
  
      const result = await controller.update(testId, dto);
@@ -128,7 +128,7 @@ describe('menu item size controller', () => {
  
    it('should fail update size name (not exist)', async () => {
      const dto = {
-       name: "updateTestItemSize",
+       sizeName: "updateTestItemSize",
      } as UpdateMenuItemSizeDto;
  
      await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

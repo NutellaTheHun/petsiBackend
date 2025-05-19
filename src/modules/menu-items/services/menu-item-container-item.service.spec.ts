@@ -71,9 +71,9 @@ describe('menu item container item service', () => {
     it('should query menu item with container item reference', async () => {
         const parentItem = await menuItemService.findOne(testParentItemId, ['container']);
         if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.container){ throw new Error(); }
+        if(!parentItem.definedContainerItems){ throw new Error(); }
 
-        expect(parentItem.container.findIndex(comp => comp.id === testId)).not.toEqual(-1);
+        expect(parentItem.definedContainerItems.findIndex(comp => comp.id === testId)).not.toEqual(-1);
     });
 
     it('should find one container item by id', async () => {
@@ -170,9 +170,9 @@ describe('menu item container item service', () => {
     it('should query menu item without container item reference', async () => {
         const parentItem = await menuItemService.findOne(testParentItemId, ['container']);
         if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.container){ throw new Error(); }
+        if(!parentItem.definedContainerItems){ throw new Error(); }
 
-        const container = await componentService.findEntitiesById(parentItem.container.map(comp => comp.id), ['containedItem']);
+        const container = await componentService.findEntitiesById(parentItem.definedContainerItems.map(comp => comp.id), ['containedItem']);
 
         expect(container.findIndex(comp => comp.containedItem.id === testId)).toEqual(-1);
     });
@@ -187,9 +187,9 @@ describe('menu item container item service', () => {
 
         const parentItem = await menuItemService.findOneByName(item_g, ['container']);
         if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.container){ throw new Error(); }
+        if(!parentItem.definedContainerItems){ throw new Error(); }
 
-        const container = await componentService.findEntitiesById(parentItem.container.map(comp => comp.id), ['containedItem']);
+        const container = await componentService.findEntitiesById(parentItem.definedContainerItems.map(comp => comp.id), ['containedItem']);
 
         expect(container.findIndex(comp => comp.containedItem.id === deleteId)).toEqual(-1);
     });

@@ -2,7 +2,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
 import { UpdateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { InventoryAreaCount } from "../../entities/inventory-area-count.entity";
 
+/**
+ * Depreciated, only created as a child through {@link InventoryAreaCount}.
+ */
 export class CreateInventoryAreaItemDto {
     @ApiProperty({ description: 'Id for Inventory-Area-Count entity.' })
     @IsNumber()

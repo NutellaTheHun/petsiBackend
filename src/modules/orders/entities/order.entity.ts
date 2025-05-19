@@ -15,7 +15,7 @@ export class Order {
      * - Example: "Wholesale", "Special", "Square", "Farmers Market"
      */
     @ManyToOne(() => OrderCategory, { nullable: false })
-    type: OrderCategory;
+    orderCategory: OrderCategory;
 
     /**
      * Name of the owner of the order, such as the name of a person or buisness.
@@ -102,5 +102,5 @@ export class Order {
      * The list of {@link OrderMenuItem} that are being purchased.
      */
     @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true, nullable: true })
-    items?: OrderMenuItem[] | null;
+    orderedItems?: OrderMenuItem[] | null;
 }

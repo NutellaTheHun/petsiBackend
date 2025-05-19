@@ -26,7 +26,7 @@ export class MenuItemContainerItem {
    * Example:
    * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
    */
-  @ManyToOne(() => MenuItem, (menuItem) => menuItem.container, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+  @ManyToOne(() => MenuItem, (menuItem) => menuItem.definedContainerItems, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   parentContainer: MenuItem;
 
   /**

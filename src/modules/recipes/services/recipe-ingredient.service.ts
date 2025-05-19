@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -9,6 +9,8 @@ import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { RecipeIngredientValidator } from "../validators/recipe-ingredient.validator";
 import { RecipeService } from "./recipe.service";
+import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
+import { Recipe } from "../entities/recipe.entity";
 
 export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
     constructor(
@@ -27,6 +29,13 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
         logger: AppLogger,
     ){ super(ingredientRepo, ingredientBuilder, validator, 'RecipeIngredientService', requestContextService, logger); }
 
+    /**
+     * Depreciated, only created as a child through {@link Recipe}.
+     */
+    public async create(dto: CreateRecipeIngredientDto): Promise<RecipeIngredient> {
+        throw new BadRequestException();
+    }
+
     async findByRecipeName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
         const recipe = await this.recipeService.findOneByName(name, ["ingredients"]);
         if(!recipe?.ingredients){
@@ -38,7 +47,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
     async findByRecipeId(id: number, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
         return await this.ingredientRepo.find({
             where: {
-                recipe: { id }
+                parentRecipe: { id }
             },
             relations
         })
@@ -52,7 +61,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
 
         return await this.ingredientRepo.find({
             where: {
-                inventoryItem: invItem
+                ingredientInventoryItem: invItem
             },
             relations
         })
@@ -66,7 +75,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
 
         return await this.ingredientRepo.find({
             where: {
-                inventoryItem: invItem
+                ingredientInventoryItem: invItem
             },
             relations
         })

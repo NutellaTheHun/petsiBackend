@@ -20,6 +20,6 @@ export class OrderCategoryService extends ServiceBase<OrderCategory> {
     ){ super(categoryRepo, typeBuilder, validator, 'OrderCategoryService', requestContextService, logger)}
 
     async findOneByName(name: string, relations?: Array<keyof OrderCategory>): Promise<OrderCategory | null> {
-        return this.categoryRepo.findOne({ where: {name: name }, relations});
+        return this.categoryRepo.findOne({ where: {categoryName: name }, relations});
     }
 }

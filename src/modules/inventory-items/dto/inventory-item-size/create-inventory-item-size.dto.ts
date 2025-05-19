@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsPositive, Min } from "class-validator";
+import { InventoryItem } from "../../entities/inventory-item.entity";
 
+/**
+ * Depreciated, only created as a child through {@link InventoryItem}.
+ */
 export class CreateInventoryItemSizeDto {
     @ApiProperty({ description: 'Id of Inventory-Item entity.' })
     @IsNumber()

@@ -25,6 +25,6 @@ export class RecipeService extends ServiceBase<Recipe>{
     ){ super(recipeRepo, recipeBuilder, validator, 'RecipeService', requestContextService, logger); }
     
     async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
-        return this.recipeRepo.findOne({ where: {name: name }, relations});
+        return this.recipeRepo.findOne({ where: {recipeName: name }, relations});
     }
 }

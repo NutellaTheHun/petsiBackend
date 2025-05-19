@@ -35,14 +35,14 @@ describe('order menu item controller', () => {
         let typeId = 1;
         types = typeNames.map(name => ({
             id: typeId++,
-            name: name,
+            categoryName: name,
         }) as OrderCategory);
 
         let orderId = 1;
         for(let i = 0; i < 3; i++){
             orders.push({
                 id: orderId++,
-                type: types[i],
+                orderCategory: types[i],
                 fulfillmentDate: new Date(),
             } as Order);
         }
@@ -51,7 +51,7 @@ describe('order menu item controller', () => {
         let menuItemId = 1;
         items = itemNames.map( name => ({
             id: menuItemId++,
-            name: name,
+            itemName: name,
         }) as MenuItem);
 
         let itemId = 1;

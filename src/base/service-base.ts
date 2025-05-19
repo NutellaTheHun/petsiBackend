@@ -60,28 +60,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
   async update(id: number, updateDto: any): Promise<T> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
-
-    // validate DTO
-    /*const error = await this.validator.validateUpdate(id, updateDto);
-    if(error){ 
-      const err = new AppHttpException(
-        `${this.cacheKeyPrefix}: update dto validation failed`,
-        HttpStatus.BAD_REQUEST,
-        DTO_VALIDATION_FAIL,
-        { error }
-      );
-
-      this.logger.logError(
-        this.cacheKeyPrefix,
-        requestId,
-        'UPDATE',
-        err,
-        { requestId, id }
-      );
-
-      throw err; 
-    }*/
-
+    
     // retrieve entity from DB
     const toUpdate = await this.findOne(id);
     if(!toUpdate){ 

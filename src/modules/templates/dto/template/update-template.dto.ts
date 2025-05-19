@@ -9,7 +9,7 @@ export class UpdateTemplateDto{
     @ApiProperty({ example: 'Summer Pies, Spring Pastries', description: 'Name of the Template entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly templateName?: string;
 
     @ApiProperty({ description: 'If the template displays a list of pies. Templates display either Pies or Pastries.' })
     @IsBoolean()
@@ -23,5 +23,5 @@ export class UpdateTemplateDto{
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => TemplateMenuItemUnionResolver)
-    itemDtos?: (CreateChildTemplateMenuItemDto | UpdateChildTemplateMenuItemDto)[];
+    templateItemDtos?: (CreateChildTemplateMenuItemDto | UpdateChildTemplateMenuItemDto)[];
 }

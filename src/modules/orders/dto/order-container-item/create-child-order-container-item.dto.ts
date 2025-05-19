@@ -9,15 +9,15 @@ export class CreateChildOrderContainerItemDto {
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
-    componentMenuItemId: number;
+    containedMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the componentMenuItem' })
+    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
-    componentItemSizeId: number;
+    containedItemSizeId: number;
 
-    @ApiProperty({ description: 'amount of the componentMenuItem / componentItemSize being ordered' })
+    @ApiProperty({ description: 'amount of the containedMenuItem / containedItemSize being ordered' })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

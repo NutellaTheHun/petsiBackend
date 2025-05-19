@@ -6,23 +6,23 @@ export class UpdateChildOrderContainerItemDto {
     @IsNotEmpty()
     readonly mode: 'update' = 'update';
 
-    @ApiProperty({ description: 'Id of the Order-Menu-Item-Component to update.' })
+    @ApiProperty({ description: 'Id of the Order-Menu-Item-Container-Item to update.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     readonly id: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is being ordered' })
+    @ApiProperty({ description: 'Id of the Menu-Item being ordered' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    componentMenuItemId?: number;
+    containedMenuItemId?: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the componentMenuItem' })
+    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    componentItemSizeId?: number;
+    containedItemSizeId?: number;
 
     @ApiProperty({ description: 'amount of the componentMenuItem / componentItemSize being ordered' })
     @IsNumber()

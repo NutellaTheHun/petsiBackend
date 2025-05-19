@@ -15,13 +15,6 @@ export class UpdateChildMenuItemContainerOptionsDto {
     readonly id: number;
 
     @ApiProperty({ 
-        example: 'Box of 6 scones is dynamic (can be any combination of the 3 flavors totaling 6). A Breakfast Pastry Platter is not dynamic (Preset assortment of items per size)',
-        description: 'Is dynamic if the quanties vary accross the valid MenuItems/MenuItemSizes' })
-    @IsBoolean()
-    @IsOptional()
-    isDynamic?: boolean;
-
-    @ApiProperty({ 
         description: 'The list of MenuItems and their sizes that are allowed in the container', 
         type: [CreateChildMenuItemContainerRuleDto] })
     @IsArray()

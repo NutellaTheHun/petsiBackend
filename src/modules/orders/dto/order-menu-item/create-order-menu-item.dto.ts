@@ -1,7 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateChildOrderContainerItemDto } from "../order-container-item/create-child-order-container-item.dto";
-
+import { Order } from "../../entities/order.entity";
+/**
+ * Depreciated, only created as a child through {@link Order}.
+ */
 export class CreateOrderMenuItemDto {
     @ApiProperty({ description: 'Id of Order entity the Order-Menu-Item belongs to.' })
     @IsNumber()

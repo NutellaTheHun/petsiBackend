@@ -3,11 +3,11 @@ import { ApiProperty } from "@nestjs/swagger";
 import { CreateChildOrderMenuItemDto } from "../order-menu-item/create-child-order-menu-item.dto";
 
 export class CreateOrderDto {
-    @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
+    @ApiProperty({ example: 'Order categories such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
-    readonly orderTypeId: number
+    readonly orderCategoryId: number
 
     @ApiProperty({ example: 'John Smith, Pepperidge Farms', description: 'Name of the owner of the order' })
     @IsString()
@@ -69,5 +69,5 @@ export class CreateOrderDto {
      })
     @IsOptional()
     @IsArray()
-    orderMenuItemDtos?: CreateChildOrderMenuItemDto[];
+    orderedMenuItemDtos?: CreateChildOrderMenuItemDto[];
 }

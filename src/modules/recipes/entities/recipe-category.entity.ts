@@ -13,7 +13,7 @@ export class RecipeCategory {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    categoryName: string;
 
     /**
      * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"

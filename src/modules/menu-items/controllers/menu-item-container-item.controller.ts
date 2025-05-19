@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
 import { Roles } from "../../../util/decorators/PublicRole";
@@ -12,6 +12,7 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constant
 import { PaginatedResult } from "../../../base/paginated-result";
 import { CreateMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
+import { MenuItem } from "../entities/menu-item.entity";
 
 @ApiTags('Menu Item Container Item')
 @ApiBearerAuth('access-token')
@@ -25,14 +26,18 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
     requestContextService: RequestContextService,
   ) { super(componentService, cacheManager, 'MenuItemComponentController', requestContextService, logger); }
 
-  @Post()
+  /*@Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Menu Item Component' })
   @ApiCreatedResponse({ description: 'Menu Item Component successfully created', type: MenuItemContainerItem })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateMenuItemContainerItemDto })
+  @ApiBody({ type: CreateMenuItemContainerItemDto })*/
+  /**
+   * Depreciated, only created as a child through {@link MenuItem}.
+   */
   async create(@Body() dto: CreateMenuItemContainerItemDto): Promise<MenuItemContainerItem> {
-    return super.create(dto);
+    //return super.create(dto);
+    throw new BadRequestException();
   }
 
   @Patch(':id')

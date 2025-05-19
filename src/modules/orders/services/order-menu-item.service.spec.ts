@@ -81,9 +81,9 @@ describe('order menu item service', () => {
     it('should update order query with new item', async () => {
         const testOrder = await orderService.findOne(testOrderId, ['items']);
         if(!testOrder){ throw new NotFoundException(); }
-        if(!testOrder.items){ throw new Error(); }
+        if(!testOrder.orderedItems){ throw new Error(); }
 
-        expect(testOrder.items.findIndex(item => item.id === testId)).not.toEqual(-1);
+        expect(testOrder.orderedItems.findIndex(item => item.id === testId)).not.toEqual(-1);
     });
 
     it('should find orderMenuItem by id', async () => {
@@ -161,9 +161,9 @@ describe('order menu item service', () => {
     it('should update order query to not contain deleted item', async () => {
         const testOrder = await orderService.findOne(testOrderId, ['items']);
         if(!testOrder){ throw new NotFoundException(); }
-        if(!testOrder.items){ throw new Error(); }
+        if(!testOrder.orderedItems){ throw new Error(); }
 
-        expect(testOrder.items.findIndex(item => item.id === testId)).toEqual(-1);
+        expect(testOrder.orderedItems.findIndex(item => item.id === testId)).toEqual(-1);
     });
 
     it('should create and order item with components', async () => {
@@ -176,14 +176,14 @@ describe('order menu item service', () => {
         const compDtos = [
             {
                 mode: 'create',
-                componentMenuItemId: itemA.id,
-                componentItemSizeId: itemA.validSizes[0].id,
+                containedMenuItemId: itemA.id,
+                containedItemSizeId: itemA.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
             {
                 mode: 'create',
-                componentMenuItemId: itemB.id,
-                componentItemSizeId: itemB.validSizes[0].id,
+                containedMenuItemId: itemB.id,
+                containedItemSizeId: itemB.validSizes[0].id,
                 quantity: 1,
             } as CreateChildOrderContainerItemDto,
         ] as CreateChildOrderContainerItemDto[];
@@ -223,8 +223,8 @@ describe('order menu item service', () => {
 
         const cDto = {
             mode: 'create',
-            componentMenuItemId: itemD.id,
-            componentItemSizeId: itemD.validSizes[0].id,
+            containedMenuItemId: itemD.id,
+            containedItemSizeId: itemD.validSizes[0].id,
             quantity: 2,
         } as CreateChildOrderContainerItemDto;
 
@@ -257,8 +257,8 @@ describe('order menu item service', () => {
         if(!itemG){ throw new Error(); }
         if(!itemG.validSizes){ throw new Error(); }
 
-        theRest[0].componentItemSizeId = itemG.validSizes[0].id;
-        theRest[0].componentMenuItemId = itemG.id;
+        theRest[0].containedItemSizeId = itemG.validSizes[0].id;
+        theRest[0].containedMenuItemId = itemG.id;
         theRest[0].quantity = 50;
 
         const moddedId = theRest[0].id;
@@ -272,8 +272,8 @@ describe('order menu item service', () => {
         if(!result.orderedItemComponents){ throw new Error(); }
         for(const comp of result.orderedItemComponents){
             if(comp.id === moddedId){
-                expect(comp.item.id).toEqual(itemG.id);
-                expect(comp.itemSize.id).toEqual(itemG.validSizes[0].id);
+                expect(comp.containedItem.id).toEqual(itemG.id);
+                expect(comp.containedItemSize.id).toEqual(itemG.validSizes[0].id);
                 expect(comp.quantity).toEqual(50);
             }
         }

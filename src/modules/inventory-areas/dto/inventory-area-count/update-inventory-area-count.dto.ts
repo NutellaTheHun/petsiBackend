@@ -12,7 +12,7 @@ export class UpdateInventoryAreaCountDto {
     readonly inventoryAreaId?: number;
     
     @ApiProperty({ description: 'Array with combination of CreateChildInventoryAreaItemDto and UpdateChildInventoryAreaItemDto, child Dtos are only used when updating a parent entity, and creating/updating children through the parent.',
-        type: [CreateChildInventoryAreaItemDto]
+        type: [UpdateChildInventoryAreaItemDto]
      })
     @IsOptional()
     @IsArray()

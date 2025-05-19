@@ -8,6 +8,7 @@ import { MenuItemContainerRuleBuilder } from "../builders/menu-item-container-ru
 import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemContainerRuleValidator } from "../validators/menu-item-container-rule.validator";
 import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
+import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 
 @Injectable()
 export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerRule> {
@@ -25,6 +26,9 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
         logger: AppLogger,
     ){ super(repo, optionBuilder, validator, 'ComponentOptionService', requestContextService, logger); }
 
+    /**
+     * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
+     */
     public async create(dto: CreateMenuItemContainerRuleDto): Promise<MenuItemContainerRule> {
         throw new BadRequestException();
     }

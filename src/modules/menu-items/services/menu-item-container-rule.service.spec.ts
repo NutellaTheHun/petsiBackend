@@ -64,7 +64,7 @@ describe('menu item container rule service', () => {
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
         let newItem;
-        if(toUpdate.validItem.name === item_a){
+        if(toUpdate.validItem.itemName === item_a){
             const itemB = await itemService.findOneByName(item_b);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
@@ -93,7 +93,7 @@ describe('menu item container rule service', () => {
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
         let newItem: MenuItem;
-        if(toUpdate.validItem.name === item_a){
+        if(toUpdate.validItem.itemName === item_a){
             const itemB = await itemService.findOneByName(item_b);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
@@ -120,7 +120,7 @@ describe('menu item container rule service', () => {
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
         let newItem: MenuItem;
-        if(toUpdate.validItem.name === item_a){
+        if(toUpdate.validItem.itemName === item_a){
             const itemB = await itemService.findOneByName(item_b);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }

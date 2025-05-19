@@ -14,9 +14,9 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategory> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateOrderCategoryDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
         if(exists) { 
-            return `Order type with name ${dto.name} already exists`; 
+            return `Order type with name ${dto.categoryName} already exists`; 
         }
         return null;
     }

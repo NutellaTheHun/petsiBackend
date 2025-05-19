@@ -9,7 +9,7 @@ export class UpdateRecipeCategoryDto{
     @ApiProperty({ description: 'Name of the Recipe-Category entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
+    readonly categoryName?: string;
 
     @ApiProperty({ description: 'Mixed array of CreateChildRecipeSubCategoryDtos and UpdateChildRecipeSubCategoryDtos, child dtos are used when updating the parent Recipe-Category with created/updated child Recipe-Sub-Category entities.',
         type: [UpdateChildRecipeSubCategoryDto]

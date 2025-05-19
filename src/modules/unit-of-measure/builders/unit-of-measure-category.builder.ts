@@ -26,7 +26,7 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
             this.name(dto.name);
         }
         if(dto.baseUnitId){
-            this.baseUnitById(dto.baseUnitId);
+            this.baseConversionUnitById(dto.baseUnitId);
         }
     }
 
@@ -35,23 +35,23 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
             this.name(dto.name);
         }
         if(dto.baseUnitId){
-            this.baseUnitById(dto.baseUnitId);
+            this.baseConversionUnitById(dto.baseUnitId);
         }
     }
 
     public name(name: string): this{
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('categoryName', name);
     }
 
-    public unitsById(ids: number[]): this{
-        return this.setPropsByIds(this.unitService.findEntitiesById.bind(this.unitService), 'units', ids);
+    public unitsOfMeasureById(ids: number[]): this{
+        return this.setPropsByIds(this.unitService.findEntitiesById.bind(this.unitService), 'unitsOfMeasure', ids);
     }
 
-    public baseUnitById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'baseUnit', id);
+    public baseConversionUnitById(id: number): this {
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'baseConversionUnit', id);
     }
 
-    public async baseUnitByName(name: string): Promise<this> {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'baseUnit', name);
+    public async baseConversionUnitByName(name: string): Promise<this> {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'baseConversionUnit', name);
     }
 }

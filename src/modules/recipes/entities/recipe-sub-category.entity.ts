@@ -14,7 +14,7 @@ export class RecipeSubCategory{
     id: number;
 
     @Column({ nullable: false })
-    name: string;
+    subCategoryName: string;
 
     /**
      * The owning category

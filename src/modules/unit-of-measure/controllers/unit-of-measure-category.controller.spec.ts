@@ -19,20 +19,20 @@ describe('UnitOfMeasureCategoryController', () => {
     categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
 
     categories = [
-      { name: UNIT } as UnitOfMeasureCategory,
-      { name: VOLUME } as UnitOfMeasureCategory,
-      { name: WEIGHT } as UnitOfMeasureCategory,
+      { categoryName: UNIT } as UnitOfMeasureCategory,
+      { categoryName: VOLUME } as UnitOfMeasureCategory,
+      { categoryName: WEIGHT } as UnitOfMeasureCategory,
     ];
     let id = 1;
     categories.map(category => category.id = id++);
 
     jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
-      const exists = categories.find(unit => unit.name === createDto.name);
+      const exists = categories.find(unit => unit.categoryName === createDto.name);
       if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: id++,
-        name: createDto.name,
+        categoryName: createDto.name,
       } as UnitOfMeasureCategory;
 
       categories.push(unit);
@@ -40,7 +40,7 @@ describe('UnitOfMeasureCategoryController', () => {
     });
 
     jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
-      return categories.find(unit => unit.name === name) || null;
+      return categories.find(unit => unit.categoryName === name) || null;
     });
     
     jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
@@ -48,7 +48,7 @@ describe('UnitOfMeasureCategoryController', () => {
       if(index === -1){ throw new NotFoundException(); }
       
       if(updateDto.name){
-        categories[index].name = updateDto.name;
+        categories[index].categoryName = updateDto.name;
       }
 
       return categories[index];
@@ -116,10 +116,10 @@ describe('UnitOfMeasureCategoryController', () => {
     const toUpdate = await categoryService.findOneByName("testCategory");
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
-    toUpdate.name = "UPDATED_testCategory";
+    toUpdate.categoryName = "UPDATED_testCategory";
     const result = await controller.update(toUpdate.id, toUpdate);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("UPDATED_testCategory")
+    expect(result?.categoryName).toEqual("UPDATED_testCategory")
   });
   
   it('should fail to update a category (doesnt exist)', async () => {

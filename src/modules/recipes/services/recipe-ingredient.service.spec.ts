@@ -63,19 +63,19 @@ describe('recipe ingredient service', () => {
 
     const dto = {
       mode: 'create',
-      recipeId: recipeA.id,
-      inventoryItemId: item.id,
+      parentRecipeId: recipeA.id,
+      ingredientInventoryItemId: item.id,
       quantity: 1,
-      unitOfMeasureId: unit.id,
+      quantityMeasurementId: unit.id,
     } as CreateRecipeIngredientDto;
 
     const result = await ingredientService.create(dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.recipe?.id).toEqual(recipeA.id);
-    expect(result?.inventoryItem?.id).toEqual(item.id);
+    expect(result?.parentRecipe?.id).toEqual(recipeA.id);
+    expect(result?.ingredientInventoryItem?.id).toEqual(item.id);
     expect(result?.quantity).toEqual(1);
-    expect(result?.unit.id).toEqual(unit.id);
+    expect(result?.quantityMeasure.id).toEqual(unit.id);
 
     testIngredId = result?.id as number;
     testRecipeId = recipeA.id;
@@ -100,19 +100,19 @@ describe('recipe ingredient service', () => {
  
      const dto = {
        mode: 'create',
-       recipeId: recipeA.id,
-       subRecipeIngredientId: subRec.id,
+       parentRecipeId: recipeA.id,
+       ingredientRecipeId: subRec.id,
        quantity: 1,
-       unitOfMeasureId: unit.id,
+       quantityMeasurementId: unit.id,
      } as CreateRecipeIngredientDto;
  
      const result = await ingredientService.create(dto);
      expect(result).not.toBeNull();
      expect(result?.id).not.toBeNull();
-     expect(result?.recipe?.id).toEqual(recipeA.id);
-     expect(result?.subRecipeIngredient?.id).toEqual(subRec.id);
+     expect(result?.parentRecipe?.id).toEqual(recipeA.id);
+     expect(result?.ingredientRecipe?.id).toEqual(subRec.id);
      expect(result?.quantity).toEqual(1);
-     expect(result?.unit.id).toEqual(unit.id);
+     expect(result?.quantityMeasure.id).toEqual(unit.id);
  
      testSubRecId = result?.id as number;
   });
@@ -153,21 +153,21 @@ describe('recipe ingredient service', () => {
 
     const dto = {
       mode: 'update',
-      inventoryItemId: newItem.id,
+      ingredientInventoryItemId: newItem.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testSubRecId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.inventoryItem?.id).toEqual(newItem.id);
+    expect(result?.ingredientInventoryItem?.id).toEqual(newItem.id);
   });
 
   it('should lose subRecipeIngredient reference', async() => {
     const result = await ingredientService.findOne(testSubRecId, ['inventoryItem', 'subRecipeIngredient']);
     expect(result).not.toBeNull();
 
-    expect(result?.inventoryItem).not.toBeNull();
-    expect(result?.subRecipeIngredient).toBeNull();
+    expect(result?.ingredientInventoryItem).not.toBeNull();
+    expect(result?.ingredientRecipe).toBeNull();
   });
 
   it('should update subRecipeIngredient', async() => {
@@ -176,21 +176,21 @@ describe('recipe ingredient service', () => {
 
     const dto = {
       mode: 'update',
-      subRecipeIngredientId: newRec.id,
+      ingredientRecipeId: newRec.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testIngredId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.subRecipeIngredient?.id).toEqual(newRec.id);
+    expect(result?.ingredientRecipe?.id).toEqual(newRec.id);
   });
 
   it('should lose ingredient reference', async() => {
     const result = await ingredientService.findOne(testIngredId, ['inventoryItem', 'subRecipeIngredient']);
     expect(result).not.toBeNull();
 
-    expect(result?.inventoryItem).toBeNull();
-    expect(result?.subRecipeIngredient).not.toBeNull();
+    expect(result?.ingredientInventoryItem).toBeNull();
+    expect(result?.ingredientRecipe).not.toBeNull();
   });
 
   it('should update quantity', async() => {
@@ -211,13 +211,13 @@ describe('recipe ingredient service', () => {
 
     const dto = {
       mode: 'update',
-      unitOfMeasureId: newUnit.id,
+      quantityMeasurementId: newUnit.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testIngredId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.unit.id).toEqual(newUnit.id);
+    expect(result?.quantityMeasure.id).toEqual(newUnit.id);
   });
 
   it('should FAIL update inventoryItemID and subRecipe', async() => {
@@ -308,9 +308,9 @@ describe('recipe ingredient service', () => {
   it('should delete ingredient when deleting subRecipe', async () => {
     const ingredient = await ingredientService.findOne(testIngredId, ['subRecipeIngredient']);
     if(!ingredient){ throw new NotFoundException(); }
-    if(!ingredient.subRecipeIngredient){ throw new Error();}
+    if(!ingredient.ingredientRecipe){ throw new Error();}
 
-    await recipeService.remove(ingredient.subRecipeIngredient?.id);
+    await recipeService.remove(ingredient.ingredientRecipe?.id);
 
     await expect(ingredientService.findOne(testIngredId)).rejects.toThrow(NotFoundException);
   });

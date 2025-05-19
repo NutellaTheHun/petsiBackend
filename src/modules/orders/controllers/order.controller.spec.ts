@@ -28,23 +28,23 @@ describe('order controller', () => {
         let typeId = 1;
         types = typeNames.map(name => ({
             id: typeId++,
-            name: name,
+            categoryName: name,
         }) as OrderCategory);
 
         let orderId = 1;
         for(let i = 0; i < 3; i++){
             orders.push({
                 id: orderId++,
-                type: types[i],
+                orderCategory: types[i],
                 fulfillmentDate: new Date(),
             } as Order);
         }
 
         jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderDto) => {
-            const oType = types.find(t => t.id === dto.orderTypeId);
+            const oType = types.find(t => t.id === dto.orderCategoryId);
             const order = {
                 id: orderId++,
-                type: oType,
+                orderCategory: oType,
                 fulfillmentDate: dto.fulfillmentDate,
             } as Order;
         
@@ -78,10 +78,10 @@ describe('order controller', () => {
             const existIdx = orders.findIndex(order => order.id === id);
             if(existIdx === -1){ throw new NotFoundException(); }
 
-            if(dto.orderTypeId){
-                const oType = types.find(t => t.id === dto.orderTypeId);
+            if(dto.orderCategoryId){
+                const oType = types.find(t => t.id === dto.orderCategoryId);
                 if(!oType){ throw new Error(); }
-                orders[existIdx].type = oType;
+                orders[existIdx].orderCategory = oType;
             }
             if(dto.deliveryAddress){
                 orders[existIdx].deliveryAddress = dto.deliveryAddress;
@@ -97,7 +97,7 @@ describe('order controller', () => {
 
     it('should create a order', async () => {
         const dto = {
-            orderTypeId: types[0].id,
+            orderCategoryId: types[0].id,
             fulfillmentDate: new Date(),
         } as CreateOrderDto;
     

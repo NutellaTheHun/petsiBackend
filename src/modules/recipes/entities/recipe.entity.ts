@@ -17,14 +17,14 @@ export class Recipe {
     id: number;
 
     @Column({ unique: true })
-    name: string
+    recipeName: string
 
     /** 
      * The {@link MenuItem} that this recipe produces.
      */
     @OneToOne(() => MenuItem, {nullable: true, onDelete: 'SET NULL'})
     @JoinColumn()
-    menuItem?: MenuItem | null;
+    producedMenuItem?: MenuItem | null;
 
     /*
     * A recipe with isIngredient set to true doesn't directly make a MenuItem, but is an ingredient to another recipe.
@@ -42,7 +42,7 @@ export class Recipe {
      * Or a Recipe: Apple Mix, (quantity), (unit of measure),  
      * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.recipe, { nullable: true, cascade: true })
+    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, { nullable: true, cascade: true })
     ingredients?: RecipeIngredient[] | null; 
 
     /**
@@ -64,7 +64,7 @@ export class Recipe {
      */
     @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    batchResultUnitOfMeasure?: UnitOfMeasure | null;
+    batchResultMeasurement?: UnitOfMeasure | null;
 
     /**
      * A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.
@@ -87,7 +87,7 @@ export class Recipe {
      */
     @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    servingSizeUnitOfMeasure?: UnitOfMeasure | null;
+    servingSizeMeasurement?: UnitOfMeasure | null;
 
     /**
      * The set price per servingSizeQuantity.

@@ -32,12 +32,12 @@ describe('UnitOfMeasureController', () => {
     units.map(unit => unit.id = unitId++);
 
     jest.spyOn(unitService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureDto) => {
-      const exists = units.find(unit => unit.name === createDto.name);
+      const exists = units.find(unit => unit.name === createDto.unitName);
       if(exists){ throw new BadRequestException(); }
 
       const unit = {
         id: unitId++,
-        name: createDto.name,
+        name: createDto.unitName,
       } as UnitOfMeasure;
 
       units.push(unit);
@@ -53,8 +53,8 @@ describe('UnitOfMeasureController', () => {
       if(index === -1){ throw new NotFoundException(); }
 
 
-      if(updateDto.name){
-        units[index].name = updateDto.name;
+      if(updateDto.unitName){
+        units[index].name = updateDto.unitName;
       }
       if(updateDto.abbreviation){
         units[index].abbreviation = updateDto.abbreviation;
@@ -94,7 +94,7 @@ describe('UnitOfMeasureController', () => {
 
   it('should create a unit', async () => {
     const dto = {
-      name: "testUnit",
+      unitName: "testUnit",
     } as CreateUnitOfMeasureDto;
 
     const result = await controller.create(dto);
@@ -103,7 +103,7 @@ describe('UnitOfMeasureController', () => {
   
   it('should fail to create a unit (already exists)', async () => {
     const dto = {
-      name: "testUnit",
+      unitName: "testUnit",
     } as CreateUnitOfMeasureDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -128,7 +128,7 @@ describe('UnitOfMeasureController', () => {
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
     const dto = {
-      name: "UPDATED_testUnit"
+      unitName: "UPDATED_testUnit"
     } as UpdateUnitOfMeasureDto;
 
     const result = await controller.update(toUpdate.id, dto);
@@ -141,7 +141,7 @@ describe('UnitOfMeasureController', () => {
     if(!toUpdate){ throw new Error("unit to update not found"); }
 
     const dto = {
-      name: "UPDATED_testUnit"
+      unitName: "UPDATED_testUnit"
     } as UpdateUnitOfMeasureDto;
 
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

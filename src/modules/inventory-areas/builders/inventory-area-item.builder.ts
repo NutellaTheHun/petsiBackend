@@ -36,6 +36,9 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
     ){ super(InventoryAreaItem, 'InventoryAreaItemBuilder', requestContextService, logger, validator); }
 
+    /**
+     * Depreciated, only created as a child through {@link InventoryAreaCount}.
+     */
     protected createEntity(dto: CreateInventoryAreaItemDto): void {
         if(dto.parentInventoryCountId){
             this.parentInventoryCountById(dto.parentInventoryCountId);

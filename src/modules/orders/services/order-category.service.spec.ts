@@ -34,12 +34,12 @@ describe('order category service', () => {
 
     it('should create an order type', async () => {
         const dto = {
-            name: "testType"
+            categoryName: "testType"
         } as CreateOrderCategoryDto;
 
         const result = await service.create(dto);
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("testType");
+        expect(result?.categoryName).toEqual("testType");
 
         testId = result?.id as number;
     });
@@ -48,7 +48,7 @@ describe('order category service', () => {
         const result = await service.findOne(testId);
         
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("testType");
+        expect(result?.categoryName).toEqual("testType");
         expect(result?.id).toEqual(testId);
     });
 
@@ -56,18 +56,18 @@ describe('order category service', () => {
         const result = await service.findOneByName("testType");
         
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("testType");
+        expect(result?.categoryName).toEqual("testType");
         expect(result?.id).toEqual(testId);
     });
 
     it('should update an order type name', async () => {
         const dto = {
-            name: "updateTestType"
+            categoryName: "updateTestType"
         } as UpdateOrderCategoryDto;
 
         const result = await service.update(testId, dto);
         expect(result).not.toBeNull();
-        expect(result?.name).toEqual("updateTestType");
+        expect(result?.categoryName).toEqual("updateTestType");
 
         testId = result?.id as number;
     });

@@ -22,6 +22,6 @@ export class TemplateService extends ServiceBase<Template>{
     ){ super(templateRepo, templateBuilder, validator, 'TemplateService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof Template>): Promise<Template | null> {
-        return await this.templateRepo.findOne({ where: { name: name }, relations: relations });
+        return await this.templateRepo.findOne({ where: { templateName: name }, relations: relations });
     }
 }

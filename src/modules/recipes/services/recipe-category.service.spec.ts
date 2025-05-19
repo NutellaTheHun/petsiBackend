@@ -49,12 +49,12 @@ describe('recipe category service', () => {
 
   it('should create a recipe category', async () => {
     const result = await categoryService.create({
-      name: "testCategory"
+      categoryName: "testCategory"
     } as CreateRecipeCategoryDto);
     if(!result?.id){ throw new Error("result id is null.")}
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
     expect(result?.id).not.toBeNull();
     
     testId = result?.id;
@@ -63,14 +63,14 @@ describe('recipe category service', () => {
   it('should find one recipe category by id', async () => {
     const result = await categoryService.findOne(testId);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
     expect(result?.id).not.toBeNull();
   });
 
   it('should find a recipe category by name', async () => {
     const result = await categoryService.findOneByName("testCategory");
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("testCategory");
+    expect(result?.categoryName).toEqual("testCategory");
     expect(result?.id).not.toBeNull();
   });
   
@@ -79,7 +79,7 @@ describe('recipe category service', () => {
     if(!toUpdate){ throw new Error("category to update not found"); }
 
     const updateDto = {
-      name: "updatedCategoryName",
+      categoryName: "updatedCategoryName",
     } as UpdateRecipeCategoryDto;
 
     const result = await categoryService.update(toUpdate.id, updateDto);
@@ -89,7 +89,7 @@ describe('recipe category service', () => {
 
   it('should have an updated name', async () => {
     const result = await categoryService.findOne(testId);
-    expect(result?.name).toEqual("updatedCategoryName");
+    expect(result?.categoryName).toEqual("updatedCategoryName");
   });
 
   it('should remove a recipe category', async () => {
@@ -130,21 +130,21 @@ describe('recipe category service', () => {
   it('should create a recipe category with subCategories', async () => {
     const subCatDtoOne = {
       mode: 'create',
-      name: "subCatOne",
+      subCategoryName: "subCatOne",
     } as CreateChildRecipeSubCategoryDto;
 
     const subCatDtoTwo = {
       mode: 'create',
-      name: "subCatTwo",
+      subCategoryName: "subCatTwo",
     } as CreateChildRecipeSubCategoryDto;
 
     const subCatDtoThree = {
       mode: 'create',
-      name: "subCatThree",
+      subCategoryName: "subCatThree",
     } as CreateChildRecipeSubCategoryDto;
 
     const createCategoryDto = {
-      name: "category with subCats",
+      categoryName: "category with subCats",
       subCategoryDtos: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
     } as CreateRecipeCategoryDto;
 
@@ -152,7 +152,7 @@ describe('recipe category service', () => {
     if(!result){ throw new Error();}
     if(!result.subCategories){ throw new Error();}
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("category with subCats");
+    expect(result?.categoryName).toEqual("category with subCats");
     expect(result?.subCategories?.length).toEqual(3);
 
     testRecSubCatId = result?.id as number;
@@ -174,7 +174,7 @@ describe('recipe category service', () => {
     const updateSubCatDto = {
       mode: 'update',
       id: modifiedSubCatId,
-      name: "UPDATED SUBCAT",
+      subCategoryName: "UPDATED SUBCAT",
     } as UpdateChildRecipeSubCategoryDto;
 
     const theRest = category.subCategories.slice(1).map(subCat => ({
@@ -194,7 +194,7 @@ describe('recipe category service', () => {
     expect(result.subCategories.length).toEqual(3);
     for(const subCat of result.subCategories){
       if(subCat.id === modifiedSubCatId){
-        expect(subCat.name).toEqual("UPDATED SUBCAT");
+        expect(subCat.subCategoryName).toEqual("UPDATED SUBCAT");
       }
     }
   });

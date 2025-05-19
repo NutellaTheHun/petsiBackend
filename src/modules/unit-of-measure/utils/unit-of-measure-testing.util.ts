@@ -145,7 +145,7 @@ export class UnitOfMeasureTestingUtil {
 
         const toInsert: UnitOfMeasureCategory[] = [];
         for(const category of categories){
-            const exists = await this.categoryService.findOneByName(category.name);
+            const exists = await this.categoryService.findOneByName(category.categoryName);
             if(!exists){
                 toInsert.push(category);
             }
@@ -188,13 +188,13 @@ export class UnitOfMeasureTestingUtil {
     
         const baseUnit = await await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
         if(!baseUnit){ throw new Error("base unit not found"); }
-        category.baseUnit = baseUnit;
+        category.baseConversionUnit = baseUnit;
         
         await await this.categoryService.update(
             category.id,
             {
-                name: category.name,
-                baseUnitId: category.baseUnit.id 
+                name: category.categoryName,
+                baseUnitId: category.baseConversionUnit.id 
             } as UpdateUnitOfMeasureCategoryDto
         );
     }

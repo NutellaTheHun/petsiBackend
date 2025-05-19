@@ -16,14 +16,14 @@ export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
     ){ super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemSizeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.sizeName){
+            this.name(dto.sizeName);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemSizeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.sizeName){
+            this.name(dto.sizeName);
         }
     }
 

@@ -25,6 +25,6 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
   ){ super( categoryRepo, categoryBuilder, validator, 'UnitCategoryService', requestContextService, logger); }
 
   async findOneByName(categoryName: string, relations?: Array<keyof UnitOfMeasureCategory>): Promise<UnitOfMeasureCategory | null> {
-    return this.categoryRepo.findOne({ where: { name: categoryName }, relations });
+    return this.categoryRepo.findOne({ where: { categoryName: categoryName }, relations });
   }
 }

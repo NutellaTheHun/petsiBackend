@@ -24,7 +24,7 @@ export class TemplateTestingUtil {
         
         for(const name of templateNames){
             results.push({
-                name: name,
+                templateName: name,
             } as Template);
         }
         return results;
@@ -63,7 +63,7 @@ export class TemplateTestingUtil {
                     displayName: "testDisplayName"+itemIdx,
                     menuItem: items[itemIdx % items.length],
                     tablePosIndex: itemIdx,
-                    template,
+                    parentTemplate: template,
                 } as TemplateMenuItem);
                 itemIdx++;
             }

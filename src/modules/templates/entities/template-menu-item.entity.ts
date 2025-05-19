@@ -32,5 +32,5 @@ export class TemplateMenuItem {
      * The parent {@link Template}.
      */
     @ManyToOne(() => Template, (template) => template.templateItems, { nullable: false, orphanedRowAction: 'delete', onDelete: 'CASCADE' })
-    template: Template;
+    parentTemplate: Template;
 }

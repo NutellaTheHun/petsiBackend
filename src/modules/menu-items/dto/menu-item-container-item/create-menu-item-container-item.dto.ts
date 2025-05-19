@@ -1,6 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
+import { MenuItem } from "../../entities/menu-item.entity";
 
+/**
+ * Depreciated, only created as a child through {@link MenuItem}.
+ */
 export class CreateMenuItemContainerItemDto {
     @ApiProperty({ 
         example: 'Box of 6 Scones(parent container, passing containerId): 6 Blueberry Muffin(contained item)',

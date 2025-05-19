@@ -31,53 +31,56 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         logger: AppLogger,
     ){ super(RecipeIngredient, 'RecipeIngredientBuilder', requestContextService, logger, validator); }
 
+    /**
+     * Depreciated, only created as a child through {@link Recipe}.
+     */
     protected createEntity(dto: CreateRecipeIngredientDto): void {
-        if(dto.inventoryItemId){
-            this.inventoryItemById(dto.inventoryItemId);
+        if(dto.ingredientInventoryItemId){
+            this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.recipeId){
-            this.recipeById(dto.recipeId);
+        if(dto.parentRecipeId){
+            this.parentRecipeById(dto.parentRecipeId);
         } 
-        if(dto.subRecipeIngredientId){
-            this.subRecipeById(dto.subRecipeIngredientId);
+        if(dto.ingredientRecipeId){
+            this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.quantityMeasurementId){
+            this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
 
     protected updateEntity(dto: UpdateRecipeIngredientDto): void {
-        if(dto.inventoryItemId){
-            this.entity.subRecipeIngredient = null;
-            this.inventoryItemById(dto.inventoryItemId);
+        if(dto.ingredientInventoryItemId){
+            this.entity.ingredientRecipe = null;
+            this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.subRecipeIngredientId){
-            this.entity.inventoryItem = null;
-            this.subRecipeById(dto.subRecipeIngredientId);
+        if(dto.ingredientRecipeId){
+            this.entity.ingredientInventoryItem = null;
+            this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.quantityMeasurementId){
+            this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
 
     buildChildEntity(dto: CreateChildRecipeIngredientDto): void {
-        if(dto.inventoryItemId){
-            this.inventoryItemById(dto.inventoryItemId);
+        if(dto.ingredientInventoryItemId){
+            this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
-        if(dto.subRecipeIngredientId){
-            this.subRecipeById(dto.subRecipeIngredientId);
+        if(dto.ingredientRecipeId){
+            this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.unitOfMeasureId){
-            this.unitOfMeasureById(dto.unitOfMeasureId);
+        if(dto.quantityMeasurementId){
+            this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
 
@@ -86,7 +89,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
 
         this.reset();
 
-        this.entity.recipe = parent;
+        this.entity.parentRecipe = parent;
 
         this.buildChildEntity(dto);
 
@@ -113,39 +116,39 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         return results;
     }
 
-    public recipeById(id: number): this {
-        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'recipe', id);
+    public parentRecipeById(id: number): this {
+        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'parentRecipe', id);
     }
 
-    public recipeByName(name: string): this {
-        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'recipe', name);
+    public parentRecipeByName(name: string): this {
+        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'parentRecipe', name);
     }
 
-    public inventoryItemById(id: number): this {
-        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'inventoryItem', id);
+    public ingredientInventoryItemById(id: number): this {
+        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'ingredientInventoryItem', id);
     }
 
-    public inventoryItemByName(name: string): this {
-        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'inventoryItem', name);
+    public ingredientInventoryItemByName(name: string): this {
+        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'ingredientInventoryItem', name);
     }
 
-    public subRecipeById(id: number): this {
-        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'subRecipeIngredient', id);
+    public ingredientRecipeById(id: number): this {
+        return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'ingredientRecipe', id);
     }
 
-    public subRecipeByName(name: string): this {
-        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'subRecipeIngredient', name);
+    public ingredientRecipeByName(name: string): this {
+        return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'ingredientRecipe', name);
     }
 
     public quantity(amount: number): this {
         return this.setPropByVal('quantity', amount);
     }
 
-    public unitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'unit', id);
+    public quantityUnitOfMeasureById(id: number): this {
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'quantityMeasure', id);
     }
 
-    public unitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'unit', name);
+    public quantityUnitOfMeasureByName(name: string): this {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'quantityMeasure', name);
     }
 }

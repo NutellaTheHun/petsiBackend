@@ -26,16 +26,16 @@ describe('order category controller', () => {
         let id = 1;
         types = typeNames.map(name => ({
             id: id++,
-            name: name,
+            categoryName: name,
         }) as OrderCategory);
 
         jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderCategoryDto) => {
-            const exists = types.find(category => category.name === dto.name);
+            const exists = types.find(category => category.categoryName === dto.categoryName);
             if(exists){ throw new BadRequestException(); }
 
             const category = {
                 id: id++,
-                name: dto.name,
+                categoryName: dto.categoryName,
             } as OrderCategory;
         
             types.push(category);
@@ -57,7 +57,7 @@ describe('order category controller', () => {
         });
 
         jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-            return types.find(type => type.name === name) || null;
+            return types.find(type => type.categoryName === name) || null;
         });
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
@@ -72,8 +72,8 @@ describe('order category controller', () => {
             const existIdx = types.findIndex(type => type.id === id);
             if(existIdx === -1){ throw new NotFoundException(); }
 
-            if(dto.name){
-                types[existIdx].name = dto.name;
+            if(dto.categoryName){
+                types[existIdx].categoryName = dto.categoryName;
             }
 
             return types[existIdx];
@@ -86,21 +86,21 @@ describe('order category controller', () => {
 
     it('should create a order type', async () => {
         const dto = {
-        name: "testType",
+        categoryName: "testType",
         } as CreateOrderCategoryDto;
     
         const result = await controller.create(dto);
     
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
-        expect(result?.name).toEqual("testType");
+        expect(result?.categoryName).toEqual("testType");
     
         testId = result?.id as number;
     });
     
     it('should fail to create a order type (already exists)', async () => {
         const dto = {
-        name: "testType",
+        categoryName: "testType",
         } as CreateOrderCategoryDto;
         
         await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -117,19 +117,19 @@ describe('order category controller', () => {
     
     it('should update order type name', async () => {
         const dto = {
-        name: "updateTestType",
+        categoryName: "updateTestType",
         } as UpdateOrderCategoryDto;
     
         const result = await controller.update(testId, dto);
     
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
-        expect(result?.name).toEqual("updateTestType");
+        expect(result?.categoryName).toEqual("updateTestType");
     });
     
     it('should fail update order type name (not exist)', async () => {
         const dto = {
-        name: "updateTestType",
+        categoryName: "updateTestType",
         } as UpdateOrderCategoryDto;
     
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

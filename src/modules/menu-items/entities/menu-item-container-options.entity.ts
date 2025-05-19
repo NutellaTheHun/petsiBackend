@@ -2,6 +2,11 @@ import { Column, Entity, JoinTable, OneToMany, OneToOne, PrimaryGeneratedColumn 
 import { MenuItemContainerRule } from "./menu-item-container-rule.entity";
 import { MenuItem } from "./menu-item.entity";
 
+/**
+ * When a {@link MenuItem} is a dynamic container (meaning the container can contain a custom amount of menuItems)
+ * the {@link MenuItemContainerOptions} describes the valid {@link MenuItem} and their {@link MenuItemSize} that are 
+ * allowed within the container.
+ */
 @Entity()
 export class MenuItemContainerOptions {
     @PrimaryGeneratedColumn()
@@ -14,13 +19,7 @@ export class MenuItemContainerOptions {
     parentContainer: MenuItem;
 
     /**
-     * Is dynamic if the contents of the container can vary within the option's {@link containerRules}
-     */
-    @Column({ default: false })
-    isDynamic: boolean;
-
-    /**
-     * A list of rules determining valid items, their sizes, and amounts.
+     * A list of {@link MenuItemContainerRule} determining valid items, their sizes, and amounts.
      */
     @OneToMany(() => MenuItemContainerRule, c => c.parentContainerOption, { cascade: true, eager: true })
     @JoinTable()

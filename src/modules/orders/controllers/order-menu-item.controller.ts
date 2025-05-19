@@ -12,68 +12,72 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constant
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { PaginatedResult } from "../../../base/paginated-result";
+import { Order } from "../entities/order.entity";
 
 @ApiTags('Order Menu Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('order-menu-item')
 export class OrderMenuItemController extends ControllerBase<OrderMenuItem>{
-  constructor(
-    orderItemService: OrderMenuItemService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) { super(orderItemService, cacheManager, 'OrderMenuItemController', requestContextService, logger); }
-  
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Creates a Order Menu Item' })
-  @ApiCreatedResponse({ description: 'Order Menu Item successfully created', type: OrderMenuItem })
-  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateOrderMenuItemDto })
-  async create(@Body() dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
-      return super.create(dto);
-  }
+    constructor(
+        orderItemService: OrderMenuItemService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(orderItemService, cacheManager, 'OrderMenuItemController', requestContextService, logger); }
+    
+    /*@Post()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Creates a Order Menu Item' })
+    @ApiCreatedResponse({ description: 'Order Menu Item successfully created', type: OrderMenuItem })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiBody({ type: CreateOrderMenuItemDto })*/
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
+    async create(@Body() dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
+        return super.create(dto);
+    }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Updates a Order Menu Item' })
-  @ApiOkResponse({ description: 'Order Menu Item successfully updated', type: OrderMenuItem })
-  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiNotFoundResponse({ description: 'Order Menu Item to update not found.' })
-  @ApiBody({ type: UpdateOrderMenuItemDto })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderMenuItemDto): Promise<OrderMenuItem> {
-      return super.update(id, dto);
-  }
+    @Patch(':id')
+    @ApiOperation({ summary: 'Updates a Order Menu Item' })
+    @ApiOkResponse({ description: 'Order Menu Item successfully updated', type: OrderMenuItem })
+    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+    @ApiNotFoundResponse({ description: 'Order Menu Item to update not found.' })
+    @ApiBody({ type: UpdateOrderMenuItemDto })
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderMenuItemDto): Promise<OrderMenuItem> {
+        return super.update(id, dto);
+    }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Removes a Order Menu Item' })
-  @ApiNoContentResponse({ description: 'Order Menu Item successfully removed' })
-  @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-      return super.remove(id);
-  }
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @ApiOperation({ summary: 'Removes a Order Menu Item' })
+    @ApiNoContentResponse({ description: 'Order Menu Item successfully removed' })
+    @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
+    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        return super.remove(id);
+    }
 
-  @Get()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Retrieves an array of Order Menu Items' })
-  @ApiOkResponse({ type: PaginatedResult<OrderMenuItem> })
-  async findAll(
-      @Query('relations') relations?: string[],
-      @Query('limit') limit?: number,
-      @Query('offset') cursor?: string,
-      @Query('sortBy') sortBy?: string,
-      @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
-  ): Promise<PaginatedResult<OrderMenuItem>> {
-      return super.findAll(relations, limit, cursor, sortBy, sortOrder);
-  }
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves an array of Order Menu Items' })
+    @ApiOkResponse({ type: PaginatedResult<OrderMenuItem> })
+    async findAll(
+        @Query('relations') relations?: string[],
+        @Query('limit') limit?: number,
+        @Query('offset') cursor?: string,
+        @Query('sortBy') sortBy?: string,
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+    ): Promise<PaginatedResult<OrderMenuItem>> {
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+    }
 
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Retrieves one Order Menu Item' })
-  @ApiOkResponse({ description: 'Order Menu Item found', type: OrderMenuItem })
-  @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderMenuItem> {
-      return super.findOne(id);
-  }
+    @Get(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves one Order Menu Item' })
+    @ApiOkResponse({ description: 'Order Menu Item found', type: OrderMenuItem })
+    @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<OrderMenuItem> {
+        return super.findOne(id);
+    }
 }

@@ -25,6 +25,6 @@ export class MenuItemService extends ServiceBase<MenuItem> {
     ){ super(itemRepo, itemBuilder, validator, 'MenuItemService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof MenuItem>): Promise<MenuItem | null> {
-        return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
+        return await this.itemRepo.findOne({ where: { itemName: name }, relations: relations });
     }
 }

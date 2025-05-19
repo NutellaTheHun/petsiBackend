@@ -15,7 +15,7 @@ export class OrderMenuItem {
     /**
      * The parent {@link Order} of the item.
      */
-    @ManyToOne(() => Order, (order) => order.items, { orphanedRowAction: 'delete', nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => Order, (order) => order.orderedItems, { orphanedRowAction: 'delete', nullable: false, onDelete: 'CASCADE' })
     order: Order;
 
     /**

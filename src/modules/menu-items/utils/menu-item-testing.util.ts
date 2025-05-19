@@ -492,7 +492,7 @@ export class MenuItemTestingUtil {
                 .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                 .name(containerItemNames[2])
                 .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
-                .containerItemsByBuilder(0, menuItemComponentsC)
+                .definedContainerItemsByBuilder(0, menuItemComponentsC)
                 .build()
         );
         

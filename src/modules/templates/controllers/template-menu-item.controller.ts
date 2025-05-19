@@ -1,5 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -12,6 +12,7 @@ import { Roles } from '../../../util/decorators/PublicRole';
 import { PaginatedResult } from '../../../base/paginated-result';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
+import { Template } from '../entities/template.entity';
 
 @ApiTags('Template Menu Item')
 @ApiBearerAuth('access-token')
@@ -25,14 +26,18 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItem>
     requestContextService: RequestContextService,
   ) { super(templateService, cacheManager, 'TemplateMenuItemController', requestContextService, logger); }
 
-  @Post()
+  /*@Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Creates a Template Menu Item' })
   @ApiCreatedResponse({ description: 'Template Menu Item successfully created', type: TemplateMenuItem })
   @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-  @ApiBody({ type: CreateTemplateMenuItemDto })
+  @ApiBody({ type: CreateTemplateMenuItemDto })*/
+  /**
+   * Depreciated, only created as a child through {@link Template}.
+   */
   async create(@Body() dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
-    return super.create(dto);
+    //return super.create(dto);
+    throw new BadRequestException();
   }
 
   @Patch(':id')

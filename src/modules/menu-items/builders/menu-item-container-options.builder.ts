@@ -51,23 +51,20 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
         if(dto.containerRuleDtos){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.isDynamic){
-            this.isDynamic(dto.isDynamic);
-        }
         if(dto.validQuantity){
             this.validQuantity(dto.validQuantity);
         }
     }
 
+    /**
+     * Depreciated, only created as a child through {@link MenuItem}.
+     */
     protected createEntity(dto: CreateMenuItemContainerOptionsDto): void {
         if(dto.containerRuleDtos){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
         if(dto.parentContainerMenuItemId){
             this.parentContainerById(dto.parentContainerMenuItemId);
-        }
-        if(dto.isDynamic){
-            this.isDynamic(dto.isDynamic);
         }
         if(dto.validQuantity){
             this.validQuantity(dto.validQuantity);
@@ -77,9 +74,6 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
     protected updateEntity(dto: UpdateMenuItemContainerOptionsDto): void {
         if(dto.containerRuleDtos){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
-        }
-        if(dto.isDynamic !== undefined){
-            this.isDynamic(dto.isDynamic);
         }
         if(dto.validQuantity){
             this.validQuantity(dto.validQuantity);
@@ -98,10 +92,6 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
 
     public containerRulesByBuilder(optionsId: number, dtos: (CreateChildMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto)[]): this {
         return this.setPropByBuilder(this.componentOptionBuilder.buildManyChildDto.bind(this.componentOptionBuilder), 'containerRules', this.entity, dtos)
-    }
-
-    public isDynamic(val: boolean): this {
-        return this.setPropByVal('isDynamic', val);
     }
 
     public validQuantity(amount: number): this {

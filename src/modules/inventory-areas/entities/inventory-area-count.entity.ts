@@ -15,19 +15,19 @@ export class InventoryAreaCount{
     id: number;
 
     /**
-     * The physical area the inventory count occurs.
+     * Reference of the {@link InventoryArea} where the inventory count occurs.
      */
     @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
     inventoryArea: InventoryArea;
 
     /**
-     * The date the inventory count occurs (automatically handled by the database)
+     * The date the {@link InventoryAreaCount} occurs (automatically handled by the database)
      */
     @CreateDateColumn()
     countDate: Date;
 
     /**
-     * The record of items and their quantites resulting from the inventory count.
+     * The record of counted items and their quantites resulting from the inventory count.
      */
     @OneToMany(() => InventoryAreaItem, (item) => item.parentInventoryCount, { cascade: true, nullable: true})
     countedItems?: InventoryAreaItem[] | null;

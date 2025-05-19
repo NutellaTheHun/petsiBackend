@@ -49,7 +49,7 @@ describe('Template menu item service', () => {
 
   it('should create a template item', async () => {
     const templateDto = {
-      name: "testTemplate"
+      templateName: "testTemplate"
     } as CreateTemplateDto;
 
     const template = await templateService.create(templateDto);
@@ -70,7 +70,7 @@ describe('Template menu item service', () => {
     expect(result?.displayName).toEqual("test display name");
     expect(result?.menuItem.id).toEqual(itemD.id);
     expect(result?.tablePosIndex).toEqual(0);
-    expect(result?.template.id).toEqual(template?.id);
+    expect(result?.parentTemplate.id).toEqual(template?.id);
 
     testId = result?.id as number;
   });

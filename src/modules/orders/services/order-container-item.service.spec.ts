@@ -66,14 +66,14 @@ describe('order container item service', () => {
         if(!itemF.validSizes){ throw new Error(); }
 
         const dto = {
-            componentMenuItemId: itemF.id,
-            componentItemSizeId: itemF.validSizes[0].id,
+            containedMenuItemId: itemF.id,
+            containedItemSizeId: itemF.validSizes[0].id,
         } as UpdateOrderContainerItemDto;
 
         const result = await service.update(testId, dto);
         expect(result).not.toBeNull();
-        expect(result.item.id).toEqual(itemF.id);
-        expect(result.itemSize.id).toEqual(itemF.validSizes[0].id);
+        expect(result.containedItem.id).toEqual(itemF.id);
+        expect(result.containedItemSize.id).toEqual(itemF.validSizes[0].id);
     });
 
     it('should update quantity', async () => {

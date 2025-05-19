@@ -107,11 +107,11 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      name: recName,
+      recipeName: recName,
       batchResultQuantity: batchAmount,
-      batchResultUnitOfMeasureId: batchUnit.id,
+      batchResultMeasurementId: batchUnit.id,
       servingSizeQuantity: servingAmonut,
-      servingSizeUnitOfMeasureId: servingUnit.id,
+      servingSizeMeasurementId: servingUnit.id,
       salesPrice: salesAmount,
       ingredientDtos: ingredientDtos,
     } as CreateRecipeDto;
@@ -119,11 +119,11 @@ describe('recipe service', () => {
     const result = await recipeService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(recName)
+    expect(result?.recipeName).toEqual(recName)
     expect(result?.batchResultQuantity).toEqual(batchAmount);
-    expect(result?.batchResultUnitOfMeasure?.id).toEqual(batchUnit.id);
+    expect(result?.batchResultMeasurement?.id).toEqual(batchUnit.id);
     expect(result?.servingSizeQuantity).toEqual(servingAmonut);
-    expect(result?.servingSizeUnitOfMeasure?.id).toEqual(servingUnit.id);
+    expect(result?.servingSizeMeasurement?.id).toEqual(servingUnit.id);
     expect(result?.salesPrice).toEqual(String(salesAmount));
     expect(result?.ingredients?.length).toEqual(3);
     
@@ -144,12 +144,12 @@ describe('recipe service', () => {
   it('should update name', async () => {
     const updateName = "UPDATED testRecipe";
     const dto = {
-      name: updateName
+      recipeName: updateName
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(updateName);
+    expect(result?.recipeName).toEqual(updateName);
   });
 
   it('should update isIngredient', async () => {
@@ -186,9 +186,9 @@ describe('recipe service', () => {
     const updateIngredDtos = testIngredients.map(ingred => ({
       id: ingred.id,
       quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
+      quantityMeasurementId: ingred.quantityMeasure.id,
+      ingredientRecipeId: ingred.ingredientRecipe?.id,
+      ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
     }) as UpdateRecipeIngredientDto);
 
     const dto = {
@@ -209,18 +209,18 @@ describe('recipe service', () => {
     
     const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
     if(!ingreds){ throw new Error("ingredient is null"); }
-    if(!ingreds[0].inventoryItem){ throw new Error("ingredient inventory item is null"); }
+    if(!ingreds[0].ingredientInventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
 
-    if(ingreds[0].inventoryItem.itemName === FOOD_A){
+    if(ingreds[0].ingredientInventoryItem.itemName === FOOD_A){
       const item = await invItemService.findOneByName(FOOD_B);
       if(!item){ throw new Error("inv item not found"); }
-      ingreds[0].inventoryItem = item;
+      ingreds[0].ingredientInventoryItem = item;
       testInvItemId = item.id;
     } else {
       const item = await invItemService.findOneByName(FOOD_A);
       if(!item){ throw new Error("inv item not found"); }
-      ingreds[0].inventoryItem = item;
+      ingreds[0].ingredientInventoryItem = item;
       testInvItemId = item.id;
     }
 
@@ -228,9 +228,9 @@ describe('recipe service', () => {
       mode: 'update',
       id: ingred.id,
       quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
+      quantityMeasurementId: ingred.quantityMeasure.id,
+      ingredientRecipeId: ingred.ingredientRecipe?.id,
+      ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
     }) as UpdateRecipeIngredientDto)
     const dto = {
       ingredientDtos: ingredUpdateDtos,
@@ -241,9 +241,9 @@ describe('recipe service', () => {
 
     const verify = await ingredientService.findOne(testIngredientId, ['inventoryItem']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
-    if(!verify.inventoryItem){ throw new Error("ingredient inv item is null"); }
+    if(!verify.ingredientInventoryItem){ throw new Error("ingredient inv item is null"); }
 
-    expect(verify.inventoryItem.id).toEqual(testInvItemId);
+    expect(verify.ingredientInventoryItem.id).toEqual(testInvItemId);
   });
 
   it('should update ingredient (modify unitOfMeasure)', async () => {
@@ -255,27 +255,27 @@ describe('recipe service', () => {
     
     const ingreds = await ingredientService.findByRecipeId(testId, ['inventoryItem', 'subRecipeIngredient', 'unit']);
     if(!ingreds){ throw new Error("ingredient is null"); }
-    if(!ingreds[0].inventoryItem){ throw new Error("ingredient inventory item is null"); }
+    if(!ingreds[0].ingredientInventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
 
-    if(ingreds[0].unit.name === POUND){
+    if(ingreds[0].quantityMeasure.name === POUND){
       const unit = await unitOfMeasureService.findOneByName(OUNCE);
       if(!unit){ throw new Error("inv item not found"); }
-      ingreds[0].unit = unit;
+      ingreds[0].quantityMeasure = unit;
       testUnitId = unit.id
     } else {
       const unit = await unitOfMeasureService.findOneByName(POUND);
       if(!unit){ throw new Error("inv item not found"); }
-      ingreds[0].unit = unit;
+      ingreds[0].quantityMeasure = unit;
       testUnitId = unit.id
     }
 
     const ingredUpdateDtos = ingreds.map(ingred => ({
       id: ingred.id,
       quantity: ingred.quantity,
-      unitOfMeasureId: ingred.unit.id,
-      subRecipeIngredientId: ingred.subRecipeIngredient?.id,
-      inventoryItemId: ingred.inventoryItem?.id,
+      quantityMeasurementId: ingred.quantityMeasure.id,
+      ingredientRecipeId: ingred.ingredientRecipe?.id,
+      ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
     }) as UpdateRecipeIngredientDto)
     const dto = {
       ingredientDtos: ingredUpdateDtos,
@@ -286,9 +286,9 @@ describe('recipe service', () => {
 
     const verify = await ingredientService.findOne(testIngredientId, ['unit']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
-    if(!verify.unit){ throw new Error("ingredient inv item is null"); }
+    if(!verify.quantityMeasure){ throw new Error("ingredient inv item is null"); }
     
-    expect(verify.unit.id).toEqual(testUnitId);
+    expect(verify.quantityMeasure.id).toEqual(testUnitId);
   });
 
   it('should update ingredient (modify subRecipeIngredient)', async () => {
@@ -302,29 +302,29 @@ describe('recipe service', () => {
     if(!ingreds){ throw new Error("ingredient is null"); }
     testIngredientId = ingreds[0].id;
 
-    if(!ingreds[0].subRecipeIngredient){
+    if(!ingreds[0].ingredientRecipe){
       const subRec = await recipeService.findOneByName(REC_B);
       if(!subRec){ throw new Error("recipe not found"); }
-      ingreds[0].subRecipeIngredient = subRec;
+      ingreds[0].ingredientRecipe = subRec;
       testSubRecipeId = subRec.id
     }
-    else if(ingreds[0].subRecipeIngredient?.name === REC_A){
+    else if(ingreds[0].ingredientRecipe?.recipeName === REC_A){
       const subRec = await recipeService.findOneByName(REC_B);
       if(!subRec){ throw new Error("recipe not found"); }
-      ingreds[0].subRecipeIngredient = subRec;
+      ingreds[0].ingredientRecipe = subRec;
       testSubRecipeId = subRec.id
     } 
     else {
       const subRec = await recipeService.findOneByName(REC_F);
       if(!subRec){ throw new Error("recipe not found"); }
-      ingreds[0].subRecipeIngredient = subRec;
+      ingreds[0].ingredientRecipe = subRec;
       testSubRecipeId = subRec.id
     }
 
     const updatedDto = {
       mode:'update',
       id: ingreds[0].id,
-      subRecipeIngredientId: ingreds[0].subRecipeIngredient?.id,
+      ingredientRecipeId: ingreds[0].ingredientRecipe?.id,
     } as UpdateRecipeIngredientDto;
 
     const theRest = ingreds.slice(1).map(ingred => ({
@@ -341,9 +341,9 @@ describe('recipe service', () => {
 
     const verify = await ingredientService.findOne(testIngredientId, ['subRecipeIngredient']);
     if(!verify){ throw new Error("ingredient to verify is null"); }
-    if(!verify.subRecipeIngredient){ throw new Error("ingredient sub recipe is null"); }
+    if(!verify.ingredientRecipe){ throw new Error("ingredient sub recipe is null"); }
     
-    expect(verify.subRecipeIngredient.id).toEqual(testSubRecipeId);
+    expect(verify.ingredientRecipe.id).toEqual(testSubRecipeId);
   });
 
   it('should update ingredient (modify quantity)', async () => {
@@ -423,24 +423,24 @@ describe('recipe service', () => {
     if(!batchUnit){ throw new Error("unit of measure kilogram not found"); }
     
     const dto = {
-      batchResultUnitOfMeasureId: batchUnit.id,
+      batchResultMeasurementId: batchUnit.id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.batchResultUnitOfMeasure?.name).toEqual(KILOGRAM);
+    expect(result?.batchResultMeasurement?.name).toEqual(KILOGRAM);
   });
 
   it('should update servingSize UnitOfMeasure', async () => {
     const servingUnit = await unitOfMeasureService.findOneByName(GRAM);
     if(!servingUnit){ throw new Error("unit of measure gram not found"); }
     const dto = {
-      servingSizeUnitOfMeasureId: servingUnit.id,
+      servingSizeMeasurementId: servingUnit.id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.servingSizeUnitOfMeasure?.name).toEqual(GRAM);
+    expect(result?.servingSizeMeasurement?.name).toEqual(GRAM);
   });
 
   it('should update batch result quantity', async () => {
@@ -660,12 +660,12 @@ describe('recipe service', () => {
     if(!menuItem){ throw new NotFoundException(); }
 
     const dto = {
-      menuItemId: menuItem.id,
+      producedMenuItemId: menuItem.id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.menuItem?.id).toEqual(menuItem.id);
+    expect(result?.producedMenuItem?.id).toEqual(menuItem.id);
   });
 
   it('should remove menuItem', async () => {
@@ -673,18 +673,18 @@ describe('recipe service', () => {
     if(!menuItem){ throw new NotFoundException(); }
 
     const dto = {
-      menuItemId: 0,
+      producedMenuItemId: 0,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.menuItem).toBeNull();
+    expect(result?.producedMenuItem).toBeNull();
   });
 
   it('should find a recipe by name', async () => {
     const result = await recipeService.findOneByName(REC_A);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(REC_A);
+    expect(result?.recipeName).toEqual(REC_A);
   });
 
   it('should set category and subcategory (for next test)', async () => {

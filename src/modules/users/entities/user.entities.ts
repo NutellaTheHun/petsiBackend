@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Role } from "../../roles/entities/role.entity";
 
 /**
@@ -28,5 +28,6 @@ export class User{
      * List of {@link Role} the user holds.
      */
     @ManyToMany(() => Role, (role) => role.users, { nullable: true, onDelete: 'CASCADE' })
+    @JoinTable()
     roles: Role[];
 }

@@ -5,5 +5,5 @@ export class CreateMenuItemCategoryDto{
     @ApiProperty({ example: 'Pastry, Pie, Catering, Boxed Pastry', description: 'Name of the Menu-Item-Category.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly categoryName: string;
 }

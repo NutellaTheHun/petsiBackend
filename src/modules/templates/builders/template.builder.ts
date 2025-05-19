@@ -24,11 +24,11 @@ export class TemplateBuilder extends BuilderBase<Template> {
         if(dto.isPie !== undefined){
             this.isPie(dto.isPie);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.templateName){
+            this.name(dto.templateName);
         }
-        if(dto.itemDtos){
-            this.itemsByBuilder(this.entity.id, dto.itemDtos);
+        if(dto.templateItemDtos){
+            this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
         } 
     }
 
@@ -36,16 +36,16 @@ export class TemplateBuilder extends BuilderBase<Template> {
         if(dto.isPie !== undefined){
             this.isPie(dto.isPie);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.templateName){
+            this.name(dto.templateName);
         }
-        if(dto.itemDtos){
-            this.itemsByBuilder(this.entity.id, dto.itemDtos);
+        if(dto.templateItemDtos){
+            this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
         } 
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
+        return this.setPropByVal('templateName', name);
     }
 
     public isPie(val: boolean): this {

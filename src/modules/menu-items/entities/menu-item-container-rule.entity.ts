@@ -3,6 +3,10 @@ import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItem } from "./menu-item.entity";
 import { MenuItemContainerOptions } from "./menu-item-container-options.entity";
 
+/**
+ * One rule within a {@link MenuItemContainerOptions} that allow one {@link MenuItem} and valid {@link MenuItemSize}
+ * within the {@link MenuItemContainerOptions} parent {@link MenuItem}
+ */
 @Entity()
 export class MenuItemContainerRule {
     @PrimaryGeneratedColumn()
@@ -26,10 +30,4 @@ export class MenuItemContainerRule {
     @ManyToMany(() => MenuItemSize, { eager: true })
     @JoinTable()
     validSizes: MenuItemSize[];
-
-    /**
-     * Might remove
-     */
-    @Column({ default: 0 })
-    validQuantity: number;
 }

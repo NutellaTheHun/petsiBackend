@@ -32,6 +32,9 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         logger: AppLogger,
     ){ super(InventoryItemSize, 'InventoryItemSizeBuilder', requestContextService, logger, validator); }
 
+    /**
+     * Depreciated, only created as a child through {@link InventoryItem}.
+     */
     protected createEntity(dto: CreateInventoryItemSizeDto): void {
         if(dto.inventoryItemId){
             this.InventoryItemById(dto.inventoryItemId);

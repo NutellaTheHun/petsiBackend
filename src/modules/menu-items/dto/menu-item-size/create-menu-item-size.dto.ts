@@ -7,5 +7,5 @@ export class CreateMenuItemSizeDto{
         description: 'Name of Menu-Item-Size entity.' })
     @IsString()
     @IsNotEmpty()
-    readonly name: string;
+    readonly sizeName: string;
 }

@@ -50,11 +50,11 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.note){
             this.note(dto.note);
         }
-        if(dto.orderMenuItemDtos){
-            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
+        if(dto.orderedMenuItemDtos){
+            this.orderedItemsByBuilder(this.entity.id, dto.orderedMenuItemDtos)
         }
-        if(dto.orderTypeId){
-            this.orderTypeById(dto.orderTypeId);
+        if(dto.orderCategoryId){
+            this.categoryById(dto.orderCategoryId);
         }
         if(dto.phoneNumber){
             this.phoneNumber(dto.phoneNumber);
@@ -92,11 +92,11 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.note){
             this.note(dto.note);
         }
-        if(dto.orderMenuItemDtos){
-            this.itemsByBuilder(this.entity.id, dto.orderMenuItemDtos)
+        if(dto.orderedMenuItemDtos){
+            this.orderedItemsByBuilder(this.entity.id, dto.orderedMenuItemDtos)
         }
-        if(dto.orderTypeId){
-            this.orderTypeById(dto.orderTypeId);
+        if(dto.orderCategoryId){
+            this.categoryById(dto.orderCategoryId);
         }
         if(dto.phoneNumber){
             this.phoneNumber(dto.phoneNumber);
@@ -112,12 +112,12 @@ export class OrderBuilder extends BuilderBase<Order>{
         }
     }
 
-    public orderTypeById(id: number): this {
-        return this.setPropById(this.typeService.findOne.bind(this.typeService), 'type', id);
+    public categoryById(id: number): this {
+        return this.setPropById(this.typeService.findOne.bind(this.typeService), 'orderCategory', id);
     }
 
-    public orderTypeByName(name: string): this {
-        return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'type', name);
+    public categoryByName(name: string): this {
+        return this.setPropByName(this.typeService.findOneByName.bind(this.typeService), 'orderCategory', name);
     }
 
     public recipient(name: string): this {
@@ -156,16 +156,16 @@ export class OrderBuilder extends BuilderBase<Order>{
         return this.setPropByVal('isWeekly', val);
     }
 
-    public itemsById(ids: number[]): this {
-        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'items', ids);
+    public orderedItemsById(ids: number[]): this {
+        return this.setPropsByIds(this.itemService.findEntitiesById.bind(this.itemService), 'orderedItems', ids);
     }
 
-    public itemsByBuilder(orderId: number, dtos: (CreateChildOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
+    public orderedItemsByBuilder(orderId: number, dtos: (CreateChildOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             orderId,
         }));
-        return this.setPropByBuilder(this.itemBuilder.buildManyChildDto.bind(this.itemBuilder), 'items', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.itemBuilder.buildManyChildDto.bind(this.itemBuilder), 'orderedItems', this.entity, enrichedDtos);
     }
 
     public weeklyFulfillment(day: string): this {

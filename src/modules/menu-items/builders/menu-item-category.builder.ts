@@ -22,14 +22,14 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
     ){ super(MenuItemCategory, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if(dto.categoryName){
+            this.name(dto.categoryName);
         }
     }
 

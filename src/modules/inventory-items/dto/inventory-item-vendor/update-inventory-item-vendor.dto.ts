@@ -4,7 +4,6 @@ import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 
 export class UpdateInventoryItemVendorDto{
     @ApiProperty({ example: 'Cysco, Driscols, Walden Farms', description: 'Name of Inventory-Item-Vendor entity.' })
     @IsString()
-    @IsNotEmpty()
     @IsOptional()
     readonly vendorName?: string;
 }

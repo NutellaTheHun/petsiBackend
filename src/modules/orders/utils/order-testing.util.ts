@@ -38,7 +38,7 @@ export class OrderTestingUtil {
 
         for(const name of names){
             results.push({
-                name: name,
+                categoryName: name,
             } as OrderCategory)
         }
 
@@ -107,16 +107,16 @@ export class OrderTestingUtil {
         if(!menuItems[1].validSizes){ throw new Error(); }
         const comp_a = {
             parentOrderItem: parentOrderItem,
-            item: menuItems[1],
-            itemSize: menuItems[1].validSizes[0],
+            containedItem: menuItems[1],
+            containedItemSize: menuItems[1].validSizes[0],
             quantity: 1,
         } as OrderContainerItem;
 
         if(!menuItems[2].validSizes){ throw new Error(); }
         const comp_b = {
             parentOrderItem: parentOrderItem,
-            item: menuItems[2],
-            itemSize: menuItems[2].validSizes[0],
+            containedItem: menuItems[2],
+            containedItemSize: menuItems[2].validSizes[0],
             quantity: 1,
         } as OrderContainerItem;
 
@@ -164,7 +164,7 @@ export class OrderTestingUtil {
 
         for(const name of recipients){
             results.push({
-                type: orderTypes[otIndex++ % orderTypes.length],
+                orderCategory: orderTypes[otIndex++ % orderTypes.length],
                 recipient: name,
                 fulfillmentDate,
                 fulfillmentType: fulfilltype[fIdx++ % fulfilltype.length],

@@ -23,6 +23,6 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
     ){ super(categoryRepo, categoryBuilder, validator, 'RecipeCategoryService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof RecipeCategory>): Promise<RecipeCategory | null> {
-        return await this.categoryRepo.findOne({ where: { name: name}, relations });
+        return await this.categoryRepo.findOne({ where: { categoryName: name}, relations });
     }
 }

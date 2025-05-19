@@ -15,7 +15,7 @@ export class Template {
      * Example: "Summer Pies", "Spring Pastries"
      */
     @Column({ unique: true, nullable: false })
-    name: string;
+    templateName: string;
 
     /**
      * Differentiates whether the template is for pie products or not.
@@ -26,6 +26,6 @@ export class Template {
     /**
      * List of {@link TemplateMenuItem} that describe the form structure.
      */
-    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.template, { nullable: false, cascade: true })
+    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.parentTemplate, { nullable: false, cascade: true })
     templateItems?: TemplateMenuItem[] | null;
 }

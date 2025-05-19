@@ -14,9 +14,9 @@ export class TemplateValidator extends ValidatorBase<Template> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateTemplateDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { templateName: dto.templateName }});
         if(exists) { 
-            return `Template with name ${dto.name} already exists`; 
+            return `Template with name ${dto.templateName} already exists`; 
         }
         return null;
     }

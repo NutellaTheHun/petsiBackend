@@ -16,12 +16,12 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
     public async validateCreate(dto: CreateRecipeSubCategoryDto): Promise<string | null> {
         const exists = await this.repo.findOne({ 
             where: {
-                name: dto.name,
+                subCategoryName: dto.subCategoryName,
                 parentCategory: { id: dto.parentCategoryId }
         }});
 
         if(exists) {
-            return `sub category for given category with name ${dto.name} already exists`;
+            return `sub category for given category with name ${dto.subCategoryName} already exists`;
         }
 
         return null;

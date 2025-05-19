@@ -40,7 +40,7 @@ describe('UnitOfMeasureService', () => {
 
   it('should create a unit of measure (no category)', async () => {
     const dto = {
-      name: "testUnit",
+      unitName: "testUnit",
       abbreviation: "testAbrev",
       conversionFactorToBase: "1",
     } as CreateUnitOfMeasureDto;
@@ -75,7 +75,7 @@ describe('UnitOfMeasureService', () => {
 
   it('should update unit of measure name', async () => {
     const dto = {
-      name: "UPDATE testUnit",
+      unitName: "UPDATE testUnit",
     } as UpdateUnitOfMeasureDto;
 
     const result = await unitService.update(testId, dto);
@@ -121,14 +121,14 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual("UPDATE testUnit");
     expect(result?.abbreviation).toEqual("UPDATE Abbrev");
     expect(result?.conversionFactorToBase).toEqual("2.0000000000");
-    expect(result?.category?.name).toEqual(WEIGHT);
+    expect(result?.category?.categoryName).toEqual(WEIGHT);
   });
 
   it('category should contain reference to unit of measure', async () => {
     const weightCategory = await categoryService.findOneByName(WEIGHT, ["units"]);
     if(!weightCategory){ throw new Error("weight category not found"); }
 
-    expect(weightCategory.units.findIndex(unit => unit.id === testId)).not.toEqual(-1);
+    expect(weightCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).not.toEqual(-1);
   });
 
   it('should update unit of measure category (old category -> new category)', async () => {
@@ -143,21 +143,21 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual("UPDATE testUnit");
     expect(result?.abbreviation).toEqual("UPDATE Abbrev");
     expect(result?.conversionFactorToBase).toEqual("2.0000000000");
-    expect(result?.category?.name).toEqual(VOLUME);
+    expect(result?.category?.categoryName).toEqual(VOLUME);
   });
 
   it('old category should not have reference to unit of measure', async () => {
     const weightCategory = await categoryService.findOneByName(WEIGHT, ["units"]);
     if(!weightCategory){ throw new Error("weight category not found"); }
 
-    expect(weightCategory.units.findIndex(unit => unit.id === testId)).toEqual(-1);
+    expect(weightCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).toEqual(-1);
   });
 
   it('new category should have reference to unit of measure', async () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
-    expect(volumeCategory.units.findIndex(unit => unit.id === testId)).not.toEqual(-1);
+    expect(volumeCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).not.toEqual(-1);
   });
 
   it('should remove category', async () => {
@@ -185,7 +185,7 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual("UPDATE testUnit");
     expect(result?.abbreviation).toEqual("UPDATE Abbrev");
     expect(result?.conversionFactorToBase).toEqual("2.0000000000");
-    expect(result?.category?.name).toEqual(VOLUME);
+    expect(result?.category?.categoryName).toEqual(VOLUME);
   });
 
   it('should remove unit of measure', async () => {
@@ -199,7 +199,7 @@ describe('UnitOfMeasureService', () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
-    expect(volumeCategory.units.findIndex(unit => unit.id === testId)).toEqual(-1);
+    expect(volumeCategory.unitsOfMeasure.findIndex(unit => unit.id === testId)).toEqual(-1);
   });
 
   it('should get all units of measure', async () => {
@@ -326,7 +326,7 @@ describe('UnitOfMeasureService', () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, ["units"]);
     if(!volumeCategory){ throw new Error("weight category not found"); }
 
-    const testUnitId = volumeCategory.units[0].id;
+    const testUnitId = volumeCategory.unitsOfMeasure[0].id;
 
     const removal = await categoryService.remove(volumeCategory.id);
     if(!removal){ throw new Error("removal of category failed"); }

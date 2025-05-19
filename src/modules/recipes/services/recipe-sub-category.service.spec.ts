@@ -41,13 +41,13 @@ describe('recipe sub category service', () => {
     if(!catC){ throw new Error("recipe category C is null"); }
 
     const dto = {
-      name: "test sub Cat",
+      subCategoryName: "test sub Cat",
       parentCategoryId: catC.id,
     } as CreateRecipeSubCategoryDto;
 
     const result = await subCategoryService.create(dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("test sub Cat");
+    expect(result?.subCategoryName).toEqual("test sub Cat");
     expect(result?.parentCategory.id).toEqual(catC.id);
     
     testId = result?.id as number;
@@ -61,24 +61,24 @@ describe('recipe sub category service', () => {
     if(!newCat){ throw new Error("recipe category A not found"); }
 
     const dto = {
-      name: "Update Sub Cat Name",
+      subCategoryName: "Update Sub Cat Name",
       parentCategoryId: newCat.id,
     } as UpdateRecipeSubCategoryDto;
 
     const result = await subCategoryService.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual("Update Sub Cat Name");
+    expect(result?.subCategoryName).toEqual("Update Sub Cat Name");
     expect(result?.parentCategory.id).toEqual(newCat.id);
 
     const checkOldCat = await categoryService.findOneByName(REC_CAT_C, ["subCategories"]);
     if(!checkOldCat){ throw new Error("old recipe category C not found"); }
     if(!checkOldCat.subCategories){ throw new Error("sub categories is null"); }
-    expect(checkOldCat.subCategories.findIndex(s => s.name === result?.name)).toEqual(-1);
+    expect(checkOldCat.subCategories.findIndex(s => s.subCategoryName === result?.subCategoryName)).toEqual(-1);
 
     const checkNewCat = await categoryService.findOneByName(REC_CAT_A, ["subCategories"]);
     if(!checkNewCat){ throw new Error("new recipe category A not found"); }
     if(!checkNewCat.subCategories){ throw new Error("sub categories is null"); }
-    expect(checkNewCat.subCategories.findIndex(s => s.name === result?.name)).not.toEqual(-1);
+    expect(checkNewCat.subCategories.findIndex(s => s.subCategoryName === result?.subCategoryName)).not.toEqual(-1);
   });
 
   it('should remove a sub-category', async () => {
@@ -107,6 +107,6 @@ describe('recipe sub category service', () => {
   it('should get one sub-category by name', async () => {
     const result = await subCategoryService.findOneByName(REC_SUBCAT_1);
     expect(result).not.toBeNull();
-    expect(result?.name).toEqual(REC_SUBCAT_1);
+    expect(result?.subCategoryName).toEqual(REC_SUBCAT_1);
   });
 });

@@ -22,9 +22,9 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateRecipeDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
+        const exists = await this.repo.findOne({ where: { recipeName: dto.recipeName }});
         if(exists) { 
-            return `Recipe with name ${dto.name} already exists`; 
+            return `Recipe with name ${dto.recipeName} already exists`; 
         }
 
         if(!dto.categoryId && dto.subCategoryId){

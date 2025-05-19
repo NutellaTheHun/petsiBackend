@@ -15,13 +15,13 @@ export class RoleTestUtil {
     public async getTestUserEntities(testContext: DatabaseTestContext): Promise<Role[]> {
         return [
             await this.roleBuilder.reset()
-                .name(ROLE_ADMIN)
+                .roleName(ROLE_ADMIN)
                 .build(),
             await this.roleBuilder.reset()
-                .name(ROLE_MANAGER)
+                .roleName(ROLE_MANAGER)
                 .build(),
             await this.roleBuilder.reset()
-                .name(ROLE_STAFF)
+                .roleName(ROLE_STAFF)
                 .build()
         ];
     }
@@ -33,7 +33,7 @@ export class RoleTestUtil {
         testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
         for(const role of roles){
-            const exists = await this.roleService.findOneByName(role.name);
+            const exists = await this.roleService.findOneByName(role.roleName);
             if(!exists){ toInsert.push(role); }
         }
 

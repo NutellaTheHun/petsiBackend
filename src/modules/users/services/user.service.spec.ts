@@ -65,7 +65,7 @@ describe('User Service', () => {
     expect(result.username).toEqual(testUsername);
     expect(result.email).toEqual(testUserEmail);
     expect(result.password).toEqual("");
-    expect(result.roles[0].name).toEqual(ROLE_STAFF);
+    expect(result.roles[0].roleName).toEqual(ROLE_STAFF);
 
     testId = result.id;
   });
@@ -131,7 +131,7 @@ describe('User Service', () => {
     const toUpdate = await usersService.findOneByName(USER_A, ["roles"]);
     if(!toUpdate){ throw new Error("user_A is null"); }
     if(!toUpdate.roles){ throw new Error("user roles is null"); }
-    expect(toUpdate.roles[0].name).toEqual(ROLE_ADMIN);
+    expect(toUpdate.roles[0].roleName).toEqual(ROLE_ADMIN);
 
     const managerRole = await rolesService.findOneByName(ROLE_MANAGER);
     if(!managerRole){ throw new Error("admin role is null"); }
@@ -151,7 +151,7 @@ describe('User Service', () => {
     const toUpdate = await usersService.findOneByName(USER_A, ["roles"]);
     if(!toUpdate){ throw new Error("user_A is null"); }
     if(!toUpdate.roles){ throw new Error("user roles is null"); }
-    expect(toUpdate.roles[0].name).toEqual(ROLE_MANAGER);
+    expect(toUpdate.roles[0].roleName).toEqual(ROLE_MANAGER);
 
     const dto = {
       roleIds: [],
