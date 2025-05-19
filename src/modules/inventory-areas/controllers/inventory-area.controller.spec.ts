@@ -1,6 +1,6 @@
 import { TestingModule } from "@nestjs/testing";
-import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
-import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
+import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
+import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaService } from "../services/inventory-area.service";

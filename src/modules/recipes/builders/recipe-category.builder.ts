@@ -1,10 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildRecipeSubCategoryDto } from "../dto/create-child-recipe-sub-category.dto";
-import { CreateRecipeCategoryDto } from "../dto/create-recipe-category.dto";
-import { UpdateChildRecipeSubCategoryDto } from "../dto/update-child-recipe-sub-category.dto copy";
-import { UpdateRecipeCategoryDto } from "../dto/update-recipe-category.dto";
+import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
+import { CreateRecipeCategoryDto } from "../dto/recipe-category/create-recipe-category.dto";
+import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
+import { UpdateRecipeCategoryDto } from "../dto/recipe-category/update-recipe-category.dto";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";

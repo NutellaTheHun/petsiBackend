@@ -1,8 +1,12 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
+import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
@@ -12,9 +16,7 @@ import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { ModuleRef } from "@nestjs/core";
-import { AppLogger } from "../../app-logging/app-logger";
+import { OrderMenuItemComponentBuilder } from "./order-menu-item-component.builder";
 
 @Injectable()
 export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
@@ -25,8 +27,12 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
 
+        @Inject(forwardRef(() => OrderMenuItemComponentBuilder))
+        private readonly itemComponentBuilder: OrderMenuItemComponentBuilder,
+
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
+
         validator: OrderMenuItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
@@ -45,6 +51,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
+        if(dto.OrderedItemComponentDtos){
+            this.itemComponentsByBuilder(dto.OrderedItemComponentDtos);
+        }
     }
 
     protected updateEntity(dto: UpdateOrderMenuItemDto): void {
@@ -57,6 +66,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         if(dto.quantity){
             this.quantity(dto.quantity);
         }
+        if(dto.OrderedItemComponentDtos){
+            this.itemComponentsByBuilder(dto.OrderedItemComponentDtos);
+        }
     }
     
     buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
@@ -68,6 +80,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         }
         if(dto.quantity){
             this.quantity(dto.quantity);
+        }
+        if(dto.orderedItemComponentDtos){
+            this.itemComponentsByBuilder(dto.orderedItemComponentDtos);
         }
     }
 
@@ -117,7 +132,11 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         return this.setPropByName(this.sizeService.findOneByName.bind(this.sizeService), 'size', name);
     }
 
-    public quantity(amount: number){
+    public quantity(amount: number): this {
         return this.setPropByVal('quantity', amount);
+    }
+
+    public itemComponentsByBuilder(dtos: (CreateChildOrderMenuItemComponentDto | UpdateChildOrderMenuItemComponentDto)[]): this {
+        return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedItemComponents', this.entity, dtos);
     }
 }

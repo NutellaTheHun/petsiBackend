@@ -1,6 +1,6 @@
 import { TestingModule } from "@nestjs/testing";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
+import { CreateInventoryItemPackageDto } from "../dto/inventory-item-package/create-inventory-item-package.dto";
+import { UpdateInventoryItemPackageDto } from "../dto/inventory-item-package/update-inventory-item-package.dto";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { BAG_PKG, BOX_PKG, CAN_PKG, CONTAINER_PKG, OTHER_PKG, PACKAGE_PKG } from "../utils/constants";

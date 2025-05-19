@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -14,7 +14,10 @@ export class OrderMenuItemComponentService extends ServiceBase<OrderMenuItemComp
     constructor(
         @InjectRepository(OrderMenuItemComponent)
         repo: Repository<OrderMenuItemComponent>,
+
+        @Inject(forwardRef(() => OrderMenuItemComponentBuilder))
         typeBuilder: OrderMenuItemComponentBuilder,
+        
         validator: OrderMenuItemComponentValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,

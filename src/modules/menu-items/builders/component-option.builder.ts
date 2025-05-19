@@ -21,8 +21,12 @@ export class ComponentOptionBuilder extends BuilderBase<ComponentOption> impleme
         @Inject(forwardRef(() => ComponentOptionService))
         private readonly componentOptionService: ComponentOptionService,
 
+        @Inject(forwardRef(() => MenuItemComponentOptionsService))
         private readonly itemOptionsSerivce: MenuItemComponentOptionsService,
+
+        @Inject(forwardRef(() => MenuItemService))
         private readonly menuItemService: MenuItemService,
+
         private readonly sizeService: MenuItemSizeService,
 
 

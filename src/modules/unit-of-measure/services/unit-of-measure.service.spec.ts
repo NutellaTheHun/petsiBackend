@@ -1,8 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import Big from "big.js";
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
-import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { CUP, EACH, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, OUNCE, PINT, POUND, QUART, UNIT, VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';

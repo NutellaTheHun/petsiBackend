@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
-import { CreateRecipeCategoryDto } from '../dto/create-recipe-category.dto';
-import { UpdateRecipeCategoryDto } from '../dto/update-recipe-category.dto';
+import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
+import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';

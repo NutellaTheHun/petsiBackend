@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constant
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
-import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
+import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
+import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 
 @ApiTags('Template Menu Item')
 @ApiBearerAuth('access-token')

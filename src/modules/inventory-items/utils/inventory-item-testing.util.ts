@@ -7,10 +7,10 @@ import { InventoryItemPackageBuilder } from "../builders/inventory-item-package.
 import { InventoryItemSizeBuilder } from "../builders/inventory-item-size.builder";
 import { InventoryItemVendorBuilder } from "../builders/inventory-item-vendor.builder";
 import { InventoryItemBuilder } from "../builders/inventory-item.builder";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
-import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { CreateInventoryItemDto } from "../dto/inventory-item/create-inventory-item.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";

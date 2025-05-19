@@ -1,9 +1,9 @@
 import { TestingModule } from '@nestjs/testing';
-import { CreateInventoryItemCategoryDto } from '../dto/create-inventory-item-category.dto';
+import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
-import { UpdateInventoryItemCategoryDto } from '../dto/update-inventory-item-category.dto';
+import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { FOOD_CAT } from '../utils/constants';
 import { NotFoundException } from '@nestjs/common';

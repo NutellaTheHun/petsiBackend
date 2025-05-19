@@ -6,13 +6,13 @@ import { ControllerBase } from "../../../base/controller-base";
 import { PaginatedResult } from "../../../base/paginated-result";
 import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
-import { UpdateMenuItemSizeDto } from "../../menu-items/dto/update-menu-item-size.dto";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ROLE_ADMIN, ROLE_MANAGER } from "../../roles/utils/constants";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
+import { UpdateMenuItemSizeDto } from "../../menu-items/dto/menu-item-size/update-menu-item-size.dto";
 
 @ApiTags('Inventory Item Size')
 @ApiBearerAuth('access-token')

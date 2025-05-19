@@ -30,5 +30,5 @@ export class CreateChildOrderMenuItemDto {
      })
     @IsArray()
     @IsOptional()
-    readonly OrderedItemComponentDtos?: CreateChildOrderMenuItemComponentDto[];
+    readonly orderedItemComponentDtos?: CreateChildOrderMenuItemComponentDto[];
 }

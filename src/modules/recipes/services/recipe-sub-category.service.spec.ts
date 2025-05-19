@@ -5,8 +5,8 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { RecipeCategoryService } from './recipe-category.service';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
-import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { NotFoundException } from '@nestjs/common';
 
 describe('recipe sub category service', () => {

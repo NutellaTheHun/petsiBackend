@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
-import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
-import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
+import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';

@@ -19,6 +19,8 @@ import { TestRequestContextService } from "../../../util/mocks/test-request-cont
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ComponentOption } from "../entities/component-option.entity";
 import { MenuItemComponentOptions } from "../entities/menu-item-component-options.entity";
+import { ComponentOptionController } from "../controllers/component-option.controller";
+import { MenuItemComponentOptionsController } from "../controllers/menu-item-component-options.controller";
 
 export async function getMenuItemTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -54,6 +56,8 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
             MenuItemSizeController,
             MenuItemController,
             MenuItemComponentController,
+            ComponentOptionController,
+            MenuItemComponentOptionsController
         ],
 
         providers: [],

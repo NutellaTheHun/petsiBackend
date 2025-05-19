@@ -4,10 +4,10 @@ import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.inter
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { UpdateChildInventoryItemSizeDto } from "../dto/update-child-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";

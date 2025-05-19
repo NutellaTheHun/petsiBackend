@@ -4,7 +4,7 @@ import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 
 @Injectable()
 export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {

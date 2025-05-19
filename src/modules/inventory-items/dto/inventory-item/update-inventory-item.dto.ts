@@ -1,8 +1,8 @@
 import { Type } from "class-transformer";
 import { IsArray, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateNested } from "class-validator";
-import { InventoryItemSizeUnionResolver } from "../utils/inventory-item-size-union-resolver";
-import { CreateChildInventoryItemSizeDto } from "./create-child-inventory-item-size.dto";
-import { UpdateChildInventoryItemSizeDto } from "./update-child-inventory-item-size.dto";
+import { InventoryItemSizeUnionResolver } from "../../utils/inventory-item-size-union-resolver";
+import { CreateChildInventoryItemSizeDto } from "../inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../inventory-item-size/update-child-inventory-item-size.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateInventoryItemDto {

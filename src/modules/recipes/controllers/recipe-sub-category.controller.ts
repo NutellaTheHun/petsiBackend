@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 
 @ApiTags('Recipe Sub Category')
 @ApiBearerAuth('access-token')

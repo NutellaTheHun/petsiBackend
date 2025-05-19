@@ -2,16 +2,16 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemValidator } from "../validators/inventory-item.validator";
 import { InventoryItemSizeBuilder } from "./inventory-item-size.builder";
-import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
-import { UpdateInventoryItemDto } from "../dto/update-inventory-item.dto";
+import { CreateInventoryItemDto } from "../dto/inventory-item/create-inventory-item.dto";
+import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {

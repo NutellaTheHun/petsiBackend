@@ -24,7 +24,7 @@ describe('component option service', () => {
         const module: TestingModule = await getMenuItemTestingModule();
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemTestDatabase(dbTestContext);
+        await testingUtil.initMenuItemContainerTestDatabase(dbTestContext);
 
         compOptionService = module.get<ComponentOptionService>(ComponentOptionService);
         itemService = module.get<MenuItemService>(MenuItemService);
@@ -47,7 +47,7 @@ describe('component option service', () => {
 
     it('should find all component options', async () => {
         const results = await compOptionService.findAll();
-        expect(results.items.length).toEqual(5);
+        expect(results.items.length).toEqual(4);
 
         testIds = results.items.slice(0,3).map(cat => cat.id);
         testId = results.items[0].id;
@@ -59,7 +59,7 @@ describe('component option service', () => {
     });
 
     it('should update component option validItem and size', async () => {
-        const toUpdate = await compOptionService.findOne(testId);
+        const toUpdate = await compOptionService.findOne(testId, ['validItem']);
         if(!toUpdate){ throw new Error("comp option is null"); }
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
@@ -88,7 +88,7 @@ describe('component option service', () => {
     });
 
     it('should update component option validSizes (add)', async () => {
-        const toUpdate = await compOptionService.findOne(testId);
+        const toUpdate = await compOptionService.findOne(testId, ['validItem']);
         if(!toUpdate){ throw new Error("comp option is null"); }
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
@@ -115,7 +115,7 @@ describe('component option service', () => {
     });
 
     it('should update component option validSizes (remove)', async () => {
-        const toUpdate = await compOptionService.findOne(testId);
+        const toUpdate = await compOptionService.findOne(testId, ['validItem']);
         if(!toUpdate){ throw new Error("comp option is null"); }
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 

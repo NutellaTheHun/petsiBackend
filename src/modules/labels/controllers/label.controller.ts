@@ -10,9 +10,9 @@ import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedRespo
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateLabelDto } from '../dto/create-label.dto';
-import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
-import { UpdateLabelDto } from '../dto/update-label.dto';
+import { CreateLabelDto } from '../dto/label/create-label.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
+import { UpdateLabelDto } from '../dto/label/update-label.dto';
 
 @ApiTags('Label')
 @ApiBearerAuth('access-token')

@@ -1,9 +1,9 @@
 import { TestingModule } from "@nestjs/testing";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemSizeController } from "./inventory-item-size.controller";
-import { UpdateInventoryItemSizeDto } from "../dto/update-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { FL_OUNCE, GALLON, LITER, MILLILITER, QUART } from "../../unit-of-measure/utils/constants";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";

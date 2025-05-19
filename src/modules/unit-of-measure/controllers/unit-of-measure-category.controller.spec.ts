@@ -1,7 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
-import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
 import { UNIT, VOLUME, WEIGHT } from '../utils/constants';

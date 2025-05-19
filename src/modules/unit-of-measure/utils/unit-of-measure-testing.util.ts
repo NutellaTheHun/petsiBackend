@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { UnitOfMeasureCategoryBuilder } from "../builders/unit-of-measure-category.builder";
 import { UnitOfMeasureBuilder } from "../builders/unit-of-measure.builder";
-import { UpdateUnitOfMeasureCategoryDto } from "../dto/update-unit-of-measure-category.dto";
+import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
 import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
 import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";

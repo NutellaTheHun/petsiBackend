@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { CreateTemplateDto } from "../dto/create-template.dto";
-import { UpdateTemplateDto } from "../dto/update-template.dto";
+import { CreateTemplateDto } from "../dto/template/create-template.dto";
+import { UpdateTemplateDto } from "../dto/template/update-template.dto";
 import { Template } from "../entities/template.entity";
 
 @Injectable()

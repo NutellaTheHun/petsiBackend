@@ -1,6 +1,6 @@
 import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
-import { CreateChildOrderMenuItemDto } from "./order-menu-item/create-child-order-menu-item.dto";
 import { ApiProperty } from "@nestjs/swagger";
+import { CreateChildOrderMenuItemDto } from "../order-menu-item/create-child-order-menu-item.dto";
 
 export class CreateOrderDto {
     @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })

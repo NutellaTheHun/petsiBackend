@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
-import { CreateUnitOfMeasureCategoryDto } from "../dto/create-unit-of-measure-category.dto";
-import { UpdateUnitOfMeasureCategoryDto } from "../dto/update-unit-of-measure-category.dto";
+import { CreateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/create-unit-of-measure-category.dto";
+import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
 
 @Injectable()
 export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureCategory> {

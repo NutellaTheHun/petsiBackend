@@ -9,8 +9,8 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from "../../roles/utils/constants";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { CreateInventoryAreaCountDto } from "../dto/create-inventory-area-count.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/update-inventory-area-count.dto";
+import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
+import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
 import { PaginatedResult } from "../../../base/paginated-result";
 
 @ApiTags('Inventory Area Count')

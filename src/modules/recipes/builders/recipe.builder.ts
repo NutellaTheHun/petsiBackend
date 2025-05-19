@@ -4,10 +4,10 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
-import { CreateRecipeDto } from "../dto/create-recipe.dto";
-import { UpdateRecipeDto } from "../dto/update-recipe-dto";
-import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
+import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
+import { UpdateRecipeIngredientDto } from "../dto/recipe-ingredient/update-recipe-ingedient.dto";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";

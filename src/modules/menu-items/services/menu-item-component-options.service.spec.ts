@@ -25,7 +25,7 @@ describe('menu item component options service', () => {
         const module: TestingModule = await getMenuItemTestingModule();
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemTestDatabase(dbTestContext);
+        await testingUtil.initMenuItemContainerTestDatabase(dbTestContext);
 
         itemComponentOptionsService = module.get<MenuItemComponentOptionsService>(MenuItemComponentOptionsService);
         itemService = module.get<MenuItemService>(MenuItemService);
@@ -48,7 +48,7 @@ describe('menu item component options service', () => {
 
     it('should find all menuItemComponentOptions', async () => {
         const results = await itemComponentOptionsService.findAll();
-        expect(results.items.length).toEqual(5);
+        expect(results.items.length).toEqual(2);
 
         testId = results.items[0].id;
         testIds = results.items.slice(0,2).map(cat => cat.id);
@@ -109,7 +109,7 @@ describe('menu item component options service', () => {
         if(!toUpdate.validComponents){ throw new Error("valid components  is null"); }
         const originalCompSize = toUpdate.validComponents.length;
 
-        const theRest = toUpdate.validComponents.slice(originalCompSize-1).map(comp => ({
+        const theRest = toUpdate.validComponents.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
        }) as UpdateChildComponentOptionDto)

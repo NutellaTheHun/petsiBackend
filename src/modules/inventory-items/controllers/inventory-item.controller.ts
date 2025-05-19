@@ -8,8 +8,8 @@ import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
-import { CreateInventoryItemDto } from '../dto/create-inventory-item.dto';
-import { UpdateInventoryItemDto } from '../dto/update-inventory-item.dto';
+import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItem } from "../entities/inventory-item.entity";
 import { InventoryItemService } from "../services/inventory-item.service";
 

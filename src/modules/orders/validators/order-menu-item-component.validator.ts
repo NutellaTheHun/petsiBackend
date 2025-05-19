@@ -2,12 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { OrderCategory } from "../entities/order-category.entity";
-import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
+import { CreateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-order-menu-item-component.dto";
+import { UpdateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-order-menu-item-component.dto";
 import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
-import { CreateOrderMenuItemComponentDto } from "../dto/create-order-menu-item-component.dto";
-import { UpdateOrderMenuItemComponentDto } from "../dto/update-order-menu-item-component.dto";
 
 @Injectable()
 export class OrderMenuItemComponentValidator extends ValidatorBase<OrderMenuItemComponent> {

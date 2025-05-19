@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
-import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 
 @ApiTags('Recipe Ingredient')
 @ApiBearerAuth('access-token')

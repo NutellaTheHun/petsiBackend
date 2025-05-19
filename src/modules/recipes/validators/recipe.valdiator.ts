@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { Recipe } from "../entities/recipe.entity";
-import { CreateRecipeDto } from "../dto/create-recipe.dto";
-import { UpdateRecipeDto } from "../dto/update-recipe-dto";
+import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
+import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeService } from "../services/recipe.service";
 

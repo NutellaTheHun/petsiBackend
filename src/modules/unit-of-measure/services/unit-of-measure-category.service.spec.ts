@@ -1,9 +1,9 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
-import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
-import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
-import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { OUNCE, POUND, VOLUME } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';

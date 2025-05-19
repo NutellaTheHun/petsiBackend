@@ -1,7 +1,4 @@
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
 import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderService } from "../services/order.service";
@@ -9,6 +6,8 @@ import { getTestOrderTypeNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderController } from "./order.controller";
 import { NotFoundException } from "@nestjs/common";
+import { CreateOrderDto } from "../dto/order/create-order.dto";
+import { UpdateOrderDto } from "../dto/order/update-order.dto";
 
 describe('order controller', () => {
     let controller: OrderController;

@@ -14,6 +14,7 @@ import { MenuItemComponentOptionsService } from "../services/menu-item-component
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemComponentOptionsValidator } from "../validators/menu-item-component-options.validator";
 import { ComponentOptionBuilder } from "./component-option.builder";
+import { UpdateChildComponentOptionDto } from "../dto/child-component-option/update-child-component-option.dto";
 
 @Injectable()
 export class MenuItemComponentOptionsBuilder extends BuilderBase<MenuItemComponentOptions> implements IBuildChildDto<MenuItem, MenuItemComponentOptions>{
@@ -21,7 +22,10 @@ export class MenuItemComponentOptionsBuilder extends BuilderBase<MenuItemCompone
         @Inject(forwardRef(() => MenuItemComponentOptionsService))
         private readonly itemComponentOptionsService: MenuItemComponentOptionsService,
 
+        @Inject(forwardRef(() => MenuItemService))
         private readonly menuItemService: MenuItemService,
+
+        @Inject(forwardRef(() => ComponentOptionBuilder))
         private readonly componentOptionBuilder: ComponentOptionBuilder,
 
         validator: MenuItemComponentOptionsValidator,
@@ -45,40 +49,40 @@ export class MenuItemComponentOptionsBuilder extends BuilderBase<MenuItemCompone
     
     buildChildEntity(dto: CreateChildMenuItemComponentOptionsDto): void {
         if(dto.componentOptionDtos){
-
+            this.componentOptionsByBuilder(0, dto.componentOptionDtos);
         }
         if(dto.isDynamic){
-
+            this.isDynamic(dto.isDynamic);
         }
         if(dto.validQuantity){
-
+            this.validQuantity(dto.validQuantity);
         }
     }
 
     protected createEntity(dto: CreateMenuItemComponentOptionsDto): void {
         if(dto.componentOptionDtos){
-
+            this.componentOptionsByBuilder(0, dto.componentOptionDtos);
         }
         if(dto.containerMenuItemId){
-
+            this.containerById(dto.containerMenuItemId);
         }
         if(dto.isDynamic){
-
+            this.isDynamic(dto.isDynamic);
         }
         if(dto.validQuantity){
-
+            this.validQuantity(dto.validQuantity);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemComponentOptionsDto): void {
         if(dto.componentOptionDtos){
-
+            this.componentOptionsByBuilder(0, dto.componentOptionDtos);
         }
-        if(dto.isDynamic){
-
+        if(dto.isDynamic !== undefined){
+            this.isDynamic(dto.isDynamic);
         }
         if(dto.validQuantity){
-
+            this.validQuantity(dto.validQuantity);
         }
     }
 
@@ -92,7 +96,7 @@ export class MenuItemComponentOptionsBuilder extends BuilderBase<MenuItemCompone
         return await this.buildUpdateDto(toUpdate, dto);
     }
 
-    componentOptionsByBuilder(optionsId: number, dtos: CreateChildComponentOptionDto): this {
+    componentOptionsByBuilder(optionsId: number, dtos: (CreateChildComponentOptionDto | UpdateChildComponentOptionDto)[]): this {
         return this.setPropByBuilder(this.componentOptionBuilder.buildManyChildDto.bind(this.componentOptionBuilder), 'validComponents', this.entity, dtos)
     }
 

@@ -10,8 +10,8 @@ import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedRespo
 import { Roles } from "../../../util/decorators/PublicRole";
 import { ROLE_ADMIN, ROLE_MANAGER } from "../../roles/utils/constants";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/update-inventory-area-item.dto";
+import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
 
 @ApiTags('Inventory Area Item')
 @ApiBearerAuth('access-token')

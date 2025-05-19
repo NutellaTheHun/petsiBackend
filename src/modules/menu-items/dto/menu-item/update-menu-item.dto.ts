@@ -4,9 +4,8 @@ import { MenuItemComponentUnionResolver } from '../../utils/menu-item-component-
 import { CreateChildMenuItemComponentDto } from '../menu-item-component/create-child-menu-item-component.dto';
 import { UpdateChildMenuItemComponentDto } from '../menu-item-component/update-child-menu-item-component.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { CreateMenuItemComponentOptionsDto } from './create-menu-item-component-options.dto';
-import { CreateChildMenuItemComponentOptionsDto } from './create-child-menu-item-component-options.dto';
-import { UpdateChildMenuItemComponentOptionsDto } from './update-child-menu-item-component-options.dto';
+import { CreateChildMenuItemComponentOptionsDto } from '../menu-item-component-options/create-child-menu-item-component-options.dto';
+import { UpdateChildMenuItemComponentOptionsDto } from '../menu-item-component-options/update-child-menu-item-component-options.dto';
 
 export class UpdateMenuItemDto {
     @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })

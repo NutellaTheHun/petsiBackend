@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsPositive, IsNotEmpty, IsArray, IsBoolean, IsOptional } from "class-validator";
-import { CreateChildComponentOptionDto } from "./child-component-option/create-child-component-option.dto";
+import { CreateChildComponentOptionDto } from "../child-component-option/create-child-component-option.dto";
+import { UpdateChildComponentOptionDto } from "../child-component-option/update-child-component-option.dto";
 
 export class UpdateChildMenuItemComponentOptionsDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Menu-Item entity with components.' })
@@ -21,8 +22,8 @@ export class UpdateChildMenuItemComponentOptionsDto {
 
     @ApiProperty({ description: 'The list of MenuItems and their sizes that are allowed in the container', type: [CreateChildComponentOptionDto] })
     @IsArray()
-    IsOptional
-    componentOptionDtos?: CreateChildComponentOptionDto[];
+    @IsOptional()
+    componentOptionDtos?: (CreateChildComponentOptionDto | UpdateChildComponentOptionDto)[];
 
     @ApiProperty({ description: 'The total size of the container. When ordered, the summation of order-menu-item-components have to equal this value.' })
     @IsNumber()

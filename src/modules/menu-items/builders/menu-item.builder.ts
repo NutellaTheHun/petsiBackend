@@ -30,6 +30,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
         private readonly sizeService: MenuItemSizeService,
 
+        @Inject(forwardRef(() => MenuItemComponentOptionsBuilder))
         private readonly componentOptionsBuilder: MenuItemComponentOptionsBuilder,
         
         validator: MenuItemValidator,
@@ -68,7 +69,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
             this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
         }
         if(dto.containerOptionDto){
-
+            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
 

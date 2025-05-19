@@ -12,14 +12,14 @@ import { OrderCategoryValidator } from "../validators/order-category.validator";
 export class OrderCategoryService extends ServiceBase<OrderCategory> {
     constructor(
         @InjectRepository(OrderCategory)
-        private readonly orderTypeRepo: Repository<OrderCategory>,
+        private readonly categoryRepo: Repository<OrderCategory>,
         typeBuilder: OrderCategoryBuilder,
         validator: OrderCategoryValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(orderTypeRepo, typeBuilder, validator, 'OrderTypeService', requestContextService, logger)}
+    ){ super(categoryRepo, typeBuilder, validator, 'OrderCategoryService', requestContextService, logger)}
 
     async findOneByName(name: string, relations?: Array<keyof OrderCategory>): Promise<OrderCategory | null> {
-        return this.orderTypeRepo.findOne({ where: {name: name }, relations});
+        return this.categoryRepo.findOne({ where: {name: name }, relations});
     }
 }

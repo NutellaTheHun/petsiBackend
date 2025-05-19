@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER } from "../../roles/utils/constants";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemPackageService } from "../services/inventory-item-package.service";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
+import { CreateInventoryItemPackageDto } from "../dto/inventory-item-package/create-inventory-item-package.dto";
+import { UpdateInventoryItemPackageDto } from "../dto/inventory-item-package/update-inventory-item-package.dto";
 
 @ApiTags('Inventory Item Package')
 @ApiBearerAuth('access-token')

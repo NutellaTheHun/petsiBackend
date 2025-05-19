@@ -1,5 +1,5 @@
 import { IsArray, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { CreateChildRecipeSubCategoryDto } from "./create-child-recipe-sub-category.dto";
+import { CreateChildRecipeSubCategoryDto } from "../recipe-sub-category/create-child-recipe-sub-category.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateRecipeCategoryDto {

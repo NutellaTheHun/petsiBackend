@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
+import { UpdateRecipeIngredientDto } from "../dto/recipe-ingredient/update-recipe-ingedient.dto";
 
 @Injectable()
 export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {

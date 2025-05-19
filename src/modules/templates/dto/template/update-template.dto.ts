@@ -1,8 +1,8 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { TemplateMenuItemUnionResolver } from '../utils/template-menu-item-union-resolver';
-import { CreateChildTemplateMenuItemDto } from './create-child-template-menu-item.dto';
-import { UpdateChildTemplateMenuItemDto } from './update-child-template-menu-item.dto';
+import { TemplateMenuItemUnionResolver } from '../../utils/template-menu-item-union-resolver';
+import { CreateChildTemplateMenuItemDto } from '../template-menu-item/create-child-template-menu-item.dto';
+import { UpdateChildTemplateMenuItemDto } from '../template-menu-item/update-child-template-menu-item.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateTemplateDto{

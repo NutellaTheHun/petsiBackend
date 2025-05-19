@@ -15,7 +15,6 @@ import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { ComponentOptionService } from "./component-option.service";
 import { MenuItemCategoryService } from "./menu-item-category.service";
-import { MenuItemComponentOptionsService } from "./menu-item-component-options.service";
 import { MenuItemComponentService } from "./menu-item-component.service";
 import { MenuItemSizeService } from "./menu-item-size.service";
 import { MenuItemService } from "./menu-item.service";
@@ -48,7 +47,7 @@ describe('menu item service', () => {
         const module: TestingModule = await getMenuItemTestingModule();
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await testingUtil.initMenuItemTestDatabase(dbTestContext);
+        await testingUtil.initMenuItemContainerTestDatabase(dbTestContext);
 
         itemService = module.get<MenuItemService>(MenuItemService);
         categoryService = module.get<MenuItemCategoryService>(MenuItemCategoryService);
@@ -229,7 +228,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
         expect(result.veganOption?.id).toEqual(veganItem.id);
         expect(result.veganOption?.name).toEqual(veganItem.name);
 
@@ -251,7 +250,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
         expect(result.takeNBakeOption?.id).toEqual(takeNBakeItem.id);
         expect(result.takeNBakeOption?.name).toEqual(takeNBakeItem.name);
 
@@ -273,7 +272,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
         expect(result.veganTakeNBakeOption?.id).toEqual(veganTakeNBakeItem.id);
         expect(result.veganTakeNBakeOption?.name).toEqual(veganTakeNBakeItem.name);
 
@@ -296,7 +295,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
         expect(result.validSizes?.length).toEqual(4);
     });
 
@@ -319,7 +318,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
         expect(result.validSizes?.length).toEqual(3);
         expect(result.validSizes?.findIndex(size => size.id === deletedValidSizeId)).toEqual(-1);
     });
@@ -448,9 +447,9 @@ describe('menu item service', () => {
         const results = await itemService.findAll();
         if(!results){ throw new Error(); }
 
-        expect(results.items.length).toEqual(8);
-
         testIds = results.items.slice(0,3).map(item => item.id);
+
+        expect(results.items.length).toEqual(10);
     });
 
     it('should find menuItems by list of ids', async () => {
@@ -472,7 +471,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
 
         expect(result.veganOption).toBeNull();
     });
@@ -489,7 +488,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
 
         expect(result.takeNBakeOption).toBeNull();
     });
@@ -506,7 +505,7 @@ describe('menu item service', () => {
         expect(result?.name).toEqual("updateTestName");
         expect(result.isPOTM).toBeTruthy();
         expect(result.isParbake).toBeTruthy();
-        expect(result.category).toBeUndefined();
+        expect(result.category).toBeNull();
 
         expect(result.veganTakeNBakeOption).toBeNull();
     });
@@ -535,8 +534,9 @@ describe('menu item service', () => {
     });
 
     it('should create a menuItem with menuItem Components', async() => {
-        const sizes = await sizeService.findAll();
-        if(!sizes){ throw new Error(); }
+        const sizeRequest =  await sizeService.findAll();
+        if(!sizeRequest){ throw new Error(); }
+        const sizes = sizeRequest.items;
 
         const itemC = await itemService.findOneByName(item_c);
         if(!itemC){ throw new Error(); }
@@ -563,7 +563,7 @@ describe('menu item service', () => {
 
         const dto = {
             name: 'menuItemWithComponents',
-            validSizeIds: sizes.items.map(size => size.id),
+            validSizeIds: sizes.map(size => size.id),
             containerComponentDtos: compDtos,
         } as CreateMenuItemDto;
 
@@ -574,12 +574,12 @@ describe('menu item service', () => {
         for(const component of result.container){
             if(component.item.id === itemC.id){
                 expect(component.quantity).toEqual(3);
-                expect(component.size).toEqual(itemC.validSizes[0].id);
+                expect(component.size.id).toEqual(itemC.validSizes[0].id);
                 expect(component.container.id).toEqual(result.id);
             }
             if(component.item.id === itemD.id){
                 expect(component.quantity).toEqual(3);
-                expect(component.size).toEqual(itemD.validSizes[0].id);
+                expect(component.size.id).toEqual(itemD.validSizes[0].id);
                 expect(component.container.id).toEqual(result.id);
             }
         }
@@ -594,9 +594,10 @@ describe('menu item service', () => {
 
         const origContainerSize = itemToUpdate.container.length;
 
-        const sizes = await sizeService.findAll();
-        if(!sizes){ throw new Error(); }
-
+        const sizeRequest = await sizeService.findAll();
+        if(!sizeRequest){ throw new Error(); }
+        const sizes = sizeRequest.items;
+        
         const itemG = await itemService.findOneByName(item_g);
         if(!itemG){ throw new Error(); }
         if(!itemG.validSizes){ throw new Error(); }
@@ -766,6 +767,8 @@ describe('menu item service', () => {
         }) as UpdateChildComponentOptionDto);
 
         const updateItemOptionsDto = {
+            mode:'update',
+            id: itemToUpdate.containerOptions.id,
             componentOptionDtos: [createOptionDto, ...theRest],
         } as UpdateChildMenuItemComponentOptionsDto;
 
@@ -800,6 +803,8 @@ describe('menu item service', () => {
         const modifiedCompId = theRest[0].id;
 
         const updateItemOptionsDto = {
+            mode:'update',
+            id: itemToUpdate.containerOptions.id,
             componentOptionDtos: theRest,
         } as UpdateChildMenuItemComponentOptionsDto;
 
@@ -813,7 +818,7 @@ describe('menu item service', () => {
         if(!result.containerOptions.validComponents){ throw new Error(); }
         for(const comp of result.containerOptions.validComponents){
             if(comp.id === modifiedCompId){
-                expect(comp.validItem).toEqual(itemC.id);
+                expect(comp.validItem.id).toEqual(itemC.id);
                 expect(comp.validSizes.length).toEqual(itemC.validSizes.length);
                 expect(comp.validQuantity).toEqual(100);
             }
@@ -835,6 +840,8 @@ describe('menu item service', () => {
         }) as UpdateChildComponentOptionDto);
 
         const updateItemOptionsDto = {
+            mode: 'update',
+            id: itemToUpdate.containerOptions.id,
             componentOptionDtos: theRest,
         } as UpdateChildMenuItemComponentOptionsDto;
 

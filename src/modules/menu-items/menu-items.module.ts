@@ -26,6 +26,14 @@ import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
 import { MenuItemValidator } from './validators/menu-item.validator';
 import { ComponentOption } from './entities/component-option.entity';
 import { MenuItemComponentOptions } from './entities/menu-item-component-options.entity';
+import { MenuItemComponentOptionsController } from './controllers/menu-item-component-options.controller';
+import { ComponentOptionController } from './controllers/component-option.controller';
+import { MenuItemComponentOptionsService } from './services/menu-item-component-options.service';
+import { ComponentOptionService } from './services/component-option.service';
+import { MenuItemComponentOptionsBuilder } from './builders/menu-item-component-options.builder';
+import { ComponentOptionBuilder } from './builders/component-option.builder';
+import { ComponentOptionValidator } from './validators/component-option.validator';
+import { MenuItemComponentOptionsValidator } from './validators/menu-item-component-options.validator';
 
 @Module({
   imports: [
@@ -47,6 +55,8 @@ import { MenuItemComponentOptions } from './entities/menu-item-component-options
     MenuItemSizeController,
     MenuItemController,
     MenuItemComponentController,
+    MenuItemComponentOptionsController,
+    ComponentOptionController,
   ],
 
   providers: [
@@ -54,16 +64,22 @@ import { MenuItemComponentOptions } from './entities/menu-item-component-options
     MenuItemSizeService,
     MenuItemService,
     MenuItemComponentService,
+    MenuItemComponentOptionsService,
+    ComponentOptionService,
 
     MenuItemCategoryBuilder,
     MenuItemSizeBuilder,
     MenuItemBuilder,
     MenuItemComponentBuilder,
+    MenuItemComponentOptionsBuilder,
+    ComponentOptionBuilder,
 
     MenuItemCategoryValidator,
     MenuItemComponentValidator,
     MenuItemSizeValidator,
     MenuItemValidator,
+    MenuItemComponentOptionsValidator,
+    ComponentOptionValidator,
 
     MenuItemTestingUtil,
   ],
@@ -73,6 +89,8 @@ import { MenuItemComponentOptions } from './entities/menu-item-component-options
     MenuItemSizeService,
     MenuItemService,
     MenuItemComponentService,
+    MenuItemComponentOptionsService,
+    ComponentOptionService,
 
     MenuItemTestingUtil,
   ]

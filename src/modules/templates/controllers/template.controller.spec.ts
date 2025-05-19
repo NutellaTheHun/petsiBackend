@@ -4,8 +4,8 @@ import { TemplateController } from './template.controller';
 import { Template } from '../entities/template.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { getTestTemplateNames } from '../utils/constants';
-import { CreateTemplateDto } from '../dto/create-template.dto';
-import { UpdateTemplateDto } from '../dto/update-template.dto';
+import { CreateTemplateDto } from '../dto/template/create-template.dto';
+import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 

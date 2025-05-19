@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER } from "../../roles/utils/constants";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendor.dto";
-import { UpdateInventoryItemVendorDto } from "../dto/update-inventory-item-vendor.dto";
+import { CreateInventoryItemVendorDto } from "../dto/inventory-item-vendor/create-inventory-item-vendor.dto";
+import { UpdateInventoryItemVendorDto } from "../dto/inventory-item-vendor/update-inventory-item-vendor.dto";
 
 @ApiTags('Inventory Item Vendor')
 @ApiBearerAuth('access-token')

@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { CreateMenuItemComponentOptionsDto } from "../dto/create-menu-item-component-options.dto";
-import { UpdateMenuItemComponentOptionsDto } from "../dto/update-menu-item-component-options.dto";
 import { MenuItemComponentOptions } from "../entities/menu-item-component-options.entity";
+import { CreateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/create-menu-item-component-options.dto";
+import { UpdateMenuItemComponentOptionsDto } from "../dto/menu-item-component-options/update-menu-item-component-options.dto";
 
 @Injectable()
 export class MenuItemComponentOptionsValidator extends ValidatorBase<MenuItemComponentOptions> {

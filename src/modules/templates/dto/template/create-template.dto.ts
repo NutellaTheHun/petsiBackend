@@ -1,5 +1,5 @@
 import { IsArray, IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { CreateChildTemplateMenuItemDto } from "./create-child-template-menu-item.dto";
+import { CreateChildTemplateMenuItemDto } from "../template-menu-item/create-child-template-menu-item.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateTemplateDto {

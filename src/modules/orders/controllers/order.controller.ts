@@ -10,8 +10,8 @@ import { OrderService } from "../services/order.service";
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from "@nestjs/swagger";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
 import { PaginatedResult } from "../../../base/paginated-result";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
+import { CreateOrderDto } from "../dto/order/create-order.dto";
+import { UpdateOrderDto } from "../dto/order/update-order.dto";
 
 @ApiTags('Order')
 @ApiBearerAuth('access-token')

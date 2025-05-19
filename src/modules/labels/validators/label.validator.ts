@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { Label } from "../entities/label.entity";
-import { CreateLabelDto } from "../dto/create-label.dto";
-import { UpdateLabelDto } from "../dto/update-label.dto";
+import { CreateLabelDto } from "../dto/label/create-label.dto";
+import { UpdateLabelDto } from "../dto/label/update-label.dto";
 
 @Injectable()
 export class LabelValidator extends ValidatorBase<Label> {

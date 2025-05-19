@@ -1,14 +1,14 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateRecipeCategoryDto } from '../dto/create-recipe-category.dto';
+import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
-import { UpdateRecipeCategoryDto } from '../dto/update-recipe-category.dto';
-import { CreateChildRecipeSubCategoryDto } from '../dto/create-child-recipe-sub-category.dto';
+import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
+import { CreateChildRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-child-recipe-sub-category.dto';
 import { RecipeSubCategoryService } from './recipe-sub-category.service';
 import { NotFoundException } from '@nestjs/common';
-import { UpdateChildRecipeSubCategoryDto } from '../dto/update-child-recipe-sub-category.dto copy';
+import { UpdateChildRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy';
 
 describe('recipe category service', () => {
   let categoryService: RecipeCategoryService;

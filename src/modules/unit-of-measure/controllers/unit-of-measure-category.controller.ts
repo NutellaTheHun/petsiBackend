@@ -9,8 +9,8 @@ import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-catego
 import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ROLE_MANAGER, ROLE_ADMIN } from '../../roles/utils/constants';
-import { UpdateUnitOfMeasureCategoryDto } from '../dto/update-unit-of-measure-category.dto';
-import { CreateUnitOfMeasureCategoryDto } from '../dto/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { PaginatedResult } from '../../../base/paginated-result';
 
 @ApiTags('Unit of Measure Category')

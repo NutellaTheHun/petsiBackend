@@ -20,6 +20,11 @@ import { OrderTestingUtil } from './utils/order-testing.util';
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
 import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderValidator } from './validators/order.validator';
+import { OrderMenuItemComponent } from './entities/order-menu-item-component.entity';
+import { OrderMenuItemComponentController } from './controllers/order-menu-item-component.controller';
+import { OrderMenuItemComponentService } from './services/order-menu-item-component.service';
+import { OrderMenuItemComponentBuilder } from './builders/order-menu-item-component.builder';
+import { OrderMenuItemComponentValidator } from './validators/order-menu-item-component.validator';
 
 
 @Module({
@@ -28,6 +33,7 @@ import { OrderValidator } from './validators/order.validator';
       Order,
       OrderCategory,
       OrderMenuItem,
+      OrderMenuItemComponent,
     ]),
     MenuItemsModule,
     CacheModule.register(),
@@ -38,19 +44,23 @@ import { OrderValidator } from './validators/order.validator';
     OrderController,
     OrderCategoryController,
     OrderMenuItemController,
+    OrderMenuItemComponentController
   ],
   providers: [
     OrderService,
     OrderCategoryService,
     OrderMenuItemService,
+    OrderMenuItemComponentService,
 
     OrderBuilder,
     OrderCategoryBuilder,
     OrderMenuItemBuilder,
+    OrderMenuItemComponentBuilder,
 
     OrderValidator,
     OrderCategoryValidator,
     OrderMenuItemValidator,
+    OrderMenuItemComponentValidator,
 
     OrderTestingUtil,
   ],
@@ -58,6 +68,7 @@ import { OrderValidator } from './validators/order.validator';
     OrderService,
     OrderCategoryService,
     OrderMenuItemService,
+    OrderMenuItemComponentService,
   ]
 })
 export class OrdersModule {}

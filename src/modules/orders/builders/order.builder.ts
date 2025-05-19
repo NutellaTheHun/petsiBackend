@@ -41,10 +41,10 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.fulfillmentType){
             this.fulfillmentType(dto.fulfillmentType);
         }
-        if(dto.isFrozen){
+        if(dto.isFrozen !== undefined){
             this.isFrozen(dto.isFrozen);
         }
-        if(dto.isWeekly){
+        if(dto.isWeekly !== undefined){
             this.isWeekly(dto.isWeekly);
         }
         if(dto.note){
@@ -83,10 +83,10 @@ export class OrderBuilder extends BuilderBase<Order>{
         if(dto.fulfillmentType){
             this.fulfillmentType(dto.fulfillmentType);
         }
-        if(dto.isFrozen){
+        if(dto.isFrozen !== undefined){
             this.isFrozen(dto.isFrozen);
         }
-        if(dto.isWeekly){
+        if(dto.isWeekly !== undefined){
             this.isWeekly(dto.isWeekly);
         }
         if(dto.note){

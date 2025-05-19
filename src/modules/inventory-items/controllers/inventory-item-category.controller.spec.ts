@@ -1,7 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
+import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
+import { UpdateInventoryItemCategoryDto } from "../dto/inventory-item-category/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { CLEANING_CAT, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, FROZEN_CAT, OTHER_CAT, PAPER_CAT, PRODUCE_CAT } from "../utils/constants";

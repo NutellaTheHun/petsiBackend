@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
-import { CreateRecipeDto } from '../dto/create-recipe.dto';
-import { UpdateRecipeDto } from '../dto/update-recipe-dto';
+import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
+import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';

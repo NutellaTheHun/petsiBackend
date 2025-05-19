@@ -1,8 +1,8 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
+import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
+import { UpdateInventoryItemCategoryDto } from "../dto/inventory-item-category/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemService } from "../services/inventory-item.service";
 import { InventoryItemCategoryValidator } from "../validators/inventory-item-category.validator";

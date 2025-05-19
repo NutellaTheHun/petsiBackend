@@ -17,8 +17,8 @@ import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-
 import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
+import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeTestUtil {

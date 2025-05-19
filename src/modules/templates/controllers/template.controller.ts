@@ -10,8 +10,8 @@ import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedRespo
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN } from '../../roles/utils/constants';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateTemplateDto } from '../dto/create-template.dto';
-import { UpdateTemplateDto } from '../dto/update-template.dto';
+import { CreateTemplateDto } from '../dto/template/create-template.dto';
+import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 
 @ApiTags('Template')
 @ApiBearerAuth('access-token')

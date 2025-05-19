@@ -8,13 +8,13 @@ export class OrderMenuItemComponent {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => OrderMenuItem, (parent) => parent.orderedItemComponents, { onDelete: 'CASCADE' })
+    @ManyToOne(() => OrderMenuItem, (parent) => parent.orderedItemComponents, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentOrderItem: OrderMenuItem;
 
-    @ManyToOne(() => MenuItem, { eager: true, nullable: false })
+    @ManyToOne(() => MenuItem, { eager: true, nullable: false, onDelete: 'CASCADE' })
     item: MenuItem;
 
-    @ManyToOne(() => MenuItemSize, { eager: true, nullable: false })
+    @ManyToOne(() => MenuItemSize, { eager: true, nullable: false, onDelete: 'CASCADE' })
     itemSize: MenuItemSize;
 
     @Column()

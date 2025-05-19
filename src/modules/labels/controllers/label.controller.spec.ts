@@ -4,8 +4,8 @@ import { LabelService } from '../services/label.service';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelController } from './label.controller';
 import { getTestImageUrls } from '../utils/constants';
-import { CreateLabelDto } from '../dto/create-label.dto';
-import { UpdateLabelDto } from '../dto/update-label.dto';
+import { CreateLabelDto } from '../dto/label/create-label.dto';
+import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 

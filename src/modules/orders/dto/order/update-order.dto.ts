@@ -1,9 +1,9 @@
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
-import { OrderMenuItemUnionResolver } from '../utils/order-menu-item-union-resolver';
-import { CreateChildOrderMenuItemDto } from './order-menu-item/create-child-order-menu-item.dto';
-import { UpdateChildOrderMenuItemDto } from './order-menu-item/update-child-order-menu-item.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { OrderMenuItemUnionResolver } from '../../utils/order-menu-item-union-resolver';
+import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-order-menu-item.dto';
+import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
 
 export class UpdateOrderDto{
     @ApiProperty({ example: 'Order types such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })

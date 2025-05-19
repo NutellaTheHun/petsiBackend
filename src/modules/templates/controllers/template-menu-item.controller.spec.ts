@@ -3,8 +3,8 @@ import { TemplateMenuItemController } from './template-menu-item.controller';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
-import { CreateTemplateMenuItemDto } from '../dto/create-template-menu-item.dto';
-import { UpdateTemplateMenuItemDto } from '../dto/update-template-menu-item.dto';
+import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
+import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 

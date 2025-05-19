@@ -1,12 +1,15 @@
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
-import { CreateChildRecipeIngredientDto } from "./create-child-recipe-ingredient.dto";
+import { Type } from "class-transformer";
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsPositive, IsString, Min, ValidateNested } from "class-validator";
+import { RecipeIngredientUnionResolver } from "../../utils/recipe-ingredient-union-resolver";
+import { CreateChildRecipeIngredientDto } from "../recipe-ingredient/create-child-recipe-ingredient.dto";
+import { UpdateChildRecipeIngredientDto } from "../recipe-ingredient/update-child-recipe-ingedient.dto";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class CreateRecipeDto {
+export class UpdateRecipeDto{
     @ApiProperty({ description: 'Name of the Recipe entity.' })
     @IsString()
-    @IsNotEmpty()
-    readonly name: string;
+    @IsOptional()
+    readonly name?: string;
 
     @ApiProperty({ example: 'Menu-Item: Chocolate Bourbon Pecan', description: 'Id of the Menu-Item that the recipe produces.' })
     @IsNumber()
@@ -22,29 +25,29 @@ export class CreateRecipeDto {
     @ApiProperty({ example: '3(batchResultQuantity) units of Blueberry Pie, 4(batchResultQuantity) lbs of pie dough', description: 'The unit amount the recipe produces of the referenced BatchUnitOfMeasure Unit-of-Measure entity.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly batchResultQuantity: number;
+    @IsOptional()
+    readonly batchResultQuantity?: number;
     
     @ApiProperty({ example: '3 units(batchResultUnitOfMeasure) of Blueberry Pie, 4 lbs(batchResultUnitOfMeasure.abbreviation) of pie dough', description: 'Id of the Unit-of-Measure entity expressing the unit size of what the recipe produces.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()  
-    readonly batchResultUnitOfMeasureId: number;
+    @IsOptional()
+    readonly batchResultUnitOfMeasureId?: number;
     
     @ApiProperty({ description: 'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly servingSizeQuantity: number;
+    @IsOptional()
+    readonly servingSizeQuantity?: number;
     
     @ApiProperty({ description: 'Id of the Unit-of-Measure used to represent the unit size of what is sold.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()    
-    readonly servingSizeUnitOfMeasureId: number;
+    @IsOptional()   
+    readonly servingSizeUnitOfMeasureId?: number;
 
     @ApiProperty({ description: 'The price of purchasing the serving size amount.' })
-    @IsNumber({ maxDecimalPlaces: 2 })
+    @IsNumber()
     @IsOptional()
     @Min(0)
     readonly salesPrice?: number;
@@ -61,11 +64,12 @@ export class CreateRecipeDto {
     @IsPositive()
     readonly subCategoryId?: number;
 
-    @ApiProperty({ 
-        description: 'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child Recipe-Ingredient entites through creating the Recipe entity.', 
-        type: [CreateChildRecipeIngredientDto],
-    })
+    @ApiProperty({ description: 'Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child Recipe-Ingredient entites through updating the Recipe entity.',
+        type: [UpdateChildRecipeIngredientDto]
+     })
     @IsOptional()
     @IsArray()
-    ingredientDtos?: CreateChildRecipeIngredientDto[];
+    @ValidateNested({ each: true })
+    @Type(() => RecipeIngredientUnionResolver)
+    readonly ingredientDtos?: (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
 }

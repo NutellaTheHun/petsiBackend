@@ -8,10 +8,10 @@ export class ComponentOption {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => MenuItemComponentOptions, (options) => options.validComponents, { onDelete: 'CASCADE' })
+    @ManyToOne(() => MenuItemComponentOptions, (options) => options.validComponents, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentOption: MenuItemComponentOptions;
 
-    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', eager: true })
+    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
     validItem: MenuItem;
 
     @ManyToMany(() => MenuItemSize, { eager: true })

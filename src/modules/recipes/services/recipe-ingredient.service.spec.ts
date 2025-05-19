@@ -7,8 +7,8 @@ import { InventoryItemService } from '../../inventory-items/services/inventory-i
 import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { FL_OUNCE, GALLON } from '../../unit-of-measure/utils/constants';
-import { CreateRecipeIngredientDto } from '../dto/create-recipe-ingredient.dto';
-import { UpdateRecipeIngredientDto } from '../dto/update-recipe-ingedient.dto';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';

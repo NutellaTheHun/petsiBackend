@@ -1,82 +1,65 @@
-import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
-import { OrderCategory } from "../entities/order-category.entity";
-import { OrderCategoryService } from "../services/order-category.service";
-import { getTestOrderTypeNames } from "../utils/constants";
-import { getOrdersTestingModule } from "../utils/order-testing.module";
-import { OrderCategoryController } from "./order-category.controller";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { TestingModule } from "@nestjs/testing";
+import { CreateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-order-menu-item-component.dto";
+import { UpdateOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-order-menu-item-component.dto";
+import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
+import { OrderMenuItemComponentService } from "../services/order-menu-item-component.service";
+import { getOrdersTestingModule } from "../utils/order-testing.module";
+import { OrderMenuItemComponentController } from "./order-menu-item-component.controller";
 
 describe('order menu item component controller', () => {
-    let controller: ;
-    let service: OrderCategoryService;
-    let types: OrderCategory[];
-
-    let testId: number;
+    let controller: OrderMenuItemComponentController;
+    let service: OrderMenuItemComponentService;
+    let components: OrderMenuItemComponent[];
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
         
-        controller = module.get<OrderCategoryController>(OrderCategoryController);
-        service = module.get<OrderCategoryService>(OrderCategoryService);
+        controller = module.get<OrderMenuItemComponentController>(OrderMenuItemComponentController);
+        service = module.get<OrderMenuItemComponentService>(OrderMenuItemComponentService);
 
-        const typeNames = getTestOrderTypeNames()
+        const quantities = [1,2,3,4,5];
         let id = 1;
-        types = typeNames.map(name => ({
+        components = quantities.map(quantity => ({
             id: id++,
-            name: name,
-        }) as OrderCategory);
+            quantity: quantity,
+        }) as OrderMenuItemComponent);
 
-        jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderCategoryDto) => {
-            const exists = types.find(category => category.name === dto.name);
-            if(exists){ throw new BadRequestException(); }
-
-            const category = {
-                id: id++,
-                name: dto.name,
-            } as OrderCategory;
-        
-            types.push(category);
-            return category;
+        jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderMenuItemComponentDto) => {
+            throw new BadRequestException();
         });
 
-        jest.spyOn(service, 'findAll').mockResolvedValue({ items: types });
+        jest.spyOn(service, 'findAll').mockResolvedValue({ items: components });
 
         jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
-            return types.filter(type => ids.findIndex(id => id === type.id) !== -1);
+            return components.filter(type => ids.findIndex(id => id === type.id) !== -1);
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            const result = types.find(type => type.id === id);
+            const result = components.find(type => type.id === id);
             if(!result){
                 throw new NotFoundException();
             }
             return result;
         });
 
-        jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-            return types.find(type => type.name === name) || null;
-        });
-
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-            const index = types.findIndex(type => type.id === id);
+            const index = components.findIndex(type => type.id === id);
             if(index === -1){ return false; }
 
-            types.splice(index, 1);
+            components.splice(index, 1);
             return true;
         });
 
-        jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderCategoryDto) => {
-            const existIdx = types.findIndex(type => type.id === id);
+        jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderMenuItemComponentDto) => {
+            const existIdx = components.findIndex(type => type.id === id);
             if(existIdx === -1){ throw new NotFoundException(); }
 
-            if(dto.name){
-                types[existIdx].name = dto.name;
+            if(dto.quantity){
+                components[existIdx].quantity = dto.quantity;
             }
 
-            return types[existIdx];
+            return components[existIdx];
         });
     });
 
@@ -84,63 +67,48 @@ describe('order menu item component controller', () => {
         expect(service).toBeDefined();
     });
 
-    it('should create a order type', async () => {
+    it('should fail to create a order item component', async () => {
         const dto = {
-        name: "testType",
-        } as CreateOrderCategoryDto;
+        } as CreateOrderMenuItemComponentDto;
     
-        const result = await controller.create(dto);
-    
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull()
-        expect(result?.name).toEqual("testType");
-    
-        testId = result?.id as number;
-    });
-    
-    it('should fail to create a order type (already exists)', async () => {
-        const dto = {
-        name: "testType",
-        } as CreateOrderCategoryDto;
-        
         await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
-    
-    it('should find order type by id', async () => {
-        const result = await controller.findOne(testId);
+      
+    it('should find order item component by id', async () => {
+        const result = await controller.findOne(1);
         expect(result).not.toBeNull();
     });
     
-    it('should fail find order type by id (not exist)', async () => {
+    it('should fail to find order item component by id (not exist)', async () => {
         expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
     
-    it('should update order type name', async () => {
+    it('should update quantity', async () => {
         const dto = {
-        name: "updateTestType",
-        } as UpdateOrderCategoryDto;
+            quantity: 5,
+        } as UpdateOrderMenuItemComponentDto;
     
-        const result = await controller.update(testId, dto);
+        const result = await controller.update(1, dto);
     
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
-        expect(result?.name).toEqual("updateTestType");
+        expect(result?.quantity).toEqual(5);
     });
     
-    it('should fail update order type name (not exist)', async () => {
+    it('should fail to update order item component (not exist)', async () => {
         const dto = {
-        name: "updateTestType",
-        } as UpdateOrderCategoryDto;
+
+        } as UpdateOrderMenuItemComponentDto;
     
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
     
-    it('should remove order type', async () => {
-        const result = await controller.remove(testId);
+    it('should remove order item component', async () => {
+        const result = await controller.remove(1);
         expect(result).toBeUndefined();
     });
     
-    it('should fail remove order type (not exist)', async () => {
-        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+    it('should fail to remove order item component (not exist)', async () => {
+        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });
 });

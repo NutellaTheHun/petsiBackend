@@ -1,14 +1,18 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { item_a, item_b, item_d, item_f, item_g } from "../../menu-items/utils/constants";
+import { CreateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/create-child-order-menu-item-component.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderMenuItemService } from "./order-menu-item.service";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { OrderService } from "./order.service";
-import { item_a, item_b } from "../../menu-items/utils/constants";
-import { NotFoundException } from "@nestjs/common";
-import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
+import { UpdateChildOrderMenuItemComponentDto } from "../dto/order-menu-item-component/update-child-order-menu-item-component.dto";
+import { OrderMenuItemComponent } from "../entities/order-menu-item-component.entity";
+import { OrderMenuItemComponentService } from "./order-menu-item-component.service";
 
 describe('order menu item service', () => {
     let orderItemService: OrderMenuItemService;
@@ -16,12 +20,14 @@ describe('order menu item service', () => {
     let dbTestContext: DatabaseTestContext
 
     let orderService: OrderService;
+    let componentService: OrderMenuItemComponentService;
 
     let menuItemService: MenuItemService;
 
     let testId: number;
     let testIds: number[];
     let testOrderId: number;
+    let testOrderItemCompsId: number;
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
@@ -31,6 +37,7 @@ describe('order menu item service', () => {
 
         orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
         orderService = module.get<OrderService>(OrderService);
+        componentService = module.get<OrderMenuItemComponentService>(OrderMenuItemComponentService);
 
         menuItemService = module.get<MenuItemService>(MenuItemService);
     });
@@ -132,9 +139,10 @@ describe('order menu item service', () => {
     it('should find all orderMenuItems', async () => {
         const orderItemsRequest = await orderItemService.findAll({ limit: 40 });
         const items = orderItemsRequest.items;
-        expect(items.length).toEqual(29)
 
         testIds = [items[0].id, items[1].id, items[2].id];
+
+        expect(items.length).toEqual(30);
     });
 
     it('should get orderMenuItems by list of ids', async () => {
@@ -156,5 +164,142 @@ describe('order menu item service', () => {
         if(!testOrder.items){ throw new Error(); }
 
         expect(testOrder.items.findIndex(item => item.id === testId)).toEqual(-1);
+    });
+
+    it('should create and order item with components', async () => {
+        const itemA = await menuItemService.findOneByName(item_a);
+        if(!itemA){ throw new Error(); }
+        if(!itemA.validSizes){ throw new Error(); }
+        const itemB = await menuItemService.findOneByName(item_b);
+        if(!itemB){ throw new Error(); }
+        if(!itemB.validSizes){ throw new Error(); }
+        const compDtos = [
+            {
+                mode: 'create',
+                componentMenuItemId: itemA.id,
+                componentItemSizeId: itemA.validSizes[0].id,
+                quantity: 1,
+            } as CreateChildOrderMenuItemComponentDto,
+            {
+                mode: 'create',
+                componentMenuItemId: itemB.id,
+                componentItemSizeId: itemB.validSizes[0].id,
+                quantity: 1,
+            } as CreateChildOrderMenuItemComponentDto,
+        ] as CreateChildOrderMenuItemComponentDto[];
+
+        const orders = await orderService.findAll();
+        if(!orders){ throw new Error(); }
+        if(!orders.items){ throw new Error(); }
+
+        const itemF = await menuItemService.findOneByName(item_f);
+        if(!itemF){ throw new Error(); }
+        if(!itemF.validSizes){ throw new Error(); }
+
+        const itemDto = {
+            orderId: orders.items[0].id,
+            menuItemId: itemF.id,
+            menuItemSizeId: itemF.validSizes[0].id,
+            quantity: 1,
+            OrderedItemComponentDtos: compDtos,
+        } as CreateOrderMenuItemDto;
+
+        const result = await orderItemService.create(itemDto);
+        if(!result){ throw new Error(); }
+        if(!result.orderedItemComponents){ throw new Error(); }
+        expect(result.orderedItemComponents.length).toEqual(2);
+
+        testOrderItemCompsId = result.id;
+    });
+
+    it('should update item components (add)', async () => {
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        if(!toUpdate){ throw new Error(); }
+        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+
+        const itemD = await menuItemService.findOneByName(item_d);
+        if(!itemD){ throw new Error(); }
+        if(!itemD.validSizes){ throw new Error(); }
+
+        const cDto = {
+            mode: 'create',
+            componentMenuItemId: itemD.id,
+            componentItemSizeId: itemD.validSizes[0].id,
+            quantity: 2,
+        } as CreateChildOrderMenuItemComponentDto;
+
+        const theRest = toUpdate.orderedItemComponents.map(comp => ({
+            mode: 'update',
+            id: comp.id,
+        }) as UpdateChildOrderMenuItemComponentDto);
+
+        const dto = {
+            OrderedItemComponentDtos: [cDto, ...theRest],
+        } as UpdateOrderMenuItemDto;
+
+        const result = await orderItemService.update(testOrderItemCompsId, dto);
+        if(!result){ throw new Error(); }
+        if(!result.orderedItemComponents){ throw new Error(); }
+        expect(result.orderedItemComponents.length).toEqual(toUpdate.orderedItemComponents.length+1);
+    });
+
+    it('should update item components (modify)', async () => {
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        if(!toUpdate){ throw new Error(); }
+        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+
+        const theRest = toUpdate.orderedItemComponents.map(comp => ({
+            mode: 'update',
+            id: comp.id,
+        }) as UpdateChildOrderMenuItemComponentDto);
+
+        const itemG = await menuItemService.findOneByName(item_g);
+        if(!itemG){ throw new Error(); }
+        if(!itemG.validSizes){ throw new Error(); }
+
+        theRest[0].componentItemSizeId = itemG.validSizes[0].id;
+        theRest[0].componentMenuItemId = itemG.id;
+        theRest[0].quantity = 50;
+
+        const moddedId = theRest[0].id;
+
+        const dto = {
+            OrderedItemComponentDtos: theRest,
+        } as UpdateOrderMenuItemDto;
+
+        const result = await orderItemService.update(testOrderItemCompsId, dto);
+        if(!result){ throw new Error(); }
+        if(!result.orderedItemComponents){ throw new Error(); }
+        for(const comp of result.orderedItemComponents){
+            if(comp.id === moddedId){
+                expect(comp.item.id).toEqual(itemG.id);
+                expect(comp.itemSize.id).toEqual(itemG.validSizes[0].id);
+                expect(comp.quantity).toEqual(50);
+            }
+        }
+    });
+
+    it('should update item components (remove)', async () => {
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        if(!toUpdate){ throw new Error(); }
+        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+
+        const theRest = toUpdate.orderedItemComponents.slice(1).map(comp => ({
+            mode: 'update',
+            id: comp.id,
+        }) as UpdateChildOrderMenuItemComponentDto);
+
+        const removedId = toUpdate.orderedItemComponents[0].id;
+
+        const dto = {
+            OrderedItemComponentDtos: theRest,
+        } as UpdateOrderMenuItemDto;
+
+        const result = await orderItemService.update(testOrderItemCompsId, dto);
+        if(!result){ throw new Error(); }
+        if(!result.orderedItemComponents){ throw new Error(); }
+        expect(result.orderedItemComponents.length).toEqual(toUpdate.orderedItemComponents.length-1);
+
+        await expect(componentService.findOne(removedId)).rejects.toThrow(NotFoundException);
     });
 });

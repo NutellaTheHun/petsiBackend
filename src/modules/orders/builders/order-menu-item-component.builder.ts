@@ -20,9 +20,12 @@ export class OrderMenuItemComponentBuilder extends BuilderBase<OrderMenuItemComp
     constructor(
         @Inject(forwardRef(() => OrderMenuItemComponentService))
         private readonly componentService: OrderMenuItemComponentService,
+        
+        @Inject(forwardRef(() => OrderMenuItemService))
+        private readonly orderItemService: OrderMenuItemService,
+
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
-        private readonly orderItemService: OrderMenuItemService,
 
         validator: OrderMenuItemComponentValidator,
         requestContextService: RequestContextService,

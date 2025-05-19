@@ -5,10 +5,10 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { AppLogger } from "../../app-logging/app-logger";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { UpdateChildRecipeIngredientDto } from "../dto/update-child-recipe-ingedient.dto";
-import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
+import { UpdateChildRecipeIngredientDto } from "../dto/recipe-ingredient/update-child-recipe-ingedient.dto";
+import { UpdateRecipeIngredientDto } from "../dto/recipe-ingredient/update-recipe-ingedient.dto";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";

@@ -10,8 +10,8 @@ import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateRecipeDto } from '../dto/create-recipe.dto';
-import { UpdateRecipeDto } from '../dto/update-recipe-dto';
+import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
+import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 
 @ApiTags('Recipe')
 @ApiBearerAuth('access-token')

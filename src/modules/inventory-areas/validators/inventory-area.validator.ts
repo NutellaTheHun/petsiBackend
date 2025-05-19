@@ -3,8 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryArea } from "../entities/inventory-area.entity";
-import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
-import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
+import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
+import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 
 @Injectable()
 export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {

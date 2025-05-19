@@ -8,8 +8,8 @@ import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../../roles/utils/constants';
-import { CreateLabelTypeDto } from '../dto/create-label-type.dto';
-import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
+import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
 import { LabelTypeService } from '../services/label-type.service';
 

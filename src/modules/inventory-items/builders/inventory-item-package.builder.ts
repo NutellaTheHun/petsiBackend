@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { UpdateInventoryItemPackageDto } from "../dto/update-inventory-item-package.dto";
+import { CreateInventoryItemPackageDto } from "../dto/inventory-item-package/create-inventory-item-package.dto";
+import { UpdateInventoryItemPackageDto } from "../dto/inventory-item-package/update-inventory-item-package.dto";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemPackageValidator } from "../validators/inventory-item-package.validator";
 

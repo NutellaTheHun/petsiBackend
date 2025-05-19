@@ -91,7 +91,7 @@ export class MenuItem {
     @OneToMany(() => MenuItemComponent, (comp) => comp.container, { cascade: true, eager: true })
     container?: MenuItemComponent[];
 
-    @OneToOne(() => MenuItemComponentOptions, (options) => options.container, { cascade: true, nullable: true, eager: true })
+    @OneToOne(() => MenuItemComponentOptions, (options) => options.container, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
     @JoinColumn()
     containerOptions?: MenuItemComponentOptions;
 

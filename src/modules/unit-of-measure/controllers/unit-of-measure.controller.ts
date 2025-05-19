@@ -10,8 +10,8 @@ import { ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiBody, ApiCreatedRespo
 import { Roles } from '../../../util/decorators/PublicRole';
 import { ROLE_MANAGER, ROLE_ADMIN } from '../../roles/utils/constants';
 import { PaginatedResult } from '../../../base/paginated-result';
-import { CreateUnitOfMeasureDto } from '../dto/create-unit-of-measure.dto';
-import { UpdateUnitOfMeasureDto } from '../dto/update-unit-of-measure.dto';
+import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 
 @ApiTags('Unit of Measure')
 @ApiBearerAuth('access-token')

@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { AppHttpException } from '../../../util/exceptions/AppHttpException';
-import { CreateRecipeSubCategoryDto } from '../dto/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/update-recipe-sub-category.dto';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
