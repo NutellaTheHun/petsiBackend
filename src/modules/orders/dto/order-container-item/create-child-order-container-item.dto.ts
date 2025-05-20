@@ -5,6 +5,12 @@ export class CreateChildOrderContainerItemDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Order-Menu-Item entity.' })
     readonly mode: 'create' = 'create';
 
+    @ApiProperty({ description: 'Id of the Menu-Item that is this item\'s container' })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    parentContainerMenuItemId: number;
+
     @ApiProperty({ description: 'Id of the Menu-Item that is being ordered' })
     @IsNumber()
     @IsNotEmpty()

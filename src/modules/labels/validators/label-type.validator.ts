@@ -22,6 +22,12 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
     }
     
     public async validateUpdate(id: number, dto: UpdateLabelTypeDto): Promise<string | null> {
+        if(dto.labelTypeName){
+            const exists = await this.repo.findOne({ where: { labelTypeName: dto.labelTypeName }});
+        if(exists) { 
+            return `Label type with name ${dto.labelTypeName} already exists`; 
+        }
+        }
         return null;
     }
 }

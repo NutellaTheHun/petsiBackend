@@ -18,10 +18,19 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {
         if(exists) { 
             return `Menu item size with name ${dto.sizeName} already exists`; 
         }
+        
         return null;
     }
     
     public async validateUpdate(id: number, dto: UpdateMenuItemSizeDto): Promise<string | null> {
+        if(dto.sizeName){
+            const exists = await this.repo.findOne({ where: { name: dto.sizeName }});
+            if(exists) { 
+                return `Menu item size with name ${dto.sizeName} already exists`; 
+            }
+            return null;
+        }
+
         return null;
     }
 }

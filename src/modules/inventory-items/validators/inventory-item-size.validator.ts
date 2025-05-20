@@ -21,12 +21,12 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
     }
     
     public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<string | null> {
-        const currentSize = await this.sizeService.findOne(id, ['inventoryItem'])
+        const currentSize = await this.sizeService.findOne(id, ['inventoryItem', 'measureUnit', 'packageType'])
         const exists = await this.repo.findOne({
             where: { 
-                measureUnit: { id: dto.measureUnitId },
-                packageType: { id: dto.inventoryPackageId },
-                inventoryItem: { id: currentSize.id } 
+                measureUnit: { id: dto.measureUnitId ?? currentSize.measureUnit.id },
+                packageType: { id: dto.inventoryPackageId ?? currentSize.packageType.id },
+                inventoryItem: { id: currentSize.inventoryItem.id }
             }
         });
         if(exists){ 

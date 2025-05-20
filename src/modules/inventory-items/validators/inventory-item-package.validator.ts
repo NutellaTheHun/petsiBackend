@@ -24,10 +24,13 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     
     public async validateUpdate(id: number, dto: UpdateInventoryItemPackageDto): Promise<string | null> {
         // Already exists check
-        const exists = await this.repo.findOne({ where: { packageName: dto.packageName }});
+        if(dto.packageName){
+            const exists = await this.repo.findOne({ where: { packageName: dto.packageName }});
         if(exists) { 
             return `Inventory item package with name ${dto.packageName} already exists`; 
         }
+        }
+        
         return null;
     }
 }

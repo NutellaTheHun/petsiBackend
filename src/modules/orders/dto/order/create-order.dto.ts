@@ -67,7 +67,6 @@ export class CreateOrderDto {
     @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
         type: [CreateChildOrderMenuItemDto]
      })
-    @IsOptional()
     @IsArray()
-    orderedMenuItemDtos?: CreateChildOrderMenuItemDto[];
+    orderedMenuItemDtos: CreateChildOrderMenuItemDto[];
 }

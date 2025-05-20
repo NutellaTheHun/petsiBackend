@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 import { CreateInventoryItemVendorDto } from "../dto/inventory-item-vendor/create-inventory-item-vendor.dto";
-import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
+import { UpdateInventoryItemVendorDto } from "../dto/inventory-item-vendor/update-inventory-item-vendor.dto";
+import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 
 @Injectable()
 export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVendor> {
@@ -21,7 +21,14 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         return null;
     }
     
-    public async validateUpdate(id: number, dto: UpdateInventoryItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryItemVendorDto): Promise<string | null> {
+        if(dto.vendorName){
+            const exists = await this.repo.findOne({ where: { vendorName: dto.vendorName }});
+            if(exists) { 
+                return `Inventory item vendor with name ${dto.vendorName} already exists`; 
+            }
+        }
+        
         return null;
     }
 }

@@ -25,7 +25,7 @@ export class CreateChildOrderMenuItemDto {
     @IsPositive()
     readonly quantity: number
 
-    @ApiProperty({ description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
+    @ApiProperty({ description: 'Dtos when creating an Order-Menu-Item entity that is a Menu-Item with Menu-Item-Container-Options',
         type: [CreateChildOrderContainerItemDto]
      })
     @IsArray()

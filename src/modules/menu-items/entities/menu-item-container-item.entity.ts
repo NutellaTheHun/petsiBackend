@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, Unique } from "typeorm";
 import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItem } from "./menu-item.entity";
 
@@ -15,6 +15,7 @@ import { MenuItem } from "./menu-item.entity";
  * - Can be { lemon: 6, trip: 0, currant: 0 }
  * - Can be { lemon: 2, trip: 2, currant: 2 } 
  */
+@Unique(['parentContainer', 'parentContainerSize', 'containedItem', 'containedItemsize'])
 @Entity()
 export class MenuItemContainerItem {
   @PrimaryGeneratedColumn()

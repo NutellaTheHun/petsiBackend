@@ -60,7 +60,7 @@ export class MenuItem {
      * 
      * Some Pastries can be size "mini"
      */
-    @ManyToMany(() => MenuItemSize, { eager: true })
+    @ManyToMany(() => MenuItemSize)
     @JoinTable()
     validSizes: MenuItemSize[];
 
@@ -88,7 +88,7 @@ export class MenuItem {
      * 
      * If a {@link MenuItem} references {@link definedContainerItems}, then {@link containerOptions} must be null/undefined
      */
-    @OneToMany(() => MenuItemContainerItem, (comp) => comp.parentContainer, { cascade: true, eager: true })
+    @OneToMany(() => MenuItemContainerItem, (comp) => comp.parentContainer, { cascade: true })
     definedContainerItems?: MenuItemContainerItem[];
 
     /**
@@ -104,7 +104,7 @@ export class MenuItem {
      * 
      * If a {@link MenuItem} references {@link containerOptions}, then {@link definedContainerItems} must be null/undefined
      */
-    @OneToOne(() => MenuItemContainerOptions, (options) => options.parentContainer, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
+    @OneToOne(() => MenuItemContainerOptions, (options) => options.parentContainer, { cascade: true, nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     containerOptions?: MenuItemContainerOptions | null;
 

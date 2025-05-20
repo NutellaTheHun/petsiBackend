@@ -14,14 +14,31 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateUnitOfMeasureDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.unitName }});
-        if(exists) { 
+        const nameExists = await this.repo.findOne({ where: { name: dto.unitName }});
+        if(nameExists) { 
             return `Unit of measure with name ${dto.unitName} already exists`; 
+        }
+
+        const abbrevExists = await this.repo.findOne({ where: { abbreviation: dto.abbreviation }});
+        if(abbrevExists) { 
+            return `Unit of measure with abbreviation ${dto.abbreviation} already exists`; 
         }
         return null;
     }
     
     public async validateUpdate(id: number, dto: UpdateUnitOfMeasureDto): Promise<string | null> {
+        if(dto.unitName){
+            const exists = await this.repo.findOne({ where: { name: dto.unitName }});
+            if(exists) { 
+                return `Unit of measure with name ${dto.unitName} already exists`; 
+            }
+        }
+        if(dto.abbreviation){
+            const abbrevExists = await this.repo.findOne({ where: { abbreviation: dto.abbreviation }});
+            if(abbrevExists) { 
+                return `Unit of measure with abbreviation ${dto.abbreviation} already exists`; 
+            }
+        }
         return null;
     }
 }

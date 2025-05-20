@@ -96,3 +96,5 @@ import { MenuItemContainerOptionsValidator } from './validators/menu-item-contai
   ]
 })
 export class MenuItemsModule {}
+
+export { MenuItem };

@@ -22,6 +22,12 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategory> {
     }
     
     public async validateUpdate(id: number, dto: UpdateOrderCategoryDto): Promise<string | null> {
+        if(dto.categoryName){
+            const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
+            if(exists) { 
+                return `Order type with name ${dto.categoryName} already exists`; 
+            } 
+        }
         return null;
     }
 }

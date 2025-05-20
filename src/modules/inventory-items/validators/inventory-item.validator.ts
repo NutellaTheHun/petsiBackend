@@ -18,10 +18,39 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
         if(exists) { 
             return `Inventory item with name ${dto.itemName} already exists`; 
         }
+
+        if(dto.itemSizeDtos){
+            const dupliateSizing = this.helper.hasDuplicatesByComposite(
+                dto.itemSizeDtos,
+                (size) => `${size.inventoryPackageId}:${size.measureUnitId}`
+            );
+            if(dupliateSizing){
+                return 'inventory item has duplicate sizing (package/measurement combination)';
+            }
+        }
+        
+        // validate no duplicate item sizing
+
         return null;
     }
     
     public async validateUpdate(id: number, dto: UpdateInventoryItemDto): Promise<string | null> {
+        if(dto.itemName){
+            const exists = await this.repo.findOne({ where: { itemName: dto.itemName }});
+            if(exists) { 
+                return `Inventory item with name ${dto.itemName} already exists`; 
+            }
+        }
+
+        if(dto.itemSizeDtos){
+            const dupliateSizing = this.helper.hasDuplicatesByComposite(
+                dto.itemSizeDtos,
+                (size) => `${size.inventoryPackageId}:${size.measureUnitId}`
+            );
+            if(dupliateSizing){
+                return 'inventory item has duplicate sizing (package/measurement combination)';
+            }
+        }
         return null;
     }
 }

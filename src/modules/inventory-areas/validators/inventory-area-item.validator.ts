@@ -7,6 +7,7 @@ import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-in
 import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
+import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
 
 @Injectable()
 export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem> {
@@ -31,23 +32,25 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         return null;
     }
     
-    public async validateUpdate(id: number, dto: UpdateInventoryAreaItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryAreaItemDto | UpdateChildInventoryAreaItemDto): Promise<string | null> {
+        // Cannot update with both item size and item size dto
         if(dto.countedItemSizeId && dto.countedItemSizeDto){
             return 'inventory area item update dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
         }
+        // cannot update item with no sizing
         else if(dto.countedInventoryItemId && !dto.countedItemSizeId && !dto.countedItemSizeDto){
             return 'updating inventory item must be accompanied by updated sizing';
         }
+        // item size must be valid for counted inventory item
         else if(dto.countedInventoryItemId && dto.countedItemSizeId){
             const item = await this.itemService.findOne(dto.countedInventoryItemId, ['itemSizes']);
-            if(!item.itemSizes){ throw new Error('item sizes is null'); }
 
             if(!item.itemSizes.find(size => size.id === dto.countedItemSizeId)){
                 return 'inventoryItemSize given is not valid for the inventory item.'
             }
         }
+        // if updating size to current item
         else if(dto.countedItemSizeId){
-            // NEED TO GET CURRENT INVENTORY ITEM FROM INV AREA ITEM
             const currentItem = (await this.areaItemService.findOne(id, ['countedItem'], ['countedItem.itemSizes'])).countedItem
             if(!currentItem){ throw new Error('current item is null'); }
             if(!currentItem.itemSizes){ throw new Error('sizes are null'); }

@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { TemplateMenuItem } from "../entities/template-menu-item.entity";
 import { CreateTemplateMenuItemDto } from "../dto/template-menu-item/create-template-menu-item.dto";
 import { UpdateTemplateMenuItemDto } from "../dto/template-menu-item/update-template-menu-item.dto";
+import { UpdateChildTemplateMenuItemDto } from "../dto/template-menu-item/update-child-template-menu-item.dto";
 
 @Injectable()
 export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItem> {
@@ -17,7 +18,7 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItem> {
         return null;
     }
     
-    public async validateUpdate(id: number, dto: UpdateTemplateMenuItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateTemplateMenuItemDto | UpdateChildTemplateMenuItemDto): Promise<string | null> {
         return null;
     }
 }

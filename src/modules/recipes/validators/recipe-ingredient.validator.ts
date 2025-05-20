@@ -15,7 +15,10 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
 
     public async validateCreate(dto: CreateRecipeIngredientDto): Promise<string | null> {
         if(dto.ingredientInventoryItemId && dto.ingredientRecipeId){
-            return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient';
+            return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient, only one.';
+        }
+        if(!dto.ingredientInventoryItemId && !dto.ingredientRecipeId){
+            return 'recipe ingredient must reference either an inventory item and a subRecipeIngredient, none are given.';
         }
         return null;
     }
@@ -23,6 +26,21 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
     public async validateUpdate(id: number, dto: UpdateRecipeIngredientDto): Promise<string | null> {
         if(dto.ingredientInventoryItemId && dto.ingredientRecipeId){
             return 'recipe ingredient cannot reference both an inventory item and a subRecipeIngredient';
+        }
+        if(dto.ingredientInventoryItemId || dto.ingredientRecipeId){
+            const currentIngred = await this.repo.findOne({ where: { id }, relations: ['ingredientInventoryItem', 'ingredientRecipe']});
+
+            if(dto.ingredientInventoryItemId && currentIngred?.ingredientRecipe){
+                if(dto.ingredientRecipeId !== null){
+                    return 'current ingredient has a recipe reference, set to null before updating to inventoryItemIngredient';
+                }
+            }
+
+            if(dto.ingredientRecipeId && currentIngred?.ingredientInventoryItem){
+                if(dto.ingredientRecipeId !== null){
+                    return 'current ingredient has a inventoryitem reference, set to null before updating to reference a recipe as ingredient.';
+                }
+            }
         }
         return null;
     }

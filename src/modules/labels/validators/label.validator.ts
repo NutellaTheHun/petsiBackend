@@ -25,6 +25,51 @@ export class LabelValidator extends ValidatorBase<Label> {
     }
     
     public async validateUpdate(id: number, dto: UpdateLabelDto): Promise<string | null> {
+        if(dto.labelTypeId && dto.menuItemId) {
+            const exists = await this.repo.findOne({ 
+                where: {
+                    menuItem: { id: dto.menuItemId },
+                    labelType: { id: dto.labelTypeId }
+                }
+            });
+            if(exists){ 
+                return 'menuItem / labelType combination already exists';
+            }
+        }
+        else if(dto.labelTypeId){
+            const currentLabel = await this.repo.findOne({ where: {id}, relations: ['menuItem'] })
+            if(!currentLabel){ throw new Error(); }
+
+            const exists = await this.repo.findOne({ 
+                where: {
+                    menuItem: { id: currentLabel.menuItem.id },
+                    labelType: { id: dto.labelTypeId }
+                }
+            });
+            if(exists){ 
+                return 'menuItem / labelType combination already exists';
+            }
+        }
+        else if(dto.menuItemId) {
+            const currentLabel = await this.repo.findOne({ where: {id}, relations: ['labelType'] })
+            if(!currentLabel){ throw new Error(); }
+
+            // No label type set, validation PASS
+            if(!currentLabel.labelType){ 
+                return null 
+            }
+
+            const exists = await this.repo.findOne({ 
+                where: {
+                    menuItem: { id: dto.menuItemId },
+                    labelType: { id: currentLabel.labelType.id }
+                }
+            });
+            if(exists){ 
+                return 'menuItem / labelType combination already exists';
+            }
+        }
+
         return null;
     }
 }

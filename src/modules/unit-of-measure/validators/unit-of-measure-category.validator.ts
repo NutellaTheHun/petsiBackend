@@ -22,6 +22,12 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
     }
     
     public async validateUpdate(id: number, dto: UpdateUnitOfMeasureCategoryDto): Promise<string | null> {
+        if(dto.categoryName){
+            const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
+            if(exists) { 
+                return `Unit category with name ${dto.categoryName} already exists`; 
+            }
+        }
         return null;
     }
 }

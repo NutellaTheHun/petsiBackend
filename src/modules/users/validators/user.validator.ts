@@ -22,6 +22,12 @@ export class UserValidator extends ValidatorBase<User> {
     }
     
     public async validateUpdate(id: number, dto: UpdateUserDto): Promise<string | null> {
+        if(dto.username){
+            const exists = await this.repo.findOne({ where: { username: dto.username }});
+            if(exists) { 
+                return `User with name ${dto.username} already exists`; 
+            }
+        }
         return null;
     }
 }
