@@ -42,50 +42,50 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
      * Depreciated, only created as a child through {@link Order}.
      */
     protected createEntity(dto: CreateOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if(dto.menuItemSizeId !== undefined){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.orderId){
+        if(dto.orderId !== undefined){
             this.orderById(dto.orderId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos){
-            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
+        if(dto.orderedItemContainerDtos !== undefined){
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
     protected updateEntity(dto: UpdateOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if(dto.menuItemSizeId !== undefined){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos){
-            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
+        if(dto.orderedItemContainerDtos !== undefined){
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
     
     buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if(dto.menuItemSizeId !== undefined){
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos){
-            this.itemComponentsByBuilder(dto.orderedItemContainerDtos);
+        if(dto.orderedItemContainerDtos !== undefined){
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
@@ -139,7 +139,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         return this.setPropByVal('quantity', amount);
     }
 
-    public itemComponentsByBuilder(dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): this {
-        return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedItemComponents', this.entity, dtos);
+    public containerItemsByBuilder(dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): this {
+        return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedContainerItems', this.entity, dtos);
     }
 }

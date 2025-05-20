@@ -16,12 +16,12 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
     ){ super(InventoryItemPackage, 'InventoryItemPackageBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemPackageDto): void {
-        if(dto.packageName){
+        if(dto.packageName !== undefined){
             this.name(dto.packageName);
         }
     }
     protected updateEntity(dto: UpdateInventoryItemPackageDto): void {
-        if(dto.packageName){
+        if(dto.packageName !== undefined){
             this.name(dto.packageName);
         }
     }

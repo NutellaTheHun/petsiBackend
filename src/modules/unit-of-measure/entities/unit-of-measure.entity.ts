@@ -40,8 +40,8 @@ export class UnitOfMeasure {
      * - Example: UnitCategory: Volume, baseUnit is milliliter
      * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
      */
-    @Column({ type: "decimal", precision: 18, scale: 10, nullable: true })
-    conversionFactorToBase?: string | null;
+    @Column({ type: "decimal", precision: 18, scale: 10 })
+    conversionFactorToBase?: string;
 
     getConversionFactor(): number | null {
         return this.conversionFactorToBase ? parseFloat(this.conversionFactorToBase) : null;

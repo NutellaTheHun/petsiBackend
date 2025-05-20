@@ -48,10 +48,10 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
     }
     
     buildChildEntity(dto: CreateChildMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos){
+        if(dto.containerRuleDtos !== undefined){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.validQuantity){
+        if(dto.validQuantity !== undefined){
             this.validQuantity(dto.validQuantity);
         }
     }
@@ -60,22 +60,22 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
      * Depreciated, only created as a child through {@link MenuItem}.
      */
     protected createEntity(dto: CreateMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos){
+        if(dto.containerRuleDtos !== undefined){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.parentContainerMenuItemId){
+        if(dto.parentContainerMenuItemId !== undefined){
             this.parentContainerById(dto.parentContainerMenuItemId);
         }
-        if(dto.validQuantity){
+        if(dto.validQuantity !== undefined){
             this.validQuantity(dto.validQuantity);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos){
+        if(dto.containerRuleDtos !== undefined){
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.validQuantity){
+        if(dto.validQuantity !== undefined){
             this.validQuantity(dto.validQuantity);
         }
     }

@@ -34,16 +34,16 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     ){ super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemDto): void {
-        if(dto.inventoryItemCategoryId){
+        if(dto.inventoryItemCategoryId !== undefined){
             this.categoryById(dto.inventoryItemCategoryId)
         }
-        if(dto.itemName){
+        if(dto.itemName !== undefined){
             this.name(dto.itemName);
         }
-        if(dto.itemSizeDtos){
+        if(dto.itemSizeDtos !== undefined){
             this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
-        if(dto.vendorId){
+        if(dto.vendorId !== undefined){
             this.vendorById(dto.vendorId);
         }
     }
@@ -52,10 +52,10 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         if(dto.inventoryItemCategoryId !== undefined){
             this.categoryById(dto.inventoryItemCategoryId);
         }
-        if(dto.itemName){
+        if(dto.itemName !== undefined){
             this.name(dto.itemName);
         }
-        if(dto.itemSizeDtos){
+        if(dto.itemSizeDtos !== undefined){
             this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
         if(dto.vendorId !== undefined){
@@ -79,8 +79,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         return this.setPropByBuilder(this.itemSizeBuilder.buildManyChildDto.bind(this.itemSizeBuilder), 'itemSizes', this.entity, enrichedDtos);
     }
     
-    public categoryById(id: number): this {
-        if(id === 0){
+    public categoryById(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -90,8 +90,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public vendorById(id: number): this {
-        if(id === 0){
+    public vendorById(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('vendor', null);
         }
         return this.setPropById(this.vendorService.findOne.bind(this.vendorService), 'vendor', id);

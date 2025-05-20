@@ -10,7 +10,7 @@ export class CreateUserDto {
     @ApiProperty({ description: '' })
     @IsString()
     @IsOptional()
-    readonly email?: string | null;
+    readonly email?: string;
 
     @ApiProperty({ description: '' })
     @IsString()

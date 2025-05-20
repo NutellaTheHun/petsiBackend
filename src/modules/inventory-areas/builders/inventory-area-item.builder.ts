@@ -29,66 +29,66 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
         @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly itemCountService: InventoryAreaItemService,
 
-        logger: AppLogger,
-        validator: InventoryAreaItemValidator,
         private readonly itemService: InventoryItemService,
         private readonly sizeService: InventoryItemSizeService,
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
+
+        logger: AppLogger,
+        validator: InventoryAreaItemValidator,
     ){ super(InventoryAreaItem, 'InventoryAreaItemBuilder', requestContextService, logger, validator); }
 
     /**
      * Depreciated, only created as a child through {@link InventoryAreaCount}.
      */
     protected createEntity(dto: CreateInventoryAreaItemDto): void {
-        if(dto.parentInventoryCountId){
+        if(dto.parentInventoryCountId !== undefined){
             this.parentInventoryCountById(dto.parentInventoryCountId);
         }
-        if(dto.countedInventoryItemId){
+        if(dto.countedInventoryItemId !== undefined){
             this.countedItemById(dto.countedInventoryItemId);
         }
-        if(dto.countedAmount){
+        if(dto.countedAmount !== undefined){
             this.amount(dto.countedAmount);
-        } else {
-            this.amount(1); // defauilt amount
         }
 
-        // a counted item's size can be created either on the fly, or a pre-existing item size
-        if(dto.countedItemSizeDto){
+        // Either a ItemSize DTO or id 
+        if(dto.countedItemSizeDto !== undefined){
             this.countedItemSizeByBuilder(dto.countedInventoryItemId, dto.countedItemSizeDto);
         }
-        else if(dto.countedItemSizeId){
+        else if(dto.countedItemSizeId !== undefined){
             this.countedItemSizeById(dto.countedItemSizeId);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaItemDto): void {
-        if(dto.countedInventoryItemId){
+        if(dto.countedInventoryItemId !== undefined){
             this.countedItemById(dto.countedInventoryItemId);
         }
-        if(dto.countedAmonut){
-            this.amount(dto.countedAmonut);
+        if(dto.countedAmount !== undefined){
+            this.amount(dto.countedAmount);
         }
-        if(dto.countedItemSizeId){
+        
+        if(dto.countedItemSizeId !== undefined){
             this.countedItemSizeById(dto.countedItemSizeId);
         }
-        if(dto.countedItemSizeDto){
+        if(dto.countedItemSizeDto !== undefined){
             this.countedItemSizeByBuilder(this.entity.countedItem.id, dto.countedItemSizeDto);
         }
     }
 
     buildChildEntity(dto: CreateChildInventoryAreaItemDto): void {
-        if(dto.countedInventoryItemId){
+        if(dto.countedInventoryItemId !== undefined){
             this.countedItemById(dto.countedInventoryItemId);
         }
-        if(dto.countedAmount){
+        if(dto.countedAmount !== undefined){
             this.amount(dto.countedAmount);
         }
 
-        // a counted item's size can either be created on the fly, or a pre-existing item size
-        if(dto.countedItemSizeDto){
+        // Either a ItemSize DTO or id 
+        if(dto.countedItemSizeDto !== undefined){
             this.countedItemSizeByBuilder(dto.countedInventoryItemId, dto.countedItemSizeDto);
         }
-        else if(dto.countedItemSizeId){
+        else if(dto.countedItemSizeId !== undefined){
             this.countedItemSizeById(dto.countedItemSizeId);
         }
     }
@@ -128,7 +128,7 @@ implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>{
     }
 
     public amount(amount: number): this {
-        if(amount === 0){
+        if(amount === null){
             return this.setPropByVal('amount', 1);
         }
         return this.setPropByVal('amount', amount);

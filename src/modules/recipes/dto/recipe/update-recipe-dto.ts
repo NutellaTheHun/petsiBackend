@@ -15,7 +15,7 @@ export class UpdateRecipeDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly producedMenuItemId?: number;
+    readonly producedMenuItemId?: number | null;
 
     @ApiProperty({ example: 'Recipe: Blueberry Mix.', description: 'If the recipe is used as an ingredient.(Not sold directly)' })
     @IsBoolean()
@@ -26,43 +26,43 @@ export class UpdateRecipeDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultQuantity?: number;
+    readonly batchResultQuantity?: number | null;
     
     @ApiProperty({ example: '3 units(batchResultUnitOfMeasure) of Blueberry Pie, 4 lbs(batchResultUnitOfMeasure.abbreviation) of pie dough', description: 'Id of the Unit-of-Measure entity expressing the unit size of what the recipe produces.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultMeasurementId?: number;
+    readonly batchResultMeasurementId?: number | null;
     
     @ApiProperty({ description: 'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly servingSizeQuantity?: number;
+    readonly servingSizeQuantity?: number | null;
     
     @ApiProperty({ description: 'Id of the Unit-of-Measure used to represent the unit size of what is sold.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()   
-    readonly servingSizeMeasurementId?: number;
+    readonly servingSizeMeasurementId?: number | null;
 
     @ApiProperty({ description: 'The price of purchasing the serving size amount.' })
     @IsNumber()
     @IsOptional()
     @Min(0)
-    readonly salesPrice?: number;
+    readonly salesPrice?: number | null;
 
     @ApiProperty({ description: 'Id of the Recipe-Category entity' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly categoryId?: number;
+    readonly categoryId?: number | null;
 
     @ApiProperty({ description: 'Id of the Recipe-Sub-Category entity. Must be a child sub-category to the referenced Recipe-Category' })
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly subCategoryId?: number;
+    readonly subCategoryId?: number | null;
 
     @ApiProperty({ description: 'Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child Recipe-Ingredient entites through updating the Recipe entity.',
         type: [UpdateChildRecipeIngredientDto]

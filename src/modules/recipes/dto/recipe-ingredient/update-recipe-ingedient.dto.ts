@@ -23,7 +23,7 @@ export class UpdateRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientInventoryItemId?: number;
+    readonly ingredientInventoryItemId?: number | null;
     
     @ApiProperty({ 
         example: 'Recipe: Blueberry Mix, ingredients: blueberries, sugar. Recipe: Blueberry Pie, ingredients: Blueberry Mix, pie dough, sugar ', 
@@ -31,5 +31,5 @@ export class UpdateRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientRecipeId?: number;
+    readonly ingredientRecipeId?: number | null;
 }

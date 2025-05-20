@@ -27,7 +27,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
         if(!menuItem.validSizes.find(size => size.id === dto.menuItemSizeId)){
             return 'orderMenuItem\'s menuItemSize is not a valid size to the given menuItem.';
         }
-
+        
         return null;
     }
     

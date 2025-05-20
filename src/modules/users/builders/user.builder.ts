@@ -22,31 +22,31 @@ export class UserBuilder extends BuilderBase<User> {
     ){ super(User, 'UserBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUserDto): void {
-        if(dto.email){
+        if(dto.email !== undefined){
             this.email(dto.email);
         }
-        if(dto.password){
+        if(dto.password !== undefined){
             this.password(dto.password);
         }
-        if(dto.roleIds){
+        if(dto.roleIds !== undefined){
             this.roles(dto.roleIds);
         }
-        if(dto.username){
+        if(dto.username !== undefined){
             this.username(dto.username);
         }
     }
     
     protected updateEntity(dto: UpdateUserDto): void {
-        if(dto.email){
+        if(dto.email !== undefined){
             this.email(dto.email);
         }
-        if(dto.password){
+        if(dto.password !== undefined){
             this.password(dto.password);
         }
-        if(dto.roleIds){
+        if(dto.roleIds !== undefined){
             this.roles(dto.roleIds);
         }
-        if(dto.username){
+        if(dto.username !== undefined){
             this.username(dto.username);
         }
     }
@@ -55,7 +55,10 @@ export class UserBuilder extends BuilderBase<User> {
         return this.setPropByVal('username', name);
     }
 
-    public email(email: string): this {
+    public email(email: string | null): this {
+        if(email === null){
+            return this.setPropByVal('email', null);
+        }
         return this.setPropByVal('email', email);
     }
     /**

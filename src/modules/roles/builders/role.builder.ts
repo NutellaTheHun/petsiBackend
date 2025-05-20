@@ -20,13 +20,13 @@ export class RoleBuilder extends BuilderBase<Role>{
     ){ super(Role, 'RoleBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRoleDto): void {
-        if(dto.roleName){
+        if(dto.roleName !== undefined){
             this.roleName(dto.roleName);
         }
     }
 
     protected updateEntity(dto: UpdateRoleDto): void {
-        if(dto.roleName){
+        if(dto.roleName !== undefined){
             this.roleName(dto.roleName);
         }
     }

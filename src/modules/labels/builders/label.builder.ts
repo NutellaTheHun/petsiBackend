@@ -20,25 +20,25 @@ export class LabelBuilder extends BuilderBase<Label> {
     ){ super(Label, 'LabelBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateLabelDto): void {
-        if(dto.imageUrl){
+        if(dto.imageUrl !== undefined){
             this.imageUrl(dto.imageUrl);
         }
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.labelTypeId){
+        if(dto.labelTypeId !== undefined){
             this.labelTypeById(dto.labelTypeId);
         }
     }
 
     protected updateEntity(dto: UpdateLabelDto): void {
-        if(dto.imageUrl){
+        if(dto.imageUrl !== undefined){
             this.imageUrl(dto.imageUrl);
         }
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.labelTypeId){
+        if(dto.labelTypeId !== undefined){
             this.labelTypeById(dto.labelTypeId);
         }
     }
@@ -55,7 +55,10 @@ export class LabelBuilder extends BuilderBase<Label> {
         return this.setPropByVal('imageUrl', url);
     }
 
-    public labelTypeById(id: number): this {
+    public labelTypeById(id: number | null): this {
+        if(id === null){
+            return this.setPropByVal('labelType', null);
+        }
         return this.setPropById(this.typeService.findOne.bind(this.typeService), 'labelType', id);
     }
 

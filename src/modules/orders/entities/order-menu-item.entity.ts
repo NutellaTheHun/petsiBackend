@@ -39,5 +39,5 @@ export class OrderMenuItem {
     size: MenuItemSize;
 
     @OneToMany(() => OrderContainerItem, (orderItem) => orderItem.parentOrderItem, { cascade: true,  eager: true })
-    orderedItemComponents?: OrderContainerItem[];
+    orderedContainerItems: OrderContainerItem[];
 }

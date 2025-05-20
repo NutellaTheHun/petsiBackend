@@ -240,7 +240,7 @@ describe('Inventory area count service', () => {
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            countedAmonut: 10,
+            countedAmount: 10,
         } as UpdateInventoryAreaItemDto;
 
         const theRest = areaCount.countedItems.splice(1).map( areaItem => ({
@@ -413,7 +413,7 @@ describe('Inventory area count service', () => {
         const updateAreaItemDto = {
             mode: 'update',
             id: updateItemTestId,
-            countedAmonut: 50,
+            countedAmount: 50,
         } as UpdateInventoryAreaItemDto;
 
         const item = await itemService.findOneByName(DRY_B, ['itemSizes'])

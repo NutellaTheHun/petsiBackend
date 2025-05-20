@@ -22,19 +22,19 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
     ){ super(UnitOfMeasureCategory, 'UnitCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUnitOfMeasureCategoryDto): void {
-        if(dto.categoryName){
+        if(dto.categoryName !== undefined){
             this.name(dto.categoryName);
         }
-        if(dto.baseUnitId){
+        if(dto.baseUnitId !== undefined){
             this.baseConversionUnitById(dto.baseUnitId);
         }
     }
 
     protected updateEntity(dto: UpdateUnitOfMeasureCategoryDto): void {
-        if(dto.categoryName){
+        if(dto.categoryName !== undefined){
             this.name(dto.categoryName);
         }
-        if(dto.baseUnitId){
+        if(dto.baseUnitId !== undefined){
             this.baseConversionUnitById(dto.baseUnitId);
         }
     }
@@ -47,7 +47,10 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
         return this.setPropsByIds(this.unitService.findEntitiesById.bind(this.unitService), 'unitsOfMeasure', ids);
     }
 
-    public baseConversionUnitById(id: number): this {
+    public baseConversionUnitById(id: number | null): this {
+        if(id === null){
+            return this.setPropByVal('baseConversionUnit', null);
+        }
         return this.setPropById(this.unitService.findOne.bind(this.unitService), 'baseConversionUnit', id);
     }
 

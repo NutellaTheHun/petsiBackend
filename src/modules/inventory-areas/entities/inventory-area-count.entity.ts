@@ -17,7 +17,7 @@ export class InventoryAreaCount{
     /**
      * Reference of the {@link InventoryArea} where the inventory count occurs.
      */
-    @ManyToOne(() => InventoryArea, { nullable: false, onDelete: 'CASCADE' })
+    @ManyToOne(() => InventoryArea, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     inventoryArea: InventoryArea;
 
     /**
@@ -29,6 +29,6 @@ export class InventoryAreaCount{
     /**
      * The record of counted items and their quantites resulting from the inventory count.
      */
-    @OneToMany(() => InventoryAreaItem, (item) => item.parentInventoryCount, { cascade: true, nullable: true})
-    countedItems?: InventoryAreaItem[] | null;
+    @OneToMany(() => InventoryAreaItem, (item) => item.parentInventoryCount, { cascade: true })
+    countedItems: InventoryAreaItem[];
 }

@@ -15,7 +15,7 @@ export class MenuItemContainerOptions {
     /**
      * The {@link MenuItem} container that the options apply to.
      */
-    @OneToOne(() => MenuItem, (container) => container.containerOptions, { onDelete: 'CASCADE' })
+    @OneToOne(() => MenuItem, (container) => container.containerOptions, { onDelete: 'CASCADE', nullable: false })
     parentContainer: MenuItem;
 
     /**
@@ -28,6 +28,6 @@ export class MenuItemContainerOptions {
     /**
      * The total amount of items the container holds. 
      */
-    @Column()
+    @Column({ nullable: false})
     validQuantity: number;
 }

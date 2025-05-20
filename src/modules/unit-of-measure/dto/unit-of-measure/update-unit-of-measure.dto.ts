@@ -16,7 +16,7 @@ export class UpdateUnitOfMeasureDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly categoryId?: number;
+    readonly categoryId?: number | null;
 
     @ApiProperty({ example: 'UnitOfMeasure, Gallon, "3785.4080001023799014"(conversionFactorToBase).', description: 'The conversion factor stored as a string to prevent rounding errors, to the base amount.' })
     @IsString()

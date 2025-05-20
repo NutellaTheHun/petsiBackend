@@ -3,34 +3,35 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { InventoryItemSizeService } from "../services/inventory-item-size.service";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
     constructor(
         @InjectRepository(InventoryItemSize)
         private readonly repo: Repository<InventoryItemSize>,
+        private readonly sizeService: InventoryItemSizeService,
     ){ super(repo); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
-        // Creating child inventory item sizes do not need to check the for item/unit of measure/package type combo,
-        // since the inventory item doesn't exist yet.
-        if(dto.mode === 'create'){ 
-            return null; 
-        }
+    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<string | null> {
+        return null;
+    }
+    
+    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<string | null> {
+        const currentSize = await this.sizeService.findOne(id, ['inventoryItem'])
         const exists = await this.repo.findOne({
             where: { 
-                measureUnit: { id: dto.unitOfMeasureId },
-                packageType: { id: dto.inventoryPackageTypeId },
-                inventoryItem: { id: dto.inventoryItemId } 
+                measureUnit: { id: dto.measureUnitId },
+                packageType: { id: dto.inventoryPackageId },
+                inventoryItem: { id: currentSize.id } 
             }
         });
         if(exists){ 
             return 'Inventory item size already exists'; 
         }
-        return null;
-    }
-    
-    public async validateUpdate(id: number, dto: any): Promise<string | null> {
         return null;
     }
 }

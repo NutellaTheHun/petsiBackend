@@ -47,31 +47,31 @@ export class Order {
      * Sometimes different from the recipient/owner of the order
      */
     @Column({ nullable: true})
-    fulfillmentContactName?: string;
+    fulfillmentContactName?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
     @Column({ nullable: true })
-    deliveryAddress?: string;
+    deliveryAddress?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
     @Column({ nullable: true })
-    phoneNumber?: string;
+    phoneNumber?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
     @Column({ nullable: true })
-    email?: string;
+    email?: string | null;
 
     /**
      * Any additional information for the order.
      */
     @Column({ nullable: true })
-    note?: string;
+    note?: string | null;
 
     /**
      * If an order is frozen, it is not an active order,
@@ -96,11 +96,11 @@ export class Order {
      * If an order is weekly, the day of the week the order is fulfilled.
      */
     @Column({ nullable: true })
-    weeklyFulfillment: string;
+    weeklyFulfillment?: string | null;
 
     /**
      * The list of {@link OrderMenuItem} that are being purchased.
      */
-    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true, nullable: true })
-    orderedItems?: OrderMenuItem[] | null;
+    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true })
+    orderedItems: OrderMenuItem[];
 }

@@ -12,6 +12,6 @@ export class MenuItemSize{
     /** 
      * By default, can be "regular", "cutie", "small", "medium", "large" 
      */
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: false })
     name: string;
 }

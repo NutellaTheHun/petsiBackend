@@ -15,6 +15,6 @@ export class OrderCategory{
     /**
      * List of {@link Order} falling under the type.
      */
-    @OneToMany(() => Order, (order) => order.orderCategory, { nullable: true })
-    orders?: Order[] | null;
+    @OneToMany(() => Order, (order) => order.orderCategory)
+    orders: Order[];
 }

@@ -26,6 +26,6 @@ export class Template {
     /**
      * List of {@link TemplateMenuItem} that describe the form structure.
      */
-    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.parentTemplate, { nullable: false, cascade: true })
-    templateItems?: TemplateMenuItem[] | null;
+    @OneToMany(() => TemplateMenuItem, (templateItem) => templateItem.parentTemplate, { cascade: true })
+    templateItems: TemplateMenuItem[];
 }

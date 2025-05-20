@@ -21,7 +21,7 @@ export class RecipeSubCategory{
      * 
      * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
      */
-    @ManyToOne(() => RecipeCategory, { nullable: true, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+    @ManyToOne(() => RecipeCategory, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentCategory: RecipeCategory;
 
     /**

@@ -35,25 +35,25 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
      * Depreciated, only created as a child through {@link RecipeCategory}.
      */
     protected createEntity(dto: CreateRecipeSubCategoryDto): void {
-        if(dto.subCategoryName){
+        if(dto.subCategoryName !== undefined){
             this.name(dto.subCategoryName);
         }
-        if(dto.parentCategoryId){
+        if(dto.parentCategoryId !== undefined){
             this.parentCategoryById(dto.parentCategoryId);
         }
     }
     
     protected updateEntity(dto: UpdateRecipeSubCategoryDto): void {
-        if(dto.subCategoryName){
+        if(dto.subCategoryName !== undefined){
             this.name(dto.subCategoryName);
         }
-        if(dto.parentCategoryId){
+        if(dto.parentCategoryId !== undefined){
             this.parentCategoryById(dto.parentCategoryId);
         }
     }
 
     buildChildEntity(dto: CreateChildRecipeSubCategoryDto): void {
-        if(dto.subCategoryName){
+        if(dto.subCategoryName !== undefined){
             this.name(dto.subCategoryName);
         }
     }

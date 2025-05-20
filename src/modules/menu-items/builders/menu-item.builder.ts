@@ -39,7 +39,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
-        if(dto.itemName){
+        if(dto.itemName !== undefined){
             this.name(dto.itemName);
         }
         if(dto.isPOTM !== undefined){
@@ -50,42 +50,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         }
 
         // Entities
-        if(dto.validSizeIds){
-            this.validSizesById(dto.validSizeIds);
-        }
-        if(dto.veganOptionMenuId){
-            this.veganOptionById(dto.veganOptionMenuId);
-        }
-        if(dto.takeNBakeOptionMenuId){
-            this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
-        }
-        if(dto.veganTakeNBakeOptionMenuId){
-            this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
-        }
-        if(dto.categoryId){
-            this.categorybyId(dto.categoryId);
-        }
-        if(dto.definedContainerItemDtos){
-            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
-        }
-        if(dto.containerOptionDto){
-            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
-        }
-    }
-
-    protected updateEntity(dto: UpdateMenuItemDto): void {
-        if(dto.itemName){
-            this.name(dto.itemName);
-        }
-        if(dto.isPOTM !== undefined){
-            this.isPOTM(dto.isPOTM);
-        }
-        if(dto.isParbake !== undefined){
-            this.isParbake(dto.isParbake);
-        }
-
-        // Entities
-        if(dto.validSizeIds){
+        if(dto.validSizeIds !== undefined){
             this.validSizesById(dto.validSizeIds);
         }
         if(dto.veganOptionMenuId !== undefined){
@@ -100,10 +65,45 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         if(dto.categoryId !== undefined){
             this.categorybyId(dto.categoryId);
         }
-        if(dto.definedContainerItemDtos){
+        if(dto.definedContainerItemDtos !== undefined){
             this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
-        if(dto.containerOptionDto){
+        if(dto.containerOptionDto !== undefined){
+            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
+        }
+    }
+
+    protected updateEntity(dto: UpdateMenuItemDto): void {
+        if(dto.itemName !== undefined){
+            this.name(dto.itemName);
+        }
+        if(dto.isPOTM !== undefined){
+            this.isPOTM(dto.isPOTM);
+        }
+        if(dto.isParbake !== undefined){
+            this.isParbake(dto.isParbake);
+        }
+
+        // Entities
+        if(dto.validSizeIds !== undefined){
+            this.validSizesById(dto.validSizeIds);
+        }
+        if(dto.veganOptionMenuId !== undefined){
+            this.veganOptionById(dto.veganOptionMenuId);
+        }
+        if(dto.takeNBakeOptionMenuId !== undefined){
+            this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
+        }
+        if(dto.veganTakeNBakeOptionMenuId !== undefined){
+            this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
+        }
+        if(dto.categoryId !== undefined){
+            this.categorybyId(dto.categoryId);
+        }
+        if(dto.definedContainerItemDtos !== undefined){
+            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
+        }
+        if(dto.containerOptionDto !== undefined){
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
@@ -124,8 +124,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'validSizes', ids);
     }
 
-    public veganOptionById(id: number): this {
-        if(id === 0){
+    public veganOptionById(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('veganOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganOption', id);
@@ -135,9 +135,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'veganOption', name);
     }
 
-    public takeNBakeOptionById(id: number): this {
-        if(id === 0){
-            return this.setPropByVal('takeNBakeOption', null)
+    public takeNBakeOptionById(id: number | null): this {
+        if(id === null){
+            return this.setPropByVal('takeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'takeNBakeOption', id);
     }
@@ -146,8 +146,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'takeNBakeOption', name);
     }
 
-    public veganTakeNBakeOptionById(id: number): this {
-        if(id === 0){
+    public veganTakeNBakeOptionById(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('veganTakeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganTakeNBakeOption', id);
@@ -157,8 +157,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'veganTakeNBakeOption', name);
     }
 
-    public categorybyId(id: number): this {
-        if(id === 0){
+    public categorybyId(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -168,7 +168,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public definedContainerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[]): this {
+    public definedContainerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[] | null): this {
+        if(dtos === null){
+            return this.setPropByVal('definedContainerItems', []);
+        }
         const enrichedDtos = dtos.map( dto => ({
             ...dto,
             containerId: parentId,
@@ -176,7 +179,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'definedContainerItems', this.entity, enrichedDtos);
     }
 
-    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto)): this {
+    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto) | null): this {
+        if(dto === null){
+            return this.setPropByVal('containerOptions', null);
+        }
         return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);
     }
 }

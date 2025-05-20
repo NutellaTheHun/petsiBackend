@@ -36,7 +36,7 @@ export class MenuItemContainerItem {
    * 
    * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
    */
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
   parentContainerSize: MenuItemSize;
 
   /**
@@ -50,7 +50,7 @@ export class MenuItemContainerItem {
    * 
    * - Breakfast Pastry Platter could be a Scone MenuItem, or any Muffin MenuItem
    */
-  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
+  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
   containedItem: MenuItem;
 
   /**
@@ -58,8 +58,8 @@ export class MenuItemContainerItem {
    * - All pastries are size Regular, sometimes size "mini"
    * - Pies would me "small", "medium", "large"
    */
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
-  containedItemsize: MenuItemSize/* | null*/;
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
+  containedItemsize: MenuItemSize;
 
   @Column({ nullable: false })
   quantity: number;

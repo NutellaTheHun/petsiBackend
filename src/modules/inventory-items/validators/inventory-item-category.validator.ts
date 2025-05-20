@@ -14,6 +14,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     ){ super(repo); }
 
     public async validateCreate(dto: CreateInventoryItemCategoryDto): Promise<string | null> {
+        // Already exists check
         const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
         if(exists) { 
             return `Inventory item with name ${dto.itemCategoryName} already exists`; 
@@ -22,6 +23,11 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     }
     
     public async validateUpdate(id: number, dto: UpdateInventoryItemCategoryDto): Promise<string | null> {
+        // Already exists check
+        const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
+        if(exists) { 
+            return `Inventory item with name ${dto.itemCategoryName} already exists`; 
+        }
         return null;
     }
 }

@@ -60,9 +60,9 @@ export class MenuItem {
      * 
      * Some Pastries can be size "mini"
      */
-    @ManyToMany(() => MenuItemSize, { nullable: true, eager: true })
+    @ManyToMany(() => MenuItemSize, { eager: true })
     @JoinTable()
-    validSizes?: MenuItemSize[] | null;
+    validSizes: MenuItemSize[];
 
     /**
      * A flag for pies that are pie of the month. POTM has a special row on BackListPie report to be 
@@ -106,7 +106,7 @@ export class MenuItem {
      */
     @OneToOne(() => MenuItemContainerOptions, (options) => options.parentContainer, { cascade: true, nullable: true, eager: true, onDelete: 'SET NULL' })
     @JoinColumn()
-    containerOptions?: MenuItemContainerOptions;
+    containerOptions?: MenuItemContainerOptions | null;
 
     /**
      * The date the order is inserted into the database. 

@@ -10,13 +10,17 @@ export class UpdateInventoryAreaItemDto {
     @IsOptional()
     readonly countedInventoryItemId?: number;
 
-    @ApiProperty({ example: '6pk(unit amount) of 28oz(measure amount) can of evaporated milk', description: 'The amount of Inventory-Item per unit.' })
+    @ApiProperty({ 
+        example: '6pk(countedAmount) of 28oz(measure amount) can of evaporated milk', 
+        description: 'The amount of Inventory-Item per unit.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly countedAmonut?: number;
+    readonly countedAmount?: number;
 
-    @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the quantity of the Inventory-Item with the Item-Size.' })
+    @ApiProperty({ 
+        example: '10(measure amount) lb of flower', 
+        description: 'the quantity of the Inventory-Item with the Item-Size.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()

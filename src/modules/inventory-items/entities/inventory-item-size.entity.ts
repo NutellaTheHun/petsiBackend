@@ -30,13 +30,13 @@ export class InventoryItemSize {
      * - example: 6 pack of 28oz(measureUnit) can of evaporated milk
      * - Example: 10 lb(measureUnit) of flour
      */
-    @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
+    @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE', nullable: false })
     measureUnit: UnitOfMeasure;
 
     /**
      * Choice of {@link InventoryItemPackage} an inventory item is counted in. "Box", "Can", "Bag"
      */
-    @ManyToOne(() => InventoryItemPackage, { onDelete: 'CASCADE' })
+    @ManyToOne(() => InventoryItemPackage, { onDelete: 'CASCADE', nullable: false })
     packageType: InventoryItemPackage;
 
     /**
@@ -44,7 +44,7 @@ export class InventoryItemSize {
      * 
      * An item can have multiple valid InventoryItemSizes
      */
-    @ManyToOne(() => InventoryItem, (item) => item.itemSizes, { onDelete: 'CASCADE', orphanedRowAction: 'delete'})
+    @ManyToOne(() => InventoryItem, (item) => item.itemSizes, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     inventoryItem: InventoryItem;
 
     /**

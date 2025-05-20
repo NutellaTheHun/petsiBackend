@@ -22,28 +22,28 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     ){ super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
     
     protected createEntity(dto: CreateUnitOfMeasureDto): void {
-        if(dto.unitName){
+        if(dto.unitName !== undefined){
             this.name(dto.unitName);
         }
-        if(dto.abbreviation){
+        if(dto.abbreviation !== undefined){
             this.abbreviation(dto.abbreviation);
         }
-        if(dto.conversionFactorToBase){
+        if(dto.conversionFactorToBase !== undefined){
             this.conversionFactor(dto.conversionFactorToBase);
         }
-        if(dto.categoryId){
+        if(dto.categoryId !== undefined){
             this.categoryById(dto.categoryId);
         }
     }
 
     protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
-        if(dto.unitName){
+        if(dto.unitName !== undefined){
             this.name(dto.unitName);
         }
-        if(dto.abbreviation){
+        if(dto.abbreviation !== undefined){
             this.abbreviation(dto.abbreviation);
         }
-        if(dto.conversionFactorToBase){
+        if(dto.conversionFactorToBase !== undefined){
             this.conversionFactor(dto.conversionFactorToBase);
         }
         if(dto.categoryId !== undefined){
@@ -59,8 +59,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         return this.setPropByVal('abbreviation', abr);
     }
 
-    public categoryById(id: number): this {
-        if(id === 0){
+    public categoryById(id: number | null): this {
+        if(id === null){
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);

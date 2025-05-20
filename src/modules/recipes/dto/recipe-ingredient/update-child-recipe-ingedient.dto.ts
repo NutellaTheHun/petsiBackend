@@ -18,7 +18,7 @@ export class UpdateChildRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientInventoryItemId?: number;
+    readonly ingredientInventoryItemId?: number | null;
     
     @ApiProperty({ 
         example: 'Recipe: Blueberry Mix, ingredients: blueberries, sugar. Recipe: Blueberry Pie, ingredients: Blueberry Mix, pie dough, sugar ', 
@@ -26,7 +26,7 @@ export class UpdateChildRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientRecipeId?: number;
+    readonly ingredientRecipeId?: number | null;
 
     @ApiProperty({ 
         example: ' 10(quantity) lb of flower', description: 'The unit amount of the Unit-of-Measure of the Inventory-Item' })

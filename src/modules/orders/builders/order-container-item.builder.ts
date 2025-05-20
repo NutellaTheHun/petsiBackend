@@ -45,13 +45,13 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
     }
 
     buildChildEntity(dto: CreateChildOrderContainerItemDto): void {
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedMenuItemById(dto.containedMenuItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }
@@ -60,28 +60,28 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
      * Depreciated, only created as a child through {@link Order}.
      */
     protected createEntity(dto: CreateOrderContainerItemDto): void {
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedMenuItemById(dto.containedMenuItemId);
         }
-        if(dto.parentOrderMenuItemId){
+        if(dto.parentOrderMenuItemId !== undefined){
             this.parentOrderMenuItemById(dto.parentOrderMenuItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }
 
     protected updateEntity(dto: UpdateOrderContainerItemDto): void {
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedMenuItemById(dto.containedMenuItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }

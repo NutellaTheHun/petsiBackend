@@ -36,49 +36,49 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
      * Depreciated, only created as a child through {@link InventoryItem}.
      */
     protected createEntity(dto: CreateInventoryItemSizeDto): void {
-        if(dto.inventoryItemId){
+        if(dto.inventoryItemId !== undefined){
             this.InventoryItemById(dto.inventoryItemId);
         }
-        if(dto.inventoryPackageId){
+        if(dto.inventoryPackageId !== undefined){
             this.packageById(dto.inventoryPackageId);
         }
-        if(dto.measureUnitId){
+        if(dto.measureUnitId !== undefined){
             this.unitOfMeasureById(dto.measureUnitId);
         }
-        if(dto.cost){
+        if(dto.cost !== undefined){
             this.costByValue(dto.cost);
         }
-        if(dto.measureAmount){
+        if(dto.measureAmount !== undefined){
             this.measureAmount(dto.measureAmount);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
-        if(dto.inventoryPackageId){
+        if(dto.inventoryPackageId !== undefined){
             this.packageById(dto.inventoryPackageId);
         }
-        if(dto.measureUnitId){
+        if(dto.measureUnitId !== undefined){
             this.unitOfMeasureById(dto.measureUnitId);
         }
-        if(dto.cost){
+        if(dto.cost !== undefined){
             this.costByValue(dto.cost);
         }
-        if(dto.measureAmount){
+        if(dto.measureAmount !== undefined){
             this.measureAmount(dto.measureAmount);
         }
     }
 
     buildChildEntity(dto: CreateChildInventoryItemSizeDto): void {
-        if(dto.inventoryPackageId){
+        if(dto.inventoryPackageId !== undefined){
             this.packageById(dto.inventoryPackageId);
         }
-        if(dto.measureUnitId){
+        if(dto.measureUnitId !== undefined){
             this.unitOfMeasureById(dto.measureUnitId);
         }
-        if(dto.cost){
+        if(dto.cost !== undefined){
             this.costByValue(dto.cost);
         }
-        if(dto.measureAmount){
+        if(dto.measureAmount !== undefined){
             this.measureAmount(dto.measureAmount);
         }
     }

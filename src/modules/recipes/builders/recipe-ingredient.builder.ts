@@ -35,51 +35,51 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
      * Depreciated, only created as a child through {@link Recipe}.
      */
     protected createEntity(dto: CreateRecipeIngredientDto): void {
-        if(dto.ingredientInventoryItemId){
+        if(dto.ingredientInventoryItemId !== undefined){
             this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.parentRecipeId){
+        if(dto.parentRecipeId !== undefined){
             this.parentRecipeById(dto.parentRecipeId);
         } 
-        if(dto.ingredientRecipeId){
+        if(dto.ingredientRecipeId !== undefined){
             this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.quantityMeasurementId){
+        if(dto.quantityMeasurementId !== undefined){
             this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
 
     protected updateEntity(dto: UpdateRecipeIngredientDto): void {
-        if(dto.ingredientInventoryItemId){
+        if(dto.ingredientInventoryItemId !== undefined){
             this.entity.ingredientRecipe = null;
             this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.ingredientRecipeId){
+        if(dto.ingredientRecipeId !== undefined){
             this.entity.ingredientInventoryItem = null;
             this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.quantityMeasurementId){
+        if(dto.quantityMeasurementId !== undefined){
             this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
 
     buildChildEntity(dto: CreateChildRecipeIngredientDto): void {
-        if(dto.ingredientInventoryItemId){
+        if(dto.ingredientInventoryItemId !== undefined){
             this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
-        if(dto.ingredientRecipeId){
+        if(dto.ingredientRecipeId !== undefined){
             this.ingredientRecipeById(dto.ingredientRecipeId);
         }
-        if(dto.quantityMeasurementId){
+        if(dto.quantityMeasurementId !== undefined){
             this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
         }
     }
@@ -124,7 +124,10 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         return this.setPropByName(this.recipeService.findOneByName.bind(this.recipeService), 'parentRecipe', name);
     }
 
-    public ingredientInventoryItemById(id: number): this {
+    public ingredientInventoryItemById(id: number | null): this {
+        if(id === null){
+            return this.setPropByVal('ingredientInventoryItem', null);
+        }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'ingredientInventoryItem', id);
     }
 
@@ -132,7 +135,10 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> imple
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'ingredientInventoryItem', name);
     }
 
-    public ingredientRecipeById(id: number): this {
+    public ingredientRecipeById(id: number | null): this {
+        if(id === null){
+            return this.setPropByVal('ingredientRecipe', null);
+        }
         return this.setPropById(this.recipeService.findOne.bind(this.recipeService), 'ingredientRecipe', id);
     }
 

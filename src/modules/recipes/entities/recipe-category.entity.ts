@@ -18,8 +18,8 @@ export class RecipeCategory {
     /**
      * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"
      */
-    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, { cascade: true, })
-    subCategories?: RecipeSubCategory[] | null;
+    @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, { cascade: true })
+    subCategories: RecipeSubCategory[];
 
     /**
      * List of {@link Recipe} under the category.

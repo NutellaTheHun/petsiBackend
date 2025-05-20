@@ -27,19 +27,19 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
     ){ super(RecipeCategory, 'RecipeCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeCategoryDto): void {
-        if(dto.categoryName){
+        if(dto.categoryName !== undefined){
             this.name(dto.categoryName);
         }
-        if(dto.subCategoryDtos){
+        if(dto.subCategoryDtos !== undefined){
             this.subCategoriesByBuilder(dto.subCategoryDtos);
         }
     }
 
     protected updateEntity(dto: UpdateRecipeCategoryDto): void {
-        if(dto.categoryName){
+        if(dto.categoryName !== undefined){
             this.name(dto.categoryName);
         }
-        if(dto.subCategoryDtos){
+        if(dto.subCategoryDtos !== undefined){
             this.subCategoriesByBuilder(dto.subCategoryDtos);
         }
     }

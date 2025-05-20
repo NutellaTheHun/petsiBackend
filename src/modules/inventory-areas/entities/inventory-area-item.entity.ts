@@ -19,7 +19,7 @@ export class InventoryAreaItem {
     /**
      * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
      */
-    @ManyToOne(() => InventoryAreaCount, { nullable: false, onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+    @ManyToOne(() => InventoryAreaCount, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentInventoryCount: InventoryAreaCount;
 
     /**
@@ -36,8 +36,8 @@ export class InventoryAreaItem {
      * - example: 6(unitAmount) pack of 28oz can of evaporated milk
      * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
      */
-    @Column({ type: 'int', nullable: true })
-    amount?: number | null;
+    @Column({ type: 'int', nullable: false })
+    amount: number;
 
     /**
      * The size of the {@link InventoryItem } counted. 

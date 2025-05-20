@@ -17,7 +17,7 @@ export class OrderContainerItem {
      * 
      * Example: Box of 6 Scones is the {@link parentOrderItem} of the {@link containedItem} { Lemon Glaze, size: regular, quantity: 6 }
      */
-    @ManyToOne(() => OrderMenuItem, (parent) => parent.orderedItemComponents, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+    @ManyToOne(() => OrderMenuItem, (parent) => parent.orderedContainerItems, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentOrderItem: OrderMenuItem;
 
     /**
@@ -37,6 +37,6 @@ export class OrderContainerItem {
     @ManyToOne(() => MenuItemSize, { eager: true, nullable: false, onDelete: 'CASCADE' })
     containedItemSize: MenuItemSize;
 
-    @Column()
+    @Column({ nullable: false })
     quantity: number;
 }

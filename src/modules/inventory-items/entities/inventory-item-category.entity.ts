@@ -16,8 +16,8 @@ export class InventoryItemCategory {
     /**
      * Hold reference to all {@link InventoryItem} under it's category.
      * 
-     * Is updated through the creation/modification/deletion of InventoryItems
+     * Is updated through the creation/modification/deletion of {@link InventoryItem}
      */
-    @OneToMany(() => InventoryItem, (item) => item.category, { nullable: false })
+    @OneToMany(() => InventoryItem, (item) => item.category)
     categoryItems: InventoryItem[];
 }

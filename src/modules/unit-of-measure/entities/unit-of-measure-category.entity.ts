@@ -20,7 +20,7 @@ export class UnitOfMeasureCategory{
     /**
      * "Volume", "Weight", "Unit"
      */
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: false })
     categoryName: string;
 
     /**

@@ -8,11 +8,11 @@ import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-o
 import { UpdateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/update-child-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
-    @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
+    @ApiProperty({ description: 'Id of Menu-Item-Category entity. Pass a null value to remove category' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly categoryId?: number;
+    readonly categoryId?: number | null;
 
     @ApiProperty({ description: 'Name of Menu-Item entity.' })
     @IsString()
@@ -20,23 +20,23 @@ export class UpdateMenuItemDto {
     @IsOptional()
     readonly itemName?: string;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item. Pass a null value to remove vegan option' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly veganOptionMenuId?: number;
+    readonly veganOptionMenuId?: number | null;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the Take \'n Bake version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of Menu-Item entity that is the Take \'n Bake version of the referencing Menu-Item. Pass a null value to remove take n bake option' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly takeNBakeOptionMenuId?: number;
+    readonly takeNBakeOptionMenuId?: number | null;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan Take \'n Bake version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan Take \'n Bake version of the referencing Menu-Item. Pass a null value to remove vegan take n bake option' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly veganTakeNBakeOptionMenuId?: number;
+    readonly veganTakeNBakeOptionMenuId?: number | null;
 
     @ApiProperty({ description: 'Ids of Menu-Item-Size entities. Represents the sizes available for the referencing Menu-Item.' })
     @IsArray()
@@ -56,18 +56,18 @@ export class UpdateMenuItemDto {
     readonly isParbake?: boolean;
 
     @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemContainerItemDtos', 
-        description: 'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
+        description: 'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container',
         type: [UpdateChildMenuItemContainerItemDto]
      })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Type(() => MenuItemComponentUnionResolver)
-    readonly definedContainerItemDtos?: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[];
+    readonly definedContainerItemDtos?: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[] | null;
 
-    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container.', 
+    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options', 
         type: [UpdateChildMenuItemContainerOptionsDto]
     })
     @IsOptional()
-    readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto;
+    readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto | null;
 }

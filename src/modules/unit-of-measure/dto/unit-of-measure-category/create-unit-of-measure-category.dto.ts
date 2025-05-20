@@ -11,5 +11,5 @@ export class CreateUnitOfMeasureCategoryDto{
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly baseUnitId?: number | null; 
+    readonly baseUnitId?: number; 
 }

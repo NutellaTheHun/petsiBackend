@@ -19,13 +19,13 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
     ){ super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaDto): void {
-        if(dto.areaName){
+        if(dto.areaName !== undefined){
             this.areaName(dto.areaName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaDto): void {
-        if(dto.areaName){
+        if(dto.areaName !== undefined){
             this.areaName(dto.areaName);
         }
     }

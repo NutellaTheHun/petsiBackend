@@ -29,7 +29,7 @@ export class InventoryItem{
         cascade: true,
         onDelete: 'SET NULL' 
     })
-    category?: InventoryItemCategory | null
+    category?: InventoryItemCategory | null;
 
     /**
      * The supplier of the item.
@@ -48,5 +48,5 @@ export class InventoryItem{
      * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
      */
     @OneToMany(() => InventoryItemSize, size => size.inventoryItem, { cascade: true })
-    itemSizes?: InventoryItemSize[] | null;
+    itemSizes: InventoryItemSize[];
 }

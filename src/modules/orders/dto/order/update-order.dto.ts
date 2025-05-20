@@ -20,7 +20,7 @@ export class UpdateOrderDto{
     @ApiProperty({ example: 'Jane Doe, Mike', description: 'Name of who is picking up the order or reciving the delivery' })
     @IsString()
     @IsOptional()
-    readonly fulfillmentContactName?: string;
+    readonly fulfillmentContactName?: string | null;
 
     @ApiProperty({ description: 'Date the order is to be available or delivered.' })
     @IsDate()
@@ -35,22 +35,22 @@ export class UpdateOrderDto{
     @ApiProperty({ description: 'for delivery contact information' })
     @IsString()
     @IsOptional()
-    readonly deliveryAddress?: string;
+    readonly deliveryAddress?: string | null;
 
     @ApiProperty({ description: 'for delivery contact information' })
     @IsString()
     @IsOptional()
-    readonly phoneNumber?: string;
+    readonly phoneNumber?: string | null;
 
     @ApiProperty({ description: 'for delivery contact information' })
     @IsString()
     @IsOptional()
-    readonly email?: string;
+    readonly email?: string | null;
 
     @ApiProperty({ description: 'special instruction for order' })
     @IsString()
     @IsOptional()
-    readonly note?: string;
+    readonly note?: string | null;
 
     @ApiProperty({ description: 'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.' })
     @IsBoolean()
@@ -65,7 +65,7 @@ export class UpdateOrderDto{
     @ApiProperty({ description: 'If is weekly, is the day of the week the order is fulfilled' })
     @IsString()
     @IsOptional()
-    readonly weeklyFulfillment?: string;
+    readonly weeklyFulfillment?: string | null;
 
     @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
         type: [UpdateChildOrderMenuItemDto]

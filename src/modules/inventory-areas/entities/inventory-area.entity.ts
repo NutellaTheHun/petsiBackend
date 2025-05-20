@@ -25,6 +25,6 @@ export class InventoryArea {
     * 
     * Contains the time it was performed, and a list of {@link InventoryAreaCount} are their {@link InventoryItemSize}
     */
-    @OneToMany(() => InventoryAreaCount, (areaCount) => areaCount.inventoryArea, { nullable: true })
-    inventoryCounts?: InventoryAreaCount[] | null;
+    @OneToMany(() => InventoryAreaCount, (areaCount) => areaCount.inventoryArea)
+    inventoryCounts: InventoryAreaCount[];
 }

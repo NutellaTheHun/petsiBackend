@@ -34,46 +34,46 @@ implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
      * Depreciated, only created as a child through {@link MenuItem}.
      */
     protected createEntity(dto: CreateMenuItemContainerItemDto): void {
-        if(dto.parentContainerId){
+        if(dto.parentContainerId !== undefined){
             this.parentContainerById(dto.parentContainerId);
         }
-        if(dto.parentContainerSizeId){
+        if(dto.parentContainerSizeId !== undefined){
             this.parentContainerSizeById(dto.parentContainerSizeId);
         }
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }
 
     buildChildEntity(dto: CreateChildMenuItemContainerItemDto): void {
-        if(dto.parentContainerSizeId){
+        if(dto.parentContainerSizeId !== undefined){
             this.parentContainerSizeById(dto.parentContainerSizeId);
         }
-        if(dto.containedMenuItemId){
+        if(dto.containedMenuItemId !== undefined){
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId){
+        if(dto.containedMenuItemSizeId !== undefined){
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity){
+        if(dto.quantity !== undefined){
             this.quantity(dto.quantity);
         }
     }

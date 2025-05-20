@@ -13,7 +13,7 @@ export class User{
     username: string;
 
     @Column({ nullable: true })
-    email: string;
+    email?: string | null;
 
     @Column({ nullable: false })
     password: string;
@@ -27,7 +27,7 @@ export class User{
     /**
      * List of {@link Role} the user holds.
      */
-    @ManyToMany(() => Role, (role) => role.users, { nullable: true, onDelete: 'CASCADE' })
+    @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
     @JoinTable()
     roles: Role[];
 }

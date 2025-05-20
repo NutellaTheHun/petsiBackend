@@ -15,6 +15,6 @@ export class InventoryItemVendor {
     /**
      * List of all {@link InventoryItem} provided by vendor.
      */
-    @OneToMany(() => InventoryItem, (item) => item.vendor, { nullable: false })
+    @OneToMany(() => InventoryItem, (item) => item.vendor)
     vendorItems: InventoryItem[];
 }

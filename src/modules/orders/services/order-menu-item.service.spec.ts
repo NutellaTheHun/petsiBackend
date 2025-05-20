@@ -235,8 +235,8 @@ describe('order menu item service', () => {
 
         const result = updateResult.orderedItems[0];
         if(!result){ throw new Error(); }
-        if(!result.orderedItemComponents){ throw new Error(); }
-        expect(result.orderedItemComponents.length).toEqual(2);
+        if(!result.orderedContainerItems){ throw new Error(); }
+        expect(result.orderedContainerItems.length).toEqual(2);
 
         testOrderItemCompsId = result.id;
     });
@@ -244,7 +244,7 @@ describe('order menu item service', () => {
     it('should update item components (add)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
         if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+        if(!toUpdate.orderedContainerItems){ throw new Error(); }
 
         const itemD = await menuItemService.findOneByName(item_d);
         if(!itemD){ throw new Error(); }
@@ -257,7 +257,7 @@ describe('order menu item service', () => {
             quantity: 2,
         } as CreateChildOrderContainerItemDto;
 
-        const theRest = toUpdate.orderedItemComponents.map(comp => ({
+        const theRest = toUpdate.orderedContainerItems.map(comp => ({
             mode: 'update',
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto);
@@ -268,16 +268,16 @@ describe('order menu item service', () => {
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
         if(!result){ throw new Error(); }
-        if(!result.orderedItemComponents){ throw new Error(); }
-        expect(result.orderedItemComponents.length).toEqual(toUpdate.orderedItemComponents.length+1);
+        if(!result.orderedContainerItems){ throw new Error(); }
+        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length+1);
     });
 
     it('should update item components (modify)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
         if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+        if(!toUpdate.orderedContainerItems){ throw new Error(); }
 
-        const theRest = toUpdate.orderedItemComponents.map(comp => ({
+        const theRest = toUpdate.orderedContainerItems.map(comp => ({
             mode: 'update',
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto);
@@ -298,8 +298,8 @@ describe('order menu item service', () => {
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
         if(!result){ throw new Error(); }
-        if(!result.orderedItemComponents){ throw new Error(); }
-        for(const comp of result.orderedItemComponents){
+        if(!result.orderedContainerItems){ throw new Error(); }
+        for(const comp of result.orderedContainerItems){
             if(comp.id === moddedId){
                 expect(comp.containedItem.id).toEqual(itemG.id);
                 expect(comp.containedItemSize.id).toEqual(itemG.validSizes[0].id);
@@ -311,14 +311,14 @@ describe('order menu item service', () => {
     it('should update item components (remove)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
         if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedItemComponents){ throw new Error(); }
+        if(!toUpdate.orderedContainerItems){ throw new Error(); }
 
-        const theRest = toUpdate.orderedItemComponents.slice(1).map(comp => ({
+        const theRest = toUpdate.orderedContainerItems.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto);
 
-        const removedId = toUpdate.orderedItemComponents[0].id;
+        const removedId = toUpdate.orderedContainerItems[0].id;
 
         const dto = {
             orderedItemContainerDtos: theRest,
@@ -326,8 +326,8 @@ describe('order menu item service', () => {
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
         if(!result){ throw new Error(); }
-        if(!result.orderedItemComponents){ throw new Error(); }
-        expect(result.orderedItemComponents.length).toEqual(toUpdate.orderedItemComponents.length-1);
+        if(!result.orderedContainerItems){ throw new Error(); }
+        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length-1);
 
         await expect(componentService.findOne(removedId)).rejects.toThrow(NotFoundException);
     });

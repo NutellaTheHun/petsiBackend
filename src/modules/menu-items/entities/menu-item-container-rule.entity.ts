@@ -21,7 +21,7 @@ export class MenuItemContainerRule {
     /**
      * The {@link MenuItem} that this rule states is allowed in the parent container.
      */
-    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
+    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
     validItem: MenuItem;
 
     /**

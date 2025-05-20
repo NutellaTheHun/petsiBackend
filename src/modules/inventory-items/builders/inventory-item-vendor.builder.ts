@@ -20,13 +20,13 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     ) { super(InventoryItemVendor, 'InventoryItemVendorBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemVendorDto): void {
-        if(dto.vendorName){
+        if(dto.vendorName !== undefined){
             this.name(dto.vendorName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
-        if(dto.vendorName){
+        if(dto.vendorName !== undefined){
             this.name(dto.vendorName);
         }
     }

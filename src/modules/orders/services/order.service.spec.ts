@@ -539,10 +539,10 @@ describe('order service', () => {
         const result = await orderService.create(orderDto);
         if(!result){ throw new Error(); }
         if(!result.orderedItems){ throw new Error(); }
-        if(!result.orderedItems[0].orderedItemComponents){ throw new Error();}
-        if(!result.orderedItems[1].orderedItemComponents){ throw new Error();}
-        expect(result.orderedItems[0].orderedItemComponents.length).toEqual(2);
-        expect(result.orderedItems[1].orderedItemComponents.length).toEqual(2);
+        if(!result.orderedItems[0].orderedContainerItems){ throw new Error();}
+        if(!result.orderedItems[1].orderedContainerItems){ throw new Error();}
+        expect(result.orderedItems[0].orderedContainerItems.length).toEqual(2);
+        expect(result.orderedItems[1].orderedContainerItems.length).toEqual(2);
 
         testOrderCompItemId = result.id;
     });
@@ -562,8 +562,8 @@ describe('order service', () => {
             quantity: 1,
         } as CreateChildOrderContainerItemDto;
 
-        if(!order.orderedItems[0].orderedItemComponents){ throw new Error(); }
-        const updateComponentDtos = order.orderedItems[0].orderedItemComponents.map(comp => ({
+        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
+        const updateComponentDtos = order.orderedItems[0].orderedContainerItems.map(comp => ({
             mode: 'update',
             id: comp.id
         }) as UpdateChildOrderContainerItemDto);
@@ -575,7 +575,7 @@ describe('order service', () => {
         } as UpdateChildOrderMenuItemDto;
 
         const updatedItemId = order.orderedItems[0].id;
-        const originalCompSize = order.orderedItems[0].orderedItemComponents.length;
+        const originalCompSize = order.orderedItems[0].orderedContainerItems.length;
 
         const theRest = order.orderedItems.slice(1).map(item => ({
             mode: 'update',
@@ -591,7 +591,7 @@ describe('order service', () => {
         if(!result.orderedItems){ throw new Error(); }
         for(const item of result.orderedItems){
             if(item.id === updatedItemId){
-                expect(item.orderedItemComponents?.length).toEqual(originalCompSize+1);
+                expect(item.orderedContainerItems?.length).toEqual(originalCompSize+1);
             }
         }
     });
@@ -600,7 +600,7 @@ describe('order service', () => {
         const order = await orderService.findOne(testOrderCompItemId, ['orderedItems']);
         if(!order){ throw new Error(); }
         if(!order.orderedItems){ throw new Error(); }
-        if(!order.orderedItems[0].orderedItemComponents){ throw new Error(); }
+        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
         
         const itemF = await menuItemService.findOneByName(item_f);
         if(!itemF){ throw new Error(); }
@@ -608,16 +608,16 @@ describe('order service', () => {
 
         const updateComponentDto = {
             mode: 'update',
-            id: order.orderedItems[0].orderedItemComponents[0].id,
+            id: order.orderedItems[0].orderedContainerItems[0].id,
             containedMenuItemId: itemF.id,
             containedMenuItemSizeId: itemF.validSizes[0].id,
             quantity: 2,
         } as UpdateChildOrderContainerItemDto;
 
-        const moddedCompId = order.orderedItems[0].orderedItemComponents[0].id;
+        const moddedCompId = order.orderedItems[0].orderedContainerItems[0].id;
         const moddedItemId = order.orderedItems[0].id;
 
-        const theRestComponents = order.orderedItems[0].orderedItemComponents.slice(1).map(comp => ({
+        const theRestComponents = order.orderedItems[0].orderedContainerItems.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto)
@@ -642,8 +642,8 @@ describe('order service', () => {
         if(!result.orderedItems){ throw new Error(); }
         for(const item of result.orderedItems){
             if(item.id === moddedItemId){
-                if(!item.orderedItemComponents){ throw new Error(); }
-                for(const comp of item.orderedItemComponents){
+                if(!item.orderedContainerItems){ throw new Error(); }
+                for(const comp of item.orderedContainerItems){
                     if(comp.id === moddedCompId){
                         expect(comp.containedItem.id).toEqual(itemF.id);
                         expect(comp.containedItemSize.id).toEqual(itemF.validSizes[0].id);
@@ -658,14 +658,14 @@ describe('order service', () => {
         const order = await orderService.findOne(testOrderCompItemId, ['orderedItems']);
         if(!order){ throw new Error(); }
         if(!order.orderedItems){ throw new Error(); }
-        if(!order.orderedItems[0].orderedItemComponents){ throw new Error(); }
+        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
 
-        const theRestComponents = order.orderedItems[0].orderedItemComponents.slice(1).map(comp => ({
+        const theRestComponents = order.orderedItems[0].orderedContainerItems.slice(1).map(comp => ({
             mode: 'update',
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto)
 
-        const removedComp = order.orderedItems[0].orderedItemComponents[0].id;
+        const removedComp = order.orderedItems[0].orderedContainerItems[0].id;
 
         const updateItemDto = {
             mode: 'update',
@@ -685,6 +685,6 @@ describe('order service', () => {
         const result = await orderService.update(testOrderCompItemId, updateOrderDto);
         if(!result){ throw new Error(); }
         if(!result.orderedItems){ throw new Error(); }
-        expect(result.orderedItems[0].orderedItemComponents?.length).toEqual(order.orderedItems[0].orderedItemComponents.length-1);
+        expect(result.orderedItems[0].orderedContainerItems?.length).toEqual(order.orderedItems[0].orderedContainerItems.length-1);
     });
 });

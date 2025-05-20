@@ -25,26 +25,24 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
         logger: AppLogger,
-
         validator: InventoryAreaCountValidator,
-
         requestContextService: RequestContextService,
     ){ super(InventoryAreaCount, 'InventoryAreaCountBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaCountDto): void{
-        if(dto.inventoryAreaId){
+        if(dto.inventoryAreaId !== undefined){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        if(dto.itemCountDtos){
+        if(dto.itemCountDtos !== undefined){
             this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaCountDto): void{
-        if(dto.inventoryAreaId){
+        if(dto.inventoryAreaId !== undefined){
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        if(dto.itemCountDtos){
+        if(dto.itemCountDtos !== undefined){
             this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
     }

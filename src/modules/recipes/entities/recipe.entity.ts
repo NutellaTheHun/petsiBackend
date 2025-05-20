@@ -16,7 +16,7 @@ export class Recipe {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: false })
     recipeName: string
 
     /** 
@@ -42,8 +42,8 @@ export class Recipe {
      * Or a Recipe: Apple Mix, (quantity), (unit of measure),  
      * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
      */
-    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, { nullable: true, cascade: true })
-    ingredients?: RecipeIngredient[] | null; 
+    @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, { cascade: true })
+    ingredients: RecipeIngredient[];
 
     /**
      * The total unit amount of the batchResultUnitOfMeaure property produced by the recipe.
@@ -51,9 +51,9 @@ export class Recipe {
      * - 5(batchResultQuantity) pounds of berry mix
      * - 1(batchResultQuantity) unit of Blueberry Pie.
      */
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     @Check(`"batchResultQuantity" >= 1`)
-    batchResultQuantity: number;
+    batchResultQuantity?: number | null;
 
     /**
      * The {@link UnitOfMeasure} that descibes the total yield the recipe produces.
@@ -77,7 +77,7 @@ export class Recipe {
      */
     @Column({ nullable: true })
     @Check(`"servingSizeQuantity" >= 1`)
-    servingSizeQuantity?: number;
+    servingSizeQuantity?: number | null;
 
     /**
      * The {@link UnitOfMeasure} that descibes the total sellable portions of the recipes yield.
@@ -94,7 +94,7 @@ export class Recipe {
      */
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true })
     @Check(`"salesPrice" >= 0`)
-    salesPrice?: string;
+    salesPrice?: string | null;
 
     // sales price per serving calculated
 

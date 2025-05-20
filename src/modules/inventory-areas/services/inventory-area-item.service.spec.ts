@@ -134,7 +134,7 @@ describe('Inventory area item service', () => {
 
     it('should update an item (unit amount)', async () => {
         const dto = {
-            countedAmonut: 2,
+            countedAmount: 2,
         } as UpdateInventoryAreaItemDto;
 
         const result = await areaItemService.update(testId, dto);

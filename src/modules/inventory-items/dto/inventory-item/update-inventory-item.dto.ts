@@ -15,13 +15,13 @@ export class UpdateInventoryItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly inventoryItemCategoryId?: number;
+    readonly inventoryItemCategoryId?: number | null;
 
     @ApiProperty({ description: 'Id of Inventory-Item-Vendor entity.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly vendorId?: number;
+    readonly vendorId?: number | null;
     
     @ApiProperty({ description: 'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
         type: [UpdateChildInventoryItemSizeDto]

@@ -33,13 +33,13 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
      * Depreciated, only created as a child through {@link Template}.
      */
     protected createEntity(dto: CreateTemplateMenuItemDto): void {
-        if(dto.templateId){
+        if(dto.templateId !== undefined){
             this.parentTemplateById(dto.templateId);
         }
-        if(dto.displayName){
+        if(dto.displayName !== undefined){
             this.displayName(dto.displayName);
         }
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
         if(dto.tablePosIndex !== undefined){
@@ -48,10 +48,10 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
     }
 
     protected updateEntity(dto: UpdateTemplateMenuItemDto): void {
-        if(dto.displayName){
+        if(dto.displayName !== undefined){
             this.displayName(dto.displayName);
         }
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
         if(dto.tablePosIndex !== undefined){
@@ -60,10 +60,10 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
     }
     
     buildChildEntity(dto: CreateChildTemplateMenuItemDto): void {
-        if(dto.displayName){
+        if(dto.displayName !== undefined){
             this.displayName(dto.displayName);
         }
-        if(dto.menuItemId){
+        if(dto.menuItemId !== undefined){
             this.menuItemById(dto.menuItemId);
         }
         if(dto.tablePosIndex !== undefined){ //tablePosIndex value can be 0

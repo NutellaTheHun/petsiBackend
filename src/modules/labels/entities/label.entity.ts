@@ -30,6 +30,6 @@ export class Label {
     /**
      * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
      */
-    @ManyToOne(() => LabelType, {nullable: true, onDelete: 'SET NULL' })
-    labelType: LabelType;
+    @ManyToOne(() => LabelType, { nullable: true, onDelete: 'SET NULL' })
+    labelType?: LabelType | null;
 }

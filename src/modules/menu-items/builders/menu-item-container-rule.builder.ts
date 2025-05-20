@@ -47,10 +47,10 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
     }
 
     buildChildEntity(dto: CreateChildMenuItemContainerRuleDto): void {
-        if(dto.validMenuItemId){
+        if(dto.validMenuItemId !== undefined){
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds){
+        if(dto.validSizeIds !== undefined){
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
@@ -59,22 +59,22 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
      * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
      */
     protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
-        if(dto.parentContainerOptionsId){
+        if(dto.parentContainerOptionsId !== undefined){
             this.parentContainerOptionsById(dto.parentContainerOptionsId);
         }
-        if(dto.validMenuItemId){
+        if(dto.validMenuItemId !== undefined){
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds){
+        if(dto.validSizeIds !== undefined){
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerRuleDto): void {
-        if(dto.validMenuItemId){
+        if(dto.validMenuItemId !== undefined){
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds){
+        if(dto.validSizeIds !== undefined){
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
