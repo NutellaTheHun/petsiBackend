@@ -18,8 +18,10 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItem> {
 
         @Inject(forwardRef(() => OrderContainerItemBuilder))
         typeBuilder: OrderContainerItemBuilder,
-        
+
+        @Inject(forwardRef(() => OrderContainerItemValidator))
         validator: OrderContainerItemValidator,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(repo, typeBuilder, validator, 'OrderMenuItemComponentService', requestContextService, logger)}

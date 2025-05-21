@@ -25,6 +25,7 @@ implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
         private readonly menuItemService: MenuItemService,
 
         private readonly itemSizeService: MenuItemSizeService,
+        
         validator: MenuItemContainerItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,

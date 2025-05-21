@@ -1,16 +1,14 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { type_a, type_b } from "../../labels/utils/constants";
 import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { UpdateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-child-menu-item-container-item.dto";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
+import { MenuItemSizeService } from "../services/menu-item-size.service";
+import { MenuItemService } from "../services/menu-item.service";
+import { item_a, item_c, SIZE_FOUR } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerItemValidator } from "./menu-item-container-item.validator";
-import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { FOOD_A } from "../../inventory-items/utils/constants";
-import { item_a, item_c, SIZE_FOUR, SIZE_ONE, SIZE_THREE } from "../utils/constants";
 
 describe('menu item container item validator', () => {
     let testingUtil: MenuItemTestingUtil;

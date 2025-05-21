@@ -1,21 +1,15 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { type_a, type_b } from "../../labels/utils/constants";
-import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
-import { MenuItemCategoryService } from "../services/menu-item-category.service";
-import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
-import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
-import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
-import { MenuItemCategoryValidator } from "./menu-item-category.validator";
-import { MenuItemContainerOptionsValidator } from "./menu-item-container-options.validator";
 import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
 import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
-import validator from "validator";
 import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
+import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
+import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { item_a, item_b } from "../utils/constants";
-import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
+import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
+import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
+import { MenuItemContainerOptionsValidator } from "./menu-item-container-options.validator";
 
 describe('menu item container options validator', () => {
     let testingUtil: MenuItemTestingUtil;

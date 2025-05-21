@@ -23,7 +23,9 @@ export class OrderBuilder extends BuilderBase<Order>{
         @Inject(forwardRef(() => OrderMenuItemBuilder))
         private readonly itemBuilder: OrderMenuItemBuilder,
 
+        @Inject(forwardRef(() => OrderValidator))
         validator: OrderValidator,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super( Order, 'OrderBuilder', requestContextService, logger, validator); }

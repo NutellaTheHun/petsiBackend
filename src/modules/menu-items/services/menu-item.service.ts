@@ -17,6 +17,7 @@ export class MenuItemService extends ServiceBase<MenuItem> {
         @Inject(forwardRef(() => MenuItemBuilder))
         itemBuilder: MenuItemBuilder,
 
+        @Inject(forwardRef(() => MenuItemValidator))
         validator: MenuItemValidator,
 
         requestContextService: RequestContextService,

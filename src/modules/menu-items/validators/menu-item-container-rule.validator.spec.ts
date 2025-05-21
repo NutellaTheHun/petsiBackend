@@ -4,7 +4,7 @@ import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-
 import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
 import { MenuItemService } from "../services/menu-item.service";
-import { item_a, item_b, item_c, item_f } from "../utils/constants";
+import { item_a, item_b, item_f } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerRuleValidator } from "./menu-item-container-rule.validator";

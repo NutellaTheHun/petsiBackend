@@ -196,6 +196,8 @@ export class OrderTestingUtil {
         await this.orderService.getQueryBuilder().delete().execute();
     }
 
+    // Dtos
+
     public async getCreateChildOrderMenuItemDtos(amount: number): Promise<CreateChildOrderMenuItemDto[]> {
         const itemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
         const items = itemsRequest.items

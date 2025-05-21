@@ -1,19 +1,12 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { type_a, type_b } from "../../labels/utils/constants";
-import { CreateMenuItemCategoryDto } from "../../menu-items/dto/menu-item-category/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../../menu-items/dto/menu-item-category/update-menu-item-category.dto";
-import { MenuItemCategoryService } from "../../menu-items/services/menu-item-category.service";
-import { getMenuItemTestingModule } from "../../menu-items/utils/menu-item-testing.module";
-import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
-import { MenuItemCategoryValidator } from "../../menu-items/validators/menu-item-category.validator";
-import { CAT_BLUE, CAT_RED } from "../../menu-items/utils/constants";
-import { OrderTestingUtil } from "../utils/order-testing.util";
-import { OrderCategoryValidator } from "./order-category.validator";
-import { OrderCategoryService } from "../services/order-category.service";
 import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
 import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
+import { OrderCategoryService } from "../services/order-category.service";
 import { TYPE_A, TYPE_B } from "../utils/constants";
+import { getOrdersTestingModule } from "../utils/order-testing.module";
+import { OrderTestingUtil } from "../utils/order-testing.util";
+import { OrderCategoryValidator } from "./order-category.validator";
 
 describe('order category validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -23,7 +16,7 @@ describe('order category validator', () => {
     let service: OrderCategoryService;
 
     beforeAll(async () => {
-        const module: TestingModule = await getMenuItemTestingModule();
+        const module: TestingModule = await getOrdersTestingModule();
         validator = module.get<OrderCategoryValidator>(OrderCategoryValidator);
         service = module.get<OrderCategoryService>(OrderCategoryService);
 

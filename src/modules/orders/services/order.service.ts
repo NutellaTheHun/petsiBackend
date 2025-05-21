@@ -17,7 +17,9 @@ export class OrderService extends ServiceBase<Order> {
         @Inject(forwardRef(() => OrderBuilder))
         orderBuilder: OrderBuilder,
         
+        @Inject(forwardRef(() => OrderValidator))
         validator: OrderValidator,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(orderRepo, orderBuilder, validator, 'OrderService', requestContextService, logger)}

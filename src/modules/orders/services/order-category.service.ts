@@ -13,8 +13,11 @@ export class OrderCategoryService extends ServiceBase<OrderCategory> {
     constructor(
         @InjectRepository(OrderCategory)
         private readonly categoryRepo: Repository<OrderCategory>,
+
         typeBuilder: OrderCategoryBuilder,
+
         validator: OrderCategoryValidator,
+        
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(categoryRepo, typeBuilder, validator, 'OrderCategoryService', requestContextService, logger)}

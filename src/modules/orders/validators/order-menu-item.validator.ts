@@ -20,6 +20,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
+
+        @Inject(forwardRef(() => OrderContainerItemService))
         private readonly containerItemService: OrderContainerItemService,
 
         private readonly menuItemService: MenuItemService,

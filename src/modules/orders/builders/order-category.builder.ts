@@ -10,7 +10,9 @@ import { OrderCategoryValidator } from "../validators/order-category.validator";
 @Injectable()
 export class OrderCategoryBuilder extends BuilderBase<OrderCategory>{
     constructor(
+
         validator: OrderCategoryValidator,
+        
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(OrderCategory, 'OrderCategoryBuilder',  requestContextService, logger, validator); }

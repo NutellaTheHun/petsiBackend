@@ -33,7 +33,9 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
 
+        @Inject(forwardRef(() => OrderMenuItemValidator))
         validator: OrderMenuItemValidator,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }

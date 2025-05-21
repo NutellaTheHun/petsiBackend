@@ -34,6 +34,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         private readonly componentOptionsBuilder: MenuItemContainerOptionsBuilder,
         
         validator: MenuItemValidator,
+        
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }

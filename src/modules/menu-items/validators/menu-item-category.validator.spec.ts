@@ -1,13 +1,12 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { type_a, type_b } from "../../labels/utils/constants";
 import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
 import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
+import { CAT_BLUE, CAT_GREEN, CAT_RED } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryValidator } from "./menu-item-category.validator";
-import { CAT_BLUE, CAT_GREEN, CAT_RED } from "../utils/constants";
 
 describe('menu item category validator', () => {
     let testingUtil: MenuItemTestingUtil;

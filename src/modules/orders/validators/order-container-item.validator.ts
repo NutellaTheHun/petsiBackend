@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
@@ -17,8 +17,14 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     constructor(
         @InjectRepository(OrderContainerItem)
         repo: Repository<OrderContainerItem>,
-        private readonly sizeService: MenuItemSizeService,
+
+        @Inject(forwardRef(() => OrderContainerItemService))
         private readonly containerItemService: OrderContainerItemService,
+
+        @Inject(forwardRef(() => MenuItemSizeService))
+        private readonly sizeService: MenuItemSizeService,
+
+        @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
     ){ super(repo); }
 
@@ -66,107 +72,56 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             return 'dto requires the parentContainerMenuItemId for validation';
         }
 
-        // If DTO ITEM and DTO SIZE
-        else if(dto.containedMenuItemId && dto.containedMenuItemSizeId && dto.parentContainerMenuItemId){
+       
+        if((dto.containedMenuItemId || dto.containedMenuItemSizeId) && dto.parentContainerMenuItemId){
+            const containerItem = await this.containerItemService.findOne(id, ['containedItem', 'containedItemSize']);
 
-            // Get parent container options with rules
-            const options = await this.getContainerOptions(dto.parentContainerMenuItemId);
-            if(!options){ throw new Error("options is null"); }
-            
-            // check if DTO ITEM is valid in CONTAINER
-            const rule = this.GetItemRule(dto.containedMenuItemId, options.containerRules);
-            if(!rule){ 
-                return `item in dto is not valid for container`;
-            }
+            const itemId = dto.containedMenuItemId ?? containerItem.id;
+            const containedItem = await this.itemService.findOne(itemId, ['validSizes']);
+            if(!containedItem){ throw new Error(); }
 
-            // check if the DTO SIZE is valid in the CONTAINER
-            const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, rule.validSizes);
-            if(!validSize){
-                const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                const container = await this.itemService.findOne(dto.parentContainerMenuItemId);
-                return `dto size ${size.name} with id ${size.id} is not valid in the parent container item ${container.itemName} with id ${container.id}`
-            }
+            const sizeId = dto.containedMenuItemSizeId ?? containerItem.containedItemSize.id;
+            const containedSize = await this.sizeService.findOne(sizeId);
+            if(!containedSize){ throw new Error(); }
 
-            // check if the DTO SIZE is valid for the MENU ITEM:
-            const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
-            if(!item){ throw new Error(); }
-            const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, item.validSizes);
-            if(!validMenuItemSize){
-                const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${item.itemName} with id ${item.id}`
-            }
-        }
-
-        // IF DTO ITEM with CURRENT SIZE
-        else if(dto.containedMenuItemId && !dto.containedMenuItemSizeId && dto.parentContainerMenuItemId){
-
-            // Get OrderContainerItem being updated
-            const containerItem = await this.containerItemService.findOne(id, ['parentOrderItem', 'containedItemSize']);
-            if(!containerItem){ throw new Error(); }
-            if(!containerItem.parentOrderItem){ throw new Error(); }
-
-            // Get MENU ITEM from DTO ITEM for validSizes
-            const newItem = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
-            if(!newItem){ throw new Error(); }
-            if(!newItem.validSizes){ throw new Error(); }
-
-            // check if CURRENT SIZE is valid with DTO ITEM as MENU ITEM:
-            const validMenuItemSize = this.helper.validateSize(containerItem.containedItemSize.id, newItem.validSizes);
-            if(!validMenuItemSize){
-                const size = await this.sizeService.findOne(containerItem.containedItemSize.id);
-                return `current size ${size.name} with id ${size.id} is not valid a valid size for the contained item (menuItem.validSize) ${newItem.itemName} with id ${newItem.id}`
-            }
-            
-            // Get parent container options with rules
             const options = await this.getContainerOptions(dto.parentContainerMenuItemId);
             if(!options){ throw new Error("options is null"); }
 
-            // check if DTO ITEM is valid in CONTAINER
-            const rule = this.GetItemRule(dto.containedMenuItemId, options.containerRules);
-            if(!rule){ 
-                return `item in dto is not valid for container`;
+            let rule: MenuItemContainerRule | null = null;
+
+            // Check item is valid in container
+            if(dto.containedMenuItemId){
+                rule = this.GetItemRule(dto.containedMenuItemId, options.containerRules);
+                if(!rule){ 
+                    return `item in dto is not valid for container`;
+                }
+            }
+            //check size is valid in container
+            if(dto.containedMenuItemSizeId){
+                if(!rule){
+                    rule = this.GetItemRule(itemId, options.containerRules);
+                    if(!rule){ 
+                        return `item in dto is not valid for container`;
+                    }
+                }
+                const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, rule.validSizes);
+                if(!validSize){
+                    const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
+                    const container = await this.itemService.findOne(dto.parentContainerMenuItemId);
+                    return `dto size ${size.name} with id ${size.id} is not valid in the parent container item ${container.itemName} with id ${container.id}`
+                }
+            }
+            //check size is valid for item
+            if(dto.containedMenuItemId && dto.containedMenuItemSizeId){
+                const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, containedItem.validSizes);
+                if(!validMenuItemSize){
+                    const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
+                    return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${containedItem.itemName} with id ${containedItem.id}`
+                }
             }
 
-            // check if DTO ITEM and the CURRENT are valid
-            const validContainedSize = this.helper.validateSize(containerItem.containedItemSize.id, rule.validSizes);
-            if(!validContainedSize){
-                const size = await this.sizeService.findOne(containerItem.containedItemSize.id);
-                return `current size ${size.name} with id ${size.id} is not valid within the new contained item\'s rule ${newItem.itemName} with id ${newItem.id}`
-            }
         }
-        // if DTO SIZE with CURRENT ITEM
-        else if(dto.containedMenuItemSizeId && dto.parentContainerMenuItemId){
-            // Get OrderContainerItem being updated
-            const containerItem = await this.containerItemService.findOne(id, ['parentOrderItem', 'containedItemSize']);
-            if(!containerItem){ throw new Error(); }
-            if(!containerItem.parentOrderItem){ throw new Error(); }
 
-            // Get MENU ITEM from CURRENT ITEM for validSizes
-            const currentItem = await this.itemService.findOne(containerItem.containedItem.id, ['validSizes']);
-            if(!currentItem){ throw new Error(); }
-            if(!currentItem.validSizes){ throw new Error(); }
-
-            // check if DTO SIZE is valid with DTO ITEM as MENU ITEM:
-            const validItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, currentItem.validSizes)
-            if(!validItemSize){
-                return `dto size ${containerItem.containedItemSize.name} are invalid is not a valid size for current item ${currentItem.itemName} (not a valid item on menuItem settings)`;
-            }
-
-            // Get parent container options with rules
-            const options = await this.getContainerOptions(dto.parentContainerMenuItemId);
-            if(!options){ throw new Error("options is null"); }
-
-            // Get RULE for CURRENT ITEM
-            const rule = options.containerRules.find(rule => rule.validItem.id === containerItem.containedItem.id);
-            if(!rule){ throw new Error(); }
-
-            // check DTO SIZE and CURRENT ITEM are valid in rule
-            const validRuleSize = this.helper.validateSize(dto.containedMenuItemSizeId, rule.validSizes);
-            if(!validRuleSize){
-                const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                return `dto size ${size.name} with id ${dto.containedMenuItemSizeId} is not valid for the contained item ${currentItem.itemName} with id ${currentItem.id}`
-            }
-        }
         return null;
     }
 
