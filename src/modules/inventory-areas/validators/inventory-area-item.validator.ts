@@ -22,11 +22,21 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
     ){ super(repo); }
 
     public async validateCreate(dto: CreateInventoryAreaItemDto): Promise<string | null> {
+        // Must have either itemSizeId or itemSizeDto
         if(!dto.countedItemSizeId && !dto.countedItemSizeDto){
             return 'inventory area item create dto requires InventoryItemSize id or CreateInventoryItemSizeDto';
         }
+        // Cannot have both itemSizeId or itemSizeDto
         else if(dto.countedItemSizeId && dto.countedItemSizeDto){
             return 'inventory area item create dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
+        }
+
+        //InventoryItem and ItemSize must be valid
+        if(dto.countedItemSizeId){
+            const item = await this.itemService.findOne(dto.countedInventoryItemId, ['itemSizes']);
+            if(!item.itemSizes.some(size => size.id === dto.countedItemSizeId)){
+                return 'given inventory item size is not valid for the inventory item';
+            }
         }
 
         return null;

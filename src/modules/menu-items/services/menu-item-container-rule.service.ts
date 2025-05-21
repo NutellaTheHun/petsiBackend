@@ -19,6 +19,7 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
         @Inject(forwardRef(() => MenuItemContainerRuleBuilder))
         optionBuilder: MenuItemContainerRuleBuilder,
 
+        @Inject(forwardRef(() => MenuItemContainerRuleValidator))
         validator: MenuItemContainerRuleValidator,
 
         requestContextService: RequestContextService,

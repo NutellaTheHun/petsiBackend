@@ -19,7 +19,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
         @Inject(forwardRef(() => InventoryItemSizeBuilder))
         sizeBuilder: InventoryItemSizeBuilder,
         
+        @Inject(forwardRef(() => InventoryItemSizeValidator))
         validator: InventoryItemSizeValidator,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ){ super(sizeRepo, sizeBuilder, validator, 'InventoryItemSizeService', requestContextService, logger); }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
@@ -15,9 +15,14 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     constructor(
         @InjectRepository(MenuItemContainerItem)
         repo: Repository<MenuItemContainerItem>,
-        private readonly itemService: MenuItemService,
-        private readonly sizeService: MenuItemSizeService,
+
+        @Inject(forwardRef(() => MenuItemContainerItemService))
         private readonly containerService: MenuItemContainerItemService,
+
+        @Inject(forwardRef(() => MenuItemService))
+        private readonly itemService: MenuItemService,
+        
+        private readonly sizeService: MenuItemSizeService,
     ){ super(repo); }
 
     public async validateCreate(dto: CreateMenuItemContainerItemDto): Promise<string | null> {

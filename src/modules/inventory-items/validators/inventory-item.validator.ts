@@ -43,12 +43,29 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
         }
 
         if(dto.itemSizeDtos){
+            const resolvedUpdateDtos: {id: number}[] = [];
+            const resolvedCreateDtos: {inventoryPackageId: number; measureUnitId: number}[] = [];
+            for(const d of dto.itemSizeDtos){
+                if(d.mode === 'update'){
+                    resolvedUpdateDtos.push({ id: d.id});
+                }
+                if(d.mode === 'create'){
+                    resolvedCreateDtos.push({ inventoryPackageId: d.inventoryPackageId, measureUnitId: d.measureUnitId});
+                }
+            }
+            const dupliateIds = this.helper.hasDuplicatesByComposite(
+                resolvedUpdateDtos,
+                (id) => `${id.id}`
+            );
+            if(dupliateIds){ // only applies to update
+                return 'inventory item has duplicate update dtos for the same item size id';
+            }
             const dupliateSizing = this.helper.hasDuplicatesByComposite(
-                dto.itemSizeDtos,
+                resolvedCreateDtos,
                 (size) => `${size.inventoryPackageId}:${size.measureUnitId}`
             );
-            if(dupliateSizing){
-                return 'inventory item has duplicate sizing (package/measurement combination)';
+            if(dupliateSizing){ // only applies to create
+                return 'inventory item has duplicate create sizing (package/measurement combination)';
             }
         }
         return null;

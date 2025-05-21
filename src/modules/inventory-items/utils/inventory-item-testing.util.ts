@@ -242,9 +242,6 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
         for(const category of categories) {
-            /*const exists = await this.categoryService.findOneByName(category.categoryName);
-            if(exists){ continue; }*/
-
             await this.categoryService.create(
                 { itemCategoryName: category.categoryName } as CreateInventoryItemCategoryDto
         )}

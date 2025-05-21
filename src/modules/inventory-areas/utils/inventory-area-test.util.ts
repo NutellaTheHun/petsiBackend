@@ -13,13 +13,10 @@ import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
-import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
+import { AREA_A, AREA_B, AREA_C, AREA_D, getAreaNames } from "./constants";
 
 @Injectable()
 export class InventoryAreaTestUtil {
-
-    private readonly areaNames = [ AREA_A, AREA_B, AREA_C, AREA_D];
-
     private initCounts = false;
     private initItems = false;
     private initAreas = false;
@@ -45,7 +42,9 @@ export class InventoryAreaTestUtil {
      */
     public async getTestInventoryAreaEntities(testContext: DatabaseTestContext): Promise<InventoryArea[]> { 
         const results: InventoryArea[] = [];
-        for(const name of this.areaNames){
+        const names = getAreaNames();
+
+        for(const name of names){
             results.push(
                 await this.areaBuilder.reset()
                     .areaName(name)

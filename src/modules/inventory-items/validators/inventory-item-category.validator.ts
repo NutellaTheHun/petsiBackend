@@ -17,7 +17,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         // Already exists check
         const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
         if(exists) { 
-            return `Inventory item with name ${dto.itemCategoryName} already exists`; 
+            return `Inventory category with name ${dto.itemCategoryName} already exists`; 
         }
         return null;
     }
@@ -27,7 +27,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         if(dto.itemCategoryName){
             const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
             if(exists) { 
-                return `Inventory item with name ${dto.itemCategoryName} already exists`; 
+                return `Inventory category with name ${dto.itemCategoryName} already exists`; 
             }
         }
         
