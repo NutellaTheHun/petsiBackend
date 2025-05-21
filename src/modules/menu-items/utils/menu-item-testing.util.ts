@@ -271,13 +271,13 @@ export class MenuItemTestingUtil {
             { 
                 mode: 'create',
                 validMenuItemId: itemA.id,
-                validSizeIds: itemA.validSizes.map(size => size.id),
+                validSizeIds: itemA.validSizes.slice(1).map(size => size.id),
                 quantity: 2,
             } as CreateChildMenuItemContainerRuleDto,
             { 
                 mode: 'create',
                 validMenuItemId: itemB.id,
-                validSizeIds: itemB.validSizes.map(size => size.id),
+                validSizeIds: itemB.validSizes.slice(1).map(size => size.id),
                 quantity: 2,
             } as CreateChildMenuItemContainerRuleDto,
         ] as CreateChildMenuItemContainerRuleDto[];
@@ -298,13 +298,13 @@ export class MenuItemTestingUtil {
             { 
                 mode: 'create',
                 validMenuItemId: itemC.id,
-                validSizeIds: itemC.validSizes.map(size => size.id),
+                validSizeIds: itemC.validSizes.slice(1).map(size => size.id),
                 quantity: 3,
             } as CreateChildMenuItemContainerRuleDto,
             { 
                 mode: 'create',
                 validMenuItemId: itemD.id,
-                validSizeIds: itemD.validSizes.map(size => size.id),
+                validSizeIds: itemD.validSizes.slice(1).map(size => size.id),
                 quantity: 3,
             } as CreateChildMenuItemContainerRuleDto,
         ] as CreateChildMenuItemContainerRuleDto[];

@@ -11,6 +11,7 @@ import { OrderContainerItem } from "../entities/order-container-item.entity";
 import { OrderContainerItemService } from "../services/order-container-item.service";
 import { MenuItemContainerRule } from "../../menu-items/entities/menu-item-container-rule.entity";
 import { UpdateOrderContainerItemDto } from "../dto/order-container-item/update-order-container-item.dto";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 @Injectable()
 export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItem> {
@@ -26,6 +27,8 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
+
+        private readonly optionsService: MenuItemContainerOptionsService,
     ){ super(repo); }
 
     public async validateCreate(dto: CreateChildOrderContainerItemDto): Promise<string | null> {
@@ -40,6 +43,16 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             return `item in dto is not valid for container`;
         }
 
+        // check if the DTO SIZE is valid for the MENU ITEM:
+        const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
+        if(!item){ throw new Error(); }
+        const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, item.validSizes);
+        if(!validMenuItemSize){
+            const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
+            return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${item.itemName} with id ${item.id}`;
+        }
+
+
         // check if the DTO SIZE is valid in the CONTAINER
         const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, rule.validSizes);
         if(!validSize){
@@ -48,15 +61,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             return `dto size ${size.name} with id ${size.id} is not valid in the parent container item ${container.itemName} with id ${container.id}`
         }
 
-        // check if the DTO SIZE is valid for the MENU ITEM:
-        const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
-        if(!item){ throw new Error(); }
-        const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, item.validSizes);
-        if(!validMenuItemSize){
-            const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-            return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${item.itemName} with id ${item.id}`
-        }
-
+        
         return null;
     }
     
@@ -96,6 +101,14 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
                     return `item in dto is not valid for container`;
                 }
             }
+            //check size is valid for item
+            if(dto.containedMenuItemId && dto.containedMenuItemSizeId){
+                const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, containedItem.validSizes);
+                if(!validMenuItemSize){
+                    const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
+                    return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${containedItem.itemName} with id ${containedItem.id}`
+                }
+            }
             //check size is valid in container
             if(dto.containedMenuItemSizeId){
                 if(!rule){
@@ -111,15 +124,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
                     return `dto size ${size.name} with id ${size.id} is not valid in the parent container item ${container.itemName} with id ${container.id}`
                 }
             }
-            //check size is valid for item
-            if(dto.containedMenuItemId && dto.containedMenuItemSizeId){
-                const validMenuItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, containedItem.validSizes);
-                if(!validMenuItemSize){
-                    const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                    return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${containedItem.itemName} with id ${containedItem.id}`
-                }
-            }
-
         }
 
         return null;
@@ -129,7 +133,8 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         const parentContainer = await this.itemService.findOne(parentContainerMenuItemId, ['containerOptions'])
         if(!parentContainer){ throw new Error("parent container is null"); }
         if(!parentContainer.containerOptions){ return null; }
-        return parentContainer.containerOptions;
+        const options = await this.optionsService.findOne(parentContainer.containerOptions.id, ['containerRules']);
+        return options;
     }
 
     /**

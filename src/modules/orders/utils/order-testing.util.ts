@@ -64,7 +64,7 @@ export class OrderTestingUtil {
     // Order Menu Item
     public async getTestOrderMenuItemEntities(testContext: DatabaseTestContext): Promise<OrderMenuItem[]>{
         await this.initOrderTestDatabase(testContext);
-        await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
+        await this.menuItemTestUtil.initMenuItemContainerTestDatabase(testContext);
 
         const ordersRequest = await this.orderService.findAll();
         const orders = ordersRequest.items;

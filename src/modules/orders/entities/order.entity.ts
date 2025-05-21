@@ -46,31 +46,31 @@ export class Order {
      * 
      * Sometimes different from the recipient/owner of the order
      */
-    @Column({ nullable: true})
+    @Column({ nullable: true, type: 'varchar' })
     fulfillmentContactName?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'varchar' })
     deliveryAddress?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'varchar' })
     phoneNumber?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'varchar' })
     email?: string | null;
 
     /**
      * Any additional information for the order.
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'varchar' })
     note?: string | null;
 
     /**
@@ -95,7 +95,7 @@ export class Order {
     /**
      * If an order is weekly, the day of the week the order is fulfilled.
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'varchar' })
     weeklyFulfillment?: string | null;
 
     /**

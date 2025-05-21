@@ -47,9 +47,6 @@ implements IBuildChildDto<RecipeCategory, RecipeSubCategory>{
         if(dto.subCategoryName !== undefined){
             this.name(dto.subCategoryName);
         }
-        if(dto.parentCategoryId !== undefined){
-            this.parentCategoryById(dto.parentCategoryId);
-        }
     }
 
     buildChildEntity(dto: CreateChildRecipeSubCategoryDto): void {

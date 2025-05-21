@@ -12,6 +12,7 @@ import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderContainerItemValidator } from "./order-container-item.validator";
 import { rule } from "postcss";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
 
 describe('order container item validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -19,6 +20,7 @@ describe('order container item validator', () => {
 
     let validator: OrderContainerItemValidator;
     let containerService: OrderContainerItemService;
+    let orderItemService: OrderMenuItemService;
     let menuItemService: MenuItemService;
     let sizeService: MenuItemSizeService;
     let optionsService: MenuItemContainerOptionsService;
@@ -27,13 +29,14 @@ describe('order container item validator', () => {
         const module: TestingModule = await getOrdersTestingModule();
         validator = module.get<OrderContainerItemValidator>(OrderContainerItemValidator);
         containerService = module.get<OrderContainerItemService>(OrderContainerItemService);
+        orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
         menuItemService = module.get<MenuItemService>(MenuItemService);
         sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
         optionsService = module.get<MenuItemContainerOptionsService>(MenuItemContainerOptionsService);
 
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderTestDatabase(dbTestContext);
+        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
     });
 
     afterAll(async () => {
@@ -45,21 +48,17 @@ describe('order container item validator', () => {
     });
 
     it('should validate create', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
-        if(!containerItemRequest){ throw new Error(); }
-        const parentItem = containerItemRequest.items[0].parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
 
-        const options = parentMenuItem.containerOptions;
-
-        const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
+        if(!options){ throw new Error(); }
 
         const dto = {
             mode: 'create',
-            parentContainerMenuItemId: parentMenuItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: options?.containerRules[0].validItem.id,
             containedMenuItemSizeId: options?.containerRules[0].validSizes[0].id,
             quantity: 1,
@@ -71,23 +70,21 @@ describe('order container item validator', () => {
     });
 
     it('should fail create: invalid dto item for container', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
-        if(!containerItemRequest){ throw new Error(); }
-        const parentItem = containerItemRequest.items[0].parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const options = parentMenuItem.containerOptions;
-        const validItemIds = options?.containerRules.map(item => item.id);
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
 
-        const menuItems = (await menuItemService.findAll({ relations: ['validSizes']})).items;
-        if(!menuItems){ throw new Error(); }
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
+        if(!options){ throw new Error(); }
+        const validItemIds = options?.containerRules.map(item => item.validItem.id);
 
-        const badItems = menuItems.filter(item => !validItemIds?.find(validItemId => validItemId === item.id))
+        const menuItems = (await menuItemService.findAll({ relations: ['validSizes'] })).items;
+        const badItems = menuItems.filter(item => !validItemIds?.includes(item.id))
 
         const dto = {
             mode: 'create',
-            parentContainerMenuItemId: parentMenuItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: badItems[0].id,
             containedMenuItemSizeId: badItems[0].validSizes[0].id,
             quantity: 1,
@@ -95,31 +92,30 @@ describe('order container item validator', () => {
 
         const result = await validator.validateCreate(dto);
 
-        expect(result).toEqual(`Order category with name ${TYPE_A} already exists`);
+        expect(result).toEqual(`item in dto is not valid for container`);
     });
 
     it('should fail create: invalid dto size for container', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const parentItem = containerItemRequest.items[0].parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
 
-        const options = parentMenuItem.containerOptions;
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
+        if(!options){ throw new Error(); }
         if(!options?.containerRules){ throw new Error(); }
 
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
         if(!containedItem){ throw new Error(); }
 
-        const validItemSizeIds = options.containerRules[0].validSizes.map(item => item.id);
+        const validItemSizeIds = options.containerRules[0].validSizes.map(size => size.id);
 
         const badSizes = containedItem.validSizes.filter( validSize => 
                             !validItemSizeIds.find(optionsSizeId => optionsSizeId === validSize.id));
 
         const dto = {
             mode: 'create',
-            parentContainerMenuItemId: parentMenuItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: containedItem.id,
             containedMenuItemSizeId: badSizes[0].id,
             quantity: 1,
@@ -127,18 +123,19 @@ describe('order container item validator', () => {
 
         const result = await validator.validateCreate(dto);
 
-        expect(result).toEqual(`Order category with name ${TYPE_A} already exists`);
+        expect(result).toEqual(`dto size ${badSizes[0].name} with id ${badSizes[0].id} is not valid in the parent container item ${itemsWithOptions[0].itemName} with id ${itemsWithOptions[0].id}`);
     });
 
     it('should fail create: invalid dto size for dto item', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
-        if(!containerItemRequest){ throw new Error(); }
-        const parentItem = containerItemRequest.items[0].parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const options = parentMenuItem.containerOptions;
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
         if(!options){ throw new Error(); }
+        if(!options?.containerRules){ throw new Error(); }
+
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
         if(!containedItem){ throw new Error(); }
         
@@ -147,7 +144,7 @@ describe('order container item validator', () => {
 
         const dto = {
             mode: 'create',
-            parentContainerMenuItemId: parentMenuItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: containedItem.id,
             containedMenuItemSizeId: badItem.validSizes[0].id,
             quantity: 1,
@@ -155,30 +152,28 @@ describe('order container item validator', () => {
 
         const result = await validator.validateCreate(dto);
 
-        expect(result).toEqual(`Order category with name ${TYPE_A} already exists`);
+        expect(result).toEqual(`dto size ${badItem.validSizes[0].name} with id ${badItem.validSizes[0].id} is not valid for the contained item ${containedItem.itemName} with id ${containedItem.id}`);
     });
 
     it('should pass update', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
+        
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const parentItem = toUpdate.parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
 
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
-
-        const options = parentMenuItem.containerOptions;
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
+        if(!options){ throw new Error(); }
         if(!options?.containerRules){ throw new Error(); }
-
-        const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
 
         const dto = {
             mode: 'update',
             id: toUpdate.id,
-            parentContainerMenuItemId: parentItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: options.containerRules[0].validItem.id,
             containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
             quantity: 1,
@@ -189,72 +184,48 @@ describe('order container item validator', () => {
     });
 
     it('should fail update: item update with no parent id', async () => {
-         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-
-        const parentItem = toUpdate.parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
-
-        const options = parentMenuItem.containerOptions;
-        if(!options?.containerRules){ throw new Error(); }
-
-        const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
+        
+        const contItemB = await menuItemService.findOneByName(item_b);
         if(!contItemB){ throw new Error(); }
 
         const dto = {
             mode: 'update',
             id: toUpdate.id,
-            containedMenuItemId: options.containerRules[0].validItem.id,
+            containedMenuItemId: contItemB.id,
         } as UpdateChildOrderContainerItemDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Order category with name ${TYPE_B} already exists`);
+        expect(result).toEqual('dto requires the parentContainerMenuItemId for validation');
     });
 
     it('should fail update: size update with no parent id', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-
-        const parentItem = toUpdate.parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
-
-        const options = parentMenuItem.containerOptions;
-        if(!options?.containerRules){ throw new Error(); }
-
+        
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
         if(!contItemB){ throw new Error(); }
 
         const dto = {
             mode: 'update',
             id: toUpdate.id,
-            containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
+            containedMenuItemSizeId: contItemB.validSizes[0].id,
         } as UpdateChildOrderContainerItemDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Order category with name ${TYPE_B} already exists`);
+        expect(result).toEqual('dto requires the parentContainerMenuItemId for validation');
     });
 
     it('should fail update DTO ITEM AND SIZE: item and size update with no parent id', async () => {
-         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-
-        const parentItem = toUpdate.parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
-
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
-
-        const options = parentMenuItem.containerOptions;
-        if(!options?.containerRules){ throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
         if(!contItemB){ throw new Error(); }
@@ -262,27 +233,29 @@ describe('order container item validator', () => {
         const dto = {
             mode: 'update',
             id: toUpdate.id,
-            containedMenuItemId: options.containerRules[0].validItem.id,
-            containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
+            containedMenuItemId: contItemB.id,
+            containedMenuItemSizeId: contItemB.validSizes[0].id,
         } as UpdateChildOrderContainerItemDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Order category with name ${TYPE_B} already exists`);
+        expect(result).toEqual(`dto requires the parentContainerMenuItemId for validation`);
     });
 
     it('should fail update DTO ITEM AND SIZE: invalid dto item for container', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
-        const parentItem = toUpdate.parentOrderItem;
-        if(!parentItem.menuItem){ throw new Error(); }
+        const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
-        const parentMenuItem = await menuItemService.findOne(parentItem.menuItem.id, ['containerOptions']);
+        const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
+        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
 
-        const options = parentMenuItem.containerOptions;
+        const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
+        if(!options){ throw new Error(); }
         if(!options?.containerRules){ throw new Error(); }
+
         const validItemIds = options?.containerRules.map(item => item.id);
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
@@ -296,18 +269,18 @@ describe('order container item validator', () => {
         const dto = {
             mode: 'update',
             id: toUpdate.id,
-            parentContainerMenuItemId: parentItem.id,
+            parentContainerMenuItemId: itemsWithOptions[0].id,
             containedMenuItemId: badItems[0].id,
             containedMenuItemSizeId: badItems[0].validSizes[0].id,
             quantity: 1,
         } as UpdateChildOrderContainerItemDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Order category with name ${TYPE_B} already exists`);
+        expect(result).toEqual(`dto size ${badItems[0].validSizes[0].name} with id ${badItems[0].validSizes[0].id} is not valid in the parent container item ${itemsWithOptions[0].itemName} with id ${itemsWithOptions[0].id}`);
     });
 
     it('should fail update DTO ITEM AND SIZE: invalid dto size for container', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
@@ -342,7 +315,7 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO ITEM AND SIZE: invalid dto size for dto item', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
@@ -374,7 +347,7 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO ITEM: invalid dto item for CURRENT size', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem', 'containedItemSize'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItemSize'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
@@ -419,7 +392,7 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO ITEM: invalid dto item for container', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem', 'containedItem', 'containedItemSize'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItem', 'containedItemSize'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
@@ -447,7 +420,7 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO ITEM: invalid CURRENT size not in the dto item rules', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem', 'containedItem', 'containedItemSize'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItem', 'containedItemSize'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
@@ -473,7 +446,7 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO SIZE: invalid DTO size with CURRENT item', async () => {
-        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'parentOrderItem.menuItem', 'containedItem', 'containedItemSize'] });
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItem', 'containedItemSize'] });
         if(!containerItemRequest){ throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
