@@ -19,7 +19,7 @@ describe('order category service', () => {
         const module: TestingModule = await getOrdersTestingModule();
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         dbTestContext = new DatabaseTestContext();
-        await testingUtil.initOrderTypeTestDatabase(dbTestContext);
+        await testingUtil.initOrderCategoryTestDatabase(dbTestContext);
 
         service = module.get<OrderCategoryService>(OrderCategoryService);
     });

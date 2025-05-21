@@ -7,6 +7,14 @@ export class CreateChildMenuItemContainerItemDto {
     readonly mode: 'create' = 'create';
 
     @ApiProperty({ 
+        example: 'Box of 6 Scones(parent container, passing containerId): 6 Blueberry Muffin(contained item)',
+        description: 'Id of a Menu-Item entity, the parent container to the child Menu-Item component. Used for validation' })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly parentContainerId: number;
+
+    @ApiProperty({ 
         example: 'Breakfast Platter, size: large (Menu-Item-Size, passing containerSizeId): {contained child items}',
         description: 'Id of a Menu-Item-Size entity of the parent container' })
     @IsNumber()

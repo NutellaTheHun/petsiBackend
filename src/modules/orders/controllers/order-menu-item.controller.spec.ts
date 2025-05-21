@@ -7,7 +7,7 @@ import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { getTestOrderTypeNames } from "../utils/constants";
+import { getTestOrderCategoryNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderMenuItemController } from "./order-menu-item.controller";
 import { AppHttpException } from "../../../util/exceptions/AppHttpException";
@@ -31,7 +31,7 @@ describe('order menu item controller', () => {
         controller = module.get<OrderMenuItemController>(OrderMenuItemController);
         service = module.get<OrderMenuItemService>(OrderMenuItemService);
 
-        const typeNames = getTestOrderTypeNames()
+        const typeNames = getTestOrderCategoryNames()
         let typeId = 1;
         types = typeNames.map(name => ({
             id: typeId++,

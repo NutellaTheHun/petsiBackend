@@ -15,7 +15,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 
 @ApiTags('User')
 @ApiBearerAuth('access-token')
-@Roles( ROLE_ADMIN)
+@Roles(ROLE_ADMIN)
 @Controller('users')
 export class UserController extends ControllerBase<User> {
   constructor(

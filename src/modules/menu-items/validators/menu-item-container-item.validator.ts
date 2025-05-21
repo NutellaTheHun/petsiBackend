@@ -9,6 +9,7 @@ import { MenuItemContainerItem } from "../entities/menu-item-container-item.enti
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 
 @Injectable()
 export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItem> {
@@ -25,7 +26,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         private readonly sizeService: MenuItemSizeService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateMenuItemContainerItemDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<string | null> {
         //defined container items must reference a valid item size to the contained item. 
         const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
 
@@ -41,7 +42,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         const validParentSize = this.helper.validateSize(dto.parentContainerSizeId, parentItem.validSizes)
         if(!validParentSize){
             const size = await this.sizeService.findOne(dto.parentContainerSizeId);
-            return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for contained item ${parentItem.itemName} with id ${parentItem.id}`
+            return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for parent container item ${parentItem.itemName} with id ${parentItem.id}`
         }
 
         return null;
@@ -74,7 +75,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
             const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, currentItem.validSizes)
             if(!validSize){
                 const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for contained item ${currentItem.itemName} with id ${currentItem.id}`
+                return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for current item ${currentItem.itemName} with id ${currentItem.id}`;
             }
         }
 

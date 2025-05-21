@@ -10,7 +10,7 @@ import { Order } from "../entities/order.entity";
 import { OrderCategoryService } from "../services/order-category.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
-import { getTestOrderTypeNames } from "./constants";
+import { getTestOrderCategoryNames } from "./constants";
 
 @Injectable()
 export class OrderTestingUtil {
@@ -33,7 +33,7 @@ export class OrderTestingUtil {
 
     // Order Type
     public async getTestOrderTypeEntities(testContext: DatabaseTestContext): Promise<OrderCategory[]>{
-        const names = getTestOrderTypeNames();
+        const names = getTestOrderCategoryNames();
         const results: OrderCategory[] = [];
 
         for(const name of names){
@@ -45,7 +45,7 @@ export class OrderTestingUtil {
         return results;
     }
 
-    public async initOrderTypeTestDatabase(testContext: DatabaseTestContext): Promise<void>{
+    public async initOrderCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void>{
         if(this.orderTypeInit){
             return;
         }
@@ -144,7 +144,7 @@ export class OrderTestingUtil {
 
     // Order
     public async getTestOrderEntities(testContext: DatabaseTestContext): Promise<Order[]>{
-        await this.initOrderTypeTestDatabase(testContext);
+        await this.initOrderCategoryTestDatabase(testContext);
 
         const recipients: string[] = [ "recipient_a", "recipient_b", "recipient_c", "recipient_d", "recipient_e", "recipient_f", "recipient_g",];
         

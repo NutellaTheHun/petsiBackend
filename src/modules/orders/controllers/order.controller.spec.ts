@@ -2,7 +2,7 @@ import { TestingModule } from "@nestjs/testing";
 import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderService } from "../services/order.service";
-import { getTestOrderTypeNames } from "../utils/constants";
+import { getTestOrderCategoryNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderController } from "./order.controller";
 import { NotFoundException } from "@nestjs/common";
@@ -24,7 +24,7 @@ describe('order controller', () => {
         controller = module.get<OrderController>(OrderController);
         service = module.get<OrderService>(OrderService);
 
-        const typeNames = getTestOrderTypeNames()
+        const typeNames = getTestOrderCategoryNames()
         let typeId = 1;
         types = typeNames.map(name => ({
             id: typeId++,

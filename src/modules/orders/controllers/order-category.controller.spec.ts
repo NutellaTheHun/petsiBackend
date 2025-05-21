@@ -4,7 +4,7 @@ import { CreateOrderCategoryDto } from "../dto/order-category/create-order-categ
 import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
 import { OrderCategory } from "../entities/order-category.entity";
 import { OrderCategoryService } from "../services/order-category.service";
-import { getTestOrderTypeNames } from "../utils/constants";
+import { getTestOrderCategoryNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderCategoryController } from "./order-category.controller";
 import { BadRequestException, NotFoundException } from "@nestjs/common";
@@ -22,7 +22,7 @@ describe('order category controller', () => {
         controller = module.get<OrderCategoryController>(OrderCategoryController);
         service = module.get<OrderCategoryService>(OrderCategoryService);
 
-        const typeNames = getTestOrderTypeNames()
+        const typeNames = getTestOrderCategoryNames()
         let id = 1;
         types = typeNames.map(name => ({
             id: id++,

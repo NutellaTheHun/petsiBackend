@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { CreateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-menu-item-container-options.dto";
+import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
 import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
@@ -16,7 +16,7 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         private readonly ruleService: MenuItemContainerRuleService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateMenuItemContainerOptionsDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<string | null> {
         // Check no duplicate item rules
         const dupliateItemRules = this.helper.hasDuplicatesByComposite(
             dto.containerRuleDtos,
