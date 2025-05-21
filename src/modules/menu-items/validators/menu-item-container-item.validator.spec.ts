@@ -86,30 +86,6 @@ describe('menu item container item validator', () => {
         expect(result).toEqual(`size ${badSize.name} with id ${badSize.id} is invalid for contained item ${containedItem.itemName} with id ${containedItem.id}`);
     });
 
-    it('should fail create: invalid parent size for parent item', async () => {
-        const parentContainer = await itemService.findOneByName(item_c, ['validSizes']);
-        if(!parentContainer){ throw new Error(); }
-
-        const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
-
-        const badSize = await sizeService.findOneByName(SIZE_FOUR);
-        if(!badSize){ throw new Error(); }
-
-        const dto = {
-            mode: 'create',
-            parentContainerId: parentContainer.id,
-            parentContainerSizeId: badSize.id,
-            containedMenuItemId: containedItem.id,
-            containedMenuItemSizeId: containedItem.validSizes[0].id,
-            quantity: 1,
-        } as CreateChildMenuItemContainerItemDto;
-
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`size ${badSize.name} with id ${badSize.id} is invalid for parent container item ${parentContainer.itemName} with id ${parentContainer.id}`);
-    });
-
     it('should pass update', async () => {
         const toUpdateRequest = await containerService.findAll();
         if(!toUpdateRequest){ throw new Error(); }

@@ -101,7 +101,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
                 else if(d.mode === 'update'){
                     const currentItem = await this.containerItemService.findOne(d.id, ['containedItem', 'containedItemsize', 'parentContainerSize']);
                     resolvedDtos.push({
-                        parentContainerSizeId: currentItem.parentContainer.id,
+                        parentContainerSizeId: currentItem.parentContainerSize.id,
                         containedMenuItemId: d.containedMenuItemId ?? currentItem.containedItem.id,
                         containedMenuItemSizeId: d.containedMenuItemSizeId ?? currentItem.containedItemsize.id,
                     });

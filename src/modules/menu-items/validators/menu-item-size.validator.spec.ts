@@ -11,6 +11,7 @@ import { MenuItemSizeValidator } from "./menu-item-size.validator";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
+import { SIZE_FOUR, SIZE_ONE, SIZE_TWO } from "../utils/constants";
 
 describe('menu item size validator', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -39,7 +40,7 @@ describe('menu item size validator', () => {
 
     it('should validate create', async () => {
        const dto = {
-
+            sizeName: "TEST CREATE",
         } as CreateMenuItemSizeDto;
 
         const result = await validator.validateCreate(dto);
@@ -49,20 +50,20 @@ describe('menu item size validator', () => {
 
     it('should fail create (name already exists)', async () => {
         const dto = {
-
+            sizeName: SIZE_TWO,
         } as CreateMenuItemSizeDto;
 
         const result = await validator.validateCreate(dto);
 
-        expect(result).toEqual(`Label type with name ${type_a} already exists`);
+        expect(result).toEqual(`Menu item size with name ${SIZE_TWO} already exists`);
     });
 
     it('should pass update', async () => {
-        const toUpdate = await service.findOneByName(type_b);
+        const toUpdate = await service.findOneByName(SIZE_FOUR);
         if(!toUpdate){ throw new Error(); }
 
         const dto = {
-
+            sizeName: "TEST UPDATE",
         } as UpdateMenuItemSizeDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
@@ -70,14 +71,14 @@ describe('menu item size validator', () => {
     });
 
     it('should fail update (name already exists)', async () => {
-        const toUpdate = await service.findOneByName(type_b);
+        const toUpdate = await service.findOneByName(SIZE_FOUR);
         if(!toUpdate){ throw new Error(); }
 
         const dto = {
-
+            sizeName: SIZE_ONE,
         } as UpdateMenuItemSizeDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Label type with name ${type_a} already exists`);
+        expect(result).toEqual(`Menu item size with name ${SIZE_ONE} already exists`);
     });
 });

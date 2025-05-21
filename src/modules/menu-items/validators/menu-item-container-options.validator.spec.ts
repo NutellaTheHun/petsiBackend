@@ -14,7 +14,7 @@ import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-contain
 import validator from "validator";
 import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
 import { MenuItemService } from "../services/menu-item.service";
-import { item_a } from "../utils/constants";
+import { item_a, item_b } from "../utils/constants";
 import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 
 describe('menu item container options validator', () => {
@@ -48,7 +48,7 @@ describe('menu item container options validator', () => {
         const itemA = await itemService.findOneByName(item_a, ['validSizes']);
         if(!itemA){ throw new Error(); }
 
-        const itemB = await itemService.findOneByName(item_a, ['validSizes']);
+        const itemB = await itemService.findOneByName(item_b, ['validSizes']);
         if(!itemB){ throw new Error(); }
 
         const ruleDtos = [
@@ -110,7 +110,7 @@ describe('menu item container options validator', () => {
     });
 
     it('should pass update', async () => {
-        const toUpdateRequest = await containerService.findAll();
+        const toUpdateRequest = await containerService.findAll({ relations: ['containerRules']});
         if(!toUpdateRequest){ throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
@@ -118,7 +118,7 @@ describe('menu item container options validator', () => {
         const itemA = await itemService.findOneByName(item_a, ['validSizes']);
         if(!itemA){ throw new Error(); }
 
-        const itemB = await itemService.findOneByName(item_a, ['validSizes']);
+        const itemB = await itemService.findOneByName(item_b, ['validSizes']);
         if(!itemB){ throw new Error(); }
 
         const ruleDtos = [
@@ -129,7 +129,7 @@ describe('menu item container options validator', () => {
             } as CreateChildMenuItemContainerRuleDto,
             {
                 mode: 'update',
-                id: 1,
+                id: toUpdate.containerRules[0].id,
                 validMenuItemId: itemB.id,
                 validSizeIds: [ itemB.validSizes[0].id ],
             } as UpdateChildMenuItemContainerRuleDto,
@@ -147,7 +147,7 @@ describe('menu item container options validator', () => {
     });
 
     it('should fail update: duplicate item rules', async () => {
-        const toUpdateRequest = await containerService.findAll();
+        const toUpdateRequest = await containerService.findAll({ relations: ['containerRules']});
         if(!toUpdateRequest){ throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
@@ -166,13 +166,13 @@ describe('menu item container options validator', () => {
             } as CreateChildMenuItemContainerRuleDto,
             {
                 mode: 'update',
-                id: 1,
+                id: toUpdate.containerRules[0].id,
                 validMenuItemId: itemB.id,
                 validSizeIds: [ itemB.validSizes[0].id ],
             } as UpdateChildMenuItemContainerRuleDto,
             {
                 mode: 'update',
-                id: 1,
+                id: toUpdate.containerRules[0].id,
                 validMenuItemId: itemB.id,
                 validSizeIds: [ itemB.validSizes[1].id ],
             } as UpdateChildMenuItemContainerRuleDto,
@@ -186,7 +186,7 @@ describe('menu item container options validator', () => {
         } as UpdateChildMenuItemContainerOptionsDto;
 
         const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Label type with name ${type_a} already exists`);
+        expect(result).toEqual('container option contains duplicate rules for the same menuItem');
     });
 
 });

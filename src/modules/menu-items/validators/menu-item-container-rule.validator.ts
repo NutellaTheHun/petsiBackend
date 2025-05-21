@@ -7,6 +7,8 @@ import { UpdateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/
 import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
+import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
+import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 
 @Injectable()
 export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContainerRule> {
@@ -21,7 +23,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         private readonly containerRuleService: MenuItemContainerRuleService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateMenuItemContainerRuleDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildMenuItemContainerRuleDto): Promise<string | null> {
         // Must have sizes with the item, otherwise item cannot be added to container
         if(dto.validSizeIds.length === 0){
             return 'validSizes is empty.'
@@ -34,16 +36,16 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         if(!item.validSizes){ throw new Error('valid sizes not found'); }
         for(const sizeToCheck of dto.validSizeIds){
             if(!item.validSizes.find(itemSize => itemSize.id === sizeToCheck)){
-                return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`
+                return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`;
             }
         }
         return null;
     }
     
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerRuleDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto): Promise<string | null> {
         // Must have sizes with the item, otherwise item cannot be added to container
         if(dto.validSizeIds?.length === 0){
-            return 'validSizes is empty.'
+            return 'validSizes is empty.';
         }
 
         // sizes must be valid to the menu item in general
@@ -54,7 +56,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
             if(!item.validSizes){ throw new Error('valid sizes not found'); }
             for(const sizeToCheck of dto.validSizeIds){
                 if(!item.validSizes.find(itemSize => itemSize.id === sizeToCheck)){
-                    return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`
+                    return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`;
                 }
             }
         }

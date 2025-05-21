@@ -37,14 +37,6 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
             return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for contained item ${item.itemName} with id ${item.id}`
         }
 
-        //parent container and parent container size must be valid to each other
-        const parentItem = await this.itemService.findOne(dto.parentContainerId, ['validSizes']);
-        const validParentSize = this.helper.validateSize(dto.parentContainerSizeId, parentItem.validSizes)
-        if(!validParentSize){
-            const size = await this.sizeService.findOne(dto.parentContainerSizeId);
-            return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for parent container item ${parentItem.itemName} with id ${parentItem.id}`
-        }
-
         return null;
     }
     

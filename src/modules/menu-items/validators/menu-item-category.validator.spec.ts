@@ -7,7 +7,7 @@ import { MenuItemCategoryService } from "../services/menu-item-category.service"
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryValidator } from "./menu-item-category.validator";
-import { CAT_BLUE, CAT_RED } from "../utils/constants";
+import { CAT_BLUE, CAT_GREEN, CAT_RED } from "../utils/constants";
 
 describe('menu item category validator', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -55,7 +55,7 @@ describe('menu item category validator', () => {
     });
 
     it('should pass update', async () => {
-        const toUpdate = await service.findOneByName(type_b);
+        const toUpdate = await service.findOneByName(CAT_GREEN);
         if(!toUpdate){ throw new Error(); }
 
         const dto = {

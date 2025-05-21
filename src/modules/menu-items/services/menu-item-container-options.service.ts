@@ -19,6 +19,7 @@ export class MenuItemContainerOptionsService extends ServiceBase<MenuItemContain
         @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
         optionsBuilder: MenuItemContainerOptionsBuilder,
 
+        @Inject(forwardRef(() => MenuItemContainerOptionsValidator))
         validator: MenuItemContainerOptionsValidator,
 
         requestContextService: RequestContextService,
