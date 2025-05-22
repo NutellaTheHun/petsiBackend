@@ -55,54 +55,24 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
     }
     
     public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<string | null> {
-        // check DTO ITEM and CURRENT SIZE are valid
-        if(dto.menuItemId && !dto.menuItemSizeId){
 
-            // Get current order item for CURRENT SIZE
-            const currentOrderItem = await this.orderItemService.findOne(id, ['size']);
-            if(!currentOrderItem){ throw new Error();}
-            if(!currentOrderItem.size){ throw new Error();}
+        // If updating menuItem or itemSize, check if they are valid
+        if(dto.menuItemId || dto.menuItemSizeId){
+            const currentOrderItem = await this.orderItemService.findOne(id, ['size', 'menuItem']);
 
-            // get DTO ITEM AS MENU ITEM for validSizes
-            const newItem = await this.menuItemService.findOne(dto.menuItemId, ['validSizes']);
-            if(!newItem){ throw new Error();}
-            if(!newItem.validSizes){ throw new Error(); }
+            const sizeId = dto.menuItemSizeId ?? currentOrderItem.size.id;
+            const itemId = dto.menuItemId ?? currentOrderItem.menuItem.id;
 
-            // Check if CURRENT SIZE and DTO ITEM AS MENU ITEM are valid
-            const validItemSize = this.helper.validateSize(currentOrderItem.size.id, newItem.validSizes);
-            if(!validItemSize){
-                return `new item ${newItem.itemName} with id ${newItem.id} is not valid with current order item\'s size ${currentOrderItem.size.name}`;
+            const menuItem = await this.menuItemService.findOne(itemId, ['validSizes']);
+            if(!menuItem){ throw new Error();}
+
+            const isValidSize = this.helper.validateSize(sizeId, menuItem.validSizes);
+            if(!isValidSize){
+                const invalidSize = await this.sizeService.findOne(sizeId);
+                return `item ${menuItem.itemName} with id ${menuItem.id} is not valid with item size ${invalidSize.name}`;
             }
         }
-
-        // check DTO ITEM and DTO SIZE are valid
-        else if(dto.menuItemId && dto.menuItemSizeId){
-            // get DTO ITEM as MENU ITEM
-            const newItem = await this.menuItemService.findOne(dto.menuItemId, ['validSizes']);
-            if(!newItem.validSizes){ throw new Error('validSizes is null'); }
-
-            // Check DTO SIZE and DTO ITEM AS MENU ITEM is valid
-            const validItemSize = this.helper.validateSize(dto.menuItemSizeId, newItem.validSizes);
-            if(!validItemSize){
-                const invalidSize = await this.sizeService.findOne(dto.menuItemSizeId);
-                return `new item ${newItem.itemName} with id ${newItem.id} is not valid with new size ${invalidSize.name} and id ${invalidSize.id}`;
-            }
-        }
-        // check CURRENT ITEM and DTO SIZE are valid
-        else if(dto.menuItemSizeId){
-            // Get CURRENT ITEM
-            const currentMenuItem = (await this.orderItemService.findOne(id, ['menuItem'], ['menuItem.validSizes'])).menuItem;
-            if(!currentMenuItem){ throw new Error('current menuItem is null'); }
-            if(!currentMenuItem.validSizes){ throw new Error('validSizes is null'); }
-            
-            // check CURRENT ITEM and DTO SIZE are valid
-            const validItemSize = this.helper.validateSize(dto.menuItemSizeId, currentMenuItem.validSizes);
-            if(!validItemSize){
-                const invalidSize = await this.sizeService.findOne(dto.menuItemSizeId);
-                return `new size ${invalidSize.name} with id ${invalidSize.id} is not valid for current item ${currentMenuItem.itemName} with id ${currentMenuItem.id}`;
-            }  
-        }
-
+        
         // Validate:
         // item container DTOs cannot contain duplicate item/size combinations
         // item container DTOS cannot contain multiple updates for the same item

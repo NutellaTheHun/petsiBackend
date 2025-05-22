@@ -451,4 +451,4 @@ describe('order container item validator', () => {
         const result = await validator.validateUpdate(toUpdate.id, dto);
         expect(result).toEqual(`dto size ${badSizes[0].name} with id ${badSizes[0].id} is not valid in the parent container item ${itemsWithOptions[0].itemName} with id ${itemsWithOptions[0].id}`);
     });
-});
+})
