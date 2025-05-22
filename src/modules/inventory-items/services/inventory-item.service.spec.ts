@@ -234,7 +234,7 @@ describe('Inventory Item Service', () => {
 
   it('should update item category to no category', async () => {
     const dto = {
-      inventoryItemCategoryId: 0,
+      inventoryItemCategoryId: null,
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
@@ -301,8 +301,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('should update item vendor to no vendor', async () => {
+
     const dto = {
-      vendorId: 0
+      vendorId: null,
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
@@ -351,7 +352,7 @@ describe('Inventory Item Service', () => {
       {
       mode:'update',
       id: item.itemSizes[1].id,
-      measureUnitId: sizes[1].measureUnit.id,
+      measureUnitId: sizes[0].measureUnit.id,
       inventoryPackageTypeId: sizes[1].packageType.id,
       } as UpdateChildInventoryItemSizeDto,
     ]
@@ -441,7 +442,7 @@ describe('Inventory Item Service', () => {
       {
         mode:'update',
         id: sizes[0].id,
-        measureUnitId: sizes[0].measureUnit.id,
+        measureUnitId: createUnit.id,
         inventoryPackageTypeId: sizes[0].packageType.id,
       } as UpdateChildInventoryItemSizeDto,
       {

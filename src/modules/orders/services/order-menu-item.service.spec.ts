@@ -186,11 +186,11 @@ describe('order menu item service', () => {
         expect(testOrder.orderedItems.findIndex(item => item.id === testId)).toEqual(-1);
     });
 
-    it('should create an order item with components', async () => {
-        const itemA = await menuItemService.findOneByName(item_a);
+    it('should create an order item with container items', async () => {
+        const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
         if(!itemA){ throw new Error(); }
         if(!itemA.validSizes){ throw new Error(); }
-        const itemB = await menuItemService.findOneByName(item_b);
+        const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
         if(!itemB){ throw new Error(); }
         if(!itemB.validSizes){ throw new Error(); }
         const compDtos = [
@@ -208,16 +208,13 @@ describe('order menu item service', () => {
             } as CreateChildOrderContainerItemDto,
         ] as CreateChildOrderContainerItemDto[];
 
-        const orders = await orderService.findAll();
-        if(!orders){ throw new Error(); }
-        if(!orders.items){ throw new Error(); }
+        const orders = (await orderService.findAll({ relations: ['orderedItems'] })).items;
 
-        const itemF = await menuItemService.findOneByName(item_f);
+        const itemF = await menuItemService.findOneByName(item_f, ['validSizes']);
         if(!itemF){ throw new Error(); }
         if(!itemF.validSizes){ throw new Error(); }
 
         const itemDto = {
-            //orderId: orders.items[0].id,
             mode: 'create',
             menuItemId: itemF.id,
             menuItemSizeId: itemF.validSizes[0].id,
@@ -229,7 +226,7 @@ describe('order menu item service', () => {
             orderedMenuItemDtos: [itemDto]
         } as UpdateOrderDto;
 
-        const updateResult = await orderService.update(orders.items[0].id, updateOrderDto);
+        const updateResult = await orderService.update(orders[0].id, updateOrderDto);
         if(!updateResult){ throw new Error(); }
         if(!updateResult.orderedItems){ throw new Error(); }
 
@@ -242,11 +239,11 @@ describe('order menu item service', () => {
     });
 
     it('should update item components (add)', async () => {
-        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems']);
         if(!toUpdate){ throw new Error(); }
         if(!toUpdate.orderedContainerItems){ throw new Error(); }
 
-        const itemD = await menuItemService.findOneByName(item_d);
+        const itemD = await menuItemService.findOneByName(item_d, ['validSizes']);
         if(!itemD){ throw new Error(); }
         if(!itemD.validSizes){ throw new Error(); }
 
@@ -273,7 +270,7 @@ describe('order menu item service', () => {
     });
 
     it('should update item components (modify)', async () => {
-        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems']);
         if(!toUpdate){ throw new Error(); }
         if(!toUpdate.orderedContainerItems){ throw new Error(); }
 
@@ -282,7 +279,7 @@ describe('order menu item service', () => {
             id: comp.id,
         }) as UpdateChildOrderContainerItemDto);
 
-        const itemG = await menuItemService.findOneByName(item_g);
+        const itemG = await menuItemService.findOneByName(item_g, ['validSizes']);
         if(!itemG){ throw new Error(); }
         if(!itemG.validSizes){ throw new Error(); }
 
@@ -309,7 +306,7 @@ describe('order menu item service', () => {
     });
 
     it('should update item components (remove)', async () => {
-        const toUpdate = await orderItemService.findOne(testOrderItemCompsId);
+        const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems']);
         if(!toUpdate){ throw new Error(); }
         if(!toUpdate.orderedContainerItems){ throw new Error(); }
 

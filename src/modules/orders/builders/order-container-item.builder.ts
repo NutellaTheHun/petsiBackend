@@ -33,7 +33,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
 
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(OrderContainerItem, 'OrderMenuItemComponentBuilder',  requestContextService, logger, validator); }
+    ){ super(OrderContainerItem, 'OrderContainerItemBuilder',  requestContextService, logger, validator); }
 
     async buildChildCreateDto(parentItem: OrderMenuItem, dto: CreateChildOrderContainerItemDto): Promise<OrderContainerItem> {
         await this.validateCreateDto(dto);
@@ -96,7 +96,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
                 results.push(await this.buildChildCreateDto(parentOrderItem, dto));
             } else {
                 const toUpdate = await this.componentService.findOne(dto.id);
-                if(!toUpdate){ throw Error("order menu item component is null"); }
+                if(!toUpdate){ throw Error("order menu item container is null"); }
                 results.push(await this.buildUpdateDto(toUpdate, dto))
             }
         }

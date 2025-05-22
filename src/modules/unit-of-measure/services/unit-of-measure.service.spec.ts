@@ -162,7 +162,7 @@ describe('UnitOfMeasureService', () => {
 
   it('should remove category', async () => {
     const dto = {
-      categoryId: 0,
+      categoryId: null,
     } as UpdateUnitOfMeasureDto;
 
     const result = await unitService.update(testId, dto);

@@ -30,7 +30,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
         // Cant assign a subCategory with no category
         if(!dto.categoryId && dto.subCategoryId){
-            return 'cannot assign a sub-category with a null category';
+            return 'cannot assign a sub-category without an assigned category';
         }
         // Cant assign a subCategory that isn't a child to the selected category.
         else if(dto.categoryId && dto.subCategoryId){
@@ -38,7 +38,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             if(!category.subCategories){ throw new Error('subcategories is null'); }
 
             if(!category.subCategories.find(cat => cat.id === dto.subCategoryId)){
-                return 'subcategory must be a child subcategory to the given RecipeCategory';
+                return 'subcategory must be a child to the given RecipeCategory';
             }
         }
 

@@ -45,13 +45,16 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         }
 
         // No duplicate validSizes
-        const duplicateSizes = this.helper.hasDuplicatesByComposite(
-            dto.validSizeIds,
-            (size) => `${size}`
-        )
-        if(duplicateSizes){
-            return `menu item to create has duplicate item size ids`;
+        if(dto.validSizeIds && dto.validSizeIds.length > 0){
+            const duplicateSizes = this.helper.hasDuplicatesByComposite(
+                dto.validSizeIds,
+                (size) => `${size}`
+            );
+            if(duplicateSizes){
+                return `menu item to create has duplicate item size ids`;
+            }
         }
+        
 
         return null;
     }

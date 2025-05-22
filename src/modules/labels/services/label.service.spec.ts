@@ -5,7 +5,7 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_g } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
-import { type_b, type_d } from '../utils/constants';
+import { type_b, type_c, type_d } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeService } from './label-type.service';
@@ -55,11 +55,13 @@ describe('Label Service', () => {
     } as CreateLabelDto;
 
     const result = await labelService.create(dto);
+    if(!result){ throw new Error();}
+    if(!result.labelType){ throw new Error();}
 
     expect(result).not.toBeNull();
-    expect(result?.imageUrl).toEqual("testUrl");
-    expect(result?.menuItem.id).toEqual(item.id);
-    expect(result?.labelType.id).toEqual(lblType.id);
+    expect(result.imageUrl).toEqual("testUrl");
+    expect(result.menuItem.id).toEqual(item.id);
+    expect(result.labelType.id).toEqual(lblType.id);
 
     testId = result?.id as number;
   });
@@ -107,7 +109,7 @@ describe('Label Service', () => {
   });
 
   it('should update type', async () => {
-    const newType = await typeService.findOneByName(type_b);
+    const newType = await typeService.findOneByName(type_c);
     if(!newType){ throw new NotFoundException(); }
 
     const dto = {
@@ -115,6 +117,7 @@ describe('Label Service', () => {
     } as UpdateLabelDto;
 
     const result = await labelService.update(testId, dto);
+    if(!result.labelType){ throw new Error(); }
 
     expect(result).not.toBeNull();
     expect(result?.labelType.id).toEqual(newType.id);

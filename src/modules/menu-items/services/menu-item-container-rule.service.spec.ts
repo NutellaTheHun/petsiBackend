@@ -65,12 +65,12 @@ describe('menu item container rule service', () => {
 
         let newItem;
         if(toUpdate.validItem.itemName === item_a){
-            const itemB = await itemService.findOneByName(item_b);
+            const itemB = await itemService.findOneByName(item_b, ['validSizes']);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemB;
         } else {
-            const itemA = await itemService.findOneByName(item_a);
+            const itemA = await itemService.findOneByName(item_a, ['validSizes']);
             if(!itemA){ throw new Error("item b is null"); }
             if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemA;
@@ -94,12 +94,12 @@ describe('menu item container rule service', () => {
 
         let newItem: MenuItem;
         if(toUpdate.validItem.itemName === item_a){
-            const itemB = await itemService.findOneByName(item_b);
+            const itemB = await itemService.findOneByName(item_b, ['validSizes']);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemB;
         } else {
-            const itemA = await itemService.findOneByName(item_a);
+            const itemA = await itemService.findOneByName(item_a, ['validSizes']);
             if(!itemA){ throw new Error("item b is null"); }
             if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemA;
@@ -121,12 +121,12 @@ describe('menu item container rule service', () => {
 
         let newItem: MenuItem;
         if(toUpdate.validItem.itemName === item_a){
-            const itemB = await itemService.findOneByName(item_b);
+            const itemB = await itemService.findOneByName(item_b, ['validSizes']);
             if(!itemB){ throw new Error("item b is null"); }
             if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemB;
         } else {
-            const itemA = await itemService.findOneByName(item_a);
+            const itemA = await itemService.findOneByName(item_a, ['validSizes']);
             if(!itemA){ throw new Error("item b is null"); }
             if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
             newItem = itemA;

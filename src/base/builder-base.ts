@@ -79,7 +79,7 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
             const error = await this.validator.validateUpdate(id, dto);
             if(error){
                 const err = new AppHttpException(
-                    `${this.builderPrefix}: update dto validation failed`,
+                    `${this.builderPrefix}: ${error}`,
                     HttpStatus.BAD_REQUEST,
                     DTO_VALIDATION_FAIL,
                     { error }

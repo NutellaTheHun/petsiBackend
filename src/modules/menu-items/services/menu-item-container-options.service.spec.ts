@@ -65,7 +65,7 @@ describe('menu item container options service', () => {
         if(!toUpdate.containerRules){ throw new Error("valid components  is null"); }
         const originalCompSize = toUpdate.containerRules.length;
 
-        const itemA = await itemService.findOneByName(item_a);
+        const itemA = await itemService.findOneByName(item_a, ['validSizes']);
         if(!itemA){ throw new Error("item a is null"); }
         if(!itemA.validSizes){ throw new Error("valid sizes is null"); }
 

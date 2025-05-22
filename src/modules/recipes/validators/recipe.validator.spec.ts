@@ -40,7 +40,7 @@ describe('recipe validator', () => {
 
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        await testingUtil.initRecipeTestingDatabase(dbTestContext);
+        await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
     });
 
     afterAll(async () => {
@@ -342,7 +342,7 @@ describe('recipe validator', () => {
     });
 
     it('should fail update: name already exists', async () => {
-        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        const toUpdate = await recipeService.findOneByName(REC_B, ['ingredients']);
         if(!toUpdate){ throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
@@ -392,7 +392,7 @@ describe('recipe validator', () => {
     });
 
     it('should fail update: subcategory with no category', async () => {
-       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
         if(!toUpdate){ throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);

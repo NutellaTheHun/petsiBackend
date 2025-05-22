@@ -3,7 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { error } from 'console';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
-import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
+import { FOOD_A, FOOD_B, FOOD_C, OTHER_C } from '../../inventory-items/utils/constants';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
@@ -212,13 +212,13 @@ describe('recipe service', () => {
     if(!ingreds[0].ingredientInventoryItem){ throw new Error("ingredient inventory item is null"); }
     testIngredientId = ingreds[0].id;
 
-    if(ingreds[0].ingredientInventoryItem.itemName === FOOD_A){
-      const item = await invItemService.findOneByName(FOOD_B);
+    if(ingreds[0].ingredientInventoryItem.itemName === FOOD_C){
+      const item = await invItemService.findOneByName(FOOD_A);
       if(!item){ throw new Error("inv item not found"); }
       ingreds[0].ingredientInventoryItem = item;
       testInvItemId = item.id;
     } else {
-      const item = await invItemService.findOneByName(FOOD_A);
+      const item = await invItemService.findOneByName(OTHER_C);
       if(!item){ throw new Error("inv item not found"); }
       ingreds[0].ingredientInventoryItem = item;
       testInvItemId = item.id;
@@ -231,7 +231,8 @@ describe('recipe service', () => {
       quantityMeasurementId: ingred.quantityMeasure.id,
       ingredientRecipeId: ingred.ingredientRecipe?.id,
       ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
-    }) as UpdateRecipeIngredientDto)
+    }) as UpdateRecipeIngredientDto);
+
     const dto = {
       ingredientDtos: ingredUpdateDtos,
     } as UpdateRecipeDto;
@@ -325,6 +326,7 @@ describe('recipe service', () => {
       mode:'update',
       id: ingreds[0].id,
       ingredientRecipeId: ingreds[0].ingredientRecipe?.id,
+      ingredientInventoryItemId: null,
     } as UpdateRecipeIngredientDto;
 
     const theRest = ingreds.slice(1).map(ingred => ({
@@ -621,7 +623,7 @@ describe('recipe service', () => {
 
   it('should update sub category (to no sub category)', async () => {
     const dto = {
-      subCategoryId: 0
+      subCategoryId: null,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -637,7 +639,7 @@ describe('recipe service', () => {
 
   it('should update category (to no category)', async () => {
     const dto = {
-      categoryId: 0
+      categoryId: null,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -669,11 +671,8 @@ describe('recipe service', () => {
   });
 
   it('should remove menuItem', async () => {
-    const menuItem = await menuItemService.findOneByName(item_a);
-    if(!menuItem){ throw new NotFoundException(); }
-
     const dto = {
-      producedMenuItemId: 0,
+      producedMenuItemId: null,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);

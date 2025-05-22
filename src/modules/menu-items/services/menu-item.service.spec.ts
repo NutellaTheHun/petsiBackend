@@ -193,7 +193,7 @@ describe('menu item service', () => {
 
     it('should set to no category', async () => {
         const dto = {
-            categoryId: 0
+            categoryId: null,
         } as UpdateMenuItemDto;
 
         const result = await itemService.update(testId, dto);
@@ -461,7 +461,7 @@ describe('menu item service', () => {
 
     it('should remove veganOption', async () => {
         const dto = {
-            veganOptionMenuId: 0
+            veganOptionMenuId: null,
         } as UpdateMenuItemDto;
 
         const result = await itemService.update(testId, dto);
@@ -478,7 +478,7 @@ describe('menu item service', () => {
 
     it('should remove takeNBakeOption', async () => {
         const dto = {
-            takeNBakeOptionMenuId: 0
+            takeNBakeOptionMenuId: null,
         } as UpdateMenuItemDto;
 
         const result = await itemService.update(testId, dto);
@@ -495,7 +495,7 @@ describe('menu item service', () => {
 
     it('should remove veganTakeNBakeOption', async () => {
         const dto = {
-            veganTakeNBakeOptionMenuId: 0
+            veganTakeNBakeOptionMenuId: null,
         } as UpdateMenuItemDto;
 
         const result = await itemService.update(testId, dto);
@@ -538,10 +538,10 @@ describe('menu item service', () => {
         if(!sizeRequest){ throw new Error(); }
         const sizes = sizeRequest.items;
 
-        const itemC = await itemService.findOneByName(item_c);
+        const itemC = await itemService.findOneByName(item_c, ['validSizes']);
         if(!itemC){ throw new Error(); }
         if(!itemC.validSizes){ throw new Error(); }
-        const itemD = await itemService.findOneByName(item_d);
+        const itemD = await itemService.findOneByName(item_d, ['validSizes']);
         if(!itemD){ throw new Error(); }
         if(!itemD.validSizes){ throw new Error(); }
         const compDtos = [
@@ -588,7 +588,7 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s menuItemComponents (add component)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['definedContainerItems']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.definedContainerItems){ throw new Error(); }
 
@@ -598,7 +598,7 @@ describe('menu item service', () => {
         if(!sizeRequest){ throw new Error(); }
         const sizes = sizeRequest.items;
         
-        const itemG = await itemService.findOneByName(item_g);
+        const itemG = await itemService.findOneByName(item_g, ['validSizes']);
         if(!itemG){ throw new Error(); }
         if(!itemG.validSizes){ throw new Error(); }
 
@@ -627,13 +627,13 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s menuItemComponents (modify component)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['definedContainerItems']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.definedContainerItems){ throw new Error(); }
 
         const compToModifyId = itemToUpdate.definedContainerItems[0].id;
 
-        const itemF = await itemService.findOneByName(item_f);
+        const itemF = await itemService.findOneByName(item_f, ['validSizes']);
         if(!itemF){ throw new Error(); }
         if(!itemF.validSizes){ throw new Error(); }
 
@@ -667,7 +667,7 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s menuItemComponents (remove component)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['definedContainerItems']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.definedContainerItems){ throw new Error(); }
 
@@ -693,10 +693,10 @@ describe('menu item service', () => {
     });
 
     it('should create a menu item with component options', async () => {
-        const itemA = await itemService.findOneByName(item_a);
+        const itemA = await itemService.findOneByName(item_a, ['validSizes']);
         if(!itemA){ throw new Error(); }
         if(!itemA.validSizes){ throw new Error(); }
-        const itemB = await itemService.findOneByName(item_b);
+        const itemB = await itemService.findOneByName(item_b, ['validSizes']);
         if(!itemB){ throw new Error(); }
         if(!itemB.validSizes){ throw new Error(); }
         const compOptionDtos = [
@@ -743,15 +743,16 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s componentOptions (add option)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['containerOptions']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.containerOptions){ throw new Error(); }
 
         const originalCompOptionslength = itemToUpdate.containerOptions.containerRules.length;
 
-        const itemF = await itemService.findOneByName(item_f);
+        const itemF = await itemService.findOneByName(item_f, ['validSizes']);
         if(!itemF){ throw new Error(); }
         if(!itemF.validSizes){ throw new Error(); }
+
         const createOptionDto = {
             mode: 'create',
             validMenuItemId: itemF.id,
@@ -781,7 +782,7 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s componentOptions (modify option)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['containerOptions']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.containerOptions){ throw new Error(); }
 
@@ -790,9 +791,10 @@ describe('menu item service', () => {
             id: comp.id,
         }) as UpdateChildMenuItemContainerRuleDto);
 
-        const itemC = await itemService.findOneByName(item_c);
+        const itemC = await itemService.findOneByName(item_c, ['validSizes']);
         if(!itemC){ throw new Error(); }
         if(!itemC.validSizes){ throw new Error(); }
+
         theRest[0].validMenuItemId = itemC.id;
         theRest[0].validSizeIds = itemC.validSizes.map(size => size.id);
 
@@ -821,7 +823,7 @@ describe('menu item service', () => {
     });
 
     it('should update menuItem\'s componentOptions (remove option)', async () => {
-        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId);
+        const itemToUpdate = await itemService.findOne(menuItemCompOptionsTestId, ['containerOptions']);
         if(!itemToUpdate){ throw new Error(); }
         if(!itemToUpdate.containerOptions){ throw new Error(); }
 

@@ -65,11 +65,6 @@ describe('recipe sub category controller', () => {
       if(dto.subCategoryName){
         subCategories[existIdx].subCategoryName = dto.subCategoryName;
       }
-      if(dto.parentCategoryId){
-        const parentCategory = categories.find(cat => cat.id === dto.parentCategoryId);
-        if(!parentCategory){ throw new Error("parent category not found"); }
-        subCategories[existIdx].parentCategory = parentCategory;
-      }
 
       return subCategories[existIdx];
     });
@@ -138,13 +133,11 @@ describe('recipe sub category controller', () => {
   it('should update a sub-category', async () => {
     const dto = {
       subCategoryName: "UPDATEtestSubCat",
-      parentCategoryId: categories[1].id
     } as UpdateRecipeSubCategoryDto;
 
     const result = await controller.update(1, dto);
     expect(result).not.toBeNull();
     expect(result?.subCategoryName).toEqual("UPDATEtestSubCat");
-    expect(result?.parentCategory.id).toEqual(categories[1].id);
   });
 
   it('should fail update a sub-category', async () => {

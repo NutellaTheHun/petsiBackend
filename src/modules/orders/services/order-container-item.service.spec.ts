@@ -61,11 +61,18 @@ describe('order container item service', () => {
     });
 
     it('should update item', async () => {
-        const itemF = await itemService.findOneByName(item_f);
+        const toUpdate = await service.findOne(testId, ['parentOrderItem']);
+        if(!toUpdate){ throw new Error(); }
+
+        const parentMenuItem = await itemService.findOne(toUpdate.parentOrderItem.id);
+        if(!parentMenuItem){ throw new Error(); }
+        
+        const itemF = await itemService.findOneByName(item_f, ['validSizes']);
         if(!itemF){ throw new Error(); }
         if(!itemF.validSizes){ throw new Error(); }
 
         const dto = {
+            parentContainerMenuItemId: parentMenuItem.id,
             containedMenuItemId: itemF.id,
             containedMenuItemSizeId: itemF.validSizes[0].id,
         } as UpdateOrderContainerItemDto;

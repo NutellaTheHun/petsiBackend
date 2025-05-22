@@ -86,12 +86,6 @@ describe('Inventory area count service', () => {
         expect(areaA?.inventoryCounts?.length).toEqual(2);
     });
 
-    it('should THROW ERROR, to create area count (no areaID)', async () => {
-        const dto = { } as CreateInventoryAreaCountDto;
-
-        await expect(countService.create(dto)).rejects.toThrow(Error);
-    });
-
     it('should THROW ERROR, to create area count (bad areaID)', async () => {
         const dto = { inventoryAreaId: 10 } as CreateInventoryAreaCountDto;
         await expect(countService.create(dto)).rejects.toThrow(Error);

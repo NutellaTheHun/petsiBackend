@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
@@ -12,6 +12,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
     constructor(
         @InjectRepository(InventoryItem)
         private readonly repo: Repository<InventoryItem>,
+
+        @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
     ){ super(repo); }
 

@@ -35,7 +35,18 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
         // Get parent container options with rules
         const options = await this.getContainerOptions(dto.parentContainerMenuItemId);
-        if(!options){ throw new Error("options is null"); }
+        if(!options){ 
+            // check that parentItem is a definedContainer
+            const parentMenuItem = await this.itemService.findOne(dto.parentContainerMenuItemId, ['definedContainerItems']);
+            if(!parentMenuItem){ throw new Error();}
+            if(!parentMenuItem.definedContainerItems){ throw new Error();}
+
+            if(parentMenuItem.definedContainerItems.length > 0){
+                return null;
+            }
+            
+            throw new Error("parent container item has no options and isn't a defined container."); 
+        }
         
         // check if DTO ITEM is valid in CONTAINER
         const rule = this.GetItemRule(dto.containedMenuItemId, options.containerRules);
@@ -52,7 +63,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             return `dto size ${size.name} with id ${size.id} is not valid for the contained item ${item.itemName} with id ${item.id}`;
         }
 
-
         // check if the DTO SIZE is valid in the CONTAINER
         const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, rule.validSizes);
         if(!validSize){
@@ -61,7 +71,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             return `dto size ${size.name} with id ${size.id} is not valid in the parent container item ${container.itemName} with id ${container.id}`
         }
 
-        
         return null;
     }
     

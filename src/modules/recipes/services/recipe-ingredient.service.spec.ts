@@ -216,6 +216,7 @@ describe('recipe ingredient service', () => {
     const dto = {
       mode: 'update',
       ingredientInventoryItemId: newItem.id,
+      ingredientRecipeId: null,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testSubRecId, dto);
@@ -239,6 +240,7 @@ describe('recipe ingredient service', () => {
     const dto = {
       mode: 'update',
       ingredientRecipeId: newRec.id,
+      ingredientInventoryItemId: null,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testIngredId, dto);
