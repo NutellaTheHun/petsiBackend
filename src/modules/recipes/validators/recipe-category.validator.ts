@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
@@ -12,6 +12,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
     constructor(
         @InjectRepository(RecipeCategory)
         private readonly repo: Repository<RecipeCategory>,
+
+        @Inject(forwardRef(() => RecipeSubCategoryService))
         private readonly subCategoryService: RecipeSubCategoryService
     ){ super(repo); }
 
@@ -26,7 +28,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
         if(dto.subCategoryDtos){
             const duplicateSubCats = this.helper.hasDuplicatesByComposite(
                 dto.subCategoryDtos,
-                (item) => `${item}`
+                (item) => `${item.subCategoryName}`
             );
             if(duplicateSubCats){
                 return 'category has duplicate subcategories (same name)';
@@ -62,7 +64,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
 
             const duplicateSubCats = this.helper.hasDuplicatesByComposite(
                 resolvedDtos,
-                (item) => `${item}`
+                (item) => `${item.subCategoryName}`
             );
             if(duplicateSubCats){
                 return 'category has duplicate subcategories (same name)';

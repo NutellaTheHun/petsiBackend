@@ -1,0 +1,611 @@
+import { TestingModule } from "@nestjs/testing";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { FOOD_B } from "../../inventory-items/utils/constants";
+import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { POUND } from "../../unit-of-measure/utils/constants";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
+import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
+import { RecipeCategoryService } from "../services/recipe-category.service";
+import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
+import { RecipeService } from "../services/recipe.service";
+import { REC_A, REC_B, REC_C, REC_CAT_A } from "../utils/constants";
+import { RecipeTestUtil } from "../utils/recipe-test.util";
+import { getRecipeTestingModule } from "../utils/recipes-testing.module";
+import { RecipeValidator } from "./recipe.valdiator";
+import { UpdateChildRecipeIngredientDto } from "../dto/recipe-ingredient/update-child-recipe-ingedient.dto";
+
+describe('recipe validator', () => {
+    let testingUtil: RecipeTestUtil;
+    let dbTestContext: DatabaseTestContext;
+
+    let validator: RecipeValidator;
+
+    let recipeService: RecipeService;
+    let categoryService: RecipeCategoryService;
+    let subCategoryService: RecipeSubCategoryService;
+    let measureService: UnitOfMeasureService;
+    let inventoryService: InventoryItemService;
+
+    beforeAll(async () => {
+        const module: TestingModule = await getRecipeTestingModule();
+        validator = module.get<RecipeValidator>(RecipeValidator);
+
+        recipeService = module.get<RecipeService>(RecipeService);
+        categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
+        subCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
+        measureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
+        inventoryService = module.get<InventoryItemService>(InventoryItemService);
+
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
+        await testingUtil.initRecipeTestingDatabase(dbTestContext);
+    });
+
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
+    
+    it('should be defined', () => {
+        expect(validator).toBeDefined
+    });
+
+    it('should validate create', async () => {
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as CreateChildRecipeIngredientDto[];
+
+        const dto = {
+            recipeName: "CREATE",
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as CreateRecipeDto;
+
+        const result = await validator.validateCreate(dto);
+
+        expect(result).toBeNull();
+    });
+
+    it('should fail create: name already exists', async () => {
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as CreateChildRecipeIngredientDto[];
+
+        const dto = {
+            recipeName: REC_C,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as CreateRecipeDto;
+
+        const result = await validator.validateCreate(dto);
+
+        expect(result).toEqual(`Recipe with name ${REC_C} already exists`);
+    });
+
+    it('should fail create: subcatgory with no category', async () => {
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as CreateChildRecipeIngredientDto[];
+
+        const dto = {
+            recipeName: "CREATE",
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as CreateRecipeDto;
+
+        const result = await validator.validateCreate(dto);
+
+        expect(result).toEqual('cannot assign a sub-category without an assigned category');
+    });
+
+    it('should fail update: subcategory with wrong parent category', async () => {
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const subCats = (await subCategoryService.findAll()).items;
+
+        const badSubCats = subCats.filter(subCat => !category.subCategories.some(validCat => validCat.id === subCat.id));
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as CreateChildRecipeIngredientDto[];
+
+        const dto = {
+            recipeName: "CREATE",
+            categoryId: category.id,
+            subCategoryId: badSubCats[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as CreateRecipeDto;
+
+        const result = await validator.validateCreate(dto);
+
+        expect(result).toEqual('subcategory must be a child to the given RecipeCategory');
+    });
+
+    it('should fail create: duplicate recipe ingredients', async () => {
+         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as CreateChildRecipeIngredientDto[];
+
+        const dto = {
+            recipeName: "CREATE",
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as CreateRecipeDto;
+
+        const result = await validator.validateCreate(dto);
+
+        expect(result).toEqual('recipe cannot have duplicate ingredients');
+    });
+
+
+    it('should pass update', async () => {
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: "UPDATE",
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toBeNull();
+    });
+
+    it('should fail update: name already exists', async () => {
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: REC_C,
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toEqual(`Recipe with name ${dto.recipeName} already exists`);
+    });
+
+    it('should fail update: subcategory with no category', async () => {
+       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: "UPDATE",
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toEqual('cannot assign a sub-category without an assigned category');
+    });
+
+    it('should fail update: subcategory with wrong parent category', async () => {
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const subCats = (await subCategoryService.findAll()).items;
+
+        const badSubCats = subCats.filter(subCat => !category.subCategories.some(validCat => validCat.id === subCat.id))
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: "UPDATE",
+            categoryId: category.id,
+            subCategoryId: badSubCats[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toEqual('subcategory must be a child to the given RecipeCategory');
+    });
+
+    it('should fail update: duplicate ingredients (update)', async () => {
+       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: "UPDATE",
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toEqual('recipe cannot have duplicate ingredients');
+    });
+
+    it('should fail update: duplicate ingredients (create)', async () => {
+       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if(!toUpdate){ throw new Error(); }
+
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if(!category){ throw new Error(); }
+
+        const batchMeasurement = await measureService.findOneByName(POUND);
+        if(!batchMeasurement){ throw new Error(); }
+
+        const servingMeasurement = await measureService.findOneByName(POUND);
+        if(!servingMeasurement){ throw new Error(); }
+
+        const invIngred = await inventoryService.findOneByName(FOOD_B);
+        if(!invIngred){ throw new Error(); }
+
+        const recIngred = await recipeService.findOneByName(REC_B);
+        if(!recIngred){ throw new Error(); }
+
+        const ingredDtos = [
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+            {
+                mode: 'update',
+                id: toUpdate.ingredients[0].id,
+                ingredientRecipeId: recIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as UpdateChildRecipeIngredientDto,
+            {
+                mode: 'create',
+                ingredientInventoryItemId: invIngred.id,
+                quantity: 1,
+                quantityMeasurementId: servingMeasurement.id,
+            } as CreateChildRecipeIngredientDto,
+        ] as (CreateChildRecipeIngredientDto | UpdateChildRecipeIngredientDto)[];
+
+        const dto = {
+            recipeName: "UPDATE",
+            categoryId: category.id,
+            subCategoryId: category.subCategories[0].id,
+            batchResultMeasurementId: batchMeasurement.id,
+            batchResultQuantity: 1,
+            servingSizeMeasurementId: servingMeasurement.id,
+            servingSizeQuantity: 1,
+            ingredientDtos: ingredDtos,
+        } as UpdateRecipeDto;
+
+
+        const result = await validator.validateUpdate(toUpdate.id, dto);
+        expect(result).toEqual('recipe cannot have duplicate ingredients');
+    });
+});

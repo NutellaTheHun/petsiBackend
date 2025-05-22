@@ -24,6 +24,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
         private readonly templateItemService: TemplateMenuItemService,
 
         private menuItemService: MenuItemService,
+        
         validator: TemplateMenuItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,

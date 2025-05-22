@@ -51,7 +51,7 @@ export class Recipe {
      * - 5(batchResultQuantity) pounds of berry mix
      * - 1(batchResultQuantity) unit of Blueberry Pie.
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'float' })
     @Check(`"batchResultQuantity" >= 1`)
     batchResultQuantity?: number | null;
 
@@ -75,7 +75,7 @@ export class Recipe {
      * - A recipe for Banana Bread produces a loaf, and is then sold by the slice.
      * - 1 loaf could have a serving size of say 8(servingSizeQuantity) units.
      */
-    @Column({ nullable: true })
+    @Column({ nullable: true, type: 'float' })
     @Check(`"servingSizeQuantity" >= 1`)
     servingSizeQuantity?: number | null;
 

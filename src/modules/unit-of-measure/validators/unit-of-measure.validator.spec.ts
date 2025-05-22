@@ -1,15 +1,12 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/create-unit-of-measure-category.dto";
-import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
-import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";
-import { FL_OUNCE, GALLON, GRAM, OUNCE_ABBREV, UNIT, VOLUME, WEIGHT } from "../utils/constants";
-import { getUnitOfMeasureTestingModule } from "../utils/unit-of-measure-testing-module";
-import { UnitOfMeasureTestingUtil } from "../utils/unit-of-measure-testing.util";
-import { UnitOfMeasureCategoryValidator } from "./unit-of-measure-category.validator";
 import { CreateUnitOfMeasureDto } from "../dto/unit-of-measure/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/unit-of-measure/update-unit-of-measure.dto";
+import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";
 import { UnitOfMeasureService } from "../services/unit-of-measure.service";
+import { FL_OUNCE, GALLON, GRAM, OUNCE_ABBREV, UNIT } from "../utils/constants";
+import { getUnitOfMeasureTestingModule } from "../utils/unit-of-measure-testing-module";
+import { UnitOfMeasureTestingUtil } from "../utils/unit-of-measure-testing.util";
 import { UnitOfMeasureValidator } from "./unit-of-measure.validator";
 
 describe('unit of measure validator', () => {
@@ -28,7 +25,7 @@ describe('unit of measure validator', () => {
 
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<UnitOfMeasureTestingUtil>(UnitOfMeasureTestingUtil);
-        await testingUtil.initUnitCategoryTestDatabase(dbTestContext);
+        await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
     });
 
     afterAll(async () => {

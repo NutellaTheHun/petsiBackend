@@ -8,7 +8,7 @@ import { RoleTestUtil } from "../utils/role-test.util";
 import { getRoleTestingModule } from "../utils/role-testing-module";
 import { RoleValidator } from "./role.validator";
 
-describe('order category validator', () => {
+describe('role validator', () => {
     let testingUtil: RoleTestUtil;
     let dbTestContext: DatabaseTestContext;
 
@@ -43,7 +43,7 @@ describe('order category validator', () => {
         expect(result).toBeNull();
     });
 
-    it('should fail create (name already exists)', async () => {
+    it('should fail create: name already exists', async () => {
         const dto = {
             roleName: ROLE_MANAGER
         } as CreateRoleDto;
@@ -65,7 +65,7 @@ describe('order category validator', () => {
         expect(result).toBeNull();
     });
 
-    it('should fail update (name already exists)', async () => {
+    it('should fail update: name already exists', async () => {
         const toUpdate = await service.findOneByName(ROLE_ADMIN);
         if(!toUpdate){ throw new Error(); }
 

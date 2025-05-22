@@ -16,6 +16,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategory>{
         @Inject(forwardRef(() => RecipeCategoryBuilder))
         categoryBuilder: RecipeCategoryBuilder,
 
+        @Inject(forwardRef(() => RecipeCategoryValidator))
         validator: RecipeCategoryValidator,
         
         requestContextService: RequestContextService,

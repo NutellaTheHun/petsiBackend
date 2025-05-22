@@ -2,11 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
-import { CreateRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-recipe-sub-category.dto";
-import { UpdateRecipeCategoryDto } from "../dto/recipe-category/update-recipe-category.dto";
-import { UpdateRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-recipe-sub-category.dto";
+import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
 import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
+import { UpdateRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-recipe-sub-category.dto";
+import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 
 @Injectable()
 export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory> {
@@ -15,14 +14,13 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
         private readonly repo: Repository<RecipeSubCategory>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateRecipeSubCategoryDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildRecipeSubCategoryDto): Promise<string | null> {
         const exists = await this.repo.findOne({ 
             where: {
                 subCategoryName: dto.subCategoryName,
-                parentCategory: { id: dto.parentCategoryId }
         }});
         if(exists) {
-            return `sub category for given category with name ${dto.subCategoryName} already exists`;
+            return `sub category with name ${dto.subCategoryName} already exists`;
         }
 
         return null;
@@ -30,15 +28,12 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
     
     public async validateUpdate(id: number, dto: UpdateRecipeSubCategoryDto | UpdateChildRecipeSubCategoryDto): Promise<string | null> {
         if(dto.subCategoryName){
-            const currentSubCat = await this.repo.findOne({ where: { id }, relations: ['parentCategory']});
-
             const exists = await this.repo.findOne({ 
                 where: {
                     subCategoryName: dto.subCategoryName,
-                    parentCategory: { id: currentSubCat?.parentCategory.id }
             }});
             if(exists) {
-                return `sub category for given category with name ${dto.subCategoryName} already exists`;
+                return `sub category with name ${dto.subCategoryName} already exists`;
             }
         }
         return null;
