@@ -57,6 +57,7 @@ export class TemplateValidator extends ValidatorBase<Template> {
             // no duplicate menuItems
             const resolvedItemDtos: {itemId: number}[] = [];
             const resolvedTablePosDtos: {pos: number}[] = [];
+            const resolvedIds: {updateIds: number}[] = [];
             for(const d of dto.templateItemDtos){
                 if(d.mode === 'create'){
                     resolvedItemDtos.push({itemId: d.menuItemId});
@@ -67,8 +68,11 @@ export class TemplateValidator extends ValidatorBase<Template> {
 
                     resolvedItemDtos.push({itemId: d.menuItemId ?? currentItem.menuItem.id});
                     resolvedTablePosDtos.push({pos: d.tablePosIndex ?? currentItem.tablePosIndex});
+                    resolvedIds.push({updateIds: d.id });
                 }
             }
+
+            // no duplicate menuItems
             const duplicateItems = this.helper.hasDuplicatesByComposite(
                 resolvedItemDtos,
                 (item) => `${item.itemId}`
@@ -76,6 +80,7 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if(duplicateItems){
                 return 'template cannot have items with multiple menuItems';
             }
+
             // no duplicate tablePosIndex
             const duplicatePos = this.helper.hasDuplicatesByComposite(
                 resolvedTablePosDtos,
@@ -83,6 +88,15 @@ export class TemplateValidator extends ValidatorBase<Template> {
             );
             if(duplicatePos){
                 return 'template cannot have items with duplicate tablePosIndex values';
+            }
+
+            // no multiple update dtos for same entity
+            const duplicateIds = this.helper.hasDuplicatesByComposite(
+                resolvedIds,
+                (item) => `${item.updateIds}`
+            );
+            if(duplicateIds){
+                return 'template has multiple update dtos for the same template item';
             }
         }
 

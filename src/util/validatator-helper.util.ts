@@ -13,43 +13,20 @@ export class ValidatorHelper {
      * Either the array of validSizes from the current {@link MenuItem} within {@link OrderContainerItem}
      * 
      * or array of validSizes from the {@link MenuItemContainerRule}
-     * @returns 
+     * @returns true if sizeList contains sizeToValidate, false if not found.
      */
     public validateSize(sizeToValidateId: number, sizeList: MenuItemSize[]): boolean {
         return sizeList.some(size => size.id === sizeToValidateId)
     }
 
     /**
-     * Checks for duplicates based on a combination of indexed values across arrays.
-     * Example: checkDuplicates([1, 2], [10, 20]) => checks (1-10), (2-20)
+     * Checks for duplicates by passing a array of objects and passing a function to create a unique key for each.
+     * @param items any array of objects
+     * @param getCompositeKey the unique identifier accross the array
      * 
-     * @param arrays Arrays of primitive values (must all be the same length)
-     * @returns true if any duplicate composite key exists, false otherwise
+     * for example: an array of inventory item sizes, identify unique sizes with the key "${packageTypeId}:${MeasureUnitId}"
+     * @returns true if all unique, false if duplicate found.
      */
-    public hasDuplicates(...arrays: (string[] | number[])[]): boolean {
-        if(arrays.length === 0) return false;
-
-        const length = arrays[0].length;
-
-        if(!arrays.every(arr => arr.length === length)){
-            throw new Error('All arrays must have same length')
-        }
-
-        const seen = new Set<string>();
-
-        for (let i = 0; i < length; i++) {
-            const compositeKey = arrays.map(arr => String(arr[i])).join('-');
-
-            if (seen.has(compositeKey)) {
-                return true;
-            }
-
-            seen.add(compositeKey);
-        }
-
-        return false;
-    }
-
     public hasDuplicatesByComposite<T>(
         items: T[],
         getCompositeKey: (item: T) => string

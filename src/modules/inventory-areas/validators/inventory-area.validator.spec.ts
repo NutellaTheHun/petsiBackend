@@ -75,6 +75,4 @@ describe('inventory area validator', () => {
         const result = await validator.validateUpdate(area.id, dto);
         expect(result).toEqual(`Inventory with name ${AREA_A} already exists`);
     });
-
-    it('should fail update: ')
 });

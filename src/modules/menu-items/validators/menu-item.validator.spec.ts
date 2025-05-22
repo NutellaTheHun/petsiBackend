@@ -487,6 +487,9 @@ describe('menu item validator', () => {
 
         const toUpdate = optionsRequest.items[0].parentContainer;
 
+        const parentMenuitem = await itemService.findOne(toUpdate.id, ['validSizes']);
+        if(!parentMenuitem){ throw new Error(); }
+
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
         if(!containedItemA){ throw new Error(); }
 
@@ -495,7 +498,21 @@ describe('menu item validator', () => {
 
 
         const containerDtos = [
-        ] as (CreateChildMenuItemContainerItemDto | UpdateChildOrderContainerItemDto)[];
+            {
+                mode: 'create',
+                parentContainerSizeId: parentMenuitem.id,
+                containedMenuItemId: containedItemA.id,
+                containedMenuItemSizeId: containedItemA.validSizes[0].id,
+                quantity: 1,
+            } as CreateChildMenuItemContainerItemDto,
+            {
+                mode: 'create',
+                parentContainerSizeId: parentMenuitem.id,
+                containedMenuItemId: containedItemB.id,
+                containedMenuItemSizeId: containedItemB.validSizes[0].id,
+                quantity: 1,
+            } as CreateChildMenuItemContainerItemDto,
+        ] as CreateChildMenuItemContainerItemDto[];
 
         const dto = {
             definedContainerItemDtos: containerDtos,

@@ -19,6 +19,9 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     ){ super(repo); }
 
     public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<string | null> {
+        if(dto.containerRuleDtos.length === 0){
+            return 'container options cannot have 0 rules'
+        }
         // Check no duplicate item rules
         const dupliateItemRules = this.helper.hasDuplicatesByComposite(
             dto.containerRuleDtos,
@@ -31,8 +34,11 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     }
     
     public async validateUpdate(id: number, dto: UpdateMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto): Promise<string | null> {
+        if(dto.containerRuleDtos && dto.containerRuleDtos.length === 0){
+            return 'container options cannot have 0 rules'
+        }
         // Check no duplicate item rules
-        if(dto.containerRuleDtos){
+        if(dto.containerRuleDtos && dto.containerRuleDtos.length > 0){
             const resolvedDtos: {validMenuItemId: number}[] = [];
             for(const d of dto.containerRuleDtos){
                 if(d.mode === 'create'){

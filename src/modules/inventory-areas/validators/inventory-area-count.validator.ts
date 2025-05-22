@@ -18,6 +18,22 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     }
     
     public async validateUpdate(id: number, dto: UpdateInventoryAreaCountDto): Promise<string | null> {
+        // no duplicate update dtos (same id)
+        if(dto.itemCountDtos && dto.itemCountDtos.length > 0){
+            const resolvedDtos: {updateId: number}[] = [];
+            for(const d of dto.itemCountDtos){
+                if(d.mode === 'update'){
+                    resolvedDtos.push({ updateId: d.id});
+                }
+            }
+            const hasDuplateIds = this.helper.hasDuplicatesByComposite(
+                resolvedDtos,
+                (resolved) => `${resolved.updateId}`
+            );
+            if(hasDuplateIds){
+                return `multiple update dtos for same id`;
+            }
+        }
         return null;
     }
 }

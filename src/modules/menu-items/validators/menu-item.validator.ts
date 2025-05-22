@@ -6,6 +6,7 @@ import { CreateMenuItemDto } from "../dto/menu-item/create-menu-item.dto";
 import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
+import { MenuItemService } from "../services/menu-item.service";
 
 @Injectable()
 export class MenuItemValidator extends ValidatorBase<MenuItem> {
@@ -15,6 +16,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         
         @Inject(forwardRef(() => MenuItemContainerItemService))
         private readonly containerItemService: MenuItemContainerItemService,
+
+        @Inject(forwardRef(() => MenuItemService))
+        private readonly itemService: MenuItemService,
     ){ super(repo); }
 
     public async validateCreate(dto: CreateMenuItemDto): Promise<string | null> {
@@ -25,12 +29,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         }
 
         // Cannot assign both containerOptions and a definedContainer 
-        if(dto.containerOptionDto && dto.definedContainerItemDtos){
+        if(dto.containerOptionDto && dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0){
             return `Cannot create MenuItem with both containerOptions and definedContainerItems`;
         }
 
         // no parentSize / item / size duplicate
-        if(dto.definedContainerItemDtos){
+        if(dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0){
             const duplicateItems = this.helper.hasDuplicatesByComposite(
                 dto.definedContainerItemDtos,
                 (item) => `${item.parentContainerSizeId}:${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
@@ -62,7 +66,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         }
 
         // Cannot assign both containerOptions and a definedContainer
-        if(dto.containerOptionDto && dto.definedContainerItemDtos){
+        if(dto.containerOptionDto && dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0){
             return `Cannot create MenuItem with both containerOptions and definedContainerItems`;
         }
 
@@ -73,7 +77,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if(!currentItem){ throw new Error(); }
 
             // If updating definedContainer while item has container options
-            if(currentItem?.containerOptions && dto.definedContainerItemDtos){
+            if(currentItem?.containerOptions && dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0){
                 if(dto.containerOptionDto !== null){
                     return `current item has containerOptions, must set to null before updating with defined container`;
                 }
@@ -87,8 +91,21 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             }
         }
 
-        // no parentSize / item / size duplicate
-        if(dto.definedContainerItemDtos){
+        if(dto.definedContainerItemDtos && dto.definedContainerItemDtos?.length > 0){
+            // validate parent.validSizes and containerItem.parentContainerSize
+            const parentItem = await this.itemService.findOne(id, ['validSizes']);
+            if(!parentItem){ throw new Error(); }
+
+            for(const d of dto.definedContainerItemDtos){
+                if(d.mode === 'create'){
+                    const isValidSize = this.helper.validateSize(d.parentContainerSizeId, parentItem.validSizes);
+                }
+                else if (d.mode === 'update'){
+
+                }
+            }
+            
+            // no parentSize / item / size duplicate
             const resolvedDtos: {parentContainerSizeId: number; containedMenuItemId: number; containedMenuItemSizeId: number}[] = [];
             for(const d of dto.definedContainerItemDtos){
                 if(d.mode === 'create'){

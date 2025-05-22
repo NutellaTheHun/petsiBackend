@@ -1,23 +1,20 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
+import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { BAG_PKG, BOX_PKG, CAN_PKG, DRY_B, FOOD_A, OTHER_A } from "../../inventory-items/utils/constants";
+import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
+import { FL_OUNCE, KILOGRAM, POUND } from "../../unit-of-measure/utils/constants";
+import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
+import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaItemValidator } from "./inventory-area-item.validator";
-import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
-import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
-import { BAG_PKG, BOX_PKG, CAN_PKG, DRY_B, FOOD_A, OTHER_A } from "../../inventory-items/utils/constants";
-import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
-import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
-import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { FL_OUNCE, KILOGRAM, POUND } from "../../unit-of-measure/utils/constants";
-import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
-import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
-import { item_e } from "../../menu-items/utils/constants";
 
 describe('inventory area item validator', () => {
     let testingUtil: InventoryAreaTestUtil;

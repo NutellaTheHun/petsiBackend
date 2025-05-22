@@ -50,7 +50,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
         // sizes must be valid to the menu item in general
         // ContainerRule.validItem.validSizes is a superset of ContainerRule.validSize.
-        if(dto.validMenuItemId && dto.validSizeIds){
+        if(dto.validMenuItemId && dto.validSizeIds && dto.validSizeIds.length > 0){
             const item = await this.menuItemService.findOne(dto.validMenuItemId, ['validSizes']);
             if(!item){ throw new Error('item not found'); }
             if(!item.validSizes){ throw new Error('valid sizes not found'); }
@@ -62,7 +62,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         }
         // If updating the validSizes, get the current item
         // then check that the new validSizes are contained within the currentItem's validItems.
-        else if(dto.validSizeIds){
+        else if(dto.validSizeIds && dto.validSizeIds.length > 0){
             const currentRule = await this.containerRuleService.findOne(id, ['validItem']);
             if(!currentRule){ throw new Error('item not found'); }
             if(!currentRule.validItem){ throw new Error('valid sizes not found'); }

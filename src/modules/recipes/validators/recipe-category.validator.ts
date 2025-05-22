@@ -49,6 +49,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
 
         if(dto.subCategoryDtos){
             const resolvedDtos: {subCategoryName: string}[] = [];
+            const resolvedIds: {updateId: number}[] = [];
             for(const d of dto.subCategoryDtos){
                 if(d.mode === 'create'){
                     resolvedDtos.push({subCategoryName: d.subCategoryName});
@@ -59,6 +60,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
                         subCatName = (await this.subCategoryService.findOne(d.id)).subCategoryName
                     }
                     resolvedDtos.push({subCategoryName: subCatName});
+                    resolvedIds.push({updateId: d.id});
                 }
             }
 
@@ -68,6 +70,14 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
             );
             if(duplicateSubCats){
                 return 'category has duplicate subcategories (same name)';
+            }
+
+            const duplicateIds = this.helper.hasDuplicatesByComposite(
+                resolvedIds,
+                (item) => `${item.updateId}`
+            );
+            if(duplicateSubCats){
+                return 'category has duplicate update sub category dtos for the same entity';
             }
         }
         return null;

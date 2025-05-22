@@ -20,6 +20,9 @@ export class OrderValidator extends ValidatorBase<Order> {
     ){ super(repo); }
 
     public async validateCreate(dto: CreateOrderDto): Promise<string | null> {
+        if(dto.orderedMenuItemDtos.length === 0){
+            return 'order has no ordered items';
+        }
         // Validate no duplicate OrderMenuItems
         const hasDuplicateItems = this.helper.hasDuplicatesByComposite(
             dto.orderedMenuItemDtos,
@@ -34,8 +37,12 @@ export class OrderValidator extends ValidatorBase<Order> {
     
     public async validateUpdate(id: number, dto: UpdateOrderDto): Promise<string | null> {
 
+        if(dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length === 0){
+            return 'order has no ordered items';
+        }
+
         // Validate no duplicate OrderMenuItems
-        if(dto.orderedMenuItemDtos){
+        if(dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length > 0){
 
             // resolve update dtos to ensure they contain both menuItemId and menuItemSizeId
             const resolvedDtos: { menuItemId: number; menuItemSizeId: number }[] = [];

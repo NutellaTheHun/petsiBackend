@@ -87,7 +87,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         else if(!dto.categoryId && dto.subCategoryId){
             const currentCategory = (await this.recipeService.findOne(id, ['category'], ['category.subCategories'])).category;
             if(!currentCategory){ 
-                return 'cannot assign a sub-category without an assigned category'
+                return 'cannot assign a sub-category without an assigned category';
              }
             if(!currentCategory.subCategories){ throw new Error('sub-categories is null'); }
 
@@ -98,7 +98,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
         //No duplicate recipeIngredients
         if(dto.ingredientDtos){
-            const resolvedDtos: {ingredient: string;}[] = []
+            const resolvedDtos: {ingredient: string;}[] = [];
+            const resolvedIds: {updateId: number;}[] = [];
             for(const d of dto.ingredientDtos){
                     if(d.ingredientInventoryItemId){
                         resolvedDtos.push({ingredient: `I:${d.ingredientInventoryItemId}`});
@@ -106,13 +107,23 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                     else if(d.ingredientRecipeId){
                         resolvedDtos.push({ingredient: `R:${d.ingredientRecipeId}`});
                     }
+                    if(d.mode === 'update'){
+                        resolvedIds.push({updateId: d.id});
+                    }
             }
             const duplicateIngreds = this.helper.hasDuplicatesByComposite(
                 resolvedDtos,
                 (ingred) => `${ingred.ingredient}`
             );
             if(duplicateIngreds){
-                return 'recipe cannot have duplicate ingredients'
+                return 'recipe cannot have duplicate ingredients';
+            }
+            const duplicateIds = this.helper.hasDuplicatesByComposite(
+                resolvedIds,
+                (item) => `${item.updateId}`
+            );
+            if(duplicateIds){
+                return 'multiple ingredient update dtos for the same entity';
             }
         }
         return null;

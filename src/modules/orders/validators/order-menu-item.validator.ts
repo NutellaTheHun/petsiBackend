@@ -41,7 +41,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
         }
 
         // Check if order container item DTOS have duplicate item/item sizes
-        if(dto.orderedItemContainerDtos){
+        if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
             const hasDuplateItems = this.helper.hasDuplicatesByComposite(
                 dto.orderedItemContainerDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
@@ -56,7 +56,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
     
     public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<string | null> {
 
-        // If updating menuItem or itemSize, check if they are valid
+        // If updating menuItem or itemSize, check if size is valid for item
         if(dto.menuItemId || dto.menuItemSizeId){
             const currentOrderItem = await this.orderItemService.findOne(id, ['size', 'menuItem']);
 
@@ -76,17 +76,10 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
         // Validate:
         // item container DTOs cannot contain duplicate item/size combinations
         // item container DTOS cannot contain multiple updates for the same item
-        if(dto.orderedItemContainerDtos){
-            // check for multiple update DTOS for the same entity
-            const duplicateIds = this.helper.hasDuplicates(
-                dto.orderedItemContainerDtos.filter(dto => dto.mode === 'update').map(uDto => uDto.id),
-            )
-            if(duplicateIds){
-                return `order item container updates dtos cannot have multiple update request for the same entity.`;
-            } 
-
+        if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
             // resolve update dto to have menuitem and size
             const resolvedDtos: {containedMenuItemId: number; containedMenuItemSizeId: number }[] = [];
+            const resolvedIds: {updateId: number; }[] = [];
             for(const d of dto.orderedItemContainerDtos){
                 if(d.mode === 'create'){
                     resolvedDtos.push({
@@ -101,8 +94,19 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                         containedMenuItemId: updateDto.containedMenuItemId ?? currentItem.containedItem.id,
                         containedMenuItemSizeId: updateDto.containedMenuItemSizeId ?? currentItem.containedItemSize.id
                     });
+                    resolvedIds.push({updateId: d.id});
                 }
             }
+            // Check duplicate update ids
+            const hasDuplateIds = this.helper.hasDuplicatesByComposite(
+                resolvedIds,
+                (item) => `${item.updateId}`
+            );
+            if(hasDuplateIds){
+                return `order item container updates dtos cannot have multiple update request for the same entity.`;
+            }
+
+            // Check duplicate ordered items
             const hasDuplateItems = this.helper.hasDuplicatesByComposite(
                 resolvedDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
