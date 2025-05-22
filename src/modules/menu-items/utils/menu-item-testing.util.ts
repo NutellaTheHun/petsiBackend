@@ -164,7 +164,7 @@ export class MenuItemTestingUtil {
      * @returns 
      */
     public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemContainerItem[]>{
-        await this.initMenuItemTestDatabase(testContext);
+        await this.initMenuItemContainerTestDatabase(testContext);
         
         const itemF = await this.itemService.findOneByName(item_f, ['validSizes']);
         if(!itemF){ throw new NotFoundException(); }

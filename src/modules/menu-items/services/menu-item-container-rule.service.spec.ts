@@ -7,7 +7,7 @@ import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerRuleService } from "./menu-item-container-rule.service";
 import { MenuItemService } from "./menu-item.service";
-import { item_a, item_b } from "../utils/constants";
+import { item_a, item_b, item_f } from "../utils/constants";
 import { MenuItem } from "../entities/menu-item.entity";
 
 describe('menu item container rule service', () => {
@@ -92,21 +92,12 @@ describe('menu item container rule service', () => {
         if(!toUpdate){ throw new Error("comp option is null"); }
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
-        let newItem: MenuItem;
-        if(toUpdate.validItem.itemName === item_a){
-            const itemB = await itemService.findOneByName(item_b, ['validSizes']);
-            if(!itemB){ throw new Error("item b is null"); }
-            if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
-            newItem = itemB;
-        } else {
-            const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-            if(!itemA){ throw new Error("item b is null"); }
-            if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
-            newItem = itemA;
-        }
-        
+        const newItem = await itemService.findOne(toUpdate.validItem.id, ['validSizes']);
+        if(!newItem){ throw new Error("item b is null"); }
+        if(!newItem.validSizes){ throw new Error("item b valid sizes is null"); }
+
         const dto = {
-            validSizeIds: newItem.validSizes?.map(size => size.id),
+            validSizeIds: newItem.validSizes.map(size => size.id),
         } as UpdateMenuItemContainerRuleDto;
 
         const result = await compOptionService.update(testId, dto);
@@ -119,19 +110,9 @@ describe('menu item container rule service', () => {
         if(!toUpdate){ throw new Error("comp option is null"); }
         if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
 
-        let newItem: MenuItem;
-        if(toUpdate.validItem.itemName === item_a){
-            const itemB = await itemService.findOneByName(item_b, ['validSizes']);
-            if(!itemB){ throw new Error("item b is null"); }
-            if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
-            newItem = itemB;
-        } else {
-            const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-            if(!itemA){ throw new Error("item b is null"); }
-            if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
-            newItem = itemA;
-        }
-        if(!newItem.validSizes){ throw new Error(); }
+        const newItem = await itemService.findOne(toUpdate.validItem.id, ['validSizes']);
+        if(!newItem){ throw new Error("item b is null"); }
+        if(!newItem.validSizes){ throw new Error("item b valid sizes is null"); }
 
         const dto = {
             validSizeIds: [ newItem.validSizes[0].id ],

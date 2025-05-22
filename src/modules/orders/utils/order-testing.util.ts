@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Options } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
@@ -11,6 +11,7 @@ import { OrderCategoryService } from "../services/order-category.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderCategoryNames } from "./constants";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 @Injectable()
 export class OrderTestingUtil {
@@ -25,6 +26,7 @@ export class OrderTestingUtil {
 
         private readonly menuItemService: MenuItemService,
         private readonly menuItemTestUtil: MenuItemTestingUtil,
+        private readonly optionService: MenuItemContainerOptionsService,
     ){
         this.orderTypeInit = false;
         this.orderInit = false;
@@ -96,27 +98,33 @@ export class OrderTestingUtil {
         }
 
         //Order Menu Item Components
-        if(!menuItems[0].validSizes){ throw new Error(); }
+        //if(!menuItems[0].validSizes){ throw new Error(); }
+        const items = (await this.menuItemService.findAll({ relations: ['containerOptions']})).items;
+        const containerItems = items.filter(item => item.containerOptions);
+
         const parentOrderItem = {
             order: orders[0],
-            menuItem: menuItems[0],
+            menuItem: containerItems[0],
             quantity: 1,
             size: menuItems[0].validSizes[0],
         } as OrderMenuItem
 
-        if(!menuItems[1].validSizes){ throw new Error(); }
+        if(!containerItems[0].containerOptions){ throw new Error(); }
+        const options = await this.optionService.findOne(containerItems[0].containerOptions.id);
+        if(!options){ throw new Error(); }
+        
         const comp_a = {
             parentOrderItem: parentOrderItem,
-            containedItem: menuItems[1],
-            containedItemSize: menuItems[1].validSizes[0],
+            containedItem: options.containerRules[0].validItem,
+            containedItemSize: options.containerRules[0].validSizes[0],
             quantity: 1,
         } as OrderContainerItem;
 
         if(!menuItems[2].validSizes){ throw new Error(); }
         const comp_b = {
             parentOrderItem: parentOrderItem,
-            containedItem: menuItems[2],
-            containedItemSize: menuItems[2].validSizes[0],
+           containedItem: options.containerRules[1].validItem,
+            containedItemSize: options.containerRules[1].validSizes[0],
             quantity: 1,
         } as OrderContainerItem;
 

@@ -10,7 +10,7 @@ import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";
-import { REC_A, REC_B, REC_C, REC_CAT_A } from "../utils/constants";
+import { REC_A, REC_B, REC_C, REC_CAT_A, REC_F } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeValidator } from "./recipe.valdiator";
@@ -392,7 +392,7 @@ describe('recipe validator', () => {
     });
 
     it('should fail update: subcategory with no category', async () => {
-        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        const toUpdate = await recipeService.findOneByName(REC_F, ['ingredients']);
         if(!toUpdate){ throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);

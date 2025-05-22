@@ -261,7 +261,6 @@ export class RecipeTestUtil {
                 .salesPrice(12.99)
                 .servingSizeMeasurementByName(GRAM)
                 .batchResultMeasurementByName(KILOGRAM)
-                .categoryByName(CONSTANT.REC_CAT_A)
                 .build(),
         ];
     }

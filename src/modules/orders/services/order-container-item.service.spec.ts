@@ -8,13 +8,17 @@ import { UpdateOrderContainerItemDto } from "../dto/order-container-item/update-
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderContainerItemService } from "./order-container-item.service";
+import { OrderMenuItemService } from "./order-menu-item.service";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 describe('order container item service', () => {
     let service: OrderContainerItemService;
     let testingUtil: OrderTestingUtil;
     let dbTestContext: DatabaseTestContext;
 
-    let itemService: MenuItemService;
+    let menuItemService: MenuItemService;
+    let orderItemService: OrderMenuItemService;
+    let optionService: MenuItemContainerOptionsService;
 
     let testId: number;
     let testIds: number[];
@@ -26,7 +30,9 @@ describe('order container item service', () => {
         await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
 
         service = module.get<OrderContainerItemService>(OrderContainerItemService);
-        itemService = module.get<MenuItemService>(MenuItemService);
+        menuItemService = module.get<MenuItemService>(MenuItemService);
+        orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
+        optionService = module.get<MenuItemContainerOptionsService>(MenuItemContainerOptionsService);
     });
 
     afterAll(async () => {
@@ -50,6 +56,7 @@ describe('order container item service', () => {
         expect(results).not.toBeNull();
 
         testIds = results.items.slice(0,3).map(type => type.id);
+
         testId = results.items[0].id;
     });
 
@@ -64,23 +71,25 @@ describe('order container item service', () => {
         const toUpdate = await service.findOne(testId, ['parentOrderItem']);
         if(!toUpdate){ throw new Error(); }
 
-        const parentMenuItem = await itemService.findOne(toUpdate.parentOrderItem.id);
+        const parentOrderItem = await orderItemService.findOne(toUpdate.parentOrderItem.id, ['menuItem']);
+        if(!parentOrderItem){ throw new Error(); }
+
+        const parentMenuItem = await menuItemService.findOne(parentOrderItem.menuItem.id, ['validSizes', 'containerOptions']);
         if(!parentMenuItem){ throw new Error(); }
+        if(!parentMenuItem.containerOptions){ throw new Error(); }
         
-        const itemF = await itemService.findOneByName(item_f, ['validSizes']);
-        if(!itemF){ throw new Error(); }
-        if(!itemF.validSizes){ throw new Error(); }
+        const options = await optionService.findOne(parentMenuItem.containerOptions.id);
 
         const dto = {
             parentContainerMenuItemId: parentMenuItem.id,
-            containedMenuItemId: itemF.id,
-            containedMenuItemSizeId: itemF.validSizes[0].id,
+            containedMenuItemId: options.containerRules[0].validItem.id,
+            containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
         } as UpdateOrderContainerItemDto;
 
         const result = await service.update(testId, dto);
         expect(result).not.toBeNull();
-        expect(result.containedItem.id).toEqual(itemF.id);
-        expect(result.containedItemSize.id).toEqual(itemF.validSizes[0].id);
+        expect(result.containedItem.id).toEqual(options.containerRules[0].validItem.id);
+        expect(result.containedItemSize.id).toEqual(options.containerRules[0].validSizes[0].id);
     });
 
     it('should update quantity', async () => {

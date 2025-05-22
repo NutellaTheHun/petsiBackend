@@ -328,32 +328,30 @@ describe('Inventory Item Service', () => {
 
     updateItemSizeId = item.itemSizes[0].id;
 
-    let newUnit: UnitOfMeasure;
-    if(sizes[0].measureUnit.name === POUND){
-      const unit = await measureService.findOneByName(KILOGRAM);
-      if(!unit){ throw new NotFoundException(); }
-      newUnit = unit;
-      newUnitId = newUnit.id;
-    } else {
-      const unit = await measureService.findOneByName(POUND);
-      if(!unit){ throw new NotFoundException(); }
-      newUnit = unit;
-      newUnitId = newUnit.id;
-    }
+    const itemSizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['measureUnit', 'packageType'])
+
+    const itemUnitSizeIds = itemSizes.map(size => size.measureUnit.id);
+    const itemPkgIds = itemSizes.map(size => size.packageType.id);
+
+    const units = (await measureService.findAll()).items;
+    const pkgs = (await packageService.findAll()).items;
+
+    const newUnits = units.filter(unit => !itemUnitSizeIds.find(itemSize => itemSize === unit.id));
+    const newPkgs = pkgs.filter(pkg => !itemPkgIds.find(itemPkg => itemPkg === pkg.id));
     
     const updateSizeDtos = [
       {
       mode:'update',
       id: item.itemSizes[0].id,
-      measureUnitId: newUnit.id,
-      inventoryPackageTypeId: sizes[0].packageType.id,
+      measureUnitId: newUnits[0].id,
+      inventoryPackageTypeId: newPkgs[0].id,
       cost: 12.50,
       } as UpdateChildInventoryItemSizeDto,
       {
       mode:'update',
       id: item.itemSizes[1].id,
-      measureUnitId: sizes[0].measureUnit.id,
-      inventoryPackageTypeId: sizes[1].packageType.id,
+      measureUnitId: newUnits[1].id,
+      inventoryPackageTypeId: newPkgs[1].id,
       } as UpdateChildInventoryItemSizeDto,
     ]
 
@@ -371,7 +369,7 @@ describe('Inventory Item Service', () => {
     // should reflect updated item size when queried
     const updatedSize = await sizeService.findOne(updateItemSizeId, ['measureUnit']);
     if(!updatedSize){ throw new NotFoundException(); }
-    expect(updatedSize.measureUnit.id).toEqual(newUnitId);
+    expect(updatedSize.measureUnit.id).toEqual(newUnits[0].id);
     
     expect(updatedSize.cost).toEqual("12.50");
   });
@@ -415,23 +413,20 @@ describe('Inventory Item Service', () => {
     const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
     if(!item){ throw new NotFoundException(); }
     if(!item.itemSizes){ throw new Error("item sizes are null"); }
+
     const sizes = await sizeService.findEntitiesById(item.itemSizes.map(size => size.id), ['inventoryItem','measureUnit','packageType']);
     if(!sizes){ throw new Error("queried sizes are null"); }
 
     updateItemPkgId = item.itemSizes[0].id;
 
-    let newPackage: InventoryItemPackage;
-    if(sizes[0].packageType.packageName === BOX_PKG){
-      const pkg = await packageService.findOneByName(CAN_PKG);
-      if(!pkg){ throw new NotFoundException(); }
-      newPackage = pkg;
-      newPkgId = newPackage.id;
-    } else {
-      const pkg = await packageService.findOneByName(BOX_PKG);
-      if(!pkg){ throw new NotFoundException(); }
-      newPackage = pkg;
-      newPkgId = newPackage.id;
-    }
+    const itemUnitSizeIds = sizes.map(size => size.measureUnit.id);
+    const itemPkgIds = sizes.map(size => size.packageType.id);
+
+    const units = (await measureService.findAll()).items;
+    const pkgs = (await packageService.findAll()).items;
+
+    const newUnits = units.filter(unit => !itemUnitSizeIds.find(itemSize => itemSize === unit.id));
+    const newPkgs = pkgs.filter(pkg => !itemPkgIds.find(itemPkg => itemPkg === pkg.id));
     
     const createUnit = await measureService.findOneByName(GALLON)
     if(!createUnit){ throw new NotFoundException(); }
@@ -442,8 +437,8 @@ describe('Inventory Item Service', () => {
       {
         mode:'update',
         id: sizes[0].id,
-        measureUnitId: createUnit.id,
-        inventoryPackageTypeId: sizes[0].packageType.id,
+        measureUnitId: newUnits[0].id,
+        inventoryPackageId: newPkgs[0].id,
       } as UpdateChildInventoryItemSizeDto,
       {
         mode:'create',

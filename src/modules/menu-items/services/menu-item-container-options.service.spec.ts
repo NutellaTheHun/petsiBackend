@@ -62,17 +62,19 @@ describe('menu item container options service', () => {
     it('should update container rules (add)', async () => {
         const toUpdate = await itemComponentOptionsService.findOne(testId); 
         if(!toUpdate){ throw new Error("menu item components to update is null"); }
-        if(!toUpdate.containerRules){ throw new Error("valid components  is null"); }
+        if(!toUpdate.containerRules){ throw new Error("container rules is null"); }
+
         const originalCompSize = toUpdate.containerRules.length;
 
-        const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error("item a is null"); }
-        if(!itemA.validSizes){ throw new Error("valid sizes is null"); }
+        const items = (await itemService.findAll({ relations: ['validSizes'] })).items;
+        const currentItemRules = toUpdate.containerRules.map(rule => rule.validItem.id);
+
+        const newItems = items.filter(item => !currentItemRules.find(ruleItemId => ruleItemId === item.id));
 
         const createCompOptionDto = {
             mode: 'create',
-            validMenuItemId: itemA.id,
-            validSizeIds: itemA.validSizes.map(size => size.id),
+            validMenuItemId: newItems[0].id,
+            validSizeIds: newItems[0].validSizes.map(size => size.id),
             quantity: 2,
        } as CreateChildMenuItemContainerRuleDto;
 
