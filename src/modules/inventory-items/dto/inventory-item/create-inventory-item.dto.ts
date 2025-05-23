@@ -1,6 +1,6 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
-import { CreateChildInventoryItemSizeDto } from "../inventory-item-size/create-child-inventory-item-size.dto";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { CreateChildInventoryItemSizeDto } from "../inventory-item-size/create-child-inventory-item-size.dto";
 
 export class CreateInventoryItemDto {
     @ApiProperty({ example: 'Evaporated Milk, Sliced Almonds, Large Pie Tins', description: 'Name of Inventory-Item entity.' })
