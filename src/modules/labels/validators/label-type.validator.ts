@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { LabelType } from "../entities/label-type.entity";
 import { CreateLabelTypeDto } from "../dto/label-type/create-label-type.dto";
 import { UpdateLabelTypeDto } from "../dto/label-type/update-label-type.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class LabelTypeValidator extends ValidatorBase<LabelType> {
@@ -13,21 +14,33 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
         private readonly repo: Repository<LabelType>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateLabelTypeDto): Promise<string | null> {
+    public async validateCreate(dto: CreateLabelTypeDto): Promise<ValidationError[]> {
         const exists = await this.repo.findOne({ where: { labelTypeName: dto.labelTypeName }});
-        if(exists) { 
-            return `Label type with name ${dto.labelTypeName} already exists`; 
+        if(await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)) { 
+            this.addError({
+                error: 'Label type name already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateLabelTypeDto',
+                sourceEntity: 'LabelType',
+                value: dto.labelTypeName,
+            } as ValidationError);
         }
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateLabelTypeDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateLabelTypeDto): Promise<ValidationError[]> {
         if(dto.labelTypeName){
-            const exists = await this.repo.findOne({ where: { labelTypeName: dto.labelTypeName }});
-        if(exists) { 
-            return `Label type with name ${dto.labelTypeName} already exists`; 
+            if(await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)) { 
+                this.addError({
+                    error: 'Label type name already exists.',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateLabelTypeDto',
+                    contextId: id,
+                    sourceEntity: 'LabelType',
+                    value: dto.labelTypeName,
+                } as ValidationError);
+            }
         }
-        }
-        return null;
+        return this.errors;
     }
 }

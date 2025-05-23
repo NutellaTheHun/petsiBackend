@@ -2,78 +2,95 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
+import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
+import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 import { UpdateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-menu-item-container-rule.dto";
 import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
-import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
-import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 
 @Injectable()
 export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContainerRule> {
     constructor(
         @InjectRepository(MenuItemContainerRule)
-        repo: Repository<MenuItemContainerRule>,
+        private readonly repo: Repository<MenuItemContainerRule>,
         
         @Inject(forwardRef(() => MenuItemService))
-        private readonly menuItemService: MenuItemService,
-        
-        @Inject(forwardRef(() => MenuItemContainerRuleService))
-        private readonly containerRuleService: MenuItemContainerRuleService,
+        private readonly itemService: MenuItemService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildMenuItemContainerRuleDto): Promise<string | null> {
-        // Must have sizes with the item, otherwise item cannot be added to container
+    public async validateCreate(dto: CreateChildMenuItemContainerRuleDto): Promise<ValidationError[]> {
+
+        // No sizes
         if(dto.validSizeIds.length === 0){
-            return 'validSizes is empty.'
+            this.addError({
+                error: 'Menu item container setting has no sizes selected.',
+                status: 'INVALID',
+                contextEntity: 'CreateMenuItemContainerRuleDto',
+                sourceEntity: 'MenuItemSize',
+            } as ValidationError);
         }
 
-        // sizes must be valid to the menu item in general
-        // ContainerRule.validItem.validSizes is a superset of ContainerRule.validSize.
-        const item = await this.menuItemService.findOne(dto.validMenuItemId, ['validSizes']);
+        // valid sizes
+        const item = await this.itemService.findOne(dto.validMenuItemId, ['validSizes']);
         if(!item){ throw new Error('item not found'); }
-        if(!item.validSizes){ throw new Error('valid sizes not found'); }
-        for(const sizeToCheck of dto.validSizeIds){
-            if(!item.validSizes.find(itemSize => itemSize.id === sizeToCheck)){
-                return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`;
+
+        for(const scarySizeId of dto.validSizeIds){
+            if(!this.helper.isValidSize(scarySizeId, item.validSizes)){
+                this.addError({
+                    error: 'Invalid size for item',
+                    status: 'INVALID',
+                    contextEntity: 'CreateMenuItemContainerRuleDto',
+                    sourceEntity: 'MenuItemSize',
+                    sourceId: scarySizeId,
+                    conflictEntity: 'MenuItem',
+                    conflictId: item.id,
+                } as ValidationError);
             }
         }
-        return null;
+
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto): Promise<string | null> {
-        // Must have sizes with the item, otherwise item cannot be added to container
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto): Promise<ValidationError[]> {
+        
+        // No sizes
         if(dto.validSizeIds?.length === 0){
-            return 'validSizes is empty.';
+           this.addError({
+                error: 'Menu item container setting has no sizes selected.',
+                status: 'INVALID',
+                contextEntity: 'UpdateMenuItemContainerRuleDto',
+                sourceEntity: 'MenuItemSize',
+            } as ValidationError);
         }
 
-        // sizes must be valid to the menu item in general
-        // ContainerRule.validItem.validSizes is a superset of ContainerRule.validSize.
-        if(dto.validMenuItemId && dto.validSizeIds && dto.validSizeIds.length > 0){
-            const item = await this.menuItemService.findOne(dto.validMenuItemId, ['validSizes']);
+        // validate sizes
+        if(dto.validMenuItemId || dto.validSizeIds){
+            const currentRule = await this.repo.findOne({ where: { id }, relations: ['validItem', 'validSizes']});
+            if(!currentRule){ throw new Error(); }
+
+            const sizeIds = dto.validSizeIds ?? currentRule?.validSizes.map(size => size.id);
+            const itemId = dto.validMenuItemId ?? currentRule?.validItem.id;
+
+            const item = await this.itemService.findOne(itemId, ['validSizes']);
             if(!item){ throw new Error('item not found'); }
-            if(!item.validSizes){ throw new Error('valid sizes not found'); }
-            for(const sizeToCheck of dto.validSizeIds){
-                if(!item.validSizes.find(itemSize => itemSize.id === sizeToCheck)){
-                    return `invalid size with id ${sizeToCheck} assigned to validItem ${item.itemName} with id ${item.id}`;
-                }
-            }
-        }
-        // If updating the validSizes, get the current item
-        // then check that the new validSizes are contained within the currentItem's validItems.
-        else if(dto.validSizeIds && dto.validSizeIds.length > 0){
-            const currentRule = await this.containerRuleService.findOne(id, ['validItem']);
-            if(!currentRule){ throw new Error('item not found'); }
-            if(!currentRule.validItem){ throw new Error('valid sizes not found'); }
 
-            const currentItem = await this.menuItemService.findOne(currentRule.validItem.id, ['validSizes'])
-            for(const sizeToCheck of dto.validSizeIds){
-                if(!currentItem.validSizes.find(itemSize => itemSize.id === sizeToCheck)){
-                    return `invalid size with id ${sizeToCheck} assigned to current item ${currentItem.itemName} with id ${currentItem.id}`
+            for(const scarySize of sizeIds){
+                if(!this.helper.isValidSize(scarySize, item.validSizes)){
+                   this.addError({
+                        error: 'Invalid size for item',
+                        status: 'INVALID',
+                        contextEntity: 'CreateMenuItemContainerRuleDto',
+                        contextId: id,
+                        sourceEntity: 'MenuItemSize',
+                        sourceId: id,
+                        conflictEntity: 'MenuItem',
+                        conflictId: item.id,
+                    } as ValidationError);
                 }
             }
         }
-        return null;
+        
+        return this.errors;
     }
 }

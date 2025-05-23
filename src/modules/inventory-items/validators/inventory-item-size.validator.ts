@@ -7,6 +7,7 @@ import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/crea
 import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
@@ -18,11 +19,11 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
         private readonly sizeService: InventoryItemSizeService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<string | null> {
-        return null;
+    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<ValidationError[]> {
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<ValidationError[]> {
         if(dto.measureUnitId || dto.inventoryPackageId){
             const currentSize = await this.sizeService.findOne(id, ['inventoryItem', 'measureUnit', 'packageType'])
             const exists = await this.repo.findOne({
@@ -33,10 +34,15 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
                 }
             });
             if(exists){ 
-                return 'Inventory item size already exists'; 
+                this.addError({
+                    error: 'Inventory item size already already exists',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateInventoryItemSizeDto',
+                    contextId: id,
+                    sourceEntity: 'InventoryItemSize',
+                } as ValidationError); 
             }
         }
-        
-        return null;
+        return this.errors;
     }
 }

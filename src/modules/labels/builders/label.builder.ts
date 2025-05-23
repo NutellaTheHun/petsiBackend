@@ -55,10 +55,7 @@ export class LabelBuilder extends BuilderBase<Label> {
         return this.setPropByVal('imageUrl', url);
     }
 
-    public labelTypeById(id: number | null): this {
-        if(id === null){
-            return this.setPropByVal('labelType', null);
-        }
+    public labelTypeById(id: number): this {
         return this.setPropById(this.typeService.findOne.bind(this.typeService), 'labelType', id);
     }
 

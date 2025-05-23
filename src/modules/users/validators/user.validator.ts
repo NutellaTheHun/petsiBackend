@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { User } from "../entities/user.entities";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class UserValidator extends ValidatorBase<User> {
@@ -13,21 +14,38 @@ export class UserValidator extends ValidatorBase<User> {
         private readonly repo: Repository<User>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateUserDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { username: dto.username }});
-        if(exists) { 
-            return `User with name ${dto.username} already exists`; 
+    public async validateCreate(dto: CreateUserDto): Promise<ValidationError[]> {
+
+        // username exists
+        if(await this.helper.exists(this.repo, 'username', dto.username)) { 
+            this.addError({
+                error: 'username name already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateUserDto',
+                sourceEntity: 'User',
+                value: dto.username,
+            } as ValidationError);
         }
-        return null;
+
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateUserDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateUserDto): Promise<ValidationError[]> {
+
+        // username exists
         if(dto.username){
-            const exists = await this.repo.findOne({ where: { username: dto.username }});
-            if(exists) { 
-                return `User with name ${dto.username} already exists`; 
+            if(await this.helper.exists(this.repo, 'username', dto.username)) { 
+                this.addError({
+                    error: 'username name already exists.',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateUserDto',
+                    contextId: id,
+                    sourceEntity: 'User',
+                    value: dto.username,
+                } as ValidationError);
             }
         }
-        return null;
+        
+        return this.errors;
     }
 }

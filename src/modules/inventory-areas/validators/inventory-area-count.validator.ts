@@ -1,10 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Double, Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCount> {
@@ -13,27 +14,31 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
         private readonly repo: Repository<InventoryAreaCount>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<string | null> {
-        return null;
+    public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<ValidationError[]> {
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateInventoryAreaCountDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryAreaCountDto): Promise<ValidationError[]> {
         // no duplicate update dtos (same id)
         if(dto.itemCountDtos && dto.itemCountDtos.length > 0){
-            const resolvedDtos: {updateId: number}[] = [];
+            const resolvedDtos: {id: number}[] = [];
             for(const d of dto.itemCountDtos){
                 if(d.mode === 'update'){
-                    resolvedDtos.push({ updateId: d.id});
+                    resolvedDtos.push({ id: d.id });
                 }
             }
-            const hasDuplateIds = this.helper.hasDuplicatesByComposite(
-                resolvedDtos,
-                (resolved) => `${resolved.updateId}`
-            );
-            if(hasDuplateIds){
-                return `multiple update dtos for same id`;
+            const duplicateIds = this.helper.findDuplicates(resolvedDtos, (id) => `${id.id}`);
+            if(duplicateIds.length > 0){
+                duplicateIds.map(dup => this.addError({
+                    error: 'duplicate update requests for counted inventory item.',
+                    status: 'DUPLICATE',
+                    contextEntity: 'UpdateInventoryAreaCountDto',
+                    contextId: id,
+                    sourceEntity: 'UpdateChildInventoryAreaItemDto',
+                    sourceId: dup.id,
+                } as ValidationError));
             }
         }
-        return null;
+        return this.errors;
     }
 }

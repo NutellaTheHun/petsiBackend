@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { CreateInventoryItemPackageDto } from "../dto/inventory-item-package/create-inventory-item-package.dto";
 import { UpdateInventoryItemPackageDto } from "../dto/inventory-item-package/update-inventory-item-package.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPackage> {
@@ -13,24 +14,34 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
         private readonly repo: Repository<InventoryItemPackage>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateInventoryItemPackageDto): Promise<string | null> {
+    public async validateCreate(dto: CreateInventoryItemPackageDto): Promise<ValidationError[]> {
         // Already exists check
-        const exists = await this.repo.findOne({ where: { packageName: dto.packageName }});
-        if(exists) { 
-            return `Inventory item package with name ${dto.packageName} already exists`; 
+        if(await this.helper.exists(this.repo, 'packageName', dto.packageName)) { 
+            this.addError({
+                error: 'Inventory package name already exists',
+                status: 'EXIST',
+                contextEntity: 'CreateInventoryItemPackageDto',
+                sourceEntity: 'InventoryPackage',
+                value: dto.packageName,
+            } as ValidationError);
         }
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateInventoryItemPackageDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryItemPackageDto): Promise<ValidationError[]> {
         // Already exists check
         if(dto.packageName){
-            const exists = await this.repo.findOne({ where: { packageName: dto.packageName }});
-        if(exists) { 
-            return `Inventory item package with name ${dto.packageName} already exists`; 
+            if(await this.helper.exists(this.repo, 'packageName', dto.packageName)) { 
+                this.addError({
+                error: 'Inventory package name already exists',
+                status: 'EXIST',
+                contextEntity: 'UpdateInventoryItemPackageDto',
+                contextId: id,
+                sourceEntity: 'InventoryPackage',
+                value: dto.packageName,
+                } as ValidationError);
+            }
         }
-        }
-        
-        return null;
+        return this.errors;
     }
 }

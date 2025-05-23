@@ -6,6 +6,7 @@ import { CreateTemplateDto } from "../dto/template/create-template.dto";
 import { UpdateTemplateDto } from "../dto/template/update-template.dto";
 import { Template } from "../entities/template.entity";
 import { TemplateMenuItemService } from "../services/template-menu-item.service";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class TemplateValidator extends ValidatorBase<Template> {
@@ -17,89 +18,146 @@ export class TemplateValidator extends ValidatorBase<Template> {
         private readonly itemService: TemplateMenuItemService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateTemplateDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { templateName: dto.templateName }});
-        if(exists) { 
-            return `Template with name ${dto.templateName} already exists`; 
+    public async validateCreate(dto: CreateTemplateDto): Promise<ValidationError[]> {
+        if(await this.helper.exists(this.repo, 'templateName', dto.templateName)) { 
+            this.addError({
+                error: 'Template with that name already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateTemplateDto',
+                sourceEntity: 'InventoryArea',
+                value: dto.templateName,
+            } as ValidationError);
         }
 
         if(dto.templateItemDtos){
+
             // no duplicate menuItems
-            const duplicateItems = this.helper.hasDuplicatesByComposite(
+            const duplicateItems = this.helper.findDuplicates(
                 dto.templateItemDtos,
                 (item) => `${item.menuItemId}`
             );
             if(duplicateItems){
-                return 'template cannot have items with multiple menuItems';
+                for(const dup of duplicateItems){
+                    this.addError({
+                        error: 'duplicate menu items on template',
+                        status: 'DUPLICATE',
+                        contextEntity: 'CreateTemplateDto',
+                        sourceEntity: 'MenuItem',
+                        sourceId: dup.menuItemId
+                    } as ValidationError);
+                }   
             }
+
             // no duplicate tablePosIndex
-            const duplicatePos = this.helper.hasDuplicatesByComposite(
+            const duplicatePos = this.helper.findDuplicates(
                 dto.templateItemDtos,
                 (item) => `${item.tablePosIndex}`
             );
             if(duplicatePos){
-                return 'template cannot have items with duplicate tablePosIndex values';
+                for(const dup of duplicatePos){
+                    this.addError({
+                        error: 'duplicate template row positions',
+                        status: 'DUPLICATE',
+                        contextEntity: 'CreateTemplateDto',
+                        sourceEntity: 'TemplateMenuItem',
+                        value: dup.tablePosIndex
+                    } as ValidationError);
+                }
             }
         }
 
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateTemplateDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateTemplateDto): Promise<ValidationError[]> {
         if(dto.templateName){
-            const exists = await this.repo.findOne({ where: { templateName: dto.templateName }});
-            if(exists) { 
-                return `Template with name ${dto.templateName} already exists`; 
-            }
+            if(await this.helper.exists(this.repo, 'templateName', dto.templateName)) { 
+            this.addError({
+               error: 'Template with that name already exists.',
+                status: 'EXIST',
+                contextEntity: 'UpdateTemplateDto',
+                contextId: id,
+                sourceEntity: 'InventoryArea',
+                value: dto.templateName,
+            } as ValidationError);
+        }
         }
 
         if(dto.templateItemDtos){
-            // no duplicate menuItems
-            const resolvedItemDtos: {itemId: number}[] = [];
-            const resolvedTablePosDtos: {pos: number}[] = [];
-            const resolvedIds: {updateIds: number}[] = [];
+
+            // resolve
+            const resolvedItemDtos: number[] = [];
+            const resolvedTablePosDtos: number[] = [];
+            const resolvedIds: number[] = [];
             for(const d of dto.templateItemDtos){
                 if(d.mode === 'create'){
-                    resolvedItemDtos.push({itemId: d.menuItemId});
-                    resolvedTablePosDtos.push({pos: d.tablePosIndex});
+                    resolvedItemDtos.push(d.menuItemId);
+                    resolvedTablePosDtos.push(d.tablePosIndex);
                 }
                 else if(d.mode === 'update'){
                     const currentItem = await this.itemService.findOne(d.id, ['menuItem'])
 
-                    resolvedItemDtos.push({itemId: d.menuItemId ?? currentItem.menuItem.id});
-                    resolvedTablePosDtos.push({pos: d.tablePosIndex ?? currentItem.tablePosIndex});
-                    resolvedIds.push({updateIds: d.id });
+                    resolvedItemDtos.push(d.menuItemId ?? currentItem.menuItem.id);
+                    resolvedTablePosDtos.push(d.tablePosIndex ?? currentItem.tablePosIndex);
+                    resolvedIds.push(d.id);
                 }
             }
 
             // no duplicate menuItems
-            const duplicateItems = this.helper.hasDuplicatesByComposite(
-                resolvedItemDtos,
-                (item) => `${item.itemId}`
+            const duplicateItems = this.helper.findDuplicates(
+                dto.templateItemDtos,
+                (item) => `${item.menuItemId}`
             );
             if(duplicateItems){
-                return 'template cannot have items with multiple menuItems';
+                for(const dup of duplicateItems){
+                    this.addError({
+                        error: 'duplicate menu items on template',
+                        status: 'DUPLICATE',
+                        contextEntity: 'UpdateTemplateDto',
+                        contextId: id,
+                        sourceEntity: 'MenuItem',
+                        sourceId: dup.menuItemId
+                    } as ValidationError);
+                }   
             }
 
             // no duplicate tablePosIndex
-            const duplicatePos = this.helper.hasDuplicatesByComposite(
-                resolvedTablePosDtos,
-                (item) => `${item.pos}`
+            const duplicatePos = this.helper.findDuplicates(
+                dto.templateItemDtos,
+                (item) => `${item.tablePosIndex}`
             );
             if(duplicatePos){
-                return 'template cannot have items with duplicate tablePosIndex values';
+                for(const dup of duplicatePos){
+                    this.addError({
+                        error: 'duplicate template row positions',
+                        status: 'DUPLICATE',
+                        contextEntity: 'UpdateTemplateDto',
+                        contextId: id,
+                        sourceEntity: 'TemplateMenuItem',
+                        value: dup.tablePosIndex
+                    } as ValidationError);
+                }
             }
 
             // no multiple update dtos for same entity
-            const duplicateIds = this.helper.hasDuplicatesByComposite(
+            const duplicateIds = this.helper.findDuplicates(
                 resolvedIds,
-                (item) => `${item.updateIds}`
+                (id) => `${id}`
             );
             if(duplicateIds){
-                return 'template has multiple update dtos for the same template item';
+                for(const dupId of duplicateIds){
+                    this.addError({
+                        error: 'Multiple update requests for the same template item',
+                        status: 'INVALID',
+                        contextEntity: 'UpdateTemplateDto',
+                        contextId: id,
+                        sourceEntity: 'TemplateMenuItem',
+                        sourceId: dupId,
+                    } as ValidationError);
+                }
             }
         }
 
-        return null;
+        return this.errors;
     }
 }

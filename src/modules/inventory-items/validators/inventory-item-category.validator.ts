@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
 import { UpdateInventoryItemCategoryDto } from "../dto/inventory-item-category/update-inventory-item-category.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategory> {
@@ -13,24 +14,34 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         private readonly repo: Repository<InventoryItemCategory>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateInventoryItemCategoryDto): Promise<string | null> {
+    public async validateCreate(dto: CreateInventoryItemCategoryDto): Promise<ValidationError[]> {
         // Already exists check
-        const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
-        if(exists) { 
-            return `Inventory category with name ${dto.itemCategoryName} already exists`; 
+        if(await this.helper.exists(this.repo, 'categoryName', dto.itemCategoryName)) { 
+            this.addError({
+                error: 'Inventory category name already exists',
+                status: 'EXIST',
+                contextEntity: 'CreateInventoryItemCategoryDto',
+                sourceEntity: 'InventoryCategory',
+                value: dto.itemCategoryName,
+            } as ValidationError);
         }
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateInventoryItemCategoryDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateInventoryItemCategoryDto): Promise<ValidationError[]> {
         // Already exists check
         if(dto.itemCategoryName){
-            const exists = await this.repo.findOne({ where: { categoryName: dto.itemCategoryName }});
-            if(exists) { 
-                return `Inventory category with name ${dto.itemCategoryName} already exists`; 
+            if(await this.helper.exists(this.repo, 'categoryName', dto.itemCategoryName)) { 
+                this.addError({
+                    error: 'Inventory category name already exists',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateInventoryItemCategoryDto',
+                    contextId: id,
+                    sourceEntity: 'InventoryCategory',
+                    value: dto.itemCategoryName,
+                } as ValidationError);
             }
         }
-        
-        return null;
+        return this.errors;
     }
 }

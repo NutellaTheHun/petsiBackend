@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {
@@ -13,24 +14,37 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSize> {
         private readonly repo: Repository<MenuItemSize>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateMenuItemSizeDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.sizeName }});
-        if(exists) { 
-            return `Menu item size with name ${dto.sizeName} already exists`; 
+    public async validateCreate(dto: CreateMenuItemSizeDto): Promise<ValidationError[]> {
+
+        // exists
+        if(await this.helper.exists(this.repo, 'name', dto.sizeName)) { 
+            this.addError({
+                 error: 'Menu item size already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateMenuItemSizeDto',
+                sourceEntity: 'MenuItemSize',
+                value: dto.sizeName,
+            } as ValidationError);
         }
         
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateMenuItemSizeDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateMenuItemSizeDto): Promise<ValidationError[]> {
+
+        // exists
         if(dto.sizeName){
-            const exists = await this.repo.findOne({ where: { name: dto.sizeName }});
-            if(exists) { 
-                return `Menu item size with name ${dto.sizeName} already exists`; 
+            if(await this.helper.exists(this.repo, 'name', dto.sizeName)) { 
+                this.addError({
+                    error: 'Menu item size already exists.',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateMenuItemSizeDto',
+                    sourceEntity: 'MenuItemSize',
+                    value: dto.sizeName,
+                } as ValidationError);
             }
-            return null;
         }
 
-        return null;
+        return this.errors;
     }
 }

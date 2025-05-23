@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
-import { CreateInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/update-inventory-item-size.dto";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
+import { CreateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
 
 export class UpdateChildInventoryAreaItemDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Inventory-Area-Count entity.' })
@@ -50,8 +50,8 @@ export class UpdateChildInventoryAreaItemDto {
      *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
      */
     @ApiProperty({ description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is null, itemSizeId must be populated.',
-        type: [UpdateInventoryItemSizeDto]
+        type: [UpdateChildInventoryItemSizeDto]
      })
     @IsOptional()
-    readonly countedItemSizeDto?: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto);
+    readonly countedItemSizeDto?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto);
 }

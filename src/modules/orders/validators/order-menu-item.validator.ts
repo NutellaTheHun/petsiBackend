@@ -11,6 +11,7 @@ import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderContainerItemService } from "../services/order-container-item.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
@@ -29,34 +30,66 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
         
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildOrderMenuItemDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildOrderMenuItemDto): Promise<ValidationError[]> {
         const menuItem = await this.menuItemService.findOne(dto.menuItemId, ['validSizes']);
-        if(!menuItem.validSizes){ throw new Error('validSizes is null'); }
+        if(!menuItem.validSizes){ throw new Error(); }
 
-        // Check DTO ITEM and DTO SIZE are valid
-        const validSize = this.helper.validateSize(dto.menuItemSizeId, menuItem.validSizes);
-        if(!validSize){
-            const invalidSize = await this.sizeService.findOne(dto.menuItemSizeId);
-            return `size on dto ${invalidSize.name} with id ${invalidSize.id} is not a valid size for dto menu item ${menuItem.itemName} with id ${menuItem.id}`
+        // validate item / size
+        if(!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)){
+            this.addError({
+                error: 'Invalid item size.',
+                status: 'INVALID',
+                contextEntity: 'CreateOrderMenuItemDto',
+                sourceEntity: 'MenuItemSize',
+                sourceId: dto.menuItemSizeId,
+                conflictEntity: 'MenuItem',
+                conflictId: dto.menuItemId
+            } as ValidationError);
         }
 
-        // Check if order container item DTOS have duplicate item/item sizes
         if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
-            const hasDuplateItems = this.helper.hasDuplicatesByComposite(
+
+            // validate container item / size
+            const duplicateItems = this.helper.findDuplicates(
                 dto.orderedItemContainerDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
             );
-            if(hasDuplateItems){
-                return `order item container dtos contains duplicate item/item size`;
+            if(duplicateItems){
+                for(const duplicate of duplicateItems){
+                    this.addError({
+                        error: 'Order has duplicate items.',
+                        status: 'DUPLICATE',
+                        contextEntity: 'CreateOrderMenuItemDto',
+                        sourceEntity: 'MenuItem',
+                        sourceId: duplicate.containedMenuItemId,
+                        conflictEntity: 'MenuItemSize',
+                        conflictId: duplicate.containedMenuItemSizeId
+                    } as ValidationError);
+                }
+            }
+
+            //validate container parent id
+            for(const item of dto.orderedItemContainerDtos){
+                if(item.parentContainerMenuItemId !== menuItem.id){
+                    this.addError({
+                        error: 'Ordered container item references the incorrect parent item.',
+                        status: 'INVALID',
+                        contextEntity: 'CreateOrderMenuItemDto',
+                        sourceEntity: 'MenuItem',
+                        sourceId: item.parentContainerMenuItemId,
+                        conflictEntity: 'MenuItem',
+                        conflictId: dto.menuItemId
+                    } as ValidationError);
+                }
             }
         }
 
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<ValidationError[]> {
 
-        // If updating menuItem or itemSize, check if size is valid for item
+        // validate item / size
         if(dto.menuItemId || dto.menuItemSizeId){
             const currentOrderItem = await this.orderItemService.findOne(id, ['size', 'menuItem']);
 
@@ -66,20 +99,26 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             const menuItem = await this.menuItemService.findOne(itemId, ['validSizes']);
             if(!menuItem){ throw new Error();}
 
-            const isValidSize = this.helper.validateSize(sizeId, menuItem.validSizes);
-            if(!isValidSize){
-                const invalidSize = await this.sizeService.findOne(sizeId);
-                return `item ${menuItem.itemName} with id ${menuItem.id} is not valid with item size ${invalidSize.name}`;
+            if(!this.helper.isValidSize(sizeId, menuItem.validSizes)){
+                this.addError({
+                    error: 'Invalid item size.',
+                    status: 'INVALID',
+                    contextEntity: 'UpdateOrderMenuItemDto',
+                    contextId: id,
+                    sourceEntity: 'MenuItemSize',
+                    sourceId: dto.menuItemSizeId,
+                    conflictEntity: 'MenuItem',
+                    conflictId: dto.menuItemId
+                } as ValidationError);
             }
         }
         
-        // Validate:
-        // item container DTOs cannot contain duplicate item/size combinations
-        // item container DTOS cannot contain multiple updates for the same item
+        // Validate container
         if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
-            // resolve update dto to have menuitem and size
+
+            // resolve
             const resolvedDtos: {containedMenuItemId: number; containedMenuItemSizeId: number }[] = [];
-            const resolvedIds: {updateId: number; }[] = [];
+            const resolvedIds: number[] = [];
             for(const d of dto.orderedItemContainerDtos){
                 if(d.mode === 'create'){
                     resolvedDtos.push({
@@ -94,28 +133,51 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                         containedMenuItemId: updateDto.containedMenuItemId ?? currentItem.containedItem.id,
                         containedMenuItemSizeId: updateDto.containedMenuItemSizeId ?? currentItem.containedItemSize.id
                     });
-                    resolvedIds.push({updateId: d.id});
+                    resolvedIds.push(d.id);
                 }
             }
+
             // Check duplicate update ids
-            const hasDuplateIds = this.helper.hasDuplicatesByComposite(
+            const duplicateIds = this.helper.findDuplicates(
                 resolvedIds,
-                (item) => `${item.updateId}`
+                (item) => `${item}`
             );
-            if(hasDuplateIds){
-                return `order item container updates dtos cannot have multiple update request for the same entity.`;
+            if(duplicateIds){
+                for(const dupId of duplicateIds){
+                    this.addError({
+                        error: 'multiple update requests for same container item.',
+                        status: 'INVALID',
+                        contextEntity: 'UpdateOrderMenuItemDto',
+                        contextId: id,
+                        sourceEntity: 'UpdateChildOrderContainerItemDto',
+                        sourceId: dupId,
+                        conflictEntity: 'MenuItem',
+                        conflictId: dto.menuItemId
+                    } as ValidationError);
+                }
             }
 
-            // Check duplicate ordered items
-            const hasDuplateItems = this.helper.hasDuplicatesByComposite(
+            // Check duplicate items
+            const duplicateItems = this.helper.findDuplicates(
                 resolvedDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
             );
-            if(hasDuplateItems){
-                return `order item container dtos contains duplicate item/item size`;
+            if(duplicateItems){
+                for(const duplicate of duplicateItems){
+                    this.addError({
+                        error: 'duplicate container item.',
+                        status: 'DUPLICATE',
+                        contextEntity: 'UpdateOrderMenuItemDto',
+                        contextId: id,
+                        sourceEntity: 'MenuItem',
+                        sourceId: duplicate.containedMenuItemId,
+                        conflictEntity: 'MenuItemSize',
+                        conflictId: duplicate.containedMenuItemSizeId,
+                    } as ValidationError);
+                }
             }
         }
         
-        return null;
+        return this.errors;
     }
 }

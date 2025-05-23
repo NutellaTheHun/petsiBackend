@@ -2,14 +2,13 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { CreateMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-menu-item-container-item.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { UpdateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-child-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
 import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
-import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 
 @Injectable()
 export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItem> {
@@ -22,55 +21,58 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
-        
-        private readonly sizeService: MenuItemSizeService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<string | null> {
-        //defined container items must reference a valid item size to the contained item. 
-        const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
+    public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<ValidationError[]> {
 
-        // Validate the item's valid sizes contains the DTOs size
-        const validItemSize = this.helper.validateSize(dto.containedMenuItemSizeId, item.validSizes)
-        if(!validItemSize){
-            const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-            return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for contained item ${item.itemName} with id ${item.id}`
+        // validate container item size 
+        const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
+        if(!item){ throw new Error(); }
+        if(!this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)){
+            this.addError({
+                error: 'Invalid menu item size',
+                status: 'INVALID',
+                contextEntity: 'CreateChildMenuItemContainerItemDto',
+                sourceEntity: 'MenuItemSize',
+                conflictEntity: 'MenuItem',
+                value: { 
+                    containedMenuItemId: dto.containedMenuItemId,
+                    containedMenuItemSizeId: dto.containedMenuItemSizeId
+                },
+            } as ValidationError);
         }
 
-        return null;
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto): Promise<ValidationError[]> {
 
-        // if updating to new item, must come with new size
-        if(dto.containedMenuItemId && !dto.containedMenuItemSizeId){
-            return 'updating menu item must be accompanied by new menuItemSize';
-        }
+        // validate size
+        if(dto.containedMenuItemId || dto.containedMenuItemSizeId){
+            const item = await this.containerService.findOne(id, ['containedItem', 'containedItemsize']);
+            if(!item){ throw new Error(); }
 
-        // If updating item and size
-        if(dto.containedMenuItemId && dto.containedMenuItemSizeId){
-            const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
+            const itemId = dto.containedMenuItemId ?? item.containedItem.id;
+            const sizeId = dto.containedMenuItemSizeId ?? item.containedItemsize.id;
+            
+            const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
+            if(!menuItem){ throw new Error(); }
 
-            // Validate the item's valid sizes contains the DTOs size
-            const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, item.validSizes);
-            if(!validSize){
-                const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for contained item ${item.itemName} with id ${item.id}`
-            }
-        }
-        // If updating just size, get current container item and validate
-        else if(dto.containedMenuItemSizeId){
-            const currentContainer = await this.containerService.findOne(id, ['containedItem']);
-            const currentItem = await this.itemService.findOne(currentContainer.containedItem.id, ['validSizes']);
-
-            // Validate the current item's valid sizes contains the DTOs size
-            const validSize = this.helper.validateSize(dto.containedMenuItemSizeId, currentItem.validSizes)
-            if(!validSize){
-                const size = await this.sizeService.findOne(dto.containedMenuItemSizeId);
-                return `size ${size.name} with id ${dto.containedMenuItemSizeId} is invalid for current item ${currentItem.itemName} with id ${currentItem.id}`;
+            if(!this.helper.isValidSize(sizeId, menuItem.validSizes)){
+                this.addError({
+                    error: 'Invalid menu item size',
+                    status: 'INVALID',
+                    contextEntity: 'UpdateMenuItemContainerItemDto',
+                    sourceEntity: 'MenuItemSize',
+                    conflictEntity: 'MenuItem',
+                    value: { 
+                        containedMenuItemId: itemId,
+                        containedMenuItemSizeId: sizeId
+                    },
+                } as ValidationError);
             }
         }
 
-        return null;
+        return this.errors;
     }
 }

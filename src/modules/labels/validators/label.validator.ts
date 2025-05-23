@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { Label } from "../entities/label.entity";
 import { CreateLabelDto } from "../dto/label/create-label.dto";
 import { UpdateLabelDto } from "../dto/label/update-label.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class LabelValidator extends ValidatorBase<Label> {
@@ -13,63 +14,53 @@ export class LabelValidator extends ValidatorBase<Label> {
         private readonly repo: Repository<Label>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateLabelDto): Promise<string | null> {
+    public async validateCreate(dto: CreateLabelDto): Promise<ValidationError[]> {
         const exists = await this.repo.findOne({ 
             where: {
                 menuItem: { id: dto.menuItemId},
                 labelType: { id: dto.labelTypeId}
             }
         });
-        if(exists){ return 'menuItem / labelType combination already exists'; }
-        return null;
+        if(exists){ 
+            this.addError({
+                error: 'Label already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateLabelDto',
+                sourceEntity: 'Label',
+                value: { menuItemId: dto.menuItemId, labelTypeId: dto.labelTypeId },
+            } as ValidationError);
+        }
+
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateLabelDto): Promise<string | null> {
-        if(dto.labelTypeId && dto.menuItemId) {
-            const exists = await this.repo.findOne({ 
-                where: {
-                    menuItem: { id: dto.menuItemId },
-                    labelType: { id: dto.labelTypeId }
-                }
-            });
-            if(exists){ 
-                return 'menuItem / labelType combination already exists';
-            }
-        }
-        else if(dto.labelTypeId){
-            const currentLabel = await this.repo.findOne({ where: {id}, relations: ['menuItem'] })
+    public async validateUpdate(id: number, dto: UpdateLabelDto): Promise<ValidationError[]> {
+        if(dto.labelTypeId || dto.menuItemId) {
+
+            const currentLabel = await this.repo.findOne({ where: { id }, relations: ['menuItem', 'labelType'] });
             if(!currentLabel){ throw new Error(); }
 
-            const exists = await this.repo.findOne({ 
-                where: {
-                    menuItem: { id: currentLabel.menuItem.id },
-                    labelType: { id: dto.labelTypeId }
-                }
-            });
-            if(exists){ 
-                return 'menuItem / labelType combination already exists';
-            }
-        }
-        else if(dto.menuItemId) {
-            const currentLabel = await this.repo.findOne({ where: {id}, relations: ['labelType'] })
-            if(!currentLabel){ throw new Error(); }
-
-            // No label type set, validation PASS
-            if(!currentLabel.labelType){ 
-                return null 
-            }
+            const itemId = dto.menuItemId ?? currentLabel?.menuItem.id;
+            const labelId = dto.labelTypeId ?? currentLabel?.labelType.id;
 
             const exists = await this.repo.findOne({ 
                 where: {
-                    menuItem: { id: dto.menuItemId },
-                    labelType: { id: currentLabel.labelType.id }
+                    menuItem: { id: itemId },
+                    labelType: { id: labelId }
                 }
             });
-            if(exists){ 
-                return 'menuItem / labelType combination already exists';
+            if(exists){
+                this.addError({
+                    error: 'Label already exists.',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateLabelDto',
+                    contextId: id,
+                    sourceEntity: 'Label',
+                    value: { menuItemId: dto.menuItemId, labelTypeId: dto.labelTypeId },
+                } as ValidationError);
             }
         }
 
-        return null;
+        return this.errors;
     }
 }

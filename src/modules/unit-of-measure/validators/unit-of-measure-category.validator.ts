@@ -5,6 +5,7 @@ import { ValidatorBase } from "../../../base/validator-base";
 import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { CreateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/create-unit-of-measure-category.dto";
 import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureCategory> {
@@ -13,21 +14,34 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
         private readonly repo: Repository<UnitOfMeasureCategory>,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateUnitOfMeasureCategoryDto): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
-        if(exists) { 
-            return `Unit category with name ${dto.categoryName} already exists`; 
+    public async validateCreate(dto: CreateUnitOfMeasureCategoryDto): Promise<ValidationError[]> {
+        if(await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) { 
+           this.addError({
+                error: 'Unit of measure category with that name already exists.',
+                status: 'EXIST',
+                contextEntity: 'CreateUnitOfMeasureCategoryDto',
+                sourceEntity: 'UnitOfMeasureCategory',
+                value: dto.categoryName,
+            } as ValidationError);
         }
-        return null;
+
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateUnitOfMeasureCategoryDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateUnitOfMeasureCategoryDto): Promise<ValidationError[]> {
         if(dto.categoryName){
-            const exists = await this.repo.findOne({ where: { categoryName: dto.categoryName }});
-            if(exists) { 
-                return `Unit category with name ${dto.categoryName} already exists`; 
+            if(await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) { 
+                this.addError({
+                    error: 'Unit of measure category with that name already exists.',
+                    status: 'EXIST',
+                    contextEntity: 'UpdateUnitOfMeasureCategoryDto',
+                    contextId: id,
+                    sourceEntity: 'UnitOfMeasureCategory',
+                    value: dto.categoryName,
+                } as ValidationError);
             }
         }
-        return null;
+
+        return this.errors;
     }
 }

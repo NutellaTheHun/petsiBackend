@@ -7,7 +7,7 @@ import { CreateOrderDto } from "../dto/order/create-order.dto";
 import { UpdateOrderDto } from "../dto/order/update-order.dto";
 import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<Order> {
@@ -19,33 +19,77 @@ export class OrderValidator extends ValidatorBase<Order> {
         private readonly itemService: OrderMenuItemService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateOrderDto): Promise<string | null> {
+    public async validateCreate(dto: CreateOrderDto): Promise<ValidationError[]> {
         if(dto.orderedMenuItemDtos.length === 0){
-            return 'order has no ordered items';
+            this.addError({
+                error: 'Order has no items',
+                status: 'INVALID',
+                contextEntity: 'CreateOrderDto',
+            } as ValidationError);
         }
+
         // Validate no duplicate OrderMenuItems
-        const hasDuplicateItems = this.helper.hasDuplicatesByComposite(
+        const duplicateItems = this.helper.findDuplicates(
             dto.orderedMenuItemDtos,
             (item) => `${item.menuItemId}:${item.menuItemSizeId}`
         );
-        if(hasDuplicateItems){
-            return 'orderedMenuItemDtos contains duplicate menuItem/size combinations';
+        if(duplicateItems){
+            for(const duplicate of duplicateItems){
+                this.addError({
+                    error: 'duplicate ordered item',
+                    status: 'DUPLICATE',
+                    contextEntity: 'CreateOrderDto',
+                    sourceEntity: 'OrderMenuItem',
+                    sourceId: duplicate.menuItemId,
+                    conflictEntity: 'MenuItemSize',
+                    conflictId: duplicate.menuItemSizeId
+                } as ValidationError);
+            }
         }
 
-        return null;
+        // valid day of the week value
+        const validDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        if(dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)){
+            this.addError({
+                error: `Invalid weeklyFulfillment value`,
+                status: 'INVALID',
+                contextEntity: 'CreateOrderDto',
+                conflictEntity: 'Order',
+                value: dto.weeklyFulfillment,
+            } as ValidationError);
+        }
+
+        //valid fulfillment type value
+        const validFulfillmentType = ['pickup', 'delivery'];
+        if(!validFulfillmentType.includes(dto.fulfillmentType)){
+            this.addError({
+                error: `Invalid fulfillmentType value`,
+                status: 'INVALID',
+                contextEntity: 'CreateOrderDto',
+                conflictEntity: 'Order',
+                value: dto.fulfillmentType,
+            } as ValidationError);
+        }
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateOrderDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateOrderDto): Promise<ValidationError[]> {
 
         if(dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length === 0){
-            return 'order has no ordered items';
+            this.addError({
+                error: 'Order has no items',
+                status: 'INVALID',
+                contextEntity: 'UpdateOrderDto',
+                contextId: id,
+            } as ValidationError);
         }
 
-        // Validate no duplicate OrderMenuItems
+        // Validate ordered items
         if(dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length > 0){
 
-            // resolve update dtos to ensure they contain both menuItemId and menuItemSizeId
+            // resolve 
             const resolvedDtos: { menuItemId: number; menuItemSizeId: number }[] = [];
+            const updateIds : number[] = [];
             for(const d of dto.orderedMenuItemDtos){
                 if(d.mode === 'create'){
                     resolvedDtos.push({ menuItemId: d.menuItemId, menuItemSizeId: d.menuItemSizeId});
@@ -59,19 +103,76 @@ export class OrderValidator extends ValidatorBase<Order> {
                         menuItemId: updateDto.menuItemId ?? currentItem.menuItem.id,
                         menuItemSizeId: updateDto.menuItemSizeId ?? currentItem.size.id,
                     });
+
+                    updateIds.push(d.id);
                 }
             }
             
             // Check resolved dtos for duplicate
-            const duplicateItems = this.helper.hasDuplicatesByComposite(
+            const duplicateItems = this.helper.findDuplicates(
                 resolvedDtos,
                 (item) => `${item.menuItemId}:${item.menuItemSizeId}`
             );
             if(duplicateItems){
-                return 'orderedMenuItemDtos contains duplicate menuItem/size combinations';
+                for(const duplicate of duplicateItems){
+                    this.addError({
+                        error: 'duplicate ordered item',
+                        status: 'DUPLICATE',
+                        contextEntity: 'UpdateOrderDto',
+                        contextId: id,
+                        sourceEntity: 'OrderMenuItem',
+                        sourceId: duplicate.menuItemId,
+                        conflictEntity: 'MenuItemSize',
+                        conflictId: duplicate.menuItemSizeId
+                    } as ValidationError);
+                }
+            }
+
+            //Check duplicate updates
+            const duplicateIds = this.helper.findDuplicates(
+                updateIds,
+                (updateId) => `${updateId}`
+            );
+            if(duplicateIds){
+                for(const updateId of duplicateIds){
+                    this.addError({
+                        error: 'multiple update requests for the same ordered item',
+                        status: 'INVALID',
+                        contextEntity: 'UpdateOrderDto',
+                        contextId: id,
+                        sourceEntity: 'OrderMenuItem',
+                        sourceId: updateId,
+                    } as ValidationError);
+                }
             }
         }
 
-        return null;
+        // valididate weeklyFulfillment
+        const validDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        if(dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)){
+            this.addError({
+                error: `Invalid weeklyFulfillment value`,
+                status: 'INVALID',
+                contextEntity: 'CreateOrderDto',
+                contextId: id,
+                conflictEntity: 'Order',
+                value: dto.weeklyFulfillment,
+            } as ValidationError);
+        }
+
+        // validate fulfillmentType
+        const validFulfillmentType = ['pickup', 'delivery'];
+        if(dto.fulfillmentType && !validFulfillmentType.includes(dto.fulfillmentType)){
+            this.addError({
+                error: `Invalid fulfillmentType value`,
+                status: 'INVALID',
+                contextEntity: 'CreateOrderDto',
+                contextId: id,
+                conflictEntity: 'Order',
+                value: dto.fulfillmentType,
+            } as ValidationError);
+        }
+
+        return this.errors;
     }
 }

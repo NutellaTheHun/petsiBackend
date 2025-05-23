@@ -7,6 +7,7 @@ import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-contain
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
+import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemContainerOptions> {
@@ -18,25 +19,51 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         private readonly ruleService: MenuItemContainerRuleService,
     ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<string | null> {
+    public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<ValidationError[]> {
+
+        // No rules
         if(dto.containerRuleDtos.length === 0){
-            return 'container options cannot have 0 rules'
+            this.addError({
+                error: 'Menu item container has no settings.',
+                status: 'INVALID',
+                contextEntity: 'CreateMenuItemContainerOptionsDto',
+                sourceEntity: 'MenuItemContainerRule',
+            } as ValidationError);
         }
-        // Check no duplicate item rules
-        const dupliateItemRules = this.helper.hasDuplicatesByComposite(
+
+        // duplicate item rules
+        const dupliateItemRules = this.helper.findDuplicates(
             dto.containerRuleDtos,
             (rule) => `${rule.validMenuItemId}`
-        )
+        );
         if(dupliateItemRules){
-            return `container option contains duplicate rules for the same menuItem`;
+                for(const duplicate of dupliateItemRules){
+                    this.addError({
+                    error: 'Menu item container has duplicate item settings.',
+                    status: 'DUPLICATE',
+                    contextEntity: 'CreateMenuItemContainerOptionsDto',
+                    sourceEntity: 'MenuItemContainerRule',
+                    value: { duplicateMenuItemId: duplicate.validMenuItemId },
+                } as ValidationError);
+            }
         }
-        return null;
+
+        return this.errors;
     }
     
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto): Promise<string | null> {
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto): Promise<ValidationError[]> {
+        
+        // No rules
         if(dto.containerRuleDtos && dto.containerRuleDtos.length === 0){
-            return 'container options cannot have 0 rules'
+            this.addError({
+                error: 'Menu item container has no settings.',
+                status: 'INVALID',
+                contextEntity: 'UpdateMenuItemContainerOptionsDto',
+                contextId: id,
+                sourceEntity: 'MenuItemContainerRule',
+            } as ValidationError);
         }
+
         // Check no duplicate item rules
         if(dto.containerRuleDtos && dto.containerRuleDtos.length > 0){
             const resolvedDtos: {validMenuItemId: number}[] = [];
@@ -50,14 +77,22 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
                 }
             }
 
-            const dupliateItemRules = this.helper.hasDuplicatesByComposite(
+            const dupliateItemRules = this.helper.findDuplicates(
                 resolvedDtos,
                 (rule) => `${rule.validMenuItemId}`
-            )
-            if(dupliateItemRules){
-                return `container option contains duplicate rules for the same menuItem`;
+            );
+            for(const duplicate of dupliateItemRules){
+                    this.addError({
+                    error: 'Menu item container has duplicate item settings.',
+                    status: 'DUPLICATE',
+                    contextEntity: 'UpdateMenuItemContainerOptionsDto',
+                    contextId: id,
+                    sourceEntity: 'MenuItemContainerRule',
+                    value: { duplicateMenuItemId: duplicate.validMenuItemId },
+                } as ValidationError);
             }
         }
-        return null;
+
+        return this.errors;
     }
 }
