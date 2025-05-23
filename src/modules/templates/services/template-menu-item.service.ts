@@ -8,26 +8,24 @@ import { TemplateMenuItemBuilder } from '../builders/template-menu-item.builder'
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
-import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
 export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
-  constructor(
-    @InjectRepository(TemplateMenuItem)
-    itemRepo: Repository<TemplateMenuItem>,
+    constructor(
+        @InjectRepository(TemplateMenuItem)
+        repo: Repository<TemplateMenuItem>,
 
-    @Inject(forwardRef(() => TemplateMenuItemBuilder))
-    itemBuilder: TemplateMenuItemBuilder,
+        @Inject(forwardRef(() => TemplateMenuItemBuilder))
+        builder: TemplateMenuItemBuilder,
 
-    validator: TemplateMenuItemValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ){ super(itemRepo, itemBuilder, validator, 'TemplateMenuItemService', requestContextService, logger); }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) { super(repo, builder, 'TemplateMenuItemService', requestContextService, logger); }
 
-  /**
-   * Depreciated, only created as a child through {@link Template}.
-   */
-  public async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
-      throw new BadRequestException();
-  }
+    /**
+     * Depreciated, only created as a child through {@link Template}.
+     */
+    public async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
+        throw new BadRequestException();
+    }
 }

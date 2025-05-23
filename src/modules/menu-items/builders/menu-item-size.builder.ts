@@ -13,16 +13,16 @@ export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
         validator: MenuItemSizeValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemSizeDto): void {
-        if(dto.sizeName !== undefined){
+        if (dto.sizeName !== undefined) {
             this.name(dto.sizeName);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemSizeDto): void {
-        if(dto.sizeName !== undefined){
+        if (dto.sizeName !== undefined) {
             this.name(dto.sizeName);
         }
     }

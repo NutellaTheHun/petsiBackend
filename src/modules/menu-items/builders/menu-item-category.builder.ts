@@ -9,7 +9,7 @@ import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemCategoryValidator } from "../validators/menu-item-category.validator";
 
 @Injectable()
-export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
+export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
     constructor(
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
@@ -17,18 +17,18 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory>{
         validator: MenuItemCategoryValidator,
 
         requestContextService: RequestContextService,
-        
+
         logger: AppLogger,
-    ){ super(MenuItemCategory, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItemCategory, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemCategoryDto): void {
-        if(dto.categoryName !== undefined){
+        if (dto.categoryName !== undefined) {
             this.name(dto.categoryName);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
-        if(dto.categoryName !== undefined){
+        if (dto.categoryName !== undefined) {
             this.name(dto.categoryName);
         }
     }

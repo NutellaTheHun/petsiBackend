@@ -1,16 +1,16 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { TemplateTestingUtil } from "../utils/template-testing.util";
-import { TemplateValidator } from "./template.validator";
-import { TemplateService } from "../services/template.service";
-import { getTemplateTestingModule } from "../utils/template-testing.module";
-import { CreateTemplateDto } from "../dto/template/create-template.dto";
-import { UpdateTemplateDto } from "../dto/template/update-template.dto";
-import { CreateChildTemplateMenuItemDto } from "../dto/template-menu-item/create-child-template-menu-item.dto";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
-import { template_a, template_b } from "../utils/constants";
+import { CreateChildTemplateMenuItemDto } from "../dto/template-menu-item/create-child-template-menu-item.dto";
 import { UpdateChildTemplateMenuItemDto } from "../dto/template-menu-item/update-child-template-menu-item.dto";
+import { CreateTemplateDto } from "../dto/template/create-template.dto";
+import { UpdateTemplateDto } from "../dto/template/update-template.dto";
+import { TemplateService } from "../services/template.service";
+import { template_a, template_b } from "../utils/constants";
+import { getTemplateTestingModule } from "../utils/template-testing.module";
+import { TemplateTestingUtil } from "../utils/template-testing.util";
+import { TemplateValidator } from "./template.validator";
 
 describe('template validator', () => {
     let testingUtil: TemplateTestingUtil;
@@ -35,16 +35,16 @@ describe('template validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -74,9 +74,9 @@ describe('template validator', () => {
 
     it('should fail create: duplicate menuItems', async () => {
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -112,11 +112,11 @@ describe('template validator', () => {
 
     it('should fail create: duplicate TablePosIndex', async () => {
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
         const itemC = await menuItemService.findOneByName(item_c);
-        if(!itemC){ throw new Error(); }
+        if (!itemC) { throw new Error(); }
 
 
         const itemDtos = [
@@ -153,9 +153,9 @@ describe('template validator', () => {
 
     it('should fail create: Name exists', async () => {
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -185,12 +185,12 @@ describe('template validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await templateService.findOneByName(template_a, ['templateItems']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -220,12 +220,12 @@ describe('template validator', () => {
 
     it('should fail update: duplicate menuItems', async () => {
         const toUpdate = await templateService.findOneByName(template_a, ['templateItems']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -260,14 +260,14 @@ describe('template validator', () => {
 
     it('should fail update: duplicate TablePosIndex', async () => {
         const toUpdate = await templateService.findOneByName(template_a, ['templateItems']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
         const itemC = await menuItemService.findOneByName(item_c);
-        if(!itemC){ throw new Error(); }
+        if (!itemC) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -302,12 +302,12 @@ describe('template validator', () => {
 
     it('should fail update: Name exists', async () => {
         const toUpdate = await templateService.findOneByName(template_a, ['templateItems']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {

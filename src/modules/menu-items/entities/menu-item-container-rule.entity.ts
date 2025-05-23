@@ -1,7 +1,7 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { MenuItemContainerOptions } from "./menu-item-container-options.entity";
 import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItem } from "./menu-item.entity";
-import { MenuItemContainerOptions } from "./menu-item-container-options.entity";
 
 /**
  * One rule within a {@link MenuItemContainerOptions} that allow one {@link MenuItem} and valid {@link MenuItemSize}

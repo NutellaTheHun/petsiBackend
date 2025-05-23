@@ -11,7 +11,7 @@ export class CreateChildRecipeIngredientDto {
     @IsNumber()
     @IsPositive()
     readonly ingredientInventoryItemId?: number;
-    
+
     @ApiProperty({ example: 'Recipe: Blueberry Mix, ingredients: blueberries, sugar. Recipe: Blueberry Pie, ingredients: Blueberry Mix, pie dough, sugar ', description: 'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.' })
     @IsOptional()
     @IsNumber()
@@ -22,7 +22,7 @@ export class CreateChildRecipeIngredientDto {
     @IsNumber()
     @IsNotEmpty()
     readonly quantity: number;
-    
+
     @ApiProperty({ example: ' 10 lb(Unit-of-Measure.abbreviation) of flower', description: 'Id of the Unit-of-Measure entity.' })
     @IsNumber()
     @IsPositive()

@@ -2,29 +2,25 @@ import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/com
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { OrderMenuItemBuilder } from "../builders/order-menu-item.builder";
-import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { Order } from "../entities/order.entity";
 
 @Injectable()
 export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
     constructor(
         @InjectRepository(OrderMenuItem)
-        orderItemRepo: Repository<OrderMenuItem>,
-        
+        repo: Repository<OrderMenuItem>,
+
         @Inject(forwardRef(() => OrderMenuItemBuilder))
-        itemBuilder: OrderMenuItemBuilder,
-        
-        @Inject(forwardRef(() => OrderMenuItemValidator))
-        validator: OrderMenuItemValidator,
-        
+        builder: OrderMenuItemBuilder,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(orderItemRepo, itemBuilder, validator, 'OrderMenuItemService', requestContextService, logger)}
+    ) { super(repo, builder, 'OrderMenuItemService', requestContextService, logger) }
 
     /**
      * Depreciated, only created as a child through {@link Order}.

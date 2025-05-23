@@ -9,7 +9,7 @@ import { Recipe } from "./recipe.entity";
  */
 @Entity()
 @Unique(['subCategoryName', 'parentCategory'])
-export class RecipeSubCategory{
+export class RecipeSubCategory {
     @PrimaryGeneratedColumn()
     id: number;
 

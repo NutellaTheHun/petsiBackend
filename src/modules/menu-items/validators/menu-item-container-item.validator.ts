@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { ValidationError } from "../../../util/exceptions/validationError";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { UpdateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-child-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
@@ -21,51 +21,51 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<ValidationError[]> {
+    public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<void> {
 
         // validate container item size 
         const item = await this.itemService.findOne(dto.containedMenuItemId, ['validSizes']);
-        if(!item){ throw new Error(); }
-        if(!this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)){
+        if (!item) { throw new Error(); }
+        if (!this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)) {
             this.addError({
                 error: 'Invalid menu item size',
                 status: 'INVALID',
                 contextEntity: 'CreateChildMenuItemContainerItemDto',
                 sourceEntity: 'MenuItemSize',
                 conflictEntity: 'MenuItem',
-                value: { 
+                value: {
                     containedMenuItemId: dto.containedMenuItemId,
                     containedMenuItemSizeId: dto.containedMenuItemSizeId
                 },
             } as ValidationError);
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto): Promise<ValidationError[]> {
+
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto): Promise<void> {
 
         // validate size
-        if(dto.containedMenuItemId || dto.containedMenuItemSizeId){
+        if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
             const item = await this.containerService.findOne(id, ['containedItem', 'containedItemsize']);
-            if(!item){ throw new Error(); }
+            if (!item) { throw new Error(); }
 
             const itemId = dto.containedMenuItemId ?? item.containedItem.id;
             const sizeId = dto.containedMenuItemSizeId ?? item.containedItemsize.id;
-            
-            const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
-            if(!menuItem){ throw new Error(); }
 
-            if(!this.helper.isValidSize(sizeId, menuItem.validSizes)){
+            const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
+            if (!menuItem) { throw new Error(); }
+
+            if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
                 this.addError({
                     error: 'Invalid menu item size',
                     status: 'INVALID',
                     contextEntity: 'UpdateMenuItemContainerItemDto',
                     sourceEntity: 'MenuItemSize',
                     conflictEntity: 'MenuItem',
-                    value: { 
+                    value: {
                         containedMenuItemId: itemId,
                         containedMenuItemSizeId: sizeId
                     },
@@ -73,6 +73,6 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
             }
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
 }

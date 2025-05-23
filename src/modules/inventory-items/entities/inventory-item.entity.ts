@@ -12,7 +12,7 @@ import { InventoryAreaCount } from "../../inventory-areas/entities/inventory-are
  * An element of the inventory catalog, referenced via {@link InventoryAreaItem} for inventory counts, and {@link RecipeIngredient} for recipes. 
  */
 @Entity()
-export class InventoryItem{
+export class InventoryItem {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -24,10 +24,10 @@ export class InventoryItem{
      * 
      * - Example: "Produce", "Dry Goods", "Dairy", "Cleaning Supplies"
      */
-    @ManyToOne(() => InventoryItemCategory, (category) => category.categoryItems, {   
-        nullable: true, 
+    @ManyToOne(() => InventoryItemCategory, (category) => category.categoryItems, {
+        nullable: true,
         cascade: true,
-        onDelete: 'SET NULL' 
+        onDelete: 'SET NULL'
     })
     category?: InventoryItemCategory | null;
 
@@ -35,18 +35,18 @@ export class InventoryItem{
      * The supplier of the item.
      * - Example : "Cysco", "Driscols", "Walden Farms"
      */
-    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {       
-        nullable: true, 
-        cascade: true, 
-        onDelete: 'SET NULL'  
+    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {
+        nullable: true,
+        cascade: true,
+        onDelete: 'SET NULL'
     })
     vendor?: InventoryItemVendor | null;
 
-     /**
-     * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
-     * - Can be created explicitly through updating InventoryItem, 
-     * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
-     */
+    /**
+    * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
+    * - Can be created explicitly through updating InventoryItem, 
+    * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
+    */
     @OneToMany(() => InventoryItemSize, size => size.inventoryItem, { cascade: true })
     itemSizes: InventoryItemSize[];
 }

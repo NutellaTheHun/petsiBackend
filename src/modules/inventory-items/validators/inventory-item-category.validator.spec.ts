@@ -28,7 +28,7 @@ describe('inventory item category validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -54,8 +54,8 @@ describe('inventory item category validator', () => {
 
     it('should validate update', async () => {
         const toUpdate = await service.findOneByName(DRYGOOD_CAT);
-        if(!toUpdate){ throw new Error(); }
-        
+        if (!toUpdate) { throw new Error(); }
+
         const dto = {
             itemCategoryName: "UPDATE TEST",
         } as UpdateInventoryItemCategoryDto;
@@ -67,7 +67,7 @@ describe('inventory item category validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(DRYGOOD_CAT);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             itemCategoryName: DAIRY_CAT,

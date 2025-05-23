@@ -35,8 +35,8 @@ export class CreateMenuItemDto {
 
     @ApiProperty({ description: 'Ids of Menu-Item-Size entities. Represents the sizes available for the referencing Menu-Item.' })
     @IsArray()
-    @IsNumber({},{ each: true})
-    @IsPositive({ each: true})
+    @IsNumber({}, { each: true })
+    @IsPositive({ each: true })
     @IsNotEmpty()
     readonly validSizeIds: number[];
 
@@ -50,15 +50,17 @@ export class CreateMenuItemDto {
     @IsOptional()
     readonly isParbake?: boolean;
 
-    @ApiProperty({ example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemContainerItemDtos', 
+    @ApiProperty({
+        example: 'Creating a Breakfast Pastry Platter, Size: ____ , components would be created from the passed CreateChildMenutItemContainerItemDtos',
         description: 'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
         type: [CreateChildMenuItemContainerItemDto]
-     })
+    })
     @IsOptional()
     @IsArray()
     readonly definedContainerItemDtos?: CreateChildMenuItemContainerItemDto[];
 
-    @ApiProperty({ description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.', 
+    @ApiProperty({
+        description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
         type: [CreateChildMenuItemContainerOptionsDto]
     })
     @IsOptional()

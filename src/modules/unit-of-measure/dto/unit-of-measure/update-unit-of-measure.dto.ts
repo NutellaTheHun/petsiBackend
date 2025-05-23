@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
-export class UpdateUnitOfMeasureDto{
+export class UpdateUnitOfMeasureDto {
     @ApiProperty({ example: 'Pound, Kilogram, Gallon, fluid ounce', description: 'Name of the Unit-of-Measure entity.' })
     @IsString()
     @IsOptional()

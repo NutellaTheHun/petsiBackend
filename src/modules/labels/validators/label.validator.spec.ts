@@ -36,16 +36,16 @@ describe('label validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const item = await itemService.findOneByName(item_a);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
         const labelType = await labelTypeService.findOneByName(type_c);
-        if(!labelType){ throw new Error(); }
+        if (!labelType) { throw new Error(); }
 
         const dto = {
             menuItemId: item.id,
@@ -59,12 +59,12 @@ describe('label validator', () => {
     });
 
     it('should fail create: menuItem/labelType combination exists', async () => {
-        const labelRequest = await labelService.findAll({relations: ['menuItem', 'labelType']})
-        if(!labelRequest){ throw new Error(); }
+        const labelRequest = await labelService.findAll({ relations: ['menuItem', 'labelType'] })
+        if (!labelRequest) { throw new Error(); }
 
         const badLabel = labelRequest.items[0];
-        if(!badLabel.labelType){ throw new Error(); }
-        
+        if (!badLabel.labelType) { throw new Error(); }
+
         const dto = {
             menuItemId: badLabel.menuItem.id,
             imageUrl: "url.com",
@@ -77,13 +77,13 @@ describe('label validator', () => {
     });
 
     it('should pass update', async () => {
-         const labelRequest = await labelService.findAll({relations: ['menuItem', 'labelType']})
-        if(!labelRequest){ throw new Error(); }
+        const labelRequest = await labelService.findAll({ relations: ['menuItem', 'labelType'] })
+        if (!labelRequest) { throw new Error(); }
 
         const toUpdate = labelRequest.items[0];
 
         const labelType = await labelTypeService.findOneByName(type_b);
-        if(!labelType){ throw new Error(); }
+        if (!labelType) { throw new Error(); }
 
         const dto = {
             menuItemId: toUpdate.menuItem.id,
@@ -95,13 +95,13 @@ describe('label validator', () => {
     });
 
     it('should fail update: menuItem / labelType combination exists', async () => {
-        const labelRequest = await labelService.findAll({relations: ['menuItem', 'labelType']})
-        if(!labelRequest){ throw new Error(); }
+        const labelRequest = await labelService.findAll({ relations: ['menuItem', 'labelType'] })
+        if (!labelRequest) { throw new Error(); }
 
         const toUpdate = labelRequest.items[0];
 
         const badItem = labelRequest.items[1];
-        if(!badItem.labelType){ throw new Error(); }
+        if (!badItem.labelType) { throw new Error(); }
 
         const dto = {
             menuItemId: badItem.menuItem.id,
@@ -114,13 +114,13 @@ describe('label validator', () => {
     });
 
     it('should fail update: menuItem / labelType combination exists', async () => {
-        const labelRequest = await labelService.findAll({relations: ['menuItem', 'labelType']})
-        if(!labelRequest){ throw new Error(); }
+        const labelRequest = await labelService.findAll({ relations: ['menuItem', 'labelType'] })
+        if (!labelRequest) { throw new Error(); }
 
         const toUpdate = labelRequest.items[0];
 
         const badItem = labelRequest.items[1];
-        if(!badItem.labelType){ throw new Error(); }
+        if (!badItem.labelType) { throw new Error(); }
 
         const dto = {
             menuItemId: badItem.menuItem.id,

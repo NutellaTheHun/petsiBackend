@@ -1,30 +1,30 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Query } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { PaginatedResult } from '../../../base/paginated-result';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
-import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
-import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { PaginatedResult } from '../../../base/paginated-result';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
+import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 
 @ApiTags('Recipe Ingredient')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('recipe-ingredient')
-export class RecipeIngredientController extends ControllerBase<RecipeIngredient>{
+export class RecipeIngredientController extends ControllerBase<RecipeIngredient> {
     constructor(
         ingredientService: RecipeIngredientService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
-    ){ super(ingredientService, cacheManager, 'RecipeIngredientController', requestContextService, logger); }
+    ) { super(ingredientService, cacheManager, 'RecipeIngredientController', requestContextService, logger); }
 
     /*@Post()
     @HttpCode(HttpStatus.CREATED)

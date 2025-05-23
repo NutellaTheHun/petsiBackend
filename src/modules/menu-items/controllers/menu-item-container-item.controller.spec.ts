@@ -1,6 +1,5 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
 import { CreateMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
 import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
@@ -29,7 +28,7 @@ describe('menu item container item controller', () => {
         service = module.get<MenuItemContainerItemService>(MenuItemContainerItemService);
 
         const itemNames = getTestItemNames();
-        items = itemNames.map( name => ({
+        items = itemNames.map(name => ({
             id: itemId++,
             itemName: name,
         }) as MenuItem);
@@ -89,16 +88,16 @@ describe('menu item container item controller', () => {
             return comp;
         });
 
-        jest.spyOn(service, 'findAll').mockResolvedValue({ items: components});
+        jest.spyOn(service, 'findAll').mockResolvedValue({ items: components });
 
         jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
             return components.filter(comp => ids.findIndex(id => id === comp.id) !== -1);
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-            if(!id){ throw new BadRequestException(); }
+            if (!id) { throw new BadRequestException(); }
             const result = components.find(comp => comp.id === id);
-            if(!result){
+            if (!result) {
                 throw new NotFoundException();
             }
             return result;
@@ -106,7 +105,7 @@ describe('menu item container item controller', () => {
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
             const index = components.findIndex(comp => comp.id === id);
-            if(index === -1){ return false; }
+            if (index === -1) { return false; }
 
             components.splice(index, 1);
             return true;
@@ -114,20 +113,20 @@ describe('menu item container item controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateMenuItemContainerItemDto) => {
             const existIdx = components.findIndex(comp => comp.id === id);
-            if(existIdx === -1){ throw new NotFoundException(); }
+            if (existIdx === -1) { throw new NotFoundException(); }
 
-            if(dto.containedMenuItemId){
+            if (dto.containedMenuItemId) {
                 const item = items.find(item => item.id === dto.containedMenuItemId);
-                if(!item){ throw new Error(); }
+                if (!item) { throw new Error(); }
                 components[existIdx].containedItem = item;
             }
-            if(dto.quantity){
+            if (dto.quantity) {
                 components[existIdx].quantity = dto.quantity;
             }
             return components[existIdx];
         });
     });
-    
+
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
@@ -153,8 +152,8 @@ describe('menu item container item controller', () => {
 
     it('should update component', async () => {
         const dto = {
-        mode: 'update',
-        quantity: 20,
+            mode: 'update',
+            quantity: 20,
         } as UpdateMenuItemContainerItemDto;
 
         const result = await controller.update(1, dto);
@@ -165,8 +164,8 @@ describe('menu item container item controller', () => {
 
     it('should fail update component (not exist)', async () => {
         const dto = {
-        mode: 'update',
-        quantity: 20,
+            mode: 'update',
+            quantity: 20,
         } as UpdateMenuItemContainerItemDto;
 
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
@@ -174,7 +173,7 @@ describe('menu item container item controller', () => {
 
     it('should find all components', async () => {
         const results = await controller.findAll();
-        if(!results){throw new Error(); }
+        if (!results) { throw new Error(); }
         expect(results.items.length).toBeGreaterThan(0);
     });
 

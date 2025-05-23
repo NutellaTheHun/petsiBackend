@@ -21,12 +21,11 @@ import { InventoryItem } from "../entities/inventory-item.entity";
 @Controller('inventory-item-size')
 export class InventoryItemSizeController extends ControllerBase<InventoryItemSize> {
     constructor(
-
-      sizeService: InventoryItemSizeService,
-      @Inject(CACHE_MANAGER) cacheManager: Cache,
-      logger: AppLogger,
-      requestContextService: RequestContextService,
-    ){ super(sizeService, cacheManager, 'InventoryItemSizeController', requestContextService, logger); }
+        sizeService: InventoryItemSizeService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(sizeService, cacheManager, 'InventoryItemSizeController', requestContextService, logger); }
 
     /*@Post()
     @HttpCode(HttpStatus.CREATED)

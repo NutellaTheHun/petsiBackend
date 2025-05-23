@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { ValidationError } from "../../../util/exceptions/validationError";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { Recipe } from "../entities/recipe.entity";
@@ -17,15 +17,15 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
-        
+
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateRecipeDto): Promise<ValidationError[]> {
+    public async validateCreate(dto: CreateRecipeDto): Promise<void> {
 
         // Exists
-        if(await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) { 
+        if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
             this.addError({
                 error: 'Recipe already exists.',
                 status: 'EXIST',
@@ -36,7 +36,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         }
 
         // subcategory if category isnt assigned
-        if(!dto.categoryId && dto.subCategoryId){
+        if (!dto.categoryId && dto.subCategoryId) {
             this.addError({
                 error: 'Cannot assign a subcategory without a category',
                 status: 'INVALID',
@@ -47,11 +47,11 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         }
 
         // Validate category / subcategory
-        else if(dto.categoryId && dto.subCategoryId){
+        else if (dto.categoryId && dto.subCategoryId) {
             const category = await this.categoryService.findOne(dto.categoryId, ['subCategories']);
-            if(!category.subCategories){ throw new Error('subcategories is null'); }
+            if (!category.subCategories) { throw new Error('subcategories is null'); }
 
-            if(!category.subCategories.find(cat => cat.id === dto.subCategoryId)){
+            if (!category.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
                     error: 'Invalid category / subcategory',
                     status: 'INVALID',
@@ -65,13 +65,13 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         }
 
         //No duplicate recipeIngredients
-        if(dto.ingredientDtos){
+        if (dto.ingredientDtos) {
             const resolvedDtos: string[] = []
-            for(const d of dto.ingredientDtos){
-                if(d.ingredientInventoryItemId){
+            for (const d of dto.ingredientDtos) {
+                if (d.ingredientInventoryItemId) {
                     resolvedDtos.push(`I:${d.ingredientInventoryItemId}`);
                 }
-                else if(d.ingredientRecipeId){
+                else if (d.ingredientRecipeId) {
                     resolvedDtos.push(`R:${d.ingredientRecipeId}`);
                 }
             }
@@ -79,8 +79,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                 resolvedDtos,
                 (ingred) => `${ingred}`
             );
-            if(duplicateIngreds){
-                for(const dup of duplicateIngreds){
+            if (duplicateIngreds) {
+                for (const dup of duplicateIngreds) {
                     const [prefix, idStr] = dup.split(':');
                     const ingredId = parseInt(idStr, 10);
                     const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
@@ -94,16 +94,16 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                     } as ValidationError);
                 }
             }
-        }   
-       
-        return this.errors;
+        }
+
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateRecipeDto): Promise<ValidationError[]> {
-        
+
+    public async validateUpdate(id: number, dto: UpdateRecipeDto): Promise<void> {
+
         // Exists
-        if(dto.recipeName){
-            if(await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) { 
+        if (dto.recipeName) {
+            if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
                 this.addError({
                     error: 'Recipe already exists.',
                     status: 'EXIST',
@@ -114,15 +114,15 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                 } as ValidationError);
             }
         }
-        
+
         // Validate category / subcategory
-        if(dto.categoryId && dto.subCategoryId){
+        if (dto.categoryId && dto.subCategoryId) {
 
             const category = await this.categoryService.findOne(dto.categoryId, ['subCategories']);
-            if(!category.subCategories){ throw new Error('subcategories is null'); }
+            if (!category.subCategories) { throw new Error('subcategories is null'); }
 
             // category / subcategory
-            if(!category.subCategories.find(cat => cat.id === dto.subCategoryId)){
+            if (!category.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
                     error: 'Invalid category / subcategory',
                     status: 'INVALID',
@@ -135,12 +135,12 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                 } as ValidationError);
             }
         }
-        else if(!dto.categoryId && dto.subCategoryId){
+        else if (!dto.categoryId && dto.subCategoryId) {
             const currentCategory = (await this.recipeService.findOne(id, ['category'], ['category.subCategories'])).category;
-            if(!currentCategory){ throw new Error(); }
+            if (!currentCategory) { throw new Error(); }
 
             // null category / subcategory
-            if(!currentCategory){
+            if (!currentCategory) {
                 this.addError({
                     error: 'Cannot assign a subcategory without an assigned category',
                     status: 'INVALID',
@@ -152,7 +152,7 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             }
 
             // category / subcategory
-            if(!currentCategory.subCategories.find(cat => cat.id === dto.subCategoryId)){
+            if (!currentCategory.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
                     error: 'Invalid category / subcategory',
                     status: 'INVALID',
@@ -166,20 +166,20 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             }
         }
 
-        
-        if(dto.ingredientDtos){
+
+        if (dto.ingredientDtos) {
             // resolve
             const resolvedDtos: string[] = []
             const resolvedIds: number[] = [];
-            for(const d of dto.ingredientDtos){
-                if(d.ingredientInventoryItemId){
+            for (const d of dto.ingredientDtos) {
+                if (d.ingredientInventoryItemId) {
                     resolvedDtos.push(`I:${d.ingredientInventoryItemId}`);
                 }
-                else if(d.ingredientRecipeId){
+                else if (d.ingredientRecipeId) {
                     resolvedDtos.push(`R:${d.ingredientRecipeId}`);
-                    
+
                 }
-                if(d.mode === 'update'){
+                if (d.mode === 'update') {
                     resolvedIds.push(d.id);
                 }
             }
@@ -189,8 +189,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                 resolvedDtos,
                 (ingred) => `${ingred}`
             );
-            if(duplicateIngreds){
-                for(const dup of duplicateIngreds){
+            if (duplicateIngreds) {
+                for (const dup of duplicateIngreds) {
                     const [prefix, idStr] = dup.split(':');
                     const ingredId = parseInt(idStr, 10);
                     const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
@@ -211,20 +211,20 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                 resolvedIds,
                 (id) => `${id}`
             );
-            if(duplicateIds){
-                for(const dupId of duplicateIds){
+            if (duplicateIds) {
+                for (const dupId of duplicateIds) {
                     this.addError({
-                            error: 'Multiple update requests for the same ingredient',
-                            status: 'DUPLICATE',
-                            contextEntity: 'UpdateRecipeDto',
-                            contextId: id,
-                            sourceEntity: 'RecipeIngredient',
-                            sourceId: dupId,
+                        error: 'Multiple update requests for the same ingredient',
+                        status: 'DUPLICATE',
+                        contextEntity: 'UpdateRecipeDto',
+                        contextId: id,
+                        sourceEntity: 'RecipeIngredient',
+                        sourceId: dupId,
                     } as ValidationError);
                 }
             }
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
 }

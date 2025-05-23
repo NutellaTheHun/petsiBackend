@@ -45,20 +45,20 @@ describe('menu item validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create: normal', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const vegan = await itemService.findOneByName(item_b);
-        if(!vegan){ throw new Error();}
+        if (!vegan) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const dto = {
             categoryId: category?.id,
@@ -75,16 +75,16 @@ describe('menu item validator', () => {
 
     it('should validate create: defined container', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -117,10 +117,10 @@ describe('menu item validator', () => {
 
     it('should validate create: container options', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const optionDto = {
             mode: 'create',
@@ -142,13 +142,13 @@ describe('menu item validator', () => {
 
     it('should fail create (name already exists)', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const vTnBake = await itemService.findOneByName(item_b);
-        if(!vTnBake){ throw new Error(); }
+        if (!vTnBake) { throw new Error(); }
 
         const dto = {
             categoryId: category.id,
@@ -165,16 +165,16 @@ describe('menu item validator', () => {
 
     it('should fail create: definedContainer and container options', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -214,13 +214,13 @@ describe('menu item validator', () => {
 
     it('should fail create: definedContainer duplicates', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -253,15 +253,15 @@ describe('menu item validator', () => {
 
     it('should fail create: duplicate size ids', async () => {
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const dto = {
             categoryId: category.id,
             itemName: "TEST ITEM",
-            validSizeIds: [ size.id, size.id ],
+            validSizeIds: [size.id, size.id],
             isParbake: true,
         } as CreateMenuItemDto;
 
@@ -272,13 +272,13 @@ describe('menu item validator', () => {
 
     it('should pass update: normal', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const dto = {
             categoryId: category.id,
@@ -293,21 +293,21 @@ describe('menu item validator', () => {
 
     it('should pass update: defined container', async () => {
         const containerRequest = await definedContainerService.findAll({ relations: ['parentContainer'] })
-        if(!containerRequest){ throw new Error(); }
+        if (!containerRequest) { throw new Error(); }
 
         const toUpdate = containerRequest.items[0].parentContainer;
-        
+
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -341,13 +341,13 @@ describe('menu item validator', () => {
 
     it('should pass update: container options', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const optionDto = {
             mode: 'create',
@@ -369,13 +369,13 @@ describe('menu item validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const dto = {
             categoryId: category.id,
@@ -390,19 +390,19 @@ describe('menu item validator', () => {
 
     it('should fail update: container options and defined container', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -442,7 +442,7 @@ describe('menu item validator', () => {
 
     it('should fail update: container options with current defined container', async () => {
         const containerItemRequest = await definedContainerService.findAll({ relations: ['parentContainer'] })
-        if(!containerItemRequest) { throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0].parentContainer
 
@@ -462,7 +462,7 @@ describe('menu item validator', () => {
 
     it('should pass update: container options with current defined container (set null)', async () => {
         const containerItemRequest = await definedContainerService.findAll({ relations: ['parentContainer'] })
-        if(!containerItemRequest) { throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0].parentContainer
 
@@ -483,18 +483,18 @@ describe('menu item validator', () => {
 
     it('should fail update: defined container with current container options', async () => {
         const optionsRequest = await containerOptionsService.findAll({ relations: ['parentContainer'] });
-        if(!optionsRequest){ throw new Error(); }
+        if (!optionsRequest) { throw new Error(); }
 
         const toUpdate = optionsRequest.items[0].parentContainer;
 
         const parentMenuitem = await itemService.findOne(toUpdate.id, ['validSizes']);
-        if(!parentMenuitem){ throw new Error(); }
+        if (!parentMenuitem) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
 
         const containerDtos = [
@@ -524,15 +524,15 @@ describe('menu item validator', () => {
 
     it('should pass update: defined container with current container options (Set null)', async () => {
         const optionsRequest = await containerOptionsService.findAll({ relations: ['parentContainer'] });
-        if(!optionsRequest){ throw new Error(); }
+        if (!optionsRequest) { throw new Error(); }
 
         const toUpdate = optionsRequest.items[0].parentContainer;
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containedItemB = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemB){ throw new Error(); }
+        if (!containedItemB) { throw new Error(); }
 
 
         const containerDtos = [
@@ -549,13 +549,13 @@ describe('menu item validator', () => {
 
     it('should fail update: defined container duplicates', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItemA){ throw new Error(); }
+        if (!containedItemA) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -584,13 +584,13 @@ describe('menu item validator', () => {
 
     it('should fail update: duplicate validSizes', async () => {
         const toUpdate = await itemService.findOneByName(item_a);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
-         const category = await categoryService.findOneByName(CAT_BLUE);
-        if(!category){ throw new Error(); }
+        const category = await categoryService.findOneByName(CAT_BLUE);
+        if (!category) { throw new Error(); }
 
         const size = await sizeService.findOneByName(SIZE_THREE);
-        if(!size){ throw new Error(); }
+        if (!size) { throw new Error(); }
 
         const dto = {
             validSizeIds: [size.id, size.id],

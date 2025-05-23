@@ -1,12 +1,12 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { UserTestUtil } from "../utils/user-test.util";
-import { UserValidator } from "./user.validator";
-import { UserService } from "../services/user.service";
-import { getUserTestingModule } from "../utils/user-testing-module";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UpdateUserDto } from "../dto/update-user.dto";
+import { UserService } from "../services/user.service";
 import { USER_A, USER_B, USER_C } from "../utils/constants";
+import { UserTestUtil } from "../utils/user-test.util";
+import { getUserTestingModule } from "../utils/user-testing-module";
+import { UserValidator } from "./user.validator";
 
 describe('user validator', () => {
     let testingUtil: UserTestUtil;
@@ -28,13 +28,13 @@ describe('user validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
-       const dto = {
+        const dto = {
             username: "testUser",
             password: "testPass",
             email: "email",
@@ -59,7 +59,7 @@ describe('user validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(USER_B);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             username: "testUser",
@@ -73,7 +73,7 @@ describe('user validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(USER_B);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             username: USER_C,

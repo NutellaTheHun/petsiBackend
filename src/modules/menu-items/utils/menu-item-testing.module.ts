@@ -1,26 +1,26 @@
+import { CacheModule } from "@nestjs/cache-manager";
 import { ConfigModule } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { LoggerModule } from "nestjs-pino";
 import { TypeORMPostgresTestingModule } from "../../../typeorm/configs/TypeORMPostgresTesting";
+import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
+import { AppLoggingModule } from "../../app-logging/app-logging.module";
+import { RequestContextModule } from "../../request-context/request-context.module";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { MenuItemCategoryController } from "../controllers/menu-item-category.controller";
+import { MenuItemContainerItemController } from "../controllers/menu-item-container-item.controller";
+import { MenuItemContainerOptionsController } from "../controllers/menu-item-container-options.controller";
+import { MenuItemContainerRuleController } from "../controllers/menu-item-container-rule.controller";
 import { MenuItemSizeController } from "../controllers/menu-item-size.controller";
 import { MenuItemController } from "../controllers/menu-item.controller";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
+import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
+import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemsModule } from "../menu-items.module";
-import { MenuItemContainerItemController } from "../controllers/menu-item-container-item.controller";
-import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
-import { CacheModule } from "@nestjs/cache-manager";
-import { LoggerModule } from "nestjs-pino";
-import { AppLoggingModule } from "../../app-logging/app-logging.module";
-import { RequestContextModule } from "../../request-context/request-context.module";
-import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
-import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
-import { MenuItemContainerRuleController } from "../controllers/menu-item-container-rule.controller";
-import { MenuItemContainerOptionsController } from "../controllers/menu-item-container-options.controller";
 
 export async function getMenuItemTestingModule(): Promise<TestingModule> {
     return await Test.createTestingModule({
@@ -61,7 +61,8 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
         ],
 
         providers: [],
-})
-.overrideProvider(RequestContextService)
-.useClass(TestRequestContextService)
-.compile()};
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile()
+};

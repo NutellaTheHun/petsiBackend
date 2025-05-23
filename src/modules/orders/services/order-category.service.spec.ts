@@ -46,7 +46,7 @@ describe('order category service', () => {
 
     it('should find an order type by id', async () => {
         const result = await service.findOne(testId);
-        
+
         expect(result).not.toBeNull();
         expect(result?.categoryName).toEqual("testType");
         expect(result?.id).toEqual(testId);
@@ -54,7 +54,7 @@ describe('order category service', () => {
 
     it('should find an order type by name', async () => {
         const result = await service.findOneByName("testType");
-        
+
         expect(result).not.toBeNull();
         expect(result?.categoryName).toEqual("testType");
         expect(result?.id).toEqual(testId);
@@ -78,7 +78,7 @@ describe('order category service', () => {
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(5);
 
-        testIds = results.items.slice(0,3).map(type => type.id);
+        testIds = results.items.slice(0, 3).map(type => type.id);
     });
 
     it('should get order types by list of ids', async () => {

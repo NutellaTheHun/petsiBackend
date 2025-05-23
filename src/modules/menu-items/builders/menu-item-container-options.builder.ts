@@ -17,7 +17,7 @@ import { MenuItemContainerRuleBuilder } from "./menu-item-container-rule.builder
 import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
 
 @Injectable()
-export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContainerOptions> implements IBuildChildDto<MenuItem, MenuItemContainerOptions>{
+export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContainerOptions> implements IBuildChildDto<MenuItem, MenuItemContainerOptions> {
     constructor(
         @Inject(forwardRef(() => MenuItemContainerOptionsService))
         private readonly itemComponentOptionsService: MenuItemContainerOptionsService,
@@ -31,9 +31,9 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
         validator: MenuItemContainerOptionsValidator,
 
         requestContextService: RequestContextService,
-        
+
         logger: AppLogger,
-    ){ super(MenuItemContainerOptions, 'MenuItemComponentOptionsBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItemContainerOptions, 'MenuItemComponentOptionsBuilder', requestContextService, logger, validator); }
 
     async buildChildCreateDto(parentItem: MenuItem, dto: CreateChildMenuItemContainerOptionsDto): Promise<MenuItemContainerOptions> {
         await this.validateCreateDto(dto);
@@ -46,12 +46,12 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
 
         return await this.build();
     }
-    
+
     buildChildEntity(dto: CreateChildMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos !== undefined){
+        if (dto.containerRuleDtos !== undefined) {
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.validQuantity !== undefined){
+        if (dto.validQuantity !== undefined) {
             this.validQuantity(dto.validQuantity);
         }
     }
@@ -60,32 +60,32 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
      * Depreciated, only created as a child through {@link MenuItem}.
      */
     protected createEntity(dto: CreateMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos !== undefined){
+        if (dto.containerRuleDtos !== undefined) {
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.parentContainerMenuItemId !== undefined){
+        if (dto.parentContainerMenuItemId !== undefined) {
             this.parentContainerById(dto.parentContainerMenuItemId);
         }
-        if(dto.validQuantity !== undefined){
+        if (dto.validQuantity !== undefined) {
             this.validQuantity(dto.validQuantity);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerOptionsDto): void {
-        if(dto.containerRuleDtos !== undefined){
+        if (dto.containerRuleDtos !== undefined) {
             this.containerRulesByBuilder(0, dto.containerRuleDtos);
         }
-        if(dto.validQuantity !== undefined){
+        if (dto.validQuantity !== undefined) {
             this.validQuantity(dto.validQuantity);
         }
     }
 
     public async buildChildDto(parentItem: MenuItem, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto)): Promise<MenuItemContainerOptions> {
-        if(dto.mode === 'create'){
+        if (dto.mode === 'create') {
             return await this.buildChildCreateDto(parentItem, dto);
         }
         const toUpdate = await this.itemComponentOptionsService.findOne(dto.id);
-        if(!toUpdate){ throw new Error("options is null"); }
+        if (!toUpdate) { throw new Error("options is null"); }
 
         return await this.buildUpdateDto(toUpdate, dto);
     }

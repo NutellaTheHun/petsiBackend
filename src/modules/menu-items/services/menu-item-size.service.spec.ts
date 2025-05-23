@@ -1,11 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemSizeService } from "./menu-item-size.service";
-import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
-import { NotFoundException } from "@nestjs/common";
-import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 
 describe('menu item size service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -20,7 +20,7 @@ describe('menu item size service', () => {
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
-        
+
         sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
     });
 
@@ -72,13 +72,13 @@ describe('menu item size service', () => {
     it('should find all sizes', async () => {
         const results = await sizeService.findAll();
         expect(results.items.length).toEqual(5);
-        testIds = results.items.slice(0,3).map(size => size.id);
+        testIds = results.items.slice(0, 3).map(size => size.id);
     });
 
     it('should find sizes by a list of ids', async () => {
         const results = await sizeService.findEntitiesById(testIds);
         expect(results.length).toEqual(3);
-        for(const result of results){
+        for (const result of results) {
             expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
         }
     });

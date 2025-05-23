@@ -9,11 +9,11 @@ import { User } from "../../users/entities/user.entities";
  * While "Management" can access Order-Management as well as recipe costing and inventory management.
  */
 @Entity()
-export class Role{
+export class Role {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ nullable: false, unique: true})
+    @Column({ nullable: false, unique: true })
     roleName: string;
 
     /**

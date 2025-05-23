@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Order } from "./order.entity";
-import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { MenuItemSize } from "../../menu-items/entities/menu-item-size.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { OrderContainerItem } from "./order-container-item.entity";
+import { Order } from "./order.entity";
 
 /**
  * A {@link MenuItem} specified with a quantity and {@link MenuItemSize} on an {@link Order}.
@@ -38,6 +38,6 @@ export class OrderMenuItem {
     @ManyToOne(() => MenuItemSize, { nullable: false, eager: true })
     size: MenuItemSize;
 
-    @OneToMany(() => OrderContainerItem, (orderItem) => orderItem.parentOrderItem, { cascade: true,  eager: true })
+    @OneToMany(() => OrderContainerItem, (orderItem) => orderItem.parentOrderItem, { cascade: true, eager: true })
     orderedContainerItems: OrderContainerItem[];
 }

@@ -8,26 +8,26 @@ import { AuthService } from './services/auth.service';
 import { RequestContextModule } from '../request-context/request-context.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-    
-    JwtModule.registerAsync({
-      imports:[ConfigModule],
-      inject:[ConfigService],
-      useFactory: async(configService: ConfigService) => ({
-        global: true,
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '60s'},
-      }),
-    }),
+    imports: [
+        ConfigModule,
 
-    AppLoggingModule,
-    RequestContextModule,
-    UserModule,
-  ],
-  controllers: [AuthController],
-  providers: [
-    AuthService,
-  ]
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: async (configService: ConfigService) => ({
+                global: true,
+                secret: configService.get<string>('JWT_SECRET'),
+                signOptions: { expiresIn: '60s' },
+            }),
+        }),
+
+        AppLoggingModule,
+        RequestContextModule,
+        UserModule,
+    ],
+    controllers: [AuthController],
+    providers: [
+        AuthService,
+    ]
 })
-export class AuthModule {}
+export class AuthModule { }

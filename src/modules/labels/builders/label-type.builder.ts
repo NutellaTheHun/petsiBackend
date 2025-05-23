@@ -13,28 +13,28 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
         validator: LabelTypeValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(LabelType, 'LabelTypeBuilder', requestContextService, logger, validator); }
+    ) { super(LabelType, 'LabelTypeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateLabelTypeDto): void {
-        if(dto.labelTypeName !== undefined){
+        if (dto.labelTypeName !== undefined) {
             this.name(dto.labelTypeName);
         }
-        if(dto.labelTypeLength !== undefined){
+        if (dto.labelTypeLength !== undefined) {
             this.labelLength(dto.labelTypeLength);
         }
-        if(dto.labelTypeWidth !== undefined){
+        if (dto.labelTypeWidth !== undefined) {
             this.labelWidth(dto.labelTypeWidth);
         }
     }
 
     protected updateEntity(dto: UpdateLabelTypeDto): void {
-        if(dto.labelTypeName !== undefined){
+        if (dto.labelTypeName !== undefined) {
             this.name(dto.labelTypeName);
         }
-        if(dto.labelTypeLength !== undefined){
+        if (dto.labelTypeLength !== undefined) {
             this.labelLength(dto.labelTypeLength);
         }
-        if(dto.labelTypeWidth !== undefined){
+        if (dto.labelTypeWidth !== undefined) {
             this.labelWidth(dto.labelTypeWidth);
         }
     }

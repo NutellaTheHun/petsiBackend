@@ -5,7 +5,7 @@ import { Order } from "./order.entity";
  * A category of {@link Order} for filtering/organization such as: "square", "wholesale", "retail", "farmers market", "special", ect.
  */
 @Entity()
-export class OrderCategory{
+export class OrderCategory {
     @PrimaryGeneratedColumn()
     id: number;
 

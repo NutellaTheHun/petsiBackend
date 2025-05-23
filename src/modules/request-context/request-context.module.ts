@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { RequestContextService } from './RequestContextService';
 
 @Module({
-  providers: [RequestContextService],
-  exports: [RequestContextService],
+    providers: [RequestContextService],
+    exports: [RequestContextService],
 })
-export class RequestContextModule {}
+export class RequestContextModule { }

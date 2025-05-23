@@ -1,5 +1,5 @@
-export class ValidationError{
-    
+export class ValidationError {
+
     /**
      * Short, user friendly error description.
      */

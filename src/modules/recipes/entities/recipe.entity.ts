@@ -1,10 +1,10 @@
 import { Check, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
 import { RecipeCategory } from "./recipe-category.entity";
 import { RecipeIngredient } from "./recipe-ingredient.entity";
 import { RecipeSubCategory } from "./recipe-sub-category.entity";
-import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 
 /**
  * The list of {@link RecipeIngredient} and details of yield, cost, and sales price.
@@ -22,7 +22,7 @@ export class Recipe {
     /** 
      * The {@link MenuItem} that this recipe produces.
      */
-    @OneToOne(() => MenuItem, {nullable: true, onDelete: 'SET NULL'})
+    @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     producedMenuItem?: MenuItem | null;
 
@@ -105,8 +105,8 @@ export class Recipe {
     /**
      * The {@link RecipeCategory}, such as "Pie" or"Pastry"
      */
-    @ManyToOne(() => RecipeCategory, (category) => category.recipes, { nullable: true, onDelete: 'SET NULL'})
-    category?: RecipeCategory| null;
+    @ManyToOne(() => RecipeCategory, (category) => category.recipes, { nullable: true, onDelete: 'SET NULL' })
+    category?: RecipeCategory | null;
 
     /**
      * The {@link RecipeSubCategory} of {@link RecipeCategory}, such as "Sweet Pie" or "Savory Pie", of RecipeCategory Pie.

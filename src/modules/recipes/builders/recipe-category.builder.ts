@@ -1,19 +1,19 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
+import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
 import { CreateRecipeCategoryDto } from "../dto/recipe-category/create-recipe-category.dto";
-import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
 import { UpdateRecipeCategoryDto } from "../dto/recipe-category/update-recipe-category.dto";
+import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
+import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";
 import { RecipeCategoryValidator } from "../validators/recipe-category.validator";
 import { RecipeSubCategoryBuilder } from "./recipe-sub-category.builder";
-import { AppLogger } from "../../app-logging/app-logger";
 
 @Injectable()
-export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
+export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
     constructor(
         @Inject(forwardRef(() => RecipeSubCategoryService))
         private readonly recipeService: RecipeService,
@@ -24,22 +24,22 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory>{
         validator: RecipeCategoryValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(RecipeCategory, 'RecipeCategoryBuilder', requestContextService, logger, validator); }
+    ) { super(RecipeCategory, 'RecipeCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeCategoryDto): void {
-        if(dto.categoryName !== undefined){
+        if (dto.categoryName !== undefined) {
             this.name(dto.categoryName);
         }
-        if(dto.subCategoryDtos !== undefined){
+        if (dto.subCategoryDtos !== undefined) {
             this.subCategoriesByBuilder(dto.subCategoryDtos);
         }
     }
 
     protected updateEntity(dto: UpdateRecipeCategoryDto): void {
-        if(dto.categoryName !== undefined){
+        if (dto.categoryName !== undefined) {
             this.name(dto.categoryName);
         }
-        if(dto.subCategoryDtos !== undefined){
+        if (dto.subCategoryDtos !== undefined) {
             this.subCategoriesByBuilder(dto.subCategoryDtos);
         }
     }

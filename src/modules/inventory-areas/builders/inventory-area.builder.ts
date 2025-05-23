@@ -9,23 +9,23 @@ import { InventoryAreaCountService } from "../services/inventory-area-count.serv
 import { InventoryAreaValidator } from "../validators/inventory-area.validator";
 
 @Injectable()
-export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
+export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
     constructor(
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
         logger: AppLogger,
         validator: InventoryAreaValidator,
         requestContextService: RequestContextService,
-    ){ super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
+    ) { super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaDto): void {
-        if(dto.areaName !== undefined){
+        if (dto.areaName !== undefined) {
             this.areaName(dto.areaName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaDto): void {
-        if(dto.areaName !== undefined){
+        if (dto.areaName !== undefined) {
             this.areaName(dto.areaName);
         }
     }

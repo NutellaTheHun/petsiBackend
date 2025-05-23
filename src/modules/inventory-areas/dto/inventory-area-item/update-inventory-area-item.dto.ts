@@ -10,9 +10,10 @@ export class UpdateInventoryAreaItemDto {
     @IsOptional()
     readonly countedInventoryItemId?: number;
 
-    @ApiProperty({ 
-        example: '6pk(countedAmount) of 28oz(measure amount) can of evaporated milk', 
-        description: 'The amount of Inventory-Item per unit.' })
+    @ApiProperty({
+        example: '6pk(countedAmount) of 28oz(measure amount) can of evaporated milk',
+        description: 'The amount of Inventory-Item per unit.'
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
@@ -38,9 +39,10 @@ export class UpdateInventoryAreaItemDto {
      * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
      *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
      */
-    @ApiProperty({ description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is populated, itemSizeId must be null/undefined.',
+    @ApiProperty({
+        description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is populated, itemSizeId must be null/undefined.',
         type: [CreateChildInventoryItemSizeDto]
-     })
+    })
     @IsOptional()
     readonly countedItemSizeDto?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto);
 }

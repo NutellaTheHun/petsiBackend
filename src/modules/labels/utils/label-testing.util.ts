@@ -9,7 +9,7 @@ import { getTestImageUrls, getTestLabelTypeNames } from "./constants";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 
 @Injectable()
-export class LabelTestingUtil{
+export class LabelTestingUtil {
 
     private initLabels = false;
     private initLabelTypes = false;
@@ -20,14 +20,14 @@ export class LabelTestingUtil{
 
         private readonly menuItemTestUtil: MenuItemTestingUtil,
         private readonly itemService: MenuItemService,
-    ){ }
+    ) { }
 
     // Label Types
     public async getTestLabelTypeEntities(testContext: DatabaseTestContext): Promise<LabelType[]> {
         const names = getTestLabelTypeNames();
         const results: LabelType[] = [];
 
-        for(const name of names){
+        for (const name of names) {
             results.push({
                 labelTypeName: name,
                 labelTypeLength: 200,
@@ -39,8 +39,8 @@ export class LabelTestingUtil{
     }
 
     public async initLabelTypeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initLabelTypes){ 
-            return; 
+        if (this.initLabelTypes) {
+            return;
         }
         this.initLabelTypes = true;
 
@@ -59,7 +59,7 @@ export class LabelTestingUtil{
         await this.initLabelTypeTestDatabase(testContext);
         const typesRequest = await this.typeService.findAll();
         const types = typesRequest.items;
-        if(!types){ throw new Error(); }
+        if (!types) { throw new Error(); }
         let typeIdx = 0;
 
         const urls = getTestImageUrls();
@@ -67,12 +67,12 @@ export class LabelTestingUtil{
         await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
         const itemsRequest = await this.itemService.findAll();
         const items = itemsRequest.items;
-        if(!items){ throw new Error(); }
+        if (!items) { throw new Error(); }
         let itemIdx = 0;
 
         const results: Label[] = [];
 
-        for(const url of urls){
+        for (const url of urls) {
             results.push({
                 menuItem: items[itemIdx++ % items.length],
                 imageUrl: url,
@@ -84,8 +84,8 @@ export class LabelTestingUtil{
     }
 
     public async initLabelTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initLabels){ 
-            return; 
+        if (this.initLabels) {
+            return;
         }
         this.initLabels = true;
 

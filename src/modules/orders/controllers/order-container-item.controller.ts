@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
 import { PaginatedResult } from "../../../base/paginated-result";
@@ -8,24 +8,24 @@ import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { OrderContainerItem } from "../entities/order-container-item.entity";
-import { OrderContainerItemService } from "../services/order-container-item.service";
 import { CreateOrderContainerItemDto } from "../dto/order-container-item/create-order-container-item.dto";
 import { UpdateOrderContainerItemDto } from "../dto/order-container-item/update-order-container-item.dto";
+import { OrderContainerItem } from "../entities/order-container-item.entity";
 import { Order } from "../entities/order.entity";
+import { OrderContainerItemService } from "../services/order-container-item.service";
 
 @ApiTags('Order Container Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('order-container-item')
-export class OrderContainerItemController extends ControllerBase<OrderContainerItem>{
+export class OrderContainerItemController extends ControllerBase<OrderContainerItem> {
     constructor(
         service: OrderContainerItemService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) { super(service, cacheManager, 'OrderMenuItemComponentController', requestContextService, logger); }
-    
+
     /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Order Menu Item Component' })

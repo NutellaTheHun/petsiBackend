@@ -17,13 +17,13 @@ import { LabelTypeService } from '../services/label-type.service';
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('label-types')
-export class LabelTypeController extends ControllerBase<LabelType>{
+export class LabelTypeController extends ControllerBase<LabelType> {
     constructor(
-      labelTypeService: LabelTypeService,
-      @Inject(CACHE_MANAGER) cacheManager: Cache,
-      logger: AppLogger,
-      requestContextService: RequestContextService,
-    ) { super(labelTypeService, cacheManager,'LabelTypeController', requestContextService, logger); }
+        labelTypeService: LabelTypeService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(labelTypeService, cacheManager, 'LabelTypeController', requestContextService, logger); }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)

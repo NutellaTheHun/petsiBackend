@@ -20,9 +20,10 @@ export class CreateInventoryItemDto {
     @IsOptional()
     readonly vendorId?: number;
 
-    @ApiProperty({ description: 'Array of CreateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
+    @ApiProperty({
+        description: 'Array of CreateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
         type: [CreateChildInventoryItemSizeDto]
-     })
+    })
     @IsOptional()
     @IsArray()
     readonly itemSizeDtos?: CreateChildInventoryItemSizeDto[];

@@ -10,7 +10,7 @@ import { InventoryItem } from "../../inventory-items/entities/inventory-item.ent
  * Associates a list of {@link InventoryAreaItem} at a time counted, with an {@link InventoryArea}.
  */
 @Entity()
-export class InventoryAreaCount{
+export class InventoryAreaCount {
     @PrimaryGeneratedColumn()
     id: number;
 

@@ -22,8 +22,9 @@ export class UpdateInventoryItemDto {
     @IsPositive()
     @IsOptional()
     readonly vendorId?: number | null;
-    
-    @ApiProperty({ description: 'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
+
+    @ApiProperty({
+        description: 'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
         type: [UpdateChildInventoryItemSizeDto]
     })
     @IsOptional()
@@ -32,7 +33,7 @@ export class UpdateInventoryItemDto {
     @Type(() => InventoryItemSizeUnionResolver)
     readonly itemSizeDtos?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)

@@ -24,8 +24,8 @@ export class RecipeTestUtil {
 
     private initCategory = false;
     private initSubCategory = false;
-    private initRecipe= false;
-    private initIngredient= false;
+    private initRecipe = false;
+    private initIngredient = false;
 
     constructor(
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
@@ -44,7 +44,7 @@ export class RecipeTestUtil {
         private readonly recipeBuilder: RecipeBuilder,
 
         //private readonly menuItemService: MenuItemsService,
-    ){ }
+    ) { }
 
     /**
      * Dependencies: InventoryItems, UnitOfMeasure, Recipe
@@ -54,7 +54,7 @@ export class RecipeTestUtil {
         await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
         await this.initRecipeTestingDatabase(testContext);
-        
+
         return [
             await this.ingredientBuilder.reset()
                 .ingredientInventoryItemByName(FOOD_A)
@@ -193,7 +193,7 @@ export class RecipeTestUtil {
      * Dependencies: UnitOfMeasure, RecipeCategory, RecipeSubCategory
      * @returns 
      */
-    public async getTestRecipeEntities(testContext: DatabaseTestContext): Promise<Recipe[]> { 
+    public async getTestRecipeEntities(testContext: DatabaseTestContext): Promise<Recipe[]> {
         await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.initRecipeCategoryTestingDatabase(testContext);
         await this.initRecipeSubCategoryTestingDatabase(testContext);
@@ -270,9 +270,9 @@ export class RecipeTestUtil {
      * - with recipe C referencing recipe B as an ingredient
      * - Depends on InventoryItems, UnitOfMeasure, and Recipe, which are initialized beforehand.
      */
-    public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.initIngredient){ 
-            return; 
+    public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initIngredient) {
+            return;
         }
         this.initIngredient = true;
 
@@ -289,8 +289,8 @@ export class RecipeTestUtil {
      *  -No Dependencies
      */
     public async initRecipeCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initCategory){ 
-            return; 
+        if (this.initCategory) {
+            return;
         }
         this.initCategory = true;
 
@@ -299,9 +299,9 @@ export class RecipeTestUtil {
 
         testContext.addCleanupFunction(() => this.cleanupRecipeCategoryTestingDatabase());
 
-        for(const category of categories){
+        for (const category of categories) {
             const exists = await this.categoryService.findOneByName(category.categoryName);
-            if(!exists){ toInsert.push(category); }
+            if (!exists) { toInsert.push(category); }
         }
         await this.categoryService.insertEntities(toInsert);
     }
@@ -313,19 +313,19 @@ export class RecipeTestUtil {
      * - Dependent on RecipeCategory entitiy and inserts before.
      */
     public async initRecipeSubCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initSubCategory){ 
-            return; 
+        if (this.initSubCategory) {
+            return;
         }
         this.initSubCategory = true;
 
         const subCategories = await this.getTestRecipeSubCategoryEntities(testContext);
         const toInsert: RecipeSubCategory[] = [];
-        
+
         testContext.addCleanupFunction(() => this.cleanupRecipeSubCategoryTestingDatabase());
 
-        for(const subCat of subCategories){
+        for (const subCat of subCategories) {
             const exists = await this.subCategoryService.findOneByName(subCat.subCategoryName);
-            if(!exists){ toInsert.push(subCat); }
+            if (!exists) { toInsert.push(subCat); }
         }
 
         await this.subCategoryService.insertEntities(toInsert);
@@ -337,25 +337,25 @@ export class RecipeTestUtil {
      * - Depends on UnitOfMeasure, RecipeCategory, and RecipeSubCategory, which are initalized beforehand
      */
     public async initRecipeTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initRecipe){ 
-            return; 
+        if (this.initRecipe) {
+            return;
         }
         this.initRecipe = true;
 
         const recipes = await this.getTestRecipeEntities(testContext);
         const toInsert: Recipe[] = [];
-        
+
         testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
 
-        for(const recipe of recipes){
+        for (const recipe of recipes) {
             const exists = await this.recipeService.findOneByName(recipe.recipeName);
-            if(!exists){ toInsert.push(recipe); }
+            if (!exists) { toInsert.push(recipe); }
         }
 
         await this.recipeService.insertEntities(toInsert);
     }
 
-    public async cleanupRecipeIngredientTestingDatabase(): Promise<void>{
+    public async cleanupRecipeIngredientTestingDatabase(): Promise<void> {
         await this.ingredientService.getQueryBuilder().delete().execute();
     }
 
@@ -377,14 +377,14 @@ export class RecipeTestUtil {
      * - creates ingredients from inventoryItem ids array, then subRecipe ids array.
      * - will loop through inventoryItems and subRecipes if size of quantites array is larger than the combined length of items and subRecipes
      */
-    public createChildRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateChildRecipeIngredientDto[]{
+    public createChildRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateChildRecipeIngredientDto[] {
         const results: CreateChildRecipeIngredientDto[] = [];
 
         let itemIndex = 0;
         let subRecipeIndex = 0;
 
-        for(let i = 0; i < quantities.length; i++){
-            if(itemIndex < itemIds.length){
+        for (let i = 0; i < quantities.length; i++) {
+            if (itemIndex < itemIds.length) {
                 results.push({
                     mode: 'create',
                     ingredientInventoryItemId: itemIds[itemIndex++],
@@ -392,15 +392,15 @@ export class RecipeTestUtil {
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
-            else if(subRecipeIndex < subRecipeIds.length){
+            else if (subRecipeIndex < subRecipeIds.length) {
                 results.push({
                     mode: 'create',
-                    ingredientRecipeId: subRecipeIds[i - itemIds.length-1],
+                    ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
                     quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
-            else{
+            else {
                 itemIndex = 0;
                 subRecipeIndex = 0;
 

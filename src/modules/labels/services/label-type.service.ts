@@ -6,22 +6,20 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { LabelTypeBuilder } from '../builders/label-type.builder';
 import { LabelType } from '../entities/label-type.entity';
-import { LabelTypeValidator } from '../validators/label-type.validator';
 
 @Injectable()
-export class LabelTypeService extends ServiceBase<LabelType>{
-  constructor(
-    @InjectRepository(LabelType)
-    private readonly typeRepo: Repository<LabelType>,
+export class LabelTypeService extends ServiceBase<LabelType> {
+    constructor(
+        @InjectRepository(LabelType)
+        private readonly repo: Repository<LabelType>,
 
-    typeBuilder: LabelTypeBuilder,
+        builder: LabelTypeBuilder,
+        
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) { super(repo, builder, 'LabelTypeService', requestContextService, logger); }
 
-    validator: LabelTypeValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ){ super(typeRepo, typeBuilder, validator, 'LabelTypeService', requestContextService, logger); }
-
-  async findOneByName(name: string, relations?: Array<keyof LabelType>): Promise<LabelType | null> {
-      return await this.typeRepo.findOne({ where: { labelTypeName: name }, relations });
-  }
+    async findOneByName(name: string, relations?: Array<keyof LabelType>): Promise<LabelType | null> {
+        return await this.repo.findOne({ where: { labelTypeName: name }, relations });
+    }
 }

@@ -7,12 +7,10 @@ import { item_b, item_f } from "../../menu-items/utils/constants";
 import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
 import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
 import { OrderContainerItemService } from "../services/order-container-item.service";
-import { TYPE_A, TYPE_B } from "../utils/constants";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderContainerItemValidator } from "./order-container-item.validator";
-import { rule } from "postcss";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
 
 describe('order container item validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -42,7 +40,7 @@ describe('order container item validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -52,9 +50,9 @@ describe('order container item validator', () => {
 
         const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
 
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
+        if (!options) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -74,9 +72,9 @@ describe('order container item validator', () => {
 
         const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
 
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
+        if (!options) { throw new Error(); }
         const validItemIds = options?.containerRules.map(item => item.validItem.id);
 
         const menuItems = (await menuItemService.findAll({ relations: ['validSizes'] })).items;
@@ -99,19 +97,19 @@ describe('order container item validator', () => {
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const validItemSizeIds = options.containerRules[0].validSizes.map(size => size.id);
 
-        const badSizes = containedItem.validSizes.filter( validSize => 
-                            !validItemSizeIds.find(optionsSizeId => optionsSizeId === validSize.id));
+        const badSizes = containedItem.validSizes.filter(validSize =>
+            !validItemSizeIds.find(optionsSizeId => optionsSizeId === validSize.id));
 
         const dto = {
             mode: 'create',
@@ -130,17 +128,17 @@ describe('order container item validator', () => {
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
-        
+        if (!containedItem) { throw new Error(); }
+
         const badItem = await menuItemService.findOneByName(item_f, ['validSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -157,18 +155,18 @@ describe('order container item validator', () => {
 
     it('should pass update', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-        
+
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions !== null && item.containerOptions !== undefined);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -185,12 +183,12 @@ describe('order container item validator', () => {
 
     it('should fail update: item update with no parent id', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-        
+
         const contItemB = await menuItemService.findOneByName(item_b);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -204,12 +202,12 @@ describe('order container item validator', () => {
 
     it('should fail update: size update with no parent id', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
-        
+
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -222,13 +220,13 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO ITEM AND SIZE: item and size update with no parent id', async () => {
-         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -243,26 +241,26 @@ describe('order container item validator', () => {
 
     it('should fail update DTO ITEM AND SIZE: invalid dto item for container', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const validItemIds = options?.containerRules.map(item => item.id);
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
 
-        const menuItems = (await menuItemService.findAll({ relations: ['validSizes']})).items;
-        if(!menuItems){ throw new Error(); }
+        const menuItems = (await menuItemService.findAll({ relations: ['validSizes'] })).items;
+        if (!menuItems) { throw new Error(); }
 
         const badItems = menuItems.filter(item => !validItemIds?.find(validItemId => validItemId === item.id));
 
@@ -281,26 +279,26 @@ describe('order container item validator', () => {
 
     it('should fail update DTO ITEM AND SIZE: invalid dto size for container', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const validItemSizeIds = options.containerRules[0].validSizes.map(item => item.id);
 
-        const badSizes = containedItem.validSizes.filter( validSize => 
-                            !validItemSizeIds.find(optionsSizeId => optionsSizeId === validSize.id));
+        const badSizes = containedItem.validSizes.filter(validSize =>
+            !validItemSizeIds.find(optionsSizeId => optionsSizeId === validSize.id));
 
         const dto = {
             mode: 'update',
@@ -317,24 +315,24 @@ describe('order container item validator', () => {
 
     it('should fail update DTO ITEM AND SIZE: invalid dto size for dto item', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const containedItem = await menuItemService.findOne(options.containerRules[0].validItem.id, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
-        
+        if (!containedItem) { throw new Error(); }
+
         const badItem = await menuItemService.findOneByName(item_f, ['validSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -351,23 +349,23 @@ describe('order container item validator', () => {
 
     it('should fail update DTO ITEM: invalid dto item for CURRENT size', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItemSize'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
-        const itemsRequest = await menuItemService.findAll({ relations: ['validSizes']});
-        if(!itemsRequest){ throw new Error(); }
+        const itemsRequest = await menuItemService.findAll({ relations: ['validSizes'] });
+        if (!itemsRequest) { throw new Error(); }
 
-        const badItems = itemsRequest.items.filter( item => !item.validSizes.find(size => size.id === toUpdate.containedItemSize.id))
+        const badItems = itemsRequest.items.filter(item => !item.validSizes.find(size => size.id === toUpdate.containedItemSize.id))
 
         const dto = {
             mode: 'update',
@@ -381,23 +379,23 @@ describe('order container item validator', () => {
 
     it('should fail update DTO ITEM: invalid dto item for container', async () => {
         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItemSize'] });
-        if(!containerItemRequest){ throw new Error(); }
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const validItemIds = options.containerRules.map(rule => rule.validItem.id);
 
-        const menuItems = (await menuItemService.findAll({ relations: ['validSizes']})).items;
-        if(!menuItems){ throw new Error(); }
+        const menuItems = (await menuItemService.findAll({ relations: ['validSizes'] })).items;
+        if (!menuItems) { throw new Error(); }
 
         const badItems = menuItems.filter(item => !validItemIds?.find(validItemId => validItemId === item.id));
 
@@ -414,25 +412,25 @@ describe('order container item validator', () => {
     });
 
     it('should fail update DTO SIZE: invalid DTO size with CURRENT item', async () => {
-         const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItemSize', 'containedItem'] });
-        if(!containerItemRequest){ throw new Error(); }
+        const containerItemRequest = await containerService.findAll({ relations: ['parentOrderItem', 'containedItemSize', 'containedItem'] });
+        if (!containerItemRequest) { throw new Error(); }
 
         const toUpdate = containerItemRequest.items[0];
 
         const items = (await menuItemService.findAll({ relations: ['containerOptions'] })).items;
 
         const itemsWithOptions = items.filter(item => item.containerOptions);
-        if(!itemsWithOptions[0].containerOptions){ throw new Error(); }
+        if (!itemsWithOptions[0].containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(itemsWithOptions[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        if(!options?.containerRules){ throw new Error(); }
+        if (!options) { throw new Error(); }
+        if (!options?.containerRules) { throw new Error(); }
 
         const rule = options.containerRules.find(rule => rule.validItem.id === toUpdate.containedItem.id);
-        if(!rule){ throw new Error(); }
-        
+        if (!rule) { throw new Error(); }
+
         const currentItem = await menuItemService.findOne(toUpdate.containedItem.id, ['validSizes']);
-        if(!currentItem){ throw new Error(); }
+        if (!currentItem) { throw new Error(); }
 
         // sizes that are in validSizes but not in rule.validSizes
         const badSizes = currentItem.validSizes.filter(

@@ -31,18 +31,18 @@ describe('unit of measure validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: "TEST ITEM",
-            abbreviation: "ABREV", 
+            abbreviation: "ABREV",
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as CreateUnitOfMeasureDto;
@@ -54,11 +54,11 @@ describe('unit of measure validator', () => {
 
     it('should fail create (name already exists)', async () => {
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: GALLON,
-            abbreviation: "ABREV", 
+            abbreviation: "ABREV",
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as CreateUnitOfMeasureDto;
@@ -70,14 +70,14 @@ describe('unit of measure validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await unitService.findOneByName(GRAM);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: "TEST UPDATE",
-            abbreviation: "abbrev", 
+            abbreviation: "abbrev",
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as UpdateUnitOfMeasureDto;
@@ -88,14 +88,14 @@ describe('unit of measure validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await unitService.findOneByName(GRAM);
-        if(!toUpdate){ throw new Error(); }
-        
+        if (!toUpdate) { throw new Error(); }
+
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: FL_OUNCE,
-            abbreviation: "abbrev", 
+            abbreviation: "abbrev",
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as UpdateUnitOfMeasureDto;
@@ -106,11 +106,11 @@ describe('unit of measure validator', () => {
 
     it('should fail create (abbrev already exists)', async () => {
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: "TEST CREATE",
-            abbreviation: OUNCE_ABBREV, 
+            abbreviation: OUNCE_ABBREV,
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as CreateUnitOfMeasureDto;
@@ -122,14 +122,14 @@ describe('unit of measure validator', () => {
 
     it('should fail update (abbrev already exists)', async () => {
         const toUpdate = await unitService.findOneByName(GRAM);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(UNIT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const dto = {
             unitName: "TEST CREATE",
-            abbreviation: OUNCE_ABBREV, 
+            abbreviation: OUNCE_ABBREV,
             categoryId: category.id,
             conversionFactorToBase: "1234",
         } as UpdateUnitOfMeasureDto;

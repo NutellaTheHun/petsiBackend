@@ -3,7 +3,7 @@ import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_a, item_b, item_f, item_g } from "../../menu-items/utils/constants";
+import { item_a, item_b } from "../../menu-items/utils/constants";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
 import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
@@ -44,7 +44,7 @@ describe('order service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        
+
         dbTestContext = new DatabaseTestContext();
 
         menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
@@ -59,7 +59,7 @@ describe('order service', () => {
 
         menuItemService = module.get<MenuItemService>(MenuItemService);
         optionService = module.get<MenuItemContainerOptionsService>(MenuItemContainerOptionsService);
-        
+
     });
 
     afterAll(async () => {
@@ -72,7 +72,7 @@ describe('order service', () => {
 
     it('should create an order (with menuItems)', async () => {
         const type = await typeService.findOneByName(TYPE_B);
-        if(!type){ throw new NotFoundException(); }
+        if (!type) { throw new NotFoundException(); }
 
         const fulfillDate = new Date();
 
@@ -119,7 +119,7 @@ describe('order service', () => {
 
     it('should update order type', async () => {
         const newType = await typeService.findOneByName(TYPE_C);
-        if(!newType){ throw new NotFoundException(); }
+        if (!newType) { throw new NotFoundException(); }
 
         const dto = {
             orderCategoryId: newType.id,
@@ -134,7 +134,7 @@ describe('order service', () => {
     // Order Type *****
     it('should gain reference by orderType', async () => {
         const orderType = await typeService.findOneByName(TYPE_C, ['orders']);
-        if(!orderType){ throw new NotFoundException(); }
+        if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).not.toEqual(-1);
     });
@@ -142,7 +142,7 @@ describe('order service', () => {
     // Order Type
     it('should update order type again', async () => {
         const newType = await typeService.findOneByName(TYPE_D);
-        if(!newType){ throw new NotFoundException(); }
+        if (!newType) { throw new NotFoundException(); }
 
         const dto = {
             orderCategoryId: newType.id,
@@ -156,14 +156,14 @@ describe('order service', () => {
 
     it('should lose reference from previous orderType', async () => {
         const orderType = await typeService.findOneByName(TYPE_C, ['orders']);
-        if(!orderType){ throw new NotFoundException(); }
+        if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).toEqual(-1);
     });
 
     it('should gain reference by new orderType', async () => {
         const orderType = await typeService.findOneByName(TYPE_D, ['orders']);
-        if(!orderType){ throw new NotFoundException(); }
+        if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).not.toEqual(-1);
     });
@@ -285,17 +285,17 @@ describe('order service', () => {
 
     it('should add items', async () => {
         const order = await orderService.findOne(testId);
-        if(!order){ throw new NotFoundException(); }
+        if (!order) { throw new NotFoundException(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new NotFoundException(); }
-        if(!itemA.validSizes){ throw new Error();}
-        if(itemA.validSizes.length === 0){ throw new Error();}
+        if (!itemA) { throw new NotFoundException(); }
+        if (!itemA.validSizes) { throw new Error(); }
+        if (itemA.validSizes.length === 0) { throw new Error(); }
 
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new NotFoundException(); }
-        if(!itemB.validSizes){ throw new Error();}
-        if(itemB.validSizes.length === 0){ throw new Error();}
+        if (!itemB) { throw new NotFoundException(); }
+        if (!itemB.validSizes) { throw new Error(); }
+        if (itemB.validSizes.length === 0) { throw new Error(); }
 
         const cDtos = [{
             mode: 'create',
@@ -320,8 +320,8 @@ describe('order service', () => {
 
     it('should modify items', async () => {
         const order = await orderService.findOne(testId, ['orderedItems']);
-        if(!order){ throw new NotFoundException(); }
-        if(!order.orderedItems){ throw new NotFoundException(); }
+        if (!order) { throw new NotFoundException(); }
+        if (!order.orderedItems) { throw new NotFoundException(); }
 
         modifiedItemId = order.orderedItems[0].id;
 
@@ -337,16 +337,16 @@ describe('order service', () => {
         }) as UpdateOrderMenuItemDto);
 
         const orderDto = {
-            orderedMenuItemDtos: [ uDto, ...theRest],
+            orderedMenuItemDtos: [uDto, ...theRest],
         } as UpdateOrderDto;
 
         const result = await orderService.update(testId, orderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
 
         expect(result).not.toBeNull();
-        for(const item of result?.orderedItems){
-            if(item.id === modifiedItemId){
+        for (const item of result?.orderedItems) {
+            if (item.id === modifiedItemId) {
                 expect(item.quantity).toEqual(100);
             }
         }
@@ -360,8 +360,8 @@ describe('order service', () => {
 
     it('should remove items', async () => {
         const order = await orderService.findOne(testId, ['orderedItems']);
-        if(!order){ throw new NotFoundException(); }
-        if(!order.orderedItems){ throw new NotFoundException(); }
+        if (!order) { throw new NotFoundException(); }
+        if (!order.orderedItems) { throw new NotFoundException(); }
 
         deletedItemId = order.orderedItems[0].id;
 
@@ -375,8 +375,8 @@ describe('order service', () => {
         } as UpdateOrderDto;
 
         const result = await orderService.update(testId, orderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result.orderedItems.length).toEqual(1);
@@ -393,7 +393,7 @@ describe('order service', () => {
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(8);
 
-        testIds = results.items.slice(0,3).map(o => o.id);
+        testIds = results.items.slice(0, 3).map(o => o.id);
     });
 
     it('should find orders by list of ids', async () => {
@@ -405,9 +405,9 @@ describe('order service', () => {
 
     it('should remove order', async () => {
         const toRemove = await orderService.findOne(testId, ['orderedItems', 'orderCategory']);
-        if(!toRemove){ throw new NotFoundException(); }
-        if(!toRemove.orderedItems){ throw new Error(); }
-        
+        if (!toRemove) { throw new NotFoundException(); }
+        if (!toRemove.orderedItems) { throw new Error(); }
+
         removedItemIds = toRemove.orderedItems.map(i => i.id);
         removedTypeId = toRemove.orderCategory.id;
 
@@ -424,20 +424,20 @@ describe('order service', () => {
 
     it('should lose OrderType reference', async () => {
         const type = await typeService.findOne(removedTypeId, ['orders']);
-        if(!type){ throw new NotFoundException(); }
+        if (!type) { throw new NotFoundException(); }
 
         expect(type.orders?.findIndex(o => o.id === testId)).toEqual(-1);
     });
 
     it('should create an order with order menu item with components', async () => {
-        const items = (await menuItemService.findAll({ relations: [ 'containerOptions', 'validSizes' ], limit: 50 })).items;
-        
+        const items = (await menuItemService.findAll({ relations: ['containerOptions', 'validSizes'], limit: 50 })).items;
+
         const optionItems = items.filter(item => item.containerOptions);
 
-        if(!optionItems[0].containerOptions){ throw new Error(); }
+        if (!optionItems[0].containerOptions) { throw new Error(); }
         const optionItemA = await optionService.findOne(optionItems[0].containerOptions.id, ['parentContainer']);
 
-        if(!optionItems[1].containerOptions){ throw new Error(); }
+        if (!optionItems[1].containerOptions) { throw new Error(); }
         const optionItemB = await optionService.findOne(optionItems[1].containerOptions.id, ['parentContainer']);
 
         const compDtos_a = [
@@ -478,7 +478,7 @@ describe('order service', () => {
         ] as CreateChildOrderMenuItemDto[];
 
         const oType = await typeService.findOneByName(TYPE_A);
-        if(!oType){ throw new Error(); }
+        if (!oType) { throw new Error(); }
         const orderDto = {
             orderCategoryId: oType.id,
             recipient: "order / orderItemComp test",
@@ -488,10 +488,10 @@ describe('order service', () => {
         } as CreateOrderDto;
 
         const result = await orderService.create(orderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
-        if(!result.orderedItems[0].orderedContainerItems){ throw new Error();}
-        if(!result.orderedItems[1].orderedContainerItems){ throw new Error();}
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
+        if (!result.orderedItems[0].orderedContainerItems) { throw new Error(); }
+        if (!result.orderedItems[1].orderedContainerItems) { throw new Error(); }
         expect(result.orderedItems[0].orderedContainerItems.length).toEqual(1);
         expect(result.orderedItems[1].orderedContainerItems.length).toEqual(1);
 
@@ -500,17 +500,17 @@ describe('order service', () => {
 
     it('should modify order menu item container (add)', async () => {
         const order = await orderService.findOne(testOrderCompItemId, ['orderedItems'], ['orderedItems.orderedContainerItems']);
-        if(!order){ throw new Error(); }
-        if(!order.orderedItems){ throw new Error(); }
+        if (!order) { throw new Error(); }
+        if (!order.orderedItems) { throw new Error(); }
 
         const containerItems = order.orderedItems.filter(item => item.orderedContainerItems.length > 0);
 
         const itemToUpdate = await orderItemService.findOne(containerItems[0].id, ['menuItem']);
-        if(!itemToUpdate){ throw new Error(); }
+        if (!itemToUpdate) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(itemToUpdate.menuItem.id, ['validSizes', 'containerOptions']);
-        if(!parentMenuItem){ throw new Error(); }
-        if(!parentMenuItem.containerOptions){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
+        if (!parentMenuItem.containerOptions) { throw new Error(); }
 
         const options = await optionService.findOne(parentMenuItem.containerOptions.id);
 
@@ -522,7 +522,7 @@ describe('order service', () => {
             quantity: 1,
         } as CreateChildOrderContainerItemDto;
 
-        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
+        if (!order.orderedItems[0].orderedContainerItems) { throw new Error(); }
         const updateComponentDtos = order.orderedItems[0].orderedContainerItems.map(comp => ({
             mode: 'update',
             id: comp.id
@@ -541,35 +541,35 @@ describe('order service', () => {
             mode: 'update',
             id: item.id
         }) as UpdateChildOrderMenuItemDto);
-        
+
         const uOrderDto = {
             orderedMenuItemDtos: [updateOrderItemDto, ...theRest]
         } as UpdateOrderDto;
 
         const result = await orderService.update(testOrderCompItemId, uOrderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
-        for(const item of result.orderedItems){
-            if(item.id === updatedItemId){
-                expect(item.orderedContainerItems?.length).toEqual(originalCompSize+1);
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
+        for (const item of result.orderedItems) {
+            if (item.id === updatedItemId) {
+                expect(item.orderedContainerItems?.length).toEqual(originalCompSize + 1);
             }
         }
     });
 
     it('should modify order menu item components (modify)', async () => {
         const order = await orderService.findOne(testOrderCompItemId, ['orderedItems'], ['orderedItems.orderedContainerItems']);
-        if(!order){ throw new Error(); }
-        if(!order.orderedItems){ throw new Error(); }
-        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
-        
+        if (!order) { throw new Error(); }
+        if (!order.orderedItems) { throw new Error(); }
+        if (!order.orderedItems[0].orderedContainerItems) { throw new Error(); }
+
         const containerItems = order.orderedItems.filter(item => item.orderedContainerItems.length > 0);
 
         const itemToUpdate = await orderItemService.findOne(containerItems[1].id, ['menuItem']);
-        if(!itemToUpdate){ throw new Error(); }
+        if (!itemToUpdate) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(itemToUpdate.menuItem.id, ['validSizes', 'containerOptions']);
-        if(!parentMenuItem){ throw new Error(); }
-        if(!parentMenuItem.containerOptions){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
+        if (!parentMenuItem.containerOptions) { throw new Error(); }
 
         const options = await optionService.findOne(parentMenuItem.containerOptions.id);
 
@@ -598,17 +598,17 @@ describe('order service', () => {
         } as UpdateChildOrderMenuItemDto;
 
         const updateOrderDto = {
-            orderedMenuItemDtos: [ updateItemDto, theRestItems]
+            orderedMenuItemDtos: [updateItemDto, theRestItems]
         } as UpdateOrderDto;
 
         const result = await orderService.update(testOrderCompItemId, updateOrderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
-        for(const item of result.orderedItems){
-            if(item.id === moddedItemId){
-                if(!item.orderedContainerItems){ throw new Error(); }
-                for(const comp of item.orderedContainerItems){
-                    if(comp.id === moddedCompId){
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
+        for (const item of result.orderedItems) {
+            if (item.id === moddedItemId) {
+                if (!item.orderedContainerItems) { throw new Error(); }
+                for (const comp of item.orderedContainerItems) {
+                    if (comp.id === moddedCompId) {
                         expect(comp.containedItem.id).toEqual(options.containerRules[1].validItem.id);
                         expect(comp.containedItemSize.id).toEqual(options.containerRules[1].validSizes[0].id);
                         expect(comp.quantity).toEqual(2);
@@ -620,9 +620,9 @@ describe('order service', () => {
 
     it('should modify order menu item components (remove)', async () => {
         const order = await orderService.findOne(testOrderCompItemId, ['orderedItems'], ['orderedItems.orderedContainerItems']);
-        if(!order){ throw new Error(); }
-        if(!order.orderedItems){ throw new Error(); }
-        if(!order.orderedItems[0].orderedContainerItems){ throw new Error(); }
+        if (!order) { throw new Error(); }
+        if (!order.orderedItems) { throw new Error(); }
+        if (!order.orderedItems[0].orderedContainerItems) { throw new Error(); }
 
         const theRestComponents = order.orderedItems[0].orderedContainerItems.slice(1).map(comp => ({
             mode: 'update',
@@ -643,12 +643,12 @@ describe('order service', () => {
         }) as UpdateChildOrderMenuItemDto)
 
         const updateOrderDto = {
-            orderedMenuItemDtos: [ updateItemDto, ...theRestItems]
+            orderedMenuItemDtos: [updateItemDto, ...theRestItems]
         } as UpdateOrderDto;
 
         const result = await orderService.update(testOrderCompItemId, updateOrderDto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedItems){ throw new Error(); }
-        expect(result.orderedItems[0].orderedContainerItems?.length).toEqual(order.orderedItems[0].orderedContainerItems.length-1);
+        if (!result) { throw new Error(); }
+        if (!result.orderedItems) { throw new Error(); }
+        expect(result.orderedItems[0].orderedContainerItems?.length).toEqual(order.orderedItems[0].orderedContainerItems.length - 1);
     });
 });

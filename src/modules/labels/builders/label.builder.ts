@@ -17,38 +17,38 @@ export class LabelBuilder extends BuilderBase<Label> {
         validator: LabelValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(Label, 'LabelBuilder', requestContextService, logger, validator); }
+    ) { super(Label, 'LabelBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateLabelDto): void {
-        if(dto.imageUrl !== undefined){
+        if (dto.imageUrl !== undefined) {
             this.imageUrl(dto.imageUrl);
         }
-        if(dto.menuItemId !== undefined){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.labelTypeId !== undefined){
+        if (dto.labelTypeId !== undefined) {
             this.labelTypeById(dto.labelTypeId);
         }
     }
 
     protected updateEntity(dto: UpdateLabelDto): void {
-        if(dto.imageUrl !== undefined){
+        if (dto.imageUrl !== undefined) {
             this.imageUrl(dto.imageUrl);
         }
-        if(dto.menuItemId !== undefined){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.labelTypeId !== undefined){
+        if (dto.labelTypeId !== undefined) {
             this.labelTypeById(dto.labelTypeId);
         }
     }
 
     public menuItemById(id: number): this {
-        return this.setPropById(this.itemService.findOne.bind(this.itemService),'menuItem', id);
+        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'menuItem', id);
     }
 
     public menuItemByName(name: string): this {
-        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService),'menuItem', name);
+        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'menuItem', name);
     }
 
     public imageUrl(url: string): this {

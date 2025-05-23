@@ -23,7 +23,7 @@ export class InventoryAreaController extends ControllerBase<InventoryArea> {
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
-    ){ super(areaService, cacheManager, 'InventoryAreaController', requestContextService, logger); }
+    ) { super(areaService, cacheManager, 'InventoryAreaController', requestContextService, logger); }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)

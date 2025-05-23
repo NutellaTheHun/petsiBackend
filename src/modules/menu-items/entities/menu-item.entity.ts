@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MenuItemCategory } from "./menu-item-category.entity";
 import { MenuItemContainerItem } from "./menu-item-container-item.entity";
-import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItemContainerOptions } from "./menu-item-container-options.entity";
+import { MenuItemSize } from "./menu-item-size.entity";
 
 /**
  * An item that is a product to be sold.
@@ -15,7 +15,7 @@ export class MenuItem {
     /**
      * - Example: "Pie", "Pastry", "Merchandise", "Boxed Pastry", "Catering"
      */
-    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL', eager: true})
+    @ManyToOne(() => MenuItemCategory, { nullable: true, onDelete: 'SET NULL', eager: true })
     category?: MenuItemCategory | null;
 
     @Column({ unique: true, nullable: false })
@@ -27,7 +27,7 @@ export class MenuItem {
      * - Example: {@link MenuItem} {Keylime Pie}, {@link MenuItem}.veganOption={null}
      * - Necessary for aggregating the pie and its vegan version together on the BackListPie report (vegan amount denoted with a "V")
      */
-    @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL'  })
+    @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     veganOption?: MenuItem | null;
 
@@ -36,7 +36,7 @@ export class MenuItem {
      * - Example: {@link MenuItem} {Cherry Pie}, {@link MenuItem}.takeNBakeOption={Take'n Bake Cherry Pie}
      * - Example: {@link MenuItem} {Bananna Cream Pie}, {@link MenuItem}.takeNBakeOption={null}
      */
-    @OneToOne(() => MenuItem, {nullable: true, onDelete: 'SET NULL' })
+    @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn()
     takeNBakeOption?: MenuItem | null;
 

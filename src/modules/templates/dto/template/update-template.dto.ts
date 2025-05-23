@@ -1,11 +1,11 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { TemplateMenuItemUnionResolver } from '../../utils/template-menu-item-union-resolver';
 import { CreateChildTemplateMenuItemDto } from '../template-menu-item/create-child-template-menu-item.dto';
 import { UpdateChildTemplateMenuItemDto } from '../template-menu-item/update-child-template-menu-item.dto';
-import { ApiProperty } from '@nestjs/swagger';
 
-export class UpdateTemplateDto{
+export class UpdateTemplateDto {
     @ApiProperty({ example: 'Summer Pies, Spring Pastries', description: 'Name of the Template entity.' })
     @IsString()
     @IsOptional()
@@ -16,9 +16,10 @@ export class UpdateTemplateDto{
     @IsOptional()
     readonly isPie?: boolean;
 
-    @ApiProperty({ description: 'Mixed array of CreateChildTemplateMenuItemDtos and UpdateChildTemplateMenuItemDto, child dtos are used when updating a Template entity with created/updated child TemplateMenuItem entites.',
+    @ApiProperty({
+        description: 'Mixed array of CreateChildTemplateMenuItemDtos and UpdateChildTemplateMenuItemDto, child dtos are used when updating a Template entity with created/updated child TemplateMenuItem entites.',
         type: [UpdateChildTemplateMenuItemDto]
-     })
+    })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })

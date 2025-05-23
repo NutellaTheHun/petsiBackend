@@ -30,7 +30,7 @@ describe('inventory item package validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -56,8 +56,8 @@ describe('inventory item package validator', () => {
 
     it('should validate update', async () => {
         const toUpdate = await service.findOneByName(BAG_PKG);
-        if(!toUpdate){ throw new Error(); }
-        
+        if (!toUpdate) { throw new Error(); }
+
         const dto = {
             itemCategoryName: "UPDATE TEST",
         } as UpdateInventoryItemPackageDto;
@@ -69,7 +69,7 @@ describe('inventory item package validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(BAG_PKG);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             packageName: PACKAGE_PKG,

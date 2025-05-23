@@ -29,51 +29,51 @@ import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.val
 import { RecipeValidator } from './validators/recipe.valdiator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Recipe,
-      RecipeCategory,
-      RecipeSubCategory,
-      RecipeIngredient
-    ]),
-    UnitOfMeasureModule,
-    InventoryItemsModule,
-    MenuItemsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [
-    RecipeController,
-    RecipeCategoryController,
-    RecipeSubCategoryController,
-    RecipeIngredientController
-  ],
-  providers: [
-    RecipeService,
-    RecipeCategoryService,
-    RecipeSubCategoryService,
-    RecipeIngredientService,
+    imports: [
+        TypeOrmModule.forFeature([
+            Recipe,
+            RecipeCategory,
+            RecipeSubCategory,
+            RecipeIngredient
+        ]),
+        UnitOfMeasureModule,
+        InventoryItemsModule,
+        MenuItemsModule,
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [
+        RecipeController,
+        RecipeCategoryController,
+        RecipeSubCategoryController,
+        RecipeIngredientController
+    ],
+    providers: [
+        RecipeService,
+        RecipeCategoryService,
+        RecipeSubCategoryService,
+        RecipeIngredientService,
 
-    RecipeBuilder,
-    RecipeIngredientBuilder,
-    RecipeCategoryBuilder,
-    RecipeSubCategoryBuilder,
+        RecipeBuilder,
+        RecipeIngredientBuilder,
+        RecipeCategoryBuilder,
+        RecipeSubCategoryBuilder,
 
-    RecipeValidator,
-    RecipeIngredientValidator,
-    RecipeCategoryValidator,
-    RecipeSubCategoryValidator,
+        RecipeValidator,
+        RecipeIngredientValidator,
+        RecipeCategoryValidator,
+        RecipeSubCategoryValidator,
 
-    RecipeTestUtil,
-  ],
-  exports: [
-    RecipeService,
-    RecipeCategoryService,
-    RecipeSubCategoryService,
-    RecipeIngredientService,
+        RecipeTestUtil,
+    ],
+    exports: [
+        RecipeService,
+        RecipeCategoryService,
+        RecipeSubCategoryService,
+        RecipeIngredientService,
 
-    RecipeTestUtil,
-  ],
+        RecipeTestUtil,
+    ],
 })
-export class RecipesModule {}
+export class RecipesModule { }

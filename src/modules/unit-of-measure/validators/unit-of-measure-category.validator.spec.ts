@@ -28,13 +28,13 @@ describe('unit of measure category validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
-       const dto = {
+        const dto = {
             categoryName: "TEST NAME"
         } as CreateUnitOfMeasureCategoryDto;
 
@@ -55,7 +55,7 @@ describe('unit of measure category validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(WEIGHT);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             categoryName: "TEST NAME"
@@ -67,7 +67,7 @@ describe('unit of measure category validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(WEIGHT);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             categoryName: VOLUME

@@ -11,7 +11,7 @@ import { UnitOfMeasureCategory } from "./unit-of-measure-category.entity";
 @Entity()
 @Unique(['name', 'abbreviation'])
 export class UnitOfMeasure {
-    @PrimaryGeneratedColumn()   
+    @PrimaryGeneratedColumn()
     id: number;
 
     /**
@@ -20,9 +20,9 @@ export class UnitOfMeasure {
     @Column({ unique: true, nullable: false })
     name: string;
 
-     /**
-     * "Cup": "c", "Teaspoon": "tsp", "Fluid ouce": "fl oz"
-     */
+    /**
+    * "Cup": "c", "Teaspoon": "tsp", "Fluid ouce": "fl oz"
+    */
     @Column({ unique: true, nullable: false })
     abbreviation: string;
 

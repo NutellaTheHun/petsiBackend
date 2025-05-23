@@ -5,7 +5,7 @@ import { Role } from "../../roles/entities/role.entity";
  * A set of credentials and list of {@link Role} to control access to features such as order management, recipe costing, and inventory management.
  */
 @Entity({ name: "app_users" })
-export class User{
+export class User {
     @PrimaryGeneratedColumn()
     id: number;
 

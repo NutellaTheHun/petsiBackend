@@ -19,7 +19,7 @@ import { OrderMenuItemValidator } from "../validators/order-menu-item.validator"
 import { OrderContainerItemBuilder } from "./order-container-item.builder";
 
 @Injectable()
-export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
+export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem> {
     constructor(
         @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
@@ -30,63 +30,63 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         @Inject(forwardRef(() => OrderContainerItemBuilder))
         private readonly itemComponentBuilder: OrderContainerItemBuilder,
 
-        private readonly menuItemService: MenuItemService,
-        private readonly sizeService: MenuItemSizeService,
-
         @Inject(forwardRef(() => OrderMenuItemValidator))
         validator: OrderMenuItemValidator,
 
+        private readonly menuItemService: MenuItemService,
+        private readonly sizeService: MenuItemSizeService,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
-    
+    ) { super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
+
     /**
      * Depreciated, only created as a child through {@link Order}.
      */
     protected createEntity(dto: CreateOrderMenuItemDto): void {
-        if(dto.menuItemId !== undefined){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId !== undefined){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.orderId !== undefined){
+        if (dto.orderId !== undefined) {
             this.orderById(dto.orderId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos !== undefined){
+        if (dto.orderedItemContainerDtos !== undefined) {
             this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
     protected updateEntity(dto: UpdateOrderMenuItemDto): void {
-        if(dto.menuItemId !== undefined){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId !== undefined){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos !== undefined){
+        if (dto.orderedItemContainerDtos !== undefined) {
             this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
-    
+
     buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
-        if(dto.menuItemId !== undefined){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId !== undefined){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
-        if(dto.orderedItemContainerDtos !== undefined){
+        if (dto.orderedItemContainerDtos !== undefined) {
             this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
@@ -105,13 +105,13 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
 
     public async buildManyChildDto(parentOrder: Order, dtos: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[]): Promise<OrderMenuItem[]> {
         const results: OrderMenuItem[] = [];
-        for(const dto of dtos){
-            if(dto.mode === 'create'){
+        for (const dto of dtos) {
+            if (dto.mode === 'create') {
                 results.push(await this.buildChildCreateDto(parentOrder, dto));
             } else {
                 const item = await this.orderItemService.findOne(dto.id);
-                if(!item){ throw new Error("orderMenuItem not found"); }
-                results.push( await this.buildUpdateDto(item, dto));
+                if (!item) { throw new Error("orderMenuItem not found"); }
+                results.push(await this.buildUpdateDto(item, dto));
             }
         }
         return results;

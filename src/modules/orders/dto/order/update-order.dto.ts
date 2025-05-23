@@ -1,11 +1,11 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsPositive, IsString, ValidateNested } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { OrderMenuItemUnionResolver } from '../../utils/order-menu-item-union-resolver';
 import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-order-menu-item.dto';
 import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
 
-export class UpdateOrderDto{
+export class UpdateOrderDto {
     @ApiProperty({ example: 'Order categories such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
     @IsNumber()
     @IsOptional()
@@ -27,7 +27,7 @@ export class UpdateOrderDto{
     @IsOptional()
     readonly fulfillmentDate?: Date;
 
-    @ApiProperty({example: 'pickup or delivery', description: 'Method of Order\'s dispersal.' })
+    @ApiProperty({ example: 'pickup or delivery', description: 'Method of Order\'s dispersal.' })
     @IsString()
     @IsOptional()
     readonly fulfillmentType?: string;
@@ -67,9 +67,10 @@ export class UpdateOrderDto{
     @IsOptional()
     readonly weeklyFulfillment?: string | null;
 
-    @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
+    @ApiProperty({
+        description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
         type: [UpdateChildOrderMenuItemDto]
-     })
+    })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })

@@ -6,7 +6,7 @@ import { InventoryItem } from "../entities/inventory-item.entity";
 import { CreateInventoryItemDto } from "../dto/inventory-item/create-inventory-item.dto";
 import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
-import { ValidationError } from "../../../util/exceptions/validationError";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 
 @Injectable()
 export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
@@ -16,12 +16,12 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
 
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateInventoryItemDto): Promise<ValidationError[]> {
+    public async validateCreate(dto: CreateInventoryItemDto): Promise<void> {
         // no existing name
-        const exists = await this.repo.findOne({ where: { itemName: dto.itemName }});
-        if(await this.helper.exists(this.repo, 'itemName', dto.itemName)) { 
+        const exists = await this.repo.findOne({ where: { itemName: dto.itemName } });
+        if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
             this.addError({
                 error: 'Inventory item already exists',
                 status: 'EXIST',
@@ -32,67 +32,66 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
         }
 
         // no duplicate item sizing
-        if(dto.itemSizeDtos && dto.itemSizeDtos.length > 0){
+        if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
             const dupliateSizing = this.helper.findDuplicates(
-                dto.itemSizeDtos, 
+                dto.itemSizeDtos,
                 (size) => `${size.inventoryPackageId}:${size.measureUnitId}`
             );
-            if(dupliateSizing){
-                for(const duplicate of dupliateSizing){
+            if (dupliateSizing) {
+                for (const duplicate of dupliateSizing) {
                     this.addError({
                         error: 'duplicate inventory item sizes',
                         status: 'DUPLICATE',
                         contextEntity: 'CreateInventoryItemDto',
                         sourceEntity: 'CreateChildInventoryItemSizeDto',
-                        value: {packageId: duplicate.inventoryPackageId, measureId: duplicate.measureUnitId},
+                        value: { packageId: duplicate.inventoryPackageId, measureId: duplicate.measureUnitId },
                     } as ValidationError);
                 }
             }
         }
-        
 
-        return this.errors;
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateInventoryItemDto): Promise<ValidationError[]> {
+
+    public async validateUpdate(id: number, dto: UpdateInventoryItemDto): Promise<void> {
 
         // no existing name
-        if(dto.itemName){
-            if(await this.helper.exists(this.repo, 'itemName', dto.itemName)) { 
-                 this.addError({
+        if (dto.itemName) {
+            if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
+                this.addError({
                     error: 'Inventory item already exists',
                     status: 'EXIST',
                     contextEntity: 'UpdateInventoryItemDto',
                     contextId: id,
                     sourceEntity: 'InventoryItem',
                     value: dto.itemName
-                } as ValidationError); 
+                } as ValidationError);
             }
         }
 
         // no duplicate item sizing, or duplicate update ids
-        if(dto.itemSizeDtos && dto.itemSizeDtos.length > 0){
+        if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
 
-            const resolvedUpdateDtos: {id: number}[] = [];
-            const resolvedSizeDtos: {inventoryPackageId: number; measureUnitId: number}[] = [];
-            for(const d of dto.itemSizeDtos){
-                if(d.mode === 'create'){
+            const resolvedUpdateDtos: { id: number }[] = [];
+            const resolvedSizeDtos: { inventoryPackageId: number; measureUnitId: number }[] = [];
+            for (const d of dto.itemSizeDtos) {
+                if (d.mode === 'create') {
                     // resolve duplicate sizing
-                    resolvedSizeDtos.push({ inventoryPackageId: d.inventoryPackageId, measureUnitId: d.measureUnitId});
+                    resolvedSizeDtos.push({ inventoryPackageId: d.inventoryPackageId, measureUnitId: d.measureUnitId });
                 }
-                if(d.mode === 'update'){
+                if (d.mode === 'update') {
                     // resolve duplicate ids
-                    resolvedUpdateDtos.push({ id: d.id});
+                    resolvedUpdateDtos.push({ id: d.id });
 
                     // resolve duplicate sizing
-                    if(d.inventoryPackageId || d.measureUnitId){
+                    if (d.inventoryPackageId || d.measureUnitId) {
                         const currentSize = await this.sizeService.findOne(d.id, ['measureUnit', 'packageType']);
-                        if(!currentSize){ throw new Error(); }
+                        if (!currentSize) { throw new Error(); }
 
                         const pkgId = d.inventoryPackageId ?? currentSize.packageType.id;
                         const measureId = d.measureUnitId ?? currentSize.measureUnit.id;
 
-                        resolvedSizeDtos.push({ inventoryPackageId: pkgId, measureUnitId: measureId});
+                        resolvedSizeDtos.push({ inventoryPackageId: pkgId, measureUnitId: measureId });
                     }
                 }
             }
@@ -102,8 +101,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
                 resolvedUpdateDtos,
                 (id) => `${id.id}`
             );
-            if(dupliateIds){
-                for(const duplicate of dupliateIds){
+            if (dupliateIds) {
+                for (const duplicate of dupliateIds) {
                     this.addError({
                         error: 'duplicate inventory item sizes',
                         status: 'DUPLICATE',
@@ -120,19 +119,19 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
                 resolvedSizeDtos,
                 (size) => `${size.inventoryPackageId}:${size.measureUnitId}`
             );
-            if(dupliateSizing){
-                for(const duplicate of dupliateSizing){
+            if (dupliateSizing) {
+                for (const duplicate of dupliateSizing) {
                     this.addError({
                         error: 'duplicate inventory item sizes',
                         status: 'DUPLICATE',
                         contextEntity: 'UpdateInventoryItemDto',
                         contextId: id,
                         sourceEntity: 'CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto',
-                        value: {packageId: duplicate.inventoryPackageId, measureId: duplicate.measureUnitId},
+                        value: { packageId: duplicate.inventoryPackageId, measureId: duplicate.measureUnitId },
                     } as ValidationError);
                 }
             }
         }
-        return this.errors;
+        this.throwIfErrors()
     }
 }

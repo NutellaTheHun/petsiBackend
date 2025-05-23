@@ -28,7 +28,7 @@ describe('inventory item vendor validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -54,8 +54,8 @@ describe('inventory item vendor validator', () => {
 
     it('should validate update', async () => {
         const toUpdate = await service.findOneByName(VENDOR_A);
-        if(!toUpdate){ throw new Error(); }
-        
+        if (!toUpdate) { throw new Error(); }
+
         const dto = {
             vendorName: "TEST UPDATE"
         } as UpdateInventoryItemVendorDto;
@@ -67,7 +67,7 @@ describe('inventory item vendor validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(VENDOR_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             vendorName: VENDOR_A,

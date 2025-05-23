@@ -14,14 +14,14 @@ export class AuthController {
         private readonly authService: AuthService,
         private readonly requestContextService: RequestContextService,
         private readonly logger: AppLogger,
-    ) {}
+    ) { }
 
     @ApiOperation({ summary: 'Sign in and receive a JWT token and user roles.' })
     @ApiOkResponse({ description: 'Sign in successful.', type: AuthResponseDto })
-    @ApiUnauthorizedResponse({ description: 'Invalid credentials.'  })
+    @ApiUnauthorizedResponse({ description: 'Invalid credentials.' })
     @HttpCode(HttpStatus.OK)
     @Post('login')
-    @Public()  
+    @Public()
     async signIn(@Body() signInDto: SignInDto): Promise<AuthResponseDto> {
         const requestId = this.requestContextService.getRequestId();
 
@@ -42,7 +42,7 @@ export class AuthController {
             'SUCCESS',
             { requestId }
         );
-        
+
         return result;
     }
 }

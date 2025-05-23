@@ -9,7 +9,7 @@ import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-catego
 import { UnitOfMeasureValidator } from "../validators/unit-of-measure.validator";
 
 @Injectable()
-export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
+export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
     constructor(
         @Inject(forwardRef(() => UnitOfMeasureCategoryService))
         private readonly categoryService: UnitOfMeasureCategoryService,
@@ -17,36 +17,36 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         validator: UnitOfMeasureValidator,
 
         requestContextService: RequestContextService,
-        
+
         logger: AppLogger,
-    ){ super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
-    
+    ) { super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
+
     protected createEntity(dto: CreateUnitOfMeasureDto): void {
-        if(dto.unitName !== undefined){
+        if (dto.unitName !== undefined) {
             this.name(dto.unitName);
         }
-        if(dto.abbreviation !== undefined){
+        if (dto.abbreviation !== undefined) {
             this.abbreviation(dto.abbreviation);
         }
-        if(dto.conversionFactorToBase !== undefined){
+        if (dto.conversionFactorToBase !== undefined) {
             this.conversionFactor(dto.conversionFactorToBase);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categoryById(dto.categoryId);
         }
     }
 
     protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
-        if(dto.unitName !== undefined){
+        if (dto.unitName !== undefined) {
             this.name(dto.unitName);
         }
-        if(dto.abbreviation !== undefined){
+        if (dto.abbreviation !== undefined) {
             this.abbreviation(dto.abbreviation);
         }
-        if(dto.conversionFactorToBase !== undefined){
+        if (dto.conversionFactorToBase !== undefined) {
             this.conversionFactor(dto.conversionFactorToBase);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categoryById(dto.categoryId);
         }
     }
@@ -60,7 +60,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
     }
 
     public categoryById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -70,7 +70,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public conversionFactor(value: string): this{
+    public conversionFactor(value: string): this {
         return this.setPropByVal('conversionFactorToBase', value);
     }
 }

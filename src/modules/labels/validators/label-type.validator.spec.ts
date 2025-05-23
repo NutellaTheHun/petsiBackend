@@ -28,7 +28,7 @@ describe('label type validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -59,7 +59,7 @@ describe('label type validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(type_b);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             labelTypeName: "LABEL TYPE TEST",
@@ -72,7 +72,7 @@ describe('label type validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(type_b);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             labelTypeName: type_a,

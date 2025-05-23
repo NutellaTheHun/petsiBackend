@@ -3,15 +3,15 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, Par
 import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
+import { PaginatedResult } from '../../../base/paginated-result';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
-import { RecipeCategory } from '../entities/recipe-category.entity';
-import { RecipeCategoryService } from '../services/recipe-category.service';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { PaginatedResult } from '../../../base/paginated-result';
+import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeCategoryService } from '../services/recipe-category.service';
 
 @ApiTags('Recipe Category')
 @ApiBearerAuth('access-token')
@@ -19,11 +19,11 @@ import { PaginatedResult } from '../../../base/paginated-result';
 @Controller('recipe-category')
 export class RecipeCategoryController extends ControllerBase<RecipeCategory> {
     constructor(
-        categoryService: RecipeCategoryService, 
+        categoryService: RecipeCategoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
-    ){ super(categoryService, cacheManager,'RecipeCategoryController', requestContextService, logger); }
+    ) { super(categoryService, cacheManager, 'RecipeCategoryController', requestContextService, logger); }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)

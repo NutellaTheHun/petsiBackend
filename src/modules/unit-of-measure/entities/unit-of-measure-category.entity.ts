@@ -13,7 +13,7 @@ import { UnitOfMeasure } from "./unit-of-measure.entity";
  * - Pound -> grams(baseUnit) -> Kilogram
  */
 @Entity()
-export class UnitOfMeasureCategory{
+export class UnitOfMeasureCategory {
     @PrimaryGeneratedColumn()
     id: number;
 

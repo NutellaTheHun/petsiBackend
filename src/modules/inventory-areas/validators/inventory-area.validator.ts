@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { ValidationError } from "../../../util/exceptions/validationError";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 import { InventoryArea } from "../entities/inventory-area.entity";
@@ -12,11 +12,12 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
     constructor(
         @InjectRepository(InventoryArea)
         private readonly repo: Repository<InventoryArea>,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateInventoryAreaDto): Promise<ValidationError[]> {
+    public async validateCreate(dto: CreateInventoryAreaDto): Promise<void> {
+
         // Already exists check
-        if(await this.helper.exists(this.repo, 'areaName', dto.areaName)) { 
+        if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
             this.addError({
                 error: 'Inventory area name already exists.',
                 status: 'EXIST',
@@ -25,13 +26,15 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
                 value: dto.areaName,
             } as ValidationError);
         }
-        return this.errors;
+
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateInventoryAreaDto): Promise<ValidationError[]> {
+
+    public async validateUpdate(id: number, dto: UpdateInventoryAreaDto): Promise<void> {
+
         // Already exists check
-        if(dto.areaName){
-            if(await this.helper.exists(this.repo, 'areaName', dto.areaName)) { 
+        if (dto.areaName) {
+            if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
                 this.addError({
                     error: 'Inventory area name already exists.',
                     status: 'EXIST',
@@ -42,6 +45,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
                 } as ValidationError);
             }
         }
-        return this.errors;
+
+        this.throwIfErrors()
     }
 }

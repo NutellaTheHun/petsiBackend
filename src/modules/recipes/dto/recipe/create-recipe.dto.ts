@@ -1,6 +1,6 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Min } from "class-validator";
 import { CreateChildRecipeIngredientDto } from "../recipe-ingredient/create-child-recipe-ingredient.dto";
-import { ApiProperty } from "@nestjs/swagger";
 
 export class CreateRecipeDto {
     @ApiProperty({ description: 'Name of the Recipe entity.' })
@@ -24,23 +24,23 @@ export class CreateRecipeDto {
     @IsPositive()
     @IsNotEmpty()
     readonly batchResultQuantity: number;
-    
+
     @ApiProperty({ example: '3 units(batchResultUnitOfMeasure) of Blueberry Pie, 4 lbs(batchResultUnitOfMeasure.abbreviation) of pie dough', description: 'Id of the Unit-of-Measure entity expressing the unit size of what the recipe produces.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()  
+    @IsNotEmpty()
     readonly batchResultMeasurementId: number;
-    
+
     @ApiProperty({ description: 'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     readonly servingSizeQuantity: number;
-    
+
     @ApiProperty({ description: 'Id of the Unit-of-Measure used to represent the unit size of what is sold.' })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()    
+    @IsNotEmpty()
     readonly servingSizeMeasurementId: number;
 
     @ApiProperty({ description: 'The price of purchasing the serving size amount.' })
@@ -61,8 +61,8 @@ export class CreateRecipeDto {
     @IsPositive()
     readonly subCategoryId?: number;
 
-    @ApiProperty({ 
-        description: 'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child Recipe-Ingredient entites through creating the Recipe entity.', 
+    @ApiProperty({
+        description: 'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child Recipe-Ingredient entites through creating the Recipe entity.',
         type: [CreateChildRecipeIngredientDto],
     })
     @IsOptional()

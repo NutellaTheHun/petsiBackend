@@ -28,13 +28,13 @@ describe('role validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
-       const dto = {
+        const dto = {
             roleName: "TEST NAME"
         } as CreateRoleDto;
 
@@ -55,7 +55,7 @@ describe('role validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(ROLE_ADMIN);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             roleName: "UPDATE TEST"
@@ -67,7 +67,7 @@ describe('role validator', () => {
 
     it('should fail update: name already exists', async () => {
         const toUpdate = await service.findOneByName(ROLE_ADMIN);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             roleName: ROLE_STAFF

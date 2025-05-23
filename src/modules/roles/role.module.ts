@@ -12,15 +12,15 @@ import { RoleTestUtil } from './utils/role-test.util';
 import { RoleValidator } from './validators/role.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Role]),
-    forwardRef(() => UserModule),
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [RoleController,],
-  providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil],
-  exports: [RoleService, RoleTestUtil],
+    imports: [
+        TypeOrmModule.forFeature([Role]),
+        forwardRef(() => UserModule),
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [RoleController,],
+    providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil],
+    exports: [RoleService, RoleTestUtil],
 })
-export class RoleModule {}
+export class RoleModule { }

@@ -7,25 +7,20 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { MenuItemContainerOptionsBuilder } from "../builders/menu-item-container-options.builder";
 import { CreateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
-import { MenuItemContainerOptionsValidator } from "../validators/menu-item-container-options.validator";
 import { MenuItem } from "../entities/menu-item.entity";
 
 @Injectable()
 export class MenuItemContainerOptionsService extends ServiceBase<MenuItemContainerOptions> {
     constructor(
         @InjectRepository(MenuItemContainerOptions)
-        optionsRepo: Repository<MenuItemContainerOptions>,
+        repo: Repository<MenuItemContainerOptions>,
 
         @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
-        optionsBuilder: MenuItemContainerOptionsBuilder,
-
-        @Inject(forwardRef(() => MenuItemContainerOptionsValidator))
-        validator: MenuItemContainerOptionsValidator,
-
+        builder: MenuItemContainerOptionsBuilder,
+        
         requestContextService: RequestContextService,
-
         logger: AppLogger,
-    ){ super(optionsRepo, optionsBuilder, validator, 'MenuItemComponentOptionsService', requestContextService, logger); }
+    ) { super(repo, builder, 'MenuItemComponentOptionsService', requestContextService, logger); }
 
     /**
      * Depreciated, only created as a child through {@link MenuItem}.

@@ -31,14 +31,14 @@ describe('menu item container rule validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const item = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -53,8 +53,8 @@ describe('menu item container rule validator', () => {
 
     it('should fail create: Empty size array', async () => {
         const item = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
- 
+        if (!item) { throw new Error(); }
+
         const dto = {
             mode: 'create',
             validMenuItemId: item.id,
@@ -68,10 +68,10 @@ describe('menu item container rule validator', () => {
 
     it('should fail create: invalid sizes', async () => {
         const item = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const badItem = await itemService.findOneByName(item_b, ['validSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -86,12 +86,12 @@ describe('menu item container rule validator', () => {
 
     it('should pass update', async () => {
         const rulesRequest = await ruleService.findAll();
-        if(!rulesRequest){ throw new Error(); }
+        if (!rulesRequest) { throw new Error(); }
 
         const toUpdate = rulesRequest.items[0];
 
         const item = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -106,12 +106,12 @@ describe('menu item container rule validator', () => {
 
     it('should fail update: empty size array', async () => {
         const rulesRequest = await ruleService.findAll();
-        if(!rulesRequest){ throw new Error(); }
+        if (!rulesRequest) { throw new Error(); }
 
         const toUpdate = rulesRequest.items[0];
 
         const item = await itemService.findOneByName(item_a);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -126,15 +126,15 @@ describe('menu item container rule validator', () => {
 
     it('should fail update: invalid sizes', async () => {
         const rulesRequest = await ruleService.findAll();
-        if(!rulesRequest){ throw new Error(); }
+        if (!rulesRequest) { throw new Error(); }
 
         const toUpdate = rulesRequest.items[0];
 
         const item = await itemService.findOneByName(item_a);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const badItem = await itemService.findOneByName(item_f, ['validSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -148,13 +148,13 @@ describe('menu item container rule validator', () => {
     });
 
     it('should fail update: updating only sizes with invalid sizes', async () => {
-        const rulesRequest = await ruleService.findAll({ relations: ['validItem']});
-        if(!rulesRequest){ throw new Error(); }
+        const rulesRequest = await ruleService.findAll({ relations: ['validItem'] });
+        if (!rulesRequest) { throw new Error(); }
 
         const toUpdate = rulesRequest.items[0];
 
         const badItem = await itemService.findOneByName(item_f, ['validSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             mode: 'update',

@@ -16,36 +16,36 @@ import { UnitOfMeasureCategoryValidator } from './validators/unit-of-measure-cat
 import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UnitOfMeasure, UnitOfMeasureCategory]),
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([UnitOfMeasure, UnitOfMeasureCategory]),
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
 
-  providers: [
-    UnitOfMeasureService,
-    UnitOfMeasureCategoryService,
+    providers: [
+        UnitOfMeasureService,
+        UnitOfMeasureCategoryService,
 
-    UnitOfMeasureBuilder,
-    UnitOfMeasureCategoryBuilder,
+        UnitOfMeasureBuilder,
+        UnitOfMeasureCategoryBuilder,
 
-    UnitOfMeasureCategoryValidator,
-    UnitOfMeasureValidator,
+        UnitOfMeasureCategoryValidator,
+        UnitOfMeasureValidator,
 
-    UnitOfMeasureTestingUtil,
-  ],
+        UnitOfMeasureTestingUtil,
+    ],
 
-  controllers: [
-    UnitOfMeasureController, 
-    UnitOfMeasureCategoryController,
-  ],
+    controllers: [
+        UnitOfMeasureController,
+        UnitOfMeasureCategoryController,
+    ],
 
-  exports: [
-    UnitOfMeasureService, 
-    UnitOfMeasureCategoryService,
-    
-    UnitOfMeasureTestingUtil,
-  ]
+    exports: [
+        UnitOfMeasureService,
+        UnitOfMeasureCategoryService,
+
+        UnitOfMeasureTestingUtil,
+    ]
 })
-export class UnitOfMeasureModule {}
+export class UnitOfMeasureModule { }

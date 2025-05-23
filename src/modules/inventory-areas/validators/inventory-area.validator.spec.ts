@@ -28,7 +28,7 @@ describe('inventory area validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -55,7 +55,7 @@ describe('inventory area validator', () => {
 
     it('should pass update', async () => {
         const area = await service.findOneByName(AREA_A);
-        if(!area){ throw new Error(); }
+        if (!area) { throw new Error(); }
 
         const dto = {
             areaName: "testValidateArea"
@@ -66,7 +66,7 @@ describe('inventory area validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const area = await service.findOneByName(AREA_A);
-        if(!area){ throw new Error(); }
+        if (!area) { throw new Error(); }
 
         const dto = {
             areaName: AREA_A

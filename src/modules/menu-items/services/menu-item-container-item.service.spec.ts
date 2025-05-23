@@ -2,16 +2,16 @@ import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { plainToInstance } from "class-transformer";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
+import { AppHttpException } from "../../../util/exceptions/app-http-exception";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { CreateMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
+import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { item_a, item_b, item_c, item_e, item_f, item_g } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerItemService } from "./menu-item-container-item.service";
 import { MenuItemService } from "./menu-item.service";
-import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
-import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 
 describe('menu item container item service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -47,12 +47,12 @@ describe('menu item container item service', () => {
     it('should fail to create a container item (bad request) then create properly for tests.', async () => {
 
         const parent = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!parent){ throw new NotFoundException(); }
-        if(!parent.validSizes){ throw new Error(); }
+        if (!parent) { throw new NotFoundException(); }
+        if (!parent.validSizes) { throw new Error(); }
 
         const item = await menuItemService.findOneByName(item_e, ['validSizes']);
-        if(!item){ throw new NotFoundException(); }
-        if(!item.validSizes){ throw new Error(); }
+        if (!item) { throw new NotFoundException(); }
+        if (!item.validSizes) { throw new Error(); }
         const dto = {
             mode: 'create',
             parentContainerId: parent.id,
@@ -76,9 +76,9 @@ describe('menu item container item service', () => {
             definedContainerItemDtos: [definedContainerDto]
         } as UpdateMenuItemDto;
 
-        const updateResult = await menuItemService.update( parent.id, updateItemDto);
-        if(!updateResult){ throw new Error(); }
-        if(!updateResult.definedContainerItems){ throw new Error(); }
+        const updateResult = await menuItemService.update(parent.id, updateItemDto);
+        if (!updateResult) { throw new Error(); }
+        if (!updateResult.definedContainerItems) { throw new Error(); }
 
         const result = updateResult.definedContainerItems[0];
 
@@ -90,8 +90,8 @@ describe('menu item container item service', () => {
 
     it('should query menu item with container item reference', async () => {
         const parentItem = await menuItemService.findOne(testParentItemId, ['definedContainerItems']);
-        if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.definedContainerItems){ throw new Error(); }
+        if (!parentItem) { throw new NotFoundException(); }
+        if (!parentItem.definedContainerItems) { throw new Error(); }
 
         expect(parentItem.definedContainerItems.findIndex(comp => comp.id === testId)).not.toEqual(-1);
     });
@@ -104,8 +104,8 @@ describe('menu item container item service', () => {
 
     it('should update containedItem', async () => {
         const newItem = await menuItemService.findOneByName(item_f, ['validSizes']);
-        if(!newItem){ throw new NotFoundException(); }
-        if(!newItem.validSizes){ throw new Error(); }
+        if (!newItem) { throw new NotFoundException(); }
+        if (!newItem.validSizes) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -114,9 +114,9 @@ describe('menu item container item service', () => {
         } as UpdateMenuItemContainerItemDto;
 
         const result = await componentService.update(testId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.containedItem){ throw new Error(); }
-        if(!result.containedItemsize){ throw new Error(); }
+        if (!result) { throw new Error(); }
+        if (!result.containedItem) { throw new Error(); }
+        if (!result.containedItemsize) { throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.containedItem.id).toEqual(newItem.id);
@@ -125,8 +125,8 @@ describe('menu item container item service', () => {
 
     it('should update contained item size', async () => {
         const item = await menuItemService.findOneByName(item_f, ['validSizes']);
-        if(!item){ throw new NotFoundException(); }
-        if(!item.validSizes){ throw new Error(); }
+        if (!item) { throw new NotFoundException(); }
+        if (!item.validSizes) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -134,8 +134,8 @@ describe('menu item container item service', () => {
         } as UpdateMenuItemContainerItemDto;
 
         const result = await componentService.update(testId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.containedItemsize){ throw new Error(); }
+        if (!result) { throw new Error(); }
+        if (!result.containedItemsize) { throw new Error(); }
 
         expect(result).not.toBeNull();
         expect(result?.containedItemsize.id).toEqual(item.validSizes[1].id);
@@ -143,7 +143,7 @@ describe('menu item container item service', () => {
 
     it('should fail update container item (no size provided)', async () => {
         const newItem = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!newItem){ throw new NotFoundException(); }
+        if (!newItem) { throw new NotFoundException(); }
 
         const dto = plainToInstance(UpdateMenuItemContainerItemDto, {
             mode: 'update',
@@ -167,10 +167,10 @@ describe('menu item container item service', () => {
 
     it('should find all container items', async () => {
         const results = await componentService.findAll();
-        
+
         expect(results).not.toBeNull();
 
-        testIds = results.items.slice(0,2).map(item => item.id);
+        testIds = results.items.slice(0, 2).map(item => item.id);
     });
 
     it('should get container items by list of ids', async () => {
@@ -189,8 +189,8 @@ describe('menu item container item service', () => {
 
     it('should query menu item without container item reference', async () => {
         const parentItem = await menuItemService.findOne(testParentItemId, ['definedContainerItems']);
-        if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.definedContainerItems){ throw new Error(); }
+        if (!parentItem) { throw new NotFoundException(); }
+        if (!parentItem.definedContainerItems) { throw new Error(); }
 
         const container = await componentService.findEntitiesById(parentItem.definedContainerItems.map(comp => comp.id), ['containedItem']);
 
@@ -199,15 +199,15 @@ describe('menu item container item service', () => {
 
     it('should delete menuItem and remove container item', async () => {
         const toDelete = await menuItemService.findOneByName(item_c);
-        if(!toDelete){ throw new NotFoundException(); }
+        if (!toDelete) { throw new NotFoundException(); }
 
         const deleteId = toDelete.id;
-        
+
         await menuItemService.remove(toDelete.id);
 
         const parentItem = await menuItemService.findOneByName(item_g, ['definedContainerItems']);
-        if(!parentItem){ throw new NotFoundException(); }
-        if(!parentItem.definedContainerItems){ throw new Error(); }
+        if (!parentItem) { throw new NotFoundException(); }
+        if (!parentItem.definedContainerItems) { throw new Error(); }
 
         const container = await componentService.findEntitiesById(parentItem.definedContainerItems.map(comp => comp.id), ['containedItem']);
 

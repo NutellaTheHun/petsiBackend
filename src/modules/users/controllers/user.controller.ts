@@ -8,30 +8,30 @@ import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN } from '../../roles/utils/constants';
-import { User } from '../entities/user.entities';
-import { UserService } from '../services/user.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entities';
+import { UserService } from '../services/user.service';
 
 @ApiTags('User')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_ADMIN)
 @Controller('users')
 export class UserController extends ControllerBase<User> {
-  constructor(
-    userService: UserService,
-    @Inject(CACHE_MANAGER) cacheManager: Cache,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) { super(userService, cacheManager, 'UserController', requestContextService, logger); }
+    constructor(
+        userService: UserService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(userService, cacheManager, 'UserController', requestContextService, logger); }
 
-  @Post()
+    @Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a User' })
     @ApiCreatedResponse({ description: 'User successfully created', type: User })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateUserDto })
-    async create(@Body() dto: CreateUserDto): Promise<User>  {
+    async create(@Body() dto: CreateUserDto): Promise<User> {
         return super.create(dto);
     }
 
@@ -41,7 +41,7 @@ export class UserController extends ControllerBase<User> {
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'User to update not found.' })
     @ApiBody({ type: UpdateUserDto })
-    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto): Promise<User>  {
+    async update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto): Promise<User> {
         return super.update(id, dto);
     }
 
@@ -57,7 +57,7 @@ export class UserController extends ControllerBase<User> {
     @Get()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves an array of Users' })
-    @ApiOkResponse({ type: PaginatedResult<User>  })
+    @ApiOkResponse({ type: PaginatedResult<User> })
     async findAll(
         @Query('relations') relations?: string[],
         @Query('limit') limit?: number,
@@ -73,7 +73,7 @@ export class UserController extends ControllerBase<User> {
     @ApiOperation({ summary: 'Retrieves one User' })
     @ApiOkResponse({ description: 'User found', type: User })
     @ApiNotFoundResponse({ description: 'User not found' })
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<User>  {
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<User> {
         return super.findOne(id);
     }
 }

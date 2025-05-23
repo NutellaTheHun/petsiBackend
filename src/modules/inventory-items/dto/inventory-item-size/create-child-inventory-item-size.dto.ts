@@ -11,7 +11,7 @@ export class CreateChildInventoryItemSizeDto {
     @IsPositive()
     @IsNotEmpty()
     readonly measureUnitId: number;
-    
+
     @ApiProperty({ example: '10(measure amount) lb of flower', description: 'the unit quantity of the Unit-of-Measure entity.' })
     @IsNumber()
     @IsPositive()
@@ -24,7 +24,7 @@ export class CreateChildInventoryItemSizeDto {
     @IsNotEmpty()
     readonly inventoryPackageId: number;
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsNotEmpty()
     @Min(0)

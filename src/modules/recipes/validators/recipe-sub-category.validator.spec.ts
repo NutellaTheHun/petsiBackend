@@ -28,7 +28,7 @@ describe('recipe sub category validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -58,7 +58,7 @@ describe('recipe sub category validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(REC_SUBCAT_1);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -70,8 +70,8 @@ describe('recipe sub category validator', () => {
     });
 
     it('should fail update: name already exists', async () => {
-         const toUpdate = await service.findOneByName(REC_SUBCAT_1);
-        if(!toUpdate){ throw new Error(); }
+        const toUpdate = await service.findOneByName(REC_SUBCAT_1);
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             mode: 'update',

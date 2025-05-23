@@ -1,10 +1,10 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateChildTemplateMenuItemDto } from "../dto/template-menu-item/create-child-template-menu-item.dto";
-import { CreateTemplateDto } from "../dto/template/create-template.dto";
 import { UpdateTemplateMenuItemDto } from "../dto/template-menu-item/update-template-menu-item.dto";
+import { CreateTemplateDto } from "../dto/template/create-template.dto";
 import { UpdateTemplateDto } from "../dto/template/update-template.dto";
 import { Template } from "../entities/template.entity";
 import { TemplateValidator } from "../validators/template.validator";
@@ -21,30 +21,30 @@ export class TemplateBuilder extends BuilderBase<Template> {
 
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(Template, 'TemplateBuilder', requestContextService, logger, validator); }
+    ) { super(Template, 'TemplateBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateTemplateDto): void {
-        if(dto.isPie !== undefined){
+        if (dto.isPie !== undefined) {
             this.isPie(dto.isPie);
         }
-        if(dto.templateName !== undefined){
+        if (dto.templateName !== undefined) {
             this.name(dto.templateName);
         }
-        if(dto.templateItemDtos !== undefined){
+        if (dto.templateItemDtos !== undefined) {
             this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
-        } 
+        }
     }
 
     protected updateEntity(dto: UpdateTemplateDto): void {
-        if(dto.isPie !== undefined){
+        if (dto.isPie !== undefined) {
             this.isPie(dto.isPie);
         }
-        if(dto.templateName !== undefined){
+        if (dto.templateName !== undefined) {
             this.name(dto.templateName);
         }
-        if(dto.templateItemDtos !== undefined){
+        if (dto.templateItemDtos !== undefined) {
             this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
-        } 
+        }
     }
 
     public name(name: string): this {

@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { OrderMenuItem } from "./order-menu-item.entity";
-import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { MenuItemSize } from "../../menu-items/entities/menu-item-size.entity";
+import { MenuItem } from "../../menu-items/entities/menu-item.entity";
+import { OrderMenuItem } from "./order-menu-item.entity";
 
 /**
  * When a {@link OrderMenuItem} is representing a {@link MenuItem} that is a container of other {@link MenuItem}, the contained items

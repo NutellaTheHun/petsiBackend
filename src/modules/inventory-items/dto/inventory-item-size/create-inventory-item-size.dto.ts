@@ -30,7 +30,7 @@ export class CreateInventoryItemSizeDto {
     @IsNotEmpty()
     readonly inventoryPackageId: number;
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsNotEmpty()
     @Min(0)

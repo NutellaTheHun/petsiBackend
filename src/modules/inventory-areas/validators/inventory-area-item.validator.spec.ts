@@ -53,7 +53,7 @@ describe('inventory area item validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -74,9 +74,9 @@ describe('inventory area item validator', () => {
 
     it('should pass create with size dto', async () => {
         const unit = await unitService.findOneByName(POUND);
-        if(!unit){ throw new Error(); }
+        if (!unit) { throw new Error(); }
         const pkg = await packageService.findOneByName(BOX_PKG);
-        if(!pkg){ throw new Error(); }
+        if (!pkg) { throw new Error(); }
         const sizeDto = {
             mode: 'create',
             measureAmount: 1,
@@ -86,7 +86,7 @@ describe('inventory area item validator', () => {
         } as CreateChildInventoryItemSizeDto;
 
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
         const dto = {
             parentInventoryCountId: testCountId,
             countedInventoryItemId: item.id,
@@ -101,10 +101,10 @@ describe('inventory area item validator', () => {
 
     it('should fail create: bad size for item', async () => {
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const badItem = await itemService.findOneByName(DRY_B, ['itemSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             parentInventoryCountId: testCountId,
@@ -119,9 +119,9 @@ describe('inventory area item validator', () => {
 
     it('should fail create: itemSizeId and itemSizeDto', async () => {
         const unit = await unitService.findOneByName(POUND);
-        if(!unit){ throw new Error(); }
+        if (!unit) { throw new Error(); }
         const pkg = await packageService.findOneByName(BOX_PKG);
-        if(!pkg){ throw new Error(); }
+        if (!pkg) { throw new Error(); }
         const sizeDto = {
             mode: 'create',
             measureAmount: 1,
@@ -131,7 +131,7 @@ describe('inventory area item validator', () => {
         } as CreateChildInventoryItemSizeDto;
 
         const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             parentInventoryCountId: testCountId,
@@ -147,7 +147,7 @@ describe('inventory area item validator', () => {
 
     it('should fail create: no itemSizeId and no itemSizeDto with inventory item', async () => {
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             parentInventoryCountId: testCountId,
@@ -159,12 +159,12 @@ describe('inventory area item validator', () => {
         expect(result).toEqual('inventory area item create dto requires InventoryItemSize id or CreateInventoryItemSizeDto');
     });
 
-    it('should pass update with sizeId', async() => {
+    it('should pass update with sizeId', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const item = await itemService.findOneByName(OTHER_A, ['itemSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -176,17 +176,17 @@ describe('inventory area item validator', () => {
         expect(result).toBeNull();
     });
 
-    it('should pass update with update sizeDto', async() => {
+    it('should pass update with update sizeDto', async () => {
         const toUpdate = await areaItemservice.findByItemName(FOOD_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const sizes = await itemSizeService.findSizesByItemName(FOOD_A);
-        if(!sizes){ throw new Error(); }
+        if (!sizes) { throw new Error(); }
 
         const unit = await unitService.findOneByName(KILOGRAM);
-        if(!unit){ throw new Error(); }
+        if (!unit) { throw new Error(); }
         const pkg = await packageService.findOneByName(BAG_PKG);
-        if(!pkg){ throw new Error(); }
+        if (!pkg) { throw new Error(); }
 
         const sizeDto = {
             mode: 'update',
@@ -198,7 +198,7 @@ describe('inventory area item validator', () => {
         } as UpdateChildInventoryItemSizeDto;
 
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -210,14 +210,14 @@ describe('inventory area item validator', () => {
         expect(result).toBeNull();
     });
 
-    it('should pass update with create sizeDto', async() => {
+    it('should pass update with create sizeDto', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const unit = await unitService.findOneByName(FL_OUNCE);
-        if(!unit){ throw new Error(); }
+        if (!unit) { throw new Error(); }
         const pkg = await packageService.findOneByName(CAN_PKG);
-        if(!pkg){ throw new Error(); }
+        if (!pkg) { throw new Error(); }
 
         const sizeDto = {
             mode: 'create',
@@ -228,7 +228,7 @@ describe('inventory area item validator', () => {
         } as CreateChildInventoryItemSizeDto;
 
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -242,12 +242,12 @@ describe('inventory area item validator', () => {
 
     it('should fail update: itemSizeId and itemSizeDto with inventory item', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const unit = await unitService.findOneByName(FL_OUNCE);
-        if(!unit){ throw new Error(); }
+        if (!unit) { throw new Error(); }
         const pkg = await packageService.findOneByName(CAN_PKG);
-        if(!pkg){ throw new Error(); }
+        if (!pkg) { throw new Error(); }
 
         const sizeDto = {
             mode: 'create',
@@ -258,7 +258,7 @@ describe('inventory area item validator', () => {
         } as CreateChildInventoryItemSizeDto;
 
         const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -272,10 +272,10 @@ describe('inventory area item validator', () => {
 
     it('should fail update: no itemSizeId and no itemSizeDto with inventory item', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -287,13 +287,13 @@ describe('inventory area item validator', () => {
 
     it('should fail update: bad sizeId for dto item', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const item = await itemService.findOneByName(FOOD_A);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const badItem = await itemService.findOneByName(DRY_B, ['itemSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             countedInventoryItemId: item.id,
@@ -306,10 +306,10 @@ describe('inventory area item validator', () => {
 
     it('should fail update: bad sizeId for current item', async () => {
         const toUpdate = await areaItemservice.findAll();
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const badItem = await itemService.findOneByName(DRY_B, ['itemSizes']);
-        if(!badItem){ throw new Error(); }
+        if (!badItem) { throw new Error(); }
 
         const dto = {
             countedItemSizeId: badItem.itemSizes[0].id,

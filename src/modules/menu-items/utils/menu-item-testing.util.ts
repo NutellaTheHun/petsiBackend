@@ -3,20 +3,20 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemCategoryBuilder } from "../builders/menu-item-category.builder";
 import { MenuItemSizeBuilder } from "../builders/menu-item-size.builder";
 import { MenuItemBuilder } from "../builders/menu-item.builder";
-import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
-import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
 import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
+import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
+import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
 import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
+import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
+import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { getItemContainerTestNames, getTestCategoryNames, getTestItemNames, getTestSizeNames, item_a, item_b, item_c, item_d, item_f, item_g, SIZE_ONE } from "./constants";
-import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
-import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -37,16 +37,16 @@ export class MenuItemTestingUtil {
         private readonly itemBuilder: MenuItemBuilder,
         private readonly sizeBuilder: MenuItemSizeBuilder,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
-    ){}
+    ) { }
 
     // Menu Item Size
-    public async getTestMenuItemSizeEntities(testContext: DatabaseTestContext): Promise<MenuItemSize[]>{
+    public async getTestMenuItemSizeEntities(testContext: DatabaseTestContext): Promise<MenuItemSize[]> {
         const sizeNames = getTestSizeNames();
         const results: MenuItemSize[] = [];
 
-        for(const name of sizeNames){
+        for (const name of sizeNames) {
             const exists = await this.sizeService.findOneByName(name);
-            if(exists){ continue; }
+            if (exists) { continue; }
 
             results.push(
                 await this.sizeBuilder.reset()
@@ -57,9 +57,9 @@ export class MenuItemTestingUtil {
         return results;
     }
 
-    public async initMenuItemSizeTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.menuItemSizeInit){ 
-            return; 
+    public async initMenuItemSizeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.menuItemSizeInit) {
+            return;
         }
         this.menuItemSizeInit = true;
 
@@ -74,13 +74,13 @@ export class MenuItemTestingUtil {
     }
 
     // Menu Item Category
-    public async getTestMenuItemCategoryEntities(testContext: DatabaseTestContext): Promise<MenuItemCategory[]>{
+    public async getTestMenuItemCategoryEntities(testContext: DatabaseTestContext): Promise<MenuItemCategory[]> {
         const categoryNames = getTestCategoryNames();
         const results: MenuItemCategory[] = [];
 
-        for(const name of categoryNames){
+        for (const name of categoryNames) {
             const exists = await this.categoryService.findOneByName(name);
-            if(exists){ continue; }
+            if (exists) { continue; }
 
             results.push(
                 await this.categoryBuilder.reset()
@@ -91,9 +91,9 @@ export class MenuItemTestingUtil {
         return results;
     }
 
-    public async initMenuItemCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.menuItemCategoryInit){ 
-            return; 
+    public async initMenuItemCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.menuItemCategoryInit) {
+            return;
         }
         this.menuItemCategoryInit = true;
         const categories = await this.getTestMenuItemCategoryEntities(testContext);
@@ -113,7 +113,7 @@ export class MenuItemTestingUtil {
      * Creates Menu Item entities with category and name set
      * @param testContext 
      */
-    public async getTestMenuItemEntities(testContext: DatabaseTestContext): Promise<MenuItem[]>{
+    public async getTestMenuItemEntities(testContext: DatabaseTestContext): Promise<MenuItem[]> {
         await this.initMenuItemSizeTestDatabase(testContext);
         await this.initMenuItemCategoryTestDatabase(testContext);
 
@@ -124,15 +124,15 @@ export class MenuItemTestingUtil {
         let sizeIdx = 0;
         const results: MenuItem[] = [];
 
-        for(const itemName of itemNames){
+        for (const itemName of itemNames) {
             const exists = await this.itemService.findOneByName(itemName);
-            if(exists){ continue; }
-            
+            if (exists) { continue; }
+
             results.push(
                 await this.itemBuilder.reset()
                     .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                     .name(itemName)
-                    .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
+                    .validSizesById([sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length]])
                     .build()
             )
         }
@@ -140,9 +140,9 @@ export class MenuItemTestingUtil {
         return results;
     }
 
-    public async initMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.menuItemInit){ 
-            return; 
+    public async initMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.menuItemInit) {
+            return;
         }
         this.menuItemInit = true;
         const items = await this.getTestMenuItemEntities(testContext);
@@ -163,33 +163,33 @@ export class MenuItemTestingUtil {
      * @param testContext 
      * @returns 
      */
-    public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemContainerItem[]>{
+    public async getTestMenuItemComponentEntities(testContext: DatabaseTestContext): Promise<MenuItemContainerItem[]> {
         await this.initMenuItemContainerTestDatabase(testContext);
-        
+
         const itemF = await this.itemService.findOneByName(item_f, ['validSizes']);
-        if(!itemF){ throw new NotFoundException(); }
-        if(!itemF.validSizes){ throw new Error(); }
+        if (!itemF) { throw new NotFoundException(); }
+        if (!itemF.validSizes) { throw new Error(); }
 
         const itemA = await this.itemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new NotFoundException(); }
-        if(!itemA.validSizes){ throw new Error(); }
+        if (!itemA) { throw new NotFoundException(); }
+        if (!itemA.validSizes) { throw new Error(); }
 
         const itemB = await this.itemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new NotFoundException(); }
-        if(!itemB.validSizes){ throw new Error(); }
+        if (!itemB) { throw new NotFoundException(); }
+        if (!itemB.validSizes) { throw new Error(); }
 
 
         const itemG = await this.itemService.findOneByName(item_g, ['validSizes']);
-        if(!itemG){ throw new NotFoundException(); }
-        if(!itemG.validSizes){ throw new Error(); }
+        if (!itemG) { throw new NotFoundException(); }
+        if (!itemG.validSizes) { throw new Error(); }
 
         const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
-        if(!itemC){ throw new NotFoundException(); }
-        if(!itemC.validSizes){ throw new Error(); }
+        if (!itemC) { throw new NotFoundException(); }
+        if (!itemC.validSizes) { throw new Error(); }
 
         const itemD = await this.itemService.findOneByName(item_d, ['validSizes']);
-        if(!itemD){ throw new NotFoundException(); }
-        if(!itemD.validSizes){ throw new Error(); }
+        if (!itemD) { throw new NotFoundException(); }
+        if (!itemD.validSizes) { throw new Error(); }
 
         const results = [
             {
@@ -234,8 +234,8 @@ export class MenuItemTestingUtil {
      * itemG is a container of items C and D.
      * @param testContext 
      */
-    public async initMenuItemComponentTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.menuItemComponentInit){ 
+    public async initMenuItemComponentTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.menuItemComponentInit) {
             return;
         }
         this.menuItemComponentInit = true;
@@ -250,7 +250,7 @@ export class MenuItemTestingUtil {
     }
 
     //Menu Item Component Options
-    public async getTestMenuItemContainerEntities(testContext: DatabaseTestContext): Promise<MenuItem[]>{
+    public async getTestMenuItemContainerEntities(testContext: DatabaseTestContext): Promise<MenuItem[]> {
         await this.initMenuItemTestDatabase(testContext);
 
         const results: MenuItem[] = [];
@@ -262,19 +262,19 @@ export class MenuItemTestingUtil {
 
 
         const itemA = await this.itemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error("item a is null"); }
-        if(!itemA.validSizes){ throw new Error("item a valid sizes is null"); }
+        if (!itemA) { throw new Error("item a is null"); }
+        if (!itemA.validSizes) { throw new Error("item a valid sizes is null"); }
         const itemB = await this.itemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error("item b is null"); }
-        if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
+        if (!itemB) { throw new Error("item b is null"); }
+        if (!itemB.validSizes) { throw new Error("item b valid sizes is null"); }
         const componentOptionDtos_A = [
-            { 
+            {
                 mode: 'create',
                 validMenuItemId: itemA.id,
                 validSizeIds: itemA.validSizes.slice(1).map(size => size.id),
                 quantity: 2,
             } as CreateChildMenuItemContainerRuleDto,
-            { 
+            {
                 mode: 'create',
                 validMenuItemId: itemB.id,
                 validSizeIds: itemB.validSizes.slice(1).map(size => size.id),
@@ -289,19 +289,19 @@ export class MenuItemTestingUtil {
         } as CreateChildMenuItemContainerOptionsDto;
 
         const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
-        if(!itemC){ throw new Error("item c is null"); }
-        if(!itemC.validSizes){ throw new Error("item c valid sizes is null"); }
+        if (!itemC) { throw new Error("item c is null"); }
+        if (!itemC.validSizes) { throw new Error("item c valid sizes is null"); }
         const itemD = await this.itemService.findOneByName(item_d, ['validSizes']);
-        if(!itemD){ throw new Error("item d is null"); }
-        if(!itemD.validSizes){ throw new Error("item d valid sizes is null"); }
+        if (!itemD) { throw new Error("item d is null"); }
+        if (!itemD.validSizes) { throw new Error("item d valid sizes is null"); }
         const componentOptionDtos_B = [
-            { 
+            {
                 mode: 'create',
                 validMenuItemId: itemC.id,
                 validSizeIds: itemC.validSizes.slice(1).map(size => size.id),
                 quantity: 3,
             } as CreateChildMenuItemContainerRuleDto,
-            { 
+            {
                 mode: 'create',
                 validMenuItemId: itemD.id,
                 validSizeIds: itemD.validSizes.slice(1).map(size => size.id),
@@ -310,22 +310,22 @@ export class MenuItemTestingUtil {
         ] as CreateChildMenuItemContainerRuleDto[];
         const optionsB = {
             mode: 'create',
-             isDynamic: true,
+            isDynamic: true,
             containerRuleDtos: componentOptionDtos_B,
             validQuantity: 6,
         } as CreateChildMenuItemContainerOptionsDto;
 
         const sizeOne = await this.sizeService.findOneByName(SIZE_ONE);
-        if(!sizeOne){ throw new Error("size one is null"); }
+        if (!sizeOne) { throw new Error("size one is null"); }
         const menuItemComponentsC = [
-            { 
+            {
                 mode: 'create',
                 parentContainerSizeId: sizeOne.id,
                 containedMenuItemId: itemA.id,
                 containedMenuItemSizeId: itemA.validSizes[0].id,
                 quantity: 2,
             } as CreateChildMenuItemContainerItemDto,
-            { 
+            {
                 mode: 'create',
                 parentContainerSizeId: sizeOne.id,
                 containedMenuItemId: itemD.id,
@@ -341,7 +341,7 @@ export class MenuItemTestingUtil {
             await this.itemBuilder.reset()
                 .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                 .name(containerItemNames[0])
-                .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
+                .validSizesById([sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length]])
                 .containerOptionsByBuilder(0, options[0])
                 .build()
         );
@@ -350,7 +350,7 @@ export class MenuItemTestingUtil {
             await this.itemBuilder.reset()
                 .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                 .name(containerItemNames[1])
-                .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
+                .validSizesById([sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length]])
                 .containerOptionsByBuilder(0, options[1])
                 .build()
         );
@@ -359,17 +359,17 @@ export class MenuItemTestingUtil {
             await this.itemBuilder.reset()
                 .categorybyId(categoryIds[catIdx++ % categoryIds.length])
                 .name(containerItemNames[2])
-                .validSizesById([ sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length] ])
+                .validSizesById([sizeIds[sizeIdx++ % sizeIds.length], sizeIds[sizeIdx++ % sizeIds.length]])
                 .definedContainerItemsByBuilder(0, menuItemComponentsC)
                 .build()
         );
-        
+
         return results;
     }
 
-    public async initMenuItemContainerTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.menuItemContainerOptionsInit){ 
-            return; 
+    public async initMenuItemContainerTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.menuItemContainerOptionsInit) {
+            return;
         }
         this.menuItemContainerOptionsInit = true;
         const components = await this.getTestMenuItemContainerEntities(testContext);

@@ -18,10 +18,10 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     constructor(
         @Inject(forwardRef(() => InventoryItemCategoryService))
         private readonly categoryService: InventoryItemCategoryService,
-    
+
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-        
+
         @Inject(forwardRef(() => InventoryItemVendorService))
         private readonly vendorService: InventoryItemVendorService,
 
@@ -30,37 +30,37 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
         @Inject(forwardRef(() => InventoryItemValidator))
         validator: InventoryItemValidator,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }
+    ) { super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemDto): void {
-        if(dto.inventoryItemCategoryId !== undefined){
+        if (dto.inventoryItemCategoryId !== undefined) {
             this.categoryById(dto.inventoryItemCategoryId)
         }
-        if(dto.itemName !== undefined){
+        if (dto.itemName !== undefined) {
             this.name(dto.itemName);
         }
-        if(dto.itemSizeDtos !== undefined){
+        if (dto.itemSizeDtos !== undefined) {
             this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
-        if(dto.vendorId !== undefined){
+        if (dto.vendorId !== undefined) {
             this.vendorById(dto.vendorId);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemDto): void {
-        if(dto.inventoryItemCategoryId !== undefined){
+        if (dto.inventoryItemCategoryId !== undefined) {
             this.categoryById(dto.inventoryItemCategoryId);
         }
-        if(dto.itemName !== undefined){
+        if (dto.itemName !== undefined) {
             this.name(dto.itemName);
         }
-        if(dto.itemSizeDtos !== undefined){
+        if (dto.itemSizeDtos !== undefined) {
             this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
         }
-        if(dto.vendorId !== undefined){
+        if (dto.vendorId !== undefined) {
             this.vendorById(dto.vendorId);
         }
     }
@@ -74,15 +74,15 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     }
 
     public sizesByBuilder(inventoryItemId: number, dtos: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)[]): this {
-        const enrichedDtos = dtos.map( dto => ({
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
             inventoryItemId
         }));
         return this.setPropByBuilder(this.itemSizeBuilder.buildManyChildDto.bind(this.itemSizeBuilder), 'itemSizes', this.entity, enrichedDtos);
     }
-    
+
     public categoryById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -93,7 +93,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     }
 
     public vendorById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('vendor', null);
         }
         return this.setPropById(this.vendorService.findOne.bind(this.vendorService), 'vendor', id);

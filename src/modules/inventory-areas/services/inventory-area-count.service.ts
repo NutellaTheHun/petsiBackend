@@ -2,11 +2,10 @@ import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Between, Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaCountValidator } from "../validators/inventory-area-count.validator";
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -20,18 +19,18 @@ import { InventoryAreaCountValidator } from "../validators/inventory-area-count.
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
     constructor(
         @InjectRepository(InventoryAreaCount)
-        private readonly areaCountRepo: Repository<InventoryAreaCount>,
+        private readonly repo: Repository<InventoryAreaCount>,
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
-        areaCountBuilder: InventoryAreaCountBuilder,
+        builder: InventoryAreaCountBuilder,
+        
         logger: AppLogger,
-        validator: InventoryAreaCountValidator,
         requestContextService: RequestContextService,
-    ){ super(areaCountRepo, areaCountBuilder, validator, 'InventoryAreaCountService', requestContextService, logger); }
+    ) { super(repo, builder, 'InventoryAreaCountService', requestContextService, logger); }
 
     async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
-        return await this.areaCountRepo.find({ 
-            where: { inventoryArea: { areaName: name } }, 
+        return await this.repo.find({
+            where: { inventoryArea: { areaName: name } },
             relations
         });
     }
@@ -46,7 +45,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         const endOfDay = new Date(date);
         endOfDay.setUTCHours(23, 59, 59, 999);
 
-        return await this.areaCountRepo.find({
+        return await this.repo.find({
             where: {
                 countDate: Between(startOfDay, endOfDay),
             },

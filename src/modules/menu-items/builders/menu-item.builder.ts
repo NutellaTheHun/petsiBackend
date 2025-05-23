@@ -17,7 +17,7 @@ import { MenuItemContainerOptionsBuilder } from "./menu-item-container-options.b
 import { MenuItemContainerItemBuilder } from "./menu-item-container-item.builder";
 
 @Injectable()
-export class MenuItemBuilder extends BuilderBase<MenuItem>{
+export class MenuItemBuilder extends BuilderBase<MenuItem> {
     constructor(
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
@@ -32,79 +32,79 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
 
         @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
         private readonly componentOptionsBuilder: MenuItemContainerOptionsBuilder,
-        
+
         validator: MenuItemValidator,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
-        if(dto.itemName !== undefined){
+        if (dto.itemName !== undefined) {
             this.name(dto.itemName);
         }
-        if(dto.isPOTM !== undefined){
+        if (dto.isPOTM !== undefined) {
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake !== undefined){
+        if (dto.isParbake !== undefined) {
             this.isParbake(dto.isParbake);
         }
 
         // Entities
-        if(dto.validSizeIds !== undefined){
+        if (dto.validSizeIds !== undefined) {
             this.validSizesById(dto.validSizeIds);
         }
-        if(dto.veganOptionMenuId !== undefined){
+        if (dto.veganOptionMenuId !== undefined) {
             this.veganOptionById(dto.veganOptionMenuId);
         }
-        if(dto.takeNBakeOptionMenuId !== undefined){
+        if (dto.takeNBakeOptionMenuId !== undefined) {
             this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
         }
-        if(dto.veganTakeNBakeOptionMenuId !== undefined){
+        if (dto.veganTakeNBakeOptionMenuId !== undefined) {
             this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categorybyId(dto.categoryId);
         }
-        if(dto.definedContainerItemDtos !== undefined){
+        if (dto.definedContainerItemDtos !== undefined) {
             this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
-        if(dto.containerOptionDto !== undefined){
+        if (dto.containerOptionDto !== undefined) {
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemDto): void {
-        if(dto.itemName !== undefined){
+        if (dto.itemName !== undefined) {
             this.name(dto.itemName);
         }
-        if(dto.isPOTM !== undefined){
+        if (dto.isPOTM !== undefined) {
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake !== undefined){
+        if (dto.isParbake !== undefined) {
             this.isParbake(dto.isParbake);
         }
 
         // Entities
-        if(dto.validSizeIds !== undefined){
+        if (dto.validSizeIds !== undefined) {
             this.validSizesById(dto.validSizeIds);
         }
-        if(dto.veganOptionMenuId !== undefined){
+        if (dto.veganOptionMenuId !== undefined) {
             this.veganOptionById(dto.veganOptionMenuId);
         }
-        if(dto.takeNBakeOptionMenuId !== undefined){
+        if (dto.takeNBakeOptionMenuId !== undefined) {
             this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
         }
-        if(dto.veganTakeNBakeOptionMenuId !== undefined){
+        if (dto.veganTakeNBakeOptionMenuId !== undefined) {
             this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categorybyId(dto.categoryId);
         }
-        if(dto.definedContainerItemDtos !== undefined){
+        if (dto.definedContainerItemDtos !== undefined) {
             this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
-        if(dto.containerOptionDto !== undefined){
+        if (dto.containerOptionDto !== undefined) {
             this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
@@ -126,7 +126,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public veganOptionById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('veganOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganOption', id);
@@ -137,7 +137,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public takeNBakeOptionById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('takeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'takeNBakeOption', id);
@@ -148,7 +148,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public veganTakeNBakeOptionById(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('veganTakeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganTakeNBakeOption', id);
@@ -159,7 +159,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public categorybyId(id: number | null): this {
-        if(id === null){
+        if (id === null) {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -170,10 +170,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public definedContainerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[] | null): this {
-        if(dtos === null){
+        if (dtos === null) {
             return this.setPropByVal('definedContainerItems', []);
         }
-        const enrichedDtos = dtos.map( dto => ({
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
             containerId: parentId,
         }));
@@ -181,7 +181,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
     }
 
     public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto) | null): this {
-        if(dto === null){
+        if (dto === null) {
             return this.setPropByVal('containerOptions', null);
         }
         return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);

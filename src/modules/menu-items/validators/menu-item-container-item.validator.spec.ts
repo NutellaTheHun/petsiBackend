@@ -34,17 +34,17 @@ describe('menu item container item validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const parentContainer = await itemService.findOneByName(item_c, ['validSizes']);
-        if(!parentContainer){ throw new Error(); }
+        if (!parentContainer) { throw new Error(); }
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -62,13 +62,13 @@ describe('menu item container item validator', () => {
 
     it('should fail create: invalid size for item', async () => {
         const parentContainer = await itemService.findOneByName(item_c, ['validSizes']);
-        if(!parentContainer){ throw new Error(); }
+        if (!parentContainer) { throw new Error(); }
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const badSize = await sizeService.findOneByName(SIZE_FOUR);
-        if(!badSize){ throw new Error(); }
+        if (!badSize) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -86,15 +86,15 @@ describe('menu item container item validator', () => {
 
     it('should pass update', async () => {
         const toUpdateRequest = await containerService.findAll();
-        if(!toUpdateRequest){ throw new Error(); }
+        if (!toUpdateRequest) { throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
 
         const parentContainer = await itemService.findOneByName(item_c, ['validSizes']);
-        if(!parentContainer){ throw new Error(); }
+        if (!parentContainer) { throw new Error(); }
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -110,12 +110,12 @@ describe('menu item container item validator', () => {
 
     it('should fail update: new item with no sizing', async () => {
         const toUpdateRequest = await containerService.findAll();
-        if(!toUpdateRequest){ throw new Error(); }
+        if (!toUpdateRequest) { throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
+        if (!containedItem) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -130,15 +130,15 @@ describe('menu item container item validator', () => {
 
     it('should fail update: invalid contained item and size', async () => {
         const toUpdateRequest = await containerService.findAll();
-        if(!toUpdateRequest){ throw new Error(); }
+        if (!toUpdateRequest) { throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
-        
+        if (!containedItem) { throw new Error(); }
+
         const badSize = await sizeService.findOneByName(SIZE_FOUR);
-        if(!badSize){ throw new Error(); }
+        if (!badSize) { throw new Error(); }
 
 
         const dto = {
@@ -155,15 +155,15 @@ describe('menu item container item validator', () => {
 
     it('should fail update: invalid size for currentItem', async () => {
         const toUpdateRequest = await containerService.findAll({ relations: ['containedItem'] });
-        if(!toUpdateRequest){ throw new Error(); }
+        if (!toUpdateRequest) { throw new Error(); }
 
         const toUpdate = toUpdateRequest.items[0];
 
         const containedItem = await itemService.findOneByName(item_a, ['validSizes']);
-        if(!containedItem){ throw new Error(); }
-        
+        if (!containedItem) { throw new Error(); }
+
         const badSize = await sizeService.findOneByName(SIZE_FOUR);
-        if(!badSize){ throw new Error(); }
+        if (!badSize) { throw new Error(); }
 
         const dto = {
             mode: 'update',

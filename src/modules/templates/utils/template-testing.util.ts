@@ -20,13 +20,13 @@ export class TemplateTestingUtil {
 
         private readonly menuItemService: MenuItemService,
         private readonly menuItemTestUtil: MenuItemTestingUtil,
-    ){}
+    ) { }
 
-    public async getTemplateEntities(testContext: DatabaseTestContext): Promise<Template[]>{
+    public async getTemplateEntities(testContext: DatabaseTestContext): Promise<Template[]> {
         const templateNames = getTestTemplateNames();
         const results: Template[] = [];
-        
-        for(const name of templateNames){
+
+        for (const name of templateNames) {
             results.push({
                 templateName: name,
             } as Template);
@@ -34,9 +34,9 @@ export class TemplateTestingUtil {
         return results;
     }
 
-    public async initTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.initTemplates){ 
-            return; 
+    public async initTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initTemplates) {
+            return;
         }
         this.initTemplates = true;
 
@@ -47,29 +47,29 @@ export class TemplateTestingUtil {
         await this.templateService.insertEntities(templates);
     }
 
-    public async cleanupTemplateTestDatabase(): Promise<void>{
+    public async cleanupTemplateTestDatabase(): Promise<void> {
         await this.templateService.getQueryBuilder().delete().execute();
     }
 
-    public async getTemplateMenuItemEntities(testContext: DatabaseTestContext): Promise<TemplateMenuItem[]>{
+    public async getTemplateMenuItemEntities(testContext: DatabaseTestContext): Promise<TemplateMenuItem[]> {
         await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
         await this.initTemplateTestDatabase(testContext);
 
         const itemsRequest = await this.menuItemService.findAll();
         const items = itemsRequest.items;
-        if(!items){ throw new Error(); }
+        if (!items) { throw new Error(); }
         let itemIdx = 0;
-        
+
         const templatesRequest = await this.templateService.findAll();
         const templates = templatesRequest.items;
-        if(!templates){ throw new Error();}
+        if (!templates) { throw new Error(); }
 
         const results: TemplateMenuItem[] = [];
 
-        for(const template of templates){
-            for(let i = 0; i < 3; i++){
+        for (const template of templates) {
+            for (let i = 0; i < 3; i++) {
                 results.push({
-                    displayName: "testDisplayName"+itemIdx,
+                    displayName: "testDisplayName" + itemIdx,
                     menuItem: items[itemIdx % items.length],
                     tablePosIndex: itemIdx,
                     parentTemplate: template,
@@ -80,9 +80,9 @@ export class TemplateTestingUtil {
         return results;
     }
 
-    public async initTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.initItems){ 
-            return; 
+    public async initTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initItems) {
+            return;
         }
         this.initItems = true;
 
@@ -93,7 +93,7 @@ export class TemplateTestingUtil {
         await this.templateItemService.insertEntities(items);
     }
 
-    public async cleanupTemplateMenuItemTestDatabase(): Promise<void>{
+    public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
         await this.templateItemService.getQueryBuilder().delete().execute();
     }
 }

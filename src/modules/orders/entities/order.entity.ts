@@ -1,6 +1,6 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { OrderMenuItem } from "./order-menu-item.entity";
 import { OrderCategory } from "./order-category.entity";
+import { OrderMenuItem } from "./order-menu-item.entity";
 
 /**
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
@@ -25,7 +25,7 @@ export class Order {
 
     @CreateDateColumn()
     createdAt: Date;
-    
+
     @UpdateDateColumn()
     updatedAt: Date;
 
@@ -40,7 +40,7 @@ export class Order {
      */
     @Column({ nullable: false })
     fulfillmentType: string;
-    
+
     /**
      * Name of the point person to recieve the delivery.
      * 

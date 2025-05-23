@@ -1,13 +1,13 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Recipe } from "./recipe.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { Recipe } from "./recipe.entity";
 
 /**
  * A ingredient within a {@link Recipe}, can either be an {@link InventoryItem} or another {@link Recipe}.
  */
 @Entity()
-export class RecipeIngredient{
+export class RecipeIngredient {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -17,7 +17,7 @@ export class RecipeIngredient{
      */
     @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
     parentRecipe: Recipe;
-    
+
     /**
      * The {@link InventoryItem} that is being used as the ingredient. 
      * 
@@ -53,6 +53,6 @@ export class RecipeIngredient{
      * 
      * Example: 3 cups({@link UnitOfMeasure}) of Flour
      */
-    @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' }) 
+    @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' })
     quantityMeasure: UnitOfMeasure;
 }

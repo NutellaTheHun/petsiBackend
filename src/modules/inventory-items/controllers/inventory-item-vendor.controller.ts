@@ -23,7 +23,7 @@ export class InventoryItemVendorController extends ControllerBase<InventoryItemV
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
-    ){ super(vendorService, cacheManager, 'InventoryItemVendorController', requestContextService, logger); }
+    ) { super(vendorService, cacheManager, 'InventoryItemVendorController', requestContextService, logger); }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)

@@ -6,23 +6,20 @@ import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { OrderCategoryBuilder } from "../builders/order-category.builder";
 import { OrderCategory } from "../entities/order-category.entity";
-import { OrderCategoryValidator } from "../validators/order-category.validator";
 
 @Injectable()
 export class OrderCategoryService extends ServiceBase<OrderCategory> {
     constructor(
         @InjectRepository(OrderCategory)
-        private readonly categoryRepo: Repository<OrderCategory>,
+        private readonly repo: Repository<OrderCategory>,
 
-        typeBuilder: OrderCategoryBuilder,
-
-        validator: OrderCategoryValidator,
+        builder: OrderCategoryBuilder,
         
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(categoryRepo, typeBuilder, validator, 'OrderCategoryService', requestContextService, logger)}
+    ) { super(repo, builder, 'OrderCategoryService', requestContextService, logger) }
 
     async findOneByName(name: string, relations?: Array<keyof OrderCategory>): Promise<OrderCategory | null> {
-        return this.categoryRepo.findOne({ where: {categoryName: name }, relations});
+        return this.repo.findOne({ where: { categoryName: name }, relations });
     }
 }

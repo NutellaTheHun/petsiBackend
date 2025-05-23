@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive } from "class-validator";
-import { CreateChildOrderContainerItemDto } from "../order-container-item/create-child-order-container-item.dto";
 import { Order } from "../../entities/order.entity";
+import { CreateChildOrderContainerItemDto } from "../order-container-item/create-child-order-container-item.dto";
 /**
  * Depreciated, only created as a child through {@link Order}.
  */
@@ -30,9 +30,10 @@ export class CreateOrderMenuItemDto {
     @IsPositive()
     readonly quantity: number
 
-    @ApiProperty({ description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
+    @ApiProperty({
+        description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
         type: [CreateChildOrderContainerItemDto]
-        })
+    })
     @IsArray()
     @IsOptional()
     readonly orderedItemContainerDtos?: CreateChildOrderContainerItemDto[];

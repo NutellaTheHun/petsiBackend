@@ -1,92 +1,92 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { RoleService } from './role.service';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { RoleTestUtil } from '../utils/role-test.util';
-import { getRoleTestingModule } from '../utils/role-testing-module';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { ROLE_ADMIN } from '../utils/constants';
-import { NotFoundException } from '@nestjs/common';
+import { RoleTestUtil } from '../utils/role-test.util';
+import { getRoleTestingModule } from '../utils/role-testing-module';
+import { RoleService } from './role.service';
 
 
 describe('Role Service', () => {
-  let roleService: RoleService;
-  let roleTestingUtil: RoleTestUtil;
-  let dbTestContext: DatabaseTestContext;
+    let roleService: RoleService;
+    let roleTestingUtil: RoleTestUtil;
+    let dbTestContext: DatabaseTestContext;
 
-  const testRoleName = "testRole";
-  const testRoleUpdateName = "updateTestRole";
-  let testId: number;
-  let testIds: number[];
-  
-  beforeAll(async () => {
-      const module: TestingModule = await getRoleTestingModule();
-      roleService = module.get<RoleService>(RoleService);
+    const testRoleName = "testRole";
+    const testRoleUpdateName = "updateTestRole";
+    let testId: number;
+    let testIds: number[];
 
-      dbTestContext = new DatabaseTestContext();
-      roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-      await roleTestingUtil.initRoleTestingDatabase(dbTestContext);
-  });
-  
-  afterAll(async() => {
-    await dbTestContext.executeCleanupFunctions();
-  })
+    beforeAll(async () => {
+        const module: TestingModule = await getRoleTestingModule();
+        roleService = module.get<RoleService>(RoleService);
 
-  it('should be defined', () => {
-    expect(roleService).toBeDefined();
-  });
+        dbTestContext = new DatabaseTestContext();
+        roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);
+        await roleTestingUtil.initRoleTestingDatabase(dbTestContext);
+    });
 
-  it('should create a role', async () => {
-    const dto = {
-      roleName: testRoleName,
-    } as CreateRoleDto;
-    const result = await roleService.create(dto);
-    expect(result).not.toBeNull();
-    expect(result?.roleName).toEqual(testRoleName);
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    })
 
-    testId = result?.id as number;
-  });
+    it('should be defined', () => {
+        expect(roleService).toBeDefined();
+    });
 
-  it("should update a role", async () => {
-    const dto = {
-      roleName: testRoleUpdateName,
-    } as UpdateRoleDto;
+    it('should create a role', async () => {
+        const dto = {
+            roleName: testRoleName,
+        } as CreateRoleDto;
+        const result = await roleService.create(dto);
+        expect(result).not.toBeNull();
+        expect(result?.roleName).toEqual(testRoleName);
 
-    const result = await roleService.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.roleName).toEqual(testRoleUpdateName);
-  });
+        testId = result?.id as number;
+    });
 
-  it('should remove a role', async () => {
-    const removal = await roleService.remove(testId);
-    expect(removal).toBeTruthy();
+    it("should update a role", async () => {
+        const dto = {
+            roleName: testRoleUpdateName,
+        } as UpdateRoleDto;
 
-    await expect(roleService.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
+        const result = await roleService.update(testId, dto);
+        expect(result).not.toBeNull();
+        expect(result?.roleName).toEqual(testRoleUpdateName);
+    });
 
-  it("should retrieve all roles", async () => {
-    const expected = await roleTestingUtil.getTestUserEntities(dbTestContext);
+    it('should remove a role', async () => {
+        const removal = await roleService.remove(testId);
+        expect(removal).toBeTruthy();
 
-    const results = await roleService.findAll()
+        await expect(roleService.findOne(testId)).rejects.toThrow(NotFoundException);
+    });
 
-    expect(results.items.length).toEqual(expected.length);
+    it("should retrieve all roles", async () => {
+        const expected = await roleTestingUtil.getTestUserEntities(dbTestContext);
 
-    testIds = [results.items[0].id, results.items[1].id ];
-  });
+        const results = await roleService.findAll()
 
-  it("should get Roles from a list of ids", async () => {
-    const results = await roleService.findEntitiesById(testIds);
-    if(!results){ throw new Error("results is null"); }
+        expect(results.items.length).toEqual(expected.length);
 
-    expect(results.length).toEqual(testIds.length);
-    for(const result of results){
-      expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
-    }
-  });
+        testIds = [results.items[0].id, results.items[1].id];
+    });
 
-  it("should get role by name", async () => {
-    const result = await roleService.findOneByName(ROLE_ADMIN);
-    expect(result).not.toBeNull();
-    expect(result?.roleName).toBe(ROLE_ADMIN);
-  });
+    it("should get Roles from a list of ids", async () => {
+        const results = await roleService.findEntitiesById(testIds);
+        if (!results) { throw new Error("results is null"); }
+
+        expect(results.length).toEqual(testIds.length);
+        for (const result of results) {
+            expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
+        }
+    });
+
+    it("should get role by name", async () => {
+        const result = await roleService.findOneByName(ROLE_ADMIN);
+        expect(result).not.toBeNull();
+        expect(result?.roleName).toBe(ROLE_ADMIN);
+    });
 });

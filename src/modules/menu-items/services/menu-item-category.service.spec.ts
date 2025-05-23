@@ -1,11 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
+import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemCategoryService } from "./menu-item-category.service";
-import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
-import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
-import { NotFoundException } from "@nestjs/common";
 
 describe('menu item category service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -71,13 +71,13 @@ describe('menu item category service', () => {
         const results = await categoryService.findAll();
         expect(results.items.length).toEqual(5);
 
-        testIds = results.items.slice(0,3).map(cat => cat.id);
+        testIds = results.items.slice(0, 3).map(cat => cat.id);
     });
 
     it('should find categories by a list of ids', async () => {
         const results = await categoryService.findEntitiesById(testIds);
         expect(results.length).toEqual(3);
-        for(const result of results){
+        for (const result of results) {
             expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1)
         }
     });

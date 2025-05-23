@@ -47,6 +47,7 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
             InventoryAreaItemController,
         ],
         providers: [],
-}).overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .compile()};
+    }).overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile()
+};

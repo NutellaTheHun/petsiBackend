@@ -9,24 +9,24 @@ import { InventoryItemService } from "../services/inventory-item.service";
 import { InventoryItemVendorValidator } from "../validators/inventory-item-vendor.validator";
 
 @Injectable()
-export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>{
+export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor> {
     constructor(
         @Inject(forwardRef(() => InventoryItemService))
         private readonly itemService: InventoryItemService,
-        
+
         validator: InventoryItemVendorValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(InventoryItemVendor, 'InventoryItemVendorBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemVendorDto): void {
-        if(dto.vendorName !== undefined){
+        if (dto.vendorName !== undefined) {
             this.name(dto.vendorName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
-        if(dto.vendorName !== undefined){
+        if (dto.vendorName !== undefined) {
             this.name(dto.vendorName);
         }
     }

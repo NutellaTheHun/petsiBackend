@@ -1,5 +1,6 @@
-import { Injectable, Options } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
@@ -11,7 +12,6 @@ import { OrderCategoryService } from "../services/order-category.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { getTestOrderCategoryNames } from "./constants";
-import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 @Injectable()
 export class OrderTestingUtil {
@@ -27,18 +27,18 @@ export class OrderTestingUtil {
         private readonly menuItemService: MenuItemService,
         private readonly menuItemTestUtil: MenuItemTestingUtil,
         private readonly optionService: MenuItemContainerOptionsService,
-    ){
+    ) {
         this.orderTypeInit = false;
         this.orderInit = false;
         this.orderMenuItemInit = false;
-     }
+    }
 
     // Order Type
-    public async getTestOrderTypeEntities(testContext: DatabaseTestContext): Promise<OrderCategory[]>{
+    public async getTestOrderTypeEntities(testContext: DatabaseTestContext): Promise<OrderCategory[]> {
         const names = getTestOrderCategoryNames();
         const results: OrderCategory[] = [];
 
-        for(const name of names){
+        for (const name of names) {
             results.push({
                 categoryName: name,
             } as OrderCategory)
@@ -47,8 +47,8 @@ export class OrderTestingUtil {
         return results;
     }
 
-    public async initOrderCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.orderTypeInit){
+    public async initOrderCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.orderTypeInit) {
             return;
         }
         this.orderTypeInit = true;
@@ -58,33 +58,33 @@ export class OrderTestingUtil {
 
         await this.categoryService.insertEntities(types);
     }
-    
+
     public async cleanupOrderTypeTestDatabase(): Promise<void> {
         await this.categoryService.getQueryBuilder().delete().execute();
     }
 
     // Order Menu Item
-    public async getTestOrderMenuItemEntities(testContext: DatabaseTestContext): Promise<OrderMenuItem[]>{
+    public async getTestOrderMenuItemEntities(testContext: DatabaseTestContext): Promise<OrderMenuItem[]> {
         await this.initOrderTestDatabase(testContext);
         await this.menuItemTestUtil.initMenuItemContainerTestDatabase(testContext);
 
         const ordersRequest = await this.orderService.findAll();
         const orders = ordersRequest.items;
-        if(!orders){ throw new Error(); }
+        if (!orders) { throw new Error(); }
 
         const menuItemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
         const menuItems = menuItemsRequest.items
-        if(!menuItems){ throw new Error(); }
+        if (!menuItems) { throw new Error(); }
 
         let menuItemIdx = 0;
         let quantity = 1;
         let sizeIdx = 0;
         const results: OrderMenuItem[] = [];
 
-        for(const order of orders){
-            for(let i = 0; i < 4; i++){
+        for (const order of orders) {
+            for (let i = 0; i < 4; i++) {
                 const menuItem = menuItems[menuItemIdx++ % menuItems.length];
-                if(!menuItem.validSizes){ throw new Error(); }
+                if (!menuItem.validSizes) { throw new Error(); }
 
                 const size = menuItem.validSizes[sizeIdx++ % menuItem.validSizes?.length];
 
@@ -99,7 +99,7 @@ export class OrderTestingUtil {
 
         //Order Menu Item Components
         //if(!menuItems[0].validSizes){ throw new Error(); }
-        const items = (await this.menuItemService.findAll({ relations: ['containerOptions']})).items;
+        const items = (await this.menuItemService.findAll({ relations: ['containerOptions'] })).items;
         const containerItems = items.filter(item => item.containerOptions);
 
         const parentOrderItem = {
@@ -109,10 +109,10 @@ export class OrderTestingUtil {
             size: menuItems[0].validSizes[0],
         } as OrderMenuItem
 
-        if(!containerItems[0].containerOptions){ throw new Error(); }
+        if (!containerItems[0].containerOptions) { throw new Error(); }
         const options = await this.optionService.findOne(containerItems[0].containerOptions.id);
-        if(!options){ throw new Error(); }
-        
+        if (!options) { throw new Error(); }
+
         const comp_a = {
             parentOrderItem: parentOrderItem,
             containedItem: options.containerRules[0].validItem,
@@ -120,10 +120,10 @@ export class OrderTestingUtil {
             quantity: 1,
         } as OrderContainerItem;
 
-        if(!menuItems[2].validSizes){ throw new Error(); }
+        if (!menuItems[2].validSizes) { throw new Error(); }
         const comp_b = {
             parentOrderItem: parentOrderItem,
-           containedItem: options.containerRules[1].validItem,
+            containedItem: options.containerRules[1].validItem,
             containedItemSize: options.containerRules[1].validSizes[0],
             quantity: 1,
         } as OrderContainerItem;
@@ -134,34 +134,34 @@ export class OrderTestingUtil {
         return results;
     }
 
-    public async initOrderMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.orderMenuItemInit){
+    public async initOrderMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.orderMenuItemInit) {
             return;
         }
         this.orderMenuItemInit = true;
-        
+
         const oMenuItems = await this.getTestOrderMenuItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupOrderMenuItemTestDatabase());
 
         await this.orderMenuItemService.insertEntities(oMenuItems);
     }
-    
+
     public async cleanupOrderMenuItemTestDatabase(): Promise<void> {
         await this.orderMenuItemService.getQueryBuilder().delete().execute();
     }
 
     // Order
-    public async getTestOrderEntities(testContext: DatabaseTestContext): Promise<Order[]>{
+    public async getTestOrderEntities(testContext: DatabaseTestContext): Promise<Order[]> {
         await this.initOrderCategoryTestDatabase(testContext);
 
-        const recipients: string[] = [ "recipient_a", "recipient_b", "recipient_c", "recipient_d", "recipient_e", "recipient_f", "recipient_g",];
-        
-        const fulfilltype: string[] = [ "fulfilltype_a", "fulfilltype_b"];
+        const recipients: string[] = ["recipient_a", "recipient_b", "recipient_c", "recipient_d", "recipient_e", "recipient_f", "recipient_g",];
+
+        const fulfilltype: string[] = ["fulfilltype_a", "fulfilltype_b"];
         let fIdx = 0;
 
         const orderTypesRequest = await this.categoryService.findAll();
         const orderTypes = orderTypesRequest.items;
-        if(!orderTypes){ throw new Error(); }
+        if (!orderTypes) { throw new Error(); }
         let otIndex = 0;
 
         const results: Order[] = [];
@@ -170,16 +170,16 @@ export class OrderTestingUtil {
         const fulfillmentDate = new Date();
         fulfillmentDate.setDate(fulfillmentDate.getDate() + idx);
 
-        for(const name of recipients){
+        for (const name of recipients) {
             results.push({
                 orderCategory: orderTypes[otIndex++ % orderTypes.length],
                 recipient: name,
                 fulfillmentDate,
                 fulfillmentType: fulfilltype[fIdx++ % fulfilltype.length],
-                deliveryAddress: "delAddress"+idx,
-                phoneNumber: "number"+idx,
-                email: "email"+idx,
-                note: "note"+idx,
+                deliveryAddress: "delAddress" + idx,
+                phoneNumber: "number" + idx,
+                email: "email" + idx,
+                note: "note" + idx,
                 isFrozen: false,
                 isWeekly: false,
             } as Order);
@@ -188,18 +188,18 @@ export class OrderTestingUtil {
         return results;
     }
 
-    public async initOrderTestDatabase(testContext: DatabaseTestContext): Promise<void>{
-        if(this.orderInit){
+    public async initOrderTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.orderInit) {
             return;
         }
         this.orderInit = true;
-        
+
         const orders = await this.getTestOrderEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupOrderTestDatabase());
 
         await this.orderService.insertEntities(orders);
     }
-    
+
     public async cleanupOrderTestDatabase(): Promise<void> {
         await this.orderService.getQueryBuilder().delete().execute();
     }
@@ -209,14 +209,13 @@ export class OrderTestingUtil {
     public async getCreateChildOrderMenuItemDtos(amount: number): Promise<CreateChildOrderMenuItemDto[]> {
         const itemsRequest = await this.menuItemService.findAll({ relations: ['validSizes'] });
         const items = itemsRequest.items
-        if(!items){ throw new Error(); }
-        
+        if (!items) { throw new Error(); }
+
         const results: CreateChildOrderMenuItemDto[] = [];
-        for(let i = 0; i < amount; i++)
-        {
+        for (let i = 0; i < amount; i++) {
             const item = items[i % items.length];
-            if(!item.validSizes){ throw new Error(); }
-            if(item.validSizes.length === 0){ throw new Error(); }
+            if (!item.validSizes) { throw new Error(); }
+            if (item.validSizes.length === 0) { throw new Error(); }
 
             results.push({
                 mode: 'create',
@@ -225,7 +224,7 @@ export class OrderTestingUtil {
                 menuItemSizeId: item.validSizes[0].id,
             } as CreateChildOrderMenuItemDto);
         }
-        
+
         return results;
     }
 }

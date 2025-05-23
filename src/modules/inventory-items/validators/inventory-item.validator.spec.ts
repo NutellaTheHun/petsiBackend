@@ -45,7 +45,7 @@ describe('inventory item validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -53,13 +53,13 @@ describe('inventory item validator', () => {
     it('should validate create', async () => {
 
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -79,9 +79,9 @@ describe('inventory item validator', () => {
         ] as CreateChildInventoryItemSizeDto[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: "test item",
@@ -97,13 +97,13 @@ describe('inventory item validator', () => {
 
     it('should fail create (name already exists)', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -123,9 +123,9 @@ describe('inventory item validator', () => {
         ] as CreateChildInventoryItemSizeDto[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: FOOD_A,
@@ -140,9 +140,9 @@ describe('inventory item validator', () => {
 
     it('should fail create (duplicate itemSizeDtos)', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -162,9 +162,9 @@ describe('inventory item validator', () => {
         ] as CreateChildInventoryItemSizeDto[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: "TEST ITEM",
@@ -180,16 +180,16 @@ describe('inventory item validator', () => {
 
     it('should validate update', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -210,9 +210,9 @@ describe('inventory item validator', () => {
         ] as (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: "UPDATE ITEM NAME",
@@ -228,16 +228,16 @@ describe('inventory item validator', () => {
 
     it('should fail validate update (name exists)', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -258,9 +258,9 @@ describe('inventory item validator', () => {
         ] as (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: FOOD_A,
@@ -276,16 +276,16 @@ describe('inventory item validator', () => {
 
     it('should fail validate update (duplicate update sizeDtos)', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -314,9 +314,9 @@ describe('inventory item validator', () => {
         ] as (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: "UPDATE ITEM NAME",
@@ -332,16 +332,16 @@ describe('inventory item validator', () => {
 
     it('should fail validate update (duplicate create sizeDtos)', async () => {
         const unitPound = await unitService.findOneByName(POUND);
-        if(!unitPound){ throw new Error(); }
+        if (!unitPound) { throw new Error(); }
         const unitKilo = await unitService.findOneByName(KILOGRAM);
-        if(!unitKilo){ throw new Error(); }
+        if (!unitKilo) { throw new Error(); }
         const pkgBox = await packageService.findOneByName(BOX_PKG);
-        if(!pkgBox){ throw new Error(); }
+        if (!pkgBox) { throw new Error(); }
         const pkgCan = await packageService.findOneByName(CAN_PKG);
-        if(!pkgCan){ throw new Error(); }
+        if (!pkgCan) { throw new Error(); }
 
         const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const sizeDtos = [
             {
@@ -369,9 +369,9 @@ describe('inventory item validator', () => {
         ] as (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
         const category = await categoryService.findOneByName(DAIRY_CAT);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
         const vendor = await vendorService.findOneByName(VENDOR_A);
-        if(!vendor){ throw new Error(); }
+        if (!vendor) { throw new Error(); }
 
         const dto = {
             itemName: "UPDATE ITEM NAME",

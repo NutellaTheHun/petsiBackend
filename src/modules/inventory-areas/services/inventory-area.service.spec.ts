@@ -1,7 +1,7 @@
 import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
+import { AppHttpException } from "../../../util/exceptions/app-http-exception";
 import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
@@ -20,7 +20,7 @@ describe('Inventory area service', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
-        
+
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
         await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
@@ -39,10 +39,10 @@ describe('Inventory area service', () => {
     it('should create an area', async () => {
         const area = { areaName: testAreaName } as CreateInventoryAreaDto;
         const result = await service.create(area);
-        
+
         expect(result).not.toBeNull();
 
-        if(!result?.id){ throw new Error('created area id is null'); }
+        if (!result?.id) { throw new Error('created area id is null'); }
         testId = result?.id;
     });
 
@@ -64,7 +64,7 @@ describe('Inventory area service', () => {
 
     it('should fail to update an area (doesnt exist)', async () => {
         const toUpdate = { areaName: updateTestAreaName } as UpdateInventoryAreaDto;
-        
+
         await expect(service.update(0, toUpdate)).rejects.toThrow(NotFoundException);
     });
 
@@ -90,11 +90,11 @@ describe('Inventory area service', () => {
         const results = await service.findAll();
         expect(results.items.length).toEqual(testAreas.length);
 
-        testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
+        testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
     it('should get a list of areas by IDs', async () => {
-        const results = await service.findEntitiesById(testIds); 
+        const results = await service.findEntitiesById(testIds);
 
         expect(results.length).toBeGreaterThan(0);
         expect(results.length).toEqual(testIds.length);

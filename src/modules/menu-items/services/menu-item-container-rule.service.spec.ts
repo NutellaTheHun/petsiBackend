@@ -3,12 +3,11 @@ import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
 import { UpdateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-menu-item-container-rule.dto";
+import { item_a, item_b } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerRuleService } from "./menu-item-container-rule.service";
 import { MenuItemService } from "./menu-item.service";
-import { item_a, item_b, item_f } from "../utils/constants";
-import { MenuItem } from "../entities/menu-item.entity";
 
 describe('menu item container rule service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -49,7 +48,7 @@ describe('menu item container rule service', () => {
         const results = await compOptionService.findAll();
         expect(results.items.length).toEqual(4);
 
-        testIds = results.items.slice(0,3).map(cat => cat.id);
+        testIds = results.items.slice(0, 3).map(cat => cat.id);
         testId = results.items[0].id;
     });
 
@@ -60,25 +59,25 @@ describe('menu item container rule service', () => {
 
     it('should update validItem and size', async () => {
         const toUpdate = await compOptionService.findOne(testId, ['validItem']);
-        if(!toUpdate){ throw new Error("comp option is null"); }
-        if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
+        if (!toUpdate) { throw new Error("comp option is null"); }
+        if (!toUpdate.validItem) { throw new Error("comp option valid item is null"); }
 
         let newItem;
-        if(toUpdate.validItem.itemName === item_a){
+        if (toUpdate.validItem.itemName === item_a) {
             const itemB = await itemService.findOneByName(item_b, ['validSizes']);
-            if(!itemB){ throw new Error("item b is null"); }
-            if(!itemB.validSizes){ throw new Error("item b valid sizes is null"); }
+            if (!itemB) { throw new Error("item b is null"); }
+            if (!itemB.validSizes) { throw new Error("item b valid sizes is null"); }
             newItem = itemB;
         } else {
             const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-            if(!itemA){ throw new Error("item b is null"); }
-            if(!itemA.validSizes){ throw new Error("item b valid sizes is null"); }
+            if (!itemA) { throw new Error("item b is null"); }
+            if (!itemA.validSizes) { throw new Error("item b valid sizes is null"); }
             newItem = itemA;
         }
-        
+
         const dto = {
             validMenuItemId: newItem.id,
-            validSizeIds: [ newItem.validSizes[0].id ],
+            validSizeIds: [newItem.validSizes[0].id],
         } as UpdateMenuItemContainerRuleDto;
 
         const result = await compOptionService.update(testId, dto);
@@ -89,12 +88,12 @@ describe('menu item container rule service', () => {
 
     it('should update validSizes (add)', async () => {
         const toUpdate = await compOptionService.findOne(testId, ['validItem']);
-        if(!toUpdate){ throw new Error("comp option is null"); }
-        if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
+        if (!toUpdate) { throw new Error("comp option is null"); }
+        if (!toUpdate.validItem) { throw new Error("comp option valid item is null"); }
 
         const newItem = await itemService.findOne(toUpdate.validItem.id, ['validSizes']);
-        if(!newItem){ throw new Error("item b is null"); }
-        if(!newItem.validSizes){ throw new Error("item b valid sizes is null"); }
+        if (!newItem) { throw new Error("item b is null"); }
+        if (!newItem.validSizes) { throw new Error("item b valid sizes is null"); }
 
         const dto = {
             validSizeIds: newItem.validSizes.map(size => size.id),
@@ -107,15 +106,15 @@ describe('menu item container rule service', () => {
 
     it('should update validSizes (remove)', async () => {
         const toUpdate = await compOptionService.findOne(testId, ['validItem']);
-        if(!toUpdate){ throw new Error("comp option is null"); }
-        if(!toUpdate.validItem){ throw new Error("comp option valid item is null"); }
+        if (!toUpdate) { throw new Error("comp option is null"); }
+        if (!toUpdate.validItem) { throw new Error("comp option valid item is null"); }
 
         const newItem = await itemService.findOne(toUpdate.validItem.id, ['validSizes']);
-        if(!newItem){ throw new Error("item b is null"); }
-        if(!newItem.validSizes){ throw new Error("item b valid sizes is null"); }
+        if (!newItem) { throw new Error("item b is null"); }
+        if (!newItem.validSizes) { throw new Error("item b valid sizes is null"); }
 
         const dto = {
-            validSizeIds: [ newItem.validSizes[0].id ],
+            validSizeIds: [newItem.validSizes[0].id],
         } as UpdateMenuItemContainerRuleDto;
 
         const result = await compOptionService.update(testId, dto);
@@ -126,7 +125,7 @@ describe('menu item container rule service', () => {
     it('should find container rules by a list of ids', async () => {
         const results = await compOptionService.findEntitiesById(testIds);
         expect(results.length).toEqual(testIds.length);
-        for(const result of results){
+        for (const result of results) {
             expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1)
         }
     });

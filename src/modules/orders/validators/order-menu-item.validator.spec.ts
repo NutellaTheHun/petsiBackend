@@ -1,21 +1,17 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
-import { CreateOrderCategoryDto } from "../dto/order-category/create-order-category.dto";
-import { UpdateOrderCategoryDto } from "../dto/order-category/update-order-category.dto";
 import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
+import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
+import { OrderContainerItemService } from "../services/order-container-item.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { TYPE_A, TYPE_B } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderMenuItemValidator } from "./order-menu-item.validator";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
-import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
-import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
-import { OrderContainerItem } from "../entities/order-container-item.entity";
-import { OrderContainerItemService } from "../services/order-container-item.service";
 
 describe('order category validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -44,19 +40,19 @@ describe('order category validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const item = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!contItemC){ throw new Error(); }
+        if (!contItemC) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -90,7 +86,7 @@ describe('order category validator', () => {
 
     it('should fail create: invalid dto size for dto item', async () => {
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const sizes = (await sizeService.findAll()).items;
 
@@ -109,12 +105,12 @@ describe('order category validator', () => {
 
     it('should fail create: duplicate containerItem dtos', async () => {
         const item = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!item){ throw new Error(); }
+        if (!item) { throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!contItemC){ throw new Error(); }
+        if (!contItemC) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -154,19 +150,19 @@ describe('order category validator', () => {
     });
 
     it('should pass update', async () => {
-        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem']})).items;
+        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem'] })).items;
 
         const parentOrderItem = await orderItemservice.findOne(containerItems[0].parentOrderItem.id, ['order', 'menuItem', 'size']);
-        if(!parentOrderItem){ throw new Error(); }
-        if(!parentOrderItem.menuItem){ throw new Error(); }
+        if (!parentOrderItem) { throw new Error(); }
+        if (!parentOrderItem.menuItem) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(parentOrderItem.menuItem.id, ['validSizes']);
-        if(!parentMenuItem){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!contItemC){ throw new Error(); }
+        if (!contItemC) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -200,19 +196,19 @@ describe('order category validator', () => {
     });
 
     it('should fail update: duplicate create dtos', async () => {
-        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem']})).items;
+        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem'] })).items;
 
         const parentOrderItem = await orderItemservice.findOne(containerItems[0].parentOrderItem.id, ['order', 'menuItem', 'size']);
-        if(!parentOrderItem){ throw new Error(); }
-        if(!parentOrderItem.menuItem){ throw new Error(); }
+        if (!parentOrderItem) { throw new Error(); }
+        if (!parentOrderItem.menuItem) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(parentOrderItem.menuItem.id, ['validSizes']);
-        if(!parentMenuItem){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!contItemC){ throw new Error(); }
+        if (!contItemC) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -253,19 +249,19 @@ describe('order category validator', () => {
     });
 
     it('should fail update: duplicate update dtos', async () => {
-        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem']})).items;
+        const containerItems = (await orderContainerservice.findAll({ relations: ['parentOrderItem'] })).items;
 
         const parentOrderItem = await orderItemservice.findOne(containerItems[0].parentOrderItem.id, ['order', 'menuItem', 'size']);
-        if(!parentOrderItem){ throw new Error(); }
-        if(!parentOrderItem.menuItem){ throw new Error(); }
+        if (!parentOrderItem) { throw new Error(); }
+        if (!parentOrderItem.menuItem) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(parentOrderItem.menuItem.id, ['validSizes']);
-        if(!parentMenuItem){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
 
         const contItemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!contItemB){ throw new Error(); }
+        if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!contItemC){ throw new Error(); }
+        if (!contItemC) { throw new Error(); }
 
         const containerDtos = [
             {

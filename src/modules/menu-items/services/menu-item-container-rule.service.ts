@@ -5,27 +5,22 @@ import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { MenuItemContainerRuleBuilder } from "../builders/menu-item-container-rule.builder";
-import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
-import { MenuItemContainerRuleValidator } from "../validators/menu-item-container-rule.validator";
 import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
+import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
 
 @Injectable()
 export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerRule> {
     constructor(
         @InjectRepository(MenuItemContainerRule)
-        private readonly repo: Repository<MenuItemContainerRule>,
+        repo: Repository<MenuItemContainerRule>,
 
         @Inject(forwardRef(() => MenuItemContainerRuleBuilder))
-        optionBuilder: MenuItemContainerRuleBuilder,
-
-        @Inject(forwardRef(() => MenuItemContainerRuleValidator))
-        validator: MenuItemContainerRuleValidator,
+        builder: MenuItemContainerRuleBuilder,
 
         requestContextService: RequestContextService,
-
         logger: AppLogger,
-    ){ super(repo, optionBuilder, validator, 'ComponentOptionService', requestContextService, logger); }
+    ) { super(repo, builder, 'ComponentOptionService', requestContextService, logger); }
 
     /**
      * Depreciated, only created as a child through {@link MenuItemContainerOptions}.

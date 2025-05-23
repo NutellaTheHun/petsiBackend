@@ -22,20 +22,20 @@ import { TestRequestContextService } from "../../../util/mocks/test-request-cont
 import { RequestContextService } from "../../request-context/RequestContextService";
 
 export async function getInventoryItemTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
+    return await Test.createTestingModule({
+        imports: [
             ConfigModule.forRoot({ isGlobal: true }),
             TypeORMPostgresTestingModule([
-                InventoryItem, 
-                InventoryItemCategory, 
-                InventoryItemPackage, 
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
                 InventoryItemSize,
                 InventoryItemVendor,
             ]),
             TypeOrmModule.forFeature([
-                InventoryItem, 
-                InventoryItemCategory, 
-                InventoryItemPackage, 
+                InventoryItem,
+                InventoryItemCategory,
+                InventoryItemPackage,
                 InventoryItemSize,
                 InventoryItemVendor,
             ]),
@@ -47,18 +47,19 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
             }),
             AppLoggingModule,
             RequestContextModule,
-    ],
+        ],
 
-    controllers: [
-        InventoryItemController, 
-        InventoryItemCategoryController, 
-        InventoryItemSizeController, 
-        InventoryItemPackageController,
-        InventoryItemVendorController,
-    ],
+        controllers: [
+            InventoryItemController,
+            InventoryItemCategoryController,
+            InventoryItemSizeController,
+            InventoryItemPackageController,
+            InventoryItemVendorController,
+        ],
 
-    providers: [],
+        providers: [],
 
-}).overrideProvider(RequestContextService)
-  .useClass(TestRequestContextService)
-  .compile()};
+    }).overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile()
+};

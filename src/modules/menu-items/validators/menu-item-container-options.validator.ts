@@ -2,27 +2,27 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
 import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
-import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemContainerOptions> {
     constructor(
         @InjectRepository(MenuItemContainerOptions)
         private readonly repo: Repository<MenuItemContainerOptions>,
-        
+
         @Inject(forwardRef(() => MenuItemContainerRuleService))
         private readonly ruleService: MenuItemContainerRuleService,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<ValidationError[]> {
+    public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<void> {
 
         // No rules
-        if(dto.containerRuleDtos.length === 0){
+        if (dto.containerRuleDtos.length === 0) {
             this.addError({
                 error: 'Menu item container has no settings.',
                 status: 'INVALID',
@@ -36,9 +36,9 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
             dto.containerRuleDtos,
             (rule) => `${rule.validMenuItemId}`
         );
-        if(dupliateItemRules){
-                for(const duplicate of dupliateItemRules){
-                    this.addError({
+        if (dupliateItemRules) {
+            for (const duplicate of dupliateItemRules) {
+                this.addError({
                     error: 'Menu item container has duplicate item settings.',
                     status: 'DUPLICATE',
                     contextEntity: 'CreateMenuItemContainerOptionsDto',
@@ -48,13 +48,13 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
             }
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto): Promise<ValidationError[]> {
-        
+
+    public async validateUpdate(id: number, dto: UpdateMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto): Promise<void> {
+
         // No rules
-        if(dto.containerRuleDtos && dto.containerRuleDtos.length === 0){
+        if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
             this.addError({
                 error: 'Menu item container has no settings.',
                 status: 'INVALID',
@@ -65,15 +65,15 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         }
 
         // Check no duplicate item rules
-        if(dto.containerRuleDtos && dto.containerRuleDtos.length > 0){
-            const resolvedDtos: {validMenuItemId: number}[] = [];
-            for(const d of dto.containerRuleDtos){
-                if(d.mode === 'create'){
-                    resolvedDtos.push({ validMenuItemId: d.validMenuItemId});
+        if (dto.containerRuleDtos && dto.containerRuleDtos.length > 0) {
+            const resolvedDtos: { validMenuItemId: number }[] = [];
+            for (const d of dto.containerRuleDtos) {
+                if (d.mode === 'create') {
+                    resolvedDtos.push({ validMenuItemId: d.validMenuItemId });
                 }
-                else if(d.mode === 'update'){
+                else if (d.mode === 'update') {
                     const currentRule = await this.ruleService.findOne(d.id, ['validItem']);
-                    resolvedDtos.push({validMenuItemId: d.validMenuItemId ?? currentRule.validItem.id})
+                    resolvedDtos.push({ validMenuItemId: d.validMenuItemId ?? currentRule.validItem.id })
                 }
             }
 
@@ -81,8 +81,8 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
                 resolvedDtos,
                 (rule) => `${rule.validMenuItemId}`
             );
-            for(const duplicate of dupliateItemRules){
-                    this.addError({
+            for (const duplicate of dupliateItemRules) {
+                this.addError({
                     error: 'Menu item container has duplicate item settings.',
                     status: 'DUPLICATE',
                     contextEntity: 'UpdateMenuItemContainerOptionsDto',
@@ -93,6 +93,6 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
             }
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
 }

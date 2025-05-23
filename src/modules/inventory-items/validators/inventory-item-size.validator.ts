@@ -7,7 +7,7 @@ import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/crea
 import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
-import { ValidationError } from "../../../util/exceptions/validationError";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
@@ -17,32 +17,32 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
 
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    ){ super(repo); }
+    ) { super(repo); }
 
-    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<ValidationError[]> {
-        return this.errors;
+    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<void> {
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<ValidationError[]> {
-        if(dto.measureUnitId || dto.inventoryPackageId){
+
+    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<void> {
+        if (dto.measureUnitId || dto.inventoryPackageId) {
             const currentSize = await this.sizeService.findOne(id, ['inventoryItem', 'measureUnit', 'packageType'])
             const exists = await this.repo.findOne({
-                where: { 
+                where: {
                     measureUnit: { id: dto.measureUnitId ?? currentSize.measureUnit.id },
                     packageType: { id: dto.inventoryPackageId ?? currentSize.packageType.id },
                     inventoryItem: { id: currentSize.inventoryItem.id }
                 }
             });
-            if(exists){ 
+            if (exists) {
                 this.addError({
                     error: 'Inventory item size already already exists',
                     status: 'EXIST',
                     contextEntity: 'UpdateInventoryItemSizeDto',
                     contextId: id,
                     sourceEntity: 'InventoryItemSize',
-                } as ValidationError); 
+                } as ValidationError);
             }
         }
-        return this.errors;
+        this.throwIfErrors()
     }
 }

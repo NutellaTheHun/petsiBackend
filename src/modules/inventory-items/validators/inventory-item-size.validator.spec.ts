@@ -35,20 +35,20 @@ describe('inventory item package validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate update', async () => {
         const toUpdate = await service.findSizesByItemName(FOOD_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const unit = await unitService.findOneByName(GRAM);
-        if(!unit){ throw new Error(); }
-        const pkg =  await packageService.findOneByName(OTHER_PKG);
-        if(!pkg){ throw new Error(); }
-        
+        if (!unit) { throw new Error(); }
+        const pkg = await packageService.findOneByName(OTHER_PKG);
+        if (!pkg) { throw new Error(); }
+
         const dto = {
             measureUnitId: unit.id,
             measureAmount: 1,
@@ -63,7 +63,7 @@ describe('inventory item package validator', () => {
 
     it('should fail update (already exists)', async () => {
         const toUpdate = await service.findSizesByItemName(FOOD_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const badItem = await service.findOne(toUpdate[0].id, ['measureUnit', 'packageType'])
 
@@ -80,12 +80,12 @@ describe('inventory item package validator', () => {
 
     it('should pass update (close to already exists)', async () => {
         const toUpdate = await service.findSizesByItemName(FOOD_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const badItem = await service.findOne(toUpdate[0].id, ['measureUnit', 'packageType'])
 
         const newUnit = await unitService.findOneByName(GRAM);
-        if(!newUnit){ throw new Error(); }
+        if (!newUnit) { throw new Error(); }
 
         const dto = {
             measureUnitId: newUnit.id,
@@ -100,12 +100,12 @@ describe('inventory item package validator', () => {
 
     it('should pass update (close to already exists)', async () => {
         const toUpdate = await service.findSizesByItemName(FOOD_A);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const badItem = await service.findOne(toUpdate[0].id, ['measureUnit', 'packageType'])
 
         const newPkg = await packageService.findOneByName(CONTAINER_PKG);
-        if(!newPkg){ throw new Error(); }
+        if (!newPkg) { throw new Error(); }
 
         const dto = {
             measureUnitId: badItem.measureUnit.id,

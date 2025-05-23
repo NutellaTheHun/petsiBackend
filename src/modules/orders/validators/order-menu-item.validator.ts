@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
+import { ValidationError } from "../../../util/exceptions/validation-error";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
 import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
@@ -11,7 +12,6 @@ import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderContainerItemService } from "../services/order-container-item.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { ValidationError } from "../../../util/exceptions/validationError";
 
 @Injectable()
 export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
@@ -27,15 +27,15 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
 
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
-        
-    ){ super(repo); }
 
-    public async validateCreate(dto: CreateChildOrderMenuItemDto): Promise<ValidationError[]> {
+    ) { super(repo); }
+
+    public async validateCreate(dto: CreateChildOrderMenuItemDto): Promise<void> {
         const menuItem = await this.menuItemService.findOne(dto.menuItemId, ['validSizes']);
-        if(!menuItem.validSizes){ throw new Error(); }
+        if (!menuItem.validSizes) { throw new Error(); }
 
         // validate item / size
-        if(!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)){
+        if (!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)) {
             this.addError({
                 error: 'Invalid item size.',
                 status: 'INVALID',
@@ -47,15 +47,15 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             } as ValidationError);
         }
 
-        if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
+        if (dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0) {
 
             // validate container item / size
             const duplicateItems = this.helper.findDuplicates(
                 dto.orderedItemContainerDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
             );
-            if(duplicateItems){
-                for(const duplicate of duplicateItems){
+            if (duplicateItems) {
+                for (const duplicate of duplicateItems) {
                     this.addError({
                         error: 'Order has duplicate items.',
                         status: 'DUPLICATE',
@@ -69,8 +69,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             }
 
             //validate container parent id
-            for(const item of dto.orderedItemContainerDtos){
-                if(item.parentContainerMenuItemId !== menuItem.id){
+            for (const item of dto.orderedItemContainerDtos) {
+                if (item.parentContainerMenuItemId !== menuItem.id) {
                     this.addError({
                         error: 'Ordered container item references the incorrect parent item.',
                         status: 'INVALID',
@@ -84,22 +84,22 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             }
         }
 
-        return this.errors;
+        this.throwIfErrors()
     }
-    
-    public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<ValidationError[]> {
+
+    public async validateUpdate(id: number, dto: UpdateOrderMenuItemDto | UpdateChildOrderMenuItemDto): Promise<void> {
 
         // validate item / size
-        if(dto.menuItemId || dto.menuItemSizeId){
+        if (dto.menuItemId || dto.menuItemSizeId) {
             const currentOrderItem = await this.orderItemService.findOne(id, ['size', 'menuItem']);
 
             const sizeId = dto.menuItemSizeId ?? currentOrderItem.size.id;
             const itemId = dto.menuItemId ?? currentOrderItem.menuItem.id;
 
             const menuItem = await this.menuItemService.findOne(itemId, ['validSizes']);
-            if(!menuItem){ throw new Error();}
+            if (!menuItem) { throw new Error(); }
 
-            if(!this.helper.isValidSize(sizeId, menuItem.validSizes)){
+            if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
                 this.addError({
                     error: 'Invalid item size.',
                     status: 'INVALID',
@@ -112,21 +112,22 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                 } as ValidationError);
             }
         }
-        
+
         // Validate container
-        if(dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0){
+        if (dto.orderedItemContainerDtos && dto.orderedItemContainerDtos.length > 0) {
 
             // resolve
-            const resolvedDtos: {containedMenuItemId: number; containedMenuItemSizeId: number }[] = [];
+            const resolvedDtos: { containedMenuItemId: number; containedMenuItemSizeId: number }[] = [];
             const resolvedIds: number[] = [];
-            for(const d of dto.orderedItemContainerDtos){
-                if(d.mode === 'create'){
+            for (const d of dto.orderedItemContainerDtos) {
+                if (d.mode === 'create') {
                     resolvedDtos.push({
                         containedMenuItemId: d.containedMenuItemId,
-                        containedMenuItemSizeId: d.containedMenuItemSizeId}
+                        containedMenuItemSizeId: d.containedMenuItemSizeId
+                    }
                     );
                 }
-                else if(d.mode === 'update'){
+                else if (d.mode === 'update') {
                     const updateDto = d as UpdateChildOrderContainerItemDto;
                     const currentItem = await this.containerItemService.findOne(updateDto.id, ['containedItem', 'containedItemSize']);
                     resolvedDtos.push({
@@ -142,8 +143,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                 resolvedIds,
                 (item) => `${item}`
             );
-            if(duplicateIds){
-                for(const dupId of duplicateIds){
+            if (duplicateIds) {
+                for (const dupId of duplicateIds) {
                     this.addError({
                         error: 'multiple update requests for same container item.',
                         status: 'INVALID',
@@ -162,8 +163,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                 resolvedDtos,
                 (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`
             );
-            if(duplicateItems){
-                for(const duplicate of duplicateItems){
+            if (duplicateItems) {
+                for (const duplicate of duplicateItems) {
                     this.addError({
                         error: 'duplicate container item.',
                         status: 'DUPLICATE',
@@ -177,7 +178,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
                 }
             }
         }
-        
-        return this.errors;
+
+        this.throwIfErrors()
     }
 }

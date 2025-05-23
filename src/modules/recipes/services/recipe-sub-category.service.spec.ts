@@ -1,118 +1,118 @@
-import { TestingModule } from '@nestjs/testing';
-import { getRecipeTestingModule } from '../utils/recipes-testing.module';
-import { RecipeSubCategoryService } from './recipe-sub-category.service';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { RecipeTestUtil } from '../utils/recipe-test.util';
-import { RecipeCategoryService } from './recipe-category.service';
-import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
-import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateChildRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-child-recipe-sub-category.dto';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeCategoryService } from './recipe-category.service';
+import { RecipeSubCategoryService } from './recipe-sub-category.service';
 
 describe('recipe sub category service', () => {
-  let subCategoryService: RecipeSubCategoryService;
-  let testingUtil: RecipeTestUtil;
-  let dbTestContext: DatabaseTestContext;
-  let categoryService: RecipeCategoryService;
+    let subCategoryService: RecipeSubCategoryService;
+    let testingUtil: RecipeTestUtil;
+    let dbTestContext: DatabaseTestContext;
+    let categoryService: RecipeCategoryService;
 
-  let testId: number;
-  let testIds: number[];
+    let testId: number;
+    let testIds: number[];
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
-    testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-    dbTestContext = new DatabaseTestContext();
-    await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
+    beforeAll(async () => {
+        const module: TestingModule = await getRecipeTestingModule();
+        testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
+        dbTestContext = new DatabaseTestContext();
+        await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
 
-    subCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
-    categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
-  });
+        subCategoryService = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
+        categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
+    });
 
-  afterAll(async () => {
-    await dbTestContext.executeCleanupFunctions();
-  });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-  it('should be defined', () => {
-    expect(subCategoryService).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(subCategoryService).toBeDefined();
+    });
 
-  it('should fail to create a sub-category (Bad request) then create properly for future tests', async () => {
-    const catC = await categoryService.findOneByName(REC_CAT_C);
-    if(!catC){ throw new Error("recipe category C is null"); }
+    it('should fail to create a sub-category (Bad request) then create properly for future tests', async () => {
+        const catC = await categoryService.findOneByName(REC_CAT_C);
+        if (!catC) { throw new Error("recipe category C is null"); }
 
-    const dto = {
-      subCategoryName: "test sub Cat",
-      parentCategoryId: catC.id,
-    } as CreateRecipeSubCategoryDto;
+        const dto = {
+            subCategoryName: "test sub Cat",
+            parentCategoryId: catC.id,
+        } as CreateRecipeSubCategoryDto;
 
-    await expect(subCategoryService.create(dto)).rejects.toThrow(BadRequestException);
+        await expect(subCategoryService.create(dto)).rejects.toThrow(BadRequestException);
 
-    const createSubCatDto = {
-      mode: 'create',
-      subCategoryName: "test sub Cat",
-    } as CreateChildRecipeSubCategoryDto;
+        const createSubCatDto = {
+            mode: 'create',
+            subCategoryName: "test sub Cat",
+        } as CreateChildRecipeSubCategoryDto;
 
-    const updateCategoryDto = {
-      subCategoryDtos: [createSubCatDto]
-    } as UpdateRecipeCategoryDto;
+        const updateCategoryDto = {
+            subCategoryDtos: [createSubCatDto]
+        } as UpdateRecipeCategoryDto;
 
-    const updateResult = await categoryService.update(catC.id, updateCategoryDto);
-    if(!updateResult){ throw new Error(); }
-    if(!updateResult.subCategories){ throw new Error(); }
+        const updateResult = await categoryService.update(catC.id, updateCategoryDto);
+        if (!updateResult) { throw new Error(); }
+        if (!updateResult.subCategories) { throw new Error(); }
 
-    const result = updateResult.subCategories[0];
+        const result = updateResult.subCategories[0];
 
-    expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual("test sub Cat");
-    expect(result?.parentCategory.id).toEqual(catC.id);
-    
-    testId = result?.id as number;
-  });
+        expect(result).not.toBeNull();
+        expect(result?.subCategoryName).toEqual("test sub Cat");
+        expect(result?.parentCategory.id).toEqual(catC.id);
 
-  it('should update a sub-category', async () => {
-    const toUpdate = await subCategoryService.findOne(testId);
-    if(!toUpdate){ throw new Error("sub-category to update is null"); }
+        testId = result?.id as number;
+    });
 
-    const newCat =  await categoryService.findOneByName(REC_CAT_A);
-    if(!newCat){ throw new Error("recipe category A not found"); }
+    it('should update a sub-category', async () => {
+        const toUpdate = await subCategoryService.findOne(testId);
+        if (!toUpdate) { throw new Error("sub-category to update is null"); }
 
-    const dto = {
-      subCategoryName: "Update Sub Cat Name",
-    } as UpdateRecipeSubCategoryDto;
+        const newCat = await categoryService.findOneByName(REC_CAT_A);
+        if (!newCat) { throw new Error("recipe category A not found"); }
 
-    const result = await subCategoryService.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual("Update Sub Cat Name");
-  });
+        const dto = {
+            subCategoryName: "Update Sub Cat Name",
+        } as UpdateRecipeSubCategoryDto;
 
-  it('should remove a sub-category', async () => {
-    const removal = await subCategoryService.remove(testId);
-    expect(removal).toBeTruthy();
+        const result = await subCategoryService.update(toUpdate.id, dto);
+        expect(result).not.toBeNull();
+        expect(result?.subCategoryName).toEqual("Update Sub Cat Name");
+    });
 
-    await expect(subCategoryService.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('should remove a sub-category', async () => {
+        const removal = await subCategoryService.remove(testId);
+        expect(removal).toBeTruthy();
 
-  it('should get all sub-categories', async () => {
-    const expected = await testingUtil.getTestRecipeSubCategoryEntities(dbTestContext);
-    const results = await subCategoryService.findAll();
-    expect(results.items.length).toEqual(expected.length);
+        await expect(subCategoryService.findOne(testId)).rejects.toThrow(NotFoundException);
+    });
 
-    testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
-  });
+    it('should get all sub-categories', async () => {
+        const expected = await testingUtil.getTestRecipeSubCategoryEntities(dbTestContext);
+        const results = await subCategoryService.findAll();
+        expect(results.items.length).toEqual(expected.length);
 
-  it('should get sub-categories by a list of ids', async () => {
-    const results = await subCategoryService.findEntitiesById(testIds);
-    expect(results.length).toEqual(testIds.length);
-    for(const result of results){
-      expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
-    }
-  });
+        testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
+    });
 
-  it('should get one sub-category by name', async () => {
-    const result = await subCategoryService.findOneByName(REC_SUBCAT_1);
-    expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual(REC_SUBCAT_1);
-  });
+    it('should get sub-categories by a list of ids', async () => {
+        const results = await subCategoryService.findEntitiesById(testIds);
+        expect(results.length).toEqual(testIds.length);
+        for (const result of results) {
+            expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
+        }
+    });
+
+    it('should get one sub-category by name', async () => {
+        const result = await subCategoryService.findOneByName(REC_SUBCAT_1);
+        expect(result).not.toBeNull();
+        expect(result?.subCategoryName).toEqual(REC_SUBCAT_1);
+    });
 });

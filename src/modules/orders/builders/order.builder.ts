@@ -1,19 +1,19 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
-import { Order } from "../entities/order.entity";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderCategoryService } from "../services/order-category.service";
-import { OrderValidator } from "../validators/order.validator";
-import { OrderMenuItemBuilder } from "./order-menu-item.builder";
 import { CreateOrderDto } from "../dto/order/create-order.dto";
 import { UpdateOrderDto } from "../dto/order/update-order.dto";
+import { Order } from "../entities/order.entity";
+import { OrderCategoryService } from "../services/order-category.service";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { OrderValidator } from "../validators/order.validator";
+import { OrderMenuItemBuilder } from "./order-menu-item.builder";
 
 @Injectable()
-export class OrderBuilder extends BuilderBase<Order>{
+export class OrderBuilder extends BuilderBase<Order> {
     constructor(
         private readonly typeService: OrderCategoryService,
 
@@ -28,88 +28,88 @@ export class OrderBuilder extends BuilderBase<Order>{
 
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super( Order, 'OrderBuilder', requestContextService, logger, validator); }
+    ) { super(Order, 'OrderBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateOrderDto): void {
-        if(dto.deliveryAddress !== undefined){
+        if (dto.deliveryAddress !== undefined) {
             this.deliveryAddress(dto.deliveryAddress);
         }
-        if(dto.email !== undefined){
+        if (dto.email !== undefined) {
             this.email(dto.email);
         }
-        if(dto.fulfillmentDate !== undefined){
+        if (dto.fulfillmentDate !== undefined) {
             this.fulfillmentDate(dto.fulfillmentDate);
         }
-        if(dto.fulfillmentType !== undefined){
+        if (dto.fulfillmentType !== undefined) {
             this.fulfillmentType(dto.fulfillmentType);
         }
-        if(dto.isFrozen !== undefined){
+        if (dto.isFrozen !== undefined) {
             this.isFrozen(dto.isFrozen);
         }
-        if(dto.isWeekly !== undefined){
+        if (dto.isWeekly !== undefined) {
             this.isWeekly(dto.isWeekly);
         }
-        if(dto.note !== undefined){
+        if (dto.note !== undefined) {
             this.note(dto.note);
         }
-        if(dto.orderedMenuItemDtos !== undefined){
+        if (dto.orderedMenuItemDtos !== undefined) {
             this.orderedItemsByBuilder(this.entity.id, dto.orderedMenuItemDtos)
         }
-        if(dto.orderCategoryId !== undefined){
+        if (dto.orderCategoryId !== undefined) {
             this.categoryById(dto.orderCategoryId);
         }
-        if(dto.phoneNumber !== undefined){
+        if (dto.phoneNumber !== undefined) {
             this.phoneNumber(dto.phoneNumber);
         }
-        if(dto.recipient !== undefined){
+        if (dto.recipient !== undefined) {
             this.recipient(dto.recipient);
         }
-        if(dto.weeklyFulfillment !== undefined){
+        if (dto.weeklyFulfillment !== undefined) {
             this.weeklyFulfillment(dto.weeklyFulfillment);
         }
-        if(dto.fulfillmentContactName !== undefined){
+        if (dto.fulfillmentContactName !== undefined) {
             this.fulfillmentContactName(dto.fulfillmentContactName);
         }
     }
 
     protected updateEntity(dto: UpdateOrderDto): void {
-        if(dto.deliveryAddress !== undefined){
+        if (dto.deliveryAddress !== undefined) {
             this.deliveryAddress(dto.deliveryAddress);
         }
-        if(dto.email !== undefined){
+        if (dto.email !== undefined) {
             this.email(dto.email);
         }
-        if(dto.fulfillmentDate !== undefined){
+        if (dto.fulfillmentDate !== undefined) {
             this.fulfillmentDate(dto.fulfillmentDate);
         }
-        if(dto.fulfillmentType !== undefined){
+        if (dto.fulfillmentType !== undefined) {
             this.fulfillmentType(dto.fulfillmentType);
         }
-        if(dto.isFrozen !== undefined){
+        if (dto.isFrozen !== undefined) {
             this.isFrozen(dto.isFrozen);
         }
-        if(dto.isWeekly !== undefined){
+        if (dto.isWeekly !== undefined) {
             this.isWeekly(dto.isWeekly);
         }
-        if(dto.note !== undefined){
+        if (dto.note !== undefined) {
             this.note(dto.note);
         }
-        if(dto.orderedMenuItemDtos !== undefined){
+        if (dto.orderedMenuItemDtos !== undefined) {
             this.orderedItemsByBuilder(this.entity.id, dto.orderedMenuItemDtos)
         }
-        if(dto.orderCategoryId !== undefined){
+        if (dto.orderCategoryId !== undefined) {
             this.categoryById(dto.orderCategoryId);
         }
-        if(dto.phoneNumber !== undefined){
+        if (dto.phoneNumber !== undefined) {
             this.phoneNumber(dto.phoneNumber);
         }
-        if(dto.recipient !== undefined){
+        if (dto.recipient !== undefined) {
             this.recipient(dto.recipient);
         }
-        if(dto.weeklyFulfillment !== undefined){
+        if (dto.weeklyFulfillment !== undefined) {
             this.weeklyFulfillment(dto.weeklyFulfillment);
         }
-        if(dto.fulfillmentContactName !== undefined){
+        if (dto.fulfillmentContactName !== undefined) {
             this.fulfillmentContactName(dto.fulfillmentContactName);
         }
     }
@@ -135,28 +135,28 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public deliveryAddress(address: string | null): this {
-        if(address === null){
+        if (address === null) {
             return this.setPropByVal('deliveryAddress', null);
         }
         return this.setPropByVal('deliveryAddress', address);
     }
 
     public phoneNumber(number: string | null): this {
-        if(number === null){
+        if (number === null) {
             return this.setPropByVal('phoneNumber', null);
         }
         return this.setPropByVal('phoneNumber', number);
     }
 
     public email(email: string | null): this {
-        if(email === null){
+        if (email === null) {
             return this.setPropByVal('email', null);
         }
         return this.setPropByVal('email', email);
     }
 
     public note(note: string | null): this {
-        if(note === null){
+        if (note === null) {
             return this.setPropByVal('note', null);
         }
         return this.setPropByVal('note', note);
@@ -175,7 +175,7 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public orderedItemsByBuilder(orderId: number, dtos: (CreateChildOrderMenuItemDto | UpdateOrderMenuItemDto)[]): this {
-        const enrichedDtos = dtos.map( dto => ({
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
             orderId,
         }));
@@ -183,14 +183,14 @@ export class OrderBuilder extends BuilderBase<Order>{
     }
 
     public weeklyFulfillment(day: string | null): this {
-        if(day === null){
+        if (day === null) {
             return this.setPropByVal('weeklyFulfillment', null);
         }
         return this.setPropByVal('weeklyFulfillment', day);
     }
 
     public fulfillmentContactName(name: string | null): this {
-        if(name === null){
+        if (name === null) {
             return this.setPropByVal('fulfillmentContactName', null);
         }
         return this.setPropByVal('fulfillmentContactName', name);

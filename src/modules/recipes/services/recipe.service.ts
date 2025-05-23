@@ -1,30 +1,25 @@
+import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { RecipeBuilder } from "../builders/recipe.builder";
 import { Recipe } from "../entities/recipe.entity";
-import { RecipeValidator } from "../validators/recipe.valdiator";
-import { forwardRef, Inject } from "@nestjs/common";
 
-export class RecipeService extends ServiceBase<Recipe>{
+export class RecipeService extends ServiceBase<Recipe> {
     constructor(
         @InjectRepository(Recipe)
-        private readonly recipeRepo: Repository<Recipe>,
+        private readonly repo: Repository<Recipe>,
 
         @Inject(forwardRef(() => RecipeBuilder))
-        recipeBuilder: RecipeBuilder,
-
-        @Inject(forwardRef(() => RecipeValidator))
-        validator: RecipeValidator,
+        builder: RecipeBuilder,
 
         requestContextService: RequestContextService,
-        
         logger: AppLogger,
-    ){ super(recipeRepo, recipeBuilder, validator, 'RecipeService', requestContextService, logger); }
-    
+    ) { super(repo, builder, 'RecipeService', requestContextService, logger); }
+
     async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
-        return this.recipeRepo.findOne({ where: {recipeName: name }, relations});
+        return this.repo.findOne({ where: { recipeName: name }, relations });
     }
 }

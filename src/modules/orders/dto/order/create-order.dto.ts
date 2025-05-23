@@ -1,5 +1,5 @@
-import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 import { CreateChildOrderMenuItemDto } from "../order-menu-item/create-child-order-menu-item.dto";
 
 export class CreateOrderDto {
@@ -24,7 +24,7 @@ export class CreateOrderDto {
     @IsNotEmpty()
     readonly fulfillmentDate: Date;
 
-    @ApiProperty({example: 'pickup or delivery', description: 'Method of Order\'s dispersal.' })
+    @ApiProperty({ example: 'pickup or delivery', description: 'Method of Order\'s dispersal.' })
     @IsString()
     @IsNotEmpty()
     readonly fulfillmentType: string;
@@ -64,9 +64,10 @@ export class CreateOrderDto {
     @IsOptional()
     readonly weeklyFulfillment?: string;
 
-    @ApiProperty({ description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
+    @ApiProperty({
+        description: 'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
         type: [CreateChildOrderMenuItemDto]
-     })
+    })
     @IsArray()
     orderedMenuItemDtos: CreateChildOrderMenuItemDto[];
 }

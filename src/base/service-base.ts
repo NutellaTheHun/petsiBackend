@@ -1,234 +1,280 @@
-import { HttpStatus, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
 import { AppLogger } from "../modules/app-logging/app-logger";
-import { AppHttpException } from "../util/exceptions/AppHttpException";
-import { DTO_VALIDATION_FAIL } from "../util/exceptions/error_constants";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
+import { DatabaseError } from "../util/exceptions/database-error";
 import { BuilderBase } from "./builder-base";
-import { ValidatorBase } from "./validator-base";
 import { PaginatedResult } from "./paginated-result";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
-  
-  constructor(
-    private readonly entityRepo: Repository<T>,
-    private readonly builder: BuilderBase<T>,
-    protected readonly validator: ValidatorBase<T>,
-    public cacheKeyPrefix: string,
-    private readonly requestContextService: RequestContextService,
-    private logger: AppLogger,
-  ){}
 
-  /**
-   * @returns The created entity or throws AppHttpException from validation errors.
-   */
-  public async create(createDto: any): Promise<T>{
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
+    constructor(
+        private readonly entityRepo: Repository<T>,
+        private readonly builder: BuilderBase<T>,
+        public servicePrefix: string,
+        private readonly requestContextService: RequestContextService,
+        private logger: AppLogger,
+    ) { }
 
-    // validate DTO
-    const error = await this.validator.validateCreate(createDto);
-    if(error){ 
-      const err = new AppHttpException(
-        `${this.cacheKeyPrefix}: create dto validation failed`,
-        HttpStatus.BAD_REQUEST,
-        DTO_VALIDATION_FAIL,
-        { error }
-      );
+    /**
+     * @returns The created entity or throws AppHttpException from validation errors.
+     */
+    public async create(createDto: any): Promise<T> {
+        const requestId = this.requestContextService.getRequestId();
 
-      this.logger.logError(
-        this.cacheKeyPrefix,
-        requestId,
-        'CREATE',
-        err,
-        { requestId }
-      );
+        // create entity
+        const entity = await this.builder.buildCreateDto(createDto);
 
-      throw err;
+        // save in DB
+        try {
+            return await this.entityRepo.save(entity);
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'CREATE',
+                'FAIL',
+                { requestId, databaseError: err }
+            );
+            throw DatabaseError.fromTypeOrmError(err);
+        }
     }
 
-    // create entity
-    const entity = await this.builder.buildCreateDto(createDto);
+    /**
+     * @returns Updated entity or throws AppHttpException if validation fails, or NotFoundException if the supplied ID doesn't aquire an entity.
+     */
+    async update(id: number, updateDto: any): Promise<T> {
+        const requestId = this.requestContextService.getRequestId();
 
-    // save in DB
-    return await this.entityRepo.save(entity);
-  }
+        // retrieve entity from DB
+        let toUpdate: T;
+        try {
+            toUpdate = await this.findOne(id);
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'UPDATE',
+                'FAIL',
+                { requestId, id, databaseError: err }
+            );
+            throw DatabaseError.fromTypeOrmError(err);
+        }
 
-  /**
-   * @returns Updated entity or throws AppHttpException if validation fails, or NotFoundException if the supplied ID doesn't aquire an entity.
-   */
-  async update(id: number, updateDto: any): Promise<T> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-    
-    // retrieve entity from DB
-    const toUpdate = await this.findOne(id);
-    if(!toUpdate){ 
-      const err = new AppHttpException(
-      `${this.cacheKeyPrefix}: entity to update not found id: ${id}`,
-      HttpStatus.BAD_REQUEST,
-      DTO_VALIDATION_FAIL,
-      { requestId }
-    );
+        //update DTO
+        await this.builder.buildUpdateDto(toUpdate, updateDto);
 
-    this.logger.logError(
-      this.cacheKeyPrefix,
-      requestId,
-      'UPDATE',
-      err,
-      { requestId, id }
-    );
+        //Save in DB
+        try {
+            return await this.entityRepo.save(toUpdate);
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'UPDATE',
+                'FAIL',
+                { requestId, id, databaseError: err }
+            );
+            throw DatabaseError.fromTypeOrmError(err);
+        }
 
-      throw err;
     }
 
-    //update DTO
-    await this.builder.buildUpdateDto(toUpdate, updateDto);
+    async findAll(options?: {
+        relations?: string[];
+        limit?: number;
+        cursor?: string;
+        sortBy?: string;
+        sortOrder?: 'ASC' | 'DESC';
+    }): Promise<PaginatedResult<T>> {
+        // Get requestId
+        const requestId = this.requestContextService.getRequestId();
 
-    //Save in DB
-    return await this.entityRepo.save(toUpdate);
-  }
+        // Set options with default settings
+        options = {
+            limit: 10,
+            sortOrder: 'ASC',
+            ...options,
+        }
 
-  async findAll( options?: {
-    relations?: string[];
-    limit?: number;
-    cursor?: string;
-    sortBy?: string;
-    sortOrder?: 'ASC' | 'DESC'; 
-  }): Promise</*{items: T[], nextCursor?: string}*/PaginatedResult<T>> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
+        // Start query with query builder
+        const query = this.entityRepo.createQueryBuilder('entity');
 
-    // Set options with default settings
-    options = {
-      limit: 10,
-      sortOrder: 'ASC',
-      ...options,
+        if (options.relations) {
+            for (const relation of options.relations) {
+                query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+            }
+        }
+
+        if (options.sortBy) {
+            query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
+        } else {
+            query.orderBy('entity.id', 'ASC');
+        }
+
+        if (options.limit) {
+            query.limit(options.limit + 1);
+        }
+
+        if (options.cursor) {
+            const operator = options?.sortOrder === 'DESC' ? '<' : '>';
+            query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
+        }
+
+        // run query
+        let results: T[] = [];
+        try {
+            results = await query.getMany();
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'FIND_ALL',
+                'FAIL',
+                { contextId: requestId, databaseError: err }
+            );
+            throw DatabaseError.fromTypeOrmError(err);
+        }
+
+
+        // handle cursor
+        let nextCursor: string | undefined;
+        if (options.limit) {
+            if (results.length > options.limit) {
+                const nextEntity = results.pop();
+                nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+            }
+        }
+
+        // log result
+        this.logger.logAction(
+            this.servicePrefix,
+            requestId,
+            'FIND_ALL',
+            'REQUEST',
+            { requestId, message: `${results.length} entities queried` }
+        );
+
+        // return result and cursor
+        return {
+            items: results,
+            nextCursor,
+        } as PaginatedResult<T>;
     }
 
-    // Start query with query builder
-    const query = this.entityRepo.createQueryBuilder('entity');
+    /**
+     * @returns Entity or throws NotFoundException
+     */
+    async findOne(id: number, relations?: Array<keyof T>, childRelations?: string[]): Promise<T> {
+        // Get requestId
+        const requestId = this.requestContextService.getRequestId();
 
-    if(options.relations){
-      for(const relation of options.relations){
-        query.leftJoinAndSelect(`entity.${relation}`, relation as string);
-      }
+        const combinedRelations = [
+            ...(relations?.map(r => r.toString()) ?? []),
+            ...(childRelations ?? []),
+        ];
+
+        // run query and return
+        let result;
+        try {
+            result = await this.entityRepo.findOne({
+                where: { id } as unknown as FindOptionsWhere<T>,
+                relations: combinedRelations,
+            });
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'FIND_ONE',
+                'FAIL',
+                { contextId: requestId, id, databaseError: err }
+            );
+
+            throw DatabaseError.fromTypeOrmError(err);
+        }
+
+        if (!result) {
+            this.logger.logAction(
+                this.servicePrefix,
+                requestId,
+                'FIND_ONE',
+                'REQUEST',
+                { requestId, id, message: `no entity found with id: ${id}` }
+            );
+            throw new NotFoundException();
+        }
+
+        return result;
     }
 
-    if(options.sortBy){
-      query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
-    } else {
-      query.orderBy('entity.id', 'ASC');
+    async findEntitiesById(ids: number[], relations?: Array<keyof T>): Promise<T[]> {
+        // Get requestId
+        const requestId = this.requestContextService.getRequestId();
+
+        // run query and return
+        const result = await this.entityRepo.find({
+            where: { id: In(ids) } as unknown as FindOptionsWhere<T>,
+            relations: relations as string[]
+        });
+
+        this.logger.logAction(
+            this.servicePrefix,
+            requestId,
+            'FIND_ENTITIES_BY_ID',
+            'REQUEST',
+            { requestId, message: `${result.length} entities queried` }
+        );
+
+        return result
     }
 
-    if(options.limit){
-      query.limit(options.limit+1);
-    }
-    
-    if(options.cursor) {
-      const operator = options?.sortOrder === 'DESC' ? '<' : '>';
-      query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
-    }
+    async remove(id: number): Promise<Boolean> {
+        const requestId = this.requestContextService.getRequestId();
+        try {
+            return (await this.entityRepo.delete(id)).affected !== 0;
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'REMOVE',
+                'FAIL',
+                { contextId: requestId, id, databaseError: err }
+            );
 
-    // run query
-    const results = await query.getMany();
+            throw DatabaseError.fromTypeOrmError(err);
+        }
 
-    // handle cursor
-    let nextCursor: string | undefined;
-    if(options.limit){
-      if(results.length > options.limit){
-        const nextEntity = results.pop();
-        nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
-      }
     }
 
-    this.logger.logAction(
-      this.cacheKeyPrefix,
-      requestId,
-      'FIND_ALL',
-      'REQUEST',
-      { requestId, message: `${results.length} entities queried` }
-    );
-    
-    // return result and cursor
-    return {
-      items: results,
-      nextCursor,
-    } as PaginatedResult<T>;
-  }
-
-  /**
-   * @returns Entity or throws NotFoundException
-   */
-  async findOne(id: number, relations?: Array<keyof T>, childRelations? : string[]): Promise<T> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
-
-    const combinedRelations = [
-      ...(relations?.map(r => r.toString()) ?? []),
-      ...(childRelations ?? []),
-    ];
-
-    // run query and return
-    const result = await this.entityRepo.findOne({ 
-        where: { id } as unknown as FindOptionsWhere<T>, 
-        relations: combinedRelations,
-    });
-
-    if(!result){
-      this.logger.logAction(
-        this.cacheKeyPrefix,
-        requestId,
-        'FIND_ONE',
-        'REQUEST',
-        { requestId, id, message: `no entity found with id: ${id}`}
-      );
-      throw new NotFoundException();
+    async insertEntity(entity: T): Promise<T | null> {
+        return await this.entityRepo.save(entity);
     }
 
-    return result;
-  }
+    async insertEntities(entities: T[]): Promise<T[] | null> {
+        const results: T[] = [];
+        for (const entity of entities) {
+            results.push(
+                await this.entityRepo.save(entity)
+            );
+        }
+        return results;
+    }
 
-  async findEntitiesById( ids: number[], relations?: Array<keyof T>): Promise<T[]> {
-    // Get requestId
-    const requestId = this.requestContextService.getRequestId();
+    getQueryBuilder(): QueryBuilder<T> {
+        const requestId = this.requestContextService.getRequestId();
+        try {
+            return this.entityRepo.createQueryBuilder();
+        } catch (err) {
+            this.logger.logError(
+                this.servicePrefix,
+                requestId,
+                'REMOVE',
+                'FAIL',
+                { contextId: requestId, databaseError: err }
+            );
 
-    // run query and return
-    const result = await this.entityRepo.find({ 
-        where: { id: In(ids) } as unknown as FindOptionsWhere<T>, 
-        relations: relations as string[] 
-    });
+            throw DatabaseError.fromTypeOrmError(err);
+        }
 
-    this.logger.logAction(
-      this.cacheKeyPrefix,
-      requestId,
-      'FIND_ENTITIES_BY_ID',
-      'REQUEST',
-      { requestId, message: `${result.length} entities queried` }
-    );
-
-    return result
-  }
-
-  async remove(id: number): Promise<Boolean> {
-    return (await this.entityRepo.delete(id)).affected !== 0;
-  }
-
-  async insertEntity(entity: T): Promise<T | null> {
-    return await this.entityRepo.save(entity);
-  }
-  
-  async insertEntities(entities: T[]): Promise<T[] | null> {
-      const results: T[]  = [];
-      for(const entity of entities){
-          results.push(
-            await this.entityRepo.save(entity)
-          );
-      }
-      return results;
-  }
-
-  getQueryBuilder(): QueryBuilder<T> {
-    return this.entityRepo.createQueryBuilder();
-  }
+    }
 }

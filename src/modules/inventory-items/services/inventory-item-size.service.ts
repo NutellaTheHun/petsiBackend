@@ -5,26 +5,22 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
-import { InventoryItemSize } from '../entities/inventory-item-size.entity';
-import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
 
 @Injectable()
-export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
+export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
     constructor(
         @InjectRepository(InventoryItemSize)
-        private readonly sizeRepo: Repository<InventoryItemSize>,
+        private readonly reop: Repository<InventoryItemSize>,
 
         @Inject(forwardRef(() => InventoryItemSizeBuilder))
-        sizeBuilder: InventoryItemSizeBuilder,
+        builder: InventoryItemSizeBuilder,
         
-        @Inject(forwardRef(() => InventoryItemSizeValidator))
-        validator: InventoryItemSizeValidator,
-
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(sizeRepo, sizeBuilder, validator, 'InventoryItemSizeService', requestContextService, logger); }
+    ) { super(reop, builder, 'InventoryItemSizeService', requestContextService, logger); }
 
     /**
      * Depreciated, only created as a child through {@link InventoryItem}.
@@ -32,10 +28,10 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize>{
     public async create(dto: CreateInventoryItemSizeDto): Promise<InventoryItemSize> {
         throw new BadRequestException();
     }
-    
+
 
     async findSizesByItemName(name: string, relations?: Array<keyof InventoryItemSize>): Promise<InventoryItemSize[] | null> {
-        return await this.sizeRepo.find({
+        return await this.reop.find({
             where: { inventoryItem: { itemName: name } },
             relations
         });

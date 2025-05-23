@@ -18,7 +18,7 @@ import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/crea
 
 describe('Inventory area item service', () => {
     let module: TestingModule;
-    let testingUtil : InventoryAreaTestUtil;
+    let testingUtil: InventoryAreaTestUtil;
     let dbTestContext: DatabaseTestContext;
 
     let areaItemService: InventoryAreaItemService;
@@ -59,12 +59,12 @@ describe('Inventory area item service', () => {
 
     it('should fail to create an item (Bad Request), then add item proper way for the rest of tests', async () => {
         const counts = await countService.findByAreaName(AREA_A, ['countedItems']);
-        if(!counts){ throw new NotFoundException(); }
-        if(!counts[0]) throw new Error("area a counts is empty");
+        if (!counts) { throw new NotFoundException(); }
+        if (!counts[0]) throw new Error("area a counts is empty");
 
         const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-        if(!item){ throw new NotFoundException(); }
-        if(!item.itemSizes){ throw new Error("item sizes is null"); }
+        if (!item) { throw new NotFoundException(); }
+        if (!item.itemSizes) { throw new Error("item sizes is null"); }
 
         const dto = {
             parentInventoryCountId: counts[0].id,
@@ -82,7 +82,7 @@ describe('Inventory area item service', () => {
             countedItemSizeId: item.itemSizes[0].id
         } as CreateChildInventoryAreaItemDto;
 
-        if(!counts[0].countedItems){ throw new Error(); }
+        if (!counts[0].countedItems) { throw new Error(); }
         const theRest = counts[0].countedItems.map(item => ({
             mode: 'update',
             id: item.id,
@@ -93,9 +93,9 @@ describe('Inventory area item service', () => {
         } as UpdateInventoryAreaCountDto;
 
         const updateResult = await countService.update(counts[0].id, updateCountDto)
-        if(!updateResult){ throw new Error(); }
-        if(!updateResult.countedItems){ throw new Error(); }
-        
+        if (!updateResult) { throw new Error(); }
+        if (!updateResult.countedItems) { throw new Error(); }
+
         const result = updateResult.countedItems[0];
 
         expect(result).not.toBeNull();
@@ -110,16 +110,16 @@ describe('Inventory area item service', () => {
     });
 
     it('should update the inventory count\'s reference of items', async () => {
-        const count = await countService.findOne(oldAreaCountId,['countedItems']);
-        if(!count){ throw new NotFoundException(); }
+        const count = await countService.findOne(oldAreaCountId, ['countedItems']);
+        if (!count) { throw new NotFoundException(); }
 
         expect(count.countedItems?.findIndex(item => item.id === testId)).not.toEqual(-1);
     });
 
     it('should update an item (inventory item and item size)', async () => {
         const newItem = await itemService.findOneByName(FOOD_B, ['itemSizes']);
-        if(!newItem){ throw new NotFoundException(); }
-        if(!newItem.itemSizes){ throw new Error("item sizes is empty"); }
+        if (!newItem) { throw new NotFoundException(); }
+        if (!newItem.itemSizes) { throw new Error("item sizes is empty"); }
 
         const dto = {
             countedInventoryItemId: newItem.id,
@@ -151,11 +151,11 @@ describe('Inventory area item service', () => {
     });
 
     it('should get all items', async () => {
-        const results = await areaItemService.findAll({limit: 20});
+        const results = await areaItemService.findAll({ limit: 20 });
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(15);
 
-        testIds = [ results.items[0].id, results.items[1].id, results.items[2].id ];
+        testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
     it('should get items by list of ids', async () => {
@@ -163,7 +163,7 @@ describe('Inventory area item service', () => {
         expect(results).not.toBeNull();
         expect(results.length).toEqual(testIds.length);
     });
-    
+
     it('should get area items by InventoryItem name', async () => {
         const results = await areaItemService.findByItemName(FOOD_B);
         expect(results).not.toBeNull();
@@ -194,24 +194,24 @@ describe('Inventory area item service', () => {
     // if an inventory item size is deleted, the referencing inv area item count should be deleted
     it('should delete area items when it\'s referenced itemSize is deleted', async () => {
         const items = await areaItemService.findByItemName(FOOD_B, ['countedItemSize']);
-        if(!items){ throw new NotFoundException(); }
+        if (!items) { throw new NotFoundException(); }
 
         const item = items[0];
-        
+
         const removal = await sizeService.remove(item.countedItemSize.id);
-        if(!removal){ throw new Error("size removal failed"); }
+        if (!removal) { throw new Error("size removal failed"); }
 
         await expect(areaItemService.findOne(item.id)).rejects.toThrow(NotFoundException);
     });
 
     it('should delete area items when it\'s referenced inventoryItem is deleted', async () => {
         const areaItems = await areaItemService.findByItemName(FOOD_C, ['countedItem']);
-        if(!areaItems){ throw new NotFoundException(); }
+        if (!areaItems) { throw new NotFoundException(); }
 
         const areaItem = areaItems[0];
-        
+
         const removal = await itemService.remove(areaItem.countedItem.id);
-        if(!removal){ throw new Error("inventory item removal failed"); }
+        if (!removal) { throw new Error("inventory item removal failed"); }
 
         await expect(areaItemService.findOne(areaItem.id)).rejects.toThrow(NotFoundException);
     });
@@ -219,13 +219,13 @@ describe('Inventory area item service', () => {
     // if the count is deleted, the inv area item count should be deleted
     it('should delete area items when it\'s referenced inventoryAreaCount is deleted', async () => {
         const areaItems = await areaItemService.findByItemName(DRY_A, ['parentInventoryCount']);
-        if(!areaItems){ throw new NotFoundException(); }
-        if(!areaItems[0]){ throw new Error("areaItems is empty"); }
+        if (!areaItems) { throw new NotFoundException(); }
+        if (!areaItems[0]) { throw new Error("areaItems is empty"); }
 
         const areaItem = areaItems[0];
-        
+
         const removal = await countService.remove(areaItem.parentInventoryCount.id);
-        if(!removal){ throw new Error("inventory count removal failed"); }
+        if (!removal) { throw new Error("inventory count removal failed"); }
 
         await expect(areaItemService.findOne(areaItem.id)).rejects.toThrow(NotFoundException);
     });

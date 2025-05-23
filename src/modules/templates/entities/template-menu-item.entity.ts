@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Template } from "./template.entity";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
+import { Template } from "./template.entity";
 
 /**
  * A row item on a {@link Template} representing a {@link MenuItem}

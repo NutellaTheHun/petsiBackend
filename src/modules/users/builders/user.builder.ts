@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { hashPassword } from "../../auth/utils/hash";
 import { AppLogger } from "../../app-logging/app-logger";
+import { hashPassword } from "../../auth/utils/hash";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { RoleService } from "../../roles/services/role.service";
 import { CreateUserDto } from "../dto/create-user.dto";
@@ -16,37 +16,36 @@ export class UserBuilder extends BuilderBase<User> {
         private readonly rolesService: RoleService,
 
         validator: UserValidator,
-        
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(User, 'UserBuilder', requestContextService, logger, validator); }
+    ) { super(User, 'UserBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateUserDto): void {
-        if(dto.email !== undefined){
+        if (dto.email !== undefined) {
             this.email(dto.email);
         }
-        if(dto.password !== undefined){
+        if (dto.password !== undefined) {
             this.password(dto.password);
         }
-        if(dto.roleIds !== undefined){
+        if (dto.roleIds !== undefined) {
             this.roles(dto.roleIds);
         }
-        if(dto.username !== undefined){
+        if (dto.username !== undefined) {
             this.username(dto.username);
         }
     }
-    
+
     protected updateEntity(dto: UpdateUserDto): void {
-        if(dto.email !== undefined){
+        if (dto.email !== undefined) {
             this.email(dto.email);
         }
-        if(dto.password !== undefined){
+        if (dto.password !== undefined) {
             this.password(dto.password);
         }
-        if(dto.roleIds !== undefined){
+        if (dto.roleIds !== undefined) {
             this.roles(dto.roleIds);
         }
-        if(dto.username !== undefined){
+        if (dto.username !== undefined) {
             this.username(dto.username);
         }
     }
@@ -56,7 +55,7 @@ export class UserBuilder extends BuilderBase<User> {
     }
 
     public email(email: string | null): this {
-        if(email === null){
+        if (email === null) {
             return this.setPropByVal('email', null);
         }
         return this.setPropByVal('email', email);
@@ -68,7 +67,7 @@ export class UserBuilder extends BuilderBase<User> {
     public password(password: string): this {
         return this.setPropByFn(hashPassword, 'password', password);
     }
-    
+
     public roles(ids: number[]): this {
         return this.setPropsByIds(this.rolesService.findEntitiesById.bind(this.rolesService), 'roles', ids);
     }

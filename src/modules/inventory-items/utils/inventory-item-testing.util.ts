@@ -26,13 +26,13 @@ import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-i
 
 @Injectable()
 export class InventoryItemTestingUtil {
-    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C ];
-    
-    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT ];
+    private readonly vendorNames: string[] = [CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C];
 
-    private readonly packageNames: string[] = [ 
-        CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG, 
-        CONSTANT.BOX_PKG, CONSTANT.OTHER_PKG, 
+    private readonly categoryNames: string[] = [CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT];
+
+    private readonly packageNames: string[] = [
+        CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG,
+        CONSTANT.BOX_PKG, CONSTANT.OTHER_PKG,
         CONSTANT.CAN_PKG, CONSTANT.CONTAINER_PKG
     ];
 
@@ -42,21 +42,21 @@ export class InventoryItemTestingUtil {
         CONSTANT.FOOD_C, CONSTANT.DRY_C, CONSTANT.OTHER_C,
     ];
 
-    private readonly foodItemNames: string[] = [ CONSTANT.FOOD_A, CONSTANT.FOOD_B, CONSTANT.FOOD_C];
-    private readonly dryItemNames: string[] = [ CONSTANT.DRY_A, CONSTANT.DRY_B, CONSTANT.DRY_C];
-    private readonly otherItemNames: string[] = [ CONSTANT.OTHER_A, CONSTANT.OTHER_B, CONSTANT.OTHER_C];
+    private readonly foodItemNames: string[] = [CONSTANT.FOOD_A, CONSTANT.FOOD_B, CONSTANT.FOOD_C];
+    private readonly dryItemNames: string[] = [CONSTANT.DRY_A, CONSTANT.DRY_B, CONSTANT.DRY_C];
+    private readonly otherItemNames: string[] = [CONSTANT.OTHER_A, CONSTANT.OTHER_B, CONSTANT.OTHER_C];
 
     private readonly measureNames: string[] = [
         UNIT_CONSTANT.GALLON, UNIT_CONSTANT.MILLILITER,
-        UNIT_CONSTANT.PINT,   UNIT_CONSTANT.FL_OUNCE,
-        UNIT_CONSTANT.LITER,  
-        
+        UNIT_CONSTANT.PINT, UNIT_CONSTANT.FL_OUNCE,
+        UNIT_CONSTANT.LITER,
+
         UNIT_CONSTANT.OUNCE, UNIT_CONSTANT.GRAM,
         UNIT_CONSTANT.POUND, UNIT_CONSTANT.KILOGRAM,
 
         UNIT_CONSTANT.UNIT, UNIT_CONSTANT.EACH,
     ];
-    
+
     private initCategory = false;
     private initPackage = false;
     private initSize = false;
@@ -80,9 +80,9 @@ export class InventoryItemTestingUtil {
         private readonly itemBuilder: InventoryItemBuilder,
 
         private readonly unitOfMeasureTestingUtil: UnitOfMeasureTestingUtil
-    ){
+    ) {
 
-     }
+    }
 
     /**
      * Dependencies: 
@@ -90,7 +90,7 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemVendorEntities(testContext: DatabaseTestContext): Promise<InventoryItemVendor[]> {
         const results: InventoryItemVendor[] = [];
-        for(const name of this.vendorNames){
+        for (const name of this.vendorNames) {
             results.push(
                 await this.vendorBuilder.reset()
                     .name(name)
@@ -106,7 +106,7 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemPackageEntities(testContext: DatabaseTestContext): Promise<InventoryItemPackage[]> {
         const results: InventoryItemPackage[] = [];
-        for(const name of this.packageNames){
+        for (const name of this.packageNames) {
             results.push(
                 await this.packageBuilder.reset()
                     .name(name)
@@ -122,12 +122,13 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemCategoryEntities(testContext: DatabaseTestContext): Promise<InventoryItemCategory[]> {
         const results: InventoryItemCategory[] = [];
-        for(const name of this.categoryNames){
+        for (const name of this.categoryNames) {
             results.push(
                 await this.categoryBuilder.reset()
                     .categoryName(name)
                     .build()
-        )}
+            )
+        }
         return results;
     }
 
@@ -135,35 +136,38 @@ export class InventoryItemTestingUtil {
      * Dependencies: InventoryItemCategory, InventoryItemVendor
      * @returns 9 Inventory Items
      */
-    public async getTestInventoryItemEntities(testContext: DatabaseTestContext): Promise<InventoryItem[]>{
+    public async getTestInventoryItemEntities(testContext: DatabaseTestContext): Promise<InventoryItem[]> {
         await this.initInventoryItemVendorTestDatabase(testContext);
         await this.initInventoryItemCategoryTestDatabase(testContext);
-        
+
         const results: InventoryItem[] = [];
-        for(let i = 0; i < this.foodItemNames.length; i++){
+        for (let i = 0; i < this.foodItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.foodItemNames[i])
                     .categoryByName(CONSTANT.FOOD_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
-        for(let i = 0; i < this.dryItemNames.length; i++){
+            )
+        }
+        for (let i = 0; i < this.dryItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.dryItemNames[i])
                     .categoryByName(CONSTANT.DRYGOOD_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
-        for(let i = 0; i < this.otherItemNames.length; i++){
+            )
+        }
+        for (let i = 0; i < this.otherItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.otherItemNames[i])
                     .categoryByName(CONSTANT.OTHER_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
+            )
+        }
         return results;
     }
 
@@ -178,8 +182,8 @@ export class InventoryItemTestingUtil {
 
         const results: InventoryItemSize[] = [];
         let msrIdx = 0;
-        let pkgIdx = 0; 
-        for(let i = 0; i < this.itemNames.length; i++){
+        let pkgIdx = 0;
+        for (let i = 0; i < this.itemNames.length; i++) {
             results.push(
                 await this.sizeBuilder.reset()
                     //.InventoryItemByName(this.itemNames[i])
@@ -199,8 +203,8 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemVendorTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initVendor){ 
-            return; 
+        if (this.initVendor) {
+            return;
         }
         this.initVendor = true;
 
@@ -216,8 +220,8 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemPackageTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initPackage){ 
-            return; 
+        if (this.initPackage) {
+            return;
         }
         this.initPackage = true;
 
@@ -233,30 +237,31 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initCategory){ 
-            return; 
+        if (this.initCategory) {
+            return;
         }
         this.initCategory = true;
 
         const categories = await this.getTestInventoryItemCategoryEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
-        for(const category of categories) {
+        for (const category of categories) {
             await this.categoryService.create(
                 { itemCategoryName: category.categoryName } as CreateInventoryItemCategoryDto
-        )}
+            )
+        }
     }
 
     public async initInventoryItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initItem){ 
-            return; 
+        if (this.initItem) {
+            return;
         }
         this.initItem = true;
 
         const items = await this.getTestInventoryItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemTestDatabase());
-        
-        for(const item of items){
+
+        for (const item of items) {
             /*const exists = await this.itemService.findOneByName(item.itemName);
             if(exists){ continue; }*/
 
@@ -269,8 +274,8 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemSizeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initSize){ 
-            return; 
+        if (this.initSize) {
+            return;
         }
         this.initSize = true;
 
@@ -281,7 +286,7 @@ export class InventoryItemTestingUtil {
         const items = itemsRequest.items;
 
         testContext.addCleanupFunction(() => this.cleanupInventoryItemSizeTestDatabase());
-        for(const item of items){
+        for (const item of items) {
             const dto1 = testingSizes[sizeIdx++ % testingSizes.length];
             const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
 
@@ -342,7 +347,7 @@ export class InventoryItemTestingUtil {
      */
     public createChildInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[], costs: number[]): CreateChildInventoryItemSizeDto[] {
         const results: CreateChildInventoryItemSizeDto[] = [];
-        
+
         let packageIdx = 0;
         let costIdx = 0;
         let unitIdx = 0;
@@ -350,7 +355,7 @@ export class InventoryItemTestingUtil {
         let packageIter = 0;
         let costIter = 0;
 
-        for(let i = 0; i < resultAmount; i++){
+        for (let i = 0; i < resultAmount; i++) {
             results.push(
                 {
                     mode: 'create',
@@ -360,18 +365,18 @@ export class InventoryItemTestingUtil {
                     measureAmount: 1
                 } as CreateChildInventoryItemSizeDto
             )
-            if(unitIdx === unitIds.length){
+            if (unitIdx === unitIds.length) {
                 unitIdx = 0;
             }
-            if(packageIdx === packageIds.length){
+            if (packageIdx === packageIds.length) {
                 packageIter++;
                 packageIdx = packageIter;
             }
-            if(costIdx === costs.length){
+            if (costIdx === costs.length) {
                 costIter++;
                 costIdx = costIter;
             }
         }
         return results;
-    }   
+    }
 }

@@ -14,11 +14,11 @@ describe('order container item controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        
+
         controller = module.get<OrderContainerItemController>(OrderContainerItemController);
         service = module.get<OrderContainerItemService>(OrderContainerItemService);
 
-        const quantities = [1,2,3,4,5];
+        const quantities = [1, 2, 3, 4, 5];
         let id = 1;
         components = quantities.map(quantity => ({
             id: id++,
@@ -37,7 +37,7 @@ describe('order container item controller', () => {
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
             const result = components.find(type => type.id === id);
-            if(!result){
+            if (!result) {
                 throw new NotFoundException();
             }
             return result;
@@ -45,7 +45,7 @@ describe('order container item controller', () => {
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
             const index = components.findIndex(type => type.id === id);
-            if(index === -1){ return false; }
+            if (index === -1) { return false; }
 
             components.splice(index, 1);
             return true;
@@ -53,9 +53,9 @@ describe('order container item controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderContainerItemDto) => {
             const existIdx = components.findIndex(type => type.id === id);
-            if(existIdx === -1){ throw new NotFoundException(); }
+            if (existIdx === -1) { throw new NotFoundException(); }
 
-            if(dto.quantity){
+            if (dto.quantity) {
                 components[existIdx].quantity = dto.quantity;
             }
 
@@ -70,44 +70,44 @@ describe('order container item controller', () => {
     it('should fail to create a container item', async () => {
         const dto = {
         } as CreateOrderContainerItemDto;
-    
+
         await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
-      
+
     it('should find container item component by id', async () => {
         const result = await controller.findOne(1);
         expect(result).not.toBeNull();
     });
-    
+
     it('should fail to find container item by id (not exist)', async () => {
         expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should update quantity', async () => {
         const dto = {
             quantity: 5,
         } as UpdateOrderContainerItemDto;
-    
+
         const result = await controller.update(1, dto);
-    
+
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
         expect(result?.quantity).toEqual(5);
     });
-    
+
     it('should fail to update container item (not exist)', async () => {
         const dto = {
 
         } as UpdateOrderContainerItemDto;
-    
+
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should remove container item', async () => {
         const result = await controller.remove(1);
         expect(result).toBeUndefined();
     });
-    
+
     it('should fail to remove container item (not exist)', async () => {
         await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
     });

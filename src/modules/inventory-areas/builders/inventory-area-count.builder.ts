@@ -13,11 +13,11 @@ import { InventoryAreaCountValidator } from "../validators/inventory-area-count.
 import { InventoryAreaItemBuilder } from "./inventory-area-item.builder";
 
 @Injectable()
-export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
+export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
     constructor(
         @Inject(forwardRef(() => InventoryAreaService))
         private readonly areaService: InventoryAreaService,
-        
+
         @Inject(forwardRef(() => InventoryAreaItemService))
         private readonly areaItemService: InventoryAreaItemService,
 
@@ -27,22 +27,22 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         logger: AppLogger,
         validator: InventoryAreaCountValidator,
         requestContextService: RequestContextService,
-    ){ super(InventoryAreaCount, 'InventoryAreaCountBuilder', requestContextService, logger, validator); }
+    ) { super(InventoryAreaCount, 'InventoryAreaCountBuilder', requestContextService, logger, validator); }
 
-    protected createEntity(dto: CreateInventoryAreaCountDto): void{
-        if(dto.inventoryAreaId !== undefined){
+    protected createEntity(dto: CreateInventoryAreaCountDto): void {
+        if (dto.inventoryAreaId !== undefined) {
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        if(dto.itemCountDtos !== undefined){
+        if (dto.itemCountDtos !== undefined) {
             this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
     }
 
-    protected updateEntity(dto: UpdateInventoryAreaCountDto): void{
-        if(dto.inventoryAreaId !== undefined){
+    protected updateEntity(dto: UpdateInventoryAreaCountDto): void {
+        if (dto.inventoryAreaId !== undefined) {
             this.inventoryAreaById(dto.inventoryAreaId);
         }
-        if(dto.itemCountDtos !== undefined){
+        if (dto.itemCountDtos !== undefined) {
             this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
         }
     }
@@ -59,8 +59,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount>{
         return this.setPropsByIds(this.areaItemService.findEntitiesById.bind(this.areaItemService), 'countedItems', ids);
     }
 
-    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateChildInventoryAreaItemDto)[]): this{
-        const enrichedDtos = dtos.map( dto => ({
+    public countedItemsByBuilder(parent: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateChildInventoryAreaItemDto)[]): this {
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
             areaCountId: parent.id,
         }));

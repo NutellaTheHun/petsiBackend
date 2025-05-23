@@ -7,25 +7,22 @@ import { InventoryItemService } from "../../inventory-items/services/inventory-i
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(
         @InjectRepository(InventoryAreaItem)
-        private readonly itemCountRepo: Repository<InventoryAreaItem>,
+        private readonly repo: Repository<InventoryAreaItem>,
 
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
-        itemCountBuilder: InventoryAreaItemBuilder,
+        builder: InventoryAreaItemBuilder,
 
-        @Inject(forwardRef(() => InventoryAreaItemValidator))
-        validator: InventoryAreaItemValidator,
-
-        logger: AppLogger,
         private readonly itemService: InventoryItemService,
+        
+        logger: AppLogger,
         requestContextService: RequestContextService,
-    ){ super(itemCountRepo, itemCountBuilder, validator, 'InventoryAreaItemService', requestContextService, logger); }
+    ) { super(repo, builder, 'InventoryAreaItemService', requestContextService, logger); }
 
     /**
      * Depreciated, only created as a child through {@link InventoryAreaCount}.
@@ -36,10 +33,10 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
 
     async findByItemName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const item = await this.itemService.findOneByName(name);
-        if(!item){ throw new Error('inventory item not found'); }
+        if (!item) { throw new Error('inventory item not found'); }
 
-        return await this.itemCountRepo.find({ 
-            where: { countedItem: { id: item.id } }, 
+        return await this.repo.find({
+            where: { countedItem: { id: item.id } },
             relations
         });
     }

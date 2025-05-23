@@ -5,6 +5,7 @@ import { FOOD_B } from "../../inventory-items/utils/constants";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { POUND } from "../../unit-of-measure/utils/constants";
 import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { UpdateChildRecipeIngredientDto } from "../dto/recipe-ingredient/update-child-recipe-ingedient.dto";
 import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
 import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { RecipeCategoryService } from "../services/recipe-category.service";
@@ -14,7 +15,6 @@ import { REC_A, REC_B, REC_C, REC_CAT_A, REC_F } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeValidator } from "./recipe.valdiator";
-import { UpdateChildRecipeIngredientDto } from "../dto/recipe-ingredient/update-child-recipe-ingedient.dto";
 
 describe('recipe validator', () => {
     let testingUtil: RecipeTestUtil;
@@ -46,26 +46,26 @@ describe('recipe validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -100,16 +100,16 @@ describe('recipe validator', () => {
 
     it('should fail create: name already exists', async () => {
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -142,19 +142,19 @@ describe('recipe validator', () => {
 
     it('should fail create: subcatgory with no category', async () => {
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -188,23 +188,23 @@ describe('recipe validator', () => {
 
     it('should fail update: subcategory with wrong parent category', async () => {
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const subCats = (await subCategoryService.findAll()).items;
 
         const badSubCats = subCats.filter(subCat => !category.subCategories.some(validCat => validCat.id === subCat.id));
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -238,20 +238,20 @@ describe('recipe validator', () => {
     });
 
     it('should fail create: duplicate recipe ingredients', async () => {
-         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -293,22 +293,22 @@ describe('recipe validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -343,22 +343,22 @@ describe('recipe validator', () => {
 
     it('should fail update: name already exists', async () => {
         const toUpdate = await recipeService.findOneByName(REC_B, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -393,22 +393,22 @@ describe('recipe validator', () => {
 
     it('should fail update: subcategory with no category', async () => {
         const toUpdate = await recipeService.findOneByName(REC_F, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -442,26 +442,26 @@ describe('recipe validator', () => {
 
     it('should fail update: subcategory with wrong parent category', async () => {
         const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const subCats = (await subCategoryService.findAll()).items;
 
         const badSubCats = subCats.filter(subCat => !category.subCategories.some(validCat => validCat.id === subCat.id))
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -495,23 +495,23 @@ describe('recipe validator', () => {
     });
 
     it('should fail update: duplicate ingredients (update)', async () => {
-       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -553,23 +553,23 @@ describe('recipe validator', () => {
     });
 
     it('should fail update: duplicate ingredients (create)', async () => {
-       const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
-        if(!toUpdate){ throw new Error(); }
+        const toUpdate = await recipeService.findOneByName(REC_A, ['ingredients']);
+        if (!toUpdate) { throw new Error(); }
 
         const category = await categoryService.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const batchMeasurement = await measureService.findOneByName(POUND);
-        if(!batchMeasurement){ throw new Error(); }
+        if (!batchMeasurement) { throw new Error(); }
 
         const servingMeasurement = await measureService.findOneByName(POUND);
-        if(!servingMeasurement){ throw new Error(); }
+        if (!servingMeasurement) { throw new Error(); }
 
         const invIngred = await inventoryService.findOneByName(FOOD_B);
-        if(!invIngred){ throw new Error(); }
+        if (!invIngred) { throw new Error(); }
 
         const recIngred = await recipeService.findOneByName(REC_B);
-        if(!recIngred){ throw new Error(); }
+        if (!recIngred) { throw new Error(); }
 
         const ingredDtos = [
             {

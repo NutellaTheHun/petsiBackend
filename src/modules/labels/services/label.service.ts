@@ -6,27 +6,25 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { LabelBuilder } from '../builders/label.builder';
 import { Label } from '../entities/label.entity';
-import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
-export class LabelService extends ServiceBase<Label>{
-  constructor(
-    @InjectRepository(Label)
-    private readonly labelRepo: Repository<Label>,
+export class LabelService extends ServiceBase<Label> {
+    constructor(
+        @InjectRepository(Label)
+        private readonly repo: Repository<Label>,
 
-    labelBuilder: LabelBuilder,
-    
-    validator: LabelValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ){ super(labelRepo, labelBuilder, validator, 'LabelService', requestContextService, logger); }
+        builder: LabelBuilder,
 
-  async findByMenuItemId(itemId: number, relations?: Array<keyof Label>): Promise<Label[]> {
-    return await this.labelRepo.find({
-      where: {
-        menuItem: { id: itemId }
-      },
-      relations,
-    });
-  }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) { super(repo, builder, 'LabelService', requestContextService, logger); }
+
+    async findByMenuItemId(itemId: number, relations?: Array<keyof Label>): Promise<Label[]> {
+        return await this.repo.find({
+            where: {
+                menuItem: { id: itemId }
+            },
+            relations,
+        });
+    }
 }

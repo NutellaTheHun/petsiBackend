@@ -19,11 +19,11 @@ import { PaginatedResult } from "../../../base/paginated-result";
 @Controller('inventory-item-category')
 export class InventoryItemCategoryController extends ControllerBase<InventoryItemCategory> {
     constructor(
-      categoryService: InventoryItemCategoryService,
-      @Inject(CACHE_MANAGER) cacheManager: Cache,
-      logger: AppLogger,
-      requestContextService: RequestContextService,
-    ){ super(categoryService, cacheManager, 'InventoryItemCategoryController', requestContextService, logger); }
+        categoryService: InventoryItemCategoryService,
+        @Inject(CACHE_MANAGER) cacheManager: Cache,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(categoryService, cacheManager, 'InventoryItemCategoryController', requestContextService, logger); }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)

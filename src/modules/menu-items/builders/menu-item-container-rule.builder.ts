@@ -32,7 +32,7 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
         validator: MenuItemContainerRuleValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItemContainerRule, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItemContainerRule, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
 
     async buildChildCreateDto(parent: MenuItemContainerOptions, dto: CreateChildMenuItemContainerRuleDto): Promise<MenuItemContainerRule> {
         await this.validateCreateDto(dto);
@@ -47,10 +47,10 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
     }
 
     buildChildEntity(dto: CreateChildMenuItemContainerRuleDto): void {
-        if(dto.validMenuItemId !== undefined){
+        if (dto.validMenuItemId !== undefined) {
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds !== undefined){
+        if (dto.validSizeIds !== undefined) {
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
@@ -59,34 +59,34 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
      * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
      */
     protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
-        if(dto.parentContainerOptionsId !== undefined){
+        if (dto.parentContainerOptionsId !== undefined) {
             this.parentContainerOptionsById(dto.parentContainerOptionsId);
         }
-        if(dto.validMenuItemId !== undefined){
+        if (dto.validMenuItemId !== undefined) {
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds !== undefined){
+        if (dto.validSizeIds !== undefined) {
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerRuleDto): void {
-        if(dto.validMenuItemId !== undefined){
+        if (dto.validMenuItemId !== undefined) {
             this.validMenuItemById(dto.validMenuItemId);
         }
-        if(dto.validSizeIds !== undefined){
+        if (dto.validSizeIds !== undefined) {
             this.validMenuItemSizeByIds(dto.validSizeIds);
         }
     }
 
     public async buildManyChildDto(parentOption: MenuItemContainerOptions, dtos: (CreateChildMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto)[]): Promise<MenuItemContainerRule[]> {
         const results: MenuItemContainerRule[] = [];
-        for(const dto of dtos){
-            if(dto.mode === 'create'){
+        for (const dto of dtos) {
+            if (dto.mode === 'create') {
                 results.push(await this.buildChildCreateDto(parentOption, dto));
             } else {
                 const toUpdate = await this.componentOptionService.findOne(dto.id);
-                if(!toUpdate){ throw Error("component option is null"); }
+                if (!toUpdate) { throw Error("component option is null"); }
                 results.push(await this.buildUpdateDto(toUpdate, dto))
             }
         }

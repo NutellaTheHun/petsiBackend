@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from "class-validator";
 
-export class UpdateChildInventoryItemSizeDto{
+export class UpdateChildInventoryItemSizeDto {
     @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating an Inventory-Item entity.' })
     @IsNotEmpty()
     readonly mode: 'update' = 'update';
@@ -30,7 +30,7 @@ export class UpdateChildInventoryItemSizeDto{
     @IsOptional()
     readonly inventoryPackageId?: number;
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)

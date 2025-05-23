@@ -17,16 +17,16 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
         validator: InventoryItemCategoryValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super( InventoryItemCategory, 'InventoryItemCategoryBuilder', requestContextService, logger, validator); }
+    ) { super(InventoryItemCategory, 'InventoryItemCategoryBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryItemCategoryDto): void {
-        if(dto.itemCategoryName !== undefined){
+        if (dto.itemCategoryName !== undefined) {
             this.categoryName(dto.itemCategoryName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryItemCategoryDto): void {
-         if(dto.itemCategoryName !== undefined){
+        if (dto.itemCategoryName !== undefined) {
             this.categoryName(dto.itemCategoryName);
         }
     }

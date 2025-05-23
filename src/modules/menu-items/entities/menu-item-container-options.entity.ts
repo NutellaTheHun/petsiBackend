@@ -28,6 +28,6 @@ export class MenuItemContainerOptions {
     /**
      * The total amount of items the container holds. 
      */
-    @Column({ nullable: false})
+    @Column({ nullable: false })
     validQuantity: number;
 }

@@ -1,11 +1,11 @@
 import { Injectable, NestMiddleware } from "@nestjs/common";
 import { randomUUID } from "crypto";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
 
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
-    constructor(private readonly requestContext: RequestContextService){}
+    constructor(private readonly requestContext: RequestContextService) { }
 
     use(req: Request, res: Response, next: NextFunction): void {
         const requestId = req.headers['x-request-id'] || randomUUID();
@@ -16,9 +16,9 @@ export class RequestIdMiddleware implements NestMiddleware {
             res.on('finish', () => { this.clearRequestContext(); });
             res.on('close', () => { this.clearRequestContext(); });
 
-            try{
+            try {
                 next();
-            } catch (error){
+            } catch (error) {
                 this.clearRequestContext()
                 throw error;
             }
@@ -26,6 +26,6 @@ export class RequestIdMiddleware implements NestMiddleware {
     }
 
     private clearRequestContext() {
-        this.requestContext.run(() => {}, {});
+        this.requestContext.run(() => { }, {});
     }
 }

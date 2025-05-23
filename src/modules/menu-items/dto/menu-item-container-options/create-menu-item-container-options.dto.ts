@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNotEmpty, IsNumber, IsPositive } from "class-validator";
-import { CreateChildMenuItemContainerRuleDto } from "../menu-item-container-rule/create-child-menu-item-container-rule.dto";
 import { MenuItem } from "../../entities/menu-item.entity";
+import { CreateChildMenuItemContainerRuleDto } from "../menu-item-container-rule/create-child-menu-item-container-rule.dto";
 
 /**
  * Depreciated, only created as a child through {@link MenuItem}.
@@ -13,9 +13,10 @@ export class CreateMenuItemContainerOptionsDto {
     @IsNotEmpty()
     parentContainerMenuItemId: number;
 
-    @ApiProperty({ 
-        description: 'The list of MenuItems and their sizes that are allowed in the container', 
-        type: [CreateChildMenuItemContainerRuleDto] })
+    @ApiProperty({
+        description: 'The list of MenuItems and their sizes that are allowed in the container',
+        type: [CreateChildMenuItemContainerRuleDto]
+    })
     @IsArray()
     containerRuleDtos: CreateChildMenuItemContainerRuleDto[];
 

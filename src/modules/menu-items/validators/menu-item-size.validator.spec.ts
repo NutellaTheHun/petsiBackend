@@ -28,13 +28,13 @@ describe('menu item size validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
-       const dto = {
+        const dto = {
             sizeName: "TEST CREATE",
         } as CreateMenuItemSizeDto;
 
@@ -55,7 +55,7 @@ describe('menu item size validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(SIZE_FOUR);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             sizeName: "TEST UPDATE",
@@ -67,7 +67,7 @@ describe('menu item size validator', () => {
 
     it('should fail update (name already exists)', async () => {
         const toUpdate = await service.findOneByName(SIZE_FOUR);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const dto = {
             sizeName: SIZE_ONE,

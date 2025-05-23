@@ -42,17 +42,17 @@ describe('recipe ingredient validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create with recipe ingredient', async () => {
         const recipe = await recipeService.findOneByName(REC_A);
-        if(!recipe){ throw new Error(); }
+        if (!recipe) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -68,10 +68,10 @@ describe('recipe ingredient validator', () => {
 
     it('should validate create with inventoryItem ingredient', async () => {
         const inventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!inventoryItem){ throw new Error(); }
+        if (!inventoryItem) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -87,13 +87,13 @@ describe('recipe ingredient validator', () => {
 
     it('should fail create: recipe and inventory item ingredient', async () => {
         const inventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!inventoryItem){ throw new Error(); }
+        if (!inventoryItem) { throw new Error(); }
 
         const recipe = await recipeService.findOneByName(REC_A);
-        if(!recipe){ throw new Error(); }
+        if (!recipe) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -111,7 +111,7 @@ describe('recipe ingredient validator', () => {
     it('should fail create: neither recipe or inventory item ingredient', async () => {
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'create',
@@ -126,15 +126,15 @@ describe('recipe ingredient validator', () => {
 
     it('should pass update with RECIPE ingredient => RECIPE ingredient', async () => {
         const toUpdate = (await ingredientService.findAll({ relations: ['ingredientRecipe'] })).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWRecipes = toUpdate.filter(ingred => ingred.ingredientRecipe);
 
         const newRecipe = await recipeService.findOneByName(REC_A);
-        if(!newRecipe){ throw new Error(); }
+        if (!newRecipe) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -149,17 +149,17 @@ describe('recipe ingredient validator', () => {
         expect(result).toBeNull();
     });
 
-     it('should pass update with RECIPE ingredient => INVENTORY item ingredient', async () => {
+    it('should pass update with RECIPE ingredient => INVENTORY item ingredient', async () => {
         const toUpdate = (await ingredientService.findAll({ relations: ['ingredientRecipe'] })).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWRecipes = toUpdate.filter(ingred => ingred.ingredientRecipe);
 
         const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!newInventoryItem){ throw new Error(); }
+        if (!newInventoryItem) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -177,15 +177,15 @@ describe('recipe ingredient validator', () => {
 
     it('should pass update with INVENTORY item ingredient => RECIPE ingredient', async () => {
         const toUpdate = (await ingredientService.findAll({ relations: ['ingredientInventoryItem'] })).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWItems = toUpdate.filter(ingred => ingred.ingredientInventoryItem);
 
         const newRecipe = await recipeService.findOneByName(REC_A);
-        if(!newRecipe){ throw new Error(); }
+        if (!newRecipe) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -201,17 +201,17 @@ describe('recipe ingredient validator', () => {
         expect(result).toBeNull();
     });
 
-     it('should pass update with INVENTORY item ingredient => INVENTORY item ingredient', async () => {
-       const toUpdate = (await ingredientService.findAll({ relations: ['ingredientInventoryItem'] })).items;
-        if(!toUpdate){ throw new Error(); }
+    it('should pass update with INVENTORY item ingredient => INVENTORY item ingredient', async () => {
+        const toUpdate = (await ingredientService.findAll({ relations: ['ingredientInventoryItem'] })).items;
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWItems = toUpdate.filter(ingred => ingred.ingredientInventoryItem);
 
         const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!newInventoryItem){ throw new Error(); }
+        if (!newInventoryItem) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -228,16 +228,16 @@ describe('recipe ingredient validator', () => {
 
     it('should fail update: RECIPE and INVENTORY item ingredient', async () => {
         const toUpdate = (await ingredientService.findAll()).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const newRecipe = await recipeService.findOneByName(REC_A);
-        if(!newRecipe){ throw new Error(); }
+        if (!newRecipe) { throw new Error(); }
 
         const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!newInventoryItem){ throw new Error(); }
+        if (!newInventoryItem) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -255,15 +255,15 @@ describe('recipe ingredient validator', () => {
 
     it('should fail update: RECIPE ingredient => CURRENT INVENTORY item ingredient', async () => {
         const toUpdate = (await ingredientService.findAll({ relations: ['ingredientRecipe'] })).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWRecipes = toUpdate.filter(ingred => ingred.ingredientRecipe);
 
         const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-        if(!newInventoryItem){ throw new Error(); }
+        if (!newInventoryItem) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',
@@ -280,15 +280,15 @@ describe('recipe ingredient validator', () => {
 
     it('should fail update: INVENTORY item ingredient => CURRENT RECIPE ingredient', async () => {
         const toUpdate = (await ingredientService.findAll({ relations: ['ingredientInventoryItem'] })).items;
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const ingredsWItems = toUpdate.filter(ingred => ingred.ingredientInventoryItem);
 
         const newRecipe = await recipeService.findOneByName(REC_A);
-        if(!newRecipe){ throw new Error(); }
+        if (!newRecipe) { throw new Error(); }
 
         const measurement = await measureService.findOneByName(POUND);
-        if(!measurement){ throw new Error(); }
+        if (!measurement) { throw new Error(); }
 
         const dto = {
             mode: 'update',

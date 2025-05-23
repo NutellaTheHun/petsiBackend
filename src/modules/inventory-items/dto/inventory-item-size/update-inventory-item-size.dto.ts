@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsOptional, IsPositive, Min } from "class-validator";
 
-export class UpdateInventoryItemSizeDto{
+export class UpdateInventoryItemSizeDto {
     @ApiProperty({ description: 'Id of Unit-of-Measure entity.' })
     @IsNumber()
     @IsPositive()
@@ -20,7 +20,7 @@ export class UpdateInventoryItemSizeDto{
     @IsOptional()
     readonly inventoryPackageId?: number;
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.'})
+    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)

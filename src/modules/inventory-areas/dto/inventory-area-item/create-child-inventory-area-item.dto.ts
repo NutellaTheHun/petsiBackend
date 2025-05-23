@@ -45,10 +45,10 @@ export class CreateChildInventoryAreaItemDto {
      * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
      *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
      */
-    @ApiProperty({ 
+    @ApiProperty({
         description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is null, itemSizeId must be populated.',
         type: [CreateChildInventoryItemSizeDto],
-     })
+    })
     @IsOptional()
     readonly countedItemSizeDto?: CreateChildInventoryItemSizeDto;
 }

@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
 import { PaginatedResult } from "../../../base/paginated-result";
@@ -8,17 +8,17 @@ import { Roles } from "../../../util/decorators/PublicRole";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../../roles/utils/constants";
-import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
-import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
 import { CreateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-menu-item-container-options.dto";
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
+import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 import { MenuItem } from "../entities/menu-item.entity";
+import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
 
 @ApiTags('Menu Item Container Options')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-container-options')
-export class MenuItemContainerOptionsController extends ControllerBase<MenuItemContainerOptions>{
+export class MenuItemContainerOptionsController extends ControllerBase<MenuItemContainerOptions> {
     constructor(
         optionsService: MenuItemContainerOptionsService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
@@ -36,8 +36,8 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
      * Depreciated, only created as a child through {@link MenuItem}.
      */
     async create(@Body() dto: CreateMenuItemContainerOptionsDto): Promise<MenuItemContainerOptions> {
-      //return super.create(dto);
-      throw new BadRequestException();
+        //return super.create(dto);
+        throw new BadRequestException();
     }
 
     @Patch(':id')

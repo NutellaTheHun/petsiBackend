@@ -1,19 +1,18 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { type_a } from "../../labels/utils/constants";
+import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
+import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
+import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
 import { CreateOrderDto } from "../dto/order/create-order.dto";
 import { UpdateOrderDto } from "../dto/order/update-order.dto";
+import { OrderCategoryService } from "../services/order-category.service";
+import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
-import { TYPE_A, TYPE_B } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderValidator } from "./order.validator";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderCategoryService } from "../services/order-category.service";
-import { type_a } from "../../labels/utils/constants";
-import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
-import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
 
 describe('order validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -41,19 +40,19 @@ describe('order validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const category = await categoryService.findOneByName(type_a);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -84,12 +83,12 @@ describe('order validator', () => {
 
     it('should fail create: duplicate order menu item DTOs', async () => {
         const category = await categoryService.findOneByName(type_a);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -128,16 +127,16 @@ describe('order validator', () => {
         const toUpdate = (await orderService.findAll()).items[0];
 
         const category = await categoryService.findOneByName(type_a);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!itemC){ throw new Error(); }
+        if (!itemC) { throw new Error(); }
 
         const itemToUpdate = (await orderItemService.findAll()).items[0];
 
@@ -177,18 +176,18 @@ describe('order validator', () => {
 
     it('should fail update: duplicate create order item dtos', async () => {
         const toUpdate = (await orderService.findAll()).items[0];
-        
+
         const category = await categoryService.findOneByName(type_a);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!itemC){ throw new Error(); }
+        if (!itemC) { throw new Error(); }
 
         const itemToUpdate = (await orderItemService.findAll()).items[0];
 
@@ -234,18 +233,18 @@ describe('order validator', () => {
 
     it('should fail update: duplicate update order item dtos', async () => {
         const toUpdate = (await orderService.findAll()).items[0];
-        
+
         const category = await categoryService.findOneByName(type_a);
-        if(!category){ throw new Error(); }
+        if (!category) { throw new Error(); }
 
         const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-        if(!itemC){ throw new Error(); }
+        if (!itemC) { throw new Error(); }
 
         const itemToUpdate = (await orderItemService.findAll()).items[0];
 

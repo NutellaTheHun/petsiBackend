@@ -1,14 +1,14 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { RecipeCategoryService } from "../services/recipe-category.service";
-import { RecipeTestUtil } from "../utils/recipe-test.util";
-import { getRecipeTestingModule } from "../utils/recipes-testing.module";
-import { RecipeCategoryValidator } from "./recipe-category.validator";
 import { CreateRecipeCategoryDto } from "../dto/recipe-category/create-recipe-category.dto";
 import { UpdateRecipeCategoryDto } from "../dto/recipe-category/update-recipe-category.dto";
 import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
-import { REC_CAT_A, REC_CAT_B } from "../utils/constants";
 import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
+import { RecipeCategoryService } from "../services/recipe-category.service";
+import { REC_CAT_A, REC_CAT_B } from "../utils/constants";
+import { RecipeTestUtil } from "../utils/recipe-test.util";
+import { getRecipeTestingModule } from "../utils/recipes-testing.module";
+import { RecipeCategoryValidator } from "./recipe-category.validator";
 
 
 describe('recipe category validator', () => {
@@ -31,7 +31,7 @@ describe('recipe category validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
@@ -58,7 +58,7 @@ describe('recipe category validator', () => {
     });
 
     it('should fail create: name already exists', async () => {
-         const subCatDtos = [
+        const subCatDtos = [
             {
                 mode: 'create',
                 subCategoryName: "SUB CAT 1"
@@ -105,7 +105,7 @@ describe('recipe category validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const subCatDtos = [
             {
@@ -130,7 +130,7 @@ describe('recipe category validator', () => {
 
     it('should fail update: name already exists', async () => {
         const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const subCatDtos = [
             {
@@ -155,7 +155,7 @@ describe('recipe category validator', () => {
 
     it('should fail update: duplicate sub categories', async () => {
         const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const subCatDtos = [
             {

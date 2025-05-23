@@ -1,17 +1,16 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 import { getTestItemNames } from "../../menu-items/utils/constants";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
-import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderCategory } from "../entities/order-category.entity";
+import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { getTestOrderCategoryNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderMenuItemController } from "./order-menu-item.controller";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { NotFoundException } from "@nestjs/common";
 
 describe('order menu item controller', () => {
     let controller: OrderMenuItemController;
@@ -27,7 +26,7 @@ describe('order menu item controller', () => {
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        
+
         controller = module.get<OrderMenuItemController>(OrderMenuItemController);
         service = module.get<OrderMenuItemService>(OrderMenuItemService);
 
@@ -39,7 +38,7 @@ describe('order menu item controller', () => {
         }) as OrderCategory);
 
         let orderId = 1;
-        for(let i = 0; i < 3; i++){
+        for (let i = 0; i < 3; i++) {
             orders.push({
                 id: orderId++,
                 orderCategory: types[i],
@@ -49,15 +48,15 @@ describe('order menu item controller', () => {
 
         const itemNames = getTestItemNames();
         let menuItemId = 1;
-        items = itemNames.map( name => ({
+        items = itemNames.map(name => ({
             id: menuItemId++,
             itemName: name,
         }) as MenuItem);
 
         let itemId = 1;
         let mItemIdx = 0;
-        for(const order of orders){
-            for(let i = 0; i < 2; i++){
+        for (const order of orders) {
+            for (let i = 0; i < 2; i++) {
                 orderItems.push({
                     id: itemId++,
                     order,
@@ -69,11 +68,11 @@ describe('order menu item controller', () => {
 
         jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderMenuItemDto) => {
             const order = orders.find(o => o.id === dto.orderId);
-            if(!order){ throw new Error(); }
+            if (!order) { throw new Error(); }
             const menuItem = items.find(i => i.id === dto.menuItemId);
-            if(!menuItem){ throw new Error(); }
+            if (!menuItem) { throw new Error(); }
 
-            const item = { 
+            const item = {
                 order,
                 menuItem,
                 quantity: 1,
@@ -91,7 +90,7 @@ describe('order menu item controller', () => {
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
             const result = orderItems.find(item => item.id === id);
-            if(!result){
+            if (!result) {
                 throw new NotFoundException();
             }
             return result;
@@ -99,7 +98,7 @@ describe('order menu item controller', () => {
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
             const index = orderItems.findIndex(item => item.id === id);
-            if(index === -1){ return false; }
+            if (index === -1) { return false; }
 
             orderItems.splice(index, 1);
             return true;
@@ -107,14 +106,14 @@ describe('order menu item controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderMenuItemDto) => {
             const existIdx = orderItems.findIndex(item => item.id === id);
-            if(existIdx === -1){ throw new NotFoundException(); }
+            if (existIdx === -1) { throw new NotFoundException(); }
 
-            if(dto.menuItemId){
+            if (dto.menuItemId) {
                 const menuItem = items.find(i => i.id === dto.menuItemId);
-                if(!menuItem){ throw new Error(); }
+                if (!menuItem) { throw new Error(); }
                 orderItems[existIdx].menuItem = menuItem;
             }
-            if(dto.quantity){
+            if (dto.quantity) {
                 orderItems[existIdx].quantity = dto.quantity;
             }
 
@@ -128,54 +127,54 @@ describe('order menu item controller', () => {
 
     it('should create a order menu item', async () => {
         const dto = {
-        orderId: orders[0].id,
-        menuItemId: items[0].id,
-        quantity: 1,
+            orderId: orders[0].id,
+            menuItemId: items[0].id,
+            quantity: 1,
         } as CreateOrderMenuItemDto;
-    
+
         const result = await controller.create(dto);
-    
+
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
         expect(result?.quantity).toEqual(1);
-    
+
         testId = result?.id as number;
     });
-    
+
     it('should find order menu item by id', async () => {
         const result = await controller.findOne(testId);
         expect(result).not.toBeNull();
     });
-    
+
     it('should fail find order menu item by id (not exist)', async () => {
         await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should update order menu item quantity', async () => {
         const dto = {
-        quantity: 2,
+            quantity: 2,
         } as UpdateOrderMenuItemDto;
-    
+
         const result = await controller.update(testId, dto);
-    
+
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
         expect(result?.quantity).toEqual(2);
     });
-    
+
     it('should fail update order menu item quantity (not exist)', async () => {
         const dto = {
-        quantity: 2,
+            quantity: 2,
         } as UpdateOrderMenuItemDto;
-    
+
         await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should remove order menu item', async () => {
         const result = await controller.remove(testId);
         expect(result).toBeUndefined();
     });
-    
+
     it('should fail remove order menu item (not exist)', async () => {
         await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });

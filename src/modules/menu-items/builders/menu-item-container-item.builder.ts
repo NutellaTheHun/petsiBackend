@@ -15,8 +15,8 @@ import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemContainerItemValidator } from "../validators/menu-item-container-item.validator";
 
 @Injectable()
-export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerItem> 
-implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
+export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerItem>
+    implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
     constructor(
         @Inject(forwardRef(() => MenuItemContainerItemService))
         private readonly componentService: MenuItemContainerItemService,
@@ -25,56 +25,56 @@ implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
         private readonly menuItemService: MenuItemService,
 
         private readonly itemSizeService: MenuItemSizeService,
-        
+
         validator: MenuItemContainerItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItemContainerItem, 'MenuItemComponentBuilder', requestContextService, logger, validator); }
-    
+    ) { super(MenuItemContainerItem, 'MenuItemComponentBuilder', requestContextService, logger, validator); }
+
     /**
      * Depreciated, only created as a child through {@link MenuItem}.
      */
     protected createEntity(dto: CreateMenuItemContainerItemDto): void {
-        if(dto.parentContainerId !== undefined){
+        if (dto.parentContainerId !== undefined) {
             this.parentContainerById(dto.parentContainerId);
         }
-        if(dto.parentContainerSizeId !== undefined){
+        if (dto.parentContainerSizeId !== undefined) {
             this.parentContainerSizeById(dto.parentContainerSizeId);
         }
-        if(dto.containedMenuItemId !== undefined){
+        if (dto.containedMenuItemId !== undefined) {
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId !== undefined){
+        if (dto.containedMenuItemSizeId !== undefined) {
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
-        if(dto.containedMenuItemId !== undefined){
+        if (dto.containedMenuItemId !== undefined) {
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId !== undefined){
+        if (dto.containedMenuItemSizeId !== undefined) {
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
     }
 
     buildChildEntity(dto: CreateChildMenuItemContainerItemDto): void {
-        if(dto.parentContainerSizeId !== undefined){
+        if (dto.parentContainerSizeId !== undefined) {
             this.parentContainerSizeById(dto.parentContainerSizeId);
         }
-        if(dto.containedMenuItemId !== undefined){
+        if (dto.containedMenuItemId !== undefined) {
             this.containedItemById(dto.containedMenuItemId);
         }
-        if(dto.containedMenuItemSizeId !== undefined){
+        if (dto.containedMenuItemSizeId !== undefined) {
             this.containedItemSizeById(dto.containedMenuItemSizeId);
         }
-        if(dto.quantity !== undefined){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
         }
     }
@@ -93,43 +93,43 @@ implements IBuildChildDto<MenuItem, MenuItemContainerItem> {
 
     public async buildManyChildDto(parentContainer: MenuItem, dtos: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[]): Promise<MenuItemContainerItem[]> {
         const results: MenuItemContainerItem[] = [];
-        for(const dto of dtos){
-            if(dto.mode === 'create'){    
-                results.push( await this.buildChildCreateDto(parentContainer, dto));
+        for (const dto of dtos) {
+            if (dto.mode === 'create') {
+                results.push(await this.buildChildCreateDto(parentContainer, dto));
             } else {
                 const comp = await this.componentService.findOne(dto.id);
-                if(!comp){ throw new NotFoundException(); }
-                results.push( await this.buildUpdateDto(comp, dto));
+                if (!comp) { throw new NotFoundException(); }
+                results.push(await this.buildUpdateDto(comp, dto));
             }
         }
         return results;
     }
 
-    public parentContainerById(id: number): this{
+    public parentContainerById(id: number): this {
         return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'parentContainer', id);
     }
 
-    public parentContainerByName(name: string): this{
+    public parentContainerByName(name: string): this {
         return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'parentContainer', name);
     }
 
-    public parentContainerSizeById(id: number): this{
+    public parentContainerSizeById(id: number): this {
         return this.setPropById(this.itemSizeService.findOne.bind(this.itemSizeService), 'parentContainerSize', id);
     }
 
-    public containedItemById(id: number): this{
+    public containedItemById(id: number): this {
         return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'containedItem', id);
     }
 
-    public containedItemByName(name: string): this{
+    public containedItemByName(name: string): this {
         return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'containedItem', name);
     }
 
-    public containedItemSizeById(id: number): this{
+    public containedItemSizeById(id: number): this {
         return this.setPropById(this.itemSizeService.findOne.bind(this.itemSizeService), 'containedItemsize', id);
     }
 
-    public quantity(amount: number): this{
+    public quantity(amount: number): this {
         return this.setPropByVal('quantity', amount);
     }
 }

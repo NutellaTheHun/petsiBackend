@@ -1,22 +1,20 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_a, item_b, item_d, item_f, item_g } from "../../menu-items/utils/constants";
+import { item_a, item_b, item_f } from "../../menu-items/utils/constants";
 import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
+import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
 import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
+import { UpdateOrderDto } from "../dto/order/update-order.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
+import { OrderContainerItemService } from "./order-container-item.service";
 import { OrderMenuItemService } from "./order-menu-item.service";
 import { OrderService } from "./order.service";
-import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
-import { OrderContainerItem } from "../entities/order-container-item.entity";
-import { OrderContainerItemService } from "./order-container-item.service";
-import { UpdateOrderDto } from "../dto/order/update-order.dto";
-import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
-import { MenuItemContainerOptions } from "../../menu-items/entities/menu-item-container-options.entity";
-import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 describe('order menu item service', () => {
     let orderItemService: OrderMenuItemService;
@@ -59,13 +57,13 @@ describe('order menu item service', () => {
     it('should fail to create orderMenuItem (Bad Request) then create properly for future tests', async () => {
         const ordersRequest = await orderService.findAll();
         const testOrder = ordersRequest.items[0];
-        if(!testOrder){ throw new Error(); }
+        if (!testOrder) { throw new Error(); }
         testOrderId = testOrder.id;
 
         const item = await menuItemService.findOneByName(item_a, ["validSizes"]);
-        if(!item){ throw new NotFoundException(); }
-        if(!item.validSizes){ throw new Error();}
-        if(item.validSizes.length === 0){ throw new Error(); }
+        if (!item) { throw new NotFoundException(); }
+        if (!item.validSizes) { throw new Error(); }
+        if (item.validSizes.length === 0) { throw new Error(); }
 
         const dto = {
             orderId: testOrderId,
@@ -88,8 +86,8 @@ describe('order menu item service', () => {
         } as UpdateOrderDto;
 
         const updateResult = await orderService.update(testOrderId, updateOrderDto);
-        if(!updateResult){ throw new Error(); }
-        if(!updateResult.orderedItems){ throw new Error(); }
+        if (!updateResult) { throw new Error(); }
+        if (!updateResult.orderedItems) { throw new Error(); }
 
         const result = updateResult.orderedItems[0];
 
@@ -104,8 +102,8 @@ describe('order menu item service', () => {
 
     it('should update order query with new item', async () => {
         const testOrder = await orderService.findOne(testOrderId, ['orderedItems']);
-        if(!testOrder){ throw new NotFoundException(); }
-        if(!testOrder.orderedItems){ throw new Error(); }
+        if (!testOrder) { throw new NotFoundException(); }
+        if (!testOrder.orderedItems) { throw new Error(); }
 
         expect(testOrder.orderedItems.findIndex(item => item.id === testId)).not.toEqual(-1);
     });
@@ -119,9 +117,9 @@ describe('order menu item service', () => {
 
     it('should update menuItem', async () => {
         const newItem = await menuItemService.findOneByName(item_b, ["validSizes"]);
-        if(!newItem){ throw new NotFoundException(); }
-        if(!newItem.validSizes){ throw new Error();}
-        if(newItem.validSizes.length < 2){ throw new Error(); }
+        if (!newItem) { throw new NotFoundException(); }
+        if (!newItem.validSizes) { throw new Error(); }
+        if (newItem.validSizes.length < 2) { throw new Error(); }
 
         const dto = {
             menuItemId: newItem.id,
@@ -129,7 +127,7 @@ describe('order menu item service', () => {
         } as UpdateOrderMenuItemDto;
 
         const result = await orderItemService.update(testId, dto);
-        if(!result){ throw new Error(); }
+        if (!result) { throw new Error(); }
         expect(result).not.toBeNull();
         expect(result?.menuItem.id).toEqual(newItem.id);
         expect(result?.size.id).toEqual(newItem.validSizes[0].id);
@@ -147,9 +145,9 @@ describe('order menu item service', () => {
 
     it('should update size', async () => {
         const newItem = await menuItemService.findOneByName(item_b, ["validSizes"]);
-        if(!newItem){ throw new NotFoundException(); }
-        if(!newItem.validSizes){ throw new Error();}
-        if(newItem.validSizes.length < 2){ throw new Error(); }
+        if (!newItem) { throw new NotFoundException(); }
+        if (!newItem.validSizes) { throw new Error(); }
+        if (newItem.validSizes.length < 2) { throw new Error(); }
 
         const dto = {
             menuItemSizeId: newItem.validSizes[1].id,
@@ -184,20 +182,20 @@ describe('order menu item service', () => {
 
     it('should update order query to not contain deleted item', async () => {
         const testOrder = await orderService.findOne(testOrderId, ['orderedItems']);
-        if(!testOrder){ throw new NotFoundException(); }
-        if(!testOrder.orderedItems){ throw new Error(); }
+        if (!testOrder) { throw new NotFoundException(); }
+        if (!testOrder.orderedItems) { throw new Error(); }
 
         expect(testOrder.orderedItems.findIndex(item => item.id === testId)).toEqual(-1);
     });
 
     it('should create an order item with container items', async () => {
-        const items = (await menuItemService.findAll({ relations: [ 'containerOptions', 'validSizes' ], limit: 20})).items;
+        const items = (await menuItemService.findAll({ relations: ['containerOptions', 'validSizes'], limit: 20 })).items;
 
         const containerItems = items.filter(item => item.containerOptions);
 
-        if(!containerItems[0].containerOptions){ throw new Error(); }
+        if (!containerItems[0].containerOptions) { throw new Error(); }
         const options = await optionsService.findOne(containerItems[0].containerOptions.id);
-        if(!options){ throw new Error(); }
+        if (!options) { throw new Error(); }
 
         const compDtos = [
             {
@@ -212,8 +210,8 @@ describe('order menu item service', () => {
         const orders = (await orderService.findAll({ relations: ['orderedItems'] })).items;
 
         const itemF = await menuItemService.findOneByName(item_f, ['validSizes']);
-        if(!itemF){ throw new Error(); }
-        if(!itemF.validSizes){ throw new Error(); }
+        if (!itemF) { throw new Error(); }
+        if (!itemF.validSizes) { throw new Error(); }
 
         const itemDto = {
             mode: 'create',
@@ -228,12 +226,12 @@ describe('order menu item service', () => {
         } as UpdateOrderDto;
 
         const updateResult = await orderService.update(orders[0].id, updateOrderDto);
-        if(!updateResult){ throw new Error(); }
-        if(!updateResult.orderedItems){ throw new Error(); }
+        if (!updateResult) { throw new Error(); }
+        if (!updateResult.orderedItems) { throw new Error(); }
 
         const result = updateResult.orderedItems[0];
-        if(!result){ throw new Error(); }
-        if(!result.orderedContainerItems){ throw new Error(); }
+        if (!result) { throw new Error(); }
+        if (!result.orderedContainerItems) { throw new Error(); }
         expect(result.orderedContainerItems.length).toEqual(1);
 
         testOrderItemCompsId = result.id;
@@ -241,15 +239,15 @@ describe('order menu item service', () => {
 
     it('should update item container (add)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems', 'menuItem']);
-        if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedContainerItems){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
+        if (!toUpdate.orderedContainerItems) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(toUpdate.menuItem.id, ['containerOptions', 'validSizes']);
-        if(!parentMenuItem){ throw new Error(); }
-        if(!parentMenuItem.containerOptions){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
+        if (!parentMenuItem.containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(parentMenuItem.containerOptions.id);
-        if(!options){ throw new Error(); }
+        if (!options) { throw new Error(); }
 
         const cDto = {
             mode: 'create',
@@ -269,22 +267,22 @@ describe('order menu item service', () => {
         } as UpdateOrderMenuItemDto;
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedContainerItems){ throw new Error(); }
-        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length+1);
+        if (!result) { throw new Error(); }
+        if (!result.orderedContainerItems) { throw new Error(); }
+        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length + 1);
     });
 
     it('should update item container (modify)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems', 'menuItem']);
-        if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedContainerItems){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
+        if (!toUpdate.orderedContainerItems) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(toUpdate.menuItem.id, ['containerOptions', 'validSizes']);
-        if(!parentMenuItem){ throw new Error(); }
-        if(!parentMenuItem.containerOptions){ throw new Error(); }
+        if (!parentMenuItem) { throw new Error(); }
+        if (!parentMenuItem.containerOptions) { throw new Error(); }
 
         const options = await optionsService.findOne(parentMenuItem.containerOptions.id);
-        if(!options){ throw new Error(); }
+        if (!options) { throw new Error(); }
 
         const theRest = toUpdate.orderedContainerItems.map(comp => ({
             mode: 'update',
@@ -302,10 +300,10 @@ describe('order menu item service', () => {
         } as UpdateOrderMenuItemDto;
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedContainerItems){ throw new Error(); }
-        for(const comp of result.orderedContainerItems){
-            if(comp.id === moddedId){
+        if (!result) { throw new Error(); }
+        if (!result.orderedContainerItems) { throw new Error(); }
+        for (const comp of result.orderedContainerItems) {
+            if (comp.id === moddedId) {
                 expect(comp.containedItemSize.id).toEqual(options.containerRules[0].validSizes[0].id);
                 expect(comp.quantity).toEqual(50);
             }
@@ -314,8 +312,8 @@ describe('order menu item service', () => {
 
     it('should update item components (remove)', async () => {
         const toUpdate = await orderItemService.findOne(testOrderItemCompsId, ['orderedContainerItems']);
-        if(!toUpdate){ throw new Error(); }
-        if(!toUpdate.orderedContainerItems){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
+        if (!toUpdate.orderedContainerItems) { throw new Error(); }
 
         const theRest = toUpdate.orderedContainerItems.slice(1).map(comp => ({
             mode: 'update',
@@ -329,9 +327,9 @@ describe('order menu item service', () => {
         } as UpdateOrderMenuItemDto;
 
         const result = await orderItemService.update(testOrderItemCompsId, dto);
-        if(!result){ throw new Error(); }
-        if(!result.orderedContainerItems){ throw new Error(); }
-        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length-1);
+        if (!result) { throw new Error(); }
+        if (!result.orderedContainerItems) { throw new Error(); }
+        expect(result.orderedContainerItems.length).toEqual(toUpdate.orderedContainerItems.length - 1);
 
         await expect(componentService.findOne(removedId)).rejects.toThrow(NotFoundException);
     });

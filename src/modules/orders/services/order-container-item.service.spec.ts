@@ -1,15 +1,14 @@
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_f } from "../../menu-items/utils/constants";
 import { CreateOrderContainerItemDto } from "../dto/order-container-item/create-order-container-item.dto";
 import { UpdateOrderContainerItemDto } from "../dto/order-container-item/update-order-container-item.dto";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderContainerItemService } from "./order-container-item.service";
 import { OrderMenuItemService } from "./order-menu-item.service";
-import { MenuItemContainerOptionsService } from "../../menu-items/services/menu-item-container-options.service";
 
 describe('order container item service', () => {
     let service: OrderContainerItemService;
@@ -55,29 +54,29 @@ describe('order container item service', () => {
 
         expect(results).not.toBeNull();
 
-        testIds = results.items.slice(0,3).map(type => type.id);
+        testIds = results.items.slice(0, 3).map(type => type.id);
 
         testId = results.items[0].id;
     });
 
     it('should find a container item by id', async () => {
         const result = await service.findOne(testId);
-        
+
         expect(result).not.toBeNull();
         expect(result?.id).toEqual(testId);
     });
 
     it('should update item', async () => {
         const toUpdate = await service.findOne(testId, ['parentOrderItem']);
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const parentOrderItem = await orderItemService.findOne(toUpdate.parentOrderItem.id, ['menuItem']);
-        if(!parentOrderItem){ throw new Error(); }
+        if (!parentOrderItem) { throw new Error(); }
 
         const parentMenuItem = await menuItemService.findOne(parentOrderItem.menuItem.id, ['validSizes', 'containerOptions']);
-        if(!parentMenuItem){ throw new Error(); }
-        if(!parentMenuItem.containerOptions){ throw new Error(); }
-        
+        if (!parentMenuItem) { throw new Error(); }
+        if (!parentMenuItem.containerOptions) { throw new Error(); }
+
         const options = await optionService.findOne(parentMenuItem.containerOptions.id);
 
         const dto = {

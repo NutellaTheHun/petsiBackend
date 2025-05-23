@@ -37,20 +37,20 @@ describe('inventory area count validator', () => {
     afterAll(async () => {
         await dbTestContext.executeCleanupFunctions();
     });
-    
+
     it('should be defined', () => {
         expect(validator).toBeDefined
     });
 
     it('should validate create', async () => {
         const area = await areaService.findOneByName(AREA_A);
-        if(!area){ throw new Error(); }
+        if (!area) { throw new Error(); }
 
         const itemA = await itemService.findOneByName(FOOD_A);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await itemService.findOneByName(DRY_A);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -77,13 +77,13 @@ describe('inventory area count validator', () => {
 
     it('should pass update', async () => {
         const toUpdate = (await countService.findAll({ relations: ['countedItems'] })).items[0];
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await itemService.findOneByName(FOOD_A);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await itemService.findOneByName(DRY_A);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {
@@ -109,13 +109,13 @@ describe('inventory area count validator', () => {
 
     it('should fail update: duplicate update ids', async () => {
         const toUpdate = (await countService.findAll({ relations: ['countedItems'] })).items[0];
-        if(!toUpdate){ throw new Error(); }
+        if (!toUpdate) { throw new Error(); }
 
         const itemA = await itemService.findOneByName(FOOD_A);
-        if(!itemA){ throw new Error(); }
+        if (!itemA) { throw new Error(); }
 
         const itemB = await itemService.findOneByName(DRY_A);
-        if(!itemB){ throw new Error(); }
+        if (!itemB) { throw new Error(); }
 
         const itemDtos = [
             {

@@ -13,7 +13,7 @@ export class RoleTestUtil {
     constructor(
         private readonly roleService: RoleService,
         private readonly roleBuilder: RoleBuilder,
-    ){}
+    ) { }
 
     public async getTestUserEntities(testContext: DatabaseTestContext): Promise<Role[]> {
         return [
@@ -30,14 +30,14 @@ export class RoleTestUtil {
     }
 
     public async initRoleTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if(this.initRoles){ 
-            return; 
+        if (this.initRoles) {
+            return;
         }
         this.initRoles = true;
 
         const roles = await this.getTestUserEntities(testContext);
         //const toInsert: Role[] = [];
-        
+
         testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
         /*for(const role of roles){

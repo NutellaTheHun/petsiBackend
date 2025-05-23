@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, Unique } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { MenuItemSize } from "./menu-item-size.entity";
 import { MenuItem } from "./menu-item.entity";
 
@@ -18,50 +18,50 @@ import { MenuItem } from "./menu-item.entity";
 @Unique(['parentContainer', 'parentContainerSize', 'containedItem', 'containedItemsize'])
 @Entity()
 export class MenuItemContainerItem {
-  @PrimaryGeneratedColumn()
-  id: number;
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The parent {@link MenuItem}, "Box of 6...", "Pastry Breakfast Platter"
-   * 
-   * Example:
-   * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
-   */
-  @ManyToOne(() => MenuItem, (menuItem) => menuItem.definedContainerItems, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
-  parentContainer: MenuItem;
+    /**
+     * The parent {@link MenuItem}, "Box of 6...", "Pastry Breakfast Platter"
+     * 
+     * Example:
+     * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
+     */
+    @ManyToOne(() => MenuItem, (menuItem) => menuItem.definedContainerItems, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+    parentContainer: MenuItem;
 
-  /**
-   * The Parent's {@link MenuItemSize} for the context of this component.
-   * 
-   * A Box of 6 muffins with size regular, would only have one size.
-   * 
-   * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
-   */
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
-  parentContainerSize: MenuItemSize;
+    /**
+     * The Parent's {@link MenuItemSize} for the context of this component.
+     * 
+     * A Box of 6 muffins with size regular, would only have one size.
+     * 
+     * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
+     */
+    @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
+    parentContainerSize: MenuItemSize;
 
-  /**
-   * The {@link MenuItem} the component represents.
-   * - For Example:
-   * - Box of 6 scones: 
-   * 
-   *          .menuItemComponent[] { lemon(MenuItem): 6, 
-   *                                 trip(MenuItem): 0, 
-   *                                 currant(MenuItem): 0 }
-   * 
-   * - Breakfast Pastry Platter could be a Scone MenuItem, or any Muffin MenuItem
-   */
-  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
-  containedItem: MenuItem;
+    /**
+     * The {@link MenuItem} the component represents.
+     * - For Example:
+     * - Box of 6 scones: 
+     * 
+     *          .menuItemComponent[] { lemon(MenuItem): 6, 
+     *                                 trip(MenuItem): 0, 
+     *                                 currant(MenuItem): 0 }
+     * 
+     * - Breakfast Pastry Platter could be a Scone MenuItem, or any Muffin MenuItem
+     */
+    @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
+    containedItem: MenuItem;
 
-  /**
-   * The {@link MenuItemSize} of the represented item,
-   * - All pastries are size Regular, sometimes size "mini"
-   * - Pies would me "small", "medium", "large"
-   */
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
-  containedItemsize: MenuItemSize;
+    /**
+     * The {@link MenuItemSize} of the represented item,
+     * - All pastries are size Regular, sometimes size "mini"
+     * - Pies would me "small", "medium", "large"
+     */
+    @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
+    containedItemsize: MenuItemSize;
 
-  @Column({ nullable: false })
-  quantity: number;
+    @Column({ nullable: false })
+    quantity: number;
 }
