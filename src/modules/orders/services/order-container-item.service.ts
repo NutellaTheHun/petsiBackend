@@ -17,7 +17,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItem> {
 
         @Inject(forwardRef(() => OrderContainerItemBuilder))
         builder: OrderContainerItemBuilder,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(repo, builder, 'OrderMenuItemComponentService', requestContextService, logger) }

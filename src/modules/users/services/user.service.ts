@@ -14,9 +14,7 @@ export class UserService extends ServiceBase<User> {
         @InjectRepository(User)
         private readonly userRepo: Repository<User>,
 
-        @Inject(forwardRef(() => UserBuilder))
         userBuilder: UserBuilder,
-
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(userRepo, userBuilder, 'UserService', requestContextService, logger); }

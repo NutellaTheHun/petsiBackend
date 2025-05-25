@@ -14,7 +14,6 @@ export class OrderCategoryService extends ServiceBase<OrderCategory> {
         private readonly repo: Repository<OrderCategory>,
 
         builder: OrderCategoryBuilder,
-        
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(repo, builder, 'OrderCategoryService', requestContextService, logger) }

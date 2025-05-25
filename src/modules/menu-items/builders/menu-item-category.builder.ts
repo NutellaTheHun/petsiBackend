@@ -15,9 +15,7 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
         private readonly itemService: MenuItemService,
 
         validator: MenuItemCategoryValidator,
-
         requestContextService: RequestContextService,
-
         logger: AppLogger,
     ) { super(MenuItemCategory, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
 

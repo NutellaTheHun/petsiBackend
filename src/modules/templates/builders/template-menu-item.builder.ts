@@ -20,6 +20,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> imple
     constructor(
         @Inject(forwardRef(() => TemplateService))
         private readonly templateService: TemplateService,
+
         @Inject(forwardRef(() => TemplateMenuItemService))
         private readonly templateItemService: TemplateMenuItemService,
 

@@ -28,9 +28,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
         @Inject(forwardRef(() => InventoryItemSizeBuilder))
         private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
-        @Inject(forwardRef(() => InventoryItemValidator))
         validator: InventoryItemValidator,
-
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger, validator); }

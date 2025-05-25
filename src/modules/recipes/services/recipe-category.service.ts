@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -7,6 +7,7 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 
+@Injectable()
 export class RecipeCategoryService extends ServiceBase<RecipeCategory> {
     constructor(
         @InjectRepository(RecipeCategory)

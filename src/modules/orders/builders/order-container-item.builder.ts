@@ -24,12 +24,10 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> i
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
 
-        @Inject(forwardRef(() => OrderContainerItemValidator))
-        validator: OrderContainerItemValidator,
-
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
 
+        validator: OrderContainerItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(OrderContainerItem, 'OrderContainerItemBuilder', requestContextService, logger, validator); }

@@ -26,6 +26,7 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory>
 
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
+
         validator: RecipeSubCategoryValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,

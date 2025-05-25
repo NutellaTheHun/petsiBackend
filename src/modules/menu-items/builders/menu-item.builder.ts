@@ -28,13 +28,12 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
         @Inject(forwardRef(() => MenuItemContainerItemBuilder))
         private readonly componentBuilder: MenuItemContainerItemBuilder,
 
-        private readonly sizeService: MenuItemSizeService,
-
         @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
         private readonly componentOptionsBuilder: MenuItemContainerOptionsBuilder,
 
-        validator: MenuItemValidator,
+        private readonly sizeService: MenuItemSizeService,
 
+        validator: MenuItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }

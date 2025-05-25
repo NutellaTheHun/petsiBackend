@@ -15,9 +15,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
         private readonly categoryService: UnitOfMeasureCategoryService,
 
         validator: UnitOfMeasureValidator,
-
         requestContextService: RequestContextService,
-
         logger: AppLogger,
     ) { super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger, validator); }
 

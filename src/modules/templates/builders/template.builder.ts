@@ -16,9 +16,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
         @Inject(forwardRef(() => TemplateMenuItemBuilder))
         private readonly itemBuilder: TemplateMenuItemBuilder,
 
-        @Inject(forwardRef(() => TemplateValidator))
         validator: TemplateValidator,
-
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(Template, 'TemplateBuilder', requestContextService, logger, validator); }

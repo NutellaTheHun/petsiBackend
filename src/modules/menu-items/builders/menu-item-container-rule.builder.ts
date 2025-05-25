@@ -28,7 +28,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
 
         private readonly sizeService: MenuItemSizeService,
 
-
         validator: MenuItemContainerRuleValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,

@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, forwardRef } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
@@ -9,6 +9,7 @@ import { CreateRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-re
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
 
+@Injectable()
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
     constructor(
         @InjectRepository(RecipeSubCategory)
