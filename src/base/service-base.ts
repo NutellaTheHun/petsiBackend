@@ -1,20 +1,24 @@
 import { NotFoundException } from "@nestjs/common";
-import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository } from "typeorm";
+import { FindOptionsWhere, In, ObjectLiteral, QueryBuilder, Repository, SelectQueryBuilder } from "typeorm";
 import { AppLogger } from "../modules/app-logging/app-logger";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
-import { DatabaseError } from "../util/exceptions/database-error";
+import { DataBaseExceptionHandler } from "../util/exceptions/database-exception.handler";
 import { BuilderBase } from "./builder-base";
 import { PaginatedResult } from "./paginated-result";
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
 
+    private databaseExceptionHandler: DataBaseExceptionHandler;
+
     constructor(
         private readonly entityRepo: Repository<T>,
         private readonly builder: BuilderBase<T>,
-        public servicePrefix: string,
+        public readonly servicePrefix: string,
         private readonly requestContextService: RequestContextService,
-        private logger: AppLogger,
-    ) { }
+        private readonly logger: AppLogger,
+    ) {
+        this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
+    }
 
     /**
      * @returns The created entity or throws AppHttpException from validation errors.
@@ -29,14 +33,15 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return await this.entityRepo.save(entity);
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'CREATE',
                 'FAIL',
                 { requestId, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);
+            );*/
+            //throw DatabaseError.fromTypeOrmError(err);
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'CREATE');
         }
     }
 
@@ -51,14 +56,15 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             toUpdate = await this.findOne(id);
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'UPDATE',
                 'FAIL',
                 { requestId, id, databaseError: err }
             );
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'UPDATE');
         }
 
         //update DTO
@@ -68,14 +74,15 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return await this.entityRepo.save(toUpdate);
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'UPDATE',
                 'FAIL',
                 { requestId, id, databaseError: err }
             );
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'UPDATE');
         }
 
     }
@@ -86,6 +93,8 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         cursor?: string;
         sortBy?: string;
         sortOrder?: 'ASC' | 'DESC';
+        search?: string,
+        filters?: string[],
     }): Promise<PaginatedResult<T>> {
         // Get requestId
         const requestId = this.requestContextService.getRequestId();
@@ -121,19 +130,24 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
             query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
         }
 
+        if (options.search?.trim()) {
+            this.applySearch(query, options.search.trim().toLowerCase());
+        }
+
         // run query
         let results: T[] = [];
         try {
             results = await query.getMany();
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'FIND_ALL',
                 'FAIL',
                 { contextId: requestId, databaseError: err }
             );
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'FIND_ALL');
         }
 
 
@@ -182,15 +196,15 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
                 relations: combinedRelations,
             });
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'FIND_ONE',
                 'FAIL',
                 { contextId: requestId, id, databaseError: err }
             );
-
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'FIND_ONE');
         }
 
         if (!result) {
@@ -233,15 +247,15 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return (await this.entityRepo.delete(id)).affected !== 0;
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
                 'REMOVE',
                 'FAIL',
                 { contextId: requestId, id, databaseError: err }
             );
-
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'REMOVE');
         }
 
     }
@@ -265,16 +279,20 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return this.entityRepo.createQueryBuilder();
         } catch (err) {
-            this.logger.logError(
+            /*this.logger.logError(
                 this.servicePrefix,
                 requestId,
-                'REMOVE',
+                'GET_BUILDER',
                 'FAIL',
                 { contextId: requestId, databaseError: err }
             );
-
-            throw DatabaseError.fromTypeOrmError(err);
+            throw DatabaseError.fromTypeOrmError(err);*/
+            throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'GET_BUILDER');
         }
 
+    }
+
+    protected applySearch(_query: SelectQueryBuilder<T>, _search: string): void {
+        // Default: do nothing. To be overridden by subclass if needed.
     }
 }

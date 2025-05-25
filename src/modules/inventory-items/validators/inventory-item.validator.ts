@@ -7,6 +7,8 @@ import { CreateInventoryItemDto } from "../dto/inventory-item/create-inventory-i
 import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
@@ -16,15 +18,17 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
 
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryItem', requestContextService, logger); }
 
     public async validateCreate(dto: CreateInventoryItemDto): Promise<void> {
         // no existing name
         const exists = await this.repo.findOne({ where: { itemName: dto.itemName } });
         if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
             this.addError({
-                error: 'Inventory item already exists',
-                status: 'EXIST',
+                errorMessage: 'Inventory item already exists',
+                errorType: 'EXIST',
                 contextEntity: 'CreateInventoryItemDto',
                 sourceEntity: 'InventoryItem',
                 value: dto.itemName
@@ -40,8 +44,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
             if (dupliateSizing) {
                 for (const duplicate of dupliateSizing) {
                     this.addError({
-                        error: 'duplicate inventory item sizes',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate inventory item sizes',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateInventoryItemDto',
                         sourceEntity: 'CreateChildInventoryItemSizeDto',
                         value: { packageId: duplicate.inventoryPackageId, measureId: duplicate.measureUnitId },
@@ -59,8 +63,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
         if (dto.itemName) {
             if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
                 this.addError({
-                    error: 'Inventory item already exists',
-                    status: 'EXIST',
+                    errorMessage: 'Inventory item already exists',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateInventoryItemDto',
                     contextId: id,
                     sourceEntity: 'InventoryItem',
@@ -104,8 +108,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
             if (dupliateIds) {
                 for (const duplicate of dupliateIds) {
                     this.addError({
-                        error: 'duplicate inventory item sizes',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate update item size requests',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateInventoryItemDto',
                         contextId: id,
                         sourceEntity: 'UpdateChildInventoryItemSizeDto',
@@ -122,8 +126,8 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
             if (dupliateSizing) {
                 for (const duplicate of dupliateSizing) {
                     this.addError({
-                        error: 'duplicate inventory item sizes',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate inventory item sizes',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateInventoryItemDto',
                         contextId: id,
                         sourceEntity: 'CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto',
@@ -132,6 +136,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
                 }
             }
         }
+
         this.throwIfErrors()
     }
 }

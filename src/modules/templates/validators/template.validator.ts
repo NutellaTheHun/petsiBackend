@@ -7,6 +7,8 @@ import { CreateTemplateDto } from "../dto/template/create-template.dto";
 import { UpdateTemplateDto } from "../dto/template/update-template.dto";
 import { Template } from "../entities/template.entity";
 import { TemplateMenuItemService } from "../services/template-menu-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class TemplateValidator extends ValidatorBase<Template> {
@@ -16,13 +18,15 @@ export class TemplateValidator extends ValidatorBase<Template> {
 
         @Inject(forwardRef(() => TemplateMenuItemService))
         private readonly itemService: TemplateMenuItemService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'Template', requestContextService, logger); }
 
     public async validateCreate(dto: CreateTemplateDto): Promise<void> {
         if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
             this.addError({
-                error: 'Template with that name already exists.',
-                status: 'EXIST',
+                errorMessage: 'Template with that name already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateTemplateDto',
                 sourceEntity: 'InventoryArea',
                 value: dto.templateName,
@@ -39,8 +43,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if (duplicateItems) {
                 for (const dup of duplicateItems) {
                     this.addError({
-                        error: 'duplicate menu items on template',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate menu items on template',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateTemplateDto',
                         sourceEntity: 'MenuItem',
                         sourceId: dup.menuItemId
@@ -56,8 +60,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if (duplicatePos) {
                 for (const dup of duplicatePos) {
                     this.addError({
-                        error: 'duplicate template row positions',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate template row positions',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateTemplateDto',
                         sourceEntity: 'TemplateMenuItem',
                         value: dup.tablePosIndex
@@ -73,8 +77,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
         if (dto.templateName) {
             if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
                 this.addError({
-                    error: 'Template with that name already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Template with that name already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateTemplateDto',
                     contextId: id,
                     sourceEntity: 'InventoryArea',
@@ -111,8 +115,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if (duplicateItems) {
                 for (const dup of duplicateItems) {
                     this.addError({
-                        error: 'duplicate menu items on template',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate menu items on template',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateTemplateDto',
                         contextId: id,
                         sourceEntity: 'MenuItem',
@@ -129,8 +133,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if (duplicatePos) {
                 for (const dup of duplicatePos) {
                     this.addError({
-                        error: 'duplicate template row positions',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate template row positions',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateTemplateDto',
                         contextId: id,
                         sourceEntity: 'TemplateMenuItem',
@@ -147,8 +151,8 @@ export class TemplateValidator extends ValidatorBase<Template> {
             if (duplicateIds) {
                 for (const dupId of duplicateIds) {
                     this.addError({
-                        error: 'Multiple update requests for the same template item',
-                        status: 'INVALID',
+                        errorMessage: 'Multiple update requests for the same template item',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateTemplateDto',
                         contextId: id,
                         sourceEntity: 'TemplateMenuItem',

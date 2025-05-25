@@ -6,24 +6,29 @@ import { CreateInventoryItemVendorDto } from "../dto/inventory-item-vendor/creat
 import { UpdateInventoryItemVendorDto } from "../dto/inventory-item-vendor/update-inventory-item-vendor.dto";
 import { InventoryItemVendor } from "../entities/inventory-item-vendor.entity";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVendor> {
     constructor(
         @InjectRepository(InventoryItemVendor)
         private readonly repo: Repository<InventoryItemVendor>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryItemVendor', requestContextService, logger); }
 
     public async validateCreate(dto: CreateInventoryItemVendorDto): Promise<void> {
         if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
             this.addError({
-                error: 'Inventory vendor already exists',
-                status: 'EXIST',
+                errorMessage: 'Inventory vendor already exists',
+                errorType: 'EXIST',
                 contextEntity: 'CreateInventoryItemVendorDto',
                 sourceEntity: 'InventoryItemVendor',
                 value: dto.vendorName
             } as ValidationError);
         }
+
         this.throwIfErrors()
     }
 
@@ -31,8 +36,8 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         if (dto.vendorName) {
             if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
                 this.addError({
-                    error: 'Inventory vendor already exists',
-                    status: 'EXIST',
+                    errorMessage: 'Inventory vendor already exists',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateInventoryItemVendorDto',
                     contextId: id,
                     sourceEntity: 'InventoryItemVendor',

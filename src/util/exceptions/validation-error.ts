@@ -1,13 +1,12 @@
 export class ValidationError {
-
     /**
      * Short, user friendly error description.
      */
-    error: string;
+    errorMessage: string;
     /**
      * Type of validation error.
      */
-    status: 'EXIST' | 'DUPLICATE' | 'INVALID' | 'MISSING';
+    errorType: 'EXIST' | 'DUPLICATE' | 'INVALID' | 'MISSING';
     /**
      * Id of the entity that caused the error.
      */
@@ -44,4 +43,8 @@ export class ValidationError {
      * the name value would be returned as the value.
      */
     value?: any;
+
+    constructor(init?: Partial<ValidationError>) {
+        Object.assign(this, init);
+    }
 }

@@ -7,19 +7,23 @@ import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-
 import { UpdateChildRecipeIngredientDto } from "../dto/recipe-ingredient/update-child-recipe-ingedient.dto";
 import { UpdateRecipeIngredientDto } from "../dto/recipe-ingredient/update-recipe-ingedient.dto";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
     constructor(
         @InjectRepository(RecipeIngredient)
         private readonly repo: Repository<RecipeIngredient>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'RecipeIngredient', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildRecipeIngredientDto): Promise<void> {
         if (dto.ingredientInventoryItemId && dto.ingredientRecipeId) {
             this.addError({
-                error: 'Ingredient references both an inventory item and recipe',
-                status: 'INVALID',
+                errorMessage: 'Ingredient references both an inventory item and recipe',
+                errorType: 'INVALID',
                 contextEntity: 'CreateRecipeIngredientDto',
                 sourceEntity: 'InventoryItem',
                 sourceId: dto.ingredientInventoryItemId,
@@ -29,8 +33,8 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
         }
         if (!dto.ingredientInventoryItemId && !dto.ingredientRecipeId) {
             this.addError({
-                error: 'missing reference for ingredient',
-                status: 'INVALID',
+                errorMessage: 'missing reference for ingredient',
+                errorType: 'INVALID',
                 contextEntity: 'CreateRecipeIngredientDto',
                 sourceEntity: 'RecipeIngredient',
             } as ValidationError);
@@ -41,8 +45,8 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
     public async validateUpdate(id: number, dto: UpdateRecipeIngredientDto | UpdateChildRecipeIngredientDto): Promise<void> {
         if (dto.ingredientInventoryItemId && dto.ingredientRecipeId) {
             this.addError({
-                error: 'Ingredient references both an inventory item and recipe',
-                status: 'INVALID',
+                errorMessage: 'Ingredient references both an inventory item and recipe',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateRecipeIngredientDto',
                 contextId: id,
                 sourceEntity: 'InventoryItem',
@@ -51,15 +55,15 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
                 conflictId: dto.ingredientRecipeId,
             } as ValidationError);
         }
-        if (dto.ingredientInventoryItemId || dto.ingredientRecipeId) {
+        else if (dto.ingredientInventoryItemId || dto.ingredientRecipeId) {
             const currentIngred = await this.repo.findOne({ where: { id }, relations: ['ingredientInventoryItem', 'ingredientRecipe'] });
             if (!currentIngred) { throw new Error(); }
 
             if (dto.ingredientInventoryItemId && currentIngred?.ingredientRecipe) {
                 if (dto.ingredientRecipeId !== null) {
                     this.addError({
-                        error: 'Ingredient currently references a recipe, cannot reference both a inventory item and recipe',
-                        status: 'INVALID',
+                        errorMessage: 'Ingredient currently references a recipe, cannot reference both a inventory item and recipe',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateRecipeIngredientDto',
                         contextId: id,
                         sourceEntity: 'InventoryItem',
@@ -73,8 +77,8 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
             if (dto.ingredientRecipeId && currentIngred?.ingredientInventoryItem) {
                 if (dto.ingredientInventoryItemId !== null) {
                     this.addError({
-                        error: 'Ingredient currently references a inventory item, cannot reference both a inventory item and recipe',
-                        status: 'INVALID',
+                        errorMessage: 'Ingredient currently references a inventory item, cannot reference both a inventory item and recipe',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateRecipeIngredientDto',
                         contextId: id,
                         sourceEntity: 'Recipe',

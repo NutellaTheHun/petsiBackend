@@ -8,6 +8,8 @@ import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class MenuItemValidator extends ValidatorBase<MenuItem> {
@@ -20,15 +22,17 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
 
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'MenuItem', requestContextService, logger); }
 
     public async validateCreate(dto: CreateMenuItemDto): Promise<void> {
 
         // exists
         if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
             this.addError({
-                error: 'Menu item already exists.',
-                status: 'EXIST',
+                errorMessage: 'Menu item already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateMenuItemDto',
                 sourceEntity: 'MenuItem',
                 value: dto.itemName,
@@ -38,8 +42,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         // Cannot assign both containerOptions and a definedContainer 
         if (dto.containerOptionDto && dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0) {
             this.addError({
-                error: 'Cannot assign a container item as both a defined and dynamic.',
-                status: 'INVALID',
+                errorMessage: 'Cannot assign a container item as both a defined and dynamic.',
+                errorType: 'INVALID',
                 contextEntity: 'CreateMenuItemDto',
                 sourceEntity: 'MenuItemContainerOptionsDto',
                 conflictEntity: 'MenuItemContainerItemDto',
@@ -53,8 +57,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             for (const item of dto.definedContainerItemDtos) {
                 if (!this.helper.isValidSize(item.parentContainerSizeId, dto.validSizeIds)) {
                     this.addError({
-                        error: 'Invalid size assigned for container size of the contained item.',
-                        status: 'INVALID',
+                        errorMessage: 'Invalid size assigned for container size of the contained item.',
+                        errorType: 'INVALID',
                         contextEntity: 'CreateMenuItemDto',
                         sourceEntity: 'MenuItemSize',
                         sourceId: item.parentContainerSizeId,
@@ -71,8 +75,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (duplicateItems) {
                 for (const duplicate of duplicateItems) {
                     this.addError({
-                        error: 'Dupliate item in defined container.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Dupliate item in defined container.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateMenuItemDto',
                         sourceEntity: 'MenuItemContainerItemDto',
                         value: {
@@ -94,8 +98,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (duplicateSizesIds) {
                 for (const id of duplicateSizesIds) {
                     this.addError({
-                        error: 'Duplicate sizes for menu item',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate sizes for menu item',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateMenuItemDto',
                         sourceEntity: 'MenuItemSize',
                         value: { menuItemSizeId: id }
@@ -112,8 +116,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         if (dto.itemName) {
             if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
                 this.addError({
-                    error: 'Menu item already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Menu item already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateMenuItemDto',
                     contextId: id,
                     sourceEntity: 'MenuItem',
@@ -126,8 +130,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         if (dto.containerOptionDto && dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0) {
             //return `Cannot create MenuItem with both containerOptions and definedContainerItems`;
             this.addError({
-                error: 'Cannot assign a container item as both a defined and dynamic.',
-                status: 'INVALID',
+                errorMessage: 'Cannot assign a container item as both a defined and dynamic.',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateMenuItemDto',
                 contextId: id,
                 sourceEntity: 'MenuItemContainerOptionsDto',
@@ -144,8 +148,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (dto.definedContainerItemDtos && dto.definedContainerItemDtos.length > 0 && currentItem?.containerOptions) {
                 if (dto.containerOptionDto !== null) {
                     this.addError({
-                        error: 'Cannot assign a container item to be defined while it is dynamic.',
-                        status: 'INVALID',
+                        errorMessage: 'Cannot assign a container item to be defined while it is dynamic.',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateMenuItemDto',
                         contextId: id,
                         sourceEntity: 'MenuItemContainerItemDto',
@@ -158,8 +162,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (dto.containerOptionDto && currentItem.definedContainerItems && currentItem.definedContainerItems?.length > 0) {
                 if (dto.definedContainerItemDtos !== null) {
                     this.addError({
-                        error: 'Cannot assign a container item to be dynamic while it is defined.',
-                        status: 'INVALID',
+                        errorMessage: 'Cannot assign a container item to be dynamic while it is defined.',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateMenuItemDto',
                         contextId: id,
                         sourceEntity: 'MenuItemContainerOptionsDto',
@@ -184,8 +188,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
 
                     if (!this.helper.isValidSize(item.parentContainerSizeId, validSizes)) {
                         this.addError({
-                            error: 'Invalid container size assigned for the contained item.',
-                            status: 'INVALID',
+                            errorMessage: 'Invalid container size assigned for the contained item.',
+                            errorType: 'INVALID',
                             contextEntity: 'UpdateMenuItemDto',
                             contextId: id,
                             sourceEntity: 'MenuItemSize',
@@ -218,8 +222,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (duplicateItems) {
                 for (const duplicate of duplicateItems) {
                     this.addError({
-                        error: 'Dupliate item in defined container.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Dupliate item in defined container.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateMenuItemDto',
                         sourceEntity: 'MenuItemContainerItemDto',
                         value: {
@@ -242,8 +246,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             if (duplicateSizesIds) {
                 for (const dupId of duplicateSizesIds) {
                     this.addError({
-                        error: 'Duplicate sizes for menu item',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate sizes for menu item',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateMenuItemDto',
                         contextId: id,
                         sourceEntity: 'MenuItemSize',

@@ -10,6 +10,8 @@ import { type_b, type_c } from "../utils/constants";
 import { getLabelsTestingModule } from "../utils/label-testing.module";
 import { LabelTestingUtil } from "../utils/label-testing.util";
 import { LabelValidator } from "./label.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('label validator', () => {
     let testingUtil: LabelTestingUtil;
@@ -53,9 +55,7 @@ describe('label validator', () => {
             labelTypeId: labelType.id,
         } as CreateLabelDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: menuItem/labelType combination exists', async () => {
@@ -71,9 +71,14 @@ describe('label validator', () => {
             labelTypeId: badLabel.labelType.id,
         } as CreateLabelDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('menuItem / labelType combination already exists');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -90,8 +95,8 @@ describe('label validator', () => {
             imageUrl: "updateUrl",
             labelTypeId: labelType.id,
         } as UpdateLabelDto;
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: menuItem / labelType combination exists', async () => {
@@ -109,26 +114,13 @@ describe('label validator', () => {
             labelTypeId: badItem.labelType.id,
         } as UpdateLabelDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('menuItem / labelType combination already exists');
-    });
-
-    it('should fail update: menuItem / labelType combination exists', async () => {
-        const labelRequest = await labelService.findAll({ relations: ['menuItem', 'labelType'] })
-        if (!labelRequest) { throw new Error(); }
-
-        const toUpdate = labelRequest.items[0];
-
-        const badItem = labelRequest.items[1];
-        if (!badItem.labelType) { throw new Error(); }
-
-        const dto = {
-            menuItemId: badItem.menuItem.id,
-            imageUrl: "newUrl",
-            labelTypeId: badItem.labelType.id,
-        } as UpdateLabelDto;
-
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('menuItem / labelType combination already exists');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

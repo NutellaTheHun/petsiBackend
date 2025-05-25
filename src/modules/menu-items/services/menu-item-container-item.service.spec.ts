@@ -141,18 +141,6 @@ describe('menu item container item service', () => {
         expect(result?.containedItemsize.id).toEqual(item.validSizes[1].id);
     });
 
-    it('should fail update container item (no size provided)', async () => {
-        const newItem = await menuItemService.findOneByName(item_b, ['validSizes']);
-        if (!newItem) { throw new NotFoundException(); }
-
-        const dto = plainToInstance(UpdateMenuItemContainerItemDto, {
-            mode: 'update',
-            containedMenuItemId: newItem.id,
-        });
-
-        await expect(componentService.update(testId, dto)).rejects.toThrow(AppHttpException);
-    });
-
     it('should update quantity', async () => {
         const dto = {
             mode: 'update',

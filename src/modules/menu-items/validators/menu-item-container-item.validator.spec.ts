@@ -9,6 +9,8 @@ import { item_a, item_c, SIZE_FOUR } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerItemValidator } from "./menu-item-container-item.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { INVALID } from "../../../util/exceptions/error_constants";
 
 describe('menu item container item validator', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -55,9 +57,7 @@ describe('menu item container item validator', () => {
             quantity: 1,
         } as CreateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: invalid size for item', async () => {
@@ -79,9 +79,14 @@ describe('menu item container item validator', () => {
             quantity: 1,
         } as CreateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`size ${badSize.name} with id ${badSize.id} is invalid for contained item ${containedItem.itemName} with id ${containedItem.id}`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should pass update', async () => {
@@ -104,8 +109,7 @@ describe('menu item container item validator', () => {
             quantity: 2,
         } as UpdateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: new item with no sizing', async () => {
@@ -124,8 +128,14 @@ describe('menu item container item validator', () => {
             quantity: 3,
         } as UpdateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('updating menu item must be accompanied by new menuItemSize');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: invalid contained item and size', async () => {
@@ -149,8 +159,14 @@ describe('menu item container item validator', () => {
             quantity: 3,
         } as UpdateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`size ${badSize.name} with id ${badSize.id} is invalid for contained item ${containedItem.itemName} with id ${containedItem.id}`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: invalid size for currentItem', async () => {
@@ -172,8 +188,13 @@ describe('menu item container item validator', () => {
             quantity: 3,
         } as UpdateChildMenuItemContainerItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`size ${badSize.name} with id ${badSize.id} is invalid for current item ${toUpdate.containedItem.itemName} with id ${toUpdate.containedItem.id}`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
-
 });

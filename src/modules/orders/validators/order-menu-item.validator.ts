@@ -12,6 +12,8 @@ import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { OrderContainerItemService } from "../services/order-container-item.service";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
@@ -27,8 +29,10 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
 
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
 
-    ) { super(repo); }
+    ) { super(repo, 'OrderMenuItem', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildOrderMenuItemDto): Promise<void> {
         const menuItem = await this.menuItemService.findOne(dto.menuItemId, ['validSizes']);
@@ -37,8 +41,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
         // validate item / size
         if (!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)) {
             this.addError({
-                error: 'Invalid item size.',
-                status: 'INVALID',
+                errorMessage: 'Invalid item size.',
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderMenuItemDto',
                 sourceEntity: 'MenuItemSize',
                 sourceId: dto.menuItemSizeId,
@@ -57,8 +61,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             if (duplicateItems) {
                 for (const duplicate of duplicateItems) {
                     this.addError({
-                        error: 'Order has duplicate items.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Order has duplicate items.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateOrderMenuItemDto',
                         sourceEntity: 'MenuItem',
                         sourceId: duplicate.containedMenuItemId,
@@ -72,8 +76,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             for (const item of dto.orderedItemContainerDtos) {
                 if (item.parentContainerMenuItemId !== menuItem.id) {
                     this.addError({
-                        error: 'Ordered container item references the incorrect parent item.',
-                        status: 'INVALID',
+                        errorMessage: 'Ordered container item references the incorrect parent item.',
+                        errorType: 'INVALID',
                         contextEntity: 'CreateOrderMenuItemDto',
                         sourceEntity: 'MenuItem',
                         sourceId: item.parentContainerMenuItemId,
@@ -101,8 +105,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
 
             if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
                 this.addError({
-                    error: 'Invalid item size.',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid item size.',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateOrderMenuItemDto',
                     contextId: id,
                     sourceEntity: 'MenuItemSize',
@@ -146,8 +150,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             if (duplicateIds) {
                 for (const dupId of duplicateIds) {
                     this.addError({
-                        error: 'multiple update requests for same container item.',
-                        status: 'INVALID',
+                        errorMessage: 'multiple update requests for same container item.',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateOrderMenuItemDto',
                         contextId: id,
                         sourceEntity: 'UpdateChildOrderContainerItemDto',
@@ -166,8 +170,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
             if (duplicateItems) {
                 for (const duplicate of duplicateItems) {
                     this.addError({
-                        error: 'duplicate container item.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate container item.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateOrderMenuItemDto',
                         contextId: id,
                         sourceEntity: 'MenuItem',

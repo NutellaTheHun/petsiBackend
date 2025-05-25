@@ -7,6 +7,8 @@ import { TYPE_A, TYPE_B } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderCategoryValidator } from "./order-category.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('order category validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -38,9 +40,7 @@ describe('order category validator', () => {
             categoryName: "TEST NAME"
         } as CreateOrderCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -48,9 +48,14 @@ describe('order category validator', () => {
             categoryName: TYPE_A
         } as CreateOrderCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Order category with name ${TYPE_A} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -61,8 +66,7 @@ describe('order category validator', () => {
             categoryName: "UPDATE TEST"
         } as UpdateOrderCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -73,7 +77,13 @@ describe('order category validator', () => {
             categoryName: TYPE_B
         } as UpdateOrderCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Order category with name ${TYPE_B} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

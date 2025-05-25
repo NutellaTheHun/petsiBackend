@@ -1,5 +1,6 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { DRY_A, FOOD_A } from "../../inventory-items/utils/constants";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
@@ -12,6 +13,7 @@ import { AREA_A } from "../utils/constants";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountValidator } from "./inventory-area-count.validator";
+import { DUPLICATE } from "../../../util/exceptions/error_constants";
 
 describe('inventory area count validator', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -70,9 +72,7 @@ describe('inventory area count validator', () => {
             itemCountDtos: itemDtos,
         } as CreateInventoryAreaCountDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should pass update', async () => {
@@ -103,8 +103,7 @@ describe('inventory area count validator', () => {
             itemCountDtos: itemDtos,
         } as UpdateInventoryAreaCountDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: duplicate update ids', async () => {
@@ -141,7 +140,13 @@ describe('inventory area count validator', () => {
             itemCountDtos: itemDtos,
         } as UpdateInventoryAreaCountDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`multiple update dtos for same id`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 });

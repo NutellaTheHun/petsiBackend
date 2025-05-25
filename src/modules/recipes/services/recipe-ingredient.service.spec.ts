@@ -17,6 +17,7 @@ import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from './recipe-ingredient.service';
 import { RecipeService } from './recipe.service';
+import { ValidationException } from '../../../util/exceptions/validation-exception';
 
 describe('recipe ingredient service', () => {
     let ingredientService: RecipeIngredientService;
@@ -201,7 +202,7 @@ describe('recipe ingredient service', () => {
             ingredientDtos: [recIngredDto]
         } as UpdateRecipeDto
 
-        await expect(recipeService.update(recipeA.id, updateRecipeDto)).rejects.toThrow(AppHttpException);
+        await expect(recipeService.update(recipeA.id, updateRecipeDto)).rejects.toThrow(ValidationException);
     });
 
     it('should find ingredient by id', async () => {
@@ -307,7 +308,7 @@ describe('recipe ingredient service', () => {
             ingredientDtos: [updateRecIngredDto],
         } as UpdateRecipeDto
 
-        await expect(recipeService.update(newRec.id, updateRecipeDto)).rejects.toThrow(AppHttpException);
+        await expect(recipeService.update(newRec.id, updateRecipeDto)).rejects.toThrow(ValidationException);
     });
 
     it('should get all ingredients', async () => {

@@ -15,6 +15,8 @@ import { CAT_BLUE, item_a, item_b, SIZE_THREE } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemValidator } from "./menu-item.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, EXIST, INVALID } from "../../../util/exceptions/error_constants";
 
 describe('menu item validator', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -68,9 +70,7 @@ describe('menu item validator', () => {
             isParbake: true,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should validate create: defined container', async () => {
@@ -110,9 +110,7 @@ describe('menu item validator', () => {
             definedContainerItemDtos: containerDtos,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should validate create: container options', async () => {
@@ -135,9 +133,7 @@ describe('menu item validator', () => {
             containerOptionDto: optionDto,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -158,9 +154,14 @@ describe('menu item validator', () => {
             isParbake: true,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Menu item with name ${item_a} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail create: definedContainer and container options', async () => {
@@ -207,9 +208,14 @@ describe('menu item validator', () => {
             containerOptionDto: optionDto,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Cannot create MenuItem with both containerOptions and definedContainerItems`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: definedContainer duplicates', async () => {
@@ -246,9 +252,14 @@ describe('menu item validator', () => {
             definedContainerItemDtos: containerDtos,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`defined container has duplicate parentContainerSize / containedItem / containedItemSize combination`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail create: duplicate size ids', async () => {
@@ -265,9 +276,14 @@ describe('menu item validator', () => {
             isParbake: true,
         } as CreateMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`menu item to create has duplicate item size ids`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should pass update: normal', async () => {
@@ -287,8 +303,7 @@ describe('menu item validator', () => {
             isPOTM: true,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should pass update: defined container', async () => {
@@ -335,8 +350,7 @@ describe('menu item validator', () => {
             definedContainerItemDtos: containerDtos,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should pass update: container options', async () => {
@@ -363,8 +377,7 @@ describe('menu item validator', () => {
             containerOptionDto: optionDto,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -384,8 +397,14 @@ describe('menu item validator', () => {
             isParbake: true,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Menu item with name ${dto.itemName} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail update: container options and defined container', async () => {
@@ -436,8 +455,14 @@ describe('menu item validator', () => {
             containerOptionDto: optionDto,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Cannot create MenuItem with both containerOptions and definedContainerItems`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: container options with current defined container', async () => {
@@ -456,8 +481,14 @@ describe('menu item validator', () => {
             containerOptionDto: optionDto,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`current item has a defined container, must set to null before updating with containerOptions`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should pass update: container options with current defined container (set null)', async () => {
@@ -477,8 +508,7 @@ describe('menu item validator', () => {
             definedContainerItemDtos: null,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull;
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: defined container with current container options', async () => {
@@ -500,14 +530,14 @@ describe('menu item validator', () => {
         const containerDtos = [
             {
                 mode: 'create',
-                parentContainerSizeId: parentMenuitem.id,
+                parentContainerSizeId: parentMenuitem.validSizes[0].id,
                 containedMenuItemId: containedItemA.id,
                 containedMenuItemSizeId: containedItemA.validSizes[0].id,
                 quantity: 1,
             } as CreateChildMenuItemContainerItemDto,
             {
                 mode: 'create',
-                parentContainerSizeId: parentMenuitem.id,
+                parentContainerSizeId: parentMenuitem.validSizes[0].id,
                 containedMenuItemId: containedItemB.id,
                 containedMenuItemSizeId: containedItemB.validSizes[0].id,
                 quantity: 1,
@@ -518,8 +548,14 @@ describe('menu item validator', () => {
             definedContainerItemDtos: containerDtos,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`current item has containerOptions, must set to null before updating with defined container`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should pass update: defined container with current container options (Set null)', async () => {
@@ -543,16 +579,12 @@ describe('menu item validator', () => {
             containerOptionDto: null,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: defined container duplicates', async () => {
-        const toUpdate = await itemService.findOneByName(item_a);
+        const toUpdate = await itemService.findOneByName(item_a, ['validSizes']);
         if (!toUpdate) { throw new Error(); }
-
-        const size = await sizeService.findOneByName(SIZE_THREE);
-        if (!size) { throw new Error(); }
 
         const containedItemA = await itemService.findOneByName(item_a, ['validSizes']);
         if (!containedItemA) { throw new Error(); }
@@ -560,14 +592,14 @@ describe('menu item validator', () => {
         const containerDtos = [
             {
                 mode: 'create',
-                parentContainerSizeId: size.id,
+                parentContainerSizeId: toUpdate.validSizes[0].id,
                 containedMenuItemId: containedItemA.id,
                 containedMenuItemSizeId: containedItemA.validSizes[0].id,
                 quantity: 1,
             } as CreateChildMenuItemContainerItemDto,
             {
                 mode: 'create',
-                parentContainerSizeId: size.id,
+                parentContainerSizeId: toUpdate.validSizes[0].id,
                 containedMenuItemId: containedItemA.id,
                 containedMenuItemSizeId: containedItemA.validSizes[0].id,
                 quantity: 1,
@@ -578,8 +610,14 @@ describe('menu item validator', () => {
             definedContainerItemDtos: containerDtos,
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`defined container has duplicate parentContainerSize / containedItem / containedItemSize combination`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: duplicate validSizes', async () => {
@@ -596,7 +634,13 @@ describe('menu item validator', () => {
             validSizeIds: [size.id, size.id],
         } as UpdateMenuItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`menu item to create has duplicate item size ids`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 });

@@ -7,6 +7,8 @@ import { CreateRecipeCategoryDto } from "../dto/recipe-category/create-recipe-ca
 import { UpdateRecipeCategoryDto } from "../dto/recipe-category/update-recipe-category.dto";
 import { RecipeCategory } from "../entities/recipe-category.entity";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
@@ -15,16 +17,18 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
         private readonly repo: Repository<RecipeCategory>,
 
         @Inject(forwardRef(() => RecipeSubCategoryService))
-        private readonly subCategoryService: RecipeSubCategoryService
-    ) { super(repo); }
+        private readonly subCategoryService: RecipeSubCategoryService,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'RecipeCategory', requestContextService, logger); }
 
     public async validateCreate(dto: CreateRecipeCategoryDto): Promise<void> {
 
         // Exists
         if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
             this.addError({
-                error: 'Recipe category already exists.',
-                status: 'EXIST',
+                errorMessage: 'Recipe category already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateRecipeCategoryDto',
                 sourceEntity: 'RecipeCategory',
                 value: dto.categoryName,
@@ -40,8 +44,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
             if (duplicateSubCats) {
                 for (const dup of duplicateSubCats) {
                     this.addError({
-                        error: 'Duplicate sub category.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate sub category.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateRecipeCategoryDto',
                         sourceEntity: 'RecipeSubCategory',
                         value: dup.subCategoryName,
@@ -59,8 +63,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
         if (dto.categoryName) {
             if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
                 this.addError({
-                    error: 'Recipe category already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Recipe category already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateRecipeCategoryDto',
                     contextId: id,
                     sourceEntity: 'RecipeCategory',
@@ -95,8 +99,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
             if (duplicateSubCats) {
                 for (const dup of duplicateSubCats) {
                     this.addError({
-                        error: 'Duplicate subcategory.',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate subcategory.',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateRecipeCategoryDto',
                         contextId: id,
                         sourceEntity: 'RecipeSubCategory',
@@ -113,8 +117,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
             if (duplicateIds) {
                 for (const dup of duplicateIds) {
                     this.addError({
-                        error: 'Multiple update requests for sub category',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Multiple update requests for sub category',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateRecipeCategoryDto',
                         contextId: id,
                         sourceEntity: 'UpdateRecipeSubCategoryDto',

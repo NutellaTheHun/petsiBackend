@@ -11,6 +11,8 @@ import { template_a, template_b } from "../utils/constants";
 import { getTemplateTestingModule } from "../utils/template-testing.module";
 import { TemplateTestingUtil } from "../utils/template-testing.util";
 import { TemplateValidator } from "./template.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, EXIST } from "../../../util/exceptions/error_constants";
 
 describe('template validator', () => {
     let testingUtil: TemplateTestingUtil;
@@ -67,9 +69,7 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as CreateTemplateDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: duplicate menuItems', async () => {
@@ -105,9 +105,14 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as CreateTemplateDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('template cannot have items with multiple menuItems');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail create: duplicate TablePosIndex', async () => {
@@ -146,9 +151,14 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as CreateTemplateDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('template cannot have items with duplicate tablePosIndex values');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail create: Name exists', async () => {
@@ -178,9 +188,14 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as CreateTemplateDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Template with name ${template_a} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -214,8 +229,7 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as UpdateTemplateDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: duplicate menuItems', async () => {
@@ -254,8 +268,14 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as UpdateTemplateDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('template cannot have items with multiple menuItems');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: duplicate TablePosIndex', async () => {
@@ -296,8 +316,14 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as UpdateTemplateDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('template cannot have items with duplicate tablePosIndex values');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: Name exists', async () => {
@@ -331,7 +357,13 @@ describe('template validator', () => {
             templateItemDtos: itemDtos,
         } as UpdateTemplateDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Template with name ${template_b} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

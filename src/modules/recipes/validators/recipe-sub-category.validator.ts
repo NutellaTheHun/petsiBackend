@@ -7,19 +7,23 @@ import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/crea
 import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
 import { UpdateRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-recipe-sub-category.dto";
 import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory> {
     constructor(
         @InjectRepository(RecipeSubCategory)
         private readonly repo: Repository<RecipeSubCategory>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'RecipeSubCategory', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildRecipeSubCategoryDto): Promise<void> {
         if (await this.helper.exists(this.repo, 'subCategoryName', dto.subCategoryName)) {
             this.addError({
-                error: 'Recipe subcategory already exists. (name is in use accross all subcategories)',
-                status: 'EXIST',
+                errorMessage: 'Recipe subcategory already exists. (name is in use accross all subcategories)',
+                errorType: 'EXIST',
                 contextEntity: 'CreateRecipeSubCategoryDto',
                 sourceEntity: 'RecipeSubCategory',
                 value: dto.subCategoryName,
@@ -33,8 +37,8 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory>
         if (dto.subCategoryName) {
             if (await this.helper.exists(this.repo, 'subCategoryName', dto.subCategoryName)) {
                 this.addError({
-                    error: 'Recipe subcategory already exists. (name is in use accross all subcategories)',
-                    status: 'EXIST',
+                    errorMessage: 'Recipe subcategory already exists. (name is in use accross all subcategories)',
+                    errorType: 'EXIST',
                     contextEntity: 'CreateRecipeSubCategoryDto',
                     contextId: id,
                     sourceEntity: 'RecipeSubCategory',

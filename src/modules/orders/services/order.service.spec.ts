@@ -81,7 +81,7 @@ describe('order service', () => {
             orderCategoryId: type.id,
             recipient: "test recipient",
             fulfillmentDate: fulfillDate,
-            fulfillmentType: "testFufill",
+            fulfillmentType: "delivery",
             deliveryAddress: "testDelAdr",
             phoneNumber: "testPhone#",
             email: "testEmail",
@@ -92,23 +92,26 @@ describe('order service', () => {
             orderedMenuItemDtos: itemDtos,
         } as CreateOrderDto;
 
-        const result = await orderService.create(dto);
+        try {
+            const result = await orderService.create(dto);
+            expect(result).not.toBeNull();
+            expect(result?.deliveryAddress).toEqual("testDelAdr");
+            expect(result?.email).toEqual("testEmail");
+            expect(result?.fulfillmentDate).toEqual(fulfillDate);
+            expect(result?.fulfillmentType).toEqual("delivery");
+            expect(result?.isFrozen).toEqual(false);
+            expect(result?.isWeekly).toEqual(false);
+            expect(result?.weeklyFulfillment).toEqual("sunday");
+            expect(result?.note).toEqual("testNote");
+            expect(result?.phoneNumber).toEqual("testPhone#");
+            expect(result?.recipient).toEqual("test recipient");
+            expect(result?.orderCategory.id).toEqual(type.id);
+            expect(result?.orderedItems?.length).toEqual(3);
 
-        expect(result).not.toBeNull();
-        expect(result?.deliveryAddress).toEqual("testDelAdr");
-        expect(result?.email).toEqual("testEmail");
-        expect(result?.fulfillmentDate).toEqual(fulfillDate);
-        expect(result?.fulfillmentType).toEqual("testFufill");
-        expect(result?.isFrozen).toEqual(false);
-        expect(result?.isWeekly).toEqual(false);
-        expect(result?.weeklyFulfillment).toEqual("sunday");
-        expect(result?.note).toEqual("testNote");
-        expect(result?.phoneNumber).toEqual("testPhone#");
-        expect(result?.recipient).toEqual("test recipient");
-        expect(result?.orderCategory.id).toEqual(type.id);
-        expect(result?.orderedItems?.length).toEqual(3);
-
-        testId = result?.id as number;
+            testId = result?.id as number;
+        } catch (err) {
+            expect(err).toBeUndefined();
+        }
     });
 
     it('should find an order by id', async () => {
@@ -205,12 +208,12 @@ describe('order service', () => {
 
     it('should update fulfillment type', async () => {
         const dto = {
-            fulfillmentType: "UPDATED FULFILL TYPE"
+            fulfillmentType: "delivery"
         } as UpdateOrderDto;
 
         const result = await orderService.update(testId, dto);
         expect(result).not.toBeNull();
-        expect(result?.fulfillmentType).toEqual("UPDATED FULFILL TYPE");
+        expect(result?.fulfillmentType).toEqual("delivery");
     });
 
     it('should update delivery address', async () => {

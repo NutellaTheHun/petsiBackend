@@ -7,6 +7,8 @@ import { VOLUME, WEIGHT } from "../utils/constants";
 import { getUnitOfMeasureTestingModule } from "../utils/unit-of-measure-testing-module";
 import { UnitOfMeasureTestingUtil } from "../utils/unit-of-measure-testing.util";
 import { UnitOfMeasureCategoryValidator } from "./unit-of-measure-category.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('unit of measure category validator', () => {
     let testingUtil: UnitOfMeasureTestingUtil;
@@ -38,9 +40,7 @@ describe('unit of measure category validator', () => {
             categoryName: "TEST NAME"
         } as CreateUnitOfMeasureCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -48,9 +48,14 @@ describe('unit of measure category validator', () => {
             categoryName: VOLUME
         } as CreateUnitOfMeasureCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Unit category with name ${VOLUME} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -61,8 +66,7 @@ describe('unit of measure category validator', () => {
             categoryName: "TEST NAME"
         } as UpdateUnitOfMeasureCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -73,7 +77,13 @@ describe('unit of measure category validator', () => {
             categoryName: VOLUME
         } as UpdateUnitOfMeasureCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Unit category with name ${VOLUME} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

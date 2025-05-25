@@ -7,6 +7,8 @@ import { REC_SUBCAT_1, REC_SUBCAT_2, REC_SUBCAT_3 } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeSubCategoryValidator } from "./recipe-sub-category.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('recipe sub category validator', () => {
     let testingUtil: RecipeTestUtil;
@@ -39,9 +41,7 @@ describe('recipe sub category validator', () => {
             subCategoryName: "CREATE"
         } as CreateChildRecipeSubCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: name already exists', async () => {
@@ -50,9 +50,14 @@ describe('recipe sub category validator', () => {
             subCategoryName: REC_SUBCAT_3
         } as CreateChildRecipeSubCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`sub category with name ${REC_SUBCAT_3} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
 
@@ -65,8 +70,7 @@ describe('recipe sub category validator', () => {
             subCategoryName: "UPDATE",
         } as UpdateChildRecipeSubCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: name already exists', async () => {
@@ -78,7 +82,13 @@ describe('recipe sub category validator', () => {
             subCategoryName: REC_SUBCAT_2,
         } as UpdateChildRecipeSubCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`sub category with name ${REC_SUBCAT_2} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

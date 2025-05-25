@@ -7,6 +7,8 @@ import { USER_A, USER_B, USER_C } from "../utils/constants";
 import { UserTestUtil } from "../utils/user-test.util";
 import { getUserTestingModule } from "../utils/user-testing-module";
 import { UserValidator } from "./user.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('user validator', () => {
     let testingUtil: UserTestUtil;
@@ -40,9 +42,7 @@ describe('user validator', () => {
             email: "email",
         } as CreateUserDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -52,9 +52,14 @@ describe('user validator', () => {
             email: "email",
         } as CreateUserDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`User with name ${USER_A} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -67,8 +72,7 @@ describe('user validator', () => {
             email: "email",
         } as UpdateUserDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -81,7 +85,13 @@ describe('user validator', () => {
             email: "email",
         } as UpdateUserDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`User with name ${USER_C} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

@@ -8,6 +8,8 @@ import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeService } from "../services/recipe.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class RecipeValidator extends ValidatorBase<Recipe> {
@@ -20,15 +22,17 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'Recipe', requestContextService, logger); }
 
     public async validateCreate(dto: CreateRecipeDto): Promise<void> {
 
         // Exists
         if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
             this.addError({
-                error: 'Recipe already exists.',
-                status: 'EXIST',
+                errorMessage: 'Recipe already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateRecipeDto',
                 sourceEntity: 'Recipe',
                 value: dto.recipeName,
@@ -38,8 +42,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         // subcategory if category isnt assigned
         if (!dto.categoryId && dto.subCategoryId) {
             this.addError({
-                error: 'Cannot assign a subcategory without a category',
-                status: 'INVALID',
+                errorMessage: 'Cannot assign a subcategory without a category',
+                errorType: 'INVALID',
                 contextEntity: 'CreateRecipeDto',
                 sourceEntity: 'RecipeSubCategory',
                 sourceId: dto.subCategoryId,
@@ -53,8 +57,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
             if (!category.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
-                    error: 'Invalid category / subcategory',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid category / subcategory',
+                    errorType: 'INVALID',
                     contextEntity: 'CreateRecipeDto',
                     sourceEntity: 'RecipeSubCategory',
                     sourceId: dto.subCategoryId,
@@ -86,8 +90,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                     const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
 
                     this.addError({
-                        error: 'Duplicate ingredients',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate ingredients',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'CreateRecipeDto',
                         sourceEntity: entity,
                         sourceId: ingredId,
@@ -105,8 +109,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         if (dto.recipeName) {
             if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
                 this.addError({
-                    error: 'Recipe already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Recipe already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateRecipeDto',
                     contextId: id,
                     sourceEntity: 'Recipe',
@@ -124,8 +128,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             // category / subcategory
             if (!category.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
-                    error: 'Invalid category / subcategory',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid category / subcategory',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateRecipeDto',
                     contextId: id,
                     sourceEntity: 'RecipeSubCategory',
@@ -137,25 +141,23 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
         }
         else if (!dto.categoryId && dto.subCategoryId) {
             const currentCategory = (await this.recipeService.findOne(id, ['category'], ['category.subCategories'])).category;
-            if (!currentCategory) { throw new Error(); }
 
             // null category / subcategory
             if (!currentCategory) {
                 this.addError({
-                    error: 'Cannot assign a subcategory without an assigned category',
-                    status: 'INVALID',
+                    errorMessage: 'Cannot assign a subcategory without an assigned category',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateRecipeDto',
                     contextId: id,
                     sourceEntity: 'RecipeSubCategory',
                     sourceId: dto.subCategoryId,
                 } as ValidationError);
             }
-
             // category / subcategory
-            if (!currentCategory.subCategories.find(cat => cat.id === dto.subCategoryId)) {
+            else if (!currentCategory.subCategories.find(cat => cat.id === dto.subCategoryId)) {
                 this.addError({
-                    error: 'Invalid category / subcategory',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid category / subcategory',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateRecipeDto',
                     contextId: id,
                     sourceEntity: 'RecipeSubCategory',
@@ -196,8 +198,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
                     const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
 
                     this.addError({
-                        error: 'Duplicate ingredients',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Duplicate ingredients',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateRecipeDto',
                         contextId: id,
                         sourceEntity: entity,
@@ -214,8 +216,8 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
             if (duplicateIds) {
                 for (const dupId of duplicateIds) {
                     this.addError({
-                        error: 'Multiple update requests for the same ingredient',
-                        status: 'DUPLICATE',
+                        errorMessage: 'Multiple update requests for the same ingredient',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateRecipeDto',
                         contextId: id,
                         sourceEntity: 'RecipeIngredient',

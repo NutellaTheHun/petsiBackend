@@ -8,6 +8,8 @@ import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/upda
 import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
@@ -17,7 +19,9 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
 
         @Inject(forwardRef(() => InventoryItemSizeService))
         private readonly sizeService: InventoryItemSizeService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryItemSize', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<void> {
         this.throwIfErrors()
@@ -35,8 +39,8 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
             });
             if (exists) {
                 this.addError({
-                    error: 'Inventory item size already already exists',
-                    status: 'EXIST',
+                    errorMessage: 'Inventory item size already already exists',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateInventoryItemSizeDto',
                     contextId: id,
                     sourceEntity: 'InventoryItemSize',

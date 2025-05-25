@@ -14,6 +14,8 @@ import { BOX_PKG, CAN_PKG, DAIRY_CAT, FOOD_A, VENDOR_A } from "../utils/constant
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemTestingUtil } from "../utils/inventory-item-testing.util";
 import { InventoryItemValidator } from "./inventory-item.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, EXIST } from "../../../util/exceptions/error_constants";
 
 describe('inventory item validator', () => {
     let testingUtil: InventoryItemTestingUtil;
@@ -90,9 +92,7 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as CreateInventoryItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -134,8 +134,14 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as CreateInventoryItemDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual(`Inventory item with name ${FOOD_A} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail create (duplicate itemSizeDtos)', async () => {
@@ -173,8 +179,15 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as CreateInventoryItemDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual('inventory item has duplicate sizing (package/measurement combination)');
+
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
 
@@ -221,9 +234,7 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as UpdateInventoryItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail validate update (name exists)', async () => {
@@ -269,9 +280,14 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as UpdateInventoryItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toEqual(`Inventory item with name ${FOOD_A} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail validate update (duplicate update sizeDtos)', async () => {
@@ -308,7 +324,6 @@ describe('inventory item validator', () => {
                 id: toUpdate.itemSizes[0].id,
                 measureUnitId: unitPound.id,
                 measureAmount: 1,
-                inventoryPackageId: pkgBox.id,
                 cost: 1,
             } as UpdateChildInventoryItemSizeDto,
         ] as (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
@@ -325,9 +340,14 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as UpdateInventoryItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toEqual('inventory item has duplicate update dtos for the same item size id');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail validate update (duplicate create sizeDtos)', async () => {
@@ -361,7 +381,6 @@ describe('inventory item validator', () => {
             {
                 mode: 'update',
                 id: toUpdate.itemSizes[0].id,
-                measureUnitId: unitPound.id,
                 measureAmount: 1,
                 inventoryPackageId: pkgBox.id,
                 cost: 1,
@@ -380,8 +399,13 @@ describe('inventory item validator', () => {
             itemSizeDtos: sizeDtos,
         } as UpdateInventoryItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toEqual('inventory item has duplicate create sizing (package/measurement combination)');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 });

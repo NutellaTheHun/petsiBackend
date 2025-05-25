@@ -15,6 +15,8 @@ import { REC_A, REC_B, REC_C, REC_CAT_A, REC_F } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeValidator } from "./recipe.valdiator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, EXIST, INVALID } from "../../../util/exceptions/error_constants";
 
 describe('recipe validator', () => {
     let testingUtil: RecipeTestUtil;
@@ -93,9 +95,7 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as CreateRecipeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: name already exists', async () => {
@@ -135,9 +135,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as CreateRecipeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Recipe with name ${REC_C} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail create: subcatgory with no category', async () => {
@@ -181,9 +186,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as CreateRecipeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('cannot assign a sub-category without an assigned category');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: subcategory with wrong parent category', async () => {
@@ -232,9 +242,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as CreateRecipeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('subcategory must be a child to the given RecipeCategory');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: duplicate recipe ingredients', async () => {
@@ -285,9 +300,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as CreateRecipeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('recipe cannot have duplicate ingredients');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
 
@@ -337,8 +357,7 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: name already exists', async () => {
@@ -387,8 +406,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Recipe with name ${dto.recipeName} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail update: subcategory with no category', async () => {
@@ -436,8 +461,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('cannot assign a sub-category without an assigned category');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: subcategory with wrong parent category', async () => {
@@ -490,8 +521,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('subcategory must be a child to the given RecipeCategory');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: duplicate ingredients (update)', async () => {
@@ -510,8 +547,11 @@ describe('recipe validator', () => {
         const invIngred = await inventoryService.findOneByName(FOOD_B);
         if (!invIngred) { throw new Error(); }
 
-        const recIngred = await recipeService.findOneByName(REC_B);
-        if (!recIngred) { throw new Error(); }
+        const recIngredB = await recipeService.findOneByName(REC_B);
+        if (!recIngredB) { throw new Error(); }
+
+        const recIngredC = await recipeService.findOneByName(REC_C);
+        if (!recIngredC) { throw new Error(); }
 
         const ingredDtos = [
             {
@@ -523,14 +563,14 @@ describe('recipe validator', () => {
             {
                 mode: 'update',
                 id: toUpdate.ingredients[0].id,
-                ingredientRecipeId: recIngred.id,
+                ingredientRecipeId: recIngredB.id,
                 quantity: 1,
                 quantityMeasurementId: servingMeasurement.id,
             } as UpdateChildRecipeIngredientDto,
             {
                 mode: 'update',
                 id: toUpdate.ingredients[0].id,
-                ingredientRecipeId: recIngred.id,
+                ingredientRecipeId: recIngredC.id,
                 quantity: 1,
                 quantityMeasurementId: servingMeasurement.id,
             } as UpdateChildRecipeIngredientDto,
@@ -547,9 +587,14 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('recipe cannot have duplicate ingredients');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: duplicate ingredients (create)', async () => {
@@ -604,8 +649,13 @@ describe('recipe validator', () => {
             ingredientDtos: ingredDtos,
         } as UpdateRecipeDto;
 
-
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('recipe cannot have duplicate ingredients');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 });

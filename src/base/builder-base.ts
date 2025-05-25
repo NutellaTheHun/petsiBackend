@@ -1,9 +1,9 @@
 import { HttpStatus } from "@nestjs/common";
 import { ObjectLiteral } from "typeorm";
 import { AppLogger } from "../modules/app-logging/app-logger";
-import { AppHttpException } from "../util/exceptions/app-http-exception";
-import { DTO_VALIDATION_FAIL, ENTITY_NOT_FOUND } from "../util/exceptions/error_constants";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
+import { AppHttpException } from "../util/exceptions/app-http-exception";
+import { ENTITY_NOT_FOUND } from "../util/exceptions/error_constants";
 import { ValidatorBase } from "./validator-base";
 
 export abstract class BuilderBase<T extends ObjectLiteral> {

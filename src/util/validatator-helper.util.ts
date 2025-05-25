@@ -34,6 +34,9 @@ export class ValidatorHelper {
             if (seen.has(key)) {
                 if (seen.get(key)?.length === 1) {
                     duplicates.push(item);
+                    const list = seen.get(key)!;
+                    list.push(item);
+                    seen.set(key, list);
                 }
             } else {
                 seen.set(key, [item]);

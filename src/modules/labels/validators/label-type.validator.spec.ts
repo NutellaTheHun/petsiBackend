@@ -7,6 +7,8 @@ import { type_a, type_b } from "../utils/constants";
 import { getLabelsTestingModule } from "../utils/label-testing.module";
 import { LabelTestingUtil } from "../utils/label-testing.util";
 import { LabelTypeValidator } from "./label-type.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('label type validator', () => {
     let testingUtil: LabelTestingUtil;
@@ -40,9 +42,7 @@ describe('label type validator', () => {
             labelTypeWidth: 100,
         } as CreateLabelTypeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -52,9 +52,14 @@ describe('label type validator', () => {
             labelTypeWidth: 100,
         } as CreateLabelTypeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Label type with name ${type_a} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -66,8 +71,8 @@ describe('label type validator', () => {
             labelTypeLength: 100,
             labelTypeWidth: 100,
         } as UpdateLabelTypeDto;
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -80,8 +85,14 @@ describe('label type validator', () => {
             labelTypeWidth: 100,
         } as UpdateLabelTypeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Label type with name ${type_a} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
 });

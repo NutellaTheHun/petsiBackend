@@ -6,19 +6,23 @@ import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
 import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly repo: Repository<MenuItemCategory>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'MenuItemCategory', requestContextService, logger); }
 
     public async validateCreate(dto: CreateMenuItemCategoryDto): Promise<void> {
         if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
             this.addError({
-                error: 'Menu category name already exists.',
-                status: 'EXIST',
+                errorMessage: 'Menu category name already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateMenuItemCategoryDto',
                 sourceEntity: 'MenuItemCategory',
                 value: dto.categoryName,
@@ -32,8 +36,8 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
         if (dto.categoryName) {
             if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
                 this.addError({
-                    error: 'Menu category name already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Menu category name already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateMenuItemCategoryDto',
                     contextId: id,
                     sourceEntity: 'MenuItemCategory',

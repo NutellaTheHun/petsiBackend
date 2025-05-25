@@ -8,6 +8,8 @@ import { CreateOrderDto } from "../dto/order/create-order.dto";
 import { UpdateOrderDto } from "../dto/order/update-order.dto";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<Order> {
@@ -17,13 +19,15 @@ export class OrderValidator extends ValidatorBase<Order> {
 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly itemService: OrderMenuItemService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'Order', requestContextService, logger); }
 
     public async validateCreate(dto: CreateOrderDto): Promise<void> {
         if (dto.orderedMenuItemDtos.length === 0) {
             this.addError({
-                error: 'Order has no items',
-                status: 'INVALID',
+                errorMessage: 'Order has no items',
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderDto',
             } as ValidationError);
         }
@@ -36,8 +40,8 @@ export class OrderValidator extends ValidatorBase<Order> {
         if (duplicateItems) {
             for (const duplicate of duplicateItems) {
                 this.addError({
-                    error: 'duplicate ordered item',
-                    status: 'DUPLICATE',
+                    errorMessage: 'duplicate ordered item',
+                    errorType: 'DUPLICATE',
                     contextEntity: 'CreateOrderDto',
                     sourceEntity: 'OrderMenuItem',
                     sourceId: duplicate.menuItemId,
@@ -51,8 +55,8 @@ export class OrderValidator extends ValidatorBase<Order> {
         const validDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
             this.addError({
-                error: `Invalid weeklyFulfillment value`,
-                status: 'INVALID',
+                errorMessage: `Invalid weeklyFulfillment value`,
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderDto',
                 conflictEntity: 'Order',
                 value: dto.weeklyFulfillment,
@@ -63,8 +67,8 @@ export class OrderValidator extends ValidatorBase<Order> {
         const validFulfillmentType = ['pickup', 'delivery'];
         if (!validFulfillmentType.includes(dto.fulfillmentType)) {
             this.addError({
-                error: `Invalid fulfillmentType value`,
-                status: 'INVALID',
+                errorMessage: `Invalid fulfillmentType value`,
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderDto',
                 conflictEntity: 'Order',
                 value: dto.fulfillmentType,
@@ -77,8 +81,8 @@ export class OrderValidator extends ValidatorBase<Order> {
 
         if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length === 0) {
             this.addError({
-                error: 'Order has no items',
-                status: 'INVALID',
+                errorMessage: 'Order has no items',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateOrderDto',
                 contextId: id,
             } as ValidationError);
@@ -116,8 +120,8 @@ export class OrderValidator extends ValidatorBase<Order> {
             if (duplicateItems) {
                 for (const duplicate of duplicateItems) {
                     this.addError({
-                        error: 'duplicate ordered item',
-                        status: 'DUPLICATE',
+                        errorMessage: 'duplicate ordered item',
+                        errorType: 'DUPLICATE',
                         contextEntity: 'UpdateOrderDto',
                         contextId: id,
                         sourceEntity: 'OrderMenuItem',
@@ -136,8 +140,8 @@ export class OrderValidator extends ValidatorBase<Order> {
             if (duplicateIds) {
                 for (const updateId of duplicateIds) {
                     this.addError({
-                        error: 'multiple update requests for the same ordered item',
-                        status: 'INVALID',
+                        errorMessage: 'multiple update requests for the same ordered item',
+                        errorType: 'INVALID',
                         contextEntity: 'UpdateOrderDto',
                         contextId: id,
                         sourceEntity: 'OrderMenuItem',
@@ -151,8 +155,8 @@ export class OrderValidator extends ValidatorBase<Order> {
         const validDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
             this.addError({
-                error: `Invalid weeklyFulfillment value`,
-                status: 'INVALID',
+                errorMessage: `Invalid weeklyFulfillment value`,
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderDto',
                 contextId: id,
                 conflictEntity: 'Order',
@@ -164,8 +168,8 @@ export class OrderValidator extends ValidatorBase<Order> {
         const validFulfillmentType = ['pickup', 'delivery'];
         if (dto.fulfillmentType && !validFulfillmentType.includes(dto.fulfillmentType)) {
             this.addError({
-                error: `Invalid fulfillmentType value`,
-                status: 'INVALID',
+                errorMessage: `Invalid fulfillmentType value`,
+                errorType: 'INVALID',
                 contextEntity: 'CreateOrderDto',
                 contextId: id,
                 conflictEntity: 'Order',

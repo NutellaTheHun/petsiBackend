@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -22,5 +22,12 @@ export class MenuItemService extends ServiceBase<MenuItem> {
 
     async findOneByName(name: string, relations?: Array<keyof MenuItem>): Promise<MenuItem | null> {
         return await this.repo.findOne({ where: { itemName: name }, relations: relations });
+    }
+
+    protected applySearch(query: SelectQueryBuilder<MenuItem>, search: string): void {
+        query.andWhere(
+            '(LOWER(entity.itemName) LIKE :search OR LOWER(entity.itemCategory) LIKE :search)',
+            { search: `%${search.toLowerCase()}%` }
+        );
     }
 }

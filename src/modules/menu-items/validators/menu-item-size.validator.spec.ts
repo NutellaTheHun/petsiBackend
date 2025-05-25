@@ -1,5 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { EXIST } from "../../../util/exceptions/error_constants";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
 import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
@@ -38,9 +40,7 @@ describe('menu item size validator', () => {
             sizeName: "TEST CREATE",
         } as CreateMenuItemSizeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -48,9 +48,14 @@ describe('menu item size validator', () => {
             sizeName: SIZE_TWO,
         } as CreateMenuItemSizeDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Menu item size with name ${SIZE_TWO} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -61,8 +66,7 @@ describe('menu item size validator', () => {
             sizeName: "TEST UPDATE",
         } as UpdateMenuItemSizeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -73,7 +77,13 @@ describe('menu item size validator', () => {
             sizeName: SIZE_ONE,
         } as UpdateMenuItemSizeDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Menu item size with name ${SIZE_ONE} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

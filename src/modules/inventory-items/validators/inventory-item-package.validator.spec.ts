@@ -7,6 +7,8 @@ import { BAG_PKG, PACKAGE_PKG } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemTestingUtil } from "../utils/inventory-item-testing.util";
 import { InventoryItemPackageValidator } from "./inventory-item-package.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('inventory item package validator', () => {
     let testingUtil: InventoryItemTestingUtil;
@@ -40,9 +42,7 @@ describe('inventory item package validator', () => {
             packageName: "CREATE TEST",
         } as CreateInventoryItemPackageDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -50,8 +50,14 @@ describe('inventory item package validator', () => {
             packageName: BAG_PKG,
         } as CreateInventoryItemPackageDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual(`Inventory item package with name ${BAG_PKG} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should validate update', async () => {
@@ -62,9 +68,7 @@ describe('inventory item package validator', () => {
             itemCategoryName: "UPDATE TEST",
         } as UpdateInventoryItemPackageDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toBeNull();
+        validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -75,8 +79,14 @@ describe('inventory item package validator', () => {
             packageName: PACKAGE_PKG,
         } as UpdateInventoryItemPackageDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Inventory item package with name ${PACKAGE_PKG} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
 });

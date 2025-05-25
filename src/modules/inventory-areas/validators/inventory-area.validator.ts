@@ -6,21 +6,25 @@ import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 import { InventoryArea } from "../entities/inventory-area.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
     constructor(
         @InjectRepository(InventoryArea)
         private readonly repo: Repository<InventoryArea>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryArea', requestContextService, logger); }
 
     public async validateCreate(dto: CreateInventoryAreaDto): Promise<void> {
 
         // Already exists check
         if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
             this.addError({
-                error: 'Inventory area name already exists.',
-                status: 'EXIST',
+                errorMessage: 'Inventory area name already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateInventoryAreaDto',
                 sourceEntity: 'InventoryArea',
                 value: dto.areaName,
@@ -36,8 +40,8 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
         if (dto.areaName) {
             if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
                 this.addError({
-                    error: 'Inventory area name already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Inventory area name already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateInventoryAreaDto',
                     contextId: id,
                     sourceEntity: 'InventoryArea',

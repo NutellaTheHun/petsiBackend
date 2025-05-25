@@ -1,15 +1,12 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Body, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Delete, Get, HttpCode, HttpStatus, Inject, NotFoundException, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { Cache } from "cache-manager";
 import { parse, stringify } from 'flatted';
 import { ObjectLiteral } from "typeorm";
 import { AppLogger } from "../modules/app-logging/app-logger";
 import { RequestContextService } from "../modules/request-context/RequestContextService";
 import { invalidateFindAllCache, trackFindAllKey } from "../util/cache.util";
-import { AppHttpException } from "../util/exceptions/app-http-exception";
-import { DatabaseError } from "../util/exceptions/database-error";
 import { ServiceBase } from "./service-base";
-import { ENTITY_NOT_FOUND } from "../util/exceptions/error_constants";
 
 export class ControllerBase<T extends ObjectLiteral> {
     constructor(
@@ -22,7 +19,6 @@ export class ControllerBase<T extends ObjectLiteral> {
 
     @Post()
     async create(@Body() createDto: any): Promise<T> {
-
         const requestId = this.requestContextService.getRequestId();
         this.logger.logAction(
             this.controllerPrefix,
@@ -50,7 +46,9 @@ export class ControllerBase<T extends ObjectLiteral> {
         @Query('limit') limit?: number,
         @Query('offset') cursor?: string,
         @Query('sortBy') sortBy?: string,
-        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        @Query('search') search?: string,
+        @Query('filters') filters?: string[],
     ): Promise<{ items: T[], nextCursor?: string }> {
         const requestId = this.requestContextService.getRequestId();
         this.logger.logAction(
@@ -58,7 +56,7 @@ export class ControllerBase<T extends ObjectLiteral> {
             requestId,
             'FIND_ALL',
             'REQUEST',
-            { requestId, options: { relations, limit, cursor, sortBy, sortOrder } }
+            { requestId, options: { relations, limit, cursor, sortBy, sortOrder, search, filters } }
         );
 
         // Build cache key
@@ -67,7 +65,9 @@ export class ControllerBase<T extends ObjectLiteral> {
             limit,
             cursor,
             sortBy,
-            sortOrder
+            sortOrder,
+            search,
+            filters
         })}`;
 
         // Check cache
@@ -90,6 +90,8 @@ export class ControllerBase<T extends ObjectLiteral> {
             cursor,
             sortBy,
             sortOrder,
+            search,
+            filters
         });
 
         // Add key for invalidation
@@ -252,12 +254,7 @@ export class ControllerBase<T extends ObjectLiteral> {
                 'REMOVE',
                 'FAIL',
             );
-            throw new AppHttpException(
-                `${this.controllerPrefix} removal failed`,
-                HttpStatus.NOT_FOUND,
-                ENTITY_NOT_FOUND,
-                { contextId: requestId }
-            )
+            throw new NotFoundException();
         }
     }
 }

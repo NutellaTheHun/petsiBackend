@@ -6,21 +6,25 @@ import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateUnitOfMeasureDto } from "../dto/unit-of-measure/create-unit-of-measure.dto";
 import { UpdateUnitOfMeasureDto } from "../dto/unit-of-measure/update-unit-of-measure.dto";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
     constructor(
         @InjectRepository(UnitOfMeasure)
         private readonly repo: Repository<UnitOfMeasure>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'UnitOfMeasure', requestContextService, logger); }
 
     public async validateCreate(dto: CreateUnitOfMeasureDto): Promise<void> {
 
         // name exists
         if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
             this.addError({
-                error: 'Unit of measure with that name already exists.',
-                status: 'EXIST',
+                errorMessage: 'Unit of measure with that name already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateUnitOfMeasureDto',
                 sourceEntity: 'UnitOfMeasure',
                 value: dto.unitName,
@@ -30,8 +34,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
         // abbreviation exists
         if (await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)) {
             this.addError({
-                error: 'Unit of measure with that abbreviation already exists.',
-                status: 'EXIST',
+                errorMessage: 'Unit of measure with that abbreviation already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateUnitOfMeasureDto',
                 sourceEntity: 'UnitOfMeasure',
                 value: dto.abbreviation,
@@ -47,8 +51,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
         if (dto.unitName) {
             if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
                 this.addError({
-                    error: 'Unit of measure with that name already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Unit of measure with that name already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateUnitOfMeasureDto',
                     contextId: id,
                     sourceEntity: 'UnitOfMeasure',
@@ -61,8 +65,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasure> {
         if (dto.abbreviation) {
             if (await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)) {
                 this.addError({
-                    error: 'Unit of measure with that abbreviation already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Unit of measure with that abbreviation already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateUnitOfMeasureDto',
                     contextId: id,
                     sourceEntity: 'UnitOfMeasure',

@@ -15,6 +15,8 @@ import { InventoryAreaItemService } from "../services/inventory-area-item.servic
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaItemValidator } from "./inventory-area-item.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { INVALID, MISSING } from "../../../util/exceptions/error_constants";
 
 describe('inventory area item validator', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -67,9 +69,7 @@ describe('inventory area item validator', () => {
             countedItemSizeId: item?.itemSizes[0].id,
         } as CreateInventoryAreaItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should pass create with size dto', async () => {
@@ -94,9 +94,7 @@ describe('inventory area item validator', () => {
             countedItemSizeDto: sizeDto,
         } as CreateInventoryAreaItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: bad size for item', async () => {
@@ -113,8 +111,14 @@ describe('inventory area item validator', () => {
             countedItemSizeId: badItem.itemSizes[0].id,
         } as CreateInventoryAreaItemDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual('given inventory item size is not valid for the inventory item');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: itemSizeId and itemSizeDto', async () => {
@@ -141,8 +145,14 @@ describe('inventory area item validator', () => {
             countedItemSizeDto: sizeDto,
         } as CreateInventoryAreaItemDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual('inventory area item create dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: no itemSizeId and no itemSizeDto with inventory item', async () => {
@@ -155,8 +165,14 @@ describe('inventory area item validator', () => {
             countedAmount: 1,
         } as CreateInventoryAreaItemDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual('inventory area item create dto requires InventoryItemSize id or CreateInventoryItemSizeDto');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(MISSING);
+        }
     });
 
     it('should pass update with sizeId', async () => {
@@ -172,8 +188,7 @@ describe('inventory area item validator', () => {
             countedItemSizeId: item.itemSizes[0].id,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.items[0].id, dto);
     });
 
     it('should pass update with update sizeDto', async () => {
@@ -206,8 +221,7 @@ describe('inventory area item validator', () => {
             countedItemSizeDto: sizeDto,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate[0].id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate[0].id, dto);
     });
 
     it('should pass update with create sizeDto', async () => {
@@ -236,8 +250,7 @@ describe('inventory area item validator', () => {
             countedItemSizeDto: sizeDto,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.items[0].id, dto);
     });
 
     it('should fail update: itemSizeId and itemSizeDto with inventory item', async () => {
@@ -266,8 +279,14 @@ describe('inventory area item validator', () => {
             countedItemSizeDto: sizeDto,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toEqual('inventory area item update dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto');
+        try {
+            await validator.validateUpdate(toUpdate.items[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: no itemSizeId and no itemSizeDto with inventory item', async () => {
@@ -281,8 +300,14 @@ describe('inventory area item validator', () => {
             countedInventoryItemId: item.id,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toEqual('updating inventory item must be accompanied by updated sizing');
+        try {
+            await validator.validateUpdate(toUpdate.items[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: bad sizeId for dto item', async () => {
@@ -300,8 +325,14 @@ describe('inventory area item validator', () => {
             countedItemSizeId: badItem.itemSizes[0].id,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toEqual('inventoryItemSize given is not valid for the inventory item.');
+        try {
+            await validator.validateUpdate(toUpdate.items[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: bad sizeId for current item', async () => {
@@ -315,7 +346,13 @@ describe('inventory area item validator', () => {
             countedItemSizeId: badItem.itemSizes[0].id,
         } as UpdateInventoryAreaItemDto;
 
-        const result = await validator.validateUpdate(toUpdate.items[0].id, dto);
-        expect(result).toEqual('inventoryItemSize given is not valid for the current inventory item.');
+        try {
+            await validator.validateUpdate(toUpdate.items[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 });

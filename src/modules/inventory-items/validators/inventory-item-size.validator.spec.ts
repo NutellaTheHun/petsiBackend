@@ -9,6 +9,8 @@ import { CONTAINER_PKG, FOOD_A, OTHER_PKG } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemTestingUtil } from "../utils/inventory-item-testing.util";
 import { InventoryItemSizeValidator } from "./inventory-item-size.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('inventory item package validator', () => {
     let testingUtil: InventoryItemTestingUtil;
@@ -56,9 +58,7 @@ describe('inventory item package validator', () => {
             cost: 5,
         } as UpdateInventoryItemSizeDto;
 
-        const result = await validator.validateUpdate(toUpdate[0].id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate[0].id, dto);
     });
 
     it('should fail update (already exists)', async () => {
@@ -74,8 +74,14 @@ describe('inventory item package validator', () => {
             cost: 5,
         } as UpdateInventoryItemSizeDto;
 
-        const result = await validator.validateUpdate(badItem.id, dto);
-        expect(result).toEqual('Inventory item size already exists');
+        try {
+            await validator.validateUpdate(badItem.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update (close to already exists)', async () => {
@@ -94,8 +100,7 @@ describe('inventory item package validator', () => {
             cost: 5,
         } as UpdateInventoryItemSizeDto;
 
-        const result = await validator.validateUpdate(badItem.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(badItem.id, dto);
     });
 
     it('should pass update (close to already exists)', async () => {
@@ -114,8 +119,6 @@ describe('inventory item package validator', () => {
             cost: 5,
         } as UpdateInventoryItemSizeDto;
 
-        const result = await validator.validateUpdate(badItem.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(badItem.id, dto);
     });
-
 });

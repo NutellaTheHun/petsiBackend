@@ -1,8 +1,10 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { DUPLICATE, INVALID } from "../../../util/exceptions/error_constants";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
 import { type_a } from "../../labels/utils/constants";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
+import { item_a, item_b, item_c, item_d } from "../../menu-items/utils/constants";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
 import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
 import { CreateOrderDto } from "../dto/order/create-order.dto";
@@ -76,9 +78,7 @@ describe('order validator', () => {
             orderedMenuItemDtos: itemDtos,
         } as CreateOrderDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: duplicate order menu item DTOs', async () => {
@@ -118,9 +118,14 @@ describe('order validator', () => {
             orderedMenuItemDtos: itemDtos,
         } as CreateOrderDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('orderedMenuItemDtos contains duplicate menuItem/size combinations');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should pass update', async () => {
@@ -170,8 +175,7 @@ describe('order validator', () => {
             orderedMenuItemDtos: itemDtos,
         } as UpdateOrderDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: duplicate create order item dtos', async () => {
@@ -227,8 +231,14 @@ describe('order validator', () => {
             orderedMenuItemDtos: itemDtos,
         } as UpdateOrderDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`orderedMenuItemDtos contains duplicate menuItem/size combinations`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: duplicate update order item dtos', async () => {
@@ -245,6 +255,9 @@ describe('order validator', () => {
 
         const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
         if (!itemC) { throw new Error(); }
+
+        const itemD = await menuItemService.findOneByName(item_d, ['validSizes']);
+        if (!itemD) { throw new Error(); }
 
         const itemToUpdate = (await orderItemService.findAll()).items[0];
 
@@ -271,8 +284,8 @@ describe('order validator', () => {
             {
                 mode: 'update',
                 id: itemToUpdate.id,
-                menuItemId: itemC.id,
-                menuItemSizeId: itemC.validSizes[0].id,
+                menuItemId: itemD.id,
+                menuItemSizeId: itemD.validSizes[0].id,
                 quantity: 1,
             } as UpdateChildOrderMenuItemDto,
         ] as (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[];
@@ -285,7 +298,13 @@ describe('order validator', () => {
             orderedMenuItemDtos: itemDtos,
         } as UpdateOrderDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`orderedMenuItemDtos contains duplicate menuItem/size combinations`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 });

@@ -1,12 +1,14 @@
 import { TestingModule } from "@nestjs/testing";
-import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
-import { InventoryAreaValidator } from "./inventory-area.validator";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
+import { EXIST } from "../../../util/exceptions/error_constants";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
 import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
 import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
-import { AREA_A } from "../utils/constants";
 import { InventoryAreaService } from "../services/inventory-area.service";
+import { AREA_A } from "../utils/constants";
+import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
+import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
+import { InventoryAreaValidator } from "./inventory-area.validator";
 
 describe('inventory area validator', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -38,9 +40,7 @@ describe('inventory area validator', () => {
             areaName: "testValidateArea"
         } as CreateInventoryAreaDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -48,9 +48,14 @@ describe('inventory area validator', () => {
             areaName: AREA_A,
         } as CreateInventoryAreaDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Inventory with name ${AREA_A} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -60,8 +65,8 @@ describe('inventory area validator', () => {
         const dto = {
             areaName: "testValidateArea"
         } as UpdateInventoryAreaDto;
-        const result = await validator.validateUpdate(area.id, dto);
-        expect(result).toBeNull();
+
+        await validator.validateUpdate(area.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -72,7 +77,13 @@ describe('inventory area validator', () => {
             areaName: AREA_A
         } as UpdateInventoryAreaDto;
 
-        const result = await validator.validateUpdate(area.id, dto);
-        expect(result).toEqual(`Inventory with name ${AREA_A} already exists`);
+        try {
+            await validator.validateUpdate(area.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

@@ -9,6 +9,8 @@ import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/
 import { MenuItemContainerItem } from "../entities/menu-item-container-item.entity";
 import { MenuItemContainerItemService } from "../services/menu-item-container-item.service";
 import { MenuItemService } from "../services/menu-item.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItem> {
@@ -21,7 +23,9 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'MenuItemContainerItem', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildMenuItemContainerItemDto): Promise<void> {
 
@@ -30,8 +34,8 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         if (!item) { throw new Error(); }
         if (!this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)) {
             this.addError({
-                error: 'Invalid menu item size',
-                status: 'INVALID',
+                errorMessage: 'Invalid menu item size',
+                errorType: 'INVALID',
                 contextEntity: 'CreateChildMenuItemContainerItemDto',
                 sourceEntity: 'MenuItemSize',
                 conflictEntity: 'MenuItem',
@@ -60,8 +64,8 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
             if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
                 this.addError({
-                    error: 'Invalid menu item size',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid menu item size',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateMenuItemContainerItemDto',
                     sourceEntity: 'MenuItemSize',
                     conflictEntity: 'MenuItem',

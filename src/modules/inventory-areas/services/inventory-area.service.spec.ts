@@ -7,6 +7,8 @@ import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-a
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaService } from "./inventory-area.service";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DatabaseException } from "../../../util/exceptions/database-exception";
 
 describe('Inventory area service', () => {
     let testingUtil: InventoryAreaTestUtil;
@@ -49,7 +51,7 @@ describe('Inventory area service', () => {
     it('should fail to create an area (already exists)', async () => {
         const area = { areaName: testAreaName } as CreateInventoryAreaDto;
 
-        await expect(service.create(area)).rejects.toThrow(AppHttpException);
+        await expect(service.create(area)).rejects.toThrow(ValidationException);
     });
 
     it('should update an area', async () => {
@@ -65,7 +67,7 @@ describe('Inventory area service', () => {
     it('should fail to update an area (doesnt exist)', async () => {
         const toUpdate = { areaName: updateTestAreaName } as UpdateInventoryAreaDto;
 
-        await expect(service.update(0, toUpdate)).rejects.toThrow(NotFoundException);
+        await expect(service.update(0, toUpdate)).rejects.toThrow(DatabaseException);
     });
 
     it('should find one by name', async () => {

@@ -2,13 +2,15 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { InventoryAreaItemService } from "../services/inventory-area-item.service";
-import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
+import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 
 @Injectable()
 export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem> {
@@ -20,14 +22,16 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         private readonly areaItemService: InventoryAreaItemService,
 
         private readonly itemService: InventoryItemService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryAreaItem', requestContextService, logger); }
 
     public async validateCreate(dto: CreateInventoryAreaItemDto): Promise<void> {
         // Must have either itemSizeId or itemSizeDto
         if (!dto.countedItemSizeId && !dto.countedItemSizeDto) {
             this.addError({
-                error: 'missing inventory item size assignment',
-                status: 'MISSING',
+                errorMessage: 'missing inventory item size assignment',
+                errorType: 'MISSING',
                 contextEntity: 'CreateInventoryAreaItemDto',
                 sourceEntity: 'InventoryItemSize',
             } as ValidationError);
@@ -36,8 +40,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         // Cannot have both itemSizeId or itemSizeDto
         else if (dto.countedItemSizeId && dto.countedItemSizeDto) {
             this.addError({
-                error: 'cannot provide inventory item size and create dto',
-                status: 'INVALID',
+                errorMessage: 'cannot provide inventory item size and create dto',
+                errorType: 'INVALID',
                 contextEntity: 'CreateInventoryAreaItemDto',
                 sourceEntity: 'InventoryItemSize',
             } as ValidationError);
@@ -49,8 +53,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
 
             if (!this.helper.isValidSize(dto.countedItemSizeId, item.itemSizes)) {
                 this.addError({
-                    error: 'inventory item size not valid for inventory item',
-                    status: 'INVALID',
+                    errorMessage: 'inventory item size not valid for inventory item',
+                    errorType: 'INVALID',
                     contextEntity: 'CreateInventoryAreaItemDto',
                     sourceEntity: 'InventoryItemSize',
                     sourceId: dto.countedItemSizeId,
@@ -67,8 +71,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         // Cannot update with both item size and item size dto
         if (dto.countedItemSizeId && dto.countedItemSizeDto) {
             this.addError({
-                error: 'cannot provide inventory item size and create dto',
-                status: 'INVALID',
+                errorMessage: 'cannot provide inventory item size and create dto',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateInventoryAreaItemDto',
                 contextId: id,
                 sourceEntity: 'InventoryItemSize',
@@ -78,8 +82,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         // cannot update item with no sizing
         else if (dto.countedInventoryItemId && !dto.countedItemSizeId && !dto.countedItemSizeDto) {
             this.addError({
-                error: 'missing inventory item size assignment',
-                status: 'INVALID',
+                errorMessage: 'missing inventory item size assignment',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateInventoryAreaItemDto',
                 contextId: id,
                 sourceEntity: 'InventoryItemSize',
@@ -97,8 +101,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
             const item = await this.itemService.findOne(itemId, ['itemSizes']);
             if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
                 this.addError({
-                    error: 'Invalid size for inventory item',
-                    status: 'INVALID',
+                    errorMessage: 'Invalid size for inventory item',
+                    errorType: 'INVALID',
                     contextEntity: 'UpdateInventoryAreaItemDto',
                     contextId: id,
                     sourceEntity: 'InventoryItemSize',

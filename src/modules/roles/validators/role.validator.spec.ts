@@ -7,6 +7,8 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from "../utils/constants";
 import { RoleTestUtil } from "../utils/role-test.util";
 import { getRoleTestingModule } from "../utils/role-testing-module";
 import { RoleValidator } from "./role.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('role validator', () => {
     let testingUtil: RoleTestUtil;
@@ -38,9 +40,7 @@ describe('role validator', () => {
             roleName: "TEST NAME"
         } as CreateRoleDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: name already exists', async () => {
@@ -48,9 +48,14 @@ describe('role validator', () => {
             roleName: ROLE_MANAGER
         } as CreateRoleDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Role with name ${ROLE_MANAGER} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should pass update', async () => {
@@ -61,8 +66,7 @@ describe('role validator', () => {
             roleName: "UPDATE TEST"
         } as UpdateRoleDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: name already exists', async () => {
@@ -73,7 +77,13 @@ describe('role validator', () => {
             roleName: ROLE_STAFF
         } as UpdateRoleDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Role with name ${ROLE_STAFF} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 });

@@ -10,6 +10,7 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitOfMeasureCategoryService } from './unit-of-measure-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+import { ValidationException } from '../../../util/exceptions/validation-exception';
 
 
 describe('UnitOfMeasureCategoryService', () => {
@@ -57,7 +58,7 @@ describe('UnitOfMeasureCategoryService', () => {
             categoryName: "testCategory",
         } as CreateUnitOfMeasureCategoryDto;
 
-        await expect(categoryService.create(dto)).rejects.toThrow(AppHttpException);
+        await expect(categoryService.create(dto)).rejects.toThrow(ValidationException);
     });
 
     it('should find one category', async () => {

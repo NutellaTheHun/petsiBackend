@@ -6,13 +6,17 @@ import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCount> {
     constructor(
         @InjectRepository(InventoryAreaCount)
         private readonly repo: Repository<InventoryAreaCount>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryAreaCount', requestContextService, logger); }
 
     public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<void> {
         this.throwIfErrors()
@@ -30,14 +34,15 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
             }
             const duplicateIds = this.helper.findDuplicates(resolvedDtos, (id) => `${id.id}`);
             if (duplicateIds.length > 0) {
-                duplicateIds.map(dup => this.addError({
-                    error: 'duplicate update requests for counted inventory item.',
-                    status: 'DUPLICATE',
-                    contextEntity: 'UpdateInventoryAreaCountDto',
-                    contextId: id,
-                    sourceEntity: 'UpdateChildInventoryAreaItemDto',
-                    sourceId: dup.id,
-                } as ValidationError));
+                duplicateIds.map(dup => this.addError(
+                    new ValidationError({
+                        errorMessage: 'duplicate update requests for counted inventory item.',
+                        errorType: 'DUPLICATE',
+                        contextEntity: 'UpdateInventoryAreaCountDto',
+                        contextId: id,
+                        sourceEntity: 'UpdateChildInventoryAreaItemDto',
+                        sourceId: dup.id,
+                    })));
             }
         }
 

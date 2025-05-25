@@ -6,13 +6,17 @@ import { Label } from "../entities/label.entity";
 import { CreateLabelDto } from "../dto/label/create-label.dto";
 import { UpdateLabelDto } from "../dto/label/update-label.dto";
 import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class LabelValidator extends ValidatorBase<Label> {
     constructor(
         @InjectRepository(Label)
         private readonly repo: Repository<Label>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'Label', requestContextService, logger); }
 
     public async validateCreate(dto: CreateLabelDto): Promise<void> {
         const exists = await this.repo.findOne({
@@ -23,8 +27,8 @@ export class LabelValidator extends ValidatorBase<Label> {
         });
         if (exists) {
             this.addError({
-                error: 'Label already exists.',
-                status: 'EXIST',
+                errorMessage: 'Label already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateLabelDto',
                 sourceEntity: 'Label',
                 value: { menuItemId: dto.menuItemId, labelTypeId: dto.labelTypeId },
@@ -51,8 +55,8 @@ export class LabelValidator extends ValidatorBase<Label> {
             });
             if (exists) {
                 this.addError({
-                    error: 'Label already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Label already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateLabelDto',
                     contextId: id,
                     sourceEntity: 'Label',

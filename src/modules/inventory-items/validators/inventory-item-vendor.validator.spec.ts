@@ -7,6 +7,8 @@ import { VENDOR_A, VENDOR_B } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemTestingUtil } from "../utils/inventory-item-testing.util";
 import { InventoryItemVendorValidator } from "./inventory-item-vendor.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { EXIST } from "../../../util/exceptions/error_constants";
 
 describe('inventory item vendor validator', () => {
     let testingUtil: InventoryItemTestingUtil;
@@ -38,9 +40,7 @@ describe('inventory item vendor validator', () => {
             vendorName: "TEST CREATE"
         } as CreateInventoryItemVendorDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create (name already exists)', async () => {
@@ -48,8 +48,14 @@ describe('inventory item vendor validator', () => {
             vendorName: VENDOR_B
         } as CreateInventoryItemVendorDto;
 
-        const result = await validator.validateCreate(dto);
-        expect(result).toEqual(`Inventory item vendor with name ${VENDOR_B} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should validate update', async () => {
@@ -60,9 +66,7 @@ describe('inventory item vendor validator', () => {
             vendorName: "TEST UPDATE"
         } as UpdateInventoryItemVendorDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update (name already exists)', async () => {
@@ -73,8 +77,14 @@ describe('inventory item vendor validator', () => {
             vendorName: VENDOR_A,
         } as UpdateInventoryItemVendorDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Inventory item vendor with name ${VENDOR_A} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
 });

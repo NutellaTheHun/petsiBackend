@@ -1,5 +1,7 @@
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { DUPLICATE } from "../../../util/exceptions/error_constants";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
 import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
 import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
 import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
@@ -63,9 +65,7 @@ describe('menu item container options validator', () => {
             validQuantity: 3,
         } as CreateChildMenuItemContainerOptionsDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: duplicate item rules', async () => {
@@ -98,9 +98,14 @@ describe('menu item container options validator', () => {
             validQuantity: 3,
         } as CreateChildMenuItemContainerOptionsDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`container option contains duplicate rules for the same menuItem`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should pass update', async () => {
@@ -136,8 +141,7 @@ describe('menu item container options validator', () => {
             validQuantity: 4,
         } as UpdateChildMenuItemContainerOptionsDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: duplicate item rules', async () => {
@@ -179,8 +183,14 @@ describe('menu item container options validator', () => {
             validQuantity: 4,
         } as UpdateChildMenuItemContainerOptionsDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('container option contains duplicate rules for the same menuItem');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
 });

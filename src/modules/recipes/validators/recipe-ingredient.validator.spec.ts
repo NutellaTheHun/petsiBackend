@@ -12,6 +12,8 @@ import { REC_A } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeIngredientValidator } from "./recipe-ingredient.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { INVALID } from "../../../util/exceptions/error_constants";
 
 
 describe('recipe ingredient validator', () => {
@@ -61,9 +63,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as CreateChildRecipeIngredientDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should validate create with inventoryItem ingredient', async () => {
@@ -80,9 +80,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as CreateChildRecipeIngredientDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: recipe and inventory item ingredient', async () => {
@@ -103,9 +101,14 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as CreateChildRecipeIngredientDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('recipe ingredient cannot reference both an inventory item and a subRecipeIngredient, only one.');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: neither recipe or inventory item ingredient', async () => {
@@ -119,9 +122,14 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as CreateChildRecipeIngredientDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('recipe ingredient must reference either an inventory item and a subRecipeIngredient, none are given.');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should pass update with RECIPE ingredient => RECIPE ingredient', async () => {
@@ -144,9 +152,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWRecipes[0].id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(ingredsWRecipes[0].id, dto);
     });
 
     it('should pass update with RECIPE ingredient => INVENTORY item ingredient', async () => {
@@ -170,9 +176,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWRecipes[0].id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(ingredsWRecipes[0].id, dto);
     });
 
     it('should pass update with INVENTORY item ingredient => RECIPE ingredient', async () => {
@@ -196,9 +200,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWItems[0].id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(ingredsWItems[0].id, dto);
     });
 
     it('should pass update with INVENTORY item ingredient => INVENTORY item ingredient', async () => {
@@ -221,9 +223,7 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWItems[0].id, dto);
-
-        expect(result).toBeNull();
+        await validator.validateUpdate(ingredsWItems[0].id, dto);
     });
 
     it('should fail update: RECIPE and INVENTORY item ingredient', async () => {
@@ -248,9 +248,14 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(toUpdate[0].id, dto);
-
-        expect(result).toEqual('recipe ingredient cannot reference both an inventory item and a subRecipeIngredient');
+        try {
+            await validator.validateUpdate(toUpdate[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: RECIPE ingredient => CURRENT INVENTORY item ingredient', async () => {
@@ -273,9 +278,14 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWRecipes[0].id, dto);
-
-        expect(result).toEqual('current ingredient has a recipe reference, set to null before updating to inventoryItemIngredient');
+        try {
+            await validator.validateUpdate(ingredsWRecipes[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail update: INVENTORY item ingredient => CURRENT RECIPE ingredient', async () => {
@@ -298,8 +308,13 @@ describe('recipe ingredient validator', () => {
             quantityMeasurementId: measurement.id,
         } as UpdateChildRecipeIngredientDto;
 
-        const result = await validator.validateUpdate(ingredsWItems[0].id, dto);
-
-        expect(result).toEqual('current ingredient has a inventoryitem reference, set to null before updating to reference a recipe as ingredient.');
+        try {
+            await validator.validateUpdate(ingredsWItems[0].id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 });

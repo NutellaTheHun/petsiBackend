@@ -6,19 +6,23 @@ import { ValidationError } from "../../../util/exceptions/validation-error";
 import { CreateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/create-unit-of-measure-category.dto";
 import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
 import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureCategory> {
     constructor(
         @InjectRepository(UnitOfMeasureCategory)
         private readonly repo: Repository<UnitOfMeasureCategory>,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'UnitOfMeasureCategory', requestContextService, logger); }
 
     public async validateCreate(dto: CreateUnitOfMeasureCategoryDto): Promise<void> {
         if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
             this.addError({
-                error: 'Unit of measure category with that name already exists.',
-                status: 'EXIST',
+                errorMessage: 'Unit of measure category with that name already exists.',
+                errorType: 'EXIST',
                 contextEntity: 'CreateUnitOfMeasureCategoryDto',
                 sourceEntity: 'UnitOfMeasureCategory',
                 value: dto.categoryName,
@@ -32,8 +36,8 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
         if (dto.categoryName) {
             if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
                 this.addError({
-                    error: 'Unit of measure category with that name already exists.',
-                    status: 'EXIST',
+                    errorMessage: 'Unit of measure category with that name already exists.',
+                    errorType: 'EXIST',
                     contextEntity: 'UpdateUnitOfMeasureCategoryDto',
                     contextId: id,
                     sourceEntity: 'UnitOfMeasureCategory',

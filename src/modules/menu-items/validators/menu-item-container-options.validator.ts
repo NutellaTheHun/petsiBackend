@@ -8,6 +8,8 @@ import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-contain
 import { UpdateMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-menu-item-container-options.dto";
 import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
 import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemContainerOptions> {
@@ -17,15 +19,17 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
 
         @Inject(forwardRef(() => MenuItemContainerRuleService))
         private readonly ruleService: MenuItemContainerRuleService,
-    ) { super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'MenuItemContainerOptions', requestContextService, logger); }
 
     public async validateCreate(dto: CreateChildMenuItemContainerOptionsDto): Promise<void> {
 
         // No rules
         if (dto.containerRuleDtos.length === 0) {
             this.addError({
-                error: 'Menu item container has no settings.',
-                status: 'INVALID',
+                errorMessage: 'Menu item container has no settings.',
+                errorType: 'INVALID',
                 contextEntity: 'CreateMenuItemContainerOptionsDto',
                 sourceEntity: 'MenuItemContainerRule',
             } as ValidationError);
@@ -39,8 +43,8 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         if (dupliateItemRules) {
             for (const duplicate of dupliateItemRules) {
                 this.addError({
-                    error: 'Menu item container has duplicate item settings.',
-                    status: 'DUPLICATE',
+                    errorMessage: 'Menu item container has duplicate item settings.',
+                    errorType: 'DUPLICATE',
                     contextEntity: 'CreateMenuItemContainerOptionsDto',
                     sourceEntity: 'MenuItemContainerRule',
                     value: { duplicateMenuItemId: duplicate.validMenuItemId },
@@ -56,8 +60,8 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         // No rules
         if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
             this.addError({
-                error: 'Menu item container has no settings.',
-                status: 'INVALID',
+                errorMessage: 'Menu item container has no settings.',
+                errorType: 'INVALID',
                 contextEntity: 'UpdateMenuItemContainerOptionsDto',
                 contextId: id,
                 sourceEntity: 'MenuItemContainerRule',
@@ -83,8 +87,8 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
             );
             for (const duplicate of dupliateItemRules) {
                 this.addError({
-                    error: 'Menu item container has duplicate item settings.',
-                    status: 'DUPLICATE',
+                    errorMessage: 'Menu item container has duplicate item settings.',
+                    errorType: 'DUPLICATE',
                     contextEntity: 'UpdateMenuItemContainerOptionsDto',
                     contextId: id,
                     sourceEntity: 'MenuItemContainerRule',

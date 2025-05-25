@@ -20,7 +20,7 @@ export class UpdateInventoryItemSizeDto {
     @IsOptional()
     readonly inventoryPackageId?: number;
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
+    @ApiProperty({ description: 'Prsice paid for the Inventory-Item entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)

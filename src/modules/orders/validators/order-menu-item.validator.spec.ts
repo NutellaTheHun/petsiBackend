@@ -2,7 +2,7 @@ import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { item_a, item_b, item_c } from "../../menu-items/utils/constants";
+import { item_a, item_b, item_c, item_d } from "../../menu-items/utils/constants";
 import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
 import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
 import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
@@ -12,6 +12,8 @@ import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderTestingUtil } from "../utils/order-testing.util";
 import { OrderMenuItemValidator } from "./order-menu-item.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, INVALID } from "../../../util/exceptions/error_constants";
 
 describe('order category validator', () => {
     let testingUtil: OrderTestingUtil;
@@ -79,9 +81,7 @@ describe('order category validator', () => {
             orderedItemContainerDtos: containerDtos,
         } as CreateChildOrderMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: invalid dto size for dto item', async () => {
@@ -98,9 +98,14 @@ describe('order category validator', () => {
             quantity: 1,
         } as CreateChildOrderMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`size on dto ${badSizes[0].name} with id ${badSizes[0].id} is not a valid size for dto menu item ${itemA.itemName} with id ${itemA.id}`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 
     it('should fail create: duplicate containerItem dtos', async () => {
@@ -144,9 +149,14 @@ describe('order category validator', () => {
             orderedItemContainerDtos: containerDtos,
         } as CreateChildOrderMenuItemDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`order item container dtos contains duplicate item/item size`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should pass update', async () => {
@@ -191,8 +201,7 @@ describe('order category validator', () => {
             orderedItemContainerDtos: containerDtos,
         } as UpdateChildOrderMenuItemDto;
 
-        const result = await validator.validateUpdate(parentOrderItem.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(parentOrderItem.id, dto);
     });
 
     it('should fail update: duplicate create dtos', async () => {
@@ -244,8 +253,15 @@ describe('order category validator', () => {
             orderedItemContainerDtos: containerDtos,
         } as UpdateChildOrderMenuItemDto;
 
-        const result = await validator.validateUpdate(parentOrderItem.id, dto);
-        expect(result).toEqual(`order item container dtos contains duplicate item/item size`);
+
+        try {
+            await validator.validateUpdate(parentOrderItem.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should fail update: duplicate update dtos', async () => {
@@ -262,6 +278,8 @@ describe('order category validator', () => {
         if (!contItemB) { throw new Error(); }
         const contItemC = await menuItemService.findOneByName(item_c, ['validSizes']);
         if (!contItemC) { throw new Error(); }
+        const contItemD = await menuItemService.findOneByName(item_d, ['validSizes']);
+        if (!contItemD) { throw new Error(); }
 
         const containerDtos = [
             {
@@ -283,8 +301,8 @@ describe('order category validator', () => {
                 mode: 'update',
                 id: containerItems[0].id,
                 parentContainerMenuItemId: parentMenuItem.id,
-                containedMenuItemId: contItemC.id,
-                containedMenuItemSizeId: contItemC.validSizes[0].id,
+                containedMenuItemId: contItemD.id,
+                containedMenuItemSizeId: contItemD.validSizes[0].id,
                 quantity: 1,
             } as UpdateChildOrderContainerItemDto,
         ] as CreateChildOrderContainerItemDto[];
@@ -298,7 +316,13 @@ describe('order category validator', () => {
             orderedItemContainerDtos: containerDtos,
         } as UpdateChildOrderMenuItemDto;
 
-        const result = await validator.validateUpdate(parentOrderItem.id, dto);
-        expect(result).toEqual(`order item container updates dtos cannot have multiple update request for the same entity.`);
+        try {
+            await validator.validateUpdate(parentOrderItem.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(INVALID);
+        }
     });
 });

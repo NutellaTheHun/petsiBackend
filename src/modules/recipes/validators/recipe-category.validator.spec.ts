@@ -9,6 +9,8 @@ import { REC_CAT_A, REC_CAT_B } from "../utils/constants";
 import { RecipeTestUtil } from "../utils/recipe-test.util";
 import { getRecipeTestingModule } from "../utils/recipes-testing.module";
 import { RecipeCategoryValidator } from "./recipe-category.validator";
+import { ValidationException } from "../../../util/exceptions/validation-exception";
+import { DUPLICATE, EXIST } from "../../../util/exceptions/error_constants";
 
 
 describe('recipe category validator', () => {
@@ -52,9 +54,7 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as CreateRecipeCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toBeNull();
+        await validator.validateCreate(dto);
     });
 
     it('should fail create: name already exists', async () => {
@@ -73,9 +73,14 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as CreateRecipeCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual(`Recipe category with name ${REC_CAT_A} already exists`);
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail create: duplicate sub categories', async () => {
@@ -98,9 +103,14 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as CreateRecipeCategoryDto;
 
-        const result = await validator.validateCreate(dto);
-
-        expect(result).toEqual('category has duplicate subcategories (same name)');
+        try {
+            await validator.validateCreate(dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 
     it('should pass update', async () => {
@@ -124,8 +134,7 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as UpdateRecipeCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toBeNull();
+        await validator.validateUpdate(toUpdate.id, dto);
     });
 
     it('should fail update: name already exists', async () => {
@@ -149,8 +158,14 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as UpdateRecipeCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual(`Recipe category with name ${REC_CAT_B} already exists`);
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(EXIST);
+        }
     });
 
     it('should fail update: duplicate sub categories', async () => {
@@ -174,7 +189,13 @@ describe('recipe category validator', () => {
             subCategoryDtos: subCatDtos,
         } as UpdateRecipeCategoryDto;
 
-        const result = await validator.validateUpdate(toUpdate.id, dto);
-        expect(result).toEqual('category has duplicate subcategories (same name)');
+        try {
+            await validator.validateUpdate(toUpdate.id, dto);
+        } catch (err) {
+            expect(err).toBeInstanceOf(ValidationException);
+            const error = err as ValidationException;
+            expect(error.errors.length).toEqual(1);
+            expect(error.errors[0].errorType).toEqual(DUPLICATE);
+        }
     });
 });
