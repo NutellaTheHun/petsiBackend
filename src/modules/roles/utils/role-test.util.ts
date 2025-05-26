@@ -15,7 +15,7 @@ export class RoleTestUtil {
         private readonly roleBuilder: RoleBuilder,
     ) { }
 
-    public async getTestUserEntities(testContext: DatabaseTestContext): Promise<Role[]> {
+    public async getTestRoleEntities(testContext: DatabaseTestContext): Promise<Role[]> {
         return [
             await this.roleBuilder.reset()
                 .roleName(ROLE_ADMIN)
@@ -35,17 +35,11 @@ export class RoleTestUtil {
         }
         this.initRoles = true;
 
-        const roles = await this.getTestUserEntities(testContext);
-        //const toInsert: Role[] = [];
+        const roles = await this.getTestRoleEntities(testContext);
 
         testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-        /*for(const role of roles){
-            const exists = await this.roleService.findOneByName(role.roleName);
-            if(!exists){ toInsert.push(role); }
-        }*/
-
-        await this.roleService.insertEntities(/*toInsert*/ roles);
+        await this.roleService.insertEntities(roles);
     }
 
     public async cleanupRoleTestingDatabase(): Promise<void> {

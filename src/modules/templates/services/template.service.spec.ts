@@ -12,6 +12,7 @@ import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemService } from './template-menu-item.service';
 import { TemplateService } from './template.service';
+import { template_a } from '../utils/constants';
 
 describe('Template Service', () => {
     let templateService: TemplateService;
@@ -233,6 +234,13 @@ describe('Template Service', () => {
         expect(results.items.length).toEqual(5);
 
         testIds = results.items.slice(0, 3).map(temp => temp.id);
+    });
+
+    it('should search for templates', async () => {
+        const results = await templateService.findAll({ search: template_a });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(1);
     });
 
     it('should find templates by list of ids', async () => {

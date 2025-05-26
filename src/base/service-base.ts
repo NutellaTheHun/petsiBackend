@@ -33,14 +33,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return await this.entityRepo.save(entity);
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'CREATE',
-                'FAIL',
-                { requestId, databaseError: err }
-            );*/
-            //throw DatabaseError.fromTypeOrmError(err);
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'CREATE');
         }
     }
@@ -56,14 +48,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             toUpdate = await this.findOne(id);
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'UPDATE',
-                'FAIL',
-                { requestId, id, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'UPDATE');
         }
 
@@ -74,14 +58,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return await this.entityRepo.save(toUpdate);
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'UPDATE',
-                'FAIL',
-                { requestId, id, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'UPDATE');
         }
 
@@ -95,6 +71,9 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         sortOrder?: 'ASC' | 'DESC';
         search?: string,
         filters?: string[],
+        dateBy?: string,
+        startDate?: string,
+        endDate?: string,
     }): Promise<PaginatedResult<T>> {
         // Get requestId
         const requestId = this.requestContextService.getRequestId();
@@ -134,19 +113,27 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
             this.applySearch(query, options.search.trim().toLowerCase());
         }
 
+        if (options.filters) {
+            const parsedFilters: Record<string, string> = {};
+            for (const filter of options.filters) {
+                const [key, value] = filter.split('=');
+                if (key && value !== undefined) {
+                    parsedFilters[key] = value;
+                }
+            }
+
+            this.applyFilters(query, parsedFilters);
+        }
+
+        if (options.startDate) {
+            this.applyDate(query, options.startDate, options.endDate, options.dateBy);
+        }
+
         // run query
         let results: T[] = [];
         try {
             results = await query.getMany();
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'FIND_ALL',
-                'FAIL',
-                { contextId: requestId, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'FIND_ALL');
         }
 
@@ -196,14 +183,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
                 relations: combinedRelations,
             });
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'FIND_ONE',
-                'FAIL',
-                { contextId: requestId, id, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'FIND_ONE');
         }
 
@@ -247,14 +226,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return (await this.entityRepo.delete(id)).affected !== 0;
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'REMOVE',
-                'FAIL',
-                { contextId: requestId, id, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'REMOVE');
         }
 
@@ -279,14 +250,6 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         try {
             return this.entityRepo.createQueryBuilder();
         } catch (err) {
-            /*this.logger.logError(
-                this.servicePrefix,
-                requestId,
-                'GET_BUILDER',
-                'FAIL',
-                { contextId: requestId, databaseError: err }
-            );
-            throw DatabaseError.fromTypeOrmError(err);*/
             throw this.databaseExceptionHandler.handle(err, this.servicePrefix, requestId, 'GET_BUILDER');
         }
 
@@ -294,5 +257,13 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
 
     protected applySearch(_query: SelectQueryBuilder<T>, _search: string): void {
         // Default: do nothing. To be overridden by subclass if needed.
+    }
+
+    protected applyFilters(_query: SelectQueryBuilder<T>, filters: Record<string, string>): void {
+        // Default: do nothing. To be overridden by subclass if needed.
+    }
+
+    protected applyDate(_query: SelectQueryBuilder<T>, startDate: string, endDate?: string, dateBy?: string) {
+
     }
 }

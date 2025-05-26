@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -27,5 +27,18 @@ export class UserService extends ServiceBase<User> {
 
     async findOneByName(username: string, relations?: Array<keyof User>): Promise<User | null> {
         return await this.userRepo.findOne({ where: { username: username }, relations: relations });
+    }
+
+    protected applySearch(query: SelectQueryBuilder<User>, search: string): void {
+        query.andWhere(
+            '(LOWER(entity.username) LIKE :search)', { search: `%${search.toLowerCase()}%` }
+        );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<User>, filters: Record<string, string>): void {
+        if (filters.role) {
+            query.leftJoin('entity.roles', 'role')
+                .andWhere('role.id = :role', { role: Number(filters.role) });
+        }
     }
 }

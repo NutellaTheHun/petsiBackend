@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -14,12 +14,32 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
         private readonly repo: Repository<InventoryItem>,
 
         builder: InventoryItemBuilder,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(repo, builder, 'InventoryItemService', requestContextService, logger) }
 
     async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
         return await this.repo.findOne({ where: { itemName: name }, relations: relations });
+    }
+
+    protected applySearch(query: SelectQueryBuilder<InventoryItem>, search: string): void {
+        query.andWhere(
+            '(LOWER(entity.itemName) LIKE :search)', { search: `%${search.toLowerCase()}%` }
+        );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<InventoryItem>, filters: Record<string, string>): void {
+
+        if (filters.category) {
+            query.andWhere('entity.category = :category', { category: filters.category });
+        }
+
+        if (filters.vendor) {
+            query.andWhere('entity.vendor = :vendor', { vendor: filters.vendor });
+        }
+        //filter for no category?
+
+        // filter for no vendor?
     }
 }

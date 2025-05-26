@@ -188,6 +188,7 @@ export class InventoryAreaTestUtil {
         this.initItems = true;
 
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaItemCountTestDatabase());
+
         await this.itemCountService.insertEntities(
             await this.getTestInventoryAreaItemCountEntities(testContext)
         );

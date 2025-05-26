@@ -5,13 +5,13 @@ import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inven
 import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
 import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { BOX_PKG, DRY_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
+import { BOX_PKG, DRY_B, FOOD_A, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
+import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
 import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
 import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
 import { AREA_A, AREA_B } from "../utils/constants";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
@@ -149,10 +149,34 @@ describe('Inventory area count service', () => {
     });
 
     it('should get all area counts', async () => {
-        const results = await countService.findAll()
+        const results = await countService.findAll({ relations: ['inventoryArea'] })
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
     });
+
+    it('should search area counts', async () => {
+        const results = await countService.findAll({ search: FOOD_A })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(3);
+    });
+
+    it('should filter by inventoryArea', async () => {
+        const area = await areaService.findOneByName(AREA_A);
+        if (!area) { throw new Error(); }
+
+        const results = await countService.findAll({ filters: [`inventoryArea=${area.id}`] })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(1);
+    })
+
+    it('should filter by date', async () => {
+        const date = new Date();
+        const today = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+
+        const results = await countService.findAll({ startDate: today })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    })
 
     it('should get area counts by id', async () => {
         const results = await countService.findEntitiesById(testCountIds);

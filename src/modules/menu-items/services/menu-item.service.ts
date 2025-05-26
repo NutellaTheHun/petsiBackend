@@ -26,8 +26,13 @@ export class MenuItemService extends ServiceBase<MenuItem> {
 
     protected applySearch(query: SelectQueryBuilder<MenuItem>, search: string): void {
         query.andWhere(
-            '(LOWER(entity.itemName) LIKE :search OR LOWER(entity.itemCategory) LIKE :search)',
-            { search: `%${search.toLowerCase()}%` }
+            '(LOWER(entity.itemName) LIKE :search)', { search: `%${search.toLowerCase()}%` }
         );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<MenuItem>, filters: Record<string, string>): void {
+        if (filters.category) {
+            query.andWhere('entity.category = :category', { category: filters.category });
+        }
     }
 }

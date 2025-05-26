@@ -24,7 +24,7 @@ describe('order service', () => {
     let testingUtil: OrderTestingUtil;
     let dbTestContext: DatabaseTestContext;
 
-    let typeService: OrderCategoryService;
+    let categoryService: OrderCategoryService;
     let orderItemService: OrderMenuItemService;
 
     let menuItemService: MenuItemService;
@@ -54,7 +54,7 @@ describe('order service', () => {
         await testingUtil.initOrderTestDatabase(dbTestContext);
 
         orderService = module.get<OrderService>(OrderService);
-        typeService = module.get<OrderCategoryService>(OrderCategoryService);
+        categoryService = module.get<OrderCategoryService>(OrderCategoryService);
         orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
 
         menuItemService = module.get<MenuItemService>(MenuItemService);
@@ -71,7 +71,7 @@ describe('order service', () => {
     });
 
     it('should create an order (with menuItems)', async () => {
-        const type = await typeService.findOneByName(TYPE_B);
+        const type = await categoryService.findOneByName(TYPE_B);
         if (!type) { throw new NotFoundException(); }
 
         const fulfillDate = new Date();
@@ -121,7 +121,7 @@ describe('order service', () => {
     });
 
     it('should update order type', async () => {
-        const newType = await typeService.findOneByName(TYPE_C);
+        const newType = await categoryService.findOneByName(TYPE_C);
         if (!newType) { throw new NotFoundException(); }
 
         const dto = {
@@ -136,7 +136,7 @@ describe('order service', () => {
 
     // Order Type *****
     it('should gain reference by orderType', async () => {
-        const orderType = await typeService.findOneByName(TYPE_C, ['orders']);
+        const orderType = await categoryService.findOneByName(TYPE_C, ['orders']);
         if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).not.toEqual(-1);
@@ -144,7 +144,7 @@ describe('order service', () => {
 
     // Order Type
     it('should update order type again', async () => {
-        const newType = await typeService.findOneByName(TYPE_D);
+        const newType = await categoryService.findOneByName(TYPE_D);
         if (!newType) { throw new NotFoundException(); }
 
         const dto = {
@@ -158,14 +158,14 @@ describe('order service', () => {
     });
 
     it('should lose reference from previous orderType', async () => {
-        const orderType = await typeService.findOneByName(TYPE_C, ['orders']);
+        const orderType = await categoryService.findOneByName(TYPE_C, ['orders']);
         if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).toEqual(-1);
     });
 
     it('should gain reference by new orderType', async () => {
-        const orderType = await typeService.findOneByName(TYPE_D, ['orders']);
+        const orderType = await categoryService.findOneByName(TYPE_D, ['orders']);
         if (!orderType) { throw new NotFoundException(); }
 
         expect(orderType.orders?.findIndex(order => order.id === testId)).not.toEqual(-1);
@@ -391,12 +391,114 @@ describe('order service', () => {
     })
 
     it('should find all orders', async () => {
-        const results = await orderService.findAll();
+        const results = await orderService.findAll({ relations: ['orderCategory', 'orderedItems'] });
 
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(8);
 
         testIds = results.items.slice(0, 3).map(o => o.id);
+    });
+
+    it('should search all orders', async () => {
+        const results = await orderService.findAll({ search: "item a" });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(1);
+    });
+
+    it('should filter all orders', async () => {
+        const category = await categoryService.findOneByName(TYPE_A)
+        if (!category) { throw new Error(); }
+        const results = await orderService.findAll({ filters: [`category=${category.id}`] });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(2);
+    });
+
+    it('should filter by fulfillment date', async () => {
+        const date = new Date();
+        const today = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+
+        const results = await orderService.findAll({ startDate: today, dateBy: 'fulfillmentDate' })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should filter by fulfillment date range', async () => {
+        const today = new Date();
+
+        let startYear = today.getFullYear();
+        let endYear = today.getFullYear();
+
+        let startMonth = today.getMonth() + 1;
+        let endMonth = today.getMonth() + 1;
+
+        let startDate = today.getDate() - 1
+        let endDate = today.getDate() + 1;
+
+        if (today.getDate() === 1) {
+            if (startMonth === 1) {
+                startMonth = 12;
+                startYear--;
+            }
+            else {
+                startMonth--;
+            }
+            startDate = 28;
+        }
+        if (today.getDate() > 28) {
+            endDate++;
+        }
+
+        const start = `${startMonth}/${startDate}/${startYear}`;
+        const end = `${endMonth}/${endDate}/${endYear}`;
+
+        const results = await orderService.findAll({ startDate: start, endDate: end, dateBy: 'fulfillmentDate' })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should filter by create date', async () => {
+        const date = new Date();
+        const today = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+
+        const results = await orderService.findAll({ startDate: today, dateBy: 'createdAt' })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should filter by create date range', async () => {
+        const today = new Date();
+
+        let startYear = today.getFullYear();
+        let endYear = today.getFullYear();
+
+        let startMonth = today.getMonth() + 1;
+        let endMonth = today.getMonth() + 1;
+
+        let startDate = today.getDate() - 1
+        let endDate = today.getDate() + 1;
+
+        if (today.getDate() === 1) {
+            if (startMonth === 1) {
+                startMonth = 12;
+                startYear--;
+            }
+            else {
+                startMonth--;
+            }
+            startDate = 28;
+        }
+        if (today.getDate() > 28) {
+            endDate++;
+        }
+
+        const start = `${startMonth}/${startDate}/${startYear}`;
+        const end = `${endMonth}/${endDate}/${endYear}`;
+
+        const results = await orderService.findAll({ startDate: start, endDate: end, dateBy: 'createdAt' })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
     });
 
     it('should find orders by list of ids', async () => {
@@ -426,7 +528,7 @@ describe('order service', () => {
     });
 
     it('should lose OrderType reference', async () => {
-        const type = await typeService.findOne(removedTypeId, ['orders']);
+        const type = await categoryService.findOne(removedTypeId, ['orders']);
         if (!type) { throw new NotFoundException(); }
 
         expect(type.orders?.findIndex(o => o.id === testId)).toEqual(-1);
@@ -480,7 +582,7 @@ describe('order service', () => {
             } as CreateChildOrderMenuItemDto,
         ] as CreateChildOrderMenuItemDto[];
 
-        const oType = await typeService.findOneByName(TYPE_A);
+        const oType = await categoryService.findOneByName(TYPE_A);
         if (!oType) { throw new Error(); }
         const orderDto = {
             orderCategoryId: oType.id,

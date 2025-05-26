@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
@@ -19,7 +19,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         builder: InventoryAreaItemBuilder,
 
         private readonly itemService: InventoryItemService,
-        
+
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) { super(repo, builder, 'InventoryAreaItemService', requestContextService, logger); }

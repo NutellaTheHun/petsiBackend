@@ -461,9 +461,31 @@ describe('Inventory Item Service', () => {
     //find ALL
     it('should get all items', async () => {
         const results = await itemService.findAll({ limit: 20 });
-        expect(results.items.length).toEqual(12) //9 from initTestItems, 3 from create methods
+        expect(results.items.length).toEqual(12); //9 from initTestItems, 3 from create methods
 
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
+    });
+
+    it('should search items', async () => {
+        const results = await itemService.findAll({ search: 'food' });
+        expect(results.items.length).toEqual(3);
+    });
+
+    it('should filter items', async () => {
+        const category = await categoryService.findOneByName(FOOD_CAT);
+        if (!category) { throw new Error(); }
+
+        const results = await itemService.findAll({ filters: [`category=${category.id}`] });
+        expect(results.items.length).toEqual(4);
+
+    });
+
+    it('should filter items', async () => {
+        const vendor = await vendorService.findOneByName(VENDOR_A);
+        if (!vendor) { throw new Error(); }
+
+        const results = await itemService.findAll({ filters: [`vendor=${vendor.id}`] });
+        expect(results.items.length).toEqual(4);
     });
 
     //find by IDS

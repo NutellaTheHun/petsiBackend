@@ -452,6 +452,38 @@ describe('menu item service', () => {
         expect(results.items.length).toEqual(10);
     });
 
+    it('should find all menuItems with search term', async () => {
+        const results = await itemService.findAll({ search: "item", relations: ['category'] });
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(7);
+    });
+
+    it('should find all menuItems with filter', async () => {
+        const catRed = await categoryService.findOneByName(CAT_RED);
+        if (!catRed) { throw new Error(); }
+        const results = await itemService.findAll({ filters: [`category=${catRed.id}`], relations: ['category'] });
+
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(3);
+    });
+
+    it('should filter and search', async () => {
+        const catRed = await categoryService.findOneByName(CAT_RED);
+        if (!catRed) { throw new Error(); }
+
+        const results = await itemService.findAll({
+            search: "container",
+            filters: [`category=${catRed.id}`],
+            relations: ['category']
+        });
+
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(1);
+    });
+
     it('should find menuItems by list of ids', async () => {
         const results = await itemService.findEntitiesById(testIds);
         if (!results) { throw new Error(); }

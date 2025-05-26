@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Big from "big.js";
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -38,5 +38,17 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
         const targetAmount = baseAmount.div(new Big(outputUnitType.conversionFactorToBase));
 
         return targetAmount;
+    }
+
+    protected applySearch(query: SelectQueryBuilder<UnitOfMeasure>, search: string): void {
+        query.andWhere(
+            '(LOWER(entity.name) LIKE :search)', { search: `%${search.toLowerCase()}%` }
+        );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<UnitOfMeasure>, filters: Record<string, string>): void {
+        if (filters.category) {
+            query.andWhere('entity.category = :category', { category: filters.category });
+        }
     }
 }

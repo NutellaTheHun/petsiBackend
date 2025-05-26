@@ -211,6 +211,38 @@ describe('UnitOfMeasureService', () => {
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
+    it('should find all units with search term', async () => {
+        const results = await unitService.findAll({ search: POUND, relations: ['category'] });
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(1);
+    });
+
+    it('should find all units with filter', async () => {
+        const volCat = await categoryService.findOneByName(VOLUME);
+        if (!volCat) { throw new Error(); }
+        const results = await unitService.findAll({ filters: [`category=${volCat.id}`], relations: ['category'] });
+
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(9);
+    });
+
+    it('should filter and search', async () => {
+        const volCat = await categoryService.findOneByName(VOLUME);
+        if (!volCat) { throw new Error(); }
+
+        const results = await unitService.findAll({
+            filters: [`category=${volCat.id}`],
+            search: LITER,
+            relations: ['category']
+        });
+
+        if (!results) { throw new Error(); }
+
+        expect(results.items.length).toEqual(2); // Liter and Mililiter
+    });
+
     it('should get units of measure by list of ids', async () => {
         const results = await unitService.findEntitiesById(testIds);
         expect(results.length).toEqual(testIds.length);

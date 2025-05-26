@@ -21,11 +21,28 @@ export class OrderService extends ServiceBase<Order> {
     ) { super(repo, builder, 'OrderService', requestContextService, logger) }
 
     protected applySearch(query: SelectQueryBuilder<Order>, search: string): void {
-        query.leftJoin('entity.items', 'item');
-        query.andWhere(`
-        LOWER(entity.recipientName) LIKE :search
-        OR LOWER(entity.orderCategory) LIKE :search
-        OR LOWER(item.name) LIKE :search
-    `, { search: `%${search.toLowerCase()}%` });
+        query
+            .leftJoin('entity.orderedItems', 'orderedItem')
+            .leftJoin('orderedItem.menuItem', 'menuItem') // 👈 now menuItem alias is correctly defined
+            .andWhere(
+                `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.itemName) LIKE :search)`,
+                { search: `%${search.toLowerCase()}%` },
+            );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<Order>, filters: Record<string, string>): void {
+        if (filters.category) {
+            query.andWhere('entity.orderCategory = :category', { category: filters.category });
+        }
+    }
+
+    protected applyDate(query: SelectQueryBuilder<Order>, startDate: string, endDate?: string, dateBy?: string): void {
+        if (dateBy === 'createdAt' || dateBy === 'fulfillmentDate') {
+            query.andWhere(`DATE(entity.${dateBy}) >= :startDate`, { startDate });
+
+            if (endDate) {
+                query.andWhere(`DATE(entity.${dateBy}) <= :endDate`, { endDate });
+            }
+        }
     }
 }

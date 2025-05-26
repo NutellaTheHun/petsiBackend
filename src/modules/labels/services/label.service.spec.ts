@@ -5,7 +5,7 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_g } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
-import { type_c, type_d } from '../utils/constants';
+import { type_a, type_c, type_d } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelTypeService } from './label-type.service';
@@ -137,6 +137,43 @@ describe('Label Service', () => {
 
         expect(results).not.toBeNull();
         expect(results.length).toEqual(3);
+    });
+
+    it('should search for labels', async () => {
+        const results = await labelService.findAll({
+            search: "item a",
+            relations: ['menuItem', 'labelType']
+        });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(1);
+    });
+
+    it('should filter by label type', async () => {
+        const labelType = await typeService.findOneByName(type_a);
+        if (!labelType) { throw new Error(); }
+
+        const results = await labelService.findAll({
+            filters: [`labelType=${labelType.id}`],
+            relations: ['menuItem', 'labelType']
+        });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(2);
+    });
+
+    it('should filter and search by label type', async () => {
+        const labelType = await typeService.findOneByName(type_a);
+        if (!labelType) { throw new Error(); }
+
+        const results = await labelService.findAll({
+            search: 'item a',
+            filters: [`labelType=${labelType.id}`],
+            relations: ['menuItem', 'labelType']
+        });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(1);
     });
 
     it('should remove a label', async () => {

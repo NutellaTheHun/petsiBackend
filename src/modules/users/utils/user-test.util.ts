@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { RoleTestUtil } from "../../roles/utils/role-test.util";
 import { UserBuilder } from "../builders/user.builder";
 import { User } from "../entities/user.entities";
 import { UserService } from "../services/user.service";
 import { USER_A, USER_B, USER_C, USER_D, USER_E } from "./constants";
+import { RoleService } from "../../roles/services/role.service";
 
 @Injectable()
 export class UserTestUtil {
@@ -13,11 +15,17 @@ export class UserTestUtil {
     private initUsers = false;
 
     constructor(
+        private readonly roleTestUtil: RoleTestUtil,
         private readonly userService: UserService,
         private readonly userBuilder: UserBuilder,
+        private readonly roleService: RoleService,
     ) { }
 
     public async getTestUserEntities(testContext: DatabaseTestContext): Promise<User[]> {
+        await this.roleTestUtil.initRoleTestingDatabase(testContext);
+
+        const roles = (await this.roleService.findAll()).items.map(role => role.id);
+
         const results: User[] = [];
         for (let i = 0; i < this.usernames.length; i++) {
             results.push(
@@ -25,6 +33,7 @@ export class UserTestUtil {
                     .email(this.emails[i])
                     .password(`password${i}`)
                     .username(this.usernames[i])
+                    .roles([roles[i % roles.length]])
                     .build()
             );
         }
@@ -38,16 +47,10 @@ export class UserTestUtil {
         this.initUsers = true;
 
         const users = await this.getTestUserEntities(testContext);
-        //const toInsert: User[] = [];
 
         testContext.addCleanupFunction(() => this.cleanupUserTestingDatabase());
 
-        /*for(const user of users){
-            const exists = await this.userService.findOneByName(user.username);
-            if(!exists){ toInsert.push(user); }
-        }*/
-
-        await this.userService.insertEntities(/*toInsert*/users);
+        await this.userService.insertEntities(users);
     }
 
     public async cleanupUserTestingDatabase(): Promise<void> {

@@ -12,7 +12,7 @@ import { GRAM, KILOGRAM, OUNCE, POUND } from '../../unit-of-measure/utils/consta
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
-import { REC_A, REC_B, REC_CAT_B, REC_CAT_C, REC_F } from '../utils/constants';
+import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_CAT_C, REC_F, REC_SUBCAT_1, REC_SUBCAT_2 } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
@@ -58,7 +58,9 @@ describe('recipe service', () => {
         const module: TestingModule = await getRecipeTestingModule();
         testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
         dbTestContext = new DatabaseTestContext();
-        await testingUtil.initRecipeTestingDatabase(dbTestContext);
+        //await testingUtil.initRecipeTestingDatabase(dbTestContext);
+        await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
+
 
         menuItemService = module.get<MenuItemService>(MenuItemService);
         menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
@@ -738,10 +740,42 @@ describe('recipe service', () => {
     it('should get all recipes', async () => {
         const expected = await testingUtil.getTestRecipeEntities(dbTestContext);
 
-        const results = await recipeService.findAll();
+        const results = await recipeService.findAll({
+            relations: ['ingredients']
+        });
 
         expect(results.items.length).toEqual(expected.length);
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id,]
+    });
+
+    it('should search all recipes', async () => {
+        const results = await recipeService.findAll({ search: REC_A });
+
+        expect(results.items.length).toEqual(1);
+    });
+
+    it('should search all recipes by ingredients', async () => {
+        const results = await recipeService.findAll({ search: FOOD_A });
+
+        expect(results.items.length).toEqual(2);
+    });
+
+    it('should filter recipe category all recipes', async () => {
+        const recCat = await categoryService.findOneByName(REC_CAT_A)
+        if (!recCat) { throw new Error(); }
+
+        const results = await recipeService.findAll({ filters: [`category=${recCat.id}`] });
+
+        expect(results.items.length).toEqual(3);
+    });
+
+    it('should filter recipe sub category all recipes', async () => {
+        const recCat = await subCategoryService.findOneByName(REC_SUBCAT_2)
+        if (!recCat) { throw new Error(); }
+
+        const results = await recipeService.findAll({ filters: [`subCategory=${recCat.id}`] });
+
+        expect(results.items.length).toEqual(1);
     });
 
     it('should get recipes by list of ids', async () => {

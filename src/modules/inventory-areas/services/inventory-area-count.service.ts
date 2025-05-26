@@ -1,6 +1,6 @@
 import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Between, Repository } from "typeorm";
+import { Between, Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -23,7 +23,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
         @Inject(forwardRef(() => InventoryAreaCountBuilder))
         builder: InventoryAreaCountBuilder,
-        
+
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) { super(repo, builder, 'InventoryAreaCountService', requestContextService, logger); }
@@ -52,4 +52,32 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
             relations,
         });
     }
+
+    protected applySearch(query: SelectQueryBuilder<InventoryAreaCount>, search: string): void {
+
+        //query.distinct(true);
+
+        query
+            .leftJoin('entity.countedItems', 'areaItem')
+            .leftJoin('areaItem.countedItem', 'inventoryItem')
+            .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
+                search: `%${search.toLowerCase()}%`,
+            });
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<InventoryAreaCount>, filters: Record<string, string>): void {
+        if (filters.inventoryArea) {
+            query.andWhere('entity.inventoryArea = :inventoryArea', { inventoryArea: filters.inventoryArea });
+        }
+    }
+
+    protected applyDate(query: SelectQueryBuilder<InventoryAreaCount>, startDate: string, endDate?: string, dateBy?: string): void {
+
+        query.andWhere(`DATE(entity.countDate) >= :startDate`, { startDate });
+
+        if (endDate) {
+            query.andWhere(`DATE(entity.countDate) <= :endDate`, { endDate });
+        }
+    }
+
 }

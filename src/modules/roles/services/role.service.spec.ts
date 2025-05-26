@@ -65,7 +65,7 @@ describe('Role Service', () => {
     });
 
     it("should retrieve all roles", async () => {
-        const expected = await roleTestingUtil.getTestUserEntities(dbTestContext);
+        const expected = await roleTestingUtil.getTestRoleEntities(dbTestContext);
 
         const results = await roleService.findAll()
 

@@ -277,6 +277,7 @@ export class RecipeTestUtil {
         this.initIngredient = true;
 
         testContext.addCleanupFunction(() => this.cleanupRecipeIngredientTestingDatabase());
+
         await this.ingredientService.insertEntities(
             await this.getTestRecipeIngredientEntities(testContext)
         );

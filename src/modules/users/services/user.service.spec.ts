@@ -94,11 +94,24 @@ describe('User Service', () => {
     it("should get all users", async () => {
         const expected = await userTestingUtil.getTestUserEntities(dbTestContext);
 
-        const results = await usersService.findAll()
+        const results = await usersService.findAll({ relations: ['roles'] })
         expect(results.items.length).toEqual(expected.length);
 
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
+
+    it("should search for user", async () => {
+        const results = await usersService.findAll({ search: 'user_a', relations: ['roles'] })
+        expect(results.items.length).toEqual(1);
+    });
+
+    it("should filter for user", async () => {
+        const roleAdmin = await rolesService.findOneByName(ROLE_ADMIN);
+        if (!roleAdmin) { throw new Error(); }
+        const results = await usersService.findAll({ filters: [`role=${roleAdmin.id}`], relations: ['roles'] })
+        expect(results.items.length).toEqual(2);
+    });
+
 
     it("should get Users from a list of user ids", async () => {
         const results = await usersService.findEntitiesById(testIds);
@@ -161,6 +174,6 @@ describe('User Service', () => {
 
         const verifyRole = await rolesService.findOneByName(ROLE_ADMIN, ["users"]);
         expect(verifyRole).not.toBeNull();
-        expect(verifyRole?.users.length).toEqual(0);
+        expect(verifyRole?.users.length).toEqual(1); // There were 2 admin assignments from the initDb functions to start
     });
 });

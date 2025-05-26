@@ -49,6 +49,9 @@ export class ControllerBase<T extends ObjectLiteral> {
         @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
         @Query('search') search?: string,
         @Query('filters') filters?: string[],
+        @Query('dateBy') dateBy?: string,
+        @Query('startDate') startDate?: string,  // ISO format string
+        @Query('endDate') endDate?: string, // ISO format string
     ): Promise<{ items: T[], nextCursor?: string }> {
         const requestId = this.requestContextService.getRequestId();
         this.logger.logAction(
@@ -56,7 +59,19 @@ export class ControllerBase<T extends ObjectLiteral> {
             requestId,
             'FIND_ALL',
             'REQUEST',
-            { requestId, options: { relations, limit, cursor, sortBy, sortOrder, search, filters } }
+            {
+                requestId, options: {
+                    relations,
+                    limit,
+                    cursor,
+                    sortBy,
+                    sortOrder,
+                    search,
+                    filters,
+                    startDate,
+                    endDate,
+                }
+            }
         );
 
         // Build cache key
@@ -67,7 +82,10 @@ export class ControllerBase<T extends ObjectLiteral> {
             sortBy,
             sortOrder,
             search,
-            filters
+            filters,
+            dateBy,
+            startDate,
+            endDate,
         })}`;
 
         // Check cache
@@ -91,7 +109,10 @@ export class ControllerBase<T extends ObjectLiteral> {
             sortBy,
             sortOrder,
             search,
-            filters
+            filters,
+            dateBy,
+            startDate,
+            endDate,
         });
 
         // Add key for invalidation
