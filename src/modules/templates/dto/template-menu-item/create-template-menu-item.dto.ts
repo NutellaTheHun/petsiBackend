@@ -6,24 +6,28 @@ import { Template } from "../../entities/template.entity";
  * Depreciated, only created as a child through {@link Template}.
  */
 export class CreateTemplateMenuItemDto {
-    @ApiProperty({ example: 'MenuItem: Blueberry Pie, displayName: "blue"', description: 'Name to be used on the baking list representing the referenced Menu-Item.' })
+    @ApiProperty({ example: 'MenuItem: Blueberry Pie, displayName: "blue"', description: 'Name to be used on the baking list representing the referenced MenuItem.' })
     @IsString()
     @IsNotEmpty()
     readonly displayName: string;
 
-    @ApiProperty({ description: 'Id of the Menu-Item entity being displayed on the Template.' })
+    @ApiProperty({
+        description: 'Id of the MenuItem entity being displayed on the Template.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     readonly menuItemId: number;
 
-    @ApiProperty({ description: 'The row position of the Template-Menu-Item on the parent Template.' })
+    @ApiProperty({ description: 'The row position of the TemplateMenuItem on the parent Template.' })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     readonly tablePosIndex: number;
 
-    @ApiProperty({ description: 'Id of the parent Template entity.' })
+    @ApiProperty({
+        description: 'Id of the parent Template entity.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

@@ -6,13 +6,13 @@ import { CreateChildRecipeSubCategoryDto } from "../recipe-sub-category/create-c
 import { UpdateChildRecipeSubCategoryDto } from "../recipe-sub-category/update-child-recipe-sub-category.dto copy";
 
 export class UpdateRecipeCategoryDto {
-    @ApiProperty({ description: 'Name of the Recipe-Category entity.' })
+    @ApiProperty({ description: 'Name of the RecipeCategory entity.' })
     @IsString()
     @IsOptional()
     readonly categoryName?: string;
 
     @ApiProperty({
-        description: 'Mixed array of CreateChildRecipeSubCategoryDtos and UpdateChildRecipeSubCategoryDtos, child dtos are used when updating the parent Recipe-Category with created/updated child Recipe-Sub-Category entities.',
+        description: 'Mixed array of CreateChildRecipeSubCategoryDtos and UpdateChildRecipeSubCategoryDtos, child dtos are used when updating the parent RecipeCategory with created/updated child RecipeSubCategory entities.',
         type: [UpdateChildRecipeSubCategoryDto]
     })
     @IsOptional()

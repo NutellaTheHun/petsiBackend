@@ -6,19 +6,25 @@ import { MenuItemContainerOptions } from "../../entities/menu-item-container-opt
  * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
  */
 export class CreateMenuItemContainerRuleDto {
-    @ApiProperty({ description: 'Id of the Menu-Item-Container-Options entity.' })
+    @ApiProperty({
+        description: 'Id of the MenuItemContainerOptions entity.',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     parentContainerOptionsId: number;
 
-    @ApiProperty({ description: 'Id of a Menu-Item entity that is a valid component' })
+    @ApiProperty({
+        description: 'Id of a MenuItem entity that is a valid component',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     validMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of a Menu-Item-Size entity that is a valid size to the validMenuItem, and to the container' })
+    @ApiProperty({
+        description: 'Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()

@@ -6,25 +6,33 @@ import { Order } from "../../entities/order.entity";
  * Depreciated, only created as a child through {@link Order}.
  */
 export class CreateOrderContainerItemDto {
-    @ApiProperty({ description: 'Id of the Order-Menu-Item that is the parent' })
+    @ApiProperty({
+        description: 'Id of the OrderMenuItem that is the parent',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     parentOrderMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is this item\'s container' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is this item\'s container',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     parentContainerMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is being ordered' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is being ordered',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     containedMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
+    @ApiProperty({
+        description: 'Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

@@ -3,7 +3,10 @@ import { IsArray, IsBoolean, IsDate, IsNotEmpty, IsNumber, IsOptional, IsPositiv
 import { CreateChildOrderMenuItemDto } from "../order-menu-item/create-child-order-menu-item.dto";
 
 export class CreateOrderDto {
-    @ApiProperty({ example: 'Order categories such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
+    @ApiProperty({
+        example: 'Order categories such as: Wholesale, Square, Special',
+        description: 'Id of OrderType entity.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

@@ -17,7 +17,9 @@ export class UpdateUserDto {
     @IsOptional()
     readonly password?: string;
 
-    @ApiProperty({ description: 'Id of roles the user has.' })
+    @ApiProperty({
+        description: 'Id of roles the user has.',
+    })
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })

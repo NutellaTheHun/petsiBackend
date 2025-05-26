@@ -2,7 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateLabelDto {
-    @ApiProperty({ description: 'Id of Menu-Item entity.' })
+    @ApiProperty({
+        description: 'Id of MenuItem entity.',
+    })
     @IsOptional()
     @IsNumber()
     @IsPositive()
@@ -13,7 +15,9 @@ export class UpdateLabelDto {
     @IsOptional()
     readonly imageUrl?: string;
 
-    @ApiProperty({ description: 'Id of Label-Type entity.' })
+    @ApiProperty({
+        description: 'Id of LabelType entity.',
+    })
     @IsOptional()
     @IsNumber()
     @IsPositive()

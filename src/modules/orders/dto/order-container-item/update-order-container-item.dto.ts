@@ -2,19 +2,25 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsOptional, IsPositive } from "class-validator";
 
 export class UpdateOrderContainerItemDto {
-    @ApiProperty({ description: 'Id of the Menu-Item that is this item\'s container, not available to update, but required for validation' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is this item\'s container, not available to update, but required for validation',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()
     parentContainerMenuItemId?: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is being ordered' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is being ordered',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()
     containedMenuItemId?: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
+    @ApiProperty({
+        description: 'Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()

@@ -2,9 +2,13 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsOptional, IsPositive } from "class-validator";
 import { CreateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
 import { UpdateChildInventoryItemSizeDto } from "../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { InventoryItem } from "../../../inventory-items/entities/inventory-item.entity";
 
 export class UpdateInventoryAreaItemDto {
-    @ApiProperty({ description: 'Id for Inventory-Item entity.' })
+    @ApiProperty({
+        description: 'Id for InventoryItem entity.',
+        type: InventoryItem
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
@@ -12,36 +16,24 @@ export class UpdateInventoryAreaItemDto {
 
     @ApiProperty({
         example: '6pk(countedAmount) of 28oz(measure amount) can of evaporated milk',
-        description: 'The amount of Inventory-Item per unit.'
+        description: 'The amount of InventoryItem per unit.'
     })
     @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly countedAmount?: number;
 
-    /**
-     * -When creating a countedItem (during an inventory count), 
-     * an item could assign a pre-existing InventoryItemSize or create a new one.
-     * - If the itemSize exists, the DTO that the controller recieves with have a populated itemSizeId property, and an empty itemSizeCreateDto
-     * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
-     *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
-     */
-    @ApiProperty({ description: 'Id for Inventory-Item-Size entity. Is optional, if itemSizeId is populated, itemSizeDto must be null/undefined.' })
+    @ApiProperty({
+        description: 'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly countedItemSizeId?: number;
 
-    /**
-     * -When creating a countedItem (during an inventory count), 
-     * an item could assign a pre-existing InventoryItemSize or create a new one.
-     * - If the itemSize exists, the DTO that the controller recieves with have a populated itemSizeId property, and an empty itemSizeCreateDto
-     * - If the itemSize is new, the DTO that the controller recieves will have a populated itemSizeCreateDto, and no itemSizeId propery. 
-     *   At the controller level, the itemSize will be created, and its ID will be passed along with the original DTO to the service.  
-     */
     @ApiProperty({
-        description: 'Creational or update Dto for Inventory-Item-Size. Is optional, if itemSizeDto is populated, itemSizeId must be null/undefined.',
-        type: [CreateChildInventoryItemSizeDto]
+        description: 'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
+        type: UpdateChildInventoryItemSizeDto
     })
     @IsOptional()
     readonly countedItemSizeDto?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto);

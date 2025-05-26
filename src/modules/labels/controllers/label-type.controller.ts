@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
@@ -17,6 +17,7 @@ import { LabelTypeService } from '../services/label-type.service';
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('label-types')
+@ApiExtraModels(LabelType)
 export class LabelTypeController extends ControllerBase<LabelType> {
     constructor(
         labelTypeService: LabelTypeService,
@@ -58,14 +59,36 @@ export class LabelTypeController extends ControllerBase<LabelType> {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves an array of Label Types' })
     @ApiOkResponse({ type: PaginatedResult<LabelType> })
+    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'offset', required: false, type: String })
+    @ApiQuery({
+        name: 'sortBy',
+        required: false,
+        type: String,
+        description: `Field to sort by. Available options:\n
+        - labelTypeName`,
+    })
+
+    @ApiQuery({
+        name: 'sortOrder',
+        required: false,
+        enum: ['ASC', 'DESC'],
+        description: 'Sort order: ASC or DESC',
+    })
     async findAll(
         @Query('relations') relations?: string[],
         @Query('limit') limit?: number,
         @Query('offset') cursor?: string,
         @Query('sortBy') sortBy?: string,
-        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        //@Query('search') search?: string,
+        //@Query('filters') filters?: string[],
+        //@Query('dateBy') dateBy?: string,
+        //@Query('startDate') startDate?: string,  // ISO format string
+        //@Query('endDate') endDate?: string, // ISO format string
     ): Promise<PaginatedResult<LabelType>> {
-        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder, undefined, undefined, undefined, undefined, undefined);
     }
 
     @Get(':id')

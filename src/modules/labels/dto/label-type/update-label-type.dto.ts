@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateLabelTypeDto {
-    @ApiProperty({ description: 'Name of the Label-Type entity.' })
+    @ApiProperty({ description: 'Name of the LabelType entity.' })
     @IsString()
     @IsOptional()
     readonly labelTypeName?: string;

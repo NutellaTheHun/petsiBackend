@@ -5,11 +5,12 @@ import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inven
 import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
 import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { BOX_PKG, DRY_B, FOOD_A, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
+import { BOX_PKG, DRY_B, FOOD_A, FOOD_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
 import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
+import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/create-child-inventory-area-item.dto";
 import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
 import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
@@ -65,14 +66,53 @@ describe('Inventory area count service', () => {
         expect(countService).toBeDefined();
     });
 
-    it('should create area count', async () => {
+    it('should create area count with items', async () => {
         const areaA = await areaService.findOneByName(AREA_A);
         if (!areaA) { throw new NotFoundException(); }
-        const dto = { inventoryAreaId: areaA.id } as CreateInventoryAreaCountDto;
+
+        const foodA = await itemService.findOneByName(FOOD_A, ['itemSizes']);
+        if (!foodA) { throw new Error(); }
+
+        const foodB = await itemService.findOneByName(FOOD_B, ['itemSizes']);
+        if (!foodB) { throw new Error(); }
+
+        const unit = await measureService.findOneByName(POUND);
+        if (!unit) { throw new Error(); }
+
+        const pkg = await packageService.findOneByName(BOX_PKG);
+        if (!pkg) { throw new Error(); }
+
+        const sizeDto = {
+            mode: 'create',
+            measureAmount: 1,
+            measureUnitId: unit.id,
+            inventoryPackageId: pkg.id,
+        } as CreateChildInventoryItemSizeDto;
+
+        const itemDtos = [
+            {
+                mode: 'create',
+                countedInventoryItemId: foodA.id,
+                countedAmount: 1,
+                countedItemSizeId: foodA.itemSizes[0].id,
+            } as CreateChildInventoryAreaItemDto,
+            {
+                mode: 'create',
+                countedInventoryItemId: foodB.id,
+                countedAmount: 1,
+                countedItemSizeDto: sizeDto,
+            } as CreateChildInventoryAreaItemDto,
+        ] as CreateChildInventoryAreaItemDto[];
+
+        const dto = {
+            inventoryAreaId: areaA.id,
+            itemCountDtos: itemDtos,
+        } as CreateInventoryAreaCountDto;
 
         const result = await countService.create(dto);
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull();
+        expect(result.countedItems.length).toEqual(2);
 
         testAreaId = areaA.id as number;
         testCountId = result?.id as number;
@@ -157,7 +197,7 @@ describe('Inventory area count service', () => {
     it('should search area counts', async () => {
         const results = await countService.findAll({ search: FOOD_A })
         expect(results).not.toBeNull();
-        expect(results.items.length).toEqual(3);
+        expect(results.items.length).toEqual(4);
     });
 
     it('should filter by inventoryArea', async () => {
@@ -171,9 +211,43 @@ describe('Inventory area count service', () => {
 
     it('should filter by date', async () => {
         const date = new Date();
-        const today = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+        const today = `${date.getMonth() + 1}-${date.getDate()}-${date.getFullYear()}`;
 
         const results = await countService.findAll({ startDate: today })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    })
+
+    it('should filter by date range', async () => {
+        const today = new Date();
+
+        let startYear = today.getFullYear();
+        let endYear = today.getFullYear();
+
+        let startMonth = today.getMonth() + 1;
+        let endMonth = today.getMonth() + 1;
+
+        let startDate = today.getDate() - 1
+        let endDate = today.getDate() + 1;
+
+        if (today.getDate() === 1) {
+            if (startMonth === 1) {
+                startMonth = 12;
+                startYear--;
+            }
+            else {
+                startMonth--;
+            }
+            startDate = 28;
+        }
+        if (today.getDate() > 28) {
+            endDate++;
+        }
+
+        const start = `${startMonth}/${startDate}/${startYear}`;
+        const end = `${endMonth}/${endDate}/${endYear}`;
+
+        const results = await countService.findAll({ startDate: start, endDate: end })
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(8);
     })

@@ -2,17 +2,19 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
 
 export class UpdateUnitOfMeasureDto {
-    @ApiProperty({ example: 'Pound, Kilogram, Gallon, fluid ounce', description: 'Name of the Unit-of-Measure entity.' })
+    @ApiProperty({ example: 'Pound, Kilogram, Gallon, fluid ounce', description: 'Name of the UnitofMeasure entity.' })
     @IsString()
     @IsOptional()
     readonly unitName?: string;
 
-    @ApiProperty({ example: 'UnitOfMeasure: Pound, abbreviation: lb', description: 'abbrieviation of the Unit-of-Measure entity\'s name.' })
+    @ApiProperty({ example: 'UnitOfMeasure: Pound, abbreviation: lb', description: 'abbrieviation of the UnitofMeasure entity\'s name.' })
     @IsString()
     @IsOptional()
     readonly abbreviation?: string;
 
-    @ApiProperty({ description: 'Id of the Unit-of-Measure-Category entity that the Unit-of-Measure falls under.' })
+    @ApiProperty({
+        description: 'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()

@@ -6,19 +6,25 @@ import { CreateChildOrderContainerItemDto } from "../order-container-item/create
  * Depreciated, only created as a child through {@link Order}.
  */
 export class CreateOrderMenuItemDto {
-    @ApiProperty({ description: 'Id of Order entity the Order-Menu-Item belongs to.' })
+    @ApiProperty({
+        description: 'Id of Order entity the OrderMenuItem belongs to.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     readonly orderId: number;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity being ordered.' })
+    @ApiProperty({
+        description: 'Id of MenuItem entity being ordered.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     readonly menuItemId: number
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size entity. Must be valid size for the Menu-Item being ordered.' })
+    @ApiProperty({
+        description: 'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
@@ -31,7 +37,7 @@ export class CreateOrderMenuItemDto {
     readonly quantity: number
 
     @ApiProperty({
-        description: 'Dtos when creating an Order-Menu-Item entity that is a container for a list of Menu-Item',
+        description: 'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
         type: [CreateChildOrderContainerItemDto]
     })
     @IsArray()

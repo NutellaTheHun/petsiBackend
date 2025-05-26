@@ -48,6 +48,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         }
         if (dto.cost !== undefined) {
             this.costByValue(dto.cost);
+        } {
+            this.costByValue(0);
         }
         if (dto.measureAmount !== undefined) {
             this.measureAmount(dto.measureAmount);
@@ -78,6 +80,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> imp
         }
         if (dto.cost !== undefined) {
             this.costByValue(dto.cost);
+        } else {
+            this.costByValue(0);
         }
         if (dto.measureAmount !== undefined) {
             this.measureAmount(dto.measureAmount);

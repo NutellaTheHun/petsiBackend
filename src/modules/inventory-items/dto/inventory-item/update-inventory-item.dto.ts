@@ -6,25 +6,29 @@ import { CreateChildInventoryItemSizeDto } from "../inventory-item-size/create-c
 import { UpdateChildInventoryItemSizeDto } from "../inventory-item-size/update-child-inventory-item-size.dto";
 
 export class UpdateInventoryItemDto {
-    @ApiProperty({ example: 'Evaporated Milk, Sliced Almonds, Large Pie Tins', description: 'Name of Inventory-Item entity.' })
+    @ApiProperty({ example: 'Evaporated Milk, Sliced Almonds, Large Pie Tins', description: 'Name of InventoryItem entity.' })
     @IsString()
     @IsOptional()
     readonly itemName?: string;
 
-    @ApiProperty({ description: 'Id of Inventory-Item-Category entity.' })
+    @ApiProperty({
+        description: 'Id of InventoryItemCategory entity.',
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly inventoryItemCategoryId?: number | null;
 
-    @ApiProperty({ description: 'Id of Inventory-Item-Vendor entity.' })
+    @ApiProperty({
+        description: 'Id of InventoryItemVendor entity.',
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
     readonly vendorId?: number | null;
 
     @ApiProperty({
-        description: 'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (Inventory-Item).',
+        description: 'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
         type: [UpdateChildInventoryItemSizeDto]
     })
     @IsOptional()
@@ -33,7 +37,7 @@ export class UpdateInventoryItemDto {
     @Type(() => InventoryItemSizeUnionResolver)
     readonly itemSizeDtos?: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[];
 
-    @ApiProperty({ description: 'Price paid for the Inventory-Item entity.' })
+    @ApiProperty({ description: 'Price paid for the InventoryItem entity.' })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)

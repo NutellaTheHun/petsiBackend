@@ -2,7 +2,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from "class-validator";
 
 export class CreateLabelDto {
-    @ApiProperty({ description: 'Id of Menu-Item entity.' })
+    @ApiProperty({
+        description: 'Id of MenuItem entity.',
+    })
     @IsNotEmpty()
     @IsNumber()
     @IsPositive()
@@ -13,7 +15,9 @@ export class CreateLabelDto {
     @IsNotEmpty()
     readonly imageUrl: string;
 
-    @ApiProperty({ description: 'Id of Label-Type entity.' })
+    @ApiProperty({
+        description: 'Id of LabelType entity.',
+    })
     @IsNotEmpty()
     @IsNumber()
     @IsPositive()

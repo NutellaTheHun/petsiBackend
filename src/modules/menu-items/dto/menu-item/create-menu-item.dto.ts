@@ -4,36 +4,40 @@ import { CreateChildMenuItemContainerItemDto } from "../menu-item-container-item
 import { CreateChildMenuItemContainerOptionsDto } from "../menu-item-container-options/create-child-menu-item-container-options.dto";
 
 export class CreateMenuItemDto {
-    @ApiProperty({ description: 'Id of Menu-Item-Category entity.' })
+    @ApiProperty({
+        description: 'Id of MenuItemCategory entity.',
+    })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly categoryId?: number;
 
-    @ApiProperty({ description: 'Name of Menu-Item entity.' })
+    @ApiProperty({ description: 'Name of MenuItem entity.' })
     @IsString()
     @IsNotEmpty()
     readonly itemName: string;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of MenuItem entity that is the vegan version of the referencing MenuItem.' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly veganOptionMenuId?: number;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the Take \'n Bake version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of MenuItem entity that is the Take \'n Bake version of the referencing MenuItem.' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly takeNBakeOptionMenuId?: number;
 
-    @ApiProperty({ description: 'Id of Menu-Item entity that is the vegan Take \'n Bake version of the referencing Menu-Item.' })
+    @ApiProperty({ description: 'Id of MenuItem entity that is the vegan Take \'n Bake version of the referencing MenuItem.' })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly veganTakeNBakeOptionMenuId?: number;
 
-    @ApiProperty({ description: 'Ids of Menu-Item-Size entities. Represents the sizes available for the referencing Menu-Item.' })
+    @ApiProperty({
+        description: 'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
+    })
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })
@@ -61,7 +65,7 @@ export class CreateMenuItemDto {
 
     @ApiProperty({
         description: 'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-        type: [CreateChildMenuItemContainerOptionsDto]
+        type: CreateChildMenuItemContainerOptionsDto
     })
     @IsOptional()
     readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto;

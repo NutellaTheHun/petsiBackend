@@ -6,7 +6,10 @@ import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-ord
 import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
 
 export class UpdateOrderDto {
-    @ApiProperty({ example: 'Order categories such as: Wholesale, Square, Special', description: 'Id of Order-Type entity.' })
+    @ApiProperty({
+        example: 'Order categories such as: Wholesale, Square, Special',
+        description: 'Id of OrderType entity.',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()

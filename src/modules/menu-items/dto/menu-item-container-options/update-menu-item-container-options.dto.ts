@@ -12,7 +12,7 @@ export class UpdateMenuItemContainerOptionsDto {
     @IsOptional()
     containerRuleDtos?: (CreateChildMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto)[];
 
-    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of order-menu-item-components have to equal this value.' })
+    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()

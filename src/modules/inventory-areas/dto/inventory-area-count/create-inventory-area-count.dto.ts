@@ -3,13 +3,15 @@ import { IsArray, IsNotEmpty, IsNumber, IsOptional, ValidateNested } from "class
 import { CreateChildInventoryAreaItemDto } from "../inventory-area-item/create-child-inventory-area-item.dto";
 
 export class CreateInventoryAreaCountDto {
-    @ApiProperty({ description: 'Id for Inventory-Area entity.' })
+    @ApiProperty({
+        description: 'Id for InventoryArea entity.',
+    })
     @IsNumber()
     @IsNotEmpty()
     readonly inventoryAreaId: number;
 
     @ApiProperty({
-        description: 'Array with combination of CreateChildInventoryAreaItemDto and UpdateChildInventoryAreaItemDto, child Dtos are only used when updating a parent entity, and creating/updating children through the parent.',
+        description: 'Child Dtos are used when the the child entity is being created/updated through the parent, in this case, the InventoryAreaItem is being created during the created of the InventoryAreaCount (throught the InventoryAreaCount endpoint).',
         type: [CreateChildInventoryAreaItemDto]
     })
     @IsOptional()

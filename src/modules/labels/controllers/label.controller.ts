@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Cache } from "cache-manager";
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
@@ -17,6 +17,7 @@ import { LabelService } from '../services/label.service';
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('labels')
+@ApiExtraModels(Label)
 export class LabelController extends ControllerBase<Label> {
     constructor(
         labelService: LabelService,
@@ -58,14 +59,49 @@ export class LabelController extends ControllerBase<Label> {
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrieves an array of Labels' })
     @ApiOkResponse({ type: PaginatedResult<Label> })
+    @ApiQuery({
+        name: 'filters',
+        required: false,
+        isArray: true,
+        type: String,
+        description: `Filterable fields. Use format: field=value. Available filters:\n
+              - ** labelType ** (e.g., \`labelType=5\`)`
+    })
+
+    @ApiQuery({
+        name: 'sortBy',
+        required: false,
+        type: String,
+        description: `Field to sort by. Available options:\n
+         - labelType \n`
+    })
+
+    @ApiQuery({
+        name: 'sortOrder',
+        required: false,
+        enum: ['ASC', 'DESC'],
+        description: 'Sort order: ASC or DESC',
+    })
+    @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'offset', required: false, type: String })
+    @ApiQuery({
+        name: 'search', required: false, type: String,
+        description: 'search by MenuItem name',
+    })
     async findAll(
         @Query('relations') relations?: string[],
         @Query('limit') limit?: number,
         @Query('offset') cursor?: string,
         @Query('sortBy') sortBy?: string,
-        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        @Query('search') search?: string,
+        @Query('filters') filters?: string[],
+        //@Query('dateBy') dateBy?: string,
+        //@Query('startDate') startDate?: string,  // ISO format string
+        //@Query('endDate') endDate?: string, // ISO format string
     ): Promise<PaginatedResult<Label>> {
-        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder, search, filters, undefined, undefined, undefined);
     }
 
     @Get(':id')

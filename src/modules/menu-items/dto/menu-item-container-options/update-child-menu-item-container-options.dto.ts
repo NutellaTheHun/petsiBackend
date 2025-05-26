@@ -4,11 +4,11 @@ import { CreateChildMenuItemContainerRuleDto } from "../menu-item-container-rule
 import { UpdateChildMenuItemContainerRuleDto } from "../menu-item-container-rule/update-child-menu-item-container-rule.dto";
 
 export class UpdateChildMenuItemContainerOptionsDto {
-    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Menu-Item entity with components.' })
+    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a MenuItem entity with components.' })
     @IsNotEmpty()
     readonly mode: 'update' = 'update';
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Container-Options to update.' })
+    @ApiProperty({ description: 'Id of the MenuItemContainerOptions to update.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
@@ -22,7 +22,7 @@ export class UpdateChildMenuItemContainerOptionsDto {
     @IsOptional()
     containerRuleDtos?: (CreateChildMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto)[];
 
-    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of order-menu-item-components have to equal this value.' })
+    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.' })
     @IsNumber()
     @IsPositive()
     @IsOptional()

@@ -6,31 +6,40 @@ import { Recipe } from "../../entities/recipe.entity";
  * Depreciated, only created as a child through {@link Recipe}.
  */
 export class CreateRecipeIngredientDto {
-    @ApiProperty({ description: 'Id of the Recipe entity that is the parent' })
+    @ApiProperty({
+        description: 'Id of the Recipe entity that is the parent',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     readonly parentRecipeId: number;
 
-    @ApiProperty({ example: ' 10 lb of flower(Inventory-Item)', description: 'Id of Inventory-Item used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.' })
+    @ApiProperty({
+        example: ' 10 lb of flower(InventoryItem)',
+        description: 'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.'
+    })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly ingredientInventoryItemId?: number;
 
-    @ApiProperty({ example: 'Recipe: Blueberry Mix, ingredients: blueberries, sugar. Recipe: Blueberry Pie, ingredients: Blueberry Mix, pie dough, sugar ', description: 'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.' })
-    @ApiProperty({ description: '' })
+    @ApiProperty({
+        example: 'Recipe: Blueberry Mix, ingredients: blueberries, sugar. Recipe: Blueberry Pie, ingredients: Blueberry Mix, pie dough, sugar ',
+        description: 'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.',
+    })
     @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly ingredientRecipeId?: number;
 
-    @ApiProperty({ example: ' 10(quantity) lb of flower', description: 'The unit amount of the Unit-of-Measure of the Inventory-Item' })
+    @ApiProperty({ example: ' 10(quantity) lb of flower', description: 'The unit amount of the UnitofMeasure of the InventoryItem' })
     @IsNumber()
     @IsNotEmpty()
     readonly quantity: number;
 
-    @ApiProperty({ example: ' 10 lb(Unit-of-Measure.abbreviation) of flower', description: 'Id of the Unit-of-Measure entity.' })
+    @ApiProperty({
+        example: ' 10 lb(UnitofMeasure.abbreviation) of flower', description: 'Id of the UnitofMeasure entity.',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()

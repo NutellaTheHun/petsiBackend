@@ -7,13 +7,17 @@ export class CreateChildOrderMenuItemDto {
     @IsNotEmpty()
     readonly mode: 'create' = 'create';
 
-    @ApiProperty({ description: 'Id of Menu-Item entity being ordered.' })
+    @ApiProperty({
+        description: 'Id of MenuItem entity being ordered.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     readonly menuItemId: number
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size entity. Must be valid size for the Menu-Item being ordered.' })
+    @ApiProperty({
+        description: 'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
@@ -26,7 +30,7 @@ export class CreateChildOrderMenuItemDto {
     readonly quantity: number
 
     @ApiProperty({
-        description: 'Dtos when creating an Order-Menu-Item entity that is a Menu-Item with Menu-Item-Container-Options',
+        description: 'Dtos when creating an OrderMenuItem entity that is a MenuItem with MenuItemContainerOptions',
         type: [CreateChildOrderContainerItemDto]
     })
     @IsArray()

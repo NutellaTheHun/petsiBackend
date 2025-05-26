@@ -8,7 +8,9 @@ export class CreateRecipeDto {
     @IsNotEmpty()
     readonly recipeName: string;
 
-    @ApiProperty({ example: 'Menu-Item: Chocolate Bourbon Pecan', description: 'Id of the Menu-Item that the recipe produces.' })
+    @ApiProperty({
+        example: 'MenuItem: Chocolate Bourbon Pecan', description: 'Id of the MenuItem that the recipe produces.',
+    })
     @IsNumber()
     @IsPositive()
     @IsOptional()
@@ -19,13 +21,16 @@ export class CreateRecipeDto {
     @IsOptional()
     readonly isIngredient?: boolean;
 
-    @ApiProperty({ example: '3(batchResultQuantity) units of Blueberry Pie, 4(batchResultQuantity) lbs of pie dough', description: 'The unit amount the recipe produces of the referenced BatchUnitOfMeasure Unit-of-Measure entity.' })
+    @ApiProperty({ example: '3(batchResultQuantity) units of Blueberry Pie, 4(batchResultQuantity) lbs of pie dough', description: 'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
     readonly batchResultQuantity: number;
 
-    @ApiProperty({ example: '3 units(batchResultUnitOfMeasure) of Blueberry Pie, 4 lbs(batchResultUnitOfMeasure.abbreviation) of pie dough', description: 'Id of the Unit-of-Measure entity expressing the unit size of what the recipe produces.' })
+    @ApiProperty({
+        example: '3 units(batchResultUnitOfMeasure) of Blueberry Pie, 4 lbs(batchResultUnitOfMeasure.abbreviation) of pie dough',
+        description: 'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
@@ -37,7 +42,9 @@ export class CreateRecipeDto {
     @IsNotEmpty()
     readonly servingSizeQuantity: number;
 
-    @ApiProperty({ description: 'Id of the Unit-of-Measure used to represent the unit size of what is sold.' })
+    @ApiProperty({
+        description: 'Id of the UnitofMeasure used to represent the unit size of what is sold.',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
@@ -49,20 +56,24 @@ export class CreateRecipeDto {
     @Min(0)
     readonly salesPrice?: number;
 
-    @ApiProperty({ description: 'Id of the Recipe-Category entity' })
+    @ApiProperty({
+        description: 'Id of the RecipeCategory entity',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()
     readonly categoryId?: number;
 
-    @ApiProperty({ description: 'Id of the Recipe-Sub-Category entity. Must be a child sub-category to the referenced Recipe-Category' })
+    @ApiProperty({
+        description: 'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
+    })
     @IsNumber()
     @IsOptional()
     @IsPositive()
     readonly subCategoryId?: number;
 
     @ApiProperty({
-        description: 'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child Recipe-Ingredient entites through creating the Recipe entity.',
+        description: 'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child RecipeIngredient entites through creating the Recipe entity.',
         type: [CreateChildRecipeIngredientDto],
     })
     @IsOptional()

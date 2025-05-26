@@ -1,11 +1,11 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { AppLogger } from '../../app-logging/app-logger';
+import { ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Public } from '../../../util/decorators/PublicLogin';
+import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { AuthResponseDto } from '../dto/auth-response.dto';
 import { SignInDto } from '../dto/sign-in.dto';
 import { AuthService } from '../services/auth.service';
-import { ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { AuthResponseDto } from '../dto/auth-response.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')

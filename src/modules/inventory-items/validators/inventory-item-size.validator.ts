@@ -2,14 +2,14 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
-import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
-import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
-import { InventoryItemSizeService } from "../services/inventory-item-size.service";
-import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { ValidationError } from "../../../util/exceptions/validation-error";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
+import { InventoryItemSize } from "../entities/inventory-item-size.entity";
+import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
@@ -39,7 +39,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
             });
             if (exists) {
                 this.addError({
-                    errorMessage: 'Inventory item size already already exists',
+                    errorMessage: 'Inventory item size already exists',
                     errorType: 'EXIST',
                     contextEntity: 'UpdateInventoryItemSizeDto',
                     contextId: id,

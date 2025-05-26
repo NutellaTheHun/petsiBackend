@@ -2,22 +2,28 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsNumber, IsPositive } from "class-validator";
 
 export class CreateChildOrderContainerItemDto {
-    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a Order-Menu-Item entity.' })
+    @ApiProperty({ description: 'Declare whether creating or updating a child entity. Relevant when creating/updating a OrderMenuItem entity.' })
     readonly mode: 'create' = 'create';
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is this item\'s container' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is this item\'s container',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     parentContainerMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item that is being ordered' })
+    @ApiProperty({
+        description: 'Id of the MenuItem that is being ordered',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()
     containedMenuItemId: number;
 
-    @ApiProperty({ description: 'Id of the Menu-Item-Size that is being ordered, must be a valid size to the containedMenuItem' })
+    @ApiProperty({
+        description: 'Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem',
+    })
     @IsNumber()
     @IsNotEmpty()
     @IsPositive()

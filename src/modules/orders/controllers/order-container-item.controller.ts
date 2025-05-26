@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Cache } from "cache-manager";
 import { ControllerBase } from "../../../base/controller-base";
 import { PaginatedResult } from "../../../base/paginated-result";
@@ -18,6 +18,7 @@ import { OrderContainerItemService } from "../services/order-container-item.serv
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('order-container-item')
+@ApiExtraModels(OrderContainerItem)
 export class OrderContainerItemController extends ControllerBase<OrderContainerItem> {
     constructor(
         service: OrderContainerItemService,
@@ -68,9 +69,14 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
         @Query('limit') limit?: number,
         @Query('offset') cursor?: string,
         @Query('sortBy') sortBy?: string,
-        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC'
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        @Query('search') search?: string,
+        @Query('filters') filters?: string[],
+        @Query('dateBy') dateBy?: string,
+        @Query('startDate') startDate?: string,  // ISO format string
+        @Query('endDate') endDate?: string, // ISO format string
     ): Promise<PaginatedResult<OrderContainerItem>> {
-        return super.findAll(relations, limit, cursor, sortBy, sortOrder);
+        return super.findAll(relations, limit, cursor, sortBy, sortOrder, search, filters, dateBy, startDate, endDate);
     }
 
     @Get(':id')

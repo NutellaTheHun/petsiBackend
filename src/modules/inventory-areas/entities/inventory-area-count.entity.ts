@@ -1,7 +1,7 @@
 import { CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { InventoryArea } from "./inventory-area.entity";
-import { InventoryAreaItem } from "./inventory-area-item.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
+import { InventoryAreaItem } from "./inventory-area-item.entity";
+import { InventoryArea } from "./inventory-area.entity";
 
 
 /**

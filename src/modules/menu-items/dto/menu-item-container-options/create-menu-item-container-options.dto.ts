@@ -7,7 +7,9 @@ import { CreateChildMenuItemContainerRuleDto } from "../menu-item-container-rule
  * Depreciated, only created as a child through {@link MenuItem}.
  */
 export class CreateMenuItemContainerOptionsDto {
-    @ApiProperty({ description: 'Id of the Menu-Item entity that the options apply to.' })
+    @ApiProperty({
+        description: 'Id of the MenuItem entity that the options apply to.',
+    })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
@@ -20,7 +22,7 @@ export class CreateMenuItemContainerOptionsDto {
     @IsArray()
     containerRuleDtos: CreateChildMenuItemContainerRuleDto[];
 
-    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of order-menu-item-components have to equal this value.' })
+    @ApiProperty({ description: 'The total size of the container. When ordered, the summation of ordermenuitemcomponents have to equal this value.' })
     @IsNumber()
     @IsPositive()
     @IsNotEmpty()
