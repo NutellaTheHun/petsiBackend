@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
@@ -18,8 +19,11 @@ async function bootstrap() {
         .setVersion('1.0')
         .build();
 
+    const configService = app.get(ConfigService);
+    const apiDocPath = configService.get('API_DOC_PATH') || 'api';
+
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, documentFactory);
+    SwaggerModule.setup(apiDocPath, app, documentFactory);
 
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }));
 
