@@ -106,6 +106,12 @@ describe('recipe category service', () => {
         testIds = [allCategories.items[0].id, allCategories.items[1].id];
     });
 
+    it('should sort all recipe categories', async () => {
+        const expected = await testUtil.getTestRecipeCategoryEntities(dbTestContext);
+        const allCategories = await categoryService.findAll({ sortBy: 'categoryName' });
+        expect(allCategories.items.length).toEqual(expected.length)
+    });
+
     it('should find recipes by list of ids', async () => {
         const results = await categoryService.findEntitiesById(testIds);
         expect(results.length).toEqual(2);

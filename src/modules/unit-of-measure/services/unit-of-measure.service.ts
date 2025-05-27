@@ -51,4 +51,15 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
             query.andWhere('entity.category = :category', { category: filters.category });
         }
     }
+
+    protected applySortBy(query: SelectQueryBuilder<UnitOfMeasure>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy('category.categoryName', sortOrder, 'NULLS LAST');
+        }
+        // category name
+    }
 }

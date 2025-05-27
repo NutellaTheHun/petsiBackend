@@ -74,7 +74,8 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
         required: false,
         type: String,
         description: `Field to sort by. Available options:\n
-      - countDate`,
+            - countDate\n
+            - inventoryArea (by name)`,
     })
 
     @ApiQuery({

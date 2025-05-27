@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -14,12 +14,18 @@ export class LabelTypeService extends ServiceBase<LabelType> {
         private readonly repo: Repository<LabelType>,
 
         builder: LabelTypeBuilder,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(repo, builder, 'LabelTypeService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof LabelType>): Promise<LabelType | null> {
         return await this.repo.findOne({ where: { labelTypeName: name }, relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<LabelType>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
+        if (sortBy === 'labelTypeName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

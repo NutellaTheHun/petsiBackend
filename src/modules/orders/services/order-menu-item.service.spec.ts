@@ -167,6 +167,20 @@ describe('order menu item service', () => {
         expect(items.length).toEqual(25);
     });
 
+    it('should sort all orderMenuItems by quantity', async () => {
+        const orderItemsRequest = await orderItemService.findAll({ limit: 40, sortBy: 'quantity' });
+        const items = orderItemsRequest.items;
+
+        testIds = [items[0].id, items[1].id, items[2].id];
+    });
+
+    it('should sort all orderMenuItems by item', async () => {
+        const orderItemsRequest = await orderItemService.findAll({ limit: 40, sortBy: 'menuItem' });
+        const items = orderItemsRequest.items;
+
+        testIds = [items[0].id, items[1].id, items[2].id];
+    });
+
     it('should get orderMenuItems by list of ids', async () => {
         const results = await orderItemService.findEntitiesById(testIds);
         expect(results).not.toBeNull();

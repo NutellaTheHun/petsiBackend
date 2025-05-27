@@ -44,4 +44,18 @@ export class RecipeService extends ServiceBase<Recipe> {
             query.andWhere('entity.subCategory = :subCategory', { subCategory: filters.subCategory });
         }
     }
+
+    protected applySortBy(query: SelectQueryBuilder<Recipe>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'recipeName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy(`category.categoryName`, sortOrder, 'NULLS LAST');
+        }
+        else if (sortBy === 'subCategory') {
+            query.leftJoinAndSelect('entity.subCategory', 'subCategory');
+            query.orderBy(`subCategory.subCategoryName`, sortOrder, 'NULLS LAST');
+        }
+    }
 }

@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, forwardRef } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -31,5 +31,11 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
 
     async findOneByName(name: string, relations?: Array<keyof RecipeSubCategory>): Promise<RecipeSubCategory | null> {
         return this.repo.findOne({ where: { subCategoryName: name }, relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<RecipeSubCategory>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'subCategoryName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

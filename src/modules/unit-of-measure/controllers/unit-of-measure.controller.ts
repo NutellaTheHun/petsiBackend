@@ -68,7 +68,7 @@ export class UnitOfMeasureController extends ControllerBase<UnitOfMeasure> {
         type: String,
         description: `Field to sort by. Available options:\n
             - name\n
-            - category`,
+            - category (by name, nulls last)`,
     })
 
     @ApiQuery({

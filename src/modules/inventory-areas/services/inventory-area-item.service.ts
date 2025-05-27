@@ -40,4 +40,14 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
             relations
         });
     }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryAreaItem>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'countedItem') {
+            query.leftJoinAndSelect('entity.countedItem', 'inventoryItem');
+            query.orderBy(`inventoryItem.itemName`, sortOrder);
+        }
+        if (sortBy === 'amount') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
 }

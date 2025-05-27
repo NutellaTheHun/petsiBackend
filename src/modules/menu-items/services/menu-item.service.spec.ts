@@ -452,6 +452,16 @@ describe('menu item service', () => {
         expect(results.items.length).toEqual(10);
     });
 
+    it('should sort all menuItems by itemName', async () => {
+        const results = await itemService.findAll({ sortBy: 'itemName' });
+        if (!results) { throw new Error(); }
+    });
+
+    it('should sort all menuItems by category', async () => {
+        const results = await itemService.findAll({ sortBy: 'category' });
+        if (!results) { throw new Error(); }
+    });
+
     it('should find all menuItems with search term', async () => {
         const results = await itemService.findAll({ search: "item", relations: ['category'] });
         if (!results) { throw new Error(); }

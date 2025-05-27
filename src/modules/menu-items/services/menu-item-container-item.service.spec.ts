@@ -1,13 +1,11 @@
 import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { plainToInstance } from "class-transformer";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { AppHttpException } from "../../../util/exceptions/app-http-exception";
 import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
 import { CreateMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-menu-item-container-item.dto";
 import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
 import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
-import { item_a, item_b, item_c, item_e, item_f, item_g } from "../utils/constants";
+import { item_a, item_c, item_e, item_f, item_g } from "../utils/constants";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemContainerItemService } from "./menu-item-container-item.service";
@@ -156,9 +154,15 @@ describe('menu item container item service', () => {
     it('should find all container items', async () => {
         const results = await componentService.findAll();
 
-        expect(results).not.toBeNull();
+        expect(results.items.length).toBeGreaterThan(0);
 
         testIds = results.items.slice(0, 2).map(item => item.id);
+    });
+
+    it('should find all container items', async () => {
+        const results = await componentService.findAll({ sortBy: 'containedItem' });
+
+        expect(results.items.length).toBeGreaterThan(0);
     });
 
     it('should get container items by list of ids', async () => {

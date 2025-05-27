@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -17,7 +17,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
 
         @Inject(forwardRef(() => InventoryItemSizeBuilder))
         builder: InventoryItemSizeBuilder,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(reop, builder, 'InventoryItemSizeService', requestContextService, logger); }
@@ -35,5 +35,11 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
             where: { inventoryItem: { itemName: name } },
             relations
         });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryItemSize>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'cost') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

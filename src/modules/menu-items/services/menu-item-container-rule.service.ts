@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -27,5 +27,12 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
      */
     public async create(dto: CreateMenuItemContainerRuleDto): Promise<MenuItemContainerRule> {
         throw new BadRequestException();
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<MenuItemContainerRule>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'validItem') {
+            query.leftJoinAndSelect('entity.validItem', 'menuItem')
+            query.orderBy(`menuItem.itemName`, sortOrder);
+        }
     }
 }

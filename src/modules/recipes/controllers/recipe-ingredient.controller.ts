@@ -72,8 +72,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
         required: false,
         type: String,
         description: `Field to sort by. Available options:\n
-            - ingredientInventoryItem\n
-            - ingredientRecipe`,
+            - ingredient (by name)`,
     })
 
     @ApiQuery({

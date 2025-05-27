@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -27,5 +27,11 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
      */
     public async create(dto: CreateTemplateMenuItemDto): Promise<TemplateMenuItem> {
         throw new BadRequestException();
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<TemplateMenuItem>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'tablePosIndex') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

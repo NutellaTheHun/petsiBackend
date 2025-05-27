@@ -466,6 +466,21 @@ describe('Inventory Item Service', () => {
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
+    it('should sort all items by itemName', async () => {
+        const results = await itemService.findAll({ limit: 20, sortBy: 'itemName' });
+        expect(results.items.length).toEqual(12);
+    });
+
+    it('should sort all items by vendor', async () => {
+        const results = await itemService.findAll({ limit: 20, sortBy: 'vendor' });
+        expect(results.items.length).toEqual(12);
+    });
+
+    it('should sort all items by category', async () => {
+        const results = await itemService.findAll({ limit: 20, sortBy: 'category' });
+        expect(results.items.length).toEqual(12);
+    });
+
     it('should search items', async () => {
         const results = await itemService.findAll({ search: 'food' });
         expect(results.items.length).toEqual(3);
@@ -477,7 +492,6 @@ describe('Inventory Item Service', () => {
 
         const results = await itemService.findAll({ filters: [`category=${category.id}`] });
         expect(results.items.length).toEqual(4);
-
     });
 
     it('should filter items', async () => {

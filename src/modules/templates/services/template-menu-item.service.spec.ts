@@ -146,6 +146,13 @@ describe('Template menu item service', () => {
         testIds = results.items.slice(0, 3).map(item => item.id);
     });
 
+    it('should sort all template menu items', async () => {
+        const results = await templateItemService.findAll({ limit: 15, sortBy: 'tablePosIndex' });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(13);
+    });
+
     it('should get menuItems by list of ids', async () => {
         const results = await templateItemService.findEntitiesById(testIds);
 

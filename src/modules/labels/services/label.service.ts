@@ -38,4 +38,11 @@ export class LabelService extends ServiceBase<Label> {
             query.andWhere('entity.labelType = :labelType', { labelType: filters.labelType });
         }
     }
+
+    protected applySortBy(query: SelectQueryBuilder<Label>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
+        if (sortBy === 'labelType') {
+            query.leftJoinAndSelect('entity.labelType', 'labelType');
+            query.orderBy(`labelType.labelTypeName`, sortOrder);
+        }
+    }
 }

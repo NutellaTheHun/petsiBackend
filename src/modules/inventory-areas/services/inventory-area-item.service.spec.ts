@@ -4,17 +4,17 @@ import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { DRY_A, FOOD_A, FOOD_B, FOOD_C } from "../../inventory-items/utils/constants";
+import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
+import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/create-child-inventory-area-item.dto";
 import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
 import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
-import { AREA_A, AREA_B } from "../utils/constants";
+import { AREA_A } from "../utils/constants";
 import { InventoryAreaTestUtil } from "../utils/inventory-area-test.util";
 import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
 import { InventoryAreaCountService } from "./inventory-area-count.service";
 import { InventoryAreaItemService } from "./inventory-area-item.service";
 import { InventoryAreaService } from "./inventory-area.service";
-import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
-import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
-import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/create-child-inventory-area-item.dto";
 
 describe('Inventory area item service', () => {
     let module: TestingModule;
@@ -156,6 +156,18 @@ describe('Inventory area item service', () => {
         expect(results.items.length).toEqual(15);
 
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
+    });
+
+    it('should sort all items by item name', async () => {
+        const results = await areaItemService.findAll({ limit: 20, sortBy: 'countedItem' });
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(15);
+    });
+
+    it('should sort all items by amount', async () => {
+        const results = await areaItemService.findAll({ limit: 20, sortBy: 'amount' });
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(15);
     });
 
     it('should get items by list of ids', async () => {

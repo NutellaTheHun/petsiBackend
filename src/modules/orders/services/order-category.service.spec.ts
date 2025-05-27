@@ -81,6 +81,13 @@ describe('order category service', () => {
         testIds = results.items.slice(0, 3).map(type => type.id);
     });
 
+    it('should sort all order types', async () => {
+        const results = await service.findAll({ sortBy: 'categoryName' });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(5);
+    });
+
     it('should get order types by list of ids', async () => {
         const results = await service.findEntitiesById(testIds);
 

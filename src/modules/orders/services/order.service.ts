@@ -45,4 +45,26 @@ export class OrderService extends ServiceBase<Order> {
             }
         }
     }
+
+    protected applySortBy(query: SelectQueryBuilder<Order>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'orderCategory') {
+            query.leftJoinAndSelect('entity.orderCategory', 'category');
+            query.orderBy(`category.categoryName`, sortOrder);
+        }
+        else if (sortBy === 'recipient') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'fulfillmentDate') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'createdAt') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        /**
+          - orderCategory name \n
+      - recipient \n
+      - fulfillmentDate \n
+      - createdAt`,
+        */
+    }
 }

@@ -94,11 +94,11 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
             }
         }
 
-        if (options.sortBy) {
+        /*if (options.sortBy) {
             query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
         } else {
             query.orderBy('entity.id', 'ASC');
-        }
+        }*/
 
         if (options.limit) {
             query.limit(options.limit + 1);
@@ -107,6 +107,10 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         if (options.cursor) {
             const operator = options?.sortOrder === 'DESC' ? '<' : '>';
             query.andWhere(`entity.${options.sortBy ?? 'id'} ${operator} :cursor`, { cursor: options.cursor });
+        }
+
+        if (options.sortBy && options.sortOrder) {
+            this.applySortBy(query, options.sortBy, options.sortOrder);
         }
 
         if (options.search?.trim()) {
@@ -143,7 +147,9 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
         if (options.limit) {
             if (results.length > options.limit) {
                 const nextEntity = results.pop();
-                nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+                if (!nextEntity) {
+                    nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
+                }
             }
         }
 
@@ -264,6 +270,13 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     }
 
     protected applyDate(_query: SelectQueryBuilder<T>, startDate: string, endDate?: string, dateBy?: string) {
+        // Default: do nothing. To be overridden by subclass if needed.
+    }
 
+    protected applySortBy(_query: SelectQueryBuilder<T>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
+        // To be overridden by subclass if needed.
+
+        // Default: 
+        _query.orderBy('entity.id', 'ASC');
     }
 }

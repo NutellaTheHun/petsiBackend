@@ -211,6 +211,20 @@ describe('UnitOfMeasureService', () => {
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
+    it('should sort all units of measure by name', async () => {
+        const expected = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
+
+        const results = await unitService.findAll({ limit: 20, sortBy: 'name' });
+        expect(results.items.length).toEqual(expected.length);
+    });
+
+    it('should sort all units of measure by category', async () => {
+        const expected = await testingUtil.getUnitsOfMeasureEntities(dbTestContext);
+
+        const results = await unitService.findAll({ limit: 20, sortBy: 'category' });
+        expect(results.items.length).toEqual(expected.length);
+    });
+
     it('should find all units with search term', async () => {
         const results = await unitService.findAll({ search: POUND, relations: ['category'] });
         if (!results) { throw new Error(); }

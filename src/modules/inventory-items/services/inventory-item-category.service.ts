@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -15,12 +15,18 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
 
         @Inject(forwardRef(() => InventoryItemCategoryBuilder))
         builder: InventoryItemCategoryBuilder,
-        
+
         requestContextService: RequestContextService,
         logger: AppLogger,
     ) { super(repo, builder, 'InventoryItemCategoryService', requestContextService, logger); }
 
     async findOneByName(name: string, relations?: Array<keyof InventoryItemCategory>): Promise<InventoryItemCategory | null> {
         return await this.repo.findOne({ where: { categoryName: name }, relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryItemCategory>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'categoryName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

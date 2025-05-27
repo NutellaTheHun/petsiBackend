@@ -5,7 +5,7 @@ import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inven
 import { UpdateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto";
 import { InventoryItemPackageService } from "../../inventory-items/services/inventory-item-package.service";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { BOX_PKG, DRY_B, FOOD_A, FOOD_B, FOOD_C, OTHER_PKG } from "../../inventory-items/utils/constants";
+import { BOX_PKG, CAN_PKG, DRY_B, FOOD_A, FOOD_B, FOOD_C } from "../../inventory-items/utils/constants";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
 import { FL_OUNCE, POUND } from "../../unit-of-measure/utils/constants";
 import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
@@ -190,6 +190,18 @@ describe('Inventory area count service', () => {
 
     it('should get all area counts', async () => {
         const results = await countService.findAll({ relations: ['inventoryArea'] })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
+    });
+
+    it('should sort area counts by area name', async () => {
+        const results = await countService.findAll({ relations: ['inventoryArea'], sortBy: 'inventoryArea' })
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
+    });
+
+    it('should sort area counts by countDate', async () => {
+        const results = await countService.findAll({ relations: ['inventoryArea'], sortBy: 'countDate' })
         expect(results).not.toBeNull();
         expect(results.items.length).toEqual(8); // all test inventory counts (6) plus one created in tests above
     });
@@ -414,7 +426,7 @@ describe('Inventory area count service', () => {
         updateItemTestId = areaCount.countedItems[0].id;
         itemSizeTestId = areaCount.countedItems[0].countedItemSize.id;
 
-        const pkg = await packageService.findOneByName(OTHER_PKG);
+        const pkg = await packageService.findOneByName(CAN_PKG);
         if (!pkg) { throw new NotFoundException(); }
         const itemSizeUpdateDto = {
             mode: 'update',
@@ -444,7 +456,7 @@ describe('Inventory area count service', () => {
         expect(result?.countedItems?.length).toEqual(3);
         for (const item of result?.countedItems) {
             if (item.id === updateItemTestId) {
-                expect(item.countedItemSize.packageType.packageName).toEqual(OTHER_PKG);
+                expect(item.countedItemSize.packageType.packageName).toEqual(CAN_PKG);
             }
         }
     });

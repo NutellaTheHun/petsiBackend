@@ -74,6 +74,14 @@ describe('Role Service', () => {
         testIds = [results.items[0].id, results.items[1].id];
     });
 
+    it("should sort all roles", async () => {
+        const expected = await roleTestingUtil.getTestRoleEntities(dbTestContext);
+
+        const results = await roleService.findAll({ sortBy: 'roleName' })
+
+        expect(results.items.length).toEqual(expected.length);
+    });
+
     it("should get Roles from a list of ids", async () => {
         const results = await roleService.findEntitiesById(testIds);
         if (!results) { throw new Error("results is null"); }

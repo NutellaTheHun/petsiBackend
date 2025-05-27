@@ -42,4 +42,19 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
 
         // filter for no vendor?
     }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryItem>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
+
+        if (sortBy === 'itemName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'vendor') {
+            query.leftJoinAndSelect('entity.vendor', 'vendor');
+            query.orderBy('vendor.vendorName', sortOrder, 'NULLS LAST');
+        }
+        else if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy('category.categoryName', sortOrder, 'NULLS LAST');
+        }
+    }
 }

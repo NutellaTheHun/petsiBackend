@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { AppHttpException } from '../../../util/exceptions/app-http-exception';
+import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
@@ -10,7 +10,6 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitOfMeasureCategoryService } from './unit-of-measure-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
 
 
 describe('UnitOfMeasureCategoryService', () => {
@@ -148,6 +147,14 @@ describe('UnitOfMeasureCategoryService', () => {
 
         expect(results.items.length).toEqual(expected.length);
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id,]
+    });
+
+    it('should sort all categories', async () => {
+        const expected = await testingUtil.getCategoryEntities(dbTestContext);
+
+        const results = await categoryService.findAll({ sortBy: 'categoryName' });
+
+        expect(results.items.length).toEqual(expected.length);
     });
 
     it('should find categories by list of ids', async () => {

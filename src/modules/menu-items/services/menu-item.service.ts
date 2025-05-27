@@ -35,4 +35,14 @@ export class MenuItemService extends ServiceBase<MenuItem> {
             query.andWhere('entity.category = :category', { category: filters.category });
         }
     }
+
+    protected applySortBy(query: SelectQueryBuilder<MenuItem>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'itemName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'menuItemCategory');
+            query.orderBy(`menuItemCategory.categoryName`, sortOrder, 'NULLS LAST');
+        }
+    }
 }

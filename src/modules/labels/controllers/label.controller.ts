@@ -73,7 +73,7 @@ export class LabelController extends ControllerBase<Label> {
         required: false,
         type: String,
         description: `Field to sort by. Available options:\n
-         - labelType \n`
+         - labelType (by name)\n`
     })
 
     @ApiQuery({

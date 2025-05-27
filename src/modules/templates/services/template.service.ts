@@ -28,4 +28,10 @@ export class TemplateService extends ServiceBase<Template> {
             '(LOWER(entity.templateName) LIKE :search)', { search: `%${search.toLowerCase()}%` }
         );
     }
+
+    protected applySortBy(query: SelectQueryBuilder<Template>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'templateName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
 }

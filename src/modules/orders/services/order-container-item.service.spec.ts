@@ -59,6 +59,12 @@ describe('order container item service', () => {
         testId = results.items[0].id;
     });
 
+    it('should sort all container items', async () => {
+        const results = await service.findAll({ sortBy: 'containeditem' });
+
+        expect(results).not.toBeNull();
+    });
+
     it('should find a container item by id', async () => {
         const result = await service.findOne(testId);
 

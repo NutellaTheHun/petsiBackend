@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -22,5 +22,11 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
 
     async findOneByName(categoryName: string, relations?: Array<keyof UnitOfMeasureCategory>): Promise<UnitOfMeasureCategory | null> {
         return this.repo.findOne({ where: { categoryName: categoryName }, relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<UnitOfMeasureCategory>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'categoryName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

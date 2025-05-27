@@ -82,8 +82,8 @@ export class RecipeController extends ControllerBase<Recipe> {
         type: String,
         description: `Field to sort by. Available options:\n
           - recipeName\n
-          - category name \n
-          - subCategory name`,
+          - category name (nulls last)\n
+          - subCategory name (nulls last)`,
     })
 
     @ApiQuery({

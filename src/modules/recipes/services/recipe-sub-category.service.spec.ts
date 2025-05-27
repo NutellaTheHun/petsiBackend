@@ -102,6 +102,12 @@ describe('recipe sub category service', () => {
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
     });
 
+    it('should sort all sub-categories', async () => {
+        const expected = await testingUtil.getTestRecipeSubCategoryEntities(dbTestContext);
+        const results = await subCategoryService.findAll({ sortBy: 'subCategoryName' });
+        expect(results.items.length).toEqual(expected.length);
+    });
+
     it('should get sub-categories by a list of ids', async () => {
         const results = await subCategoryService.findEntitiesById(testIds);
         expect(results.length).toEqual(testIds.length);

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -23,5 +23,11 @@ export class RoleService extends ServiceBase<Role> {
 
     async findOneByName(roleName: string, relations?: Array<keyof Role>): Promise<Role | null> {
         return await this.repo.findOne({ where: { roleName: roleName }, relations: relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<Role>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'roleName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

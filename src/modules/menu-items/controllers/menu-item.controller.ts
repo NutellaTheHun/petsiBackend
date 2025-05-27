@@ -80,7 +80,7 @@ export class MenuItemController extends ControllerBase<MenuItem> {
         type: String,
         description: `Field to sort by. Available options:\n
           - itemName'\n
-          - category`,
+          - category (by name)`,
     })
     @ApiQuery({
         name: 'sortOrder',

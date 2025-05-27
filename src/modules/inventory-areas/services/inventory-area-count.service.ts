@@ -80,4 +80,14 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
         }
     }
 
+    protected applySortBy(query: SelectQueryBuilder<InventoryAreaCount>, sortBy: string, sortOrder?: 'ASC' | 'DESC'): void {
+        if (sortBy === 'countDate') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'inventoryArea') {
+            query.leftJoinAndSelect('entity.inventoryArea', 'area');
+            query.orderBy(`area.areaName`, sortOrder);
+        }
+    }
+
 }

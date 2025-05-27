@@ -12,7 +12,7 @@ import { GRAM, KILOGRAM, OUNCE, POUND } from '../../unit-of-measure/utils/consta
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
-import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_CAT_C, REC_F, REC_SUBCAT_1, REC_SUBCAT_2 } from '../utils/constants';
+import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_CAT_C, REC_F, REC_SUBCAT_2 } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
@@ -746,6 +746,21 @@ describe('recipe service', () => {
 
         expect(results.items.length).toEqual(expected.length);
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id,]
+    });
+
+    it('should sort all recipes by name', async () => {
+        const results = await recipeService.findAll({ sortBy: 'recipeName' });
+        expect(results.items.length).toEqual(6);
+    });
+
+    it('should sort all recipes by category', async () => {
+        const results = await recipeService.findAll({ sortBy: 'recipeCategory' });
+        expect(results.items.length).toEqual(6);
+    });
+
+    it('should sort all recipes by sub category', async () => {
+        const results = await recipeService.findAll({ sortBy: 'recipeSubCategory' });
+        expect(results.items.length).toEqual(6);
     });
 
     it('should search all recipes', async () => {

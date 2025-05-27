@@ -1,6 +1,6 @@
 import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
@@ -79,5 +79,16 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient> {
             },
             relations
         })
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<RecipeIngredient>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'ingredient') {
+            query.leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
+                .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
+
+            query.orderBy(
+                `COALESCE(inventoryItem.itemName, recipe.recipeName)`,
+                sortOrder)
+        }
     }
 }

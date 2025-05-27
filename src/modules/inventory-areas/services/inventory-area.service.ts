@@ -1,6 +1,6 @@
 import { forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -21,5 +21,11 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
 
     async findOneByName(name: string, relations?: Array<keyof InventoryArea>): Promise<InventoryArea | null> {
         return await this.repo.findOne({ where: { areaName: name }, relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryArea>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'areaName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

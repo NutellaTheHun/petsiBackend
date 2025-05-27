@@ -75,8 +75,8 @@ export class InventoryItemController extends ControllerBase<InventoryItem> {
         type: String,
         description: `Field to sort by. Available options:\n
           - itemName \n
-          - vendor \n
-          - category `,
+          - vendor (by name, nulls sorted last)\n
+          - category (by name, nulls sorted last)`,
     })
 
     @ApiQuery({

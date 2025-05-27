@@ -52,6 +52,11 @@ describe('menu item container rule service', () => {
         testId = results.items[0].id;
     });
 
+    it('should find all container rules', async () => {
+        const results = await compOptionService.findAll({ sortBy: 'validItem' });
+        expect(results.items.length).toEqual(4);
+    });
+
     it('should find a container rule by id', async () => {
         const result = await compOptionService.findOne(testId);
         expect(result).not.toBeNull();

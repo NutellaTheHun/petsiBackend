@@ -132,6 +132,15 @@ describe('Label Service', () => {
         testIds = results.items.slice(0, 3).map(label => label.id);
     });
 
+    it('should sort all labels', async () => {
+        const results = await labelService.findAll({ sortBy: 'labelType' });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+
+        testIds = results.items.slice(0, 3).map(label => label.id);
+    });
+
     it('should find labels by list of ids', async () => {
         const results = await labelService.findEntitiesById(testIds);
 

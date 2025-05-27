@@ -406,6 +406,34 @@ describe('order service', () => {
         expect(results.items.length).toEqual(1);
     });
 
+    it('should sort all orders by recipient', async () => {
+        const results = await orderService.findAll({ sortBy: "recipient" });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should sort all orders by category', async () => {
+        const results = await orderService.findAll({ sortBy: "orderCategory" });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should sort all orders by fulfillment date', async () => {
+        const results = await orderService.findAll({ sortBy: "fulfillmentDate" });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
+    it('should sort all orders by create date', async () => {
+        const results = await orderService.findAll({ sortBy: "createdAt" });
+
+        expect(results).not.toBeNull();
+        expect(results.items.length).toEqual(8);
+    });
+
     it('should filter all orders', async () => {
         const category = await categoryService.findOneByName(TYPE_A)
         if (!category) { throw new Error(); }

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
 import { AppLogger } from "../../app-logging/app-logger";
 import { RequestContextService } from "../../request-context/RequestContextService";
@@ -22,5 +22,11 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
 
     async findOneByName(name: string, relations?: Array<keyof MenuItemCategory>): Promise<MenuItemCategory | null> {
         return await this.repo.findOne({ where: { categoryName: name }, relations: relations });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<MenuItemCategory>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'categoryName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

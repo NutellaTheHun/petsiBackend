@@ -74,6 +74,11 @@ describe('menu item category service', () => {
         testIds = results.items.slice(0, 3).map(cat => cat.id);
     });
 
+    it('should sort all categories by categoryName', async () => {
+        const results = await categoryService.findAll({ sortBy: 'category' });
+        expect(results.items.length).toEqual(5);
+    });
+
     it('should find categories by a list of ids', async () => {
         const results = await categoryService.findEntitiesById(testIds);
         expect(results.length).toEqual(3);

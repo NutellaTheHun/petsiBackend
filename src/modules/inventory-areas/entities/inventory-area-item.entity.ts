@@ -1,9 +1,9 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { InventoryItemPackage } from "../../inventory-items/entities/inventory-item-package.entity";
 import { InventoryItemSize } from "../../inventory-items/entities/inventory-item-size.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
-import { InventoryAreaCount } from "./inventory-area-count.entity";
-import { InventoryItemPackage } from "../../inventory-items/entities/inventory-item-package.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { InventoryAreaCount } from "./inventory-area-count.entity";
 
 /**
  * A single item within the process of an {@link InventoryAreaCount},

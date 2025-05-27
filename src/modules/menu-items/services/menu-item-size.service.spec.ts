@@ -75,6 +75,11 @@ describe('menu item size service', () => {
         testIds = results.items.slice(0, 3).map(size => size.id);
     });
 
+    it('should sort all sizes by name', async () => {
+        const results = await sizeService.findAll({ sortBy: 'name' });
+        expect(results.items.length).toEqual(5);
+    });
+
     it('should find sizes by a list of ids', async () => {
         const results = await sizeService.findEntitiesById(testIds);
         expect(results.length).toEqual(3);

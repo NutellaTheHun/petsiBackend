@@ -105,6 +105,11 @@ describe('User Service', () => {
         expect(results.items.length).toEqual(1);
     });
 
+    it("should sortby all users", async () => {
+        const results = await usersService.findAll({ sortBy: 'username' })
+        expect(results.items.length).toEqual(5);
+    });
+
     it("should filter for user", async () => {
         const roleAdmin = await rolesService.findOneByName(ROLE_ADMIN);
         if (!roleAdmin) { throw new Error(); }

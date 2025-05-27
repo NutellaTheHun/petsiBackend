@@ -2,7 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { AppHttpException } from '../../../util/exceptions/app-http-exception';
+import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { DRY_A, FOOD_A, FOOD_B, OTHER_A } from '../../inventory-items/utils/constants';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
@@ -17,7 +17,6 @@ import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from './recipe-ingredient.service';
 import { RecipeService } from './recipe.service';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
 
 describe('recipe ingredient service', () => {
     let ingredientService: RecipeIngredientService;
@@ -317,6 +316,13 @@ describe('recipe ingredient service', () => {
         const results = await ingredientService.findAll({ limit: 15 });
         expect(results.items.length).toEqual(expected.length + 2);
         testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
+    });
+
+    it('should sort all ingredients', async () => {
+        const expected = await testingUtil.getTestRecipeIngredientEntities(dbTestContext);
+
+        const results = await ingredientService.findAll({ limit: 15, sortBy: 'ingredient' });
+        expect(results.items.length).toEqual(expected.length + 2);
     });
 
     it('should get ingredients by list of ids', async () => {

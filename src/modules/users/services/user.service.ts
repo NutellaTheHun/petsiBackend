@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -39,6 +39,12 @@ export class UserService extends ServiceBase<User> {
         if (filters.role) {
             query.leftJoin('entity.roles', 'role')
                 .andWhere('role.id = :role', { role: Number(filters.role) });
+        }
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<User>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'username') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
         }
     }
 }
