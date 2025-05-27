@@ -1,7 +1,7 @@
 export class DatabaseTestContext {
     private cleanupFuncs: (() => Promise<void>)[];
 
-    constructor(){
+    constructor() {
         this.cleanupFuncs = [];
     }
 

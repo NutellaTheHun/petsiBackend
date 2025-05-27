@@ -1,7 +1,10 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { InventoryItem } from "./inventory-item.entity";
+import { InventoryAreaItem } from "../../inventory-areas/entities/inventory-area-item.entity";
 
 /**
- * The type of packaging an item is counted in: "box", "bag", "ea", "can"
+ * The type of packaging an {@link InventoryItem} is counted in when when mapping to an {@link InventoryAreaItem}
+ * - example: "box", "bag", "ea", "can"
  */
 @Entity()
 export class InventoryItemPackage {
@@ -9,5 +12,5 @@ export class InventoryItemPackage {
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    packageName: string;
 } 

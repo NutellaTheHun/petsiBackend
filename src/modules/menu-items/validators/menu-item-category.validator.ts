@@ -2,23 +2,50 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
+import { ValidationError } from "../../../util/exceptions/validation-error";
+import { CreateMenuItemCategoryDto } from "../dto/menu-item-category/create-menu-item-category.dto";
+import { UpdateMenuItemCategoryDto } from "../dto/menu-item-category/update-menu-item-category.dto";
 import { MenuItemCategory } from "../entities/menu-item-category.entity";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 
 @Injectable()
 export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
     constructor(
         @InjectRepository(MenuItemCategory)
         private readonly repo: Repository<MenuItemCategory>,
-    ){ super(repo); }
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'MenuItemCategory', requestContextService, logger); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
-        const exists = await this.repo.findOne({ where: { name: dto.name }});
-        if(exists) { 
-            return `Menu item category with name ${dto.name} already exists`; 
+    public async validateCreate(dto: CreateMenuItemCategoryDto): Promise<void> {
+        if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
+            this.addError({
+                errorMessage: 'Menu category name already exists.',
+                errorType: 'EXIST',
+                contextEntity: 'CreateMenuItemCategoryDto',
+                sourceEntity: 'MenuItemCategory',
+                value: dto.categoryName,
+            } as ValidationError)
         }
-        return null;
+
+        this.throwIfErrors()
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
-        return null;
+
+    public async validateUpdate(id: number, dto: UpdateMenuItemCategoryDto): Promise<void> {
+        if (dto.categoryName) {
+            if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
+                this.addError({
+                    errorMessage: 'Menu category name already exists.',
+                    errorType: 'EXIST',
+                    contextEntity: 'UpdateMenuItemCategoryDto',
+                    contextId: id,
+                    sourceEntity: 'MenuItemCategory',
+                    value: dto.categoryName,
+                } as ValidationError)
+            }
+        }
+
+        this.throwIfErrors()
     }
 }

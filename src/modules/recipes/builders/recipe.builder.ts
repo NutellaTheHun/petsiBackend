@@ -1,13 +1,13 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
-import { CreateRecipeDto } from "../dto/create-recipe.dto";
-import { UpdateRecipeDto } from "../dto/update-recipe-dto";
-import { UpdateRecipeIngredientDto } from "../dto/update-recipe-ingedient.dto";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { UpdateRecipeIngredientDto } from "../dto/recipe-ingredient/update-recipe-ingedient.dto";
+import { CreateRecipeDto } from "../dto/recipe/create-recipe.dto";
+import { UpdateRecipeDto } from "../dto/recipe/update-recipe-dto";
 import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
@@ -16,14 +16,14 @@ import { RecipeValidator } from "../validators/recipe.valdiator";
 import { RecipeIngredientBuilder } from "./recipe-ingredient.builder";
 
 @Injectable()
-export class RecipeBuilder extends BuilderBase<Recipe>{
+export class RecipeBuilder extends BuilderBase<Recipe> {
     constructor(
         @Inject(forwardRef(() => RecipeIngredientService))
         private readonly ingredientService: RecipeIngredientService,
-        
+
         @Inject(forwardRef(() => RecipeCategoryService))
         private readonly categoryService: RecipeCategoryService,
-        
+
         @Inject(forwardRef(() => RecipeSubCategoryService))
         private readonly subCategoryService: RecipeSubCategoryService,
 
@@ -32,120 +32,101 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
 
         private readonly unitService: UnitOfMeasureService,
         private readonly menuItemService: MenuItemService,
-        
+
         validator: RecipeValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(Recipe, 'RecipeBuilder', requestContextService, logger, validator); }
+    ) { super(Recipe, 'RecipeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateRecipeDto): void {
-        if(dto.batchResultQuantity){
+        if (dto.batchResultQuantity !== undefined) {
             this.batchResultQuantity(dto.batchResultQuantity);
         }
-
-        if(dto.batchResultUnitOfMeasureId){
-            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        if (dto.batchResultMeasurementId !== undefined) {
+            this.batchResultMeasurementById(dto.batchResultMeasurementId);
         }
-
-        if(dto.categoryId){
+        if (dto.categoryId !== undefined) {
             this.categoryById(dto.categoryId);
         }
-
-        if(dto.cost){
-            this.cost(dto.cost);
-        }
-
-        if(dto.isIngredient){
+        if (dto.isIngredient !== undefined) {
             this.isIngredient(dto.isIngredient);
         }
-
-        if(dto.menuItemId){
-            this.menuItemById(dto.menuItemId);
+        if (dto.producedMenuItemId !== undefined) {
+            this.producedMenuItemById(dto.producedMenuItemId);
         }
-
-        if(dto.name){
-            this.name(dto.name);
+        if (dto.recipeName !== undefined) {
+            this.name(dto.recipeName);
         }
-
-        if(dto.salesPrice){
+        if (dto.salesPrice !== undefined) {
             this.salesPrice(dto.salesPrice);
         }
-
-        if(dto.servingSizeQuantity){
+        if (dto.servingSizeQuantity !== undefined) {
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
-
-        if(dto.servingSizeUnitOfMeasureId){
-            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        if (dto.servingSizeMeasurementId !== undefined) {
+            this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
         }
-
-        if(dto.subCategoryId){
+        if (dto.subCategoryId !== undefined) {
             this.subCategoryById(dto.subCategoryId);
         }
-
-        if(dto.ingredientDtos){
+        if (dto.ingredientDtos !== undefined) {
             this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
         }
     }
 
     protected updateEntity(dto: UpdateRecipeDto): void {
-        if(dto.batchResultQuantity){
+        if (dto.batchResultQuantity !== undefined) {
             this.batchResultQuantity(dto.batchResultQuantity);
         }
-        if(dto.batchResultUnitOfMeasureId){
-            this.batchResultUnitOfMeasureById(dto.batchResultUnitOfMeasureId);
+        if (dto.batchResultMeasurementId !== undefined) {
+            this.batchResultMeasurementById(dto.batchResultMeasurementId);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categoryById(dto.categoryId);
 
-            if(dto.subCategoryId !== undefined){
-                this.subCategoryById(dto.subCategoryId);
-            } else {
-                this.subCategoryById(0);
+            if (dto.subCategoryId === undefined) {
+                this.subCategoryById(null);
             }
         }
-        if(dto.cost){
-            this.cost(dto.cost);
-        }
-        if(dto.isIngredient){
+        if (dto.isIngredient !== undefined) {
             this.isIngredient(dto.isIngredient);
         }
-        if(dto.menuItemId !== undefined){
-            this.menuItemById(dto.menuItemId);
+        if (dto.producedMenuItemId !== undefined) {
+            this.producedMenuItemById(dto.producedMenuItemId);
         }
-        if(dto.name){
-            this.name(dto.name);
+        if (dto.recipeName !== undefined) {
+            this.name(dto.recipeName);
         }
-        if(dto.salesPrice){
+        if (dto.salesPrice !== undefined) {
             this.salesPrice(dto.salesPrice);
         }
-        if(dto.servingSizeQuantity){
+        if (dto.servingSizeQuantity !== undefined) {
             this.servingSizeQuantity(dto.servingSizeQuantity);
         }
-        if(dto.servingSizeUnitOfMeasureId){
-            this.servingUnitOfMeasureById(dto.servingSizeUnitOfMeasureId);
+        if (dto.servingSizeMeasurementId !== undefined) {
+            this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
         }
-        if(dto.subCategoryId !== undefined){
+        if (dto.subCategoryId !== undefined) {
             this.subCategoryById(dto.subCategoryId);
         }
-        if(dto.ingredientDtos){
+        if (dto.ingredientDtos !== undefined) {
             this.ingredientsByBuilder(this.entity.id, dto.ingredientDtos);
         }
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
-    }
-    
-    public menuItemById(id: number): this {
-        if(id === 0){
-            return this.setPropByVal('menuItem', null);
-        }
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'menuItem',id);
+        return this.setPropByVal('recipeName', name);
     }
 
-    public menuItemByName(name: string): this {
-        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'menuItem', name);
+    public producedMenuItemById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('producedMenuItem', null);
+        }
+        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'producedMenuItem', id);
+    }
+
+    public producedMenuItemByName(name: string): this {
+        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'producedMenuItem', name);
     }
 
     public isIngredient(value: boolean): this {
@@ -157,47 +138,58 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
     }
 
     public ingredientsByBuilder(recipeId: number, dtos: (CreateChildRecipeIngredientDto | UpdateRecipeIngredientDto)[]): this {
-        const enrichedDtos = dtos.map( dto => ({
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
             recipeId,
         }));
         return this.setPropByBuilder(this.ingredientBuilder.buildManyDto.bind(this.ingredientBuilder), 'ingredients', this.entity, enrichedDtos);
     }
 
-    public batchResultQuantity(amount: number): this {
+    public batchResultQuantity(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('batchResultQuantity', null);
+        }
         return this.setPropByVal('batchResultQuantity', amount);
     }
 
-    public batchResultUnitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'batchResultUnitOfMeasure', id);
+    public batchResultMeasurementById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('batchResultMeasurement', null);
+        }
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'batchResultMeasurement', id);
     }
 
-    public batchResultUnitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'batchResultUnitOfMeasure', name);
+    public batchResultMeasurementByName(name: string): this {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'batchResultMeasurement', name);
     }
 
-    public servingSizeQuantity(amount: number): this {
+    public servingSizeQuantity(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('servingSizeQuantity', null);
+        }
         return this.setPropByVal('servingSizeQuantity', amount);
     }
 
-    public servingUnitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'servingSizeUnitOfMeasure', id);
+    public servingSizeMeasurementById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('servingSizeMeasurement', null);
+        }
+        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'servingSizeMeasurement', id);
     }
 
-    public servingUnitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'servingSizeUnitOfMeasure', name);
+    public servingSizeMeasurementByName(name: string): this {
+        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'servingSizeMeasurement', name);
     }
 
-    public salesPrice(amount: number): this {
-        return this.setPropByVal('salesPrice', amount);
+    public salesPrice(amount: number | null): this {
+        if (amount === null) {
+            return this.setPropByVal('salesPrice', null);
+        }
+        return this.setPropByVal('salesPrice', String(amount));
     }
 
-    public cost(amount: number): this {
-        return this.setPropByVal('cost', amount);
-    }
-
-    public categoryById(id: number): this {
-        if(id === 0){
+    public categoryById(id: number | null): this {
+        if (id === null) {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -207,8 +199,8 @@ export class RecipeBuilder extends BuilderBase<Recipe>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public subCategoryById(id: number): this {
-        if(id === 0){
+    public subCategoryById(id: number | null): this {
+        if (id === null) {
             return this.setPropByVal('subCategory', null);
         }
         return this.setPropById(this.subCategoryService.findOne.bind(this.subCategoryService), 'subCategory', id);

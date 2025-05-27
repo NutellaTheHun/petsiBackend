@@ -3,7 +3,7 @@ import { Logger } from "nestjs-pino";
 
 @Injectable()
 export class AppLogger {
-    constructor(private readonly logger: Logger) {}
+    constructor(private readonly logger: Logger) { }
 
     logAction(
         context: string,

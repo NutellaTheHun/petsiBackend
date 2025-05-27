@@ -1,150 +1,153 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { CreateLabelTypeDto } from '../dto/create-label-type.dto';
-import { UpdateLabelTypeDto } from '../dto/update-label-type.dto';
+import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType } from '../entities/label-type.entity';
 import { LabelTypeService } from '../services/label-type.service';
 import { getTestLabelTypeNames } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTypeController } from './label-type.controller';
-import { AppHttpException } from '../../../util/exceptions/AppHttpException';
 
 describe('Label type Controller', () => {
-  let controller: LabelTypeController;
-  let service: LabelTypeService;
+    let controller: LabelTypeController;
+    let service: LabelTypeService;
 
-  let types: LabelType[];
-  let typeId: number = 1;
+    let types: LabelType[];
+    let typeId: number = 1;
 
-  let testId: number;
+    let testId: number;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getLabelsTestingModule();
+    beforeAll(async () => {
+        const module: TestingModule = await getLabelsTestingModule();
 
-    controller = module.get<LabelTypeController>(LabelTypeController);
-    service = module.get<LabelTypeService>(LabelTypeService);
+        controller = module.get<LabelTypeController>(LabelTypeController);
+        service = module.get<LabelTypeService>(LabelTypeService);
 
-    const typeNames = getTestLabelTypeNames();
-    types = typeNames.map(name => ({
-      id: typeId++,
-      name: name,
-    }) as LabelType);
+        const typeNames = getTestLabelTypeNames();
+        types = typeNames.map(name => ({
+            id: typeId++,
+            labelTypeName: name,
+        }) as LabelType);
 
-    jest.spyOn(service, 'create').mockImplementation(async (dto: CreateLabelTypeDto) => {
-        const exists = types.find(type => type.name === dto.name);
-        if(exists){ return null; }
+        jest.spyOn(service, 'create').mockImplementation(async (dto: CreateLabelTypeDto) => {
+            const exists = types.find(type => type.labelTypeName === dto.labelTypeName);
+            if (exists) { throw new BadRequestException(); }
 
-        const labelType = {
-          id: typeId++,
-          name: dto.name,
-        } as LabelType;
+            const labelType = {
+                id: typeId++,
+                labelTypeName: dto.labelTypeName,
+            } as LabelType;
 
-        types.push(labelType);
-        return labelType;
-      }
-    );
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: types });
-
-    jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
-        return types.filter(type => ids.findIndex(id => id === type.id) !== -1);
-      }
-    );
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if(!id){ throw new Error(); }
-        return types.find(type => type.id === id) || null;
-      }
-    );
-
-    jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
-        return types.find(type => type.name === name) || null;
-      }
-    );
-
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-        const index = types.findIndex(type => type.id === id);
-        if(index === -1){ return false; }
-
-        types.splice(index, 1);
-        return true;
-      }
-    );
-
-    jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateLabelTypeDto) => {
-        const existIdx = types.findIndex(type => type.id === id);
-        if(existIdx === -1){ return null; }
-
-        if(dto.name){
-          types[existIdx].name = dto.name;
+            types.push(labelType);
+            return labelType;
         }
-        
-        return types[existIdx];
-      }
-    );
-  });
+        );
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+        jest.spyOn(service, 'findAll').mockResolvedValue({ items: types });
 
-  it('should create a label type', async () => {
-    const dto = {
-      name: "testLabel",
-    } as CreateLabelTypeDto;
+        jest.spyOn(service, 'findEntitiesById').mockImplementation(async (ids: number[]) => {
+            return types.filter(type => ids.findIndex(id => id === type.id) !== -1);
+        }
+        );
 
-    const result = await controller.create(dto);
+        jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+            if (!id) { throw new Error(); }
+            const result = types.find(type => type.id === id);
+            if (!result) {
+                throw new NotFoundException();
+            }
+            return result;
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull()
-    expect(result?.name).toEqual("testLabel");
+        });
 
-    testId = result?.id as number;
-  });
+        jest.spyOn(service, 'findOneByName').mockImplementation(async (name: string) => {
+            return types.find(type => type.labelTypeName === name) || null;
+        }
+        );
 
-  it('should fail to create a label type (already exists)', async () => {
-    const dto = {
-      name: "testLabel",
-    } as CreateLabelTypeDto;
-    
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
-  });
+        jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
+            const index = types.findIndex(type => type.id === id);
+            if (index === -1) { return false; }
 
-  it('should find label type by id', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
+            types.splice(index, 1);
+            return true;
+        }
+        );
 
-  it('should fail find label type by id (not exist)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(Error);
-  });
+        jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateLabelTypeDto) => {
+            const existIdx = types.findIndex(type => type.id === id);
+            if (existIdx === -1) { throw new NotFoundException(); }
 
-  it('should update label type name', async () => {
-    const dto = {
-      name: "updateTestLabel",
-    } as UpdateLabelTypeDto;
+            if (dto.labelTypeName) {
+                types[existIdx].labelTypeName = dto.labelTypeName;
+            }
 
-    const result = await controller.update(testId, dto);
+            return types[existIdx];
+        }
+        );
+    });
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull()
-    expect(result?.name).toEqual("updateTestLabel");
-  });
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-  it('should fail update label type name (not exist)', async () => {
-    const dto = {
-      name: "updateTestLabel",
-    } as UpdateLabelTypeDto;
+    it('should create a label type', async () => {
+        const dto = {
+            labelTypeName: "testLabel",
+        } as CreateLabelTypeDto;
 
-    await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
-  });
+        const result = await controller.create(dto);
 
-  it('should remove label type', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeTruthy();
-  });
+        expect(result).not.toBeNull();
+        expect(result?.id).not.toBeNull()
+        expect(result?.labelTypeName).toEqual("testLabel");
 
-  it('should fail remove label type (not exist)', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeFalsy();
-  });
+        testId = result?.id as number;
+    });
+
+    it('should fail to create a label type (already exists)', async () => {
+        const dto = {
+            labelTypeName: "testLabel",
+        } as CreateLabelTypeDto;
+
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should find label type by id', async () => {
+        const result = await controller.findOne(testId);
+        expect(result).not.toBeNull();
+    });
+
+    it('should fail find label type by id (not exist)', async () => {
+        await expect(controller.findOne(0)).rejects.toThrow(Error);
+    });
+
+    it('should update label type name', async () => {
+        const dto = {
+            labelTypeName: "updateTestLabel",
+        } as UpdateLabelTypeDto;
+
+        const result = await controller.update(testId, dto);
+
+        expect(result).not.toBeNull();
+        expect(result?.id).not.toBeNull()
+        expect(result?.labelTypeName).toEqual("updateTestLabel");
+    });
+
+    it('should fail update label type name (not exist)', async () => {
+        const dto = {
+            labelTypeName: "updateTestLabel",
+        } as UpdateLabelTypeDto;
+
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should remove label type', async () => {
+        const result = await controller.remove(testId);
+        expect(result).toBeUndefined();
+    });
+
+    it('should fail remove label type (not exist)', async () => {
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+    });
 });

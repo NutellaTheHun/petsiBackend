@@ -2,10 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
 import { MenuItemSize } from "../entities/menu-item-size.entity";
 import { MenuItemSizeValidator } from "../validators/menu-item-size.validator";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 
 @Injectable()
 export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
@@ -13,17 +13,17 @@ export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
         validator: MenuItemSizeValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemSizeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if (dto.sizeName !== undefined) {
+            this.name(dto.sizeName);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemSizeDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if (dto.sizeName !== undefined) {
+            this.name(dto.sizeName);
         }
     }
 

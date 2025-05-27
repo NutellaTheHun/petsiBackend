@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { createNamespace, getNamespace, Namespace } from 'cls-hooked'
-import { AppHttpException } from "../../util/exceptions/AppHttpException";
+import { createNamespace, getNamespace, Namespace } from 'cls-hooked';
+import { AppHttpException } from "../../util/exceptions/app-http-exception";
 
 export const REQUEST_NAMESPACE = 'request';
 
@@ -22,7 +22,7 @@ export class RequestContextService {
 
     getRequestId(): string {
         const result = this.get('requestId');
-        if(!result){
+        if (!result) {
             throw new AppHttpException('RequestContextService getRequestID is null', HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return result
@@ -32,8 +32,8 @@ export class RequestContextService {
 }
 
 export function getRequestNamespace(): Namespace {
-  return (
-    getNamespace(REQUEST_NAMESPACE) ??
-    createNamespace(REQUEST_NAMESPACE)
-  );
+    return (
+        getNamespace(REQUEST_NAMESPACE) ??
+        createNamespace(REQUEST_NAMESPACE)
+    );
 }

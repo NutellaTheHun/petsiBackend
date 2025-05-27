@@ -1,20 +1,23 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateChildMenuItemComponentDto } from "../dto/create-child-menu-item-component.dto";
-import { CreateMenuItemDto } from "../dto/create-menu-item.dto";
-import { UpdateMenuItemComponentDto } from "../dto/update-menu-item-component.dto";
-import { UpdateMenuItemDto } from "../dto/update-menu-item.dto";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/create-child-menu-item-container-options.dto";
+import { UpdateChildMenuItemContainerOptionsDto } from "../dto/menu-item-container-options/update-child-menu-item-container-options.dto";
+import { CreateChildMenuItemContainerItemDto } from "../dto/menu-item-container-item/create-child-menu-item-container-item.dto";
+import { UpdateMenuItemContainerItemDto } from "../dto/menu-item-container-item/update-menu-item-container-item.dto";
+import { CreateMenuItemDto } from "../dto/menu-item/create-menu-item.dto";
+import { UpdateMenuItemDto } from "../dto/menu-item/update-menu-item.dto";
 import { MenuItem } from "../entities/menu-item.entity";
 import { MenuItemCategoryService } from "../services/menu-item-category.service";
 import { MenuItemSizeService } from "../services/menu-item-size.service";
 import { MenuItemService } from "../services/menu-item.service";
 import { MenuItemValidator } from "../validators/menu-item.validator";
-import { MenuItemComponentBuilder } from "./menu-item-component.builder";
+import { MenuItemContainerOptionsBuilder } from "./menu-item-container-options.builder";
+import { MenuItemContainerItemBuilder } from "./menu-item-container-item.builder";
 
 @Injectable()
-export class MenuItemBuilder extends BuilderBase<MenuItem>{
+export class MenuItemBuilder extends BuilderBase<MenuItem> {
     constructor(
         @Inject(forwardRef(() => MenuItemService))
         private readonly itemService: MenuItemService,
@@ -22,112 +25,91 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         @Inject(forwardRef(() => MenuItemCategoryService))
         private readonly categoryService: MenuItemCategoryService,
 
-        @Inject(forwardRef(() => MenuItemComponentBuilder))
-        private readonly componentBuilder: MenuItemComponentBuilder,
+        @Inject(forwardRef(() => MenuItemContainerItemBuilder))
+        private readonly componentBuilder: MenuItemContainerItemBuilder,
+
+        @Inject(forwardRef(() => MenuItemContainerOptionsBuilder))
+        private readonly componentOptionsBuilder: MenuItemContainerOptionsBuilder,
 
         private readonly sizeService: MenuItemSizeService,
-        
+
         validator: MenuItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
+    ) { super(MenuItem, 'MenuItemBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateMenuItemDto): void {
-        if(dto.squareCatalogId){
-            this.squareCatalogId(dto.squareCatalogId);
+        if (dto.itemName !== undefined) {
+            this.name(dto.itemName);
         }
-        if(dto.squareCategoryId){
-            this.squareCategoryId(dto.squareCategoryId);
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.searchNames){
-            this.searchNames(dto.searchNames);
-        }
-        if(dto.isPOTM){
+        if (dto.isPOTM !== undefined) {
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake){
+        if (dto.isParbake !== undefined) {
             this.isParbake(dto.isParbake);
         }
 
         // Entities
-        if(dto.validSizeIds){
+        if (dto.validSizeIds !== undefined) {
             this.validSizesById(dto.validSizeIds);
         }
-        if(dto.veganOptionMenuId){
+        if (dto.veganOptionMenuId !== undefined) {
             this.veganOptionById(dto.veganOptionMenuId);
         }
-        if(dto.takeNBakeOptionMenuId){
+        if (dto.takeNBakeOptionMenuId !== undefined) {
             this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
         }
-        if(dto.veganTakeNBakeOptionMenuId){
+        if (dto.veganTakeNBakeOptionMenuId !== undefined) {
             this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
         }
-        if(dto.categoryId){
+        if (dto.categoryId !== undefined) {
             this.categorybyId(dto.categoryId);
         }
-        if(dto.containerComponentDtos){
-            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        if (dto.definedContainerItemDtos !== undefined) {
+            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
+        }
+        if (dto.containerOptionDto !== undefined) {
+            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
         }
     }
 
     protected updateEntity(dto: UpdateMenuItemDto): void {
-        if(dto.squareCatalogId){
-            this.squareCatalogId(dto.squareCatalogId);
+        if (dto.itemName !== undefined) {
+            this.name(dto.itemName);
         }
-        if(dto.squareCategoryId){
-            this.squareCategoryId(dto.squareCategoryId);
-        }
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.searchNames){
-            this.searchNames(dto.searchNames);
-        }
-        if(dto.isPOTM){
+        if (dto.isPOTM !== undefined) {
             this.isPOTM(dto.isPOTM);
         }
-        if(dto.isParbake){
+        if (dto.isParbake !== undefined) {
             this.isParbake(dto.isParbake);
         }
 
         // Entities
-        if(dto.validSizeIds){
+        if (dto.validSizeIds !== undefined) {
             this.validSizesById(dto.validSizeIds);
         }
-        if(dto.veganOptionMenuId !== undefined){
+        if (dto.veganOptionMenuId !== undefined) {
             this.veganOptionById(dto.veganOptionMenuId);
         }
-        if(dto.takeNBakeOptionMenuId !== undefined){
+        if (dto.takeNBakeOptionMenuId !== undefined) {
             this.takeNBakeOptionById(dto.takeNBakeOptionMenuId);
         }
-        if(dto.veganTakeNBakeOptionMenuId !== undefined){
+        if (dto.veganTakeNBakeOptionMenuId !== undefined) {
             this.veganTakeNBakeOptionById(dto.veganTakeNBakeOptionMenuId);
         }
-        if(dto.categoryId !== undefined){
+        if (dto.categoryId !== undefined) {
             this.categorybyId(dto.categoryId);
         }
-        if(dto.containerComponentDtos){
-            this.containerByBuilder(this.entity.id, dto.containerComponentDtos);
+        if (dto.definedContainerItemDtos !== undefined) {
+            this.definedContainerItemsByBuilder(this.entity.id, dto.definedContainerItemDtos);
         }
-    }
-
-    public squareCatalogId(catalogId: string): this {
-        return this.setPropByVal('squareCatalogId', catalogId);
-    }
-
-    public squareCategoryId(categoryId: string): this {
-        return this.setPropByVal('squareCategoryId', categoryId);
+        if (dto.containerOptionDto !== undefined) {
+            this.containerOptionsByBuilder(this.entity.id, dto.containerOptionDto);
+        }
     }
 
     public name(name: string): this {
-        return this.setPropByVal('name', name);
-    }
-
-    public searchNames(names: string[]): this {
-        return this.setPropByVal('searchNames', names);
+        return this.setPropByVal('itemName', name);
     }
 
     public isPOTM(val: boolean): this {
@@ -142,8 +124,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'validSizes', ids);
     }
 
-    public veganOptionById(id: number): this {
-        if(id === 0){
+    public veganOptionById(id: number | null): this {
+        if (id === null) {
             return this.setPropByVal('veganOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganOption', id);
@@ -153,9 +135,9 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'veganOption', name);
     }
 
-    public takeNBakeOptionById(id: number): this {
-        if(id === 0){
-            return this.setPropByVal('takeNBakeOption', null)
+    public takeNBakeOptionById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('takeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'takeNBakeOption', id);
     }
@@ -164,8 +146,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'takeNBakeOption', name);
     }
 
-    public veganTakeNBakeOptionById(id: number): this {
-        if(id === 0){
+    public veganTakeNBakeOptionById(id: number | null): this {
+        if (id === null) {
             return this.setPropByVal('veganTakeNBakeOption', null);
         }
         return this.setPropById(this.itemService.findOne.bind(this.itemService), 'veganTakeNBakeOption', id);
@@ -175,8 +157,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'veganTakeNBakeOption', name);
     }
 
-    public categorybyId(id: number): this {
-        if(id === 0){
+    public categorybyId(id: number | null): this {
+        if (id === null) {
             return this.setPropByVal('category', null);
         }
         return this.setPropById(this.categoryService.findOne.bind(this.categoryService), 'category', id);
@@ -186,11 +168,21 @@ export class MenuItemBuilder extends BuilderBase<MenuItem>{
         return this.setPropByName(this.categoryService.findOneByName.bind(this.categoryService), 'category', name);
     }
 
-    public containerByBuilder(containerId: number, dtos: (CreateChildMenuItemComponentDto | UpdateMenuItemComponentDto)[]): this {
-        const enrichedDtos = dtos.map( dto => ({
+    public definedContainerItemsByBuilder(parentId: number, dtos: (CreateChildMenuItemContainerItemDto | UpdateMenuItemContainerItemDto)[] | null): this {
+        if (dtos === null) {
+            return this.setPropByVal('definedContainerItems', []);
+        }
+        const enrichedDtos = dtos.map(dto => ({
             ...dto,
-            containerId,
+            containerId: parentId,
         }));
-        return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'container', this.entity, enrichedDtos);
+        return this.setPropByBuilder(this.componentBuilder.buildManyChildDto.bind(this.componentBuilder), 'definedContainerItems', this.entity, enrichedDtos);
+    }
+
+    public containerOptionsByBuilder(parentId: number, dto: (CreateChildMenuItemContainerOptionsDto | UpdateChildMenuItemContainerOptionsDto) | null): this {
+        if (dto === null) {
+            return this.setPropByVal('containerOptions', null);
+        }
+        return this.setPropByBuilder(this.componentOptionsBuilder.buildChildDto.bind(this.componentOptionsBuilder), 'containerOptions', this.entity, dto);
     }
 }

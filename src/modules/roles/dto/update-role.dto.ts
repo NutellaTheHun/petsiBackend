@@ -1,13 +1,9 @@
-import { IsArray, IsNumber, IsOptional, IsPositive, IsString } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsString } from "class-validator";
 
 export class UpdateRoleDto {
+    @ApiProperty({ description: 'Name of the Role entity.' })
     @IsString()
     @IsOptional()
-    readonly name?: string;
-
-    @IsArray()
-    @IsNumber({}, { each: true})
-    @IsPositive({ each: true})
-    @IsOptional()
-    readonly userIds?: number[];
+    readonly roleName?: string;
 }

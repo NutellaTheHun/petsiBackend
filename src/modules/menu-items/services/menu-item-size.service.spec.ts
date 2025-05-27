@@ -1,10 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { CreateMenuItemSizeDto } from "../dto/menu-item-size/create-menu-item-size.dto";
+import { UpdateMenuItemSizeDto } from "../dto/menu-item-size/update-menu-item-size.dto";
 import { getMenuItemTestingModule } from "../utils/menu-item-testing.module";
 import { MenuItemTestingUtil } from "../utils/menu-item-testing.util";
 import { MenuItemSizeService } from "./menu-item-size.service";
-import { CreateMenuItemSizeDto } from "../dto/create-menu-item-size.dto";
-import { UpdateMenuItemSizeDto } from "../dto/update-menu-item-size.dto";
 
 describe('menu item size service', () => {
     let testingUtil: MenuItemTestingUtil;
@@ -19,7 +20,7 @@ describe('menu item size service', () => {
         dbTestContext = new DatabaseTestContext();
         testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
         await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
-        
+
         sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
     });
 
@@ -33,7 +34,7 @@ describe('menu item size service', () => {
 
     it('should create a size', async () => {
         const dto = {
-            name: "test Size",
+            sizeName: "test Size",
         } as CreateMenuItemSizeDto;
 
         const result = await sizeService.create(dto);
@@ -59,7 +60,7 @@ describe('menu item size service', () => {
 
     it('should update a size', async () => {
         const dto = {
-            name: "updated test size",
+            sizeName: "updated test size",
         } as UpdateMenuItemSizeDto;
 
         const result = await sizeService.update(testId, dto);
@@ -71,13 +72,18 @@ describe('menu item size service', () => {
     it('should find all sizes', async () => {
         const results = await sizeService.findAll();
         expect(results.items.length).toEqual(5);
-        testIds = results.items.slice(0,3).map(size => size.id);
+        testIds = results.items.slice(0, 3).map(size => size.id);
+    });
+
+    it('should sort all sizes by name', async () => {
+        const results = await sizeService.findAll({ sortBy: 'name' });
+        expect(results.items.length).toEqual(5);
     });
 
     it('should find sizes by a list of ids', async () => {
         const results = await sizeService.findEntitiesById(testIds);
         expect(results.length).toEqual(3);
-        for(const result of results){
+        for (const result of results) {
             expect(testIds.findIndex(id => id === result.id)).not.toEqual(-1);
         }
     });
@@ -86,7 +92,6 @@ describe('menu item size service', () => {
         const removal = await sizeService.remove(testId);
         expect(removal).toBeTruthy();
 
-        const verify = await sizeService.findOne(testId);
-        expect(verify).toBeNull();
+        await expect(sizeService.findOne(testId)).rejects.toThrow(NotFoundException);
     });
 });

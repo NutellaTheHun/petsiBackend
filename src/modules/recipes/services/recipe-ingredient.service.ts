@@ -1,74 +1,94 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { AppLogger } from "../../app-logging/app-logger";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
+import { CreateRecipeIngredientDto } from "../dto/recipe-ingredient/create-recipe-ingredient.dto";
 import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
-import { RecipeIngredientValidator } from "../validators/recipe-ingredient.validator";
+import { Recipe } from "../entities/recipe.entity";
 import { RecipeService } from "./recipe.service";
 
-export class RecipeIngredientService extends ServiceBase<RecipeIngredient>{
+@Injectable()
+export class RecipeIngredientService extends ServiceBase<RecipeIngredient> {
     constructor(
         @InjectRepository(RecipeIngredient)
-        private readonly ingredientRepo: Repository<RecipeIngredient>,
+        private readonly repo: Repository<RecipeIngredient>,
 
         @Inject(forwardRef(() => RecipeIngredientBuilder))
-        ingredientBuilder: RecipeIngredientBuilder,
-
-        validator: RecipeIngredientValidator,
+        builder: RecipeIngredientBuilder,
 
         @Inject(forwardRef(() => RecipeService))
         private readonly recipeService: RecipeService,
+
         private readonly inventoryItemService: InventoryItemService,
+
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(ingredientRepo, ingredientBuilder, validator, 'RecipeIngredientService', requestContextService, logger); }
+    ) { super(repo, builder, 'RecipeIngredientService', requestContextService, logger); }
 
-    async findByRecipeName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
+    /**
+     * Depreciated, only created as a child through {@link Recipe}.
+     */
+    public async create(dto: CreateRecipeIngredientDto): Promise<RecipeIngredient> {
+        throw new BadRequestException();
+    }
+
+    async findByRecipeName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]> {
         const recipe = await this.recipeService.findOneByName(name, ["ingredients"]);
-        if(!recipe?.ingredients){
+        if (!recipe?.ingredients) {
             throw new Error("recipe ingredients not found");
         }
         return recipe.ingredients;
     }
 
-    async findByRecipeId(id: number, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
-        return await this.ingredientRepo.find({
+    async findByRecipeId(id: number, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]> {
+        return await this.repo.find({
             where: {
-                recipe: { id }
+                parentRecipe: { id }
             },
             relations
         })
     }
 
-    async findByInventoryItemName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
+    async findByInventoryItemName(name: string, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]> {
         const invItem = await this.inventoryItemService.findOneByName(name);
-        if(!invItem){
+        if (!invItem) {
             throw new Error('inventory item not found');
         }
 
-        return await this.ingredientRepo.find({
+        return await this.repo.find({
             where: {
-                inventoryItem: invItem
+                ingredientInventoryItem: invItem
             },
             relations
         })
     }
 
-    async findByInventoryItemId(id: number, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]>{
+    async findByInventoryItemId(id: number, relations?: Array<keyof RecipeIngredient>): Promise<RecipeIngredient[]> {
         const invItem = await this.inventoryItemService.findOne(id);
-        if(!invItem){
+        if (!invItem) {
             throw new Error('inventory item not found');
         }
 
-        return await this.ingredientRepo.find({
+        return await this.repo.find({
             where: {
-                inventoryItem: invItem
+                ingredientInventoryItem: invItem
             },
             relations
         })
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<RecipeIngredient>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'ingredient') {
+            query.leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
+                .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
+
+            query.orderBy(
+                `COALESCE(inventoryItem.itemName, recipe.recipeName)`,
+                sortOrder)
+        }
     }
 }

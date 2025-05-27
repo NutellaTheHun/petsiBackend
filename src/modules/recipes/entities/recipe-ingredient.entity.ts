@@ -1,40 +1,58 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Recipe } from "./recipe.entity";
 import { InventoryItem } from "../../inventory-items/entities/inventory-item.entity";
 import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { Recipe } from "./recipe.entity";
 
 /**
- * A ingredient in a Recipe, can either be an InventoryItem or another Recipe that is marked isIngredient.
+ * A ingredient within a {@link Recipe}, can either be an {@link InventoryItem} or another {@link Recipe}.
  */
 @Entity()
-export class RecipeIngredient{
+export class RecipeIngredient {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // Link to Recipe that owns the ingredient
-    @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
-    recipe: Recipe;
-    
     /**
-     * - The inventory item that this ingredient references. Like "flour" or "pecan halves"
-     * - Can only be one inventory item per ingredient
-     * - A RecipeIngredient can only have an inventoryItem OR subRecipe property set, not both
+     * The parent {@link Recipe} to the ingredient.
+     * 
+     */
+    @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
+    parentRecipe: Recipe;
+
+    /**
+     * The {@link InventoryItem} that is being used as the ingredient. 
+     * 
+     * - Example:  "flour" or "pecan halves"
+     *
+     * If a RecipeIngredient is referencing the inventoryItem property, the subRecipeIngredient property must be null/undefined.
      */
     @ManyToOne(() => InventoryItem, { nullable: true, onDelete: 'CASCADE' })
-    inventoryItem?: InventoryItem | null;
+    ingredientInventoryItem?: InventoryItem | null;
 
     /**
-     * - A recipe that is a in ingredient for a recipe, such as "Apple Mix" or "Pie Dough"
-     * - A subRecipe is a Recipe with isIngredient marked true
-     * - A subRecipe doesn't represent an item on the menu (menuItem).
+     * A {@link Recipe} that is used as an ingredient in the parent recipe property.
+     * 
+     * Recipes such as "Apple Mix" or "Pie Dough"
+     * 
+     * A subRecipe is a Recipe with isIngredient marked true
+     * 
+     * If a RecipeIngredient is referencing the subRecipeIngredient property, the inventoryItem property must be null/undefined.
      */
     @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
-    subRecipeIngredient?: Recipe | null;
+    ingredientRecipe?: Recipe | null;
 
+    /**
+     * the amount of the unit property for the referenced inventoryItem/subRecipeIngredient property.
+     * 
+     * Example: 3(quantity) cups of Flour
+     */
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
     quantity: number;
 
-    // Shouldn't really need to OnDelete cascade, but just to keep db clean in case?
-    @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' }) 
-    unit: UnitOfMeasure;
+    /**
+     * The choice of measurement for the ingredient.
+     * 
+     * Example: 3 cups({@link UnitOfMeasure}) of Flour
+     */
+    @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' })
+    quantityMeasure: UnitOfMeasure;
 }

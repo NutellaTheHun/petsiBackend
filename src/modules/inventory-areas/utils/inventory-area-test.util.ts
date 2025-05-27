@@ -1,25 +1,25 @@
 import { Injectable } from "@nestjs/common";
 import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/create-inventory-item-size.dto";
+import { CreateChildInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto";
 import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
 import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
 import { InventoryAreaBuilder } from "../builders/inventory-area.builder";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/create-child-inventory-area-item.dto";
 import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 import { InventoryAreaService } from "../services/inventory-area.service";
-import { AREA_A, AREA_B, AREA_C, AREA_D } from "./constants";
-import e from "express";
+import { AREA_A, AREA_B, AREA_C, AREA_D, getAreaNames } from "./constants";
 
 @Injectable()
 export class InventoryAreaTestUtil {
-
-    private readonly areaNames = [ AREA_A, AREA_B, AREA_C, AREA_D];
+    private initCounts = false;
+    private initItems = false;
+    private initAreas = false;
 
     constructor(
         private readonly areaService: InventoryAreaService,
@@ -30,22 +30,24 @@ export class InventoryAreaTestUtil {
 
         private readonly itemCountService: InventoryAreaItemService,
         private readonly itemCountBuilder: InventoryAreaItemBuilder,
-        
+
         private readonly inventoryItemService: InventoryItemService,
 
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
-    ){}
+    ) { }
 
     /**
      * Dependencies initialized: None
      * @returns 4 Inventory areas, Area_A, B, C, and D
      */
-    public async getTestInventoryAreaEntities(testContext: DatabaseTestContext): Promise<InventoryArea[]> { 
+    public async getTestInventoryAreaEntities(testContext: DatabaseTestContext): Promise<InventoryArea[]> {
         const results: InventoryArea[] = [];
-        for(const name of this.areaNames){
+        const names = getAreaNames();
+
+        for (const name of names) {
             results.push(
                 await this.areaBuilder.reset()
-                    .name(name)
+                    .areaName(name)
                     .build()
             )
         }
@@ -62,8 +64,8 @@ export class InventoryAreaTestUtil {
 
         return [
             await this.areaCountBuilder.reset()
-            .inventoryAreaByName(AREA_A)
-            .build(),
+                .inventoryAreaByName(AREA_A)
+                .build(),
 
             await this.areaCountBuilder.reset()
                 .inventoryAreaByName(AREA_B)
@@ -97,44 +99,40 @@ export class InventoryAreaTestUtil {
         await this.inventoryItemTestUtil.initInventoryItemSizeTestDatabase(testContext);
 
         const results: InventoryAreaItem[] = [];
-        const countsRequest = await this.countService.findAll({ relations: ["inventoryArea"]});
+        const countsRequest = await this.countService.findAll({ relations: ["inventoryArea"] });
         const counts = countsRequest.items;
-        const itemsRequest = await this.inventoryItemService.findAll({ relations: ["sizes"] });
+        const itemsRequest = await this.inventoryItemService.findAll({ relations: ['itemSizes'] });
         const items = itemsRequest.items;
         let itemPtr = 0;
 
-        for(let i = 0; i < counts.length; i++){
+        for (let i = 0; i < counts.length; i++) {
             const itemA = items[itemPtr++ % items.length];
-            if(!itemA.sizes){ throw new Error("itemA sizes null"); }
-            const sizeA = itemA.sizes[0];
+            if (!itemA.itemSizes) { throw new Error("itemA sizes null"); }
+            const sizeA = itemA.itemSizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                //.inventoryAreaById(counts[i].inventoryArea.id)
-                .areaCountById(counts[i].id)
-                .inventoryItemById(itemA.id)
-                .sizeById(sizeA.id)
-                .unitAmount(1)
-                .measureAmount(1)
-                .build()
+                    .parentInventoryCountById(counts[i].id)
+                    .countedItemById(itemA.id)
+                    .countedItemSizeById(sizeA.id)
+                    .amount(1)
+                    .build()
             );
 
             const itemB = items[itemPtr++ % items.length];
-            if(!itemB.sizes){ throw new Error("itemA sizes null"); }
-            const sizeB = itemB.sizes[0];
+            if (!itemB.itemSizes) { throw new Error("itemA sizes null"); }
+            const sizeB = itemB.itemSizes[0];
             results.push(
                 await this.itemCountBuilder.reset()
-                //.inventoryAreaById(counts[i].inventoryArea.id)
-                .areaCountById(counts[i].id)
-                .inventoryItemById(itemB.id)
-                .sizeById(sizeB.id)
-                .unitAmount(1)
-                .measureAmount(1)
-                .build()
+                    .parentInventoryCountById(counts[i].id)
+                    .countedItemById(itemB.id)
+                    .countedItemSizeById(sizeB.id)
+                    .amount(1)
+                    .build()
             );
         }
         return results;
     }
-    
+
     /**
      * - Inserts InventoryArea entities into the test database.
      * - Adds cleanup function to testContext
@@ -142,15 +140,20 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() to clear database after test
      */
     public async initInventoryAreaTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initAreas) {
+            return;
+        }
+        this.initAreas = true;
+
         const areas = await this.getTestInventoryAreaEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaTestDatabase());
         const toInsert: InventoryArea[] = [];
 
-        for(const area of areas){
-            const exists = await this.areaService.findOneByName(area.name);
+        /*for(const area of areas){
+            const exists = await this.areaService.findOneByName(area.areaName);
             if(!exists){ toInsert.push(area); }
-        }
-        await this.areaService.insertEntities(toInsert);
+        }*/
+        await this.areaService.insertEntities(/*toInsert*/areas);
     }
 
     /**
@@ -160,6 +163,11 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() for entitiy and its dependencies to clear database after test
      */
     public async initInventoryAreaCountTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initCounts) {
+            return;
+        }
+        this.initCounts = true;
+
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaCountTestDatabase());
         await this.countService.insertEntities(
             await this.getTestInventoryAreaCountEntities(testContext)
@@ -174,7 +182,13 @@ export class InventoryAreaTestUtil {
      * @param testContext provides addCleanupFunction() for entitiy and its dependencies to clear database after test
      */
     public async initInventoryAreaItemCountTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initItems) {
+            return;
+        }
+        this.initItems = true;
+
         testContext.addCleanupFunction(() => this.cleanupInventoryAreaItemCountTestDatabase());
+
         await this.itemCountService.insertEntities(
             await this.getTestInventoryAreaItemCountEntities(testContext)
         );
@@ -202,47 +216,33 @@ export class InventoryAreaTestUtil {
     }
 
     public createInventoryAreaItemDtos(
-       /* inventoryAreaId: number,*/ areaCountId: number, 
-        itemConfigs: {itemId: number, itemSizeId?: number, sizeDto?: CreateInventoryItemSizeDto}[]
-    ){
+       /* inventoryAreaId: number,*/ areaCountId: number,
+        itemConfigs: { itemId: number, itemSizeId?: number, sizeDto?: CreateChildInventoryItemSizeDto }[]
+    ) {
         let unitAmount = 1;
         let measureAmount = 1;
-        const results: CreateInventoryAreaItemDto[] = [];
+        const results: CreateChildInventoryAreaItemDto[] = [];
 
-        for(const item of itemConfigs){
-            if(item.sizeDto){
+        for (const item of itemConfigs) {
+            if (item.sizeDto) {
                 results.push({
                     mode: 'create',
-                    //inventoryAreaId,
-                    areaCountId,
-                    unitAmount: unitAmount++,
+                    countedAmount: unitAmount++,
                     measureAmount: measureAmount++,
-                    inventoryItemId: item.itemId,
+                    countedInventoryItemId: item.itemId,
                     //itemSizeId: item.itemSizeId,
-                    itemSizeDto: item.sizeDto
-                } as CreateInventoryAreaItemDto)
+                    countedItemSizeDto: item.sizeDto
+                } as CreateChildInventoryAreaItemDto)
             } else {
                 results.push({
                     mode: 'create',
-                    //inventoryAreaId,
-                    areaCountId,
-                    unitAmount: unitAmount++,
+                    countedAmount: unitAmount++,
                     measureAmount: measureAmount++,
-                    inventoryItemId: item.itemId,
-                    itemSizeId: item.itemSizeId,
+                    countedInventoryItemId: item.itemId,
+                    countedItemSizeId: item.itemSizeId,
                     //itemSizeDto: item.sizeDto
-                } as CreateInventoryAreaItemDto)
+                } as CreateChildInventoryAreaItemDto)
             }
-           /* results.push({
-                mode: 'create',
-                //inventoryAreaId,
-                areaCountId,
-                unitAmount: unitAmount++,
-                measureAmount: measureAmount++,
-                inventoryItemId: item.itemId,
-                itemSizeId: item.itemSizeId,
-                itemSizeDto: item.sizeDto
-            } as CreateInventoryAreaItemDto)*/
         }
         return results;
     }

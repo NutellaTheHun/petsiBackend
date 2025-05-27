@@ -1,147 +1,152 @@
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { UpdateInventoryItemCategoryDto } from "../dto/update-inventory-item-category.dto";
+import { AppHttpException } from "../../../util/exceptions/app-http-exception";
+import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
+import { UpdateInventoryItemCategoryDto } from "../dto/inventory-item-category/update-inventory-item-category.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemCategoryService } from "../services/inventory-item-category.service";
 import { CLEANING_CAT, DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT, FROZEN_CAT, OTHER_CAT, PAPER_CAT, PRODUCE_CAT } from "../utils/constants";
 import { getInventoryItemTestingModule } from "../utils/inventory-item-testing-module";
 import { InventoryItemCategoryController } from "./inventory-item-category.controller";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 
 describe('Inventory Item Categories Controller', () => {
-  let controller: InventoryItemCategoryController;
-  let categoryService: InventoryItemCategoryService;
+    let controller: InventoryItemCategoryController;
+    let categoryService: InventoryItemCategoryService;
 
-  let categories: InventoryItemCategory[];
-  beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
+    let categories: InventoryItemCategory[];
+    beforeAll(async () => {
+        const module: TestingModule = await getInventoryItemTestingModule();
 
-    controller = module.get<InventoryItemCategoryController>(InventoryItemCategoryController);
-    categoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
+        controller = module.get<InventoryItemCategoryController>(InventoryItemCategoryController);
+        categoryService = module.get<InventoryItemCategoryService>(InventoryItemCategoryService);
 
-    categories = [
-      { name: CLEANING_CAT } as InventoryItemCategory,
-      { name: DAIRY_CAT } as InventoryItemCategory,
-      { name: DRYGOOD_CAT } as InventoryItemCategory,
-      { name: FOOD_CAT } as InventoryItemCategory,
-      { name: FROZEN_CAT } as InventoryItemCategory,
-      { name: OTHER_CAT } as InventoryItemCategory,
-      { name: PAPER_CAT } as InventoryItemCategory,
-      { name: PRODUCE_CAT } as InventoryItemCategory,
-    ];
-    let id = 1;
-    categories.map(category => category.id = id++);
+        categories = [
+            { categoryName: CLEANING_CAT } as InventoryItemCategory,
+            { categoryName: DAIRY_CAT } as InventoryItemCategory,
+            { categoryName: DRYGOOD_CAT } as InventoryItemCategory,
+            { categoryName: FOOD_CAT } as InventoryItemCategory,
+            { categoryName: FROZEN_CAT } as InventoryItemCategory,
+            { categoryName: OTHER_CAT } as InventoryItemCategory,
+            { categoryName: PAPER_CAT } as InventoryItemCategory,
+            { categoryName: PRODUCE_CAT } as InventoryItemCategory,
+        ];
+        let id = 1;
+        categories.map(category => category.id = id++);
 
-    jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateInventoryItemCategoryDto) => {
-      const exists = categories.find(unit => unit.name === createDto.name);
-      if(exists){ return null; }
+        jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateInventoryItemCategoryDto) => {
+            const exists = categories.find(unit => unit.categoryName === createDto.itemCategoryName);
+            if (exists) { throw new BadRequestException(); }
 
-      const unit = {
-        id: id++,
-        name: createDto.name
-      } as InventoryItemCategory;
+            const unit = {
+                id: id++,
+                categoryName: createDto.itemCategoryName
+            } as InventoryItemCategory;
 
-      categories.push(unit);
-      return unit;
+            categories.push(unit);
+            return unit;
+        });
+
+        jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
+            return categories.find(unit => unit.categoryName === name) || null;
+        });
+
+        jest.spyOn(categoryService, "update").mockImplementation(async (id: number, updateDto: UpdateInventoryItemCategoryDto) => {
+            const index = categories.findIndex(unit => unit.id === id);
+            if (index === -1) throw new NotFoundException();
+
+            if (updateDto.itemCategoryName) {
+                categories[index].categoryName = updateDto.itemCategoryName;
+            }
+
+            return categories[index];
+        });
+
+        jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
+
+        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+            const result = categories.find(unit => unit.id === id)
+            if (!result) {
+                throw new NotFoundException();
+            }
+            return result;
+        });
+
+        jest.spyOn(categoryService, "remove").mockImplementation(async (id: number) => {
+            const index = categories.findIndex(unit => unit.id === id);
+            if (index === -1) return false;
+
+            categories.splice(index, 1);
+
+            return true;
+        });
     });
-        
-    jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
-      return categories.find(unit => unit.name === name) || null;
-    });
-    
-    jest.spyOn(categoryService, "update").mockImplementation( async (id: number, updateDto: UpdateInventoryItemCategoryDto) => {
-      const index = categories.findIndex(unit => unit.id === id);
-      if (index === -1) return null;
 
-      if(updateDto.name){
-        categories[index].name = updateDto.name;
-      }
-
-      return categories[index];
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
     });
 
-    jest.spyOn(categoryService, "findAll").mockResolvedValue( {items: categories} );
+    it('should create a category', async () => {
+        const dto = {
+            itemCategoryName: "testCategory",
+        } as CreateInventoryItemCategoryDto;
 
-    jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
-      if(!id){ throw new Error(); }
-      return categories.find(unit => unit.id === id) || null;
+        const result = await controller.create(dto);
+        expect(result).not.toBeNull();
     });
 
-    jest.spyOn(categoryService, "remove").mockImplementation( async (id: number) => {
-      const index = categories.findIndex(unit => unit.id === id);
-      if (index === -1) return false;
+    it('should fail to create a category (already exists)', async () => {
+        const dto = {
+            itemCategoryName: "testCategory",
+        } as CreateInventoryItemCategoryDto;
 
-      categories.splice(index,1);
-
-      return true;
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-  
-  it('should create a category', async () => {
-    const dto = {
-      name: "testCategory",
-    } as CreateInventoryItemCategoryDto;
+    it('should return all categories', async () => {
+        const results = await controller.findAll();
+        expect(results.items.length).toEqual(categories.length);
+    });
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
-  
-  it('should fail to create a category (already exists)', async () => {
-    const dto = {
-      name: "testCategory",
-    } as CreateInventoryItemCategoryDto;
+    it('should return a category by id', async () => {
+        const result = await controller.findOne(1);
+        expect(result).not.toBeNull();
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(AppHttpException);
-  });
+    it('should fail to return a category (bad id, returns null)', async () => {
+        await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
+    });
 
-  it('should return all categories', async () => {
-    const results = await controller.findAll();
-    expect(results.items.length).toEqual(categories.length);
-  });
-  
-  it('should return a category by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
-  
-  it('should fail to return a category (bad id, returns null)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(Error);
-  });
-  
-  it('should update a category', async () => {
-    const toUpdate = await categoryService.findOneByName("testCategory");
-    if(!toUpdate){ throw new Error("unit to update not found"); }
+    it('should update a category', async () => {
+        const toUpdate = await categoryService.findOneByName("testCategory");
+        if (!toUpdate) { throw new Error("unit to update not found"); }
 
-    const dto = {
-      name: "UPDATED_testCategory"
-    } as UpdateInventoryItemCategoryDto;
+        const dto = {
+            itemCategoryName: "UPDATED_testCategory"
+        } as UpdateInventoryItemCategoryDto;
 
-    const result = await controller.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual("UPDATED_testCategory")
-  });
-  
-  it('should fail to update a category (doesnt exist)', async () => {
-    const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
-    if(!toUpdate){ throw new Error("unit to update not found"); }
+        const result = await controller.update(toUpdate.id, dto);
+        expect(result).not.toBeNull();
+        expect(result?.categoryName).toEqual("UPDATED_testCategory")
+    });
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(AppHttpException);
-  });
-  
-  it('should remove a category', async () => {
-    const toRemove = await categoryService.findOneByName("UPDATED_testCategory");
-    if(!toRemove){ throw new Error("unit to remove not found"); }
+    it('should fail to update a category (doesnt exist)', async () => {
+        //const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
+        //if(!toUpdate){ throw new Error("unit to update not found"); }
+        const dto = {
 
-    const result = await controller.remove(toRemove.id);
-    expect(result).toBeTruthy();
-  });
+        } as UpdateInventoryItemCategoryDto;
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
+    });
 
-  it('should fail to remove a category (id not found, returns false)', async () => {
-    const result = await controller.remove(0);
-    expect(result).toBeFalsy();
-  });
+    it('should remove a category', async () => {
+        const toRemove = await categoryService.findOneByName("UPDATED_testCategory");
+        if (!toRemove) { throw new Error("unit to remove not found"); }
+
+        const result = await controller.remove(toRemove.id);
+        expect(result).toBeUndefined();
+    });
+
+    it('should fail to remove a category (id not found)', async () => {
+        await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
+    });
 });

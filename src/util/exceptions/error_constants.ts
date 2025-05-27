@@ -1,3 +1,8 @@
 export const DTO_VALIDATION_FAIL = 'DTO_VALIDATION_FAIL';
 export const ENTITY_NOT_FOUND = 'ENTITY_NOT_FOUND';
 export const SOMETHING_WENT_WRONG = 'SOMETHING_WENT_WRONG';
+
+export const EXIST = 'EXIST';
+export const DUPLICATE = 'DUPLICATE';
+export const INVALID = 'INVALID';
+export const MISSING = 'MISSING';

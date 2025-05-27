@@ -1,26 +1,60 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemValidator } from '../validators/inventory-item.validator';
-import { RequestContextService } from '../../request-context/RequestContextService';
-import { ModuleRef } from '@nestjs/core';
-import { AppLogger } from '../../app-logging/app-logger';
 
 @Injectable()
 export class InventoryItemService extends ServiceBase<InventoryItem> {
-  constructor(
-    @InjectRepository(InventoryItem)
-    private readonly itemRepo: Repository<InventoryItem>,
-    itemBuilder: InventoryItemBuilder,
-    validator:InventoryItemValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ){ super(itemRepo, itemBuilder, validator, 'InventoryItemService', requestContextService, logger)}
+    constructor(
+        @InjectRepository(InventoryItem)
+        private readonly repo: Repository<InventoryItem>,
 
-  async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
-    return await this.itemRepo.findOne({ where: { name: name }, relations: relations });
-  }
+        builder: InventoryItemBuilder,
+
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) { super(repo, builder, 'InventoryItemService', requestContextService, logger) }
+
+    async findOneByName(name: string, relations?: Array<keyof InventoryItem>): Promise<InventoryItem | null> {
+        return await this.repo.findOne({ where: { itemName: name }, relations: relations });
+    }
+
+    protected applySearch(query: SelectQueryBuilder<InventoryItem>, search: string): void {
+        query.andWhere(
+            '(LOWER(entity.itemName) LIKE :search)', { search: `%${search.toLowerCase()}%` }
+        );
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<InventoryItem>, filters: Record<string, string>): void {
+
+        if (filters.category) {
+            query.andWhere('entity.category = :category', { category: filters.category });
+        }
+
+        if (filters.vendor) {
+            query.andWhere('entity.vendor = :vendor', { vendor: filters.vendor });
+        }
+        //filter for no category?
+
+        // filter for no vendor?
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryItem>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
+
+        if (sortBy === 'itemName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'vendor') {
+            query.leftJoinAndSelect('entity.vendor', 'vendor');
+            query.orderBy('vendor.vendorName', sortOrder, 'NULLS LAST');
+        }
+        else if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy('category.categoryName', sortOrder, 'NULLS LAST');
+        }
+    }
 }

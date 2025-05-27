@@ -1,11 +1,11 @@
+import { NotFoundException } from "@nestjs/common";
 import { TestingModule } from "@nestjs/testing";
-import { AppHttpException } from "../../../util/exceptions/AppHttpException";
-import { CreateOrderDto } from "../dto/create-order.dto";
-import { UpdateOrderDto } from "../dto/update-order.dto";
-import { OrderType } from "../entities/order-type.entity";
+import { CreateOrderDto } from "../dto/order/create-order.dto";
+import { UpdateOrderDto } from "../dto/order/update-order.dto";
+import { OrderCategory } from "../entities/order-category.entity";
 import { Order } from "../entities/order.entity";
 import { OrderService } from "../services/order.service";
-import { getTestOrderTypeNames } from "../utils/constants";
+import { getTestOrderCategoryNames } from "../utils/constants";
 import { getOrdersTestingModule } from "../utils/order-testing.module";
 import { OrderController } from "./order.controller";
 
@@ -14,40 +14,40 @@ describe('order controller', () => {
     let service: OrderService;
 
     let orders: Order[] = [];
-    let types: OrderType[];
+    let types: OrderCategory[];
 
     let testId: number;
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
-        
+
         controller = module.get<OrderController>(OrderController);
         service = module.get<OrderService>(OrderService);
 
-        const typeNames = getTestOrderTypeNames()
+        const typeNames = getTestOrderCategoryNames()
         let typeId = 1;
         types = typeNames.map(name => ({
             id: typeId++,
-            name: name,
-        }) as OrderType);
+            categoryName: name,
+        }) as OrderCategory);
 
         let orderId = 1;
-        for(let i = 0; i < 3; i++){
+        for (let i = 0; i < 3; i++) {
             orders.push({
                 id: orderId++,
-                type: types[i],
+                orderCategory: types[i],
                 fulfillmentDate: new Date(),
             } as Order);
         }
 
         jest.spyOn(service, 'create').mockImplementation(async (dto: CreateOrderDto) => {
-            const oType = types.find(t => t.id === dto.orderTypeId);
+            const oType = types.find(t => t.id === dto.orderCategoryId);
             const order = {
                 id: orderId++,
-                type: oType,
+                orderCategory: oType,
                 fulfillmentDate: dto.fulfillmentDate,
             } as Order;
-        
+
             orders.push(order);
             return order;
         });
@@ -59,12 +59,16 @@ describe('order controller', () => {
         });
 
         jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-            return orders.find(order => order.id === id) || null;
+            const result = orders.find(order => order.id === id);
+            if (!result) {
+                throw new NotFoundException();
+            }
+            return result;
         });
 
         jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
             const index = orders.findIndex(order => order.id === id);
-            if(index === -1){ return false; }
+            if (index === -1) { return false; }
 
             orders.splice(index, 1);
             return true;
@@ -72,14 +76,14 @@ describe('order controller', () => {
 
         jest.spyOn(service, 'update').mockImplementation(async (id: number, dto: UpdateOrderDto) => {
             const existIdx = orders.findIndex(order => order.id === id);
-            if(existIdx === -1){ return null; }
+            if (existIdx === -1) { throw new NotFoundException(); }
 
-            if(dto.orderTypeId){
-                const oType = types.find(t => t.id === dto.orderTypeId);
-                if(!oType){ throw new Error(); }
-                orders[existIdx].type = oType;
+            if (dto.orderCategoryId) {
+                const oType = types.find(t => t.id === dto.orderCategoryId);
+                if (!oType) { throw new Error(); }
+                orders[existIdx].orderCategory = oType;
             }
-            if(dto.deliveryAddress){
+            if (dto.deliveryAddress) {
                 orders[existIdx].deliveryAddress = dto.deliveryAddress;
             }
 
@@ -93,55 +97,53 @@ describe('order controller', () => {
 
     it('should create a order', async () => {
         const dto = {
-            orderTypeId: types[0].id,
+            orderCategoryId: types[0].id,
             fulfillmentDate: new Date(),
         } as CreateOrderDto;
-    
+
         const result = await controller.create(dto);
-    
+
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
-    
+
         testId = result?.id as number;
     });
-    
+
     it('should find order by id', async () => {
         const result = await controller.findOne(testId);
         expect(result).not.toBeNull();
     });
-    
+
     it('should fail find order by id (not exist)', async () => {
-        const result = await controller.findOne(0);
-        expect(result).toBeNull();
+        await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should update order quantity', async () => {
         const dto = {
             deliveryAddress: "test",
         } as UpdateOrderDto;
-    
+
         const result = await controller.update(testId, dto);
-    
+
         expect(result).not.toBeNull();
         expect(result?.id).not.toBeNull()
         expect(result?.deliveryAddress).toEqual("test");
     });
-    
+
     it('should fail update order quantity (not exist)', async () => {
         const dto = {
             deliveryAddress: "test",
         } as UpdateOrderDto;
-    
-        await expect(controller.update(0, dto)).rejects.toThrow(AppHttpException);
+
+        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
     });
-    
+
     it('should remove order', async () => {
         const result = await controller.remove(testId);
-        expect(result).toBeTruthy();
+        expect(result).toBeUndefined();
     });
-    
+
     it('should fail remove order (not exist)', async () => {
-        const result = await controller.remove(testId);
-        expect(result).toBeFalsy();
+        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
     });
 });

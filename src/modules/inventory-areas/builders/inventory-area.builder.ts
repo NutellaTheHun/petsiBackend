@@ -2,39 +2,36 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
-import { CreateInventoryAreaDto } from "../dto/create-inventory-area.dto";
-import { UpdateInventoryAreaDto } from "../dto/update-inventory-area.dto";
+import { CreateInventoryAreaDto } from "../dto/inventory-area/create-inventory-area.dto";
+import { UpdateInventoryAreaDto } from "../dto/inventory-area/update-inventory-area.dto";
 import { InventoryArea } from "../entities/inventory-area.entity";
 import { InventoryAreaCountService } from "../services/inventory-area-count.service";
 import { InventoryAreaValidator } from "../validators/inventory-area.validator";
 
 @Injectable()
-export class InventoryAreaBuilder extends BuilderBase<InventoryArea>{
+export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
     constructor(
         @Inject(forwardRef(() => InventoryAreaCountService))
         private readonly countService: InventoryAreaCountService,
         logger: AppLogger,
         validator: InventoryAreaValidator,
         requestContextService: RequestContextService,
-    ){ super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
+    ) { super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger, validator); }
 
     protected createEntity(dto: CreateInventoryAreaDto): void {
-        if(dto.name){
-            this.name(dto.name);
+        if (dto.areaName !== undefined) {
+            this.areaName(dto.areaName);
         }
     }
 
     protected updateEntity(dto: UpdateInventoryAreaDto): void {
-        if(dto.name){
-            this.name(dto.name);
-        }
-        if(dto.inventoryCountIds){
-            this.inventoryCountsById(dto.inventoryCountIds);
+        if (dto.areaName !== undefined) {
+            this.areaName(dto.areaName);
         }
     }
 
-    public name(name: string): this {
-        return this.setPropByVal('name', name);
+    public areaName(name: string): this {
+        return this.setPropByVal('areaName', name);
     }
 
     public inventoryCountsById(ids: number[]): this {

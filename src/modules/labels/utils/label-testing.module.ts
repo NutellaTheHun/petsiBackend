@@ -31,7 +31,7 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
 
             LabelsModule,
             MenuItemsModule,
-            
+
             CacheModule.register(),
             LoggerModule.forRoot({
                 pinoHttp: { transport: { target: 'pino-pretty' } }
@@ -39,14 +39,15 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
             AppLoggingModule,
             RequestContextModule,
         ],
-        
+
         controllers: [
             LabelController,
             LabelTypeController,
         ],
 
         providers: [],
-})
-.overrideProvider(RequestContextService)
-.useClass(TestRequestContextService)
-.compile()};
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile()
+};

@@ -1,27 +1,32 @@
-import { Injectable, NotImplementedException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
+import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
+import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
+import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
+import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
+import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
+import { RecipeBuilder } from "../builders/recipe.builder";
+import { CreateChildRecipeIngredientDto } from "../dto/recipe-ingredient/create-child-recipe-ingredient.dto";
+import { RecipeCategory } from "../entities/recipe-category.entity";
+import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
+import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
+import { Recipe } from "../entities/recipe.entity";
 import { RecipeCategoryService } from "../services/recipe-category.service";
 import { RecipeIngredientService } from "../services/recipe-ingredient.service";
 import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
 import { RecipeService } from "../services/recipe.service";
-import { RecipeIngredient } from "../entities/recipe-ingredient.entity";
-import { RecipeCategory } from "../entities/recipe-category.entity";
-import { RecipeSubCategory } from "../entities/recipe-sub-category.entity";
-import { Recipe } from "../entities/recipe.entity";
-import { RecipeCategoryBuilder } from "../builders/recipe-category.builder";
 import * as CONSTANT from "./constants";
-import { RecipeSubCategoryBuilder } from "../builders/recipe-sub-category.builder";
-import { RecipeBuilder } from "../builders/recipe.builder";
-import { CUP, FL_OUNCE, GALLON, GRAM, KILOGRAM, LITER, MILLILITER, OUNCE, POUND, TABLESPOON, TEASPOON } from "../../unit-of-measure/utils/constants";
-import { RecipeIngredientBuilder } from "../builders/recipe-ingredient.builder";
-import { InventoryItemTestingUtil } from "../../inventory-items/utils/inventory-item-testing.util";
-import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
-import { DRY_A, DRY_C, FOOD_A, FOOD_B, OTHER_A, OTHER_B, OTHER_C } from "../../inventory-items/utils/constants";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateRecipeIngredientDto } from "../dto/create-recipe-ingredient.dto";
-import { CreateChildRecipeIngredientDto } from "../dto/create-child-recipe-ingredient.dto";
 
 @Injectable()
 export class RecipeTestUtil {
+
+    private initCategory = false;
+    private initSubCategory = false;
+    private initRecipe = false;
+    private initIngredient = false;
+
     constructor(
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
         private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
@@ -39,7 +44,7 @@ export class RecipeTestUtil {
         private readonly recipeBuilder: RecipeBuilder,
 
         //private readonly menuItemService: MenuItemsService,
-    ){ }
+    ) { }
 
     /**
      * Dependencies: InventoryItems, UnitOfMeasure, Recipe
@@ -49,91 +54,91 @@ export class RecipeTestUtil {
         await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
         await this.initRecipeTestingDatabase(testContext);
-        
+
         return [
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_A)
+                .ingredientInventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(0.5)
-                .recipeByName(CONSTANT.REC_A)
-                .unitOfMeasureByName(OUNCE)
+                .parentRecipeByName(CONSTANT.REC_A)
+                .quantityUnitOfMeasureByName(OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(DRY_A)
+                .ingredientInventoryItemByName(DRY_A)
                 //.subRecipeByName()
                 .quantity(1.0)
-                .recipeByName(CONSTANT.REC_A)
-                .unitOfMeasureByName(POUND)
+                .parentRecipeByName(CONSTANT.REC_A)
+                .quantityUnitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_B)
+                .ingredientInventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(1.5)
-                .recipeByName(CONSTANT.REC_B)
-                .unitOfMeasureByName(GRAM)
+                .parentRecipeByName(CONSTANT.REC_B)
+                .quantityUnitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_B)
+                .ingredientInventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(2)
-                .recipeByName(CONSTANT.REC_B)
-                .unitOfMeasureByName(FL_OUNCE)
+                .parentRecipeByName(CONSTANT.REC_B)
+                .quantityUnitOfMeasureByName(FL_OUNCE)
                 .build(),
             await this.ingredientBuilder.reset()
                 //.inventoryItemByName(DRY_C)
-                .subRecipeByName(CONSTANT.REC_B)
+                .ingredientRecipeByName(CONSTANT.REC_B)
                 .quantity(2.5)
-                .recipeByName(CONSTANT.REC_C)
-                .unitOfMeasureByName(LITER)
+                .parentRecipeByName(CONSTANT.REC_C)
+                .quantityUnitOfMeasureByName(LITER)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_C)
+                .ingredientInventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(2.75)
-                .recipeByName(CONSTANT.REC_C)
-                .unitOfMeasureByName(GALLON)
+                .parentRecipeByName(CONSTANT.REC_C)
+                .quantityUnitOfMeasureByName(GALLON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_B)
+                .ingredientInventoryItemByName(FOOD_B)
                 //.subRecipeByName()
                 .quantity(3)
-                .recipeByName(CONSTANT.REC_D)
-                .unitOfMeasureByName(KILOGRAM)
+                .parentRecipeByName(CONSTANT.REC_D)
+                .quantityUnitOfMeasureByName(KILOGRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(FOOD_A)
+                .ingredientInventoryItemByName(FOOD_A)
                 //.subRecipeByName()
                 .quantity(3.5)
-                .recipeByName(CONSTANT.REC_D)
-                .unitOfMeasureByName(GRAM)
+                .parentRecipeByName(CONSTANT.REC_D)
+                .quantityUnitOfMeasureByName(GRAM)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_B)
+                .ingredientInventoryItemByName(OTHER_B)
                 //.subRecipeByName()
                 .quantity(10)
-                .recipeByName(CONSTANT.REC_E)
-                .unitOfMeasureByName(POUND)
+                .parentRecipeByName(CONSTANT.REC_E)
+                .quantityUnitOfMeasureByName(POUND)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_C)
+                .ingredientInventoryItemByName(OTHER_C)
                 //.subRecipeByName()
                 .quantity(10.5)
-                .recipeByName(CONSTANT.REC_E)
-                .unitOfMeasureByName(CUP)
+                .parentRecipeByName(CONSTANT.REC_E)
+                .quantityUnitOfMeasureByName(CUP)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(DRY_C)
+                .ingredientInventoryItemByName(DRY_C)
                 //.subRecipeByName()
                 .quantity(10.75)
-                .recipeByName(CONSTANT.REC_F)
-                .unitOfMeasureByName(TABLESPOON)
+                .parentRecipeByName(CONSTANT.REC_F)
+                .quantityUnitOfMeasureByName(TABLESPOON)
                 .build(),
             await this.ingredientBuilder.reset()
-                .inventoryItemByName(OTHER_A)
+                .ingredientInventoryItemByName(OTHER_A)
                 //.subRecipeByName()
                 .quantity(15)
-                .recipeByName(CONSTANT.REC_F)
-                .unitOfMeasureByName(TEASPOON)
+                .parentRecipeByName(CONSTANT.REC_F)
+                .quantityUnitOfMeasureByName(TEASPOON)
                 .build(),
         ];
     }
@@ -188,7 +193,7 @@ export class RecipeTestUtil {
      * Dependencies: UnitOfMeasure, RecipeCategory, RecipeSubCategory
      * @returns 
      */
-    public async getTestRecipeEntities(testContext: DatabaseTestContext): Promise<Recipe[]> { 
+    public async getTestRecipeEntities(testContext: DatabaseTestContext): Promise<Recipe[]> {
         await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.initRecipeCategoryTestingDatabase(testContext);
         await this.initRecipeSubCategoryTestingDatabase(testContext);
@@ -199,10 +204,9 @@ export class RecipeTestUtil {
                 .isIngredient(false)
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
-                .cost(2.99)
                 .salesPrice(4.99)
-                .servingUnitOfMeasureByName(OUNCE)
-                .batchResultUnitOfMeasureByName(POUND)
+                .servingSizeMeasurementByName(OUNCE)
+                .batchResultMeasurementByName(POUND)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_1)
                 .build(),
@@ -211,10 +215,9 @@ export class RecipeTestUtil {
                 .isIngredient(true)
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
-                .cost(5.99)
                 .salesPrice(8.99)
-                .servingUnitOfMeasureByName(MILLILITER)
-                .batchResultUnitOfMeasureByName(LITER)
+                .servingSizeMeasurementByName(MILLILITER)
+                .batchResultMeasurementByName(LITER)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_2)
                 .build(),
@@ -223,10 +226,9 @@ export class RecipeTestUtil {
                 .isIngredient(false)
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
-                .cost(10.99)
                 .salesPrice(12.99)
-                .servingUnitOfMeasureByName(GRAM)
-                .batchResultUnitOfMeasureByName(KILOGRAM)
+                .servingSizeMeasurementByName(GRAM)
+                .batchResultMeasurementByName(KILOGRAM)
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .build(),
             await this.recipeBuilder.reset()
@@ -234,10 +236,9 @@ export class RecipeTestUtil {
                 .isIngredient(false)
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
-                .cost(2.99)
                 .salesPrice(4.99)
-                .servingUnitOfMeasureByName(OUNCE)
-                .batchResultUnitOfMeasureByName(POUND)
+                .servingSizeMeasurementByName(OUNCE)
+                .batchResultMeasurementByName(POUND)
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_3)
                 .build(),
@@ -246,10 +247,9 @@ export class RecipeTestUtil {
                 .isIngredient(false)
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
-                .cost(5.99)
                 .salesPrice(8.99)
-                .servingUnitOfMeasureByName(MILLILITER)
-                .batchResultUnitOfMeasureByName(LITER)
+                .servingSizeMeasurementByName(MILLILITER)
+                .batchResultMeasurementByName(LITER)
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_4)
                 .build(),
@@ -258,11 +258,9 @@ export class RecipeTestUtil {
                 .isIngredient(true)
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
-                .cost(10.99)
                 .salesPrice(12.99)
-                .servingUnitOfMeasureByName(GRAM)
-                .batchResultUnitOfMeasureByName(KILOGRAM)
-                .categoryByName(CONSTANT.REC_CAT_A)
+                .servingSizeMeasurementByName(GRAM)
+                .batchResultMeasurementByName(KILOGRAM)
                 .build(),
         ];
     }
@@ -272,8 +270,14 @@ export class RecipeTestUtil {
      * - with recipe C referencing recipe B as an ingredient
      * - Depends on InventoryItems, UnitOfMeasure, and Recipe, which are initialized beforehand.
      */
-    public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void>{
+    public async initRecipeIngredientTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initIngredient) {
+            return;
+        }
+        this.initIngredient = true;
+
         testContext.addCleanupFunction(() => this.cleanupRecipeIngredientTestingDatabase());
+
         await this.ingredientService.insertEntities(
             await this.getTestRecipeIngredientEntities(testContext)
         );
@@ -286,14 +290,19 @@ export class RecipeTestUtil {
      *  -No Dependencies
      */
     public async initRecipeCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initCategory) {
+            return;
+        }
+        this.initCategory = true;
+
         const categories = await this.getTestRecipeCategoryEntities(testContext);
         const toInsert: RecipeCategory[] = [];
 
         testContext.addCleanupFunction(() => this.cleanupRecipeCategoryTestingDatabase());
 
-        for(const category of categories){
-            const exists = await this.categoryService.findOneByName(category.name);
-            if(!exists){ toInsert.push(category); }
+        for (const category of categories) {
+            const exists = await this.categoryService.findOneByName(category.categoryName);
+            if (!exists) { toInsert.push(category); }
         }
         await this.categoryService.insertEntities(toInsert);
     }
@@ -305,14 +314,19 @@ export class RecipeTestUtil {
      * - Dependent on RecipeCategory entitiy and inserts before.
      */
     public async initRecipeSubCategoryTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initSubCategory) {
+            return;
+        }
+        this.initSubCategory = true;
+
         const subCategories = await this.getTestRecipeSubCategoryEntities(testContext);
         const toInsert: RecipeSubCategory[] = [];
-        
+
         testContext.addCleanupFunction(() => this.cleanupRecipeSubCategoryTestingDatabase());
 
-        for(const subCat of subCategories){
-            const exists = await this.subCategoryService.findOneByName(subCat.name);
-            if(!exists){ toInsert.push(subCat); }
+        for (const subCat of subCategories) {
+            const exists = await this.subCategoryService.findOneByName(subCat.subCategoryName);
+            if (!exists) { toInsert.push(subCat); }
         }
 
         await this.subCategoryService.insertEntities(toInsert);
@@ -324,20 +338,25 @@ export class RecipeTestUtil {
      * - Depends on UnitOfMeasure, RecipeCategory, and RecipeSubCategory, which are initalized beforehand
      */
     public async initRecipeTestingDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initRecipe) {
+            return;
+        }
+        this.initRecipe = true;
+
         const recipes = await this.getTestRecipeEntities(testContext);
         const toInsert: Recipe[] = [];
-        
+
         testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
 
-        for(const recipe of recipes){
-            const exists = await this.recipeService.findOneByName(recipe.name);
-            if(!exists){ toInsert.push(recipe); }
+        for (const recipe of recipes) {
+            const exists = await this.recipeService.findOneByName(recipe.recipeName);
+            if (!exists) { toInsert.push(recipe); }
         }
 
         await this.recipeService.insertEntities(toInsert);
     }
 
-    public async cleanupRecipeIngredientTestingDatabase(): Promise<void>{
+    public async cleanupRecipeIngredientTestingDatabase(): Promise<void> {
         await this.ingredientService.getQueryBuilder().delete().execute();
     }
 
@@ -359,37 +378,37 @@ export class RecipeTestUtil {
      * - creates ingredients from inventoryItem ids array, then subRecipe ids array.
      * - will loop through inventoryItems and subRecipes if size of quantites array is larger than the combined length of items and subRecipes
      */
-    public createChildRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateChildRecipeIngredientDto[]{
+    public createChildRecipeIngredientDtos(itemIds: number[], subRecipeIds: number[], unitIds: number[], quantities: number[]): CreateChildRecipeIngredientDto[] {
         const results: CreateChildRecipeIngredientDto[] = [];
 
         let itemIndex = 0;
         let subRecipeIndex = 0;
 
-        for(let i = 0; i < quantities.length; i++){
-            if(itemIndex < itemIds.length){
+        for (let i = 0; i < quantities.length; i++) {
+            if (itemIndex < itemIds.length) {
                 results.push({
                     mode: 'create',
-                    inventoryItemId: itemIds[itemIndex++],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientInventoryItemId: itemIds[itemIndex++],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
-            else if(subRecipeIndex < subRecipeIds.length){
+            else if (subRecipeIndex < subRecipeIds.length) {
                 results.push({
                     mode: 'create',
-                    subRecipeIngredientId: subRecipeIds[i - itemIds.length-1],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }
-            else{
+            else {
                 itemIndex = 0;
                 subRecipeIndex = 0;
 
                 results.push({
                     mode: 'create',
-                    inventoryItemId: itemIds[itemIndex++],
-                    unitOfMeasureId: unitIds[i % unitIds.length],
+                    ingredientInventoryItemId: itemIds[itemIndex++],
+                    quantityMeasurementId: unitIds[i % unitIds.length],
                     quantity: quantities[i]
                 } as CreateChildRecipeIngredientDto);
             }

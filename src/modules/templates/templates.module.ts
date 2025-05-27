@@ -17,36 +17,36 @@ import { TemplateMenuItemValidator } from './validators/template-menu-item.valid
 import { TemplateValidator } from './validators/template.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Template,
-      TemplateMenuItem,
-    ]),
-    MenuItemsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [
-    TemplateController,
-    TemplateMenuItemController,
-  ],
-  providers: [
-    TemplateService,
-    TemplateMenuItemService,
+    imports: [
+        TypeOrmModule.forFeature([
+            Template,
+            TemplateMenuItem,
+        ]),
+        MenuItemsModule,
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [
+        TemplateController,
+        TemplateMenuItemController,
+    ],
+    providers: [
+        TemplateService,
+        TemplateMenuItemService,
 
-    TemplateBuilder,
-    TemplateMenuItemBuilder,
+        TemplateBuilder,
+        TemplateMenuItemBuilder,
 
-    TemplateValidator,
-    TemplateMenuItemValidator,
+        TemplateValidator,
+        TemplateMenuItemValidator,
 
-    TemplateTestingUtil,
-  ],
-  exports: [
-    TemplateService,
-    TemplateMenuItemService,
-    TemplateTestingUtil,
-  ]
+        TemplateTestingUtil,
+    ],
+    exports: [
+        TemplateService,
+        TemplateMenuItemService,
+        TemplateTestingUtil,
+    ]
 })
-export class TemplatesModule {}
+export class TemplatesModule { }

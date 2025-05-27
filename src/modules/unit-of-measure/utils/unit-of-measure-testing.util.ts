@@ -1,25 +1,29 @@
 import { Injectable } from "@nestjs/common";
-import { UnitCategoryBuilder } from "../builders/unit-category.builder";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
+import { UnitOfMeasureCategoryBuilder } from "../builders/unit-of-measure-category.builder";
 import { UnitOfMeasureBuilder } from "../builders/unit-of-measure.builder";
-import { UpdateUnitCategoryDto } from "../dto/update-unit-category.dto";
-import { UnitCategory } from "../entities/unit-category.entity";
+import { UpdateUnitOfMeasureCategoryDto } from "../dto/unit-of-measure-category/update-unit-of-measure-category.dto";
+import { UnitOfMeasureCategory } from "../entities/unit-of-measure-category.entity";
 import { UnitOfMeasure } from "../entities/unit-of-measure.entity";
-import { UnitCategoryService } from "../services/unit-category.service";
+import { UnitOfMeasureCategoryService } from "../services/unit-of-measure-category.service";
 import { UnitOfMeasureService } from "../services/unit-of-measure.service";
 import * as CONSTANTS from "./constants";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 
 @Injectable()
 export class UnitOfMeasureTestingUtil {
+
+    private initUnits = false;
+    private initCategory = false;
+
     constructor(
-        private readonly categoryService: UnitCategoryService,
-        private readonly categoryBuilder: UnitCategoryBuilder,
+        private readonly categoryService: UnitOfMeasureCategoryService,
+        private readonly categoryBuilder: UnitOfMeasureCategoryBuilder,
 
         private readonly unitService: UnitOfMeasureService,
         private readonly unitBuilder: UnitOfMeasureBuilder,
-    ){ }
+    ) { }
 
-    public async getCategoryEntities(testContext: DatabaseTestContext): Promise<UnitCategory[]> {
+    public async getCategoryEntities(testContext: DatabaseTestContext): Promise<UnitOfMeasureCategory[]> {
         return [
             await await this.categoryBuilder.reset()
                 .name(CONSTANTS.UNIT)
@@ -40,7 +44,7 @@ export class UnitOfMeasureTestingUtil {
     public async getUnitsOfMeasureEntities(testContext: DatabaseTestContext): Promise<UnitOfMeasure[]> {
         await this.initUnitCategoryTestDatabase(testContext);
 
-        return[
+        return [
             // Volume
             await await this.unitBuilder.reset()
                 .name(CONSTANTS.GALLON)
@@ -140,31 +144,41 @@ export class UnitOfMeasureTestingUtil {
     }
 
     public async initUnitCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initCategory) {
+            return;
+        }
+        this.initCategory = true;
+
         const categories = await this.getCategoryEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupUnitCategoryTestDatabase());
 
-        const toInsert: UnitCategory[] = [];
+        /*const toInsert: UnitOfMeasureCategory[] = [];
         for(const category of categories){
-            const exists = await this.categoryService.findOneByName(category.name);
+            const exists = await this.categoryService.findOneByName(category.categoryName);
             if(!exists){
                 toInsert.push(category);
             }
-        }
-        await this.categoryService.insertEntities(toInsert);
+        }*/
+        await this.categoryService.insertEntities(/*toInsert*/categories);
     }
 
     public async initUnitOfMeasureTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initUnits) {
+            return;
+        }
+        this.initUnits = true;
+
         const units = await this.getUnitsOfMeasureEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupUnitOfMeasureTestDatabase());
 
-        const toInsert: UnitOfMeasure[] = [];
+        /*const toInsert: UnitOfMeasure[] = [];
         for(const unit of units){
             const exists = await this.unitService.findOneByName(unit.name);
             if(!exists){
                 toInsert.push(unit);
             }
-        } 
-        await this.unitService.insertEntities(toInsert);
+        } */
+        await this.unitService.insertEntities(/*toInsert*/units);
     }
 
     private async cleanupUnitCategoryTestDatabase(): Promise<void> {
@@ -180,22 +194,22 @@ export class UnitOfMeasureTestingUtil {
         await await this.setCategoryBaseUnit(CONSTANTS.VOLUME, CONSTANTS.MILLILITER);
         await await this.setCategoryBaseUnit(CONSTANTS.UNIT, CONSTANTS.UNIT);
     }
-    
-      
+
+
     public async setCategoryBaseUnit(categoryName: string, baseUnitOfMeasure: string): Promise<void> {
         const category = await await this.categoryService.findOneByName(categoryName);
-        if(!category){ throw new Error(`${categoryName} category not found.`); }
-    
+        if (!category) { throw new Error(`${categoryName} category not found.`); }
+
         const baseUnit = await await this.unitService.findOneByName(baseUnitOfMeasure, ['category']);
-        if(!baseUnit){ throw new Error("base unit not found"); }
-        category.baseUnit = baseUnit;
-        
+        if (!baseUnit) { throw new Error("base unit not found"); }
+        category.baseConversionUnit = baseUnit;
+
         await await this.categoryService.update(
             category.id,
             {
-                name: category.name,
-                baseUnitId: category.baseUnit.id 
-            } as UpdateUnitCategoryDto
+                categoryName: category.categoryName,
+                baseUnitId: category.baseConversionUnit.id
+            } as UpdateUnitOfMeasureCategoryDto
         );
     }
 }

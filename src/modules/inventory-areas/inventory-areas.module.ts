@@ -22,43 +22,43 @@ import { InventoryAreaItemValidator } from './validators/inventory-area-item.val
 import { InventoryAreaValidator } from './validators/inventory-area.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      InventoryArea,
-      InventoryAreaCount,
-      InventoryAreaItem
-    ]),
-    InventoryItemsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [
-    InventoryAreaController,
-    InventoryAreaCountController,
-    InventoryAreaItemController,
-  ],
-  providers: [
-    InventoryAreaService,
-    InventoryAreaCountService,
-    InventoryAreaItemService,
+    imports: [
+        TypeOrmModule.forFeature([
+            InventoryArea,
+            InventoryAreaCount,
+            InventoryAreaItem
+        ]),
+        InventoryItemsModule,
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [
+        InventoryAreaController,
+        InventoryAreaCountController,
+        InventoryAreaItemController,
+    ],
+    providers: [
+        InventoryAreaService,
+        InventoryAreaCountService,
+        InventoryAreaItemService,
 
-    InventoryAreaBuilder,
-    InventoryAreaCountBuilder,
-    InventoryAreaItemBuilder,
+        InventoryAreaBuilder,
+        InventoryAreaCountBuilder,
+        InventoryAreaItemBuilder,
 
-    InventoryAreaValidator,
-    InventoryAreaCountValidator,
-    InventoryAreaItemValidator,
+        InventoryAreaValidator,
+        InventoryAreaCountValidator,
+        InventoryAreaItemValidator,
 
-    InventoryAreaTestUtil,
-  ],
-  exports: [
-    InventoryAreaService,
-    InventoryAreaCountService,
-    InventoryAreaItemService,
+        InventoryAreaTestUtil,
+    ],
+    exports: [
+        InventoryAreaService,
+        InventoryAreaCountService,
+        InventoryAreaItemService,
 
-    InventoryAreaTestUtil,
-  ]
+        InventoryAreaTestUtil,
+    ]
 })
-export class InventoryAreasModule {}
+export class InventoryAreasModule { }

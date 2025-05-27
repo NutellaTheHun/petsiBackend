@@ -1,0 +1,147 @@
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
+import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureCategoryController } from './unit-of-measure-category.controller';
+
+describe('UnitOfMeasureCategoryController', () => {
+    let controller: UnitOfMeasureCategoryController;
+    let categoryService: UnitOfMeasureCategoryService;
+    let categories: UnitOfMeasureCategory[];
+
+    beforeAll(async () => {
+        const module: TestingModule = await getUnitOfMeasureTestingModule();
+        controller = module.get<UnitOfMeasureCategoryController>(UnitOfMeasureCategoryController);
+        categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
+
+        categories = [
+            { categoryName: UNIT } as UnitOfMeasureCategory,
+            { categoryName: VOLUME } as UnitOfMeasureCategory,
+            { categoryName: WEIGHT } as UnitOfMeasureCategory,
+        ];
+        let id = 1;
+        categories.map(category => category.id = id++);
+
+        jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
+            const exists = categories.find(unit => unit.categoryName === createDto.categoryName);
+            if (exists) { throw new BadRequestException(); }
+
+            const unit = {
+                id: id++,
+                categoryName: createDto.categoryName,
+            } as UnitOfMeasureCategory;
+
+            categories.push(unit);
+            return unit;
+        });
+
+        jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
+            return categories.find(unit => unit.categoryName === name) || null;
+        });
+
+        jest.spyOn(categoryService, "update").mockImplementation(async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
+            const index = categories.findIndex(unit => unit.id === id);
+            if (index === -1) { throw new NotFoundException(); }
+
+            if (updateDto.categoryName) {
+                categories[index].categoryName = updateDto.categoryName;
+            }
+
+            return categories[index];
+        });
+
+        jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
+
+        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
+            if (!id) { throw new BadRequestException(); }
+            const result = categories.find(unit => unit.id === id);
+            if (!result) {
+                throw new NotFoundException();
+            }
+            return result;
+        });
+
+        jest.spyOn(categoryService, "remove").mockImplementation(async (id: number) => {
+            const index = categories.findIndex(unit => unit.id === id);
+            if (index === -1) { throw new NotFoundException(); }
+
+            categories.splice(index, 1);
+
+            return true;
+        });
+
+    });
+
+
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
+
+    it('should create a category', async () => {
+        const dto = {
+            categoryName: "testCategory",
+        } as CreateUnitOfMeasureCategoryDto;
+
+        const result = await controller.create(dto);
+        expect(result).not.toBeNull();
+    });
+
+    it('should fail to create a category (already exists)', async () => {
+        const dto = {
+            categoryName: "testCategory",
+        } as CreateUnitOfMeasureCategoryDto;
+
+        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should return all categories', async () => {
+        const results = await controller.findAll();
+        expect(results.items.length).toEqual(categories.length);
+    });
+
+    it('should return a category by id', async () => {
+        const result = await controller.findOne(1);
+        expect(result).not.toBeNull();
+    });
+
+    it('should fail to return a category (bad id, returns null)', async () => {
+        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should update a category', async () => {
+        const toUpdate = await categoryService.findOneByName("testCategory");
+        if (!toUpdate) { throw new Error("unit to update not found"); }
+
+        //toUpdate.categoryName = "UPDATED_testCategory";
+        const dto = {
+            categoryName: "UPDATED_testCategory"
+        } as UpdateUnitOfMeasureCategoryDto;
+
+        const result = await controller.update(toUpdate.id, dto);
+        expect(result).not.toBeNull();
+        expect(result?.categoryName).toEqual("UPDATED_testCategory")
+    });
+
+    it('should fail to update a category (doesnt exist)', async () => {
+        const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
+        if (!toUpdate) { throw new Error("unit to update not found"); }
+
+        await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
+    });
+
+    it('should remove a category', async () => {
+        const toRemove = await categoryService.findOneByName("UPDATED_testCategory");
+        if (!toRemove) { throw new Error("unit to remove not found"); }
+
+        const result = await controller.remove(toRemove.id);
+        expect(result).toBeUndefined();
+    });
+
+    it('should fail to remove a category (id not found, returns false)', async () => {
+        await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
+    });
+});

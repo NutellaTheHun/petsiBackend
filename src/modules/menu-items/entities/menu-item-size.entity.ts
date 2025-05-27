@@ -5,13 +5,13 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
  * - Pies can be size "cutie"(3"), "small"(5"), "medium"(8"), "large"(10")
  */
 @Entity()
-export class MenuItemSize{
+export class MenuItemSize {
     @PrimaryGeneratedColumn()
     id: number;
 
     /** 
      * By default, can be "regular", "cutie", "small", "medium", "large" 
      */
-    @Column({ unique: true })
+    @Column({ unique: true, nullable: false })
     name: string;
 }

@@ -17,40 +17,40 @@ import { LabelTypeValidator } from './validators/label-type.validator';
 import { LabelValidator } from './validators/label.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Label,
-      LabelType,
-    ]),
-    MenuItemsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([
+            Label,
+            LabelType,
+        ]),
+        MenuItemsModule,
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
 
-  controllers: [
-    LabelController,
-    LabelTypeController,
-  ],
+    controllers: [
+        LabelController,
+        LabelTypeController,
+    ],
 
-  providers: [
-    LabelService,
-    LabelTypeService,
+    providers: [
+        LabelService,
+        LabelTypeService,
 
-    LabelBuilder,
-    LabelTypeBuilder,
+        LabelBuilder,
+        LabelTypeBuilder,
 
-    LabelValidator,
-    LabelTypeValidator,
+        LabelValidator,
+        LabelTypeValidator,
 
-    LabelTestingUtil,
-  ],
-  
-  exports: [
-    LabelService,
-    LabelTypeService,
-    
-    LabelTestingUtil,
-  ]
+        LabelTestingUtil,
+    ],
+
+    exports: [
+        LabelService,
+        LabelTypeService,
+
+        LabelTestingUtil,
+    ]
 })
-export class LabelsModule {}
+export class LabelsModule { }

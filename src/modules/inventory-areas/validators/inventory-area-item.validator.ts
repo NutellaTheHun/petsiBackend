@@ -1,34 +1,118 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
+import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
+import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { CreateInventoryAreaItemDto } from "../dto/create-inventory-area-item.dto";
+import { InventoryAreaItemService } from "../services/inventory-area-item.service";
 
 @Injectable()
 export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem> {
     constructor(
         @InjectRepository(InventoryAreaItem)
         private readonly repo: Repository<InventoryAreaItem>,
-    ){ super(repo); }
 
-    public async validateCreate(dto: CreateInventoryAreaItemDto): Promise<string | null> {
-        if(!dto.itemSizeId && !dto.itemSizeDto){
-            return 'inventory area item create dto requires InventoryItemSize id or CreateInventoryItemSizeDto';
-        }
-        if(dto.itemSizeId && dto.itemSizeDto){
-            return 'inventory area item create dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
+        @Inject(forwardRef(() => InventoryAreaItemService))
+        private readonly areaItemService: InventoryAreaItemService,
+
+        private readonly itemService: InventoryItemService,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryAreaItem', requestContextService, logger); }
+
+    public async validateCreate(dto: CreateInventoryAreaItemDto): Promise<void> {
+        // Must have either itemSizeId or itemSizeDto
+        if (!dto.countedItemSizeId && !dto.countedItemSizeDto) {
+            this.addError({
+                errorMessage: 'missing inventory item size assignment',
+                errorType: 'MISSING',
+                contextEntity: 'CreateInventoryAreaItemDto',
+                sourceEntity: 'InventoryItemSize',
+            } as ValidationError);
         }
 
-        return null;
+        // Cannot have both itemSizeId or itemSizeDto
+        else if (dto.countedItemSizeId && dto.countedItemSizeDto) {
+            this.addError({
+                errorMessage: 'cannot provide inventory item size and create dto',
+                errorType: 'INVALID',
+                contextEntity: 'CreateInventoryAreaItemDto',
+                sourceEntity: 'InventoryItemSize',
+            } as ValidationError);
+        }
+
+        //InventoryItem and ItemSize must be valid
+        if (dto.countedItemSizeId) {
+            const item = await this.itemService.findOne(dto.countedInventoryItemId, ['itemSizes']);
+
+            if (!this.helper.isValidSize(dto.countedItemSizeId, item.itemSizes)) {
+                this.addError({
+                    errorMessage: 'inventory item size not valid for inventory item',
+                    errorType: 'INVALID',
+                    contextEntity: 'CreateInventoryAreaItemDto',
+                    sourceEntity: 'InventoryItemSize',
+                    sourceId: dto.countedItemSizeId,
+                    conflictEntity: 'InventoryItem',
+                    conflictId: item.id,
+                } as ValidationError);
+            }
+        }
+
+        this.throwIfErrors()
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
-        if(dto.itemSizeId && dto.itemSizeDto){
-            return 'inventory area item update dto cannot have both an InventoryItemSize id and CreateInventoryItemSizeDto';
+
+    public async validateUpdate(id: number, dto: UpdateInventoryAreaItemDto | UpdateChildInventoryAreaItemDto): Promise<void> {
+        // Cannot update with both item size and item size dto
+        if (dto.countedItemSizeId && dto.countedItemSizeDto) {
+            this.addError({
+                errorMessage: 'cannot provide inventory item size and create dto',
+                errorType: 'INVALID',
+                contextEntity: 'UpdateInventoryAreaItemDto',
+                contextId: id,
+                sourceEntity: 'InventoryItemSize',
+            } as ValidationError);
         }
-        if(dto.inventoryItemId && !dto.itemSizeId && !dto.itemSizeDto){
-            return 'updating inventory item must be accompanied by updated sizing';
+
+        // cannot update item with no sizing
+        else if (dto.countedInventoryItemId && !dto.countedItemSizeId && !dto.countedItemSizeDto) {
+            this.addError({
+                errorMessage: 'missing inventory item size assignment',
+                errorType: 'INVALID',
+                contextEntity: 'UpdateInventoryAreaItemDto',
+                contextId: id,
+                sourceEntity: 'InventoryItemSize',
+            } as ValidationError);
         }
-        return null;
+
+        // Check if counted item and counted size are valid
+        else if (dto.countedInventoryItemId || dto.countedItemSizeId && !dto.countedItemSizeDto) {
+            const toUpdate = await this.areaItemService.findOne(id, ['countedItem', 'countedItemSize']);
+            if (!toUpdate) { throw new Error(); }
+
+            const itemId = dto.countedInventoryItemId ?? toUpdate.countedItem.id;
+            const sizeId = dto.countedItemSizeId ?? toUpdate.countedItemSize.id;
+
+            const item = await this.itemService.findOne(itemId, ['itemSizes']);
+            if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
+                this.addError({
+                    errorMessage: 'Invalid size for inventory item',
+                    errorType: 'INVALID',
+                    contextEntity: 'UpdateInventoryAreaItemDto',
+                    contextId: id,
+                    sourceEntity: 'InventoryItemSize',
+                    sourceId: sizeId,
+                    conflictEntity: 'InventoryItem',
+                    conflictId: item.id,
+                } as ValidationError);
+            }
+        }
+
+        this.throwIfErrors()
     }
 }

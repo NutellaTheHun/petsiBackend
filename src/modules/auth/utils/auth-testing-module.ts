@@ -12,33 +12,34 @@ import { RequestContextService } from "../../request-context/RequestContextServi
 import { TestRequestContextService } from "../../../util/mocks/test-request-context.service";
 
 export async function getAuthTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
 
-      JwtModule.registerAsync({
-            imports:[ConfigModule],
-            inject:[ConfigService],
-            useFactory: async(configService: ConfigService) => ({
-              global: true,
-              secret: configService.get<string>('JWT_SECRET'),
-              signOptions: { expiresIn: '60s'},
+            JwtModule.registerAsync({
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: async (configService: ConfigService) => ({
+                    global: true,
+                    secret: configService.get<string>('JWT_SECRET'),
+                    signOptions: { expiresIn: '60s' },
+                }),
             }),
-          }),
 
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } }
-      }),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } }
+            }),
 
-      AuthModule,
-      AppLoggingModule,
-      RequestContextModule,
-      UserModule
-    ],
+            AuthModule,
+            AppLoggingModule,
+            RequestContextModule,
+            UserModule
+        ],
 
-    controllers: [AuthController],
-    
-    providers: [ AuthService, ],
-}).overrideProvider(RequestContextService)
-  .useClass(TestRequestContextService)
-  .compile()};
+        controllers: [AuthController],
+
+        providers: [AuthService,],
+    }).overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .compile()
+};

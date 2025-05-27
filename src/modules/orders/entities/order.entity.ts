@@ -1,22 +1,21 @@
 import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { OrderCategory } from "./order-category.entity";
 import { OrderMenuItem } from "./order-menu-item.entity";
-import { OrderType } from "./order-type.entity";
 
+/**
+ * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
+ */
 @Entity("orders")
 export class Order {
     @PrimaryGeneratedColumn()
     id: number;
 
     /**
-     * If an Order originates from Square's order API,
-     * this value will contain the order id from their 
-     * system, otherwise will be false.
+     * The category of order
+     * - Example: "Wholesale", "Special", "Square", "Farmers Market"
      */
-    @Column({ nullable: true })
-    squareOrderId?: string;
-
-    @ManyToOne(() => OrderType, { nullable: false })
-    type: OrderType;
+    @ManyToOne(() => OrderCategory, { nullable: false })
+    orderCategory: OrderCategory;
 
     /**
      * Name of the owner of the order, such as the name of a person or buisness.
@@ -26,7 +25,7 @@ export class Order {
 
     @CreateDateColumn()
     createdAt: Date;
-    
+
     @UpdateDateColumn()
     updatedAt: Date;
 
@@ -41,47 +40,67 @@ export class Order {
      */
     @Column({ nullable: false })
     fulfillmentType: string;
-    
+
     /**
-     * Only required for orders with fulfillment type delivery
+     * Name of the point person to recieve the delivery.
+     * 
+     * Sometimes different from the recipient/owner of the order
      */
-    @Column({ nullable: true })
-    deliveryAddress?: string;
+    @Column({ nullable: true, type: 'varchar' })
+    fulfillmentContactName?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
-    @Column({ nullable: true })
-    phoneNumber?: string;
+    @Column({ nullable: true, type: 'varchar' })
+    deliveryAddress?: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
      */
-    @Column({ nullable: true })
-    email?: string;
+    @Column({ nullable: true, type: 'varchar' })
+    phoneNumber?: string | null;
+
+    /**
+     * Only required for orders with fulfillment type delivery
+     */
+    @Column({ nullable: true, type: 'varchar' })
+    email?: string | null;
 
     /**
      * Any additional information for the order.
      */
-    @Column({ nullable: true })
-    note?: string;
+    @Column({ nullable: true, type: 'varchar' })
+    note?: string | null;
 
     /**
-     * If an order is frozen, it is not an active order, 
-     * and will not be aggregated in various actions like
-     * report creation, and list population (except when viewing frozen orders exclusively)
+     * If an order is frozen, it is not an active order,
+     * 
+     * will not be aggregated in various actions like report creation, 
+     * and list population (except when viewing frozen orders exclusively)
      */
     @Column({ default: false })
     isFrozen: boolean;
 
     /**
-     * If an order occurs weekly (such as most wholesale orders), 
+     * If an order occurs weekly (such as most wholesale orders),
+     * 
      * this flag ensures that its aggregation is calculated appropriately. 
-     * Most orders will be isWeekly=false (A "one-shot" order, most orders are one and done after fulfillment). 
+     * 
+     * Most orders will be isWeekly=false (A "one-shot" order, most orders are done after fulfillment). 
      */
     @Column({ default: false })
     isWeekly: boolean;
 
-    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true, nullable: true })
-    items?: OrderMenuItem[] | null;
+    /**
+     * If an order is weekly, the day of the week the order is fulfilled.
+     */
+    @Column({ nullable: true, type: 'varchar' })
+    weeklyFulfillment?: string | null;
+
+    /**
+     * The list of {@link OrderMenuItem} that are being purchased.
+     */
+    @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true })
+    orderedItems: OrderMenuItem[];
 }

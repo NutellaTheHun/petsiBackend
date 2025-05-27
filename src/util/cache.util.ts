@@ -7,7 +7,7 @@ export async function invalidateFindAllCache(servicePrefix: string, cacheManager
     const trackerKey = `${servicePrefix}-findAll-tracker`;
     const keys: string[] = await cacheManager.get<string[]>(trackerKey) ?? [];
 
-    for(const key of keys){
+    for (const key of keys) {
         await cacheManager.del(key);
     }
 

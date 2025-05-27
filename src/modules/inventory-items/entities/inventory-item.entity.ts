@@ -1,45 +1,52 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Check, Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { InventoryItemCategory } from "./inventory-item-category.entity";
 import { InventoryItemSize } from "./inventory-item-size.entity";
 import { InventoryItemVendor } from "./inventory-item-vendor.entity";
+import { RecipeIngredient } from "../../recipes/entities/recipe-ingredient.entity";
+import { InventoryAreaItem } from "../../inventory-areas/entities/inventory-area-item.entity";
+import { UnitOfMeasure } from "../../unit-of-measure/entities/unit-of-measure.entity";
+import { InventoryItemPackage } from "./inventory-item-package.entity";
+import { InventoryAreaCount } from "../../inventory-areas/entities/inventory-area-count.entity";
 
 /**
- * An item that exists in inventory, referenced for inventory counting, and ingredients for recipes. 
+ * An element of the inventory catalog, referenced via {@link InventoryAreaItem} for inventory counts, and {@link RecipeIngredient} for recipes. 
  */
 @Entity()
-export class InventoryItem{
+export class InventoryItem {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ unique: true, nullable: false })
-    name: string;
+    itemName: string;
 
     /**
-     * - categories must be pre-existing, or null  (cannot create a new category when making a new item)
-     * - If the associated category is deleted, the item's category will be set to null.
+     * {@link InventoryItemCategory} for item.
+     * 
+     * - Example: "Produce", "Dry Goods", "Dairy", "Cleaning Supplies"
      */
-    @ManyToOne(() => InventoryItemCategory, (category) => category.items, {   
-        nullable: true, 
+    @ManyToOne(() => InventoryItemCategory, (category) => category.categoryItems, {
+        nullable: true,
         cascade: true,
-        onDelete: 'SET NULL' 
+        onDelete: 'SET NULL'
     })
-    category?: InventoryItemCategory | null
+    category?: InventoryItemCategory | null;
 
     /**
-     * - If the associated vendor is deleted, the item's vendor will be set to null?(maybe not).
+     * The supplier of the item.
+     * - Example : "Cysco", "Driscols", "Walden Farms"
      */
-    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.items, {       
-        nullable: true, 
-        cascade: true, 
-        onDelete: 'SET NULL'  
+    @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {
+        nullable: true,
+        cascade: true,
+        onDelete: 'SET NULL'
     })
     vendor?: InventoryItemVendor | null;
 
-     /**
-     * Pre-existing item sizes, (combination of package type and unit of measurement)
-     * - Can be created explicitly through updating InventoryItem, 
-     * - can also be created on the fly during the creation of an InventoryAreaItemCount (which is during an InventoryAreaCount creation)
-     */
-    @OneToMany(() => InventoryItemSize, size => size.item, { cascade: true })
-    sizes?: InventoryItemSize[] | null;
+    /**
+    * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
+    * - Can be created explicitly through updating InventoryItem, 
+    * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
+    */
+    @OneToMany(() => InventoryItemSize, size => size.inventoryItem, { cascade: true })
+    itemSizes: InventoryItemSize[];
 }

@@ -1,37 +1,52 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { ValidatorBase } from "../../../base/validator-base";
+import { ValidationError } from "../../../util/exceptions/validation-error";
+import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
+import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
+import { InventoryItemSizeService } from "../services/inventory-item-size.service";
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize> {
     constructor(
         @InjectRepository(InventoryItemSize)
         private readonly repo: Repository<InventoryItemSize>,
-    ){ super(repo); }
 
-    public async validateCreate(dto: any): Promise<string | null> {
-        // Creating child inventory item sizes do not need to check the for item/unit of measure/package type combo,
-        // since the inventory item doesn't exist yet.
-        if(dto.mode === 'create'){ 
-            return null; 
-        }
-        const exists = await this.repo.findOne({
-            where: { 
-                measureUnit: { id: dto.unitOfMeasureId },
-                packageType: { id: dto.inventoryPackageTypeId },
-                item: { id: dto.inventoryItemId } 
-            }
-        });
-        if(exists){ 
-            return 'Inventory item size already exists'; 
-        }
-        return null;
+        @Inject(forwardRef(() => InventoryItemSizeService))
+        private readonly sizeService: InventoryItemSizeService,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) { super(repo, 'InventoryItemSize', requestContextService, logger); }
+
+    public async validateCreate(dto: CreateChildInventoryItemSizeDto): Promise<void> {
+        this.throwIfErrors()
     }
-    public async validateUpdate(dto: any): Promise<string | null> {
-        return null;
+
+    public async validateUpdate(id: number, dto: UpdateChildInventoryItemSizeDto | UpdateInventoryItemSizeDto): Promise<void> {
+        if (dto.measureUnitId || dto.inventoryPackageId) {
+            const currentSize = await this.sizeService.findOne(id, ['inventoryItem', 'measureUnit', 'packageType'])
+            const exists = await this.repo.findOne({
+                where: {
+                    measureUnit: { id: dto.measureUnitId ?? currentSize.measureUnit.id },
+                    packageType: { id: dto.inventoryPackageId ?? currentSize.packageType.id },
+                    inventoryItem: { id: currentSize.inventoryItem.id }
+                }
+            });
+            if (exists) {
+                this.addError({
+                    errorMessage: 'Inventory item size already exists',
+                    errorType: 'EXIST',
+                    contextEntity: 'UpdateInventoryItemSizeDto',
+                    contextId: id,
+                    sourceEntity: 'InventoryItemSize',
+                } as ValidationError);
+            }
+        }
+        this.throwIfErrors()
     }
 }

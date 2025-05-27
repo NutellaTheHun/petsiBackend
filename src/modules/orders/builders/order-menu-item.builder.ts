@@ -1,23 +1,25 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BuilderBase } from "../../../base/builder-base";
 import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
+import { AppLogger } from "../../app-logging/app-logger";
 import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
 import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { CreateChildOrderMenuItemDto } from "../dto/create-child-order-menu-item.dto";
-import { CreateOrderMenuItemDto } from "../dto/create-order-menu-item.dto";
-import { UpdateChildOrderMenuItemDto } from "../dto/update-child-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/update-order-menu-item.dto";
+import { RequestContextService } from "../../request-context/RequestContextService";
+import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
+import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
+import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
+import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
+import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
+import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
 import { OrderMenuItem } from "../entities/order-menu-item.entity";
 import { Order } from "../entities/order.entity";
 import { OrderMenuItemService } from "../services/order-menu-item.service";
 import { OrderService } from "../services/order.service";
 import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { ModuleRef } from "@nestjs/core";
-import { AppLogger } from "../../app-logging/app-logger";
+import { OrderContainerItemBuilder } from "./order-container-item.builder";
 
 @Injectable()
-export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem>{
+export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem> {
     constructor(
         @Inject(forwardRef(() => OrderService))
         private readonly orderService: OrderService,
@@ -25,49 +27,65 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         @Inject(forwardRef(() => OrderMenuItemService))
         private readonly orderItemService: OrderMenuItemService,
 
+        @Inject(forwardRef(() => OrderContainerItemBuilder))
+        private readonly itemComponentBuilder: OrderContainerItemBuilder,
+
         private readonly menuItemService: MenuItemService,
         private readonly sizeService: MenuItemSizeService,
+
         validator: OrderMenuItemValidator,
         requestContextService: RequestContextService,
         logger: AppLogger,
-    ){ super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
-    
+    ) { super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
+
+    /**
+     * Depreciated, only created as a child through {@link Order}.
+     */
     protected createEntity(dto: CreateOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.orderId){
+        if (dto.orderId !== undefined) {
             this.orderById(dto.orderId);
         }
-        if(dto.quantity){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
+        }
+        if (dto.orderedItemContainerDtos !== undefined) {
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
     protected updateEntity(dto: UpdateOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
+        }
+        if (dto.orderedItemContainerDtos !== undefined) {
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
-    
+
     buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
-        if(dto.menuItemId){
+        if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
-        if(dto.menuItemSizeId){
+        if (dto.menuItemSizeId !== undefined) {
             this.menuItemSizeById(dto.menuItemSizeId);
         }
-        if(dto.quantity){
+        if (dto.quantity !== undefined) {
             this.quantity(dto.quantity);
+        }
+        if (dto.orderedItemContainerDtos !== undefined) {
+            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
         }
     }
 
@@ -85,13 +103,13 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
 
     public async buildManyChildDto(parentOrder: Order, dtos: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[]): Promise<OrderMenuItem[]> {
         const results: OrderMenuItem[] = [];
-        for(const dto of dtos){
-            if(dto.mode === 'create'){
+        for (const dto of dtos) {
+            if (dto.mode === 'create') {
                 results.push(await this.buildChildCreateDto(parentOrder, dto));
             } else {
                 const item = await this.orderItemService.findOne(dto.id);
-                if(!item){ throw new Error("orderMenuItem not found"); }
-                results.push( await this.buildUpdateDto(item, dto));
+                if (!item) { throw new Error("orderMenuItem not found"); }
+                results.push(await this.buildUpdateDto(item, dto));
             }
         }
         return results;
@@ -117,7 +135,11 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
         return this.setPropByName(this.sizeService.findOneByName.bind(this.sizeService), 'size', name);
     }
 
-    public quantity(amount: number){
+    public quantity(amount: number): this {
         return this.setPropByVal('quantity', amount);
+    }
+
+    public containerItemsByBuilder(dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): this {
+        return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedContainerItems', this.entity, dtos);
     }
 }

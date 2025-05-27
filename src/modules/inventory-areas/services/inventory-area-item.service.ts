@@ -1,36 +1,53 @@
-import { forwardRef, Inject } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
 import { AppLogger } from "../../app-logging/app-logger";
+import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { InventoryAreaItemBuilder } from "../builders/inventory-area-item.builder";
+import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
+import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
 import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
     constructor(
         @InjectRepository(InventoryAreaItem)
-        private readonly itemCountRepo: Repository<InventoryAreaItem>,
+        private readonly repo: Repository<InventoryAreaItem>,
 
         @Inject(forwardRef(() => InventoryAreaItemBuilder))
-        itemCountBuilder: InventoryAreaItemBuilder,
+        builder: InventoryAreaItemBuilder,
 
-        validator: InventoryAreaItemValidator,
+        private readonly itemService: InventoryItemService,
 
         logger: AppLogger,
-        private readonly itemService: InventoryItemService,
         requestContextService: RequestContextService,
-    ){ super(itemCountRepo, itemCountBuilder, validator, 'InventoryAreaItemService', requestContextService, logger); }
+    ) { super(repo, builder, 'InventoryAreaItemService', requestContextService, logger); }
+
+    /**
+     * Depreciated, only created as a child through {@link InventoryAreaCount}.
+     */
+    public async create(dto: CreateInventoryAreaItemDto): Promise<InventoryAreaItem> {
+        throw new BadRequestException();
+    }
 
     async findByItemName(name: string, relations?: Array<keyof InventoryAreaItem>): Promise<InventoryAreaItem[]> {
         const item = await this.itemService.findOneByName(name);
-        if(!item){ throw new Error('inventory item not found'); }
+        if (!item) { throw new Error('inventory item not found'); }
 
-        return await this.itemCountRepo.find({ 
-            where: { item: { id: item.id } }, 
+        return await this.repo.find({
+            where: { countedItem: { id: item.id } },
             relations
         });
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<InventoryAreaItem>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'countedItem') {
+            query.leftJoinAndSelect('entity.countedItem', 'inventoryItem');
+            query.orderBy(`inventoryItem.itemName`, sortOrder);
+        }
+        if (sortBy === 'amount') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
 }

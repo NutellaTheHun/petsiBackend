@@ -1,15 +1,16 @@
 import { Injectable } from "@nestjs/common";
+import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
 import * as UNIT_CONSTANT from "../../unit-of-measure/utils/constants";
+import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
 import { InventoryItemCategoryBuilder } from "../builders/inventory-item-category.builder";
 import { InventoryItemPackageBuilder } from "../builders/inventory-item-package.builder";
 import { InventoryItemSizeBuilder } from "../builders/inventory-item-size.builder";
 import { InventoryItemVendorBuilder } from "../builders/inventory-item-vendor.builder";
 import { InventoryItemBuilder } from "../builders/inventory-item.builder";
-import { CreateInventoryItemCategoryDto } from "../dto/create-inventory-item-category.dto";
-import { CreateInventoryItemPackageDto } from "../dto/create-inventory-item-package.dto";
-import { CreateInventoryItemSizeDto } from "../dto/create-inventory-item-size.dto";
-import { CreateInventoryItemVendorDto } from "../dto/create-inventory-item-vendor.dto";
-import { CreateInventoryItemDto } from "../dto/create-inventory-item.dto";
+import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
+import { CreateInventoryItemCategoryDto } from "../dto/inventory-item-category/create-inventory-item-category.dto";
+import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
+import { CreateInventoryItemDto } from "../dto/inventory-item/create-inventory-item.dto";
 import { InventoryItemCategory } from "../entities/inventory-item-category.entity";
 import { InventoryItemPackage } from "../entities/inventory-item-package.entity";
 import { InventoryItemSize } from "../entities/inventory-item-size.entity";
@@ -21,19 +22,17 @@ import { InventoryItemSizeService } from "../services/inventory-item-size.servic
 import { InventoryItemVendorService } from "../services/inventory-item-vendor.service";
 import { InventoryItemService } from "../services/inventory-item.service";
 import * as CONSTANT from "./constants";
-import { UnitOfMeasureTestingUtil } from "../../unit-of-measure/utils/unit-of-measure-testing.util";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateChildInventoryItemSizeDto } from "../dto/create-child-inventory-item-size.dto";
+import { UpdateInventoryItemDto } from "../dto/inventory-item/update-inventory-item.dto";
 
 @Injectable()
 export class InventoryItemTestingUtil {
-    private readonly vendorNames: string[] = [ CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C ];
-    
-    private readonly categoryNames: string[] = [ CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT ];
+    private readonly vendorNames: string[] = [CONSTANT.VENDOR_A, CONSTANT.VENDOR_B, CONSTANT.VENDOR_C];
 
-    private readonly packageNames: string[] = [ 
-        CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG, 
-        CONSTANT.BOX_PKG, CONSTANT.OTHER_PKG, 
+    private readonly categoryNames: string[] = [CONSTANT.OTHER_CAT, CONSTANT.DRYGOOD_CAT, CONSTANT.DAIRY_CAT, CONSTANT.FOOD_CAT];
+
+    private readonly packageNames: string[] = [
+        CONSTANT.BAG_PKG, CONSTANT.PACKAGE_PKG,
+        CONSTANT.BOX_PKG, CONSTANT.OTHER_PKG,
         CONSTANT.CAN_PKG, CONSTANT.CONTAINER_PKG
     ];
 
@@ -43,21 +42,27 @@ export class InventoryItemTestingUtil {
         CONSTANT.FOOD_C, CONSTANT.DRY_C, CONSTANT.OTHER_C,
     ];
 
-    private readonly foodItemNames: string[] = [ CONSTANT.FOOD_A, CONSTANT.FOOD_B, CONSTANT.FOOD_C];
-    private readonly dryItemNames: string[] = [ CONSTANT.DRY_A, CONSTANT.DRY_B, CONSTANT.DRY_C];
-    private readonly otherItemNames: string[] = [ CONSTANT.OTHER_A, CONSTANT.OTHER_B, CONSTANT.OTHER_C];
+    private readonly foodItemNames: string[] = [CONSTANT.FOOD_A, CONSTANT.FOOD_B, CONSTANT.FOOD_C];
+    private readonly dryItemNames: string[] = [CONSTANT.DRY_A, CONSTANT.DRY_B, CONSTANT.DRY_C];
+    private readonly otherItemNames: string[] = [CONSTANT.OTHER_A, CONSTANT.OTHER_B, CONSTANT.OTHER_C];
 
     private readonly measureNames: string[] = [
         UNIT_CONSTANT.GALLON, UNIT_CONSTANT.MILLILITER,
-        UNIT_CONSTANT.PINT,   UNIT_CONSTANT.FL_OUNCE,
-        UNIT_CONSTANT.LITER,  
-        
+        UNIT_CONSTANT.PINT, UNIT_CONSTANT.FL_OUNCE,
+        UNIT_CONSTANT.LITER,
+
         UNIT_CONSTANT.OUNCE, UNIT_CONSTANT.GRAM,
         UNIT_CONSTANT.POUND, UNIT_CONSTANT.KILOGRAM,
 
         UNIT_CONSTANT.UNIT, UNIT_CONSTANT.EACH,
     ];
-    
+
+    private initCategory = false;
+    private initPackage = false;
+    private initSize = false;
+    private initVendor = false;
+    private initItem = false;
+
     constructor(
         private readonly vendorService: InventoryItemVendorService,
         private readonly vendorBuilder: InventoryItemVendorBuilder,
@@ -75,7 +80,9 @@ export class InventoryItemTestingUtil {
         private readonly itemBuilder: InventoryItemBuilder,
 
         private readonly unitOfMeasureTestingUtil: UnitOfMeasureTestingUtil
-    ){ }
+    ) {
+
+    }
 
     /**
      * Dependencies: 
@@ -83,7 +90,7 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemVendorEntities(testContext: DatabaseTestContext): Promise<InventoryItemVendor[]> {
         const results: InventoryItemVendor[] = [];
-        for(const name of this.vendorNames){
+        for (const name of this.vendorNames) {
             results.push(
                 await this.vendorBuilder.reset()
                     .name(name)
@@ -99,7 +106,7 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemPackageEntities(testContext: DatabaseTestContext): Promise<InventoryItemPackage[]> {
         const results: InventoryItemPackage[] = [];
-        for(const name of this.packageNames){
+        for (const name of this.packageNames) {
             results.push(
                 await this.packageBuilder.reset()
                     .name(name)
@@ -115,12 +122,13 @@ export class InventoryItemTestingUtil {
      */
     public async getTestInventoryItemCategoryEntities(testContext: DatabaseTestContext): Promise<InventoryItemCategory[]> {
         const results: InventoryItemCategory[] = [];
-        for(const name of this.categoryNames){
+        for (const name of this.categoryNames) {
             results.push(
                 await this.categoryBuilder.reset()
-                    .name(name)
+                    .categoryName(name)
                     .build()
-        )}
+            )
+        }
         return results;
     }
 
@@ -128,35 +136,38 @@ export class InventoryItemTestingUtil {
      * Dependencies: InventoryItemCategory, InventoryItemVendor
      * @returns 9 Inventory Items
      */
-    public async getTestInventoryItemEntities(testContext: DatabaseTestContext): Promise<InventoryItem[]>{
+    public async getTestInventoryItemEntities(testContext: DatabaseTestContext): Promise<InventoryItem[]> {
         await this.initInventoryItemVendorTestDatabase(testContext);
         await this.initInventoryItemCategoryTestDatabase(testContext);
-        
+
         const results: InventoryItem[] = [];
-        for(let i = 0; i < this.foodItemNames.length; i++){
+        for (let i = 0; i < this.foodItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.foodItemNames[i])
                     .categoryByName(CONSTANT.FOOD_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
-        for(let i = 0; i < this.dryItemNames.length; i++){
+            )
+        }
+        for (let i = 0; i < this.dryItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.dryItemNames[i])
                     .categoryByName(CONSTANT.DRYGOOD_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
-        for(let i = 0; i < this.otherItemNames.length; i++){
+            )
+        }
+        for (let i = 0; i < this.otherItemNames.length; i++) {
             results.push(
                 await this.itemBuilder.reset()
                     .name(this.otherItemNames[i])
                     .categoryByName(CONSTANT.OTHER_CAT)
                     .vendorByName(this.vendorNames[i % this.vendorNames.length])
                     .build()
-        )}
+            )
+        }
         return results;
     }
 
@@ -171,18 +182,18 @@ export class InventoryItemTestingUtil {
 
         const results: InventoryItemSize[] = [];
         let msrIdx = 0;
-        let pkgIdx = 0; 
-        for(let i = 0; i < this.itemNames.length; i++){
+        let pkgIdx = 0;
+        for (let i = 0; i < this.itemNames.length; i++) {
             results.push(
                 await this.sizeBuilder.reset()
-                    .InventoryItemByName(this.itemNames[i])
+                    //.InventoryItemByName(this.itemNames[i])
                     .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .build()
             );
             results.push(
                 await this.sizeBuilder.reset()
-                    .InventoryItemByName(this.itemNames[i])
+                    //.InventoryItemByName(this.itemNames[i])
                     .unitOfMeasureByName(this.measureNames[msrIdx++ % this.measureNames.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .build()
@@ -192,68 +203,123 @@ export class InventoryItemTestingUtil {
     }
 
     public async initInventoryItemVendorTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initVendor) {
+            return;
+        }
+        this.initVendor = true;
+
         const vendors = await this.getTestInventoryItemVendorEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemVendorTestDatabase());
 
-        const toInsert: InventoryItemVendor[] = [];
+        /*const toInsert: InventoryItemVendor[] = [];
         for(const vendor of vendors){
-            const exists = await this.vendorService.findOneByName(vendor.name);
+            const exists = await this.vendorService.findOneByName(vendor.vendorName);
             if(!exists){ toInsert.push(vendor); }
-        }
-        await this.vendorService.insertEntities(toInsert);
+        }*/
+        await this.vendorService.insertEntities(/*toInsert*/vendors);
     }
 
     public async initInventoryItemPackageTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initPackage) {
+            return;
+        }
+        this.initPackage = true;
+
         const defaultPackages = await this.getTestInventoryItemPackageEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemPackageTestDatabase());
 
-        const toInsert: InventoryItemPackage[] = [];
+        /*const toInsert: InventoryItemPackage[] = [];
         for(const packaging of defaultPackages){
-            const exists = await this.packageService.findOneByName(packaging.name);
+            const exists = await this.packageService.findOneByName(packaging.packageName);
             if(!exists){ toInsert.push(packaging); }
-        }
-        await this.packageService.insertEntities(toInsert);
+        }*/
+        await this.packageService.insertEntities(/*toInsert*/defaultPackages);
     }
 
     public async initInventoryItemCategoryTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initCategory) {
+            return;
+        }
+        this.initCategory = true;
+
         const categories = await this.getTestInventoryItemCategoryEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemCategoryTestDatabase());
 
-        for(const category of categories) {
-            const exists = await this.categoryService.findOneByName(category.name);
-            if(exists){ continue; }
-
+        for (const category of categories) {
             await this.categoryService.create(
-                { name: category.name } as CreateInventoryItemCategoryDto
-        )}
+                { itemCategoryName: category.categoryName } as CreateInventoryItemCategoryDto
+            )
+        }
     }
 
     public async initInventoryItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
+        if (this.initItem) {
+            return;
+        }
+        this.initItem = true;
+
         const items = await this.getTestInventoryItemEntities(testContext);
         testContext.addCleanupFunction(() => this.cleanupInventoryItemTestDatabase());
-        for(const item of items){
-            const exists = await this.itemService.findOneByName(item.name);
-            if(exists){ continue; }
+
+        for (const item of items) {
+            /*const exists = await this.itemService.findOneByName(item.itemName);
+            if(exists){ continue; }*/
 
             await this.itemService.create({
-                    name: item.name,
-                    inventoryItemCategoryId: item.category?.id,
-                    vendorId: item.vendor?.id, 
-                } as CreateInventoryItemDto
-        )};
+                itemName: item.itemName,
+                inventoryItemCategoryId: item.category?.id,
+                vendorId: item.vendor?.id,
+            } as CreateInventoryItemDto);
+        };
     }
 
     public async initInventoryItemSizeTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        const testingSizes = await this.getTestInventoryItemSizeEntities(testContext);
-        testContext.addCleanupFunction(() => this.cleanupInventoryItemSizeTestDatabase());
+        if (this.initSize) {
+            return;
+        }
+        this.initSize = true;
 
-        for(const size of testingSizes){
+        const testingSizes = await this.getTestInventoryItemSizeEntities(testContext);
+        let sizeIdx = 0;
+
+        const itemsRequest = await this.itemService.findAll();
+        const items = itemsRequest.items;
+
+        testContext.addCleanupFunction(() => this.cleanupInventoryItemSizeTestDatabase());
+        for (const item of items) {
+            const dto1 = testingSizes[sizeIdx++ % testingSizes.length];
+            const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
+
+            await this.itemService.update(item.id, {
+                itemSizeDtos: [
+                    {
+                        mode: 'create',
+                        measureUnitId: dto1.measureUnit.id,
+                        measureAmount: 1,
+                        inventoryPackageId: dto1.packageType.id,
+                        cost: 1,
+                    } as CreateChildInventoryItemSizeDto,
+                    {
+                        mode: 'create',
+                        measureUnitId: dto2.measureUnit.id,
+                        measureAmount: 1,
+                        inventoryPackageId: dto2.packageType.id,
+                        cost: 1,
+                    } as CreateChildInventoryItemSizeDto
+                ]
+            } as UpdateInventoryItemDto);
+        }
+        /*for(const size of testingSizes){
             await this.sizeService.create({
-                    unitOfMeasureId: size.measureUnit.id,
-                    inventoryPackageTypeId: size.packageType.id,
-                    inventoryItemId: size.item.id,
+                    measureUnitId: size.measureUnit.id,
+                    inventoryPackageId: size.packageType.id,
+                    inventoryItemId: size.inventoryItem.id,
+                    cost: 1,
+                    measureAmount: 1,
                 } as CreateInventoryItemSizeDto 
-        )}
+        )}*/
+
+        // updateInventoryItem
     }
 
     public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
@@ -279,29 +345,38 @@ export class InventoryItemTestingUtil {
     /**
      * - Create's inventoryItemSize dtos for create method of an inventory item
      */
-    public createInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[]): CreateChildInventoryItemSizeDto[] {
+    public createChildInventoryItemSizeDtos(resultAmount: number, packageIds: number[], unitIds: number[], costs: number[]): CreateChildInventoryItemSizeDto[] {
         const results: CreateChildInventoryItemSizeDto[] = [];
-        
-        let packageIdx = 0;
-        let unitIdx = 0;
-        let packageIter = 0;
 
-        for(let i = 0; i < resultAmount; i++){
+        let packageIdx = 0;
+        let costIdx = 0;
+        let unitIdx = 0;
+
+        let packageIter = 0;
+        let costIter = 0;
+
+        for (let i = 0; i < resultAmount; i++) {
             results.push(
                 {
                     mode: 'create',
-                    unitOfMeasureId: unitIds[unitIdx++],
-                    inventoryPackageTypeId: packageIds[packageIdx++],
+                    measureUnitId: unitIds[unitIdx++],
+                    inventoryPackageId: packageIds[packageIdx++],
+                    cost: costs[costIter++],
+                    measureAmount: 1
                 } as CreateChildInventoryItemSizeDto
             )
-            if(unitIdx === unitIds.length){
+            if (unitIdx === unitIds.length) {
                 unitIdx = 0;
             }
-            if(packageIdx === packageIds.length){
+            if (packageIdx === packageIds.length) {
                 packageIter++;
                 packageIdx = packageIter;
             }
+            if (costIdx === costs.length) {
+                costIter++;
+                costIdx = costIter;
+            }
         }
         return results;
-    }   
+    }
 }

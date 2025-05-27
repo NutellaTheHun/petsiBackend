@@ -3,17 +3,20 @@ import { LabelType } from "./label-type.entity";
 import { MenuItem } from "../../menu-items/entities/menu-item.entity";
 
 /**
- * Contains all labels associated a menuItem, such as the assortment of wholesale labels (4x2, 2x1)
- * and any future labels required. Holds URLs to remote storage holding the images.
+ * References a {@link menuItem} with a {@link LabelType} and a url to the label image for printing.
  */
 @Entity()
-@Unique(['menuItem', 'imageUrl', 'type'])
+@Unique(['menuItem', 'imageUrl', 'labelType'])
 export class Label {
     @PrimaryGeneratedColumn()
     id: number;
 
     /**
-     * When a menuItem is deleted, its associated labels will be removed.
+     * MenuItem that this image/type combination is for.
+     * Example:
+     * - MenuItem: Classic Apple, Type: 4x2, imageUrl: image.com/wsClapple
+     * - MenuItem: Classic Apple, Type: 2x1, imageUrl: image.com/cutieClapple
+     * - MenuItem: ChickenPotPie, Type: 4x6, imageUrl: image.com/frozenPotPie
      */
     @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
     menuItem: MenuItem;
@@ -25,8 +28,8 @@ export class Label {
     imageUrl: string;
 
     /**
-     * A label type for categories like: "4x2", "2x1", or "ingredient label"
+     * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
      */
-    @ManyToOne(() => LabelType, {nullable: true, onDelete: 'SET NULL' })
-    type: LabelType;
+    @ManyToOne(() => LabelType, { nullable: true, onDelete: 'SET NULL' })
+    labelType: LabelType;
 }

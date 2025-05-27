@@ -1,29 +1,61 @@
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, SelectQueryBuilder } from "typeorm";
 import { ServiceBase } from "../../../base/service-base";
-import { RequestContextService } from "../../request-context/RequestContextService";
 import { AppLogger } from "../../app-logging/app-logger";
+import { RequestContextService } from "../../request-context/RequestContextService";
 import { RecipeBuilder } from "../builders/recipe.builder";
 import { Recipe } from "../entities/recipe.entity";
-import { RecipeValidator } from "../validators/recipe.valdiator";
-import { forwardRef, Inject } from "@nestjs/common";
 
-export class RecipeService extends ServiceBase<Recipe>{
+@Injectable()
+export class RecipeService extends ServiceBase<Recipe> {
     constructor(
         @InjectRepository(Recipe)
-        private readonly recipeRepo: Repository<Recipe>,
+        private readonly repo: Repository<Recipe>,
 
         @Inject(forwardRef(() => RecipeBuilder))
-        recipeBuilder: RecipeBuilder,
-
-        validator: RecipeValidator,
+        builder: RecipeBuilder,
 
         requestContextService: RequestContextService,
-        
         logger: AppLogger,
-    ){ super(recipeRepo, recipeBuilder, validator, 'RecipeService', requestContextService, logger); }
-    
+    ) { super(repo, builder, 'RecipeService', requestContextService, logger); }
+
     async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
-        return this.recipeRepo.findOne({ where: {name: name }, relations});
+        return this.repo.findOne({ where: { recipeName: name }, relations });
+    }
+
+    protected applySearch(query: SelectQueryBuilder<Recipe>, search: string): void {
+        query
+            .leftJoin('entity.ingredients', 'ingredient')
+            .leftJoin('ingredient.ingredientInventoryItem', 'inventoryItem')
+            .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
+            .andWhere(`
+            LOWER(entity.recipeName) LIKE :search
+            OR LOWER(inventoryItem.itemName) LIKE :search
+            OR LOWER(subRecipe.recipeName) LIKE :search
+        `, { search: `%${search.toLowerCase()}%` });
+    }
+
+    protected applyFilters(query: SelectQueryBuilder<Recipe>, filters: Record<string, string>): void {
+        if (filters.category) {
+            query.andWhere('entity.category = :category', { category: filters.category });
+        }
+        if (filters.subCategory) {
+            query.andWhere('entity.subCategory = :subCategory', { subCategory: filters.subCategory });
+        }
+    }
+
+    protected applySortBy(query: SelectQueryBuilder<Recipe>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
+        if (sortBy === 'recipeName') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+        else if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy(`category.categoryName`, sortOrder, 'NULLS LAST');
+        }
+        else if (sortBy === 'subCategory') {
+            query.leftJoinAndSelect('entity.subCategory', 'subCategory');
+            query.orderBy(`subCategory.subCategoryName`, sortOrder, 'NULLS LAST');
+        }
     }
 }

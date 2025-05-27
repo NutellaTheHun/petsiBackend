@@ -13,16 +13,16 @@ import { UserTestUtil } from './utils/user-test.util';
 import { UserValidator } from './validators/user.validator';
 
 @Module({
-  imports: [
-    TypeORMPostgresTestingModule([]),
-    TypeOrmModule.forFeature([User]),
-    forwardRef(() => RoleModule),
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [UserController,],
-  providers: [UserService, UserBuilder, UserValidator, UserTestUtil],
-  exports: [UserService, UserTestUtil]
+    imports: [
+        TypeORMPostgresTestingModule([]),
+        TypeOrmModule.forFeature([User]),
+        forwardRef(() => RoleModule),
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [UserController,],
+    providers: [UserService, UserBuilder, UserValidator, UserTestUtil],
+    exports: [UserService, UserTestUtil]
 })
-export class UserModule {}
+export class UserModule { }
