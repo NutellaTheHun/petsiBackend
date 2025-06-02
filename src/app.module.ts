@@ -19,6 +19,7 @@ import { RecipesModule } from './modules/recipes/recipes.module';
 import { RequestContextModule } from './modules/request-context/request-context.module';
 import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
+import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 import { UserModule } from './modules/users/user.module';
@@ -63,7 +64,7 @@ import { RequestIdMiddleware } from './util/RequestIdMiddleware';
             },
         }),
 
-        AuthModule, AppLoggingModule, RequestContextModule,
+        AuthModule, AppLoggingModule, RequestContextModule, SeedModule,
 
         OrdersModule, MenuItemsModule, TemplatesModule,
         LabelsModule, InventoryAreasModule, InventoryItemsModule,
