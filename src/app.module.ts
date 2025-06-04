@@ -23,14 +23,14 @@ import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 import { UserModule } from './modules/users/user.module';
-import { TypeORMPostgresModule } from './typeorm/configs/TypeORMPostgresProd';
+import { selectTypeOrmModule } from './typeorm/typeorm.module';
 import { RequestIdMiddleware } from './util/RequestIdMiddleware';
 
 @Module({
     imports: [
         ConfigModule.forRoot({ isGlobal: true }),
 
-        TypeORMPostgresModule([]),
+        selectTypeOrmModule([]),
 
         CacheModule.register(),
 

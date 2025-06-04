@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { createNamespace, getNamespace, Namespace } from 'cls-hooked';
+import { randomUUID } from "crypto";
 import { AppHttpException } from "../../util/exceptions/app-http-exception";
 
 export const REQUEST_NAMESPACE = 'request';
@@ -21,6 +22,9 @@ export class RequestContextService {
     }
 
     getRequestId(): string {
+        if (process.env.NODE_ENV !== 'production') {
+            return `development-${randomUUID()}`
+        }
         const result = this.get('requestId');
         if (!result) {
             throw new AppHttpException('RequestContextService getRequestID is null', HttpStatus.INTERNAL_SERVER_ERROR);
