@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { ApiProperty } from '@nestjs/swagger';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * - All items except pie are size "regular"
@@ -6,12 +7,20 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
  */
 @Entity()
 export class MenuItemSize {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @ApiProperty({
+    example: 1,
+    description: 'The unique identifier of the entity',
+  })
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    /** 
-     * By default, can be "regular", "cutie", "small", "medium", "large" 
-     */
-    @Column({ unique: true, nullable: false })
-    name: string;
+  /**
+   * By default, can be "regular", "cutie", "small", "medium", "large"
+   */
+  @ApiProperty({
+    example: 'medium',
+    description: 'The naming identifier of the size.',
+  })
+  @Column({ unique: true, nullable: false })
+  name: string;
 }
