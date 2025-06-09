@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { orderExample } from '../../../util/swagger-examples/orders/order.example';
 import { Order } from './order.entity';
 
 /**
@@ -22,7 +23,7 @@ export class OrderCategory {
    * List of {@link Order} falling under the type.
    */
   @ApiProperty({
-    example: [{}],
+    example: [orderExample(new Set<string>(), true)],
     description: 'Orders under the category',
     type: () => Order,
     isArray: true,

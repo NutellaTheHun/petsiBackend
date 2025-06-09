@@ -25,6 +25,7 @@ import {
   ApiOperation,
   ApiQuery,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
@@ -111,7 +112,21 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Retrieves an array of Inventory Area Count' })
-  @ApiOkResponse({ type: PaginatedResult<InventoryAreaCount> })
+  @ApiOkResponse({
+    schema: {
+      type: 'object',
+      properties: {
+        items: {
+          type: 'array',
+          items: { $ref: getSchemaPath(InventoryAreaCount) },
+        },
+        nextCursor: {
+          type: 'string',
+          example: '2',
+        },
+      },
+    },
+  })
   @ApiQuery({
     name: 'filters',
     required: false,

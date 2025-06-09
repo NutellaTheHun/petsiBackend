@@ -6,6 +6,8 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
 
@@ -44,7 +46,7 @@ export class MenuItemContainerItem {
    * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem that is the container to this item',
     type: () => MenuItem,
   })
@@ -62,7 +64,7 @@ export class MenuItemContainerItem {
    * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
    */
   @ApiProperty({
-    example: {},
+    example: menuItemSizeExample(new Set<string>(), true),
     description: 'The size of the container to this item',
     type: MenuItemSize,
   })
@@ -81,7 +83,7 @@ export class MenuItemContainerItem {
    * - Breakfast Pastry Platter could be a Scone MenuItem, or any Muffin MenuItem
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The menuItem that is being referenced as the contained item',
     type: () => MenuItem,
   })
@@ -94,7 +96,7 @@ export class MenuItemContainerItem {
    * - Pies would me "small", "medium", "large"
    */
   @ApiProperty({
-    example: {},
+    example: menuItemSizeExample(new Set<string>(), false),
     description: 'The size of the MenuItem that is being contained',
     type: MenuItemSize,
   })

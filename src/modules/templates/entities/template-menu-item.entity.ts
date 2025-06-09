@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { templateExample } from '../../../util/swagger-examples/templates/template.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { Template } from './template.entity';
 
@@ -29,7 +31,7 @@ export class TemplateMenuItem {
    * The referenced {@link MenuItem} for the row.
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description:
       'The item being represented in the template item (as a row on the template)',
     type: MenuItem,
@@ -52,7 +54,7 @@ export class TemplateMenuItem {
    * The parent {@link Template}.
    */
   @ApiProperty({
-    example: {},
+    example: templateExample(new Set<string>(), true),
     description: 'The template this template item is for',
     type: () => Template,
   })

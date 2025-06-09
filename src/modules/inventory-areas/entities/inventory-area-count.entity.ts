@@ -54,7 +54,7 @@ export class InventoryAreaCount {
    * The record of counted items and their quantites, in the form of {@link InventoryAreaItem}, resulting from the inventory count.
    */
   @ApiProperty({
-    example: inventoryAreaItemExample(new Set<string>(), false),
+    example: [inventoryAreaItemExample(new Set<string>(), false)],
     description: 'Inventory items that were recorded during the count.',
     type: () => InventoryAreaItem,
   })

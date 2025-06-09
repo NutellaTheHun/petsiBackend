@@ -27,7 +27,7 @@ export class Role {
    * List of users who hold that role.
    */
   @ApiProperty({
-    example: [userExample(new Set<string>())],
+    example: [userExample(new Set<string>(), true)],
     description: 'List of users who possess this role',
     type: () => User,
     isArray: true,

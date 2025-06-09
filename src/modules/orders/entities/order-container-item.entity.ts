@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { orderMenuItemExample } from '../../../util/swagger-examples/orders/order-menu-item.example';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
@@ -23,7 +26,7 @@ export class OrderContainerItem {
    * Example: Box of 6 Scones is the {@link parentOrderItem} of the {@link containedItem} { Lemon Glaze, size: regular, quantity: 6 }
    */
   @ApiProperty({
-    example: {},
+    example: orderMenuItemExample(new Set<string>(), true),
     description: 'The OrderMenuItem that is the container for this item',
     type: () => OrderMenuItem,
   })
@@ -39,7 +42,7 @@ export class OrderContainerItem {
    * Example: Within the parent {@link menuItem} Breakfast Pastry Platter, size: small, one of the {@link containedItem} would be a Blueberry muffin, size regular, quantity 2.
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem being contained',
     type: MenuItem,
   })
@@ -56,7 +59,7 @@ export class OrderContainerItem {
    * Example: containedItem: Blueberry muffin, containedSize: regular ...
    */
   @ApiProperty({
-    example: {},
+    example: menuItemSizeExample(new Set<string>(), false),
     description: 'The size of the contained MenuItem',
     type: MenuItemSize,
   })

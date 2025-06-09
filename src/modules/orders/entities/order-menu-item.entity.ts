@@ -6,6 +6,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { orderContainerItemExample } from '../../../util/swagger-examples/orders/order-container-item.example';
+import { orderExample } from '../../../util/swagger-examples/orders/order.example';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { OrderContainerItem } from './order-container-item.entity';
@@ -27,7 +31,7 @@ export class OrderMenuItem {
    * The parent {@link Order} of the item.
    */
   @ApiProperty({
-    example: {},
+    example: orderExample(new Set<string>(), true),
     description: 'The Order this ordered item is on',
     type: () => Order,
   })
@@ -43,7 +47,7 @@ export class OrderMenuItem {
    * - Example: "Classic Apple", "Blueberry Muffin", "Large T-shirt", "Box of 6 Scones"
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem being ordered',
     type: MenuItem,
   })
@@ -69,7 +73,7 @@ export class OrderMenuItem {
    * - Example: "small", "medium", "large", "cold", "hot", "regular"
    */
   @ApiProperty({
-    example: {},
+    example: menuItemSizeExample(new Set<string>(), false),
     description: 'The size of the ordered MenuItem',
     type: MenuItemSize,
   })
@@ -77,7 +81,7 @@ export class OrderMenuItem {
   size: MenuItemSize;
 
   @ApiProperty({
-    example: [{}],
+    example: [orderContainerItemExample(new Set<string>(), false)],
     description:
       'If the ordered MenuItem is a container, the contained items will be listed here',
     type: () => OrderContainerItem,

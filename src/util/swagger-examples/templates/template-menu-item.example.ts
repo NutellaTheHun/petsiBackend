@@ -1,15 +1,18 @@
+import { handleSetHas, handleShallow } from '../handlers/handlers';
 import { menuItemExample } from '../menu-items/menu-item.example';
 import { templateExample } from './template.example';
 
-export function templateMenuItemExample(fnSet: Set<string>) {
+export function templateMenuItemExample(fnSet: Set<string>, shallow: boolean) {
   fnSet.add(templateMenuItemExample.name);
   return {
     id: 1,
+
     displayName: 'CLAPPLE',
-    menuItem: menuItemExample(fnSet),
+
+    menuItem: handleShallow(shallow, fnSet, menuItemExample, false),
+
     tablePosIndex: 0,
-    parentTemplate: fnSet.has(templateExample.name)
-      ? undefined
-      : templateExample(fnSet),
+
+    parentTemplate: handleSetHas(shallow, fnSet, templateExample, true),
   };
 }

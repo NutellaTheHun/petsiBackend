@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
 import { InventoryItem } from './inventory-item.entity';
 
 /**
@@ -22,7 +23,7 @@ export class InventoryItemVendor {
    * List of all {@link InventoryItem} provided by vendor.
    */
   @ApiProperty({
-    example: [{}],
+    example: [inventoryItemExample(new Set<string>(), true)],
     description: 'InventoryItems from the vendor',
     type: () => InventoryItem,
     isArray: true,

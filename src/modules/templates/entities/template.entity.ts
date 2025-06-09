@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { templateMenuItemExample } from '../../../util/swagger-examples/templates/template-menu-item.example';
 import { TemplateMenuItem } from './template-menu-item.entity';
 
 /**
@@ -38,7 +39,7 @@ export class Template {
    * List of {@link TemplateMenuItem} that describe the form structure.
    */
   @ApiProperty({
-    example: [{}],
+    example: [templateMenuItemExample(new Set<string>(), false)],
     description:
       'A list of template items representing the rows of the printed template',
     type: () => TemplateMenuItem,

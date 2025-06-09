@@ -9,6 +9,11 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { recipeCategoryExample } from '../../../util/swagger-examples/recipes/recipe-category.example';
+import { recipeIngredientExample } from '../../../util/swagger-examples/recipes/recipe-ingredient.example';
+import { recipeSubCategoryExample } from '../../../util/swagger-examples/recipes/recipe-sub-category.example';
+import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
@@ -38,7 +43,7 @@ export class Recipe {
    * The {@link MenuItem} that this recipe produces.
    */
   @ApiPropertyOptional({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The referenced MenuItem if this recipe produces one.',
     type: MenuItem,
   })
@@ -68,7 +73,7 @@ export class Recipe {
    * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
    */
   @ApiProperty({
-    example: [{}],
+    example: [recipeIngredientExample(new Set<string>(), false)],
     description: 'A list of ingredients for the recipe',
     type: () => RecipeIngredient,
     isArray: true,
@@ -101,7 +106,7 @@ export class Recipe {
    * - 1 unit(batchResultUnitOfMeasure) of Blueberry Pie.
    */
   @ApiPropertyOptional({
-    example: {},
+    example: unitOfMeasureExample(new Set<string>(), true),
     description:
       'The unit of measure that descibes the total yield the recipe produces.',
     type: UnitOfMeasure,
@@ -135,7 +140,7 @@ export class Recipe {
    * - 1 loaf could have a serving size of say 8 units(servingSizeUnitOfMeasure).
    */
   @ApiPropertyOptional({
-    example: {},
+    example: unitOfMeasureExample(new Set<string>(), true),
     description:
       'The unit of measure that describes the total sellable portions of the recipes yield',
     type: UnitOfMeasure,
@@ -155,17 +160,11 @@ export class Recipe {
   @Check(`"salesPrice" >= 0`)
   salesPrice?: string | null;
 
-  // sales price per serving calculated
-
-  // cost per serving calculated
-
-  // cost calculated? getCostFunction()
-
   /**
    * The {@link RecipeCategory}, such as "Pie" or"Pastry"
    */
   @ApiPropertyOptional({
-    example: {},
+    example: recipeCategoryExample(new Set<string>(), true),
     description: 'The category of the recipe',
     type: () => RecipeCategory,
   })
@@ -179,7 +178,7 @@ export class Recipe {
    * The {@link RecipeSubCategory} of {@link RecipeCategory}, such as "Sweet Pie" or "Savory Pie", of RecipeCategory Pie.
    */
   @ApiPropertyOptional({
-    example: {},
+    example: recipeSubCategoryExample(new Set<string>(), true),
     description: 'The sub category of the recipe',
     type: () => RecipeSubCategory,
   })

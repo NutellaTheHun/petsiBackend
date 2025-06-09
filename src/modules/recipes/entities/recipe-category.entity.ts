@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { recipeSubCategoryExample } from '../../../util/swagger-examples/recipes/recipe-sub-category.example';
+import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
 import { RecipeSubCategory } from './recipe-sub-category.entity';
 import { Recipe } from './recipe.entity';
 
@@ -25,7 +27,7 @@ export class RecipeCategory {
    * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"
    */
   @ApiProperty({
-    example: [{}],
+    example: [recipeSubCategoryExample(new Set<string>(), true)],
     description: 'List of subcategories under the category',
     type: () => RecipeSubCategory,
     isArray: true,
@@ -39,7 +41,7 @@ export class RecipeCategory {
    * List of {@link Recipe} under the category.
    */
   @ApiProperty({
-    example: [{}],
+    example: [recipeExample(new Set<string>(), true)],
     description: 'List of recipes under the category',
     type: () => Recipe,
     isArray: true,

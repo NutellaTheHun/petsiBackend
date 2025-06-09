@@ -1,11 +1,15 @@
+import { handleSetHas } from '../handlers/handlers';
 import { roleExample } from '../roles/role.example';
 
-export function userExample(fnSet: Set<string>) {
+export function userExample(fnSet: Set<string>, shallow: boolean) {
   fnSet.add(userExample.name);
   return {
     id: 1,
+
     userName: 'jim',
+
     email: 'jim@email.com',
-    roles: fnSet.has(roleExample.name) ? undefined : [roleExample(fnSet)],
+
+    roles: [handleSetHas(shallow, fnSet, roleExample, false)],
   };
 }

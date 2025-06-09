@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { orderCategoryExample } from '../../../util/swagger-examples/orders/order-category.example';
+import { orderMenuItemExample } from '../../../util/swagger-examples/orders/order-menu-item.example';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
 
@@ -28,7 +30,7 @@ export class Order {
    * - Example: "Wholesale", "Special", "Square", "Farmers Market"
    */
   @ApiProperty({
-    example: {},
+    example: orderCategoryExample(new Set<string>(), true),
     description: 'The assigned category of the order',
     type: () => OrderCategory,
   })
@@ -177,7 +179,7 @@ export class Order {
    * The list of {@link OrderMenuItem} that are being purchased.
    */
   @ApiProperty({
-    example: [{}],
+    example: [orderMenuItemExample(new Set<string>(), false)],
     description:
       'If the ordered MenuItem is a container, the contained items will be populated here',
     type: () => OrderMenuItem,

@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { unitOfMeasureCategoryExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure-category.example';
 import { UnitOfMeasureCategory } from './unit-of-measure-category.entity';
 
 /**
@@ -45,7 +46,7 @@ export class UnitOfMeasure {
    * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
    */
   @ApiPropertyOptional({
-    example: '',
+    example: unitOfMeasureCategoryExample(new Set<string>(), true),
     description: '',
     type: () => UnitOfMeasureCategory,
   })

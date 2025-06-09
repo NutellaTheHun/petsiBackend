@@ -6,6 +6,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { inventoryItemCategoryExample } from '../../../util/swagger-examples/inventory-items/inventory-item-category.example';
+import { inventoryItemSizeExample } from '../../../util/swagger-examples/inventory-items/inventory-item-size.example';
+import { inventoryItemVendorExample } from '../../../util/swagger-examples/inventory-items/inventory-item-vendor.example';
 import { InventoryAreaCount } from '../../inventory-areas/entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RecipeIngredient } from '../../recipes/entities/recipe-ingredient.entity';
@@ -37,7 +40,7 @@ export class InventoryItem {
    * - Example: "Produce", "Dry Goods", "Dairy", "Cleaning Supplies"
    */
   @ApiPropertyOptional({
-    example: {},
+    example: inventoryItemCategoryExample(new Set<string>(), true),
     description: 'The assigned category',
     type: () => InventoryItemCategory,
   })
@@ -57,7 +60,7 @@ export class InventoryItem {
    * - Example : "Cysco", "Driscols", "Walden Farms"
    */
   @ApiPropertyOptional({
-    example: {},
+    example: inventoryItemVendorExample(new Set<string>(), true),
     description: 'The assigned Vendor',
     type: () => InventoryItemVendor,
   })
@@ -74,7 +77,7 @@ export class InventoryItem {
    * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
    */
   @ApiProperty({
-    example: [{}],
+    example: [inventoryItemSizeExample(new Set<string>(), false)],
     description: 'The size options to the item',
     type: () => InventoryItemSize,
     isArray: true,

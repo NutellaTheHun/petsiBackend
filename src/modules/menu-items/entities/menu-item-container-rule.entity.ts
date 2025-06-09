@@ -6,6 +6,9 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { menuItemContainerOptionsExample } from '../../../util/swagger-examples/menu-items/menu-item-container-options.example';
+import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItemContainerOptions } from './menu-item-container-options.entity';
 import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
@@ -27,7 +30,7 @@ export class MenuItemContainerRule {
    * The {@link MenuItemContainerOptions} that this rule applies to.
    */
   @ApiProperty({
-    example: {},
+    example: menuItemContainerOptionsExample(new Set<string>(), true),
     description: 'The container options this rule applies to.',
     type: () => MenuItemContainerOptions,
   })
@@ -42,7 +45,7 @@ export class MenuItemContainerRule {
    * The {@link MenuItem} that this rule states is allowed in the parent container.
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem this rule states is valid in the container.',
     type: () => MenuItem,
   })
@@ -57,7 +60,7 @@ export class MenuItemContainerRule {
    * The list of {@link MenuItemSize} of the {@link validItem} that is allowed in the parent container.
    */
   @ApiProperty({
-    example: {},
+    example: [menuItemSizeExample(new Set<string>(), false)],
     description: 'The sizes of the validItem that is allowed in the container.',
     type: MenuItemSize,
     isArray: true,

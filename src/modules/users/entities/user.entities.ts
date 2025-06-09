@@ -31,7 +31,6 @@ export class User {
   @Column({ nullable: true, type: 'varchar' })
   email?: string | null;
 
-  @ApiProperty({ example: 'pass1234', description: 'password of the user' })
   @Column({ nullable: false })
   password: string;
 
@@ -50,7 +49,7 @@ export class User {
   updatedAt: Date;
 
   @ApiProperty({
-    example: [roleExample(new Set<string>())],
+    example: [roleExample(new Set<string>(), true)],
     description: 'list of roles the user possess to determine feature access',
     type: () => Role,
     isArray: true,

@@ -7,6 +7,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { menuItemContainerRuleExample } from '../../../util/swagger-examples/menu-items/menu-item-container-rule.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItemContainerRule } from './menu-item-container-rule.entity';
 import { MenuItem } from './menu-item.entity';
 
@@ -28,7 +30,7 @@ export class MenuItemContainerOptions {
    * The {@link MenuItem} container that the options apply to.
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem these options apply to.',
     type: () => MenuItem,
   })
@@ -42,7 +44,7 @@ export class MenuItemContainerOptions {
    * A list of {@link MenuItemContainerRule} determining valid items, their sizes, and amounts.
    */
   @ApiProperty({
-    example: [{}],
+    example: [menuItemContainerRuleExample(new Set<string>(), false)],
     description:
       'The rules describing what items are allowed in the container and what sizes',
     type: () => MenuItemContainerRule,

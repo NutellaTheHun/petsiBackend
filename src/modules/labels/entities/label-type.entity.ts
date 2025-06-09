@@ -9,13 +9,13 @@ import { Label } from './label.entity';
 @Entity()
 export class LabelType {
   @ApiProperty({
-    example: 1,
     description: 'The unique identifier of the entity',
+    example: 1,
   })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ example: '4x2', description: 'Name of the label type' })
+  @ApiProperty({ description: 'Name of the label type', example: '4x2' })
   @Column({ unique: true, nullable: false })
   labelTypeName: string;
 
@@ -24,8 +24,8 @@ export class LabelType {
    * 400(labelLength)x200
    */
   @ApiProperty({
-    example: '400',
     description: 'Length of the label in hundreths of an inch',
+    example: 400,
   })
   @Column({ nullable: false })
   labelTypeLength: number;
@@ -35,8 +35,8 @@ export class LabelType {
    * 400x200(labelWidth)
    */
   @ApiProperty({
-    example: '200',
     description: 'Width of the label in hundreths of an inch',
+    example: 200,
   })
   @Column({ nullable: false })
   labelTypeWidth: number;

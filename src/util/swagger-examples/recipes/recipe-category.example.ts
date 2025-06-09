@@ -1,13 +1,15 @@
+import { handleSetHas } from '../handlers/handlers';
 import { recipeExample } from './recipe.example';
 
-export function recipeCategoryExample(fnSet: Set<string>) {
+export function recipeCategoryExample(fnSet: Set<string>, shallow: boolean) {
   fnSet.add(recipeCategoryExample.name);
   return {
     id: 1,
+
     categoryName: 'Pie',
-    subCategories: fnSet.has(recipeCategoryExample.name)
-      ? undefined
-      : recipeCategoryExample(fnSet),
-    recipes: fnSet.has(recipeExample.name) ? undefined : recipeExample(fnSet),
+
+    subCategories: [handleSetHas(shallow, fnSet, recipeCategoryExample, false)],
+
+    recipes: [handleSetHas(shallow, fnSet, recipeExample, false)],
   };
 }

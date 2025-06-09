@@ -7,6 +7,8 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { recipeCategoryExample } from '../../../util/swagger-examples/recipes/recipe-category.example';
+import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
 import { RecipeCategory } from './recipe-category.entity';
 import { Recipe } from './recipe.entity';
 
@@ -38,7 +40,7 @@ export class RecipeSubCategory {
    * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
    */
   @ApiProperty({
-    example: {},
+    example: recipeCategoryExample(new Set<string>(), true),
     description: 'Category this subcategory is for',
     type: () => RecipeCategory,
   })
@@ -52,7 +54,7 @@ export class RecipeSubCategory {
    * Recipes belonging to the sub-category.
    */
   @ApiProperty({
-    example: [{}],
+    example: [recipeExample(new Set<string>(), true)],
     description: 'List of Recipes under the subcategory',
     type: () => Recipe,
     isArray: true,

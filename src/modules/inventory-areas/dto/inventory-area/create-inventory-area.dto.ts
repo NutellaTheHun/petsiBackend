@@ -1,9 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateInventoryAreaDto {
-    @ApiProperty({ example: 'Dry Storage, Walkin, Freezer', description: 'Name of the InventoryArea.' })
-    @IsString()
-    @IsNotEmpty()
-    readonly areaName: string;
+  @ApiProperty({
+    description: 'Name of the InventoryArea.',
+    example: 'Dry Storage',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly areaName: string;
 }

@@ -6,6 +6,9 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { inventoryItemPackageExample } from '../../../util/swagger-examples/inventory-items/inventory-item-package.example';
+import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
+import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from './inventory-item-package.entity';
@@ -46,7 +49,7 @@ export class InventoryItemSize {
    * - Example: 10 lb(measureUnit) of flour
    */
   @ApiProperty({
-    example: '',
+    example: unitOfMeasureExample(new Set<string>(), false),
     description: 'The unit of measure scaling the measureAmount property',
     type: UnitOfMeasure,
   })
@@ -57,7 +60,7 @@ export class InventoryItemSize {
    * Choice of {@link InventoryItemPackage} an inventory item is counted in. "Box", "Can", "Bag"
    */
   @ApiProperty({
-    example: 'example.packageTypeExample',
+    example: inventoryItemPackageExample(new Set<string>(), false),
     description: "The type of package for this item's size.",
     type: InventoryItemPackage,
   })
@@ -73,7 +76,7 @@ export class InventoryItemSize {
    * An item can have multiple valid InventoryItemSizes
    */
   @ApiProperty({
-    example: 'example.inventoryItemExample',
+    example: inventoryItemExample(new Set<string>(), true),
     description: 'The inventoryitem associated with this InventoryItemSize',
     type: () => InventoryItem,
   })

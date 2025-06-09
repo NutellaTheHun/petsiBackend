@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItem } from './menu-item.entity';
 
 /**
@@ -22,7 +23,7 @@ export class MenuItemCategory {
    * A list of {@link MenuItem} with who's {@link MenuItemCategory} property are set to this instance.
    */
   @ApiProperty({
-    example: [{}],
+    example: [menuItemExample(new Set<string>(), true)],
     description: 'MenuItems that are under the category instance',
     type: () => MenuItem,
     isArray: true,

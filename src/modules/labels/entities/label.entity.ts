@@ -6,6 +6,8 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { labelTypeExample } from '../../../util/swagger-examples/labels/label-type.example';
+import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { LabelType } from './label-type.entity';
 
@@ -30,7 +32,7 @@ export class Label {
    * - MenuItem: ChickenPotPie, Type: 4x6, imageUrl: image.com/frozenPotPie
    */
   @ApiProperty({
-    example: {},
+    example: menuItemExample(new Set<string>(), true),
     description: 'The MenuItem this label is for',
     type: MenuItem,
   })
@@ -41,8 +43,8 @@ export class Label {
    * Url of image stored in 3rd party source
    */
   @ApiProperty({
-    example: 'http://toMyImages.gov',
     description: 'URL path to the stored image file',
+    example: 'http://toMyImages.gov',
   })
   @Column({ type: 'text', nullable: false })
   imageUrl: string;
@@ -51,7 +53,7 @@ export class Label {
    * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"
    */
   @ApiProperty({
-    example: {},
+    example: labelTypeExample(new Set<string>(), false),
     description: 'The label type describing size characteristics',
     type: LabelType,
   })

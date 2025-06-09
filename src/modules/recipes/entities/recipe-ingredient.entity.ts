@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
+import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
+import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { Recipe } from './recipe.entity';
@@ -21,7 +24,7 @@ export class RecipeIngredient {
    *
    */
   @ApiProperty({
-    example: {},
+    example: recipeExample(new Set<string>(), true),
     description: 'Recipe the ingredient is for',
     type: () => Recipe,
   })
@@ -39,7 +42,7 @@ export class RecipeIngredient {
    * If a RecipeIngredient is referencing the inventoryItem property, the subRecipeIngredient property must be null/undefined.
    */
   @ApiPropertyOptional({
-    example: {},
+    example: inventoryItemExample(new Set<string>(), true),
     description:
       'The InventoryItem this ingredient uses, if this property is referenced, ingredientRecipe property must be null.',
     type: InventoryItem,
@@ -57,7 +60,7 @@ export class RecipeIngredient {
    * If a RecipeIngredient is referencing the subRecipeIngredient property, the inventoryItem property must be null/undefined.
    */
   @ApiPropertyOptional({
-    example: {},
+    example: null,
     description:
       'The Recipe this ingredient uses, if this property is referenced, ingredientInventoryItem must be null.',
     type: () => Recipe,
@@ -84,7 +87,7 @@ export class RecipeIngredient {
    * Example: 3 cups({@link UnitOfMeasure}) of Flour
    */
   @ApiProperty({
-    example: {},
+    example: unitOfMeasureExample(new Set<string>(), false),
     description: 'The unit of measure for the ingredient',
     type: UnitOfMeasure,
   })

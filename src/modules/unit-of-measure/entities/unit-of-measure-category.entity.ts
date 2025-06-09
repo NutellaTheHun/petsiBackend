@@ -7,6 +7,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { UnitOfMeasure } from './unit-of-measure.entity';
 
 /**
@@ -40,7 +41,7 @@ export class UnitOfMeasureCategory {
    * List of {@link UnitOfMeasure} under the category.
    */
   @ApiProperty({
-    example: [{}],
+    example: [unitOfMeasureExample(new Set<string>(), true)],
     description: 'List of units of measure under the category',
     type: () => UnitOfMeasure,
     isArray: true,
@@ -54,7 +55,7 @@ export class UnitOfMeasureCategory {
    * the baseUnit reference must be within the parent's category. (Cant see the base category of weight to be a unit of measure from volume)
    */
   @ApiPropertyOptional({
-    example: {},
+    example: unitOfMeasureExample(new Set<string>(), true),
     description:
       'The designated unit all other units under this category use for conversions.',
     type: () => UnitOfMeasure,

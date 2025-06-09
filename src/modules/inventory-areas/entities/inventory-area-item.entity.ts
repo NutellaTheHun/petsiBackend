@@ -74,7 +74,7 @@ export class InventoryAreaItem {
    * Creating new InventoryItemSizes is permitted during the creation of {@link InventoryAreaCount} (selects package and unit type on the fly)
    */
   @ApiProperty({
-    example: inventoryItemSizeExample(new Set<string>(), false),
+    example: inventoryItemSizeExample(new Set<string>(), true),
     description: 'The size of the inventory item recorded',
     type: InventoryItemSize,
   })

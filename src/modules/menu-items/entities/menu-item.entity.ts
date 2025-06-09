@@ -12,6 +12,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { menuItemCategoryExample } from '../../../util/swagger-examples/menu-items/menu-item-category.example';
+import { menuItemContainerItemExample } from '../../../util/swagger-examples/menu-items/menu-item-container-item.example';
+import { menuItemContainerOptionsExample } from '../../../util/swagger-examples/menu-items/menu-item-container-options.example';
+import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
 import { MenuItemCategory } from './menu-item-category.entity';
 import { MenuItemContainerItem } from './menu-item-container-item.entity';
 import { MenuItemContainerOptions } from './menu-item-container-options.entity';
@@ -33,7 +37,7 @@ export class MenuItem {
    * - Example: "Pie", "Pastry", "Merchandise", "Boxed Pastry", "Catering"
    */
   @ApiProperty({
-    example: 'Pie',
+    example: menuItemCategoryExample(new Set<string>(), true),
     description: 'The category assigned to the item',
     type: () => MenuItemCategory,
   })
@@ -103,7 +107,7 @@ export class MenuItem {
    * Some Pastries can be size "mini"
    */
   @ApiProperty({
-    example: [{}],
+    example: [menuItemSizeExample(new Set<string>(), false)],
     description: 'The sizes the item is available in',
     type: MenuItemSize,
     isArray: true,
@@ -146,7 +150,7 @@ export class MenuItem {
    * If a {@link MenuItem} references {@link definedContainerItems}, then {@link containerOptions} must be null/undefined
    */
   @ApiPropertyOptional({
-    example: [{}],
+    example: [menuItemContainerItemExample(new Set<string>(), false)],
     description:
       'When the item is a container for other MenuItems, and the contained is a fixed set of items per container size.',
     type: () => MenuItemContainerItem,
@@ -171,7 +175,7 @@ export class MenuItem {
    * If a {@link MenuItem} references {@link containerOptions}, then {@link definedContainerItems} must be null/undefined
    */
   @ApiPropertyOptional({
-    example: {},
+    example: menuItemContainerOptionsExample(new Set<string>(), false),
     description:
       'When the item is a container for other MenuItems, and the contained items can vary between a set of items and their sizes, totaling a declared size.',
     type: () => MenuItemContainerOptions,
