@@ -45,7 +45,7 @@ import { OrderMenuItemService } from '../services/order-menu-item.service';
 @ApiTags('Order Menu Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-@Controller('order-menu-item')
+@Controller('order-menu-items')
 @ApiExtraModels(OrderMenuItem)
 export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
   constructor(

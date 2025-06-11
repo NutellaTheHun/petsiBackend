@@ -46,7 +46,7 @@ import { OrderCategoryService } from '../services/order-category.service';
 @ApiTags('Order Category')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-@Controller('order-category')
+@Controller('order-categories')
 @ApiExtraModels(OrderCategory)
 export class OrderCategoryController extends ControllerBase<OrderCategory> {
   constructor(

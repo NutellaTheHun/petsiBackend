@@ -2,7 +2,11 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+  ThrottlerModuleOptions,
+} from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
@@ -27,73 +31,82 @@ import { selectTypeOrmModule } from './typeorm/typeorm.module';
 import { RequestIdMiddleware } from './util/RequestIdMiddleware';
 
 @Module({
-    imports: [
-        ConfigModule.forRoot({ isGlobal: true }),
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
 
-        selectTypeOrmModule([]),
+    selectTypeOrmModule([]),
 
-        CacheModule.register(),
+    CacheModule.register(),
 
-        ThrottlerModule.forRootAsync({
-            imports: [ConfigModule],
-            useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
-                throttlers: [
-                    {
-                        ttl: config.get('THROTTLE_TTL') || 60000,
-                        limit: config.get('THROTTLE_LIMIT') || 10,
-                    }
-                ]
-            }),
-            inject: [ConfigService],
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService): ThrottlerModuleOptions => ({
+        throttlers: [
+          {
+            ttl: config.get('THROTTLE_TTL') || 60000,
+            //limit: config.get('THROTTLE_LIMIT') || 500,
+            limit: config.get('NODE_ENV') === 'development' ? 999999 : 500,
+          },
+        ],
+      }),
+      inject: [ConfigService],
+    }),
+
+    LoggerModule.forRoot({
+      pinoHttp: {
+        genReqId: (req) => req['requestId'],
+        customProps: (req) => ({
+          requestId: req['requestId'],
         }),
-
-        LoggerModule.forRoot({
-            pinoHttp: {
-                genReqId: (req) => req['requestId'],
-                customProps: (req) => ({
-                    requestId: req['requestId'],
-                }),
-                transport: {
-                    target: 'pino-pretty',
-                    options: {
-                        colorize: true,
-                        translateTime: 'SYS:standard',
-                        ignore: 'pid,hostname',
-                    },
-                },
-            },
-        }),
-
-        AuthModule, AppLoggingModule, RequestContextModule, SeedModule,
-
-        OrdersModule, MenuItemsModule, TemplatesModule,
-        LabelsModule, InventoryAreasModule, InventoryItemsModule,
-        RecipesModule, UnitOfMeasureModule, UserModule, RoleModule,
-    ],
-
-    controllers: [AppController],
-
-    providers: [
-        AppService,
-        {
-            provide: APP_GUARD,
-            useClass: AuthGuard,
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'SYS:standard',
+            ignore: 'pid,hostname',
+          },
         },
-        {
-            provide: APP_GUARD,
-            useClass: RoleGuard,
-        },
-        {
-            provide: APP_GUARD,
-            useClass: ThrottlerGuard
-        }
-    ],
+      },
+    }),
+
+    AuthModule,
+    AppLoggingModule,
+    RequestContextModule,
+    SeedModule,
+
+    OrdersModule,
+    MenuItemsModule,
+    TemplatesModule,
+    LabelsModule,
+    InventoryAreasModule,
+    InventoryItemsModule,
+    RecipesModule,
+    UnitOfMeasureModule,
+    UserModule,
+    RoleModule,
+  ],
+
+  controllers: [AppController],
+
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RoleGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {
-    configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(RequestIdMiddleware)
-            .forRoutes('*');
-    }
-    constructor(private dataSource: DataSource) { }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+  constructor(private dataSource: DataSource) {}
 }

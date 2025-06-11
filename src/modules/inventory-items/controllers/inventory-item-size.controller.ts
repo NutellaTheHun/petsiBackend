@@ -43,7 +43,7 @@ import { InventoryItemSizeService } from '../services/inventory-item-size.servic
 @ApiTags('Inventory Item Size')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('inventory-item-size')
+@Controller('inventory-item-sizes')
 @ApiExtraModels(InventoryItemSize)
 export class InventoryItemSizeController extends ControllerBase<InventoryItemSize> {
   constructor(

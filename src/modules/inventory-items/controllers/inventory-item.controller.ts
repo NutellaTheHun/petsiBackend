@@ -42,7 +42,7 @@ import { InventoryItemService } from '../services/inventory-item.service';
 @ApiTags('Inventory Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('inventory-item')
+@Controller('inventory-items')
 @ApiExtraModels(InventoryItem)
 export class InventoryItemController extends ControllerBase<InventoryItem> {
   constructor(

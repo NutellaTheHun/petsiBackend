@@ -1,3 +1,3 @@
-export const ROLE_ADMIN = "Admin";
-export const ROLE_MANAGER = "Manager";
-export const ROLE_STAFF = "Staff";
+export const ROLE_ADMIN = 'admin';
+export const ROLE_MANAGER = 'manager';
+export const ROLE_STAFF = 'staff';

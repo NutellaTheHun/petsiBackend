@@ -28,7 +28,7 @@ export class AuthService {
         requestId,
       });
       throw new UnauthorizedException('Invalid username or password');
-    } // check if this will suffice
+    }
 
     if (!(await isPassHashMatch(rawPass, user.password))) {
       this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
@@ -37,13 +37,16 @@ export class AuthService {
       throw new UnauthorizedException('Invalid username or password');
     }
 
-    const payload = { sub: user.id, username: user.username };
+    const payload = {
+      sub: user.id,
+      username: user.username,
+      roles: user.roles.map((role) => role.roleName),
+    };
 
-    //Passport is a popular node.js auth library
-    //SHOULD SET HTTP-ONLY COOKIES, unless using an Auth framefork, (auth0?, Passport, or NextAuth.js)
-    //would also need to return users roles for the RoleGuard to work
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      access_token: await this.jwtService.signAsync(payload, {
+        expiresIn: '1hr',
+      }),
       roles: user.roles.map((role) => role.roleName),
     };
   }

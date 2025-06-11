@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { writeFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { GlobalHttpExceptionFilter } from './util/exceptions/global-http-exception-filter';
@@ -24,8 +25,9 @@ async function bootstrap() {
   const apiDocPath = configService.get('API_DOC_PATH') || 'api';
 
   const document = SwaggerModule.createDocument(app, config);
-  //console.log(JSON.stringify(document, null, 2));
   SwaggerModule.setup(apiDocPath, app, document);
+
+  writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
 
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),

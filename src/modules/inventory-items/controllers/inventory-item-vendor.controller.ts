@@ -42,7 +42,7 @@ import { InventoryItemVendorService } from '../services/inventory-item-vendor.se
 @ApiTags('Inventory Item Vendor')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('inventory-item-vendor')
+@Controller('inventory-item-vendors')
 @ApiExtraModels(InventoryItemVendor)
 export class InventoryItemVendorController extends ControllerBase<InventoryItemVendor> {
   constructor(

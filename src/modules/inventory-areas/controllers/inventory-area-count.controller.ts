@@ -42,7 +42,7 @@ import { InventoryAreaCountService } from '../services/inventory-area-count.serv
 @ApiTags('Inventory Area Count')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('inventory-area-count')
+@Controller('inventory-area-counts')
 @ApiExtraModels(InventoryAreaCount)
 export class InventoryAreaCountController extends ControllerBase<InventoryAreaCount> {
   constructor(

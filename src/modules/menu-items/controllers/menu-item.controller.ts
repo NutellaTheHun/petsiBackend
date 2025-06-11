@@ -46,7 +46,7 @@ import { MenuItemService } from '../services/menu-item.service';
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-@Controller('menu-item-size')
+@Controller('menu-items')
 @ApiExtraModels(MenuItem)
 export class MenuItemController extends ControllerBase<MenuItem> {
   constructor(

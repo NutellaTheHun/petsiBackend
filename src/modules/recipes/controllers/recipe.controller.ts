@@ -42,7 +42,7 @@ import { RecipeService } from '../services/recipe.service';
 @ApiTags('Recipe')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('recipe')
+@Controller('recipes')
 @ApiExtraModels(Recipe)
 export class RecipeController extends ControllerBase<Recipe> {
   constructor(

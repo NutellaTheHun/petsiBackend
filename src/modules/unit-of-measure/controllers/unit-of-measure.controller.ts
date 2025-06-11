@@ -42,7 +42,7 @@ import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 @ApiTags('Unit of Measure')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('unit-of-measure')
+@Controller('units-of-measure')
 @ApiExtraModels(UnitOfMeasure)
 export class UnitOfMeasureController extends ControllerBase<UnitOfMeasure> {
   constructor(

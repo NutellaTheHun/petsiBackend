@@ -42,7 +42,7 @@ import { RecipeSubCategoryService } from '../services/recipe-sub-category.servic
 @ApiTags('Recipe Sub Category')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
-@Controller('recipe-sub-category')
+@Controller('recipe-sub-categories')
 @ApiExtraModels(RecipeSubCategory)
 export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategory> {
   constructor(
