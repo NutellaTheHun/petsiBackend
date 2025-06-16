@@ -8033,8 +8033,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-11T20:50:04.102Z",
-              "updatedAt": "2025-06-11T20:50:04.102Z",
+              "createdAt": "2025-06-16T20:14:02.389Z",
+              "updatedAt": "2025-06-16T20:14:02.389Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8321,8 +8321,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-11T20:50:04.102Z",
-                "updatedAt": "2025-06-11T20:50:04.102Z",
+                "createdAt": "2025-06-16T20:14:02.390Z",
+                "updatedAt": "2025-06-16T20:14:02.390Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9020,7 +9020,16 @@
       },
       "UpdateMenuItemSizeDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "sizeName": {
+            "type": "string",
+            "description": "Name of MenuItemSize entity.",
+            "example": "medium"
+          }
+        },
+        "required": [
+          "sizeName"
+        ]
       },
       "CreateChildMenuItemContainerItemDto": {
         "type": "object",
@@ -10194,7 +10203,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-11T20:50:04.054Z",
+              "countDate": "2025-06-16T20:14:02.339Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10565,7 +10574,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-11T20:50:04.053Z",
+              "countDate": "2025-06-16T20:14:02.338Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
