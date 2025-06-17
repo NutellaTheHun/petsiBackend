@@ -133,7 +133,7 @@ export class InventoryAreaController extends ControllerBase<InventoryArea> {
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -145,7 +145,7 @@ export class InventoryAreaController extends ControllerBase<InventoryArea> {
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<InventoryArea>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       sortBy,

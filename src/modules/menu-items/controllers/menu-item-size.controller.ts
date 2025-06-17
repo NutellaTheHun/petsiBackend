@@ -137,7 +137,7 @@ export class MenuItemSizeController extends ControllerBase<MenuItemSize> {
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -149,7 +149,7 @@ export class MenuItemSizeController extends ControllerBase<MenuItemSize> {
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<MenuItemSize>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       sortBy,

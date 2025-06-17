@@ -61,7 +61,7 @@ export class ControllerBase<T extends ObjectLiteral> {
 
   @Get()
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -73,6 +73,10 @@ export class ControllerBase<T extends ObjectLiteral> {
     @Query('endDate') endDate?: string, // ISO format string
   ): Promise<{ items: T[]; nextCursor?: string }> {
     const requestId = this.requestContextService.getRequestId();
+    let relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
+
+    relations = relations.filter((r) => r !== undefined && r !== 'undefined');
+
     this.logger.logAction(
       this.controllerPrefix,
       requestId,

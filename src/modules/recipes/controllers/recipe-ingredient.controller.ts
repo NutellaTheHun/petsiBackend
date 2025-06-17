@@ -140,7 +140,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -152,7 +152,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<RecipeIngredient>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       sortBy,

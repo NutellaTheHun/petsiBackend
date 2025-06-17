@@ -133,7 +133,7 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: String })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     //@Query('sortBy') sortBy?: string,
@@ -145,7 +145,7 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<MenuItemContainerOptions>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       undefined,

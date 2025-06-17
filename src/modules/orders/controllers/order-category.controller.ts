@@ -137,7 +137,7 @@ export class OrderCategoryController extends ControllerBase<OrderCategory> {
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -149,7 +149,7 @@ export class OrderCategoryController extends ControllerBase<OrderCategory> {
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<OrderCategory>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       sortBy,

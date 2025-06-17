@@ -116,7 +116,14 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategory> {
       },
     },
   })
-  @ApiQuery({ name: 'relations', required: false, isArray: true, type: String })
+  @ApiQuery({
+    name: 'relations',
+    required: false,
+    isArray: true,
+    type: String,
+    style: 'form',
+    explode: true,
+  })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({
@@ -133,7 +140,7 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategory> {
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') relations?: string[],
+    @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -145,7 +152,7 @@ export class RecipeCategoryController extends ControllerBase<RecipeCategory> {
     //@Query('endDate') endDate?: string, // ISO format string
   ): Promise<PaginatedResult<RecipeCategory>> {
     return super.findAll(
-      relations,
+      rawRelations,
       limit,
       cursor,
       sortBy,

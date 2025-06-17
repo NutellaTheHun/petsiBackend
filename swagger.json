@@ -93,17 +93,6 @@
         "operationId": "UserController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -139,6 +128,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -339,17 +339,6 @@
         "operationId": "RoleController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -385,6 +374,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -585,17 +585,6 @@
         "operationId": "OrderController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -679,6 +668,17 @@
             "description": "End date (inclusive) in ISO format (e.g., 2025-05-31)",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -879,17 +879,6 @@
         "operationId": "OrderCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -925,6 +914,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -1206,17 +1206,6 @@
         "operationId": "OrderMenuItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -1252,6 +1241,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -1414,17 +1414,6 @@
         "operationId": "OrderContainerItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -1460,6 +1449,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -1541,17 +1541,6 @@
         "operationId": "MenuItemCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -1587,6 +1576,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -1787,17 +1787,6 @@
         "operationId": "MenuItemSizeController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -1833,6 +1822,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -2033,17 +2033,6 @@
         "operationId": "MenuItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -2095,6 +2084,17 @@
             "required": false,
             "in": "query",
             "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "array",
               "items": {
@@ -2381,17 +2381,6 @@
         "operationId": "MenuItemContainerItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -2427,6 +2416,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -2589,17 +2589,6 @@
         "operationId": "MenuItemContainerOptionsController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -2613,6 +2602,17 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -2775,17 +2775,6 @@
         "operationId": "MenuItemContainerRuleController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -2821,6 +2810,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -2902,17 +2902,6 @@
         "operationId": "TemplateController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -2948,6 +2937,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -3229,17 +3229,6 @@
         "operationId": "TemplateMenuItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -3275,6 +3264,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -3356,17 +3356,6 @@
         "operationId": "LabelController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -3418,6 +3407,17 @@
             "required": false,
             "in": "query",
             "description": "Filterable fields. Use format: field=value. Available filters:\n\n              - ** labelType ** (e.g., `labelType=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "array",
               "items": {
@@ -3623,17 +3623,6 @@
         "operationId": "LabelTypeController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -3669,6 +3658,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -3869,17 +3869,6 @@
         "operationId": "InventoryAreaController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -3915,6 +3904,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -4115,17 +4115,6 @@
         "operationId": "InventoryAreaCountController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -4200,6 +4189,17 @@
             "description": "End date (inclusive) in ISO format (e.g., 2025-05-31)",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -4481,17 +4481,6 @@
         "operationId": "InventoryAreaItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -4527,6 +4516,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -4608,17 +4608,6 @@
         "operationId": "InventoryItemController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -4670,6 +4659,17 @@
             "required": false,
             "in": "query",
             "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - ** category ** (e.g., `category=5`)\n\n          - ** vendor ** (e.g., `vendor=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "array",
               "items": {
@@ -4875,17 +4875,6 @@
         "operationId": "InventoryItemCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -4921,6 +4910,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -5121,17 +5121,6 @@
         "operationId": "InventoryItemPackageController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -5167,6 +5156,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -5448,17 +5448,6 @@
         "operationId": "InventoryItemSizeController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -5494,6 +5483,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -5575,17 +5575,6 @@
         "operationId": "InventoryItemVendorController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -5621,6 +5610,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -5821,17 +5821,6 @@
         "operationId": "UnitOfMeasureController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -5867,6 +5856,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -6067,17 +6067,6 @@
         "operationId": "UnitOfMeasureCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -6113,6 +6102,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -6313,17 +6313,6 @@
         "operationId": "RecipeController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -6375,6 +6364,17 @@
             "required": false,
             "in": "query",
             "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)\n\n          - **subCategory**",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
             "schema": {
               "type": "array",
               "items": {
@@ -6580,17 +6580,6 @@
         "operationId": "RecipeCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -6626,6 +6615,19 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -6907,17 +6909,6 @@
         "operationId": "RecipeSubCategoryController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -6953,6 +6944,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -7115,17 +7117,6 @@
         "operationId": "RecipeIngredientController_findAll",
         "parameters": [
           {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
             "name": "limit",
             "required": false,
             "in": "query",
@@ -7161,6 +7152,17 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],
@@ -8033,8 +8035,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-16T20:14:02.389Z",
-              "updatedAt": "2025-06-16T20:14:02.389Z",
+              "createdAt": "2025-06-17T20:08:55.750Z",
+              "updatedAt": "2025-06-17T20:08:55.750Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8321,8 +8323,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-16T20:14:02.390Z",
-                "updatedAt": "2025-06-16T20:14:02.390Z",
+                "createdAt": "2025-06-17T20:08:55.751Z",
+                "updatedAt": "2025-06-17T20:08:55.751Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10203,7 +10205,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-16T20:14:02.339Z",
+              "countDate": "2025-06-17T20:08:55.673Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10574,7 +10576,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-16T20:14:02.338Z",
+              "countDate": "2025-06-17T20:08:55.672Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
