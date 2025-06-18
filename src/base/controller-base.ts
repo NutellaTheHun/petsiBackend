@@ -24,7 +24,7 @@ import { ServiceBase } from './service-base';
 export class ControllerBase<T extends ObjectLiteral> {
   constructor(
     protected readonly entityService: ServiceBase<T>,
-    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
     public controllerPrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
@@ -73,6 +73,7 @@ export class ControllerBase<T extends ObjectLiteral> {
     @Query('endDate') endDate?: string, // ISO format string
   ): Promise<{ items: T[]; nextCursor?: string }> {
     const requestId = this.requestContextService.getRequestId();
+
     let relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
 
     relations = relations.filter((r) => r !== undefined && r !== 'undefined');

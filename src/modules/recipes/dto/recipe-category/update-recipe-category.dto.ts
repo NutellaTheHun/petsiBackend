@@ -1,12 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { plainToInstance, Transform } from 'class-transformer';
 import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { RecipeIngredientUnionResolver } from '../../utils/recipe-ingredient-union-resolver';
 import { CreateChildRecipeSubCategoryDto } from '../recipe-sub-category/create-child-recipe-sub-category.dto';
 import { UpdateChildRecipeSubCategoryDto } from '../recipe-sub-category/update-child-recipe-sub-category.dto copy';
 
 export class UpdateRecipeCategoryDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the RecipeCategory entity.',
     example: 'Pies',
   })
@@ -14,10 +13,10 @@ export class UpdateRecipeCategoryDto {
   @IsOptional()
   readonly categoryName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildRecipeSubCategoryDtos and UpdateChildRecipeSubCategoryDtos, child dtos are used when updating the parent RecipeCategory with created/updated child RecipeSubCategory entities.',
-    type: [UpdateChildRecipeSubCategoryDto],
+    type: [CreateChildRecipeSubCategoryDto],
     example: [
       {
         mode: 'create',
@@ -33,7 +32,16 @@ export class UpdateRecipeCategoryDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => RecipeIngredientUnionResolver)
+  //@Type(() => RecipeSubCategoryUnionResolver)
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value.map((obj: any) =>
+          obj?.mode === 'update'
+            ? plainToInstance(UpdateChildRecipeSubCategoryDto, obj)
+            : plainToInstance(CreateChildRecipeSubCategoryDto, obj),
+        )
+      : [],
+  )
   readonly subCategoryDtos?: (
     | CreateChildRecipeSubCategoryDto
     | UpdateChildRecipeSubCategoryDto

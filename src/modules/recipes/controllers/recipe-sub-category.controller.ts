@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,13 +30,13 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
-import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 
@@ -60,20 +61,23 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Recipe Sub Category' })
-    @ApiCreatedResponse({ description: 'Recipe Sub Category successfully created', type: RecipeSubCategory })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateRecipeSubCategoryDto })*/
-  /**
-   * Depreciated, only created as a child through {@link RecipeCategory}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Recipe Sub Category' })
+  @ApiCreatedResponse({
+    description: 'Recipe Sub Category successfully created',
+    type: RecipeSubCategory,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateRecipeSubCategoryDto })
   async create(
     @Body() dto: CreateRecipeSubCategoryDto,
   ): Promise<RecipeSubCategory> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
+
+    return result;
   }
 
   @Patch(':id')
@@ -91,7 +95,11 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateRecipeSubCategoryDto,
   ): Promise<RecipeSubCategory> {
-    return super.update(id, dto);
+    const result = super.update(id, dto);
+
+    await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
+
+    return result;
   }
 
   @Delete(':id')
@@ -102,7 +110,11 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
   })
   @ApiNotFoundResponse({ description: 'Recipe Sub Category not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = super.remove(id);
+
+    await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
+
+    return result;
   }
 
   @Get()

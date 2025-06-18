@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -30,7 +30,15 @@ async function bootstrap() {
   writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
 
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+    new ValidationPipe({
+      whitelist: true, // strips unknown properties
+      forbidNonWhitelisted: true, // throws on unknown properties
+      transform: true, // auto-transform payload to DTO instances
+      exceptionFactory: (errors) => {
+        console.error('Validation errors:', errors); // logs errors server-side
+        return new BadRequestException(errors);
+      },
+    }),
   );
 
   app.useLogger(app.get(Logger));

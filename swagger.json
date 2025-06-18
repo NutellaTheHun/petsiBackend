@@ -6785,6 +6785,133 @@
         ]
       }
     },
+    "/recipe-sub-categories": {
+      "post": {
+        "operationId": "RecipeSubCategoryController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecipeSubCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe Sub Category successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeSubCategory"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Recipe Sub Category",
+        "tags": [
+          "Recipe Sub Category"
+        ]
+      },
+      "get": {
+        "operationId": "RecipeSubCategoryController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - subCategoryName \n",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RecipeSubCategory"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Recipe Sub Categories",
+        "tags": [
+          "Recipe Sub Category"
+        ]
+      }
+    },
     "/recipe-sub-categories/{id}": {
       "patch": {
         "operationId": "RecipeSubCategoryController_update",
@@ -6899,95 +7026,6 @@
           }
         ],
         "summary": "Retrieves one Recipe Sub Category",
-        "tags": [
-          "Recipe Sub Category"
-        ]
-      }
-    },
-    "/recipe-sub-categories": {
-      "get": {
-        "operationId": "RecipeSubCategoryController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - subCategoryName \n",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/RecipeSubCategory"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Recipe Sub Categories",
         "tags": [
           "Recipe Sub Category"
         ]
@@ -8035,8 +8073,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-17T20:08:55.750Z",
-              "updatedAt": "2025-06-17T20:08:55.750Z",
+              "createdAt": "2025-06-18T18:28:17.541Z",
+              "updatedAt": "2025-06-18T18:28:17.541Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8323,8 +8361,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-17T20:08:55.751Z",
-                "updatedAt": "2025-06-17T20:08:55.751Z",
+                "createdAt": "2025-06-18T18:28:17.541Z",
+                "updatedAt": "2025-06-18T18:28:17.541Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10205,7 +10243,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-17T20:08:55.673Z",
+              "countDate": "2025-06-18T18:28:17.465Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10576,7 +10614,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-17T20:08:55.672Z",
+              "countDate": "2025-06-18T18:28:17.464Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -12180,33 +12218,7 @@
           }
         },
         "required": [
-          "categoryName",
-          "subCategoryDtos"
-        ]
-      },
-      "UpdateChildRecipeSubCategoryDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a RecipeCategory entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of the RecipeSubCategory to be updated.",
-            "example": 1
-          },
-          "subCategoryName": {
-            "type": "string",
-            "description": "Name of the RecipeSubCategory entity.",
-            "example": "name"
-          }
-        },
-        "required": [
-          "mode",
-          "id",
-          "subCategoryName"
+          "categoryName"
         ]
       },
       "UpdateRecipeCategoryDto": {
@@ -12232,14 +12244,10 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildRecipeSubCategoryDto"
+              "$ref": "#/components/schemas/CreateChildRecipeSubCategoryDto"
             }
           }
-        },
-        "required": [
-          "categoryName",
-          "subCategoryDtos"
-        ]
+        }
       },
       "CreateRecipeSubCategoryDto": {
         "type": "object",
@@ -12247,7 +12255,7 @@
           "subCategoryName": {
             "type": "string",
             "description": "Name of the RecipeSubCategory entity.",
-            "example": "name"
+            "example": "Sweet Pie"
           },
           "parentCategoryId": {
             "type": "number",
