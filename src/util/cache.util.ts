@@ -33,8 +33,10 @@ export async function trackFindAllKey(
 ): Promise<void> {
   const trackerKey = `${servicePrefix}-findAll-tracker`;
 
-  const existingKeys =
-    (await cacheManager.get<Set<string>>(trackerKey)) ?? new Set<string>();
+  /*const existingKeys =
+    (await cacheManager.get<Set<string>>(trackerKey)) ?? new Set<string>();*/
+  const existingKeysArr = (await cacheManager.get<string[]>(trackerKey)) ?? [];
+  const existingKeys = new Set(existingKeysArr);
 
   existingKeys.add(cacheKey);
 
