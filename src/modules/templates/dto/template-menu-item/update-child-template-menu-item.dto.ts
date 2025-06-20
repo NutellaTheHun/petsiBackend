@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -25,7 +25,7 @@ export class UpdateChildTemplateMenuItemDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Name to be used on the baking list representing the referenced MenuItem.',
     example: 'CRUMB',
@@ -34,7 +34,7 @@ export class UpdateChildTemplateMenuItemDto {
   @IsOptional()
   readonly displayName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the MenuItem entity being displayed on the Template.',
     example: 2,
   })
@@ -43,7 +43,7 @@ export class UpdateChildTemplateMenuItemDto {
   @IsPositive()
   readonly menuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The row position of the TemplateMenuItem on the parent Template.',
     example: 3,

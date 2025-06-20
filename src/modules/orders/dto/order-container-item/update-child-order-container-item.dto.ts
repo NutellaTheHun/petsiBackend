@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateChildOrderContainerItemDto {
@@ -19,7 +19,7 @@ export class UpdateChildOrderContainerItemDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       "Id of the MenuItem that is this item's container, not available to update, but required for validation",
     example: 2,
@@ -27,18 +27,18 @@ export class UpdateChildOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  parentContainerMenuItemId?: number;
+  readonly parentContainerMenuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the MenuItem being ordered',
     example: 3,
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  containedMenuItemId?: number;
+  readonly containedMenuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem',
     example: 4,
@@ -46,9 +46,9 @@ export class UpdateChildOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  containedMenuItemSizeId?: number;
+  readonly containedMenuItemSizeId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'amount of the componentMenuItem / componentItemSize being ordered',
     example: 5,
@@ -56,5 +56,5 @@ export class UpdateChildOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  quantity?: number;
+  readonly quantity?: number;
 }

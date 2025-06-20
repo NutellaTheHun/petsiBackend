@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 
 export class UpdateInventoryItemSizeDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of UnitofMeasure entity.',
     example: 1,
   })
@@ -11,7 +11,7 @@ export class UpdateInventoryItemSizeDto {
   @IsOptional()
   readonly measureUnitId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'the unit quantity of the UnitofMeasure entity.',
     example: 10,
   })
@@ -20,7 +20,7 @@ export class UpdateInventoryItemSizeDto {
   @IsOptional()
   readonly measureAmount?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of InventoryItemPackage entity.',
     example: 2,
   })
@@ -29,12 +29,12 @@ export class UpdateInventoryItemSizeDto {
   @IsOptional()
   readonly inventoryPackageId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Prsice paid for the InventoryItem entity.',
     example: 3.99,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
   @Min(0)
-  cost?: number;
+  readonly cost?: number;
 }

@@ -16,7 +16,7 @@ export class CreateChildOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  parentContainerMenuItemId: number;
+  readonly parentContainerMenuItemId: number;
 
   @ApiProperty({
     description: 'Id of the MenuItem that is being ordered',
@@ -25,7 +25,7 @@ export class CreateChildOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  containedMenuItemId: number;
+  readonly containedMenuItemId: number;
 
   @ApiProperty({
     description:
@@ -35,7 +35,7 @@ export class CreateChildOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  containedMenuItemSizeId: number;
+  readonly containedMenuItemSizeId: number;
 
   @ApiProperty({
     description:
@@ -45,5 +45,5 @@ export class CreateChildOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  quantity: number;
+  readonly quantity: number;
 }

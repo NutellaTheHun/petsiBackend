@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNumber,
@@ -8,22 +8,22 @@ import {
 } from 'class-validator';
 
 export class UpdateUserDto {
-  @ApiProperty({ description: '', example: 'jsmith123' })
+  @ApiPropertyOptional({ description: '', example: 'jsmith123' })
   @IsString()
   @IsOptional()
   readonly username?: string;
 
-  @ApiProperty({ description: '', example: 'jjsmithy@email.com' })
+  @ApiPropertyOptional({ description: '', example: 'jjsmithy@email.com' })
   @IsString()
   @IsOptional()
   readonly email?: string | null;
 
-  @ApiProperty({ description: '', example: 'strongPassword1234' })
+  @ApiPropertyOptional({ description: '', example: 'strongPassword1234' })
   @IsString()
   @IsOptional()
   readonly password?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of roles the user has.',
     example: [1, 2],
   })

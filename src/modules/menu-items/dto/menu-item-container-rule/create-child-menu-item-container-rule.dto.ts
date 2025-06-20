@@ -17,7 +17,7 @@ export class CreateChildMenuItemContainerRuleDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  validMenuItemId: number;
+  readonly validMenuItemId: number;
 
   @ApiProperty({
     description:
@@ -27,5 +27,5 @@ export class CreateChildMenuItemContainerRuleDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  validSizeIds: number[];
+  readonly validSizeIds: number[];
 }

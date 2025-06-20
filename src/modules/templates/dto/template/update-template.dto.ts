@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -12,7 +12,7 @@ import { CreateChildTemplateMenuItemDto } from '../template-menu-item/create-chi
 import { UpdateChildTemplateMenuItemDto } from '../template-menu-item/update-child-template-menu-item.dto';
 
 export class UpdateTemplateDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the Template entity.',
     example: 'Spring Pastries',
   })
@@ -20,7 +20,7 @@ export class UpdateTemplateDto {
   @IsOptional()
   readonly templateName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'If the template displays a list of pies. Templates display either Pies or Pastries.',
     example: false,
@@ -29,7 +29,7 @@ export class UpdateTemplateDto {
   @IsOptional()
   readonly isPie?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildTemplateMenuItemDtos and UpdateChildTemplateMenuItemDto, child dtos are used when updating a Template entity with created/updated child TemplateMenuItem entites.',
     type: [UpdateChildTemplateMenuItemDto],
@@ -53,7 +53,7 @@ export class UpdateTemplateDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TemplateMenuItemUnionResolver)
-  templateItemDtos?: (
+  readonly templateItemDtos?: (
     | CreateChildTemplateMenuItemDto
     | UpdateChildTemplateMenuItemDto
   )[];

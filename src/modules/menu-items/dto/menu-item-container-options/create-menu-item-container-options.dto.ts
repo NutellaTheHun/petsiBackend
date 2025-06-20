@@ -14,7 +14,7 @@ export class CreateMenuItemContainerOptionsDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  parentContainerMenuItemId: number;
+  readonly parentContainerMenuItemId: number;
 
   @ApiProperty({
     description:
@@ -34,7 +34,7 @@ export class CreateMenuItemContainerOptionsDto {
     ],
   })
   @IsArray()
-  containerRuleDtos: CreateChildMenuItemContainerRuleDto[];
+  readonly containerRuleDtos: CreateChildMenuItemContainerRuleDto[];
 
   @ApiProperty({
     description:
@@ -44,5 +44,5 @@ export class CreateMenuItemContainerOptionsDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  validQuantity: number;
+  readonly validQuantity: number;
 }

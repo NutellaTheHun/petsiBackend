@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -15,7 +15,7 @@ import { CreateChildRecipeIngredientDto } from '../recipe-ingredient/create-chil
 import { UpdateChildRecipeIngredientDto } from '../recipe-ingredient/update-child-recipe-ingedient.dto';
 
 export class UpdateRecipeDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the Recipe entity.',
     example: 'Blueberry Pie',
   })
@@ -23,7 +23,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly recipeName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the MenuItem that the recipe produces.',
     example: 'Blueberry Pie',
   })
@@ -32,7 +32,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly producedMenuItemId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'If the recipe is used as an ingredient.(Not sold directly)',
     example: false,
   })
@@ -40,7 +40,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly isIngredient?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
     example: 1,
@@ -50,7 +50,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly batchResultQuantity?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
     example: 2,
@@ -60,7 +60,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly batchResultMeasurementId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
     example: 3,
@@ -70,7 +70,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly servingSizeQuantity?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasure used to represent the unit size of what is sold.',
     example: 4,
@@ -80,7 +80,7 @@ export class UpdateRecipeDto {
   @IsOptional()
   readonly servingSizeMeasurementId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
     example: 5.99,
   })
@@ -89,7 +89,7 @@ export class UpdateRecipeDto {
   @Min(0)
   readonly salesPrice?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',
     example: 6,
   })
@@ -98,7 +98,7 @@ export class UpdateRecipeDto {
   @IsPositive()
   readonly categoryId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
     example: 7,
@@ -108,7 +108,7 @@ export class UpdateRecipeDto {
   @IsPositive()
   readonly subCategoryId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.',
     type: [UpdateChildRecipeIngredientDto],

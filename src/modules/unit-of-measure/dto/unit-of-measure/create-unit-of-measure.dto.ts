@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -24,7 +24,7 @@ export class CreateUnitOfMeasureDto {
   @IsNotEmpty()
   readonly abbreviation: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
     example: 1,
@@ -34,7 +34,7 @@ export class CreateUnitOfMeasureDto {
   @IsOptional()
   readonly categoryId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
     example: '3785.4080001023799014',

@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateInventoryItemVendorDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of InventoryItemVendor entity.',
     example: 'Driscols',
   })

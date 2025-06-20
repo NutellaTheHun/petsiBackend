@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -14,7 +14,7 @@ import { CreateChildInventoryItemSizeDto } from '../inventory-item-size/create-c
 import { UpdateChildInventoryItemSizeDto } from '../inventory-item-size/update-child-inventory-item-size.dto';
 
 export class UpdateInventoryItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of InventoryItem entity.',
     example: 'Sliced Almonds',
   })
@@ -22,7 +22,7 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   readonly itemName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
     example: 1,
   })
@@ -31,7 +31,7 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   readonly inventoryItemCategoryId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 2,
     description: 'Id of InventoryItemVendor entity.',
   })
@@ -40,7 +40,7 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   readonly vendorId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
     type: [UpdateChildInventoryItemSizeDto],
@@ -71,7 +71,7 @@ export class UpdateInventoryItemDto {
     | UpdateChildInventoryItemSizeDto
   )[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Price paid for the InventoryItem entity.',
     example: 5.99,
   })

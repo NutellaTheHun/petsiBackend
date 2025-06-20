@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateUnitOfMeasureDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the UnitofMeasure entity.',
     example: 'Kilogram',
   })
@@ -10,7 +10,7 @@ export class UpdateUnitOfMeasureDto {
   @IsOptional()
   readonly unitName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: "abbrieviation of the UnitofMeasure entity's name.",
     example: 'kg',
   })
@@ -18,7 +18,7 @@ export class UpdateUnitOfMeasureDto {
   @IsOptional()
   readonly abbreviation?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
     example: 1,
@@ -28,7 +28,7 @@ export class UpdateUnitOfMeasureDto {
   @IsOptional()
   readonly categoryId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
     example: '3785.4080001023799014',

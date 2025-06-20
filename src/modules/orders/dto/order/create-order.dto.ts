@@ -133,5 +133,5 @@ export class CreateOrderDto {
     ],
   })
   @IsArray()
-  orderedMenuItemDtos: CreateChildOrderMenuItemDto[];
+  readonly orderedMenuItemDtos: CreateChildOrderMenuItemDto[];
 }

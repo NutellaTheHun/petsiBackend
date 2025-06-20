@@ -32,7 +32,6 @@ export class UpdateRecipeCategoryDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  //@Type(() => RecipeSubCategoryUnionResolver)
   @Transform(({ value }) =>
     Array.isArray(value)
       ? value.map((obj: any) =>

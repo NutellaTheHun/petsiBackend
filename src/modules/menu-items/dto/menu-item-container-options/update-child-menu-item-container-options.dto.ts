@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
@@ -27,7 +27,7 @@ export class UpdateChildMenuItemContainerOptionsDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The list of MenuItems and their sizes that are allowed in the container',
     type: [CreateChildMenuItemContainerRuleDto],
@@ -47,12 +47,12 @@ export class UpdateChildMenuItemContainerOptionsDto {
   })
   @IsArray()
   @IsOptional()
-  containerRuleDtos?: (
+  readonly containerRuleDtos?: (
     | CreateChildMenuItemContainerRuleDto
     | UpdateChildMenuItemContainerRuleDto
   )[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.',
     example: 9,
@@ -60,5 +60,5 @@ export class UpdateChildMenuItemContainerOptionsDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  validQuantity?: number;
+  readonly validQuantity?: number;
 }

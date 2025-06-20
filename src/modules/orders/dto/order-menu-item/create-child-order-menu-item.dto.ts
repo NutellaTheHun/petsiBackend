@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
@@ -42,7 +42,7 @@ export class CreateChildOrderMenuItemDto {
   @IsPositive()
   readonly quantity: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a MenuItem with MenuItemContainerOptions',
     type: [CreateChildOrderContainerItemDto],

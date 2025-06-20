@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -17,7 +17,7 @@ import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-o
 import { UpdateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/update-child-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of MenuItemCategory entity. Pass a null value to remove category',
     example: 1,
@@ -27,7 +27,7 @@ export class UpdateMenuItemDto {
   @IsPositive()
   readonly categoryId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of MenuItem entity.',
     example: 'box of 6 muffins',
   })
@@ -36,7 +36,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   readonly itemName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of MenuItem entity that is the vegan version of the referencing MenuItem. Pass a null value to remove vegan option',
     example: 2,
@@ -46,7 +46,7 @@ export class UpdateMenuItemDto {
   @IsPositive()
   readonly veganOptionMenuId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       "Id of MenuItem entity that is the Take 'n Bake version of the referencing MenuItem. Pass a null value to remove take n bake option",
     example: 3,
@@ -56,7 +56,7 @@ export class UpdateMenuItemDto {
   @IsPositive()
   readonly takeNBakeOptionMenuId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       "Id of MenuItem entity that is the vegan Take 'n Bake version of the referencing MenuItem. Pass a null value to remove vegan take n bake option",
     example: 4,
@@ -66,7 +66,7 @@ export class UpdateMenuItemDto {
   @IsPositive()
   readonly veganTakeNBakeOptionMenuId?: number | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
     example: [5, 6],
@@ -77,7 +77,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   readonly validSizeIds?: number[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Is Pie of the Month, monthly rotating special, relevant for Pie baking lists.',
     example: false,
@@ -91,7 +91,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   readonly isParbake?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container',
     type: [UpdateChildMenuItemContainerItemDto],
@@ -124,7 +124,7 @@ export class UpdateMenuItemDto {
       )[]
     | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options',
     type: UpdateChildMenuItemContainerOptionsDto,

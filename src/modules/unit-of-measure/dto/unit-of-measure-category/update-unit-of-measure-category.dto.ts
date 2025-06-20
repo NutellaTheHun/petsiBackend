@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateUnitOfMeasureCategoryDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of UnitCategory entity.',
     example: 'Volume',
   })
@@ -10,7 +10,7 @@ export class UpdateUnitOfMeasureCategoryDto {
   @IsOptional()
   readonly categoryName?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.',
     example: 1,

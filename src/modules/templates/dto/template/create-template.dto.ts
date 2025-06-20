@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -17,7 +17,7 @@ export class CreateTemplateDto {
   @IsNotEmpty()
   readonly templateName: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'If the template displays a list of pies. Templates display either Pies or Pastries.',
     example: false,
@@ -26,7 +26,7 @@ export class CreateTemplateDto {
   @IsOptional()
   readonly isPie?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Array of CreateChildTemplateMenuItemDtos, child dtos are used when creating a Template entity with child TemplateMenuItem entites.',
     type: [CreateChildTemplateMenuItemDto],
@@ -47,5 +47,5 @@ export class CreateTemplateDto {
   })
   @IsOptional()
   @IsArray()
-  templateItemDtos?: CreateChildTemplateMenuItemDto[];
+  readonly templateItemDtos?: CreateChildTemplateMenuItemDto[];
 }

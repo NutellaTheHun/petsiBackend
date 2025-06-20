@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
@@ -27,7 +27,7 @@ export class UpdateChildOrderMenuItemDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of MenuItem entity being ordered.',
     example: 2,
   })
@@ -36,7 +36,7 @@ export class UpdateChildOrderMenuItemDto {
   @IsPositive()
   readonly menuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
     example: 3,
@@ -52,7 +52,7 @@ export class UpdateChildOrderMenuItemDto {
   @IsPositive()
   readonly quantity?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
     type: [UpdateChildOrderContainerItemDto],

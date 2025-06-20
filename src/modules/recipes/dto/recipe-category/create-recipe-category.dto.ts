@@ -28,5 +28,5 @@ export class CreateRecipeCategoryDto {
   })
   @IsOptional()
   @IsArray()
-  subCategoryDtos?: CreateChildRecipeSubCategoryDto[];
+  readonly subCategoryDtos?: CreateChildRecipeSubCategoryDto[];
 }

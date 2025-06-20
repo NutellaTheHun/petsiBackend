@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -15,7 +15,7 @@ import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-ord
 import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
 
 export class UpdateOrderDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of OrderType entity.',
     example: 1,
   })
@@ -24,7 +24,7 @@ export class UpdateOrderDto {
   @IsPositive()
   readonly orderCategoryId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the owner of the order',
     example: 'John Smith',
   })
@@ -32,7 +32,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly recipient?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of who is picking up the order or reciving the delivery',
     example: 'Jane Doe',
   })
@@ -40,7 +40,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly fulfillmentContactName?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Date the order is to be available or delivered.',
     example: '2025-06-08T20:26:45.883Z',
   })
@@ -48,7 +48,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly fulfillmentDate?: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: "Method of Order's dispersal.",
     example: 'delivery',
   })
@@ -56,7 +56,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly fulfillmentType?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '123 main st',
   })
@@ -64,7 +64,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly deliveryAddress?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '1234568',
   })
@@ -72,7 +72,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly phoneNumber?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: 'email@email.com',
   })
@@ -80,7 +80,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly email?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'special instruction for order',
     example: 'note information',
   })
@@ -88,7 +88,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly note?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
     example: false,
@@ -97,7 +97,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly isFrozen?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Is true if the order occurs on a weekly basis.',
     example: true,
   })
@@ -105,7 +105,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly isWeekly?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'If is weekly, is the day of the week the order is fulfilled',
     example: 'sunday',
   })
@@ -113,7 +113,7 @@ export class UpdateOrderDto {
   @IsOptional()
   readonly weeklyFulfillment?: string | null;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
     type: [UpdateChildOrderMenuItemDto],
@@ -163,7 +163,7 @@ export class UpdateOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderMenuItemUnionResolver)
-  orderedMenuItemDtos?: (
+  readonly orderedMenuItemDtos?: (
     | CreateChildOrderMenuItemDto
     | UpdateChildOrderMenuItemDto
   )[];

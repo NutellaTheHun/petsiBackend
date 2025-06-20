@@ -13,7 +13,7 @@ export class CreateMenuItemContainerRuleDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  parentContainerOptionsId: number;
+  readonly parentContainerOptionsId: number;
 
   @ApiProperty({
     description: 'Id of a MenuItem entity that is a valid component',
@@ -22,7 +22,7 @@ export class CreateMenuItemContainerRuleDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  validMenuItemId: number;
+  readonly validMenuItemId: number;
 
   @ApiProperty({
     description:
@@ -32,5 +32,5 @@ export class CreateMenuItemContainerRuleDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  validSizeIds: number[];
+  readonly validSizeIds: number[];
 }

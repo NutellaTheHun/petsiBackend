@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -25,7 +25,7 @@ export class UpdateChildRecipeSubCategoryDto {
   @IsNotEmpty()
   readonly id: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the RecipeSubCategory entity.',
     example: 'name',
   })

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
@@ -14,7 +14,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   readonly username: string;
 
-  @ApiProperty({ description: '', example: 'jjsmithy@email.com' })
+  @ApiPropertyOptional({ description: '', example: 'jjsmithy@email.com' })
   @IsString()
   @IsOptional()
   readonly email?: string;
@@ -24,7 +24,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   readonly password: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of roles the user has.',
     example: [1, 2],
   })

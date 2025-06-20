@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateRecipeSubCategoryDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of the RecipeSubCategory entity.',
     example: 'name',
   })

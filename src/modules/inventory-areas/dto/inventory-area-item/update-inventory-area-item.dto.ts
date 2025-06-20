@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { CreateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto';
 import { UpdateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 
 export class UpdateInventoryAreaItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id for InventoryItem entity.',
     type: InventoryItem,
     example: 1,
@@ -15,7 +15,7 @@ export class UpdateInventoryAreaItemDto {
   @IsOptional()
   readonly countedInventoryItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The amount of InventoryItem per unit.',
     example: 6,
   })
@@ -24,7 +24,7 @@ export class UpdateInventoryAreaItemDto {
   @IsOptional()
   readonly countedAmount?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
     example: 2,
@@ -34,7 +34,7 @@ export class UpdateInventoryAreaItemDto {
   @IsOptional()
   readonly countedItemSizeId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
     type: UpdateChildInventoryItemSizeDto,

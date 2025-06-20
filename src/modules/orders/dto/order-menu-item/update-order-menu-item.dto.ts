@@ -1,10 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { CreateChildOrderContainerItemDto } from '../order-container-item/create-child-order-container-item.dto';
 import { UpdateChildOrderContainerItemDto } from '../order-container-item/update-child-order-container-item.dto';
 
 export class UpdateOrderMenuItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of MenuItem entity being ordered.',
     example: 1,
   })
@@ -13,7 +13,7 @@ export class UpdateOrderMenuItemDto {
   @IsPositive()
   readonly menuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
     example: 2,
@@ -23,13 +23,13 @@ export class UpdateOrderMenuItemDto {
   @IsPositive()
   readonly menuItemSizeId?: number;
 
-  @ApiProperty({ description: 'Amount being ordered.', example: 3 })
+  @ApiPropertyOptional({ description: 'Amount being ordered.', example: 3 })
   @IsNumber()
   @IsOptional()
   @IsPositive()
   readonly quantity?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
     type: [UpdateChildOrderContainerItemDto],

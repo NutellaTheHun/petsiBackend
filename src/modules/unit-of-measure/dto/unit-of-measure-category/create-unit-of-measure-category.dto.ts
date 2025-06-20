@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNotEmpty,
   IsNumber,
@@ -16,7 +16,7 @@ export class CreateUnitOfMeasureCategoryDto {
   @IsNotEmpty()
   readonly categoryName: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.',
     example: 1,

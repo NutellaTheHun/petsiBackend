@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -20,7 +20,7 @@ export class CreateRecipeDto {
   @IsNotEmpty()
   readonly recipeName: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the MenuItem that the recipe produces.',
     example: 1,
   })
@@ -29,7 +29,7 @@ export class CreateRecipeDto {
   @IsOptional()
   readonly producedMenuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'If the recipe is used as an ingredient.(Not sold directly)',
     example: false,
   })
@@ -77,7 +77,7 @@ export class CreateRecipeDto {
   @IsNotEmpty()
   readonly servingSizeMeasurementId: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
     example: 6,
   })
@@ -86,7 +86,7 @@ export class CreateRecipeDto {
   @Min(0)
   readonly salesPrice?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',
     example: 7,
   })
@@ -95,7 +95,7 @@ export class CreateRecipeDto {
   @IsPositive()
   readonly categoryId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
     example: 8,
@@ -105,7 +105,7 @@ export class CreateRecipeDto {
   @IsPositive()
   readonly subCategoryId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child RecipeIngredient entites through creating the Recipe entity.',
     type: [CreateChildRecipeIngredientDto],
@@ -128,5 +128,5 @@ export class CreateRecipeDto {
   })
   @IsOptional()
   @IsArray()
-  ingredientDtos?: CreateChildRecipeIngredientDto[];
+  readonly ingredientDtos?: CreateChildRecipeIngredientDto[];
 }

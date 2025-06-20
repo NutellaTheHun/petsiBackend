@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { InventoryAreaItemUnionResolver } from '../../utils/inventory-area-item-union-resolver';
@@ -6,7 +6,7 @@ import { CreateChildInventoryAreaItemDto } from '../inventory-area-item/create-c
 import { UpdateChildInventoryAreaItemDto } from '../inventory-area-item/update-child-inventory-area-item.dto';
 
 export class UpdateInventoryAreaCountDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id for Inventory-Area entity.',
     example: 1,
   })
@@ -14,7 +14,7 @@ export class UpdateInventoryAreaCountDto {
   @IsOptional()
   readonly inventoryAreaId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Child Dtos are used when the the child entity is being created/updated through the parent, in this case, the InventoryAreaItem is being created or updated during the update request of the InventoryAreaCount (throught the InventoryAreaCount endpoint).',
     type: [UpdateChildInventoryAreaItemDto],

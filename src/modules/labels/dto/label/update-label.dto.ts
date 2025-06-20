@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class UpdateLabelDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of MenuItem entity.',
     example: 1,
   })
@@ -11,7 +11,7 @@ export class UpdateLabelDto {
   @IsPositive()
   readonly menuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'URL to image on offsite storage.',
     example: 'url/image.com',
   })
@@ -19,7 +19,7 @@ export class UpdateLabelDto {
   @IsOptional()
   readonly imageUrl?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of LabelType entity.',
     example: 2,
   })

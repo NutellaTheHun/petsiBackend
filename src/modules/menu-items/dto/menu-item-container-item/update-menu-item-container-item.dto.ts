@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateMenuItemContainerItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of a MenuItem entity. Represents the contained item.',
     example: 1,
   })
@@ -11,7 +11,7 @@ export class UpdateMenuItemContainerItemDto {
   @IsOptional()
   readonly containedMenuItemId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of a MenuItemSize entity. The size of the contained item',
     example: 2,
   })
@@ -20,7 +20,7 @@ export class UpdateMenuItemContainerItemDto {
   @IsOptional()
   readonly containedMenuItemSizeId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The amount of MenuItem/MenuItemSize combination',
     example: 3,
   })

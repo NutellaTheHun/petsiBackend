@@ -7764,9 +7764,7 @@
         },
         "required": [
           "username",
-          "email",
-          "password",
-          "roleIds"
+          "password"
         ]
       },
       "UpdateUserDto": {
@@ -7798,13 +7796,7 @@
               "type": "string"
             }
           }
-        },
-        "required": [
-          "username",
-          "email",
-          "password",
-          "roleIds"
-        ]
+        }
       },
       "CreateRoleDto": {
         "type": "object",
@@ -7827,10 +7819,7 @@
             "description": "Name of the Role entity.",
             "example": "manager"
           }
-        },
-        "required": [
-          "roleName"
-        ]
+        }
       },
       "MenuItemCategory": {
         "type": "object",
@@ -8415,8 +8404,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-20T21:39:28.993Z",
-              "updatedAt": "2025-06-20T21:39:28.993Z",
+              "createdAt": "2025-06-20T23:04:48.928Z",
+              "updatedAt": "2025-06-20T23:04:48.928Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8703,8 +8692,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-20T21:39:28.994Z",
-                "updatedAt": "2025-06-20T21:39:28.994Z",
+                "createdAt": "2025-06-20T23:04:48.929Z",
+                "updatedAt": "2025-06-20T23:04:48.929Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -8820,8 +8809,7 @@
           "mode",
           "menuItemId",
           "menuItemSizeId",
-          "quantity",
-          "orderedItemContainerDtos"
+          "quantity"
         ]
       },
       "CreateOrderDto": {
@@ -8965,11 +8953,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "parentContainerMenuItemId",
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
+          "id"
         ]
       },
       "UpdateChildOrderMenuItemDto": {
@@ -9028,10 +9012,7 @@
         "required": [
           "mode",
           "id",
-          "menuItemId",
-          "menuItemSizeId",
-          "quantity",
-          "orderedItemContainerDtos"
+          "quantity"
         ]
       },
       "UpdateOrderDto": {
@@ -9146,22 +9127,7 @@
               "$ref": "#/components/schemas/UpdateChildOrderMenuItemDto"
             }
           }
-        },
-        "required": [
-          "orderCategoryId",
-          "recipient",
-          "fulfillmentContactName",
-          "fulfillmentDate",
-          "fulfillmentType",
-          "deliveryAddress",
-          "phoneNumber",
-          "email",
-          "note",
-          "isFrozen",
-          "isWeekly",
-          "weeklyFulfillment",
-          "orderedMenuItemDtos"
-        ]
+        }
       },
       "CreateOrderCategoryDto": {
         "type": "object",
@@ -9184,10 +9150,7 @@
             "description": "Name of the OrderCategory entity.",
             "example": "Wholesale"
           }
-        },
-        "required": [
-          "categoryName"
-        ]
+        }
       },
       "CreateOrderMenuItemDto": {
         "type": "object",
@@ -9239,8 +9202,7 @@
           "orderId",
           "menuItemId",
           "menuItemSizeId",
-          "quantity",
-          "orderedItemContainerDtos"
+          "quantity"
         ]
       },
       "UpdateOrderMenuItemDto": {
@@ -9285,13 +9247,7 @@
               "$ref": "#/components/schemas/UpdateChildOrderContainerItemDto"
             }
           }
-        },
-        "required": [
-          "menuItemId",
-          "menuItemSizeId",
-          "quantity",
-          "orderedItemContainerDtos"
-        ]
+        }
       },
       "CreateOrderContainerItemDto": {
         "type": "object",
@@ -9353,13 +9309,7 @@
             "description": "amount of the containedMenuItem / containedItemSize being ordered",
             "example": 4
           }
-        },
-        "required": [
-          "parentContainerMenuItemId",
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
-        ]
+        }
       },
       "CreateMenuItemCategoryDto": {
         "type": "object",
@@ -9382,10 +9332,7 @@
             "example": "Pie",
             "description": "Name of the MenuItemCategory."
           }
-        },
-        "required": [
-          "categoryName"
-        ]
+        }
       },
       "CreateMenuItemSizeDto": {
         "type": "object",
@@ -9666,10 +9613,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
+          "id"
         ]
       },
       "UpdateChildMenuItemContainerOptionsDto": {
@@ -9719,9 +9663,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "containerRuleDtos",
-          "validQuantity"
+          "id"
         ]
       },
       "UpdateMenuItemDto": {
@@ -9830,16 +9772,7 @@
           }
         },
         "required": [
-          "categoryId",
-          "itemName",
-          "veganOptionMenuId",
-          "takeNBakeOptionMenuId",
-          "veganTakeNBakeOptionMenuId",
-          "validSizeIds",
-          "isPOTM",
-          "isParbake",
-          "definedContainerItemDtos",
-          "containerOptionDto"
+          "isParbake"
         ]
       },
       "CreateMenuItemContainerItemDto": {
@@ -9897,12 +9830,7 @@
             "description": "The amount of MenuItem/MenuItemSize combination",
             "example": 3
           }
-        },
-        "required": [
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
-        ]
+        }
       },
       "CreateMenuItemContainerOptionsDto": {
         "type": "object",
@@ -9983,11 +9911,7 @@
             "description": "The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.",
             "example": 1
           }
-        },
-        "required": [
-          "containerRuleDtos",
-          "validQuantity"
-        ]
+        }
       },
       "CreateMenuItemContainerRuleDto": {
         "type": "object",
@@ -10039,11 +9963,7 @@
               "type": "string"
             }
           }
-        },
-        "required": [
-          "validMenuItemId",
-          "validSizeIds"
-        ]
+        }
       },
       "Template": {
         "type": "object",
@@ -10234,9 +10154,7 @@
           }
         },
         "required": [
-          "templateName",
-          "isPie",
-          "templateItemDtos"
+          "templateName"
         ]
       },
       "UpdateChildTemplateMenuItemDto": {
@@ -10270,10 +10188,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "displayName",
-          "menuItemId",
-          "tablePosIndex"
+          "id"
         ]
       },
       "UpdateTemplateDto": {
@@ -10311,12 +10226,7 @@
               "$ref": "#/components/schemas/UpdateChildTemplateMenuItemDto"
             }
           }
-        },
-        "required": [
-          "templateName",
-          "isPie",
-          "templateItemDtos"
-        ]
+        }
       },
       "CreateTemplateMenuItemDto": {
         "type": "object",
@@ -10372,13 +10282,7 @@
             "description": "Id of the parent Template entity.",
             "example": 3
           }
-        },
-        "required": [
-          "displayName",
-          "menuItemId",
-          "tablePosIndex",
-          "templateId"
-        ]
+        }
       },
       "LabelType": {
         "type": "object",
@@ -10512,12 +10416,7 @@
             "description": "Id of LabelType entity.",
             "example": 2
           }
-        },
-        "required": [
-          "menuItemId",
-          "imageUrl",
-          "labelTypeId"
-        ]
+        }
       },
       "CreateLabelTypeDto": {
         "type": "object",
@@ -10562,12 +10461,7 @@
             "description": "The length of the label type in hundreths of an inch",
             "example": 100
           }
-        },
-        "required": [
-          "labelTypeName",
-          "labelTypeLength",
-          "labelTypeWidth"
-        ]
+        }
       },
       "InventoryArea": {
         "type": "object",
@@ -10585,7 +10479,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-20T21:39:28.898Z",
+              "countDate": "2025-06-20T23:04:48.838Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10956,7 +10850,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-20T21:39:28.897Z",
+              "countDate": "2025-06-20T23:04:48.837Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11122,10 +11016,7 @@
             "description": "Name of the InventoryArea.",
             "example": "Dry Storage"
           }
-        },
-        "required": [
-          "areaName"
-        ]
+        }
       },
       "CreateChildInventoryItemSizeDto": {
         "type": "object",
@@ -11283,11 +11174,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "measureUnitId",
-          "measureAmount",
-          "inventoryPackageId",
-          "cost"
+          "id"
         ]
       },
       "UpdateChildInventoryAreaItemDto": {
@@ -11337,11 +11224,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "countedInventoryItemId",
-          "countedAmount",
-          "countedItemSizeId",
-          "countedItemSizeDto"
+          "id"
         ]
       },
       "UpdateInventoryAreaCountDto": {
@@ -11389,11 +11272,7 @@
               "$ref": "#/components/schemas/UpdateChildInventoryAreaItemDto"
             }
           }
-        },
-        "required": [
-          "inventoryAreaId",
-          "itemCountDtos"
-        ]
+        }
       },
       "CreateInventoryAreaItemDto": {
         "type": "object",
@@ -11480,13 +11359,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "countedInventoryItemId",
-          "countedAmount",
-          "countedItemSizeId",
-          "countedItemSizeDto"
-        ]
+        }
       },
       "CreateInventoryItemDto": {
         "type": "object",
@@ -11577,14 +11450,7 @@
             "description": "Price paid for the InventoryItem entity.",
             "example": 5.99
           }
-        },
-        "required": [
-          "itemName",
-          "inventoryItemCategoryId",
-          "vendorId",
-          "itemSizeDtos",
-          "cost"
-        ]
+        }
       },
       "CreateInventoryItemCategoryDto": {
         "type": "object",
@@ -11607,10 +11473,7 @@
             "example": "Dry Goods",
             "description": "Name of InventoryItemCategory entity."
           }
-        },
-        "required": [
-          "itemCategoryName"
-        ]
+        }
       },
       "CreateInventoryItemPackageDto": {
         "type": "object",
@@ -11633,10 +11496,7 @@
             "example": "Can",
             "description": "Name for InventoryItemPackage entity."
           }
-        },
-        "required": [
-          "packageName"
-        ]
+        }
       },
       "CreateInventoryItemSizeDto": {
         "type": "object",
@@ -11699,10 +11559,7 @@
             "description": "Name of InventoryItemVendor entity.",
             "example": "Driscols"
           }
-        },
-        "required": [
-          "vendorName"
-        ]
+        }
       },
       "CreateUnitOfMeasureDto": {
         "type": "object",
@@ -11730,9 +11587,7 @@
         },
         "required": [
           "unitName",
-          "abbreviation",
-          "categoryId",
-          "conversionFactorToBase"
+          "abbreviation"
         ]
       },
       "UpdateUnitOfMeasureDto": {
@@ -11758,13 +11613,7 @@
             "description": "The conversion factor stored as a string to prevent rounding errors, to the base amount.",
             "example": "3785.4080001023799014"
           }
-        },
-        "required": [
-          "unitName",
-          "abbreviation",
-          "categoryId",
-          "conversionFactorToBase"
-        ]
+        }
       },
       "CreateUnitOfMeasureCategoryDto": {
         "type": "object",
@@ -11781,8 +11630,7 @@
           }
         },
         "required": [
-          "categoryName",
-          "baseUnitId"
+          "categoryName"
         ]
       },
       "UpdateUnitOfMeasureCategoryDto": {
@@ -11798,11 +11646,7 @@
             "description": "The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.",
             "example": 1
           }
-        },
-        "required": [
-          "categoryName",
-          "baseUnitId"
-        ]
+        }
       },
       "RecipeSubCategory": {
         "type": "object",
@@ -12282,8 +12126,6 @@
         },
         "required": [
           "mode",
-          "ingredientInventoryItemId",
-          "ingredientRecipeId",
           "quantity",
           "quantityMeasurementId"
         ]
@@ -12367,16 +12209,10 @@
         },
         "required": [
           "recipeName",
-          "producedMenuItemId",
-          "isIngredient",
           "batchResultQuantity",
           "batchResultMeasurementId",
           "servingSizeQuantity",
-          "servingSizeMeasurementId",
-          "salesPrice",
-          "categoryId",
-          "subCategoryId",
-          "ingredientDtos"
+          "servingSizeMeasurementId"
         ]
       },
       "UpdateChildRecipeIngredientDto": {
@@ -12415,11 +12251,7 @@
         },
         "required": [
           "mode",
-          "id",
-          "ingredientInventoryItemId",
-          "ingredientRecipeId",
-          "quantity",
-          "quantityMeasurementId"
+          "id"
         ]
       },
       "UpdateRecipeDto": {
@@ -12499,20 +12331,7 @@
               "$ref": "#/components/schemas/UpdateChildRecipeIngredientDto"
             }
           }
-        },
-        "required": [
-          "recipeName",
-          "producedMenuItemId",
-          "isIngredient",
-          "batchResultQuantity",
-          "batchResultMeasurementId",
-          "servingSizeQuantity",
-          "servingSizeMeasurementId",
-          "salesPrice",
-          "categoryId",
-          "subCategoryId",
-          "ingredientDtos"
-        ]
+        }
       },
       "CreateChildRecipeSubCategoryDto": {
         "type": "object",
@@ -12618,10 +12437,7 @@
             "description": "Name of the RecipeSubCategory entity.",
             "example": "name"
           }
-        },
-        "required": [
-          "subCategoryName"
-        ]
+        }
       },
       "CreateRecipeIngredientDto": {
         "type": "object",
@@ -12654,8 +12470,6 @@
         },
         "required": [
           "parentRecipeId",
-          "ingredientInventoryItemId",
-          "ingredientRecipeId",
           "quantity",
           "quantityMeasurementId"
         ]
@@ -12683,13 +12497,7 @@
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
             "example": 4
           }
-        },
-        "required": [
-          "quantity",
-          "quantityMeasurementId",
-          "ingredientInventoryItemId",
-          "ingredientRecipeId"
-        ]
+        }
       }
     }
   }
