@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -36,7 +38,6 @@ import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
-import { Recipe } from '../entities/recipe.entity';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 
 @ApiTags('Recipe Ingredient')
@@ -60,20 +61,23 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Recipe Ingredient' })
-    @ApiCreatedResponse({ description: 'Recipe Ingredient successfully created', type: RecipeIngredient })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateRecipeIngredientDto })*/
-  /**
-   * Depreciated, only created as a child through {@link Recipe}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Recipe Ingredient' })
+  @ApiCreatedResponse({
+    description: 'Recipe Ingredient successfully created',
+    type: RecipeIngredient,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateRecipeIngredientDto })
   async create(
     @Body() dto: CreateRecipeIngredientDto,
   ): Promise<RecipeIngredient> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('RecipeService', this.cacheManager);
+
+    return result;
   }
 
   @Patch(':id')
@@ -91,7 +95,11 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateRecipeIngredientDto,
   ): Promise<RecipeIngredient> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache('RecipeService', this.cacheManager);
+
+    return result;
   }
 
   @Delete(':id')
@@ -102,7 +110,11 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredient>
   })
   @ApiNotFoundResponse({ description: 'Recipe Ingredient not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache('RecipeService', this.cacheManager);
+
+    return result;
   }
 
   @Get()

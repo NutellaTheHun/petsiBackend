@@ -28,10 +28,6 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
     );
   }
 
-  /*public async create(dto: CreateRecipeSubCategoryDto): Promise<RecipeSubCategory> {
-        throw new BadRequestException();
-    }*/
-
   async findOneByName(
     name: string,
     relations?: Array<keyof RecipeSubCategory>,

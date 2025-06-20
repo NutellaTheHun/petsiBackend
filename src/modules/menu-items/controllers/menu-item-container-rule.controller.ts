@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -39,7 +41,6 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
-import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
 import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
 import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
 
@@ -58,26 +59,35 @@ export class MenuItemContainerRuleController extends ControllerBase<MenuItemCont
     super(
       optionSerivce,
       cacheManager,
-      'ComponentOptionController',
+      'MenuItemContainerRuleController',
       requestContextService,
       logger,
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Menu item container component option (1 rule of the container options determing a valid menuItem and its allowed sizes)' })
-    @ApiCreatedResponse({ description: 'Component Option successfully created', type: ComponentOption })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateComponentOptionDto })*/
-  /**
-   * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary:
+      'Creates a Menu item container component option (1 rule of the container options determing a valid menuItem and its allowed sizes)',
+  })
+  @ApiCreatedResponse({
+    description: 'Component Option successfully created',
+    type: MenuItemContainerRule,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateMenuItemContainerRuleDto })
   async create(
     @Body() dto: CreateMenuItemContainerRuleDto,
   ): Promise<MenuItemContainerRule> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache(
+      'MenuItemContainerOptionsService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Patch(':id')
@@ -93,7 +103,14 @@ export class MenuItemContainerRuleController extends ControllerBase<MenuItemCont
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateMenuItemContainerRuleDto,
   ): Promise<MenuItemContainerRule> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache(
+      'MenuItemContainerOptionsService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Delete(':id')
@@ -104,7 +121,14 @@ export class MenuItemContainerRuleController extends ControllerBase<MenuItemCont
   })
   @ApiNotFoundResponse({ description: 'Component Option not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache(
+      'MenuItemContainerOptionsService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Get()

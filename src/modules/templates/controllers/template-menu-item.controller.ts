@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -40,7 +42,6 @@ import {
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
-import { Template } from '../entities/template.entity';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
 
 @ApiTags('Template Menu Item')
@@ -64,20 +65,23 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItem>
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Template Menu Item' })
-    @ApiCreatedResponse({ description: 'Template Menu Item successfully created', type: TemplateMenuItem })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateTemplateMenuItemDto })*/
-  /**
-   * Depreciated, only created as a child through {@link Template}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Template Menu Item' })
+  @ApiCreatedResponse({
+    description: 'Template Menu Item successfully created',
+    type: TemplateMenuItem,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateTemplateMenuItemDto })
   async create(
     @Body() dto: CreateTemplateMenuItemDto,
   ): Promise<TemplateMenuItem> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('TemplateService', this.cacheManager);
+
+    return result;
   }
 
   @Patch(':id')
@@ -95,7 +99,11 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItem>
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateTemplateMenuItemDto,
   ): Promise<TemplateMenuItem> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache('TemplateService', this.cacheManager);
+
+    return result;
   }
 
   @Delete(':id')
@@ -106,7 +114,11 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItem>
   })
   @ApiNotFoundResponse({ description: 'Template Menu Item not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache('TemplateService', this.cacheManager);
+
+    return result;
   }
 
   @Get()

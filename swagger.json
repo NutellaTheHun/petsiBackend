@@ -1082,6 +1082,133 @@
         ]
       }
     },
+    "/order-menu-items": {
+      "post": {
+        "operationId": "OrderMenuItemController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderMenuItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order Menu Item successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMenuItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Order Menu Item",
+        "tags": [
+          "Order Menu Item"
+        ]
+      },
+      "get": {
+        "operationId": "OrderMenuItemController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - menuItem name '\n\n            - quantity",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrderMenuItem"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Order Menu Items",
+        "tags": [
+          "Order Menu Item"
+        ]
+      }
+    },
     "/order-menu-items/{id}": {
       "patch": {
         "operationId": "OrderMenuItemController_update",
@@ -1201,9 +1328,47 @@
         ]
       }
     },
-    "/order-menu-items": {
+    "/order-container-items": {
+      "post": {
+        "operationId": "OrderContainerItemController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderContainerItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Order Menu Item Component successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderContainerItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Order Menu Item Component",
+        "tags": [
+          "Order Container Item"
+        ]
+      },
       "get": {
-        "operationId": "OrderMenuItemController_findAll",
+        "operationId": "OrderContainerItemController_findAll",
         "parameters": [
           {
             "name": "limit",
@@ -1225,7 +1390,7 @@
             "name": "sortBy",
             "required": false,
             "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - menuItem name '\n\n            - quantity",
+            "description": "Field to sort by. Available options:\n\n                - containedItem name",
             "schema": {
               "type": "string"
             }
@@ -1266,7 +1431,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrderMenuItem"
+                        "$ref": "#/components/schemas/OrderContainerItem"
                       }
                     },
                     "nextCursor": {
@@ -1284,9 +1449,9 @@
             "access-token": []
           }
         ],
-        "summary": "Retrieves an array of Order Menu Items",
+        "summary": "Retrieves an array of Order Menu Item Component",
         "tags": [
-          "Order Menu Item"
+          "Order Container Item"
         ]
       }
     },
@@ -1409,96 +1574,7 @@
         ]
       }
     },
-    "/order-container-items": {
-      "get": {
-        "operationId": "OrderContainerItemController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n                - containedItem name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/OrderContainerItem"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Order Menu Item Component",
-        "tags": [
-          "Order Container Item"
-        ]
-      }
-    },
-    "/menu-categories": {
+    "/menu-item-categories": {
       "post": {
         "operationId": "MenuItemCategoryController_create",
         "parameters": [],
@@ -1625,7 +1701,7 @@
         ]
       }
     },
-    "/menu-categories/{id}": {
+    "/menu-item-categories/{id}": {
       "patch": {
         "operationId": "MenuItemCategoryController_update",
         "parameters": [
@@ -2257,6 +2333,133 @@
         ]
       }
     },
+    "/menu-item-container-items": {
+      "post": {
+        "operationId": "MenuItemContainerItemController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuItemContainerItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Menu Item Component successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItemContainerItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Menu Item Component",
+        "tags": [
+          "Menu Item Container Item"
+        ]
+      },
+      "get": {
+        "operationId": "MenuItemContainerItemController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - containedItem name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MenuItemContainerItem"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Menu Item Components",
+        "tags": [
+          "Menu Item Container Item"
+        ]
+      }
+    },
     "/menu-item-container-items/{id}": {
       "patch": {
         "operationId": "MenuItemContainerItemController_update",
@@ -2376,9 +2579,47 @@
         ]
       }
     },
-    "/menu-item-container-items": {
+    "/menu-item-container-options": {
+      "post": {
+        "operationId": "MenuItemContainerOptionsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuItemContainerOptionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Menu Item Component Options created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItemContainerOptions"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates Menu Item Component Options",
+        "tags": [
+          "Menu Item Container Options"
+        ]
+      },
       "get": {
-        "operationId": "MenuItemContainerItemController_findAll",
+        "operationId": "MenuItemContainerOptionsController_findAll",
         "parameters": [
           {
             "name": "limit",
@@ -2393,28 +2634,6 @@
             "required": false,
             "in": "query",
             "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - containedItem name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
               "type": "string"
             }
           },
@@ -2441,7 +2660,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/MenuItemContainerItem"
+                        "$ref": "#/components/schemas/MenuItemContainerOptions"
                       }
                     },
                     "nextCursor": {
@@ -2459,9 +2678,9 @@
             "access-token": []
           }
         ],
-        "summary": "Retrieves an array of Menu Item Components",
+        "summary": "Retrieves an array of Menu Item Component Options",
         "tags": [
-          "Menu Item Container Item"
+          "Menu Item Container Options"
         ]
       }
     },
@@ -2584,9 +2803,47 @@
         ]
       }
     },
-    "/menu-item-container-options": {
+    "/menu-item-container-rules": {
+      "post": {
+        "operationId": "MenuItemContainerRuleController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMenuItemContainerRuleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Component Option successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItemContainerRule"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Menu item container component option (1 rule of the container options determing a valid menuItem and its allowed sizes)",
+        "tags": [
+          "Menu Item Container Rules"
+        ]
+      },
       "get": {
-        "operationId": "MenuItemContainerOptionsController_findAll",
+        "operationId": "MenuItemContainerRuleController_findAll",
         "parameters": [
           {
             "name": "limit",
@@ -2601,6 +2858,28 @@
             "required": false,
             "in": "query",
             "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n                -validItem name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
               "type": "string"
             }
           },
@@ -2627,7 +2906,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/MenuItemContainerOptions"
+                        "$ref": "#/components/schemas/MenuItemContainerRule"
                       }
                     },
                     "nextCursor": {
@@ -2645,9 +2924,9 @@
             "access-token": []
           }
         ],
-        "summary": "Retrieves an array of Menu Item Component Options",
+        "summary": "Retrieves an array of Component Option",
         "tags": [
-          "Menu Item Container Options"
+          "Menu Item Container Rules"
         ]
       }
     },
@@ -2765,95 +3044,6 @@
           }
         ],
         "summary": "Retrieves one Component Option",
-        "tags": [
-          "Menu Item Container Rules"
-        ]
-      }
-    },
-    "/menu-item-container-rules": {
-      "get": {
-        "operationId": "MenuItemContainerRuleController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n                -validItem name",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/MenuItemContainerRule"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Component Option",
         "tags": [
           "Menu Item Container Rules"
         ]
@@ -3105,6 +3295,133 @@
         ]
       }
     },
+    "/template-menu-items": {
+      "post": {
+        "operationId": "TemplateMenuItemController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Template Menu Item successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateMenuItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Template Menu Item",
+        "tags": [
+          "Template Menu Item"
+        ]
+      },
+      "get": {
+        "operationId": "TemplateMenuItemController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - tablePosIndex",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TemplateMenuItem"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Template Menu Items",
+        "tags": [
+          "Template Menu Item"
+        ]
+      }
+    },
     "/template-menu-items/{id}": {
       "patch": {
         "operationId": "TemplateMenuItemController_update",
@@ -3219,95 +3536,6 @@
           }
         ],
         "summary": "Retrieves one Template Menu Item",
-        "tags": [
-          "Template Menu Item"
-        ]
-      }
-    },
-    "/template-menu-items": {
-      "get": {
-        "operationId": "TemplateMenuItemController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - tablePosIndex",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/TemplateMenuItem"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Template Menu Items",
         "tags": [
           "Template Menu Item"
         ]
@@ -4357,6 +4585,133 @@
         ]
       }
     },
+    "/inventory-area-items": {
+      "post": {
+        "operationId": "InventoryAreaItemController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryAreaItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Inventory Area Item successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryAreaItem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request: ValidationException or DatabaseException"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Inventory Area Item",
+        "tags": [
+          "Inventory Area Item"
+        ]
+      },
+      "get": {
+        "operationId": "InventoryAreaItemController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n      - countedItem \n\n      - amount",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventoryAreaItem"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Inventory Area Items",
+        "tags": [
+          "Inventory Area Item"
+        ]
+      }
+    },
     "/inventory-area-items/{id}": {
       "patch": {
         "operationId": "InventoryAreaItemController_update",
@@ -4471,95 +4826,6 @@
           }
         ],
         "summary": "Retrieves one Inventory Area Item",
-        "tags": [
-          "Inventory Area Item"
-        ]
-      }
-    },
-    "/inventory-area-items": {
-      "get": {
-        "operationId": "InventoryAreaItemController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n      - countedItem \n\n      - amount",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventoryAreaItem"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Inventory Area Items",
         "tags": [
           "Inventory Area Item"
         ]
@@ -5324,6 +5590,133 @@
         ]
       }
     },
+    "/inventory-item-sizes": {
+      "post": {
+        "operationId": "InventoryItemSizeController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Inventory Item Size successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItemSize"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Inventory Item Size",
+        "tags": [
+          "Inventory Item Size"
+        ]
+      },
+      "get": {
+        "operationId": "InventoryItemSizeController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - cost",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventoryItemSize"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Inventory Item Sizes",
+        "tags": [
+          "Inventory Item Size"
+        ]
+      }
+    },
     "/inventory-item-sizes/{id}": {
       "patch": {
         "operationId": "InventoryItemSizeController_update",
@@ -5438,95 +5831,6 @@
           }
         ],
         "summary": "Retrieves one Inventory Item Size",
-        "tags": [
-          "Inventory Item Size"
-        ]
-      }
-    },
-    "/inventory-item-sizes": {
-      "get": {
-        "operationId": "InventoryItemSizeController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - cost",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventoryItemSize"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Inventory Item Sizes",
         "tags": [
           "Inventory Item Size"
         ]
@@ -7031,6 +7335,133 @@
         ]
       }
     },
+    "/recipe-ingredients": {
+      "post": {
+        "operationId": "RecipeIngredientController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRecipeIngredientDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recipe Ingredient successfully created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipeIngredient"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (validation error)"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Creates a Recipe Ingredient",
+        "tags": [
+          "Recipe Ingredient"
+        ]
+      },
+      "get": {
+        "operationId": "RecipeIngredientController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - ingredient (by name)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RecipeIngredient"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Recipe Ingredients",
+        "tags": [
+          "Recipe Ingredient"
+        ]
+      }
+    },
     "/recipe-ingredients/{id}": {
       "patch": {
         "operationId": "RecipeIngredientController_update",
@@ -7145,95 +7576,6 @@
           }
         ],
         "summary": "Retrieves one Recipe Ingredient",
-        "tags": [
-          "Recipe Ingredient"
-        ]
-      }
-    },
-    "/recipe-ingredients": {
-      "get": {
-        "operationId": "RecipeIngredientController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - ingredient (by name)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/RecipeIngredient"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Recipe Ingredients",
         "tags": [
           "Recipe Ingredient"
         ]
@@ -8073,8 +8415,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-19T18:14:17.345Z",
-              "updatedAt": "2025-06-19T18:14:17.345Z",
+              "createdAt": "2025-06-20T21:39:28.993Z",
+              "updatedAt": "2025-06-20T21:39:28.993Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8361,8 +8703,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-19T18:14:17.345Z",
-                "updatedAt": "2025-06-19T18:14:17.345Z",
+                "createdAt": "2025-06-20T21:39:28.994Z",
+                "updatedAt": "2025-06-20T21:39:28.994Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10243,7 +10585,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-19T18:14:17.300Z",
+              "countDate": "2025-06-20T21:39:28.898Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10614,7 +10956,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-19T18:14:17.299Z",
+              "countDate": "2025-06-20T21:39:28.897Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

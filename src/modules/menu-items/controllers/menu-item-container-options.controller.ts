@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -40,7 +42,6 @@ import {
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
-import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
 
 @ApiTags('Menu Item Container Options')
@@ -58,26 +59,33 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
     super(
       optionsService,
       cacheManager,
-      'MenuItemSizeController',
+      'MenuItemContainerOptionsController',
       requestContextService,
       logger,
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates Menu Item Component Options' })
-    @ApiCreatedResponse({ description: 'Menu Item Component Options created', type: MenuItemComponentOptions })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateMenuItemComponentOptionsDto })*/
-  /**
-   * Depreciated, only created as a child through {@link MenuItem}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates Menu Item Component Options' })
+  @ApiCreatedResponse({
+    description: 'Menu Item Component Options created',
+    type: MenuItemContainerOptions,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateMenuItemContainerOptionsDto })
   async create(
     @Body() dto: CreateMenuItemContainerOptionsDto,
   ): Promise<MenuItemContainerOptions> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+    await invalidateFindAllCache(
+      'MenuItemContainerRuleService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Patch(':id')
@@ -95,7 +103,15 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateMenuItemContainerOptionsDto,
   ): Promise<MenuItemContainerOptions> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+    await invalidateFindAllCache(
+      'MenuItemContainerRuleService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Delete(':id')
@@ -106,7 +122,15 @@ export class MenuItemContainerOptionsController extends ControllerBase<MenuItemC
   })
   @ApiNotFoundResponse({ description: 'Menu Item Component Options not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+    await invalidateFindAllCache(
+      'MenuItemContainerRuleService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Get()

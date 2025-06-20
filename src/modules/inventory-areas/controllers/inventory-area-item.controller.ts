@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,13 +30,13 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
-import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
@@ -60,20 +61,28 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Inventory Area Item' })
-    @ApiCreatedResponse({ description: 'Inventory Area Item successfully created', type: InventoryAreaItem })
-    @ApiBadRequestResponse({ description: 'Bad request: ValidationException or DatabaseException' })
-    @ApiBody({ type: CreateInventoryAreaItemDto })*/
-  /**
-   * Depreciated, only created as a child through {@link InventoryAreaCount}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Inventory Area Item' })
+  @ApiCreatedResponse({
+    description: 'Inventory Area Item successfully created',
+    type: InventoryAreaItem,
+  })
+  @ApiBadRequestResponse({
+    description: 'Bad request: ValidationException or DatabaseException',
+  })
+  @ApiBody({ type: CreateInventoryAreaItemDto })
   async create(
     @Body() dto: CreateInventoryAreaItemDto,
   ): Promise<InventoryAreaItem> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache(
+      'InventoryAreaCountService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Patch(':id')
@@ -93,7 +102,14 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateInventoryAreaItemDto,
   ): Promise<InventoryAreaItem> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache(
+      'InventoryAreaCountService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Delete(':id')
@@ -104,7 +120,14 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
   })
   @ApiNotFoundResponse({ description: 'Inventory Area Item not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache(
+      'InventoryAreaCountService',
+      this.cacheManager,
+    );
+
+    return result;
   }
 
   @Get()

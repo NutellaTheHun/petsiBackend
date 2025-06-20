@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -11,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -29,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -40,7 +42,6 @@ import {
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
-import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 
 @ApiTags('Menu Item Container Item')
@@ -58,26 +59,29 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
     super(
       componentService,
       cacheManager,
-      'MenuItemComponentController',
+      'MenuItemContainerItemController',
       requestContextService,
       logger,
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Menu Item Component' })
-    @ApiCreatedResponse({ description: 'Menu Item Component successfully created', type: MenuItemContainerItem })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateMenuItemContainerItemDto })*/
-  /**
-   * Depreciated, only created as a child through {@link MenuItem}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Menu Item Component' })
+  @ApiCreatedResponse({
+    description: 'Menu Item Component successfully created',
+    type: MenuItemContainerItem,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateMenuItemContainerItemDto })
   async create(
     @Body() dto: CreateMenuItemContainerItemDto,
   ): Promise<MenuItemContainerItem> {
-    //return super.create(dto);
-    throw new BadRequestException();
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+
+    return result;
   }
 
   @Patch(':id')
@@ -95,7 +99,11 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateMenuItemContainerItemDto,
   ): Promise<MenuItemContainerItem> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+
+    return result;
   }
 
   @Delete(':id')
@@ -106,7 +114,11 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
   })
   @ApiNotFoundResponse({ description: 'Menu Item Component not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache('MenuItemService', this.cacheManager);
+
+    return result;
   }
 
   @Get()

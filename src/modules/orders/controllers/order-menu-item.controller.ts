@@ -10,12 +10,14 @@ import {
   Param,
   ParseIntPipe,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
   ApiExtraModels,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -28,6 +30,7 @@ import {
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../base/controller-base';
 import { PaginatedResult } from '../../../base/paginated-result';
+import { invalidateFindAllCache } from '../../../util/cache.util';
 import { Roles } from '../../../util/decorators/PublicRole';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -39,7 +42,6 @@ import {
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
-import { Order } from '../entities/order.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 
 @ApiTags('Order Menu Item')
@@ -63,17 +65,21 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
     );
   }
 
-  /*@Post()
-    @HttpCode(HttpStatus.CREATED)
-    @ApiOperation({ summary: 'Creates a Order Menu Item' })
-    @ApiCreatedResponse({ description: 'Order Menu Item successfully created', type: OrderMenuItem })
-    @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateOrderMenuItemDto })*/
-  /**
-   * Depreciated, only created as a child through {@link Order}.
-   */
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Creates a Order Menu Item' })
+  @ApiCreatedResponse({
+    description: 'Order Menu Item successfully created',
+    type: OrderMenuItem,
+  })
+  @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
+  @ApiBody({ type: CreateOrderMenuItemDto })
   async create(@Body() dto: CreateOrderMenuItemDto): Promise<OrderMenuItem> {
-    return super.create(dto);
+    const result = await super.create(dto);
+
+    await invalidateFindAllCache('OrderService', this.cacheManager);
+
+    return result;
   }
 
   @Patch(':id')
@@ -89,7 +95,11 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateOrderMenuItemDto,
   ): Promise<OrderMenuItem> {
-    return super.update(id, dto);
+    const result = await super.update(id, dto);
+
+    await invalidateFindAllCache('OrderService', this.cacheManager);
+
+    return result;
   }
 
   @Delete(':id')
@@ -98,7 +108,11 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
   @ApiNoContentResponse({ description: 'Order Menu Item successfully removed' })
   @ApiNotFoundResponse({ description: 'Order Menu Item not found' })
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    return super.remove(id);
+    const result = await super.remove(id);
+
+    await invalidateFindAllCache('OrderService', this.cacheManager);
+
+    return result;
   }
 
   @Get()

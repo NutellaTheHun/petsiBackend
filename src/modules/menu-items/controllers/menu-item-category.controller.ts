@@ -46,7 +46,7 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 @ApiTags('Menu Item Category')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
-@Controller('menu-categories')
+@Controller('menu-item-categories')
 @ApiExtraModels(MenuItemCategory)
 export class MenuItemCategoryController extends ControllerBase<MenuItemCategory> {
   constructor(
