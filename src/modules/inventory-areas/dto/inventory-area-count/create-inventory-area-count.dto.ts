@@ -1,12 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
-import { CreateChildInventoryAreaItemDto } from '../inventory-area-item/create-child-inventory-area-item.dto';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateInventoryAreaCountDto {
   @ApiProperty({
@@ -17,7 +10,7 @@ export class CreateInventoryAreaCountDto {
   @IsNotEmpty()
   readonly inventoryAreaId: number;
 
-  @ApiProperty({
+  /*@ApiProperty({
     description:
       'Child Dtos are used when the the child entity is being created/updated through the parent, in this case, the InventoryAreaItem is being created during the created of the InventoryAreaCount (throught the InventoryAreaCount endpoint).',
     type: [CreateChildInventoryAreaItemDto],
@@ -40,5 +33,5 @@ export class CreateInventoryAreaCountDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly itemCountDtos?: CreateChildInventoryAreaItemDto[];
+  readonly itemCountDtos?: CreateChildInventoryAreaItemDto[];*/
 }

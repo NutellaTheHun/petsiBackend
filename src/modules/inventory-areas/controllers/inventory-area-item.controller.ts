@@ -165,13 +165,19 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     enum: ['ASC', 'DESC'],
     description: 'Sort order: ASC or DESC',
   })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'search by InventoryItem name',
+  })
   async findAll(
     @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-    //@Query('search') search?: string,
+    @Query('search') search?: string,
     //@Query('filters') filters?: string[],
     //@Query('dateBy') dateBy?: string,
     //@Query('startDate') startDate?: string,  // ISO format string
@@ -183,7 +189,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
       cursor,
       sortBy,
       sortOrder,
-      undefined,
+      search,
       undefined,
       undefined,
       undefined,

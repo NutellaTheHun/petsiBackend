@@ -4666,6 +4666,15 @@
             }
           },
           {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "search by InventoryItem name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "relations",
             "required": false,
             "in": "query",
@@ -8404,8 +8413,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-23T18:13:22.637Z",
-              "updatedAt": "2025-06-23T18:13:22.637Z",
+              "createdAt": "2025-06-23T21:02:20.034Z",
+              "updatedAt": "2025-06-23T21:02:20.034Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8692,8 +8701,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-23T18:13:22.638Z",
-                "updatedAt": "2025-06-23T18:13:22.638Z",
+                "createdAt": "2025-06-23T21:02:20.035Z",
+                "updatedAt": "2025-06-23T21:02:20.035Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10479,7 +10488,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-23T18:13:22.591Z",
+              "countDate": "2025-06-23T21:02:19.969Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10850,7 +10859,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-23T18:13:22.591Z",
+              "countDate": "2025-06-23T21:02:19.969Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11018,6 +11027,29 @@
           }
         }
       },
+      "CreateInventoryAreaCountDto": {
+        "type": "object",
+        "properties": {
+          "inventoryAreaId": {
+            "type": "number",
+            "description": "Id for InventoryArea entity.",
+            "example": 1
+          }
+        },
+        "required": [
+          "inventoryAreaId"
+        ]
+      },
+      "UpdateInventoryAreaCountDto": {
+        "type": "object",
+        "properties": {
+          "inventoryAreaId": {
+            "type": "number",
+            "description": "Id for Inventory-Area entity.",
+            "example": 1
+          }
+        }
+      },
       "CreateChildInventoryItemSizeDto": {
         "type": "object",
         "properties": {
@@ -11054,225 +11086,6 @@
           "inventoryPackageId",
           "cost"
         ]
-      },
-      "CreateChildInventoryAreaItemDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "A requirement of all child dtos. Relevant when creating/updating an InventoryAreaCount entity.",
-            "example": "create"
-          },
-          "countedInventoryItemId": {
-            "type": "number",
-            "description": "Id for InventoryItem entity.",
-            "example": 1
-          },
-          "countedAmount": {
-            "type": "number",
-            "description": "The amount of InventoryItem per unit.",
-            "example": 6
-          },
-          "countedItemSizeId": {
-            "type": "number",
-            "description": "Is optional, if itemSizeId is null, itemSizeDto must be populated.",
-            "example": 2
-          },
-          "countedItemSizeDto": {
-            "description": "Is optional, if itemSizeDto is null, itemSizeId must be populated.",
-            "example": {
-              "mode": "create",
-              "measureUnitId": 1,
-              "measureAmount": 2,
-              "inventoryPackageId": 3,
-              "cost": 4.99
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CreateChildInventoryItemSizeDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "mode",
-          "countedInventoryItemId",
-          "countedAmount",
-          "countedItemSizeId",
-          "countedItemSizeDto"
-        ]
-      },
-      "CreateInventoryAreaCountDto": {
-        "type": "object",
-        "properties": {
-          "inventoryAreaId": {
-            "type": "number",
-            "description": "Id for InventoryArea entity.",
-            "example": 1
-          },
-          "itemCountDtos": {
-            "description": "Child Dtos are used when the the child entity is being created/updated through the parent, in this case, the InventoryAreaItem is being created during the created of the InventoryAreaCount (throught the InventoryAreaCount endpoint).",
-            "example": [
-              {
-                "mode": "create",
-                "countedInventoryItemId": 1,
-                "countedAmount": 2,
-                "countedItemSizeId": 3,
-                "countedItemSizeDto": {
-                  "mode": "create",
-                  "measureUnitId": 4,
-                  "measureAmount": 5,
-                  "inventoryPackageId": 6,
-                  "cost": 7.99
-                }
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateChildInventoryAreaItemDto"
-            }
-          }
-        },
-        "required": [
-          "inventoryAreaId",
-          "itemCountDtos"
-        ]
-      },
-      "UpdateChildInventoryItemSizeDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an InventoryItem entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of InventoryItemSize entity to be updated.",
-            "example": 1
-          },
-          "measureUnitId": {
-            "type": "number",
-            "description": "Id of UnitofMeasure entity.",
-            "example": 2
-          },
-          "measureAmount": {
-            "type": "number",
-            "description": "the unit quantity of the UnitofMeasure entity.",
-            "example": 10
-          },
-          "inventoryPackageId": {
-            "type": "number",
-            "description": "Id of InventoryItemPackage entity.",
-            "example": 3
-          },
-          "cost": {
-            "type": "number",
-            "description": "Price paid for the InventoryItem entity.",
-            "example": 4.99
-          }
-        },
-        "required": [
-          "mode",
-          "id"
-        ]
-      },
-      "UpdateChildInventoryAreaItemDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an Inventory-Area-Count entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of the InventoryAreaItem to update.",
-            "example": 1
-          },
-          "countedInventoryItemId": {
-            "type": "number",
-            "description": "Id for InventoryItem entity.",
-            "example": 2
-          },
-          "countedAmount": {
-            "type": "number",
-            "description": "The amount of InventoryItem per unit.",
-            "example": 6
-          },
-          "countedItemSizeId": {
-            "type": "number",
-            "description": "Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.",
-            "example": 3
-          },
-          "countedItemSizeDto": {
-            "description": "Creational or update Dto for InventoryItemSize. If countedItemSizeDto is null, countedItemSizeId must be populated.",
-            "example": {
-              "mode": "update",
-              "id": 5,
-              "measureUnitId": 1,
-              "measureAmount": 2,
-              "inventoryPackageId": 3,
-              "cost": 4.99
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UpdateChildInventoryItemSizeDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "mode",
-          "id"
-        ]
-      },
-      "UpdateInventoryAreaCountDto": {
-        "type": "object",
-        "properties": {
-          "inventoryAreaId": {
-            "type": "number",
-            "description": "Id for Inventory-Area entity.",
-            "example": 1
-          },
-          "itemCountDtos": {
-            "description": "Child Dtos are used when the the child entity is being created/updated through the parent, in this case, the InventoryAreaItem is being created or updated during the update request of the InventoryAreaCount (throught the InventoryAreaCount endpoint).",
-            "example": [
-              {
-                "mode": "update",
-                "id": 1,
-                "countedInventoryItemId": 2,
-                "countedAmount": 3,
-                "countedItemSizeId": 4,
-                "countedItemSizeDto": {
-                  "mode": "update",
-                  "id": 5,
-                  "measureUnitId": 6,
-                  "measureAmount": 7,
-                  "inventoryPackageId": 8,
-                  "cost": 9.99
-                }
-              },
-              {
-                "mode": "create",
-                "countedInventoryItemId": 10,
-                "countedAmount": 11,
-                "countedItemSizeId": 12,
-                "countedItemSizeDto": {
-                  "mode": "create",
-                  "measureUnitId": 13,
-                  "measureAmount": 14,
-                  "inventoryPackageId": 15,
-                  "cost": 16.99
-                }
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UpdateChildInventoryAreaItemDto"
-            }
-          }
-        }
       },
       "CreateInventoryAreaItemDto": {
         "type": "object",
@@ -11319,6 +11132,45 @@
           "countedAmount",
           "countedItemSizeId",
           "countedItemSizeDto"
+        ]
+      },
+      "UpdateChildInventoryItemSizeDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an InventoryItem entity.",
+            "example": "update"
+          },
+          "id": {
+            "type": "number",
+            "description": "Id of InventoryItemSize entity to be updated.",
+            "example": 1
+          },
+          "measureUnitId": {
+            "type": "number",
+            "description": "Id of UnitofMeasure entity.",
+            "example": 2
+          },
+          "measureAmount": {
+            "type": "number",
+            "description": "the unit quantity of the UnitofMeasure entity.",
+            "example": 10
+          },
+          "inventoryPackageId": {
+            "type": "number",
+            "description": "Id of InventoryItemPackage entity.",
+            "example": 3
+          },
+          "cost": {
+            "type": "number",
+            "description": "Price paid for the InventoryItem entity.",
+            "example": 4.99
+          }
+        },
+        "required": [
+          "mode",
+          "id"
         ]
       },
       "UpdateInventoryAreaItemDto": {

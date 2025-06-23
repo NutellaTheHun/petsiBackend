@@ -1,31 +1,34 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Double, Repository } from "typeorm";
-import { ValidatorBase } from "../../../base/validator-base";
-import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { CreateInventoryAreaCountDto } from "../dto/inventory-area-count/create-inventory-area-count.dto";
-import { UpdateInventoryAreaCountDto } from "../dto/inventory-area-count/update-inventory-area-count.dto";
-import { ValidationError } from "../../../util/exceptions/validation-error";
-import { AppLogger } from "../../app-logging/app-logger";
-import { RequestContextService } from "../../request-context/RequestContextService";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ValidatorBase } from '../../../base/validator-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCount> {
-    constructor(
-        @InjectRepository(InventoryAreaCount)
-        private readonly repo: Repository<InventoryAreaCount>,
-        logger: AppLogger,
-        requestContextService: RequestContextService,
-    ) { super(repo, 'InventoryAreaCount', requestContextService, logger); }
+  constructor(
+    @InjectRepository(InventoryAreaCount)
+    private readonly repo: Repository<InventoryAreaCount>,
+    logger: AppLogger,
+    requestContextService: RequestContextService,
+  ) {
+    super(repo, 'InventoryAreaCount', requestContextService, logger);
+  }
 
-    public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<void> {
-        this.throwIfErrors()
-    }
+  public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<void> {
+    this.throwIfErrors();
+  }
 
-    public async validateUpdate(id: number, dto: UpdateInventoryAreaCountDto): Promise<void> {
-
-        // no duplicate update dtos (same id)
-        if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
+  public async validateUpdate(
+    id: number,
+    dto: UpdateInventoryAreaCountDto,
+  ): Promise<void> {
+    // no duplicate update dtos (same id)
+    /*if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
             const resolvedDtos: { id: number }[] = [];
             for (const d of dto.itemCountDtos) {
                 if (d.mode === 'update') {
@@ -44,8 +47,8 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
                         sourceId: dup.id,
                     })));
             }
-        }
+        }*/
 
-        this.throwIfErrors()
-    }
+    this.throwIfErrors();
+  }
 }

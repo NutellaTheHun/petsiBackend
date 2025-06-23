@@ -58,4 +58,15 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }
+
+  protected applySearch(
+    query: SelectQueryBuilder<InventoryAreaItem>,
+    search: string,
+  ): void {
+    query
+      .leftJoin('entity.countedItem', 'inventoryItem')
+      .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
+        search: `%${search.toLowerCase()}%`,
+      });
+  }
 }
