@@ -1,11 +1,11 @@
-import { forwardRef, Inject } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Between, Repository, SelectQueryBuilder } from "typeorm";
-import { ServiceBase } from "../../../base/service-base";
-import { AppLogger } from "../../app-logging/app-logger";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { InventoryAreaCountBuilder } from "../builders/inventory-area-count.builder";
-import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
+import { forwardRef, Inject } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Between, Repository, SelectQueryBuilder } from 'typeorm';
+import { ServiceBase } from '../../../base/service-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -17,77 +17,104 @@ import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
  * - with returned list of inventoryItemCountIDs, update areaCount entity with itemIDs
  */
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
-    constructor(
-        @InjectRepository(InventoryAreaCount)
-        private readonly repo: Repository<InventoryAreaCount>,
+  constructor(
+    @InjectRepository(InventoryAreaCount)
+    private readonly repo: Repository<InventoryAreaCount>,
 
-        @Inject(forwardRef(() => InventoryAreaCountBuilder))
-        builder: InventoryAreaCountBuilder,
+    @Inject(forwardRef(() => InventoryAreaCountBuilder))
+    builder: InventoryAreaCountBuilder,
 
-        logger: AppLogger,
-        requestContextService: RequestContextService,
-    ) { super(repo, builder, 'InventoryAreaCountService', requestContextService, logger); }
+    logger: AppLogger,
+    requestContextService: RequestContextService,
+  ) {
+    super(
+      repo,
+      builder,
+      'InventoryAreaCountService',
+      requestContextService,
+      logger,
+    );
+  }
 
-    async findByAreaName(name: string, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
-        return await this.repo.find({
-            where: { inventoryArea: { areaName: name } },
-            relations
-        });
+  async findByAreaName(
+    name: string,
+    relations?: Array<keyof InventoryAreaCount>,
+  ): Promise<InventoryAreaCount[]> {
+    return await this.repo.find({
+      where: { inventoryArea: { areaName: name } },
+      relations,
+    });
+  }
+
+  /**
+   * finds all counts for the given day of date, ignores time.
+   */
+  async findByDate(
+    date: Date,
+    relations?: Array<keyof InventoryAreaCount>,
+  ): Promise<InventoryAreaCount[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    return await this.repo.find({
+      where: {
+        countDate: Between(startOfDay, endOfDay),
+      },
+      relations,
+    });
+  }
+
+  protected applySearch(
+    query: SelectQueryBuilder<InventoryAreaCount>,
+    search: string,
+  ): void {
+    //query.distinct(true);
+
+    query
+      .leftJoin('entity.countedItems', 'areaItem')
+      .leftJoin('areaItem.countedItem', 'inventoryItem')
+      .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
+        search: `%${search.toLowerCase()}%`,
+      });
+  }
+
+  protected applyFilters(
+    query: SelectQueryBuilder<InventoryAreaCount>,
+    filters: Record<string, string[]>,
+  ): void {
+    if (filters.inventoryArea && filters.inventoryArea.length > 0) {
+      query.andWhere('entity.inventoryArea IN (:...inventoryAreas)', {
+        inventoryAreas: filters.inventoryArea,
+      });
     }
+  }
 
-    /**
-     * finds all counts for the given day of date, ignores time.
-     */
-    async findByDate(date: Date, relations?: Array<keyof InventoryAreaCount>): Promise<InventoryAreaCount[]> {
-        const startOfDay = new Date(date);
-        startOfDay.setUTCHours(0, 0, 0, 0);
+  protected applyDate(
+    query: SelectQueryBuilder<InventoryAreaCount>,
+    startDate: string,
+    endDate?: string,
+    dateBy?: string,
+  ): void {
+    query.andWhere(`DATE(entity.countDate) >= :startDate`, { startDate });
 
-        const endOfDay = new Date(date);
-        endOfDay.setUTCHours(23, 59, 59, 999);
-
-        return await this.repo.find({
-            where: {
-                countDate: Between(startOfDay, endOfDay),
-            },
-            relations,
-        });
+    if (endDate) {
+      query.andWhere(`DATE(entity.countDate) <= :endDate`, { endDate });
     }
+  }
 
-    protected applySearch(query: SelectQueryBuilder<InventoryAreaCount>, search: string): void {
-
-        //query.distinct(true);
-
-        query
-            .leftJoin('entity.countedItems', 'areaItem')
-            .leftJoin('areaItem.countedItem', 'inventoryItem')
-            .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
-                search: `%${search.toLowerCase()}%`,
-            });
+  protected applySortBy(
+    query: SelectQueryBuilder<InventoryAreaCount>,
+    sortBy: string,
+    sortOrder?: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'countDate') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
+    } else if (sortBy === 'inventoryArea') {
+      query.leftJoinAndSelect('entity.inventoryArea', 'area');
+      query.orderBy(`area.areaName`, sortOrder);
     }
-
-    protected applyFilters(query: SelectQueryBuilder<InventoryAreaCount>, filters: Record<string, string>): void {
-        if (filters.inventoryArea) {
-            query.andWhere('entity.inventoryArea = :inventoryArea', { inventoryArea: filters.inventoryArea });
-        }
-    }
-
-    protected applyDate(query: SelectQueryBuilder<InventoryAreaCount>, startDate: string, endDate?: string, dateBy?: string): void {
-
-        query.andWhere(`DATE(entity.countDate) >= :startDate`, { startDate });
-
-        if (endDate) {
-            query.andWhere(`DATE(entity.countDate) <= :endDate`, { endDate });
-        }
-    }
-
-    protected applySortBy(query: SelectQueryBuilder<InventoryAreaCount>, sortBy: string, sortOrder?: 'ASC' | 'DESC'): void {
-        if (sortBy === 'countDate') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-        else if (sortBy === 'inventoryArea') {
-            query.leftJoinAndSelect('entity.inventoryArea', 'area');
-            query.orderBy(`area.areaName`, sortOrder);
-        }
-    }
-
+  }
 }

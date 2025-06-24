@@ -132,8 +132,8 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
     required: false,
     isArray: true,
     type: String,
-    description: `Filterable fields. Use format: field=value. Available filters:\n
-      - **inventoryArea** (e.g., \`inventoryArea=5\`)`,
+    description: `Filterable fields. Use format: filters=field,value. Available filters:\n
+      - **inventoryArea** (e.g., \`filters=inventoryArea,5\`)`,
   })
   @ApiQuery({
     name: 'sortBy',
@@ -178,7 +178,7 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
     @Query('search') search?: string,
     @Query('filters') filters?: string[],
-    //@Query('dateBy') dateBy?: string,
+    @Query('dateBy') dateBy?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ): Promise<PaginatedResult<InventoryAreaCount>> {
@@ -190,7 +190,7 @@ export class InventoryAreaCountController extends ControllerBase<InventoryAreaCo
       sortOrder,
       search,
       filters,
-      undefined,
+      dateBy,
       startDate,
       endDate,
     );

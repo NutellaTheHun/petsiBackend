@@ -78,6 +78,12 @@ export class ControllerBase<T extends ObjectLiteral> {
 
     relations = relations.filter((r) => r !== undefined && r !== 'undefined');
 
+    const filterArray = Array.isArray(filters)
+      ? filters
+      : filters
+        ? [filters]
+        : [];
+
     this.logger.logAction(
       this.controllerPrefix,
       requestId,
@@ -92,7 +98,7 @@ export class ControllerBase<T extends ObjectLiteral> {
           sortBy,
           sortOrder,
           search,
-          filters,
+          filters: filterArray,
           startDate,
           endDate,
         },
@@ -108,7 +114,7 @@ export class ControllerBase<T extends ObjectLiteral> {
         sortBy,
         sortOrder,
         search,
-        filters,
+        filters: filterArray,
         dateBy,
         startDate,
         endDate,
@@ -136,7 +142,7 @@ export class ControllerBase<T extends ObjectLiteral> {
       sortBy,
       sortOrder,
       search,
-      filters,
+      filters: filterArray,
       dateBy,
       startDate,
       endDate,

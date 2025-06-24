@@ -1,61 +1,81 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository, SelectQueryBuilder } from "typeorm";
-import { ServiceBase } from "../../../base/service-base";
-import { AppLogger } from "../../app-logging/app-logger";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { RecipeBuilder } from "../builders/recipe.builder";
-import { Recipe } from "../entities/recipe.entity";
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { ServiceBase } from '../../../base/service-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { RecipeBuilder } from '../builders/recipe.builder';
+import { Recipe } from '../entities/recipe.entity';
 
 @Injectable()
 export class RecipeService extends ServiceBase<Recipe> {
-    constructor(
-        @InjectRepository(Recipe)
-        private readonly repo: Repository<Recipe>,
+  constructor(
+    @InjectRepository(Recipe)
+    private readonly repo: Repository<Recipe>,
 
-        @Inject(forwardRef(() => RecipeBuilder))
-        builder: RecipeBuilder,
+    @Inject(forwardRef(() => RecipeBuilder))
+    builder: RecipeBuilder,
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'RecipeService', requestContextService, logger); }
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(repo, builder, 'RecipeService', requestContextService, logger);
+  }
 
-    async findOneByName(name: string, relations?: Array<keyof Recipe>): Promise<Recipe | null> {
-        return this.repo.findOne({ where: { recipeName: name }, relations });
-    }
+  async findOneByName(
+    name: string,
+    relations?: Array<keyof Recipe>,
+  ): Promise<Recipe | null> {
+    return this.repo.findOne({ where: { recipeName: name }, relations });
+  }
 
-    protected applySearch(query: SelectQueryBuilder<Recipe>, search: string): void {
-        query
-            .leftJoin('entity.ingredients', 'ingredient')
-            .leftJoin('ingredient.ingredientInventoryItem', 'inventoryItem')
-            .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
-            .andWhere(`
+  protected applySearch(
+    query: SelectQueryBuilder<Recipe>,
+    search: string,
+  ): void {
+    query
+      .leftJoin('entity.ingredients', 'ingredient')
+      .leftJoin('ingredient.ingredientInventoryItem', 'inventoryItem')
+      .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
+      .andWhere(
+        `
             LOWER(entity.recipeName) LIKE :search
             OR LOWER(inventoryItem.itemName) LIKE :search
             OR LOWER(subRecipe.recipeName) LIKE :search
-        `, { search: `%${search.toLowerCase()}%` });
-    }
+        `,
+        { search: `%${search.toLowerCase()}%` },
+      );
+  }
 
-    protected applyFilters(query: SelectQueryBuilder<Recipe>, filters: Record<string, string>): void {
-        if (filters.category) {
-            query.andWhere('entity.category = :category', { category: filters.category });
-        }
-        if (filters.subCategory) {
-            query.andWhere('entity.subCategory = :subCategory', { subCategory: filters.subCategory });
-        }
+  protected applyFilters(
+    query: SelectQueryBuilder<Recipe>,
+    filters: Record<string, string[]>,
+  ): void {
+    if (filters.category && filters.category.length > 0) {
+      query.andWhere('entity.category IN (:...categories)', {
+        categories: filters.category,
+      });
     }
+    if (filters.subCategory && filters.subCategory.length > 0) {
+      query.andWhere('entity.subCategory IN (:...subCategories)', {
+        subCategories: filters.subCategory,
+      });
+    }
+  }
 
-    protected applySortBy(query: SelectQueryBuilder<Recipe>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
-        if (sortBy === 'recipeName') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-        else if (sortBy === 'category') {
-            query.leftJoinAndSelect('entity.category', 'category');
-            query.orderBy(`category.categoryName`, sortOrder, 'NULLS LAST');
-        }
-        else if (sortBy === 'subCategory') {
-            query.leftJoinAndSelect('entity.subCategory', 'subCategory');
-            query.orderBy(`subCategory.subCategoryName`, sortOrder, 'NULLS LAST');
-        }
+  protected applySortBy(
+    query: SelectQueryBuilder<Recipe>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'recipeName') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
+    } else if (sortBy === 'category') {
+      query.leftJoinAndSelect('entity.category', 'category');
+      query.orderBy(`category.categoryName`, sortOrder, 'NULLS LAST');
+    } else if (sortBy === 'subCategory') {
+      query.leftJoinAndSelect('entity.subCategory', 'subCategory');
+      query.orderBy(`subCategory.subCategoryName`, sortOrder, 'NULLS LAST');
     }
+  }
 }

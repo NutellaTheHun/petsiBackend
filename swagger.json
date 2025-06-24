@@ -4393,12 +4393,20 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n      - **inventoryArea** (e.g., `inventoryArea=5`)",
+            "description": "Filterable fields. Use format: filters=field,value. Available filters:\n\n      - **inventoryArea** (e.g., `filters=inventoryArea,5`)",
             "schema": {
               "type": "array",
               "items": {
                 "type": "string"
               }
+            }
+          },
+          {
+            "name": "dateBy",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -4672,6 +4680,17 @@
             "description": "search by InventoryItem name",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -8413,8 +8432,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-23T21:02:20.034Z",
-              "updatedAt": "2025-06-23T21:02:20.034Z",
+              "createdAt": "2025-06-24T21:53:27.311Z",
+              "updatedAt": "2025-06-24T21:53:27.311Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8701,8 +8720,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-23T21:02:20.035Z",
-                "updatedAt": "2025-06-23T21:02:20.035Z",
+                "createdAt": "2025-06-24T21:53:27.311Z",
+                "updatedAt": "2025-06-24T21:53:27.311Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10488,7 +10507,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-23T21:02:19.969Z",
+              "countDate": "2025-06-24T21:53:27.265Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10859,7 +10878,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-23T21:02:19.969Z",
+              "countDate": "2025-06-24T21:53:27.264Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

@@ -178,7 +178,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
     @Query('search') search?: string,
-    //@Query('filters') filters?: string[],
+    @Query('filters') filters?: string[],
     //@Query('dateBy') dateBy?: string,
     //@Query('startDate') startDate?: string,  // ISO format string
     //@Query('endDate') endDate?: string, // ISO format string
@@ -190,7 +190,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
       sortBy,
       sortOrder,
       search,
-      undefined,
+      filters,
       undefined,
       undefined,
       undefined,

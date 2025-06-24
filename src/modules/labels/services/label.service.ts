@@ -9,40 +9,58 @@ import { Label } from '../entities/label.entity';
 
 @Injectable()
 export class LabelService extends ServiceBase<Label> {
-    constructor(
-        @InjectRepository(Label)
-        private readonly repo: Repository<Label>,
+  constructor(
+    @InjectRepository(Label)
+    private readonly repo: Repository<Label>,
 
-        builder: LabelBuilder,
+    builder: LabelBuilder,
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'LabelService', requestContextService, logger); }
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(repo, builder, 'LabelService', requestContextService, logger);
+  }
 
-    async findByMenuItemId(itemId: number, relations?: Array<keyof Label>): Promise<Label[]> {
-        return await this.repo.find({
-            where: {
-                menuItem: { id: itemId }
-            },
-            relations,
-        });
+  async findByMenuItemId(
+    itemId: number,
+    relations?: Array<keyof Label>,
+  ): Promise<Label[]> {
+    return await this.repo.find({
+      where: {
+        menuItem: { id: itemId },
+      },
+      relations,
+    });
+  }
+
+  protected applySearch(
+    query: SelectQueryBuilder<Label>,
+    search: string,
+  ): void {
+    query.andWhere('(LOWER(menuItem.itemName) LIKE :search)', {
+      search: `%${search.toLowerCase()}%`,
+    });
+  }
+
+  protected applyFilters(
+    query: SelectQueryBuilder<Label>,
+    filters: Record<string, string[]>,
+  ): void {
+    if (filters.labelType && filters.labelType.length > 0) {
+      query.andWhere('entity.labelType IN (:...labelTypes)', {
+        labelTypes: filters.labelType,
+      });
     }
+  }
 
-    protected applySearch(query: SelectQueryBuilder<Label>, search: string): void {
-        query
-            .andWhere('(LOWER(menuItem.itemName) LIKE :search)', { search: `%${search.toLowerCase()}%` });
+  protected applySortBy(
+    query: SelectQueryBuilder<Label>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'labelType') {
+      query.leftJoinAndSelect('entity.labelType', 'labelType');
+      query.orderBy(`labelType.labelTypeName`, sortOrder);
     }
-
-    protected applyFilters(query: SelectQueryBuilder<Label>, filters: Record<string, string>): void {
-        if (filters.labelType) {
-            query.andWhere('entity.labelType = :labelType', { labelType: filters.labelType });
-        }
-    }
-
-    protected applySortBy(query: SelectQueryBuilder<Label>, sortBy: string, sortOrder: 'ASC' | 'DESC'): void {
-        if (sortBy === 'labelType') {
-            query.leftJoinAndSelect('entity.labelType', 'labelType');
-            query.orderBy(`labelType.labelTypeName`, sortOrder);
-        }
-    }
+  }
 }

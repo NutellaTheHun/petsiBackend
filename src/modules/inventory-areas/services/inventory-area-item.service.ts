@@ -69,4 +69,18 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
         search: `%${search.toLowerCase()}%`,
       });
   }
+
+  protected applyFilters(
+    query: SelectQueryBuilder<InventoryAreaItem>,
+    filters: Record<string, string[]>,
+  ): void {
+    if (filters.inventoryAreaCount && filters.inventoryAreaCount.length > 0) {
+      query.andWhere(
+        'entity.parentInventoryCount IN (:...inventoryAreaCounts)',
+        {
+          inventoryAreaCounts: filters.inventoryAreaCount,
+        },
+      );
+    }
+  }
 }
