@@ -8432,8 +8432,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-24T21:53:27.311Z",
-              "updatedAt": "2025-06-24T21:53:27.311Z",
+              "createdAt": "2025-06-26T18:39:56.136Z",
+              "updatedAt": "2025-06-26T18:39:56.136Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8720,8 +8720,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-24T21:53:27.311Z",
-                "updatedAt": "2025-06-24T21:53:27.311Z",
+                "createdAt": "2025-06-26T18:39:56.137Z",
+                "updatedAt": "2025-06-26T18:39:56.137Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10507,7 +10507,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-24T21:53:27.265Z",
+              "countDate": "2025-06-26T18:39:56.077Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10878,7 +10878,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-24T21:53:27.264Z",
+              "countDate": "2025-06-26T18:39:56.076Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11724,6 +11724,7 @@
               "containerOptions": {}
             },
             "description": "The referenced MenuItem if this recipe produces one.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItem"
@@ -11766,9 +11767,11 @@
             }
           },
           "batchResultQuantity": {
-            "type": "object",
+            "type": "number",
             "example": 3,
-            "description": "The total unit amout of the batchResultUnitOfMeaure property produced by the recipe."
+            "description": "The total unit amout of the batchResultUnitOfMeaure property produced by the recipe.",
+            "format": "decimal",
+            "nullable": true
           },
           "batchResultMeasurement": {
             "example": {
@@ -11778,6 +11781,7 @@
               "category": {}
             },
             "description": "The unit of measure that descibes the total yield the recipe produces.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/UnitOfMeasure"
@@ -11785,9 +11789,11 @@
             ]
           },
           "servingSizeQuantity": {
-            "type": "object",
+            "type": "number",
             "example": 4,
-            "description": "A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property."
+            "description": "A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.",
+            "format": "decimal",
+            "nullable": true
           },
           "servingSizeMeasurement": {
             "example": {
@@ -11797,6 +11803,7 @@
               "category": {}
             },
             "description": "The unit of measure that describes the total sellable portions of the recipes yield",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/UnitOfMeasure"
@@ -11804,9 +11811,11 @@
             ]
           },
           "salesPrice": {
-            "type": "object",
+            "type": "number",
             "example": "34.99",
-            "description": "The set price per servingSizeQuantity."
+            "description": "The set price per servingSizeQuantity.",
+            "format": "decimal",
+            "nullable": true
           },
           "category": {
             "example": {
@@ -11820,6 +11829,7 @@
               ]
             },
             "description": "The category of the recipe",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/RecipeCategory"
@@ -11836,6 +11846,7 @@
               ]
             },
             "description": "The sub category of the recipe",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/RecipeSubCategory"
@@ -11847,8 +11858,7 @@
           "id",
           "recipeName",
           "isIngredient",
-          "ingredients",
-          "salesPrice"
+          "ingredients"
         ]
       },
       "RecipeIngredient": {
@@ -12022,7 +12032,8 @@
           "batchResultQuantity": {
             "type": "number",
             "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
-            "example": 2
+            "example": 2,
+            "format": "decimal"
           },
           "batchResultMeasurementId": {
             "type": "number",
@@ -12032,7 +12043,8 @@
           "servingSizeQuantity": {
             "type": "number",
             "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
-            "example": 4
+            "example": 4,
+            "format": "decimal"
           },
           "servingSizeMeasurementId": {
             "type": "number",
@@ -12042,7 +12054,8 @@
           "salesPrice": {
             "type": "number",
             "description": "The price of purchasing the serving size amount.",
-            "example": 6
+            "example": 6,
+            "format": "decimal"
           },
           "categoryId": {
             "type": "number",
@@ -12080,9 +12093,7 @@
         },
         "required": [
           "recipeName",
-          "batchResultQuantity",
           "batchResultMeasurementId",
-          "servingSizeQuantity",
           "servingSizeMeasurementId"
         ]
       },

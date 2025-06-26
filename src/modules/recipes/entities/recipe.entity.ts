@@ -46,6 +46,7 @@ export class Recipe {
     example: menuItemExample(new Set<string>(), true),
     description: 'The referenced MenuItem if this recipe produces one.',
     type: MenuItem,
+    nullable: true,
   })
   @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -93,6 +94,9 @@ export class Recipe {
     example: 3,
     description:
       'The total unit amout of the batchResultUnitOfMeaure property produced by the recipe.',
+    type: 'number',
+    format: 'decimal',
+    nullable: true,
   })
   @Column({ nullable: true, type: 'float' })
   @Check(`"batchResultQuantity" >= 1`)
@@ -110,6 +114,7 @@ export class Recipe {
     description:
       'The unit of measure that descibes the total yield the recipe produces.',
     type: UnitOfMeasure,
+    nullable: true,
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -128,6 +133,9 @@ export class Recipe {
     example: 4,
     description:
       'A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.',
+    type: 'number',
+    format: 'decimal',
+    nullable: true,
   })
   @Column({ nullable: true, type: 'float' })
   @Check(`"servingSizeQuantity" >= 1`)
@@ -144,6 +152,7 @@ export class Recipe {
     description:
       'The unit of measure that describes the total sellable portions of the recipes yield',
     type: UnitOfMeasure,
+    nullable: true,
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -152,9 +161,12 @@ export class Recipe {
   /**
    * The set price per servingSizeQuantity.
    */
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '34.99',
     description: 'The set price per servingSizeQuantity.',
+    type: 'number',
+    format: 'decimal',
+    nullable: true,
   })
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   @Check(`"salesPrice" >= 0`)
@@ -167,6 +179,7 @@ export class Recipe {
     example: recipeCategoryExample(new Set<string>(), true),
     description: 'The category of the recipe',
     type: () => RecipeCategory,
+    nullable: true,
   })
   @ManyToOne(() => RecipeCategory, (category) => category.recipes, {
     nullable: true,
@@ -181,6 +194,7 @@ export class Recipe {
     example: recipeSubCategoryExample(new Set<string>(), true),
     description: 'The sub category of the recipe',
     type: () => RecipeSubCategory,
+    nullable: true,
   })
   @ManyToOne(() => RecipeSubCategory, (subCategory) => subCategory.recipes, {
     nullable: true,

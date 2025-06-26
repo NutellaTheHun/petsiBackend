@@ -1,13 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsBoolean,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  Min,
+    IsArray,
+    IsBoolean,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    IsString,
+    Min,
 } from 'class-validator';
 import { CreateChildRecipeIngredientDto } from '../recipe-ingredient/create-child-recipe-ingredient.dto';
 
@@ -37,15 +37,17 @@ export class CreateRecipeDto {
   @IsOptional()
   readonly isIngredient?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
     example: 2,
+    type: 'number',
+    format: 'decimal',
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly batchResultQuantity: number;
+  readonly batchResultQuantity?: number | null;
 
   @ApiProperty({
     description:
@@ -57,15 +59,17 @@ export class CreateRecipeDto {
   @IsNotEmpty()
   readonly batchResultMeasurementId: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
     example: 4,
+    type: 'number',
+    format: 'decimal',
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly servingSizeQuantity: number;
+  readonly servingSizeQuantity?: number | null;
 
   @ApiProperty({
     description:
@@ -80,6 +84,8 @@ export class CreateRecipeDto {
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
     example: 6,
+    type: 'number',
+    format: 'decimal',
   })
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
