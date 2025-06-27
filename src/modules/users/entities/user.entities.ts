@@ -27,6 +27,9 @@ export class User {
   @ApiPropertyOptional({
     example: 'john@example.com',
     description: 'Email address',
+    type: 'string',
+    format: 'email',
+    nullable: true,
   })
   @Column({ nullable: true, type: 'varchar' })
   email?: string | null;

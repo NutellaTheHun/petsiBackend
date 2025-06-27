@@ -7682,9 +7682,11 @@
             "description": "Username of the user"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "example": "john@example.com",
-            "description": "Email address"
+            "description": "Email address",
+            "format": "email",
+            "nullable": true
           },
           "createdAt": {
             "format": "date-time",
@@ -8432,8 +8434,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-26T18:39:56.136Z",
-              "updatedAt": "2025-06-26T18:39:56.136Z",
+              "createdAt": "2025-06-27T21:57:58.976Z",
+              "updatedAt": "2025-06-27T21:57:58.976Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8720,8 +8722,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-26T18:39:56.137Z",
-                "updatedAt": "2025-06-26T18:39:56.137Z",
+                "createdAt": "2025-06-27T21:57:58.976Z",
+                "updatedAt": "2025-06-27T21:57:58.976Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10507,7 +10509,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-26T18:39:56.077Z",
+              "countDate": "2025-06-27T21:57:58.924Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10878,7 +10880,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-26T18:39:56.076Z",
+              "countDate": "2025-06-27T21:57:58.924Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
