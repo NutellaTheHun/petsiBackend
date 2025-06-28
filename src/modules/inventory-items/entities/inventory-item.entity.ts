@@ -43,6 +43,7 @@ export class InventoryItem {
     example: inventoryItemCategoryExample(new Set<string>(), true),
     description: 'The assigned category',
     type: () => InventoryItemCategory,
+    nullable: true,
   })
   @ManyToOne(
     () => InventoryItemCategory,
@@ -63,6 +64,7 @@ export class InventoryItem {
     example: inventoryItemVendorExample(new Set<string>(), true),
     description: 'The assigned Vendor',
     type: () => InventoryItemVendor,
+    nullable: true,
   })
   @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {
     nullable: true,

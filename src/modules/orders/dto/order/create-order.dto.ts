@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -29,9 +29,11 @@ export class CreateOrderDto {
   @IsNotEmpty()
   readonly recipient: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Name of who is picking up the order or reciving the delivery',
     example: 'Jane Doe',
+    nullable: true,
+    type: 'string',
   })
   @IsString()
   @IsOptional()
@@ -53,58 +55,73 @@ export class CreateOrderDto {
   @IsNotEmpty()
   readonly fulfillmentType: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '123 main st',
+    nullable: true,
+    type: 'string',
   })
   @IsString()
   @IsOptional()
   readonly deliveryAddress?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '1234568',
+    nullable: true,
+    type: 'string',
   })
   @IsString()
   @IsOptional()
   readonly phoneNumber?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: 'email@email.com',
+    nullable: true,
+    type: 'string',
+    format: 'email',
   })
   @IsString()
   @IsOptional()
   readonly email?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'special instruction for order',
     example: 'note information',
+    nullable: true,
+    type: 'string',
   })
   @IsString()
   @IsOptional()
   readonly note?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
     example: false,
+    nullable: true,
+    type: 'boolean',
   })
   @IsBoolean()
   @IsOptional()
   readonly isFrozen?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Is true if the order occurs on a weekly basis.',
     example: true,
+    nullable: true,
+    type: 'boolean',
   })
   @IsBoolean()
   @IsOptional()
   readonly isWeekly?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'If is weekly, is the day of the week the order is fulfilled',
     example: 'sunday',
+    nullable: true,
+    type: 'string',
   })
   @IsString()
   @IsOptional()

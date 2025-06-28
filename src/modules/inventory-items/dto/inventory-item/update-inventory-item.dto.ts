@@ -25,6 +25,8 @@ export class UpdateInventoryItemDto {
   @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
     example: 1,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsPositive()
@@ -34,6 +36,8 @@ export class UpdateInventoryItemDto {
   @ApiPropertyOptional({
     example: 2,
     description: 'Id of InventoryItemVendor entity.',
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsPositive()
@@ -61,6 +65,8 @@ export class UpdateInventoryItemDto {
         cost: 9.99,
       },
     ],
+    nullable: true,
+    isArray: true,
   })
   @IsOptional()
   @IsArray()
@@ -74,6 +80,8 @@ export class UpdateInventoryItemDto {
   @ApiPropertyOptional({
     description: 'Price paid for the InventoryItem entity.',
     example: 5.99,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()

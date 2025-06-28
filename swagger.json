@@ -8170,6 +8170,7 @@
               ]
             },
             "description": "The category assigned to the item",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItemCategory"
@@ -8184,6 +8185,7 @@
           "veganOption": {
             "example": {},
             "description": "The vegan counterpart to the item.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItem"
@@ -8193,6 +8195,7 @@
           "takeNBakeOption": {
             "example": {},
             "description": "The take n bake counterpart to the time",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItem"
@@ -8202,6 +8205,7 @@
           "veganTakeNBakeOption": {
             "example": {},
             "description": "The vegan take n bake option for the item",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItem"
@@ -8209,16 +8213,19 @@
             ]
           },
           "validSizes": {
-            "example": [
-              {
-                "id": 1,
-                "name": "medium"
-              }
-            ],
-            "description": "The sizes the item is available in",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/MenuItemSize"
+              "example": [
+                {
+                  "id": 1,
+                  "name": "medium"
+                }
+              ],
+              "description": "The sizes the item is available in",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/MenuItemSize"
+              }
             }
           },
           "isPOTM": {
@@ -8299,6 +8306,7 @@
               "validQuantity": 1
             },
             "description": "When the item is a container for other MenuItems, and the contained items can vary between a set of items and their sizes, totaling a declared size.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/MenuItemContainerOptions"
@@ -8320,11 +8328,11 @@
         },
         "required": [
           "id",
-          "category",
           "itemName",
           "validSizes",
           "isPOTM",
           "isParbake",
+          "definedContainerItems",
           "createdAt",
           "updatedAt"
         ]
@@ -8434,8 +8442,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-27T21:57:58.976Z",
-              "updatedAt": "2025-06-27T21:57:58.976Z",
+              "createdAt": "2025-06-28T21:21:08.677Z",
+              "updatedAt": "2025-06-28T21:21:08.677Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8591,29 +8599,35 @@
             "description": "The method of transferring the order to the recipient/fulfillmentContactName (pickup or delivery)"
           },
           "fulfillmentContactName": {
-            "type": "object",
+            "type": "string",
             "example": "Marcus Bolognese",
-            "description": "If the order is for delivery and the recipient property isn't who is recieving the order"
+            "description": "If the order is for delivery and the recipient property isn't who is recieving the order",
+            "nullable": true
           },
           "deliveryAddress": {
-            "type": "object",
+            "type": "string",
             "example": "1 Broken Dreams Blvd",
-            "description": "If a delivery order, that address to deliver"
+            "description": "If a delivery order, that address to deliver",
+            "nullable": true
           },
           "phoneNumber": {
-            "type": "object",
+            "type": "string",
             "example": "555-420-6969",
-            "description": "Phone number associated with order"
+            "description": "Phone number associated with order",
+            "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "example": "email@email.com",
-            "description": "email associated with order"
+            "description": "email associated with order",
+            "nullable": true,
+            "format": "email"
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "example": "This is a note",
-            "description": "an extra information regarding the order"
+            "description": "an extra information regarding the order",
+            "nullable": true
           },
           "isFrozen": {
             "type": "boolean",
@@ -8626,9 +8640,10 @@
             "description": "A flag if a order occurs on a weekly basis. A traditional order has isWeekly=false (upon fulfillment the order is completed, while a wholesale standing order could occur every thursday)"
           },
           "weeklyFulfillment": {
-            "type": "object",
+            "type": "string",
             "example": "tuesday",
-            "description": "If the order isWeekly is set to true, the day of the week the order is fulfilled on."
+            "description": "If the order isWeekly is set to true, the day of the week the order is fulfilled on.",
+            "nullable": true
           },
           "orderedItems": {
             "example": [
@@ -8722,8 +8737,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-27T21:57:58.976Z",
-                "updatedAt": "2025-06-27T21:57:58.976Z",
+                "createdAt": "2025-06-28T21:21:08.677Z",
+                "updatedAt": "2025-06-28T21:21:08.677Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -8858,7 +8873,8 @@
           "fulfillmentContactName": {
             "type": "string",
             "description": "Name of who is picking up the order or reciving the delivery",
-            "example": "Jane Doe"
+            "example": "Jane Doe",
+            "nullable": true
           },
           "fulfillmentDate": {
             "format": "date-time",
@@ -8874,37 +8890,45 @@
           "deliveryAddress": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "123 main st"
+            "example": "123 main st",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "1234568"
+            "example": "1234568",
+            "nullable": true
           },
           "email": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "email@email.com"
+            "example": "email@email.com",
+            "nullable": true,
+            "format": "email"
           },
           "note": {
             "type": "string",
             "description": "special instruction for order",
-            "example": "note information"
+            "example": "note information",
+            "nullable": true
           },
           "isFrozen": {
             "type": "boolean",
             "description": "A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.",
-            "example": false
+            "example": false,
+            "nullable": true
           },
           "isWeekly": {
             "type": "boolean",
             "description": "Is true if the order occurs on a weekly basis.",
-            "example": true
+            "example": true,
+            "nullable": true
           },
           "weeklyFulfillment": {
             "type": "string",
             "description": "If is weekly, is the day of the week the order is fulfilled",
-            "example": "sunday"
+            "example": "sunday",
+            "nullable": true
           },
           "orderedMenuItemDtos": {
             "description": "An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.",
@@ -8934,16 +8958,8 @@
         "required": [
           "orderCategoryId",
           "recipient",
-          "fulfillmentContactName",
           "fulfillmentDate",
           "fulfillmentType",
-          "deliveryAddress",
-          "phoneNumber",
-          "email",
-          "note",
-          "isFrozen",
-          "isWeekly",
-          "weeklyFulfillment",
           "orderedMenuItemDtos"
         ]
       },
@@ -9051,66 +9067,79 @@
           "orderCategoryId": {
             "type": "number",
             "description": "Id of OrderType entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "recipient": {
             "type": "string",
             "description": "Name of the owner of the order",
-            "example": "John Smith"
+            "example": "John Smith",
+            "nullable": true
           },
           "fulfillmentContactName": {
-            "type": "object",
+            "type": "string",
             "description": "Name of who is picking up the order or reciving the delivery",
-            "example": "Jane Doe"
+            "example": "Jane Doe",
+            "nullable": true
           },
           "fulfillmentDate": {
-            "format": "date-time",
             "type": "string",
             "description": "Date the order is to be available or delivered.",
-            "example": "2025-06-08T20:26:45.883Z"
+            "example": "2025-06-08T20:26:45.883Z",
+            "nullable": true
           },
           "fulfillmentType": {
             "type": "string",
             "description": "Method of Order's dispersal.",
-            "example": "delivery"
+            "example": "delivery",
+            "nullable": true
           },
           "deliveryAddress": {
-            "type": "object",
+            "type": "string",
             "description": "for delivery contact information",
-            "example": "123 main st"
+            "example": "123 main st",
+            "nullable": true
           },
           "phoneNumber": {
-            "type": "object",
+            "type": "string",
             "description": "for delivery contact information",
-            "example": "1234568"
+            "example": "1234568",
+            "nullable": true
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "description": "for delivery contact information",
-            "example": "email@email.com"
+            "example": "email@email.com",
+            "nullable": true,
+            "format": "email"
           },
           "note": {
-            "type": "object",
+            "type": "string",
             "description": "special instruction for order",
-            "example": "note information"
+            "example": "note information",
+            "nullable": true
           },
           "isFrozen": {
             "type": "boolean",
             "description": "A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.",
-            "example": false
+            "example": false,
+            "nullable": true
           },
           "isWeekly": {
             "type": "boolean",
             "description": "Is true if the order occurs on a weekly basis.",
-            "example": true
+            "example": true,
+            "nullable": true
           },
           "weeklyFulfillment": {
-            "type": "object",
+            "type": "string",
             "description": "If is weekly, is the day of the week the order is fulfilled",
-            "example": "sunday"
+            "example": "sunday",
+            "nullable": true
           },
           "orderedMenuItemDtos": {
             "description": "An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.",
+            "nullable": true,
             "example": [
               {
                 "mode": "update",
@@ -9509,7 +9538,8 @@
           "categoryId": {
             "type": "number",
             "description": "Id of MenuItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "itemName": {
             "type": "string",
@@ -9519,12 +9549,14 @@
           "veganOptionMenuId": {
             "type": "number",
             "description": "Id of MenuItem entity that is the vegan version of the referencing MenuItem.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "takeNBakeOptionMenuId": {
             "type": "number",
             "description": "Id of MenuItem entity that is the Take 'n Bake version of the referencing MenuItem.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "veganTakeNBakeOptionMenuId": {
             "type": "number",
@@ -9539,7 +9571,7 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           },
           "isPOTM": {
@@ -9550,7 +9582,8 @@
           "isParbake": {
             "type": "boolean",
             "description": "If pie requires parbaked shells",
-            "example": false
+            "example": false,
+            "nullable": true
           },
           "definedContainerItemDtos": {
             "description": "Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.",
@@ -9602,12 +9635,7 @@
         "required": [
           "categoryId",
           "itemName",
-          "veganOptionMenuId",
-          "takeNBakeOptionMenuId",
-          "veganTakeNBakeOptionMenuId",
           "validSizeIds",
-          "isPOTM",
-          "isParbake",
           "definedContainerItemDtos",
           "containerOptionDto"
         ]
@@ -9700,29 +9728,34 @@
         "type": "object",
         "properties": {
           "categoryId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of MenuItemCategory entity. Pass a null value to remove category",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "itemName": {
             "type": "string",
             "description": "Name of MenuItem entity.",
-            "example": "box of 6 muffins"
+            "example": "box of 6 muffins",
+            "nullable": true
           },
           "veganOptionMenuId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of MenuItem entity that is the vegan version of the referencing MenuItem. Pass a null value to remove vegan option",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "takeNBakeOptionMenuId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of MenuItem entity that is the Take 'n Bake version of the referencing MenuItem. Pass a null value to remove take n bake option",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "veganTakeNBakeOptionMenuId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of MenuItem entity that is the vegan Take 'n Bake version of the referencing MenuItem. Pass a null value to remove vegan take n bake option",
-            "example": 4
+            "example": 4,
+            "nullable": true
           },
           "validSizeIds": {
             "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
@@ -9732,18 +9765,20 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           },
           "isPOTM": {
             "type": "boolean",
             "description": "Is Pie of the Month, monthly rotating special, relevant for Pie baking lists.",
-            "example": false
+            "example": false,
+            "nullable": true
           },
           "isParbake": {
             "type": "boolean",
             "description": "Pie requires parbaked shells",
-            "example": false
+            "example": false,
+            "nullable": true
           },
           "definedContainerItemDtos": {
             "description": "Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container",
@@ -9800,10 +9835,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "isParbake"
-        ]
+        }
       },
       "CreateMenuItemContainerItemDto": {
         "type": "object",
@@ -10509,7 +10541,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-27T21:57:58.924Z",
+              "countDate": "2025-06-28T21:21:08.633Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10816,6 +10848,7 @@
               ]
             },
             "description": "The assigned category",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemCategory"
@@ -10831,6 +10864,7 @@
               ]
             },
             "description": "The assigned Vendor",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/InventoryItemVendor"
@@ -10880,7 +10914,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-27T21:57:58.924Z",
+              "countDate": "2025-06-28T21:21:08.633Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11245,12 +11279,14 @@
           "inventoryItemCategoryId": {
             "type": "number",
             "description": "Id of InventoryItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "vendorId": {
             "type": "number",
             "description": "Id of InventoryItemVendor entity.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "itemSizeDtos": {
             "description": "Child dtos are used when creating/updating an entity through a parent (InventoryItem).",
@@ -11263,6 +11299,7 @@
                 "cost": 4.99
               }
             ],
+            "nullable": true,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CreateChildInventoryItemSizeDto"
@@ -11270,10 +11307,7 @@
           }
         },
         "required": [
-          "itemName",
-          "inventoryItemCategoryId",
-          "vendorId",
-          "itemSizeDtos"
+          "itemName"
         ]
       },
       "UpdateInventoryItemDto": {
@@ -11285,14 +11319,16 @@
             "example": "Sliced Almonds"
           },
           "inventoryItemCategoryId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of InventoryItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "vendorId": {
-            "type": "object",
+            "type": "number",
             "example": 2,
-            "description": "Id of InventoryItemVendor entity."
+            "description": "Id of InventoryItemVendor entity.",
+            "nullable": true
           },
           "itemSizeDtos": {
             "description": "Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (InventoryItem).",
@@ -11313,15 +11349,17 @@
                 "cost": 9.99
               }
             ],
-            "type": "array",
+            "nullable": true,
             "items": {
-              "$ref": "#/components/schemas/UpdateChildInventoryItemSizeDto"
-            }
+              "type": "array"
+            },
+            "type": "array"
           },
           "cost": {
             "type": "number",
             "description": "Price paid for the InventoryItem entity.",
-            "example": 5.99
+            "example": 5.99,
+            "nullable": true
           }
         }
       },

@@ -91,6 +91,8 @@ export class Order {
     example: 'Marcus Bolognese',
     description:
       "If the order is for delivery and the recipient property isn't who is recieving the order",
+    nullable: true,
+    type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
   fulfillmentContactName?: string | null;
@@ -101,6 +103,8 @@ export class Order {
   @ApiPropertyOptional({
     example: '1 Broken Dreams Blvd',
     description: 'If a delivery order, that address to deliver',
+    nullable: true,
+    type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
   deliveryAddress?: string | null;
@@ -111,6 +115,8 @@ export class Order {
   @ApiPropertyOptional({
     example: '555-420-6969',
     description: 'Phone number associated with order',
+    nullable: true,
+    type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
   phoneNumber?: string | null;
@@ -121,6 +127,9 @@ export class Order {
   @ApiPropertyOptional({
     example: 'email@email.com',
     description: 'email associated with order',
+    nullable: true,
+    type: 'string',
+    format: 'email',
   })
   @Column({ nullable: true, type: 'varchar' })
   email?: string | null;
@@ -131,6 +140,8 @@ export class Order {
   @ApiPropertyOptional({
     example: 'This is a note',
     description: 'an extra information regarding the order',
+    nullable: true,
+    type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
   note?: string | null;
@@ -171,6 +182,8 @@ export class Order {
     example: 'tuesday',
     description:
       'If the order isWeekly is set to true, the day of the week the order is fulfilled on.',
+    nullable: true,
+    type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
   weeklyFulfillment?: string | null;

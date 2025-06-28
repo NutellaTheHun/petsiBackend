@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -15,6 +15,8 @@ export class CreateMenuItemDto {
   @ApiProperty({
     description: 'Id of MenuItemCategory entity.',
     example: 1,
+    nullable: true,
+    type: 'number',
   })
   @IsOptional()
   @IsNumber()
@@ -24,35 +26,41 @@ export class CreateMenuItemDto {
   @ApiProperty({
     description: 'Name of MenuItem entity.',
     example: 'classic apple',
+    type: 'string',
   })
   @IsString()
   @IsNotEmpty()
   readonly itemName: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of MenuItem entity that is the vegan version of the referencing MenuItem.',
     example: 2,
+    nullable: true,
+    type: 'number',
   })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   readonly veganOptionMenuId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       "Id of MenuItem entity that is the Take 'n Bake version of the referencing MenuItem.",
     example: 3,
+    nullable: true,
+    type: 'number',
   })
   @IsOptional()
   @IsNumber()
   @IsPositive()
   readonly takeNBakeOptionMenuId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       "Id of MenuItem entity that is the vegan Take 'n Bake version of the referencing MenuItem.",
     example: 4,
+    type: 'number',
   })
   @IsOptional()
   @IsNumber()
@@ -63,6 +71,7 @@ export class CreateMenuItemDto {
     description:
       'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
     example: [5, 6],
+    type: () => [Number],
   })
   @IsArray()
   @IsNumber({}, { each: true })
@@ -70,18 +79,21 @@ export class CreateMenuItemDto {
   @IsNotEmpty()
   readonly validSizeIds: number[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Is Pie of the Month, monthly rotating special, relevant for Pie baking lists.',
     example: false,
+    type: 'boolean',
   })
   @IsBoolean()
   @IsOptional()
   readonly isPOTM?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'If pie requires parbaked shells',
     example: false,
+    nullable: true,
+    type: 'boolean',
   })
   @IsBoolean()
   @IsOptional()
@@ -90,7 +102,7 @@ export class CreateMenuItemDto {
   @ApiProperty({
     description:
       'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
-    type: [CreateChildMenuItemContainerItemDto],
+    type: () => [CreateChildMenuItemContainerItemDto],
     example: [
       {
         mode: 'create',
@@ -108,7 +120,7 @@ export class CreateMenuItemDto {
   @ApiProperty({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-    type: CreateChildMenuItemContainerOptionsDto,
+    type: () => CreateChildMenuItemContainerOptionsDto,
     example: {
       mode: 'create',
       containerRuleDtos: [

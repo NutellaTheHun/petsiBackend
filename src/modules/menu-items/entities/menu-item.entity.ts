@@ -36,10 +36,11 @@ export class MenuItem {
   /**
    * - Example: "Pie", "Pastry", "Merchandise", "Boxed Pastry", "Catering"
    */
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: menuItemCategoryExample(new Set<string>(), true),
     description: 'The category assigned to the item',
     type: () => MenuItemCategory,
+    nullable: true,
   })
   @ManyToOne(() => MenuItemCategory, {
     nullable: true,
@@ -62,6 +63,7 @@ export class MenuItem {
     example: {},
     description: 'The vegan counterpart to the item.',
     type: () => MenuItem,
+    nullable: true,
   })
   @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -76,6 +78,7 @@ export class MenuItem {
     example: {},
     description: 'The take n bake counterpart to the time',
     type: () => MenuItem,
+    nullable: true,
   })
   @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -90,6 +93,7 @@ export class MenuItem {
     example: {},
     description: 'The vegan take n bake option for the item',
     type: () => MenuItem,
+    nullable: true,
   })
   @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
@@ -109,7 +113,7 @@ export class MenuItem {
   @ApiProperty({
     example: [menuItemSizeExample(new Set<string>(), false)],
     description: 'The sizes the item is available in',
-    type: MenuItemSize,
+    type: () => [MenuItemSize],
     isArray: true,
   })
   @ManyToMany(() => MenuItemSize)
@@ -149,7 +153,7 @@ export class MenuItem {
    *
    * If a {@link MenuItem} references {@link definedContainerItems}, then {@link containerOptions} must be null/undefined
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: [menuItemContainerItemExample(new Set<string>(), false)],
     description:
       'When the item is a container for other MenuItems, and the contained is a fixed set of items per container size.',
@@ -179,6 +183,7 @@ export class MenuItem {
     description:
       'When the item is a container for other MenuItems, and the contained items can vary between a set of items and their sizes, totaling a declared size.',
     type: () => MenuItemContainerOptions,
+    nullable: true,
   })
   @OneToOne(
     () => MenuItemContainerOptions,

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNotEmpty,
@@ -18,25 +18,29 @@ export class CreateInventoryItemDto {
   @IsNotEmpty()
   readonly itemName: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
     example: 1,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
   readonly inventoryItemCategoryId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of InventoryItemVendor entity.',
     example: 2,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
   readonly vendorId?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
     type: [CreateChildInventoryItemSizeDto],
@@ -49,6 +53,7 @@ export class CreateInventoryItemDto {
         cost: 4.99,
       },
     ],
+    nullable: true,
   })
   @IsOptional()
   @IsArray()
