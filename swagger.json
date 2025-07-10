@@ -635,7 +635,7 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`)",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **orderCategory** (e.g., `orderCategory=5`) \n\n          - **isFrozen** (e.g., `isFrozen=true`) \n\n          - **fulfillmentType** (e.g., `fulfillmentType=pickup`)",
             "schema": {
               "type": "array",
               "items": {
@@ -1160,6 +1160,26 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **order** (e.g., `order=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -3376,6 +3396,26 @@
             }
           },
           {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentTemplate** (e.g., `parentTemplate=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "relations",
             "required": false,
             "in": "query",
@@ -4684,8 +4724,9 @@
           },
           {
             "name": "filters",
-            "required": true,
+            "required": false,
             "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentInventoryCount** (e.g., `parentInventoryCount=5`)",
             "schema": {
               "type": "array",
               "items": {
@@ -6188,6 +6229,26 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -7773,7 +7834,9 @@
           "email": {
             "type": "string",
             "description": "",
-            "example": "jjsmithy@email.com"
+            "example": "jjsmithy@email.com",
+            "format": "email",
+            "nullable": true
           },
           "password": {
             "type": "string",
@@ -7806,9 +7869,11 @@
             "example": "jsmith123"
           },
           "email": {
-            "type": "object",
+            "type": "string",
             "description": "",
-            "example": "jjsmithy@email.com"
+            "example": "jjsmithy@email.com",
+            "format": "email",
+            "nullable": true
           },
           "password": {
             "type": "string",
@@ -8213,19 +8278,16 @@
             ]
           },
           "validSizes": {
+            "example": [
+              {
+                "id": 1,
+                "name": "medium"
+              }
+            ],
+            "description": "The sizes the item is available in",
             "type": "array",
             "items": {
-              "example": [
-                {
-                  "id": 1,
-                  "name": "medium"
-                }
-              ],
-              "description": "The sizes the item is available in",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/MenuItemSize"
-              }
+              "$ref": "#/components/schemas/MenuItemSize"
             }
           },
           "isPOTM": {
@@ -8442,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-06-28T21:21:08.677Z",
-              "updatedAt": "2025-06-28T21:21:08.677Z",
+              "createdAt": "2025-07-10T20:41:59.057Z",
+              "updatedAt": "2025-07-10T20:41:59.057Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8737,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-06-28T21:21:08.677Z",
-                "updatedAt": "2025-06-28T21:21:08.677Z",
+                "createdAt": "2025-07-10T20:41:59.057Z",
+                "updatedAt": "2025-07-10T20:41:59.057Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9564,14 +9626,17 @@
             "example": 4
           },
           "validSizeIds": {
-            "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
-            "example": [
-              5,
-              6
-            ],
             "type": "array",
             "items": {
-              "type": "number"
+              "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
+              "example": [
+                5,
+                6
+              ],
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
             }
           },
           "isPOTM": {
@@ -10541,7 +10606,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-28T21:21:08.633Z",
+              "countDate": "2025-07-10T20:41:59.003Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10672,6 +10737,7 @@
               "category": {}
             },
             "description": "The designated unit all other units under this category use for conversions.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/UnitOfMeasure"
@@ -10914,7 +10980,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-06-28T21:21:08.633Z",
+              "countDate": "2025-07-10T20:41:59.003Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11232,13 +11298,9 @@
         "type": "object",
         "properties": {
           "countedInventoryItemId": {
+            "type": "number",
             "description": "Id for InventoryItem entity.",
-            "example": 1,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/InventoryItem"
-              }
-            ]
+            "example": 1
           },
           "countedAmount": {
             "type": "number",
@@ -11537,7 +11599,8 @@
           "baseUnitId": {
             "type": "number",
             "description": "The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           }
         },
         "required": [
@@ -11553,9 +11616,10 @@
             "example": "Volume"
           },
           "baseUnitId": {
-            "type": "object",
+            "type": "number",
             "description": "The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           }
         }
       },

@@ -44,6 +44,18 @@ export class OrderService extends ServiceBase<Order> {
         categories: filters.category,
       });
     }
+
+    if (filters.isFrozen && filters.isFrozen.length > 0) {
+      query.andWhere('entity.isFrozen IN (:...isFrozen)', {
+        isFrozens: filters.isFrozen,
+      });
+    }
+
+    if (filters.fulfillmentType && filters.fulfillmentType.length > 0) {
+      query.andWhere('entity.fulfillmentType IN (:...fulfillmentType)', {
+        fulfillmentType: filters.fulfillmentType,
+      });
+    }
   }
 
   protected applyDate(

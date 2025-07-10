@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+This is a backend made with TypeScript and NestJS framework, using a postgres database, typeorm, and Jest for testing. The web application faciliates order management, inventory management, recipe costing, and ticking/labelling. The backend is largely a RESTFUL crud api. There will be services however to create reports, print labels, and perform some calculations/conversions for recipes.

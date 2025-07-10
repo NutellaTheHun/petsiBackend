@@ -24,6 +24,7 @@ export class UpdateChildInventoryAreaItemDto {
   @ApiPropertyOptional({
     description: 'Id for InventoryItem entity.',
     example: 2,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()
@@ -43,6 +44,7 @@ export class UpdateChildInventoryAreaItemDto {
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.',
     example: 3,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()

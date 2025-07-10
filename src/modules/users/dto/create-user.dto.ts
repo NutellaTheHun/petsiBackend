@@ -14,7 +14,13 @@ export class CreateUserDto {
   @IsNotEmpty()
   readonly username: string;
 
-  @ApiPropertyOptional({ description: '', example: 'jjsmithy@email.com' })
+  @ApiPropertyOptional({
+    description: '',
+    example: 'jjsmithy@email.com',
+    type: 'string',
+    format: 'email',
+    nullable: true,
+  })
   @IsString()
   @IsOptional()
   readonly email?: string;

@@ -11,6 +11,7 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description: 'Id for InventoryAreaCount entity.',
     example: 1,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()
@@ -20,6 +21,7 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description: 'Id for InventoryItem entity.',
     example: 2,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()
@@ -39,6 +41,7 @@ export class CreateInventoryAreaItemDto {
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.',
     example: 3,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()

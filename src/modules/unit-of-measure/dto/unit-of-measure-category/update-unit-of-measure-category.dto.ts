@@ -14,6 +14,8 @@ export class UpdateUnitOfMeasureCategoryDto {
     description:
       'The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.',
     example: 1,
+    nullable: true,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()

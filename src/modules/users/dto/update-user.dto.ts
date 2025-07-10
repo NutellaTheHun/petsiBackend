@@ -1,4 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsNumber,
@@ -13,7 +14,13 @@ export class UpdateUserDto {
   @IsOptional()
   readonly username?: string;
 
-  @ApiPropertyOptional({ description: '', example: 'jjsmithy@email.com' })
+  @ApiPropertyOptional({
+    description: '',
+    example: 'jjsmithy@email.com',
+    type: 'string',
+    format: 'email',
+    nullable: true,
+  })
   @IsString()
   @IsOptional()
   readonly email?: string | null;
@@ -31,5 +38,6 @@ export class UpdateUserDto {
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsOptional()
+  @Type(() => Number)
   readonly roleIds?: number[];
 }

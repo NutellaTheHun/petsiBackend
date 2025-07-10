@@ -59,6 +59,7 @@ export class UnitOfMeasureCategory {
     description:
       'The designated unit all other units under this category use for conversions.',
     type: () => UnitOfMeasure,
+    nullable: true,
   })
   @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()

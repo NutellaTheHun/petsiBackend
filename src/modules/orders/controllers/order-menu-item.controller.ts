@@ -150,14 +150,22 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
     enum: ['ASC', 'DESC'],
     description: 'Sort order: ASC or DESC',
   })
+  @ApiQuery({
+    name: 'filters',
+    required: false,
+    isArray: true,
+    type: String,
+    description: `Filterable fields. Use format: field=value. Available filters:\n
+          - **order** (e.g., \`order=5\`)`,
+  })
   async findAll(
     @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
     @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-    //@Query('search') search?: string,
-    //@Query('filters') filters?: string[],
+    @Query('search') search?: string,
+    @Query('filters') filters?: string[],
     //@Query('dateBy') dateBy?: string,
     //@Query('startDate') startDate?: string,  // ISO format string
     //@Query('endDate') endDate?: string, // ISO format string
@@ -169,7 +177,7 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
       sortBy,
       sortOrder,
       undefined,
-      undefined,
+      filters,
       undefined,
       undefined,
       undefined,

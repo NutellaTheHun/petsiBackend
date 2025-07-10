@@ -171,6 +171,14 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     type: String,
     description: 'search by InventoryItem name',
   })
+  @ApiQuery({
+    name: 'filters',
+    required: false,
+    isArray: true,
+    type: String,
+    description: `Filterable fields. Use format: field=value. Available filters:\n
+          - **parentInventoryCount** (e.g., \`parentInventoryCount=5\`)`,
+  })
   async findAll(
     @Query('relations') rawRelations: string | string[],
     @Query('limit') limit?: number,

@@ -47,6 +47,8 @@ async function bootstrap() {
 
   app.enableCors(); // FOR DEVELOPEMENT
 
+  app.getHttpAdapter().getInstance().set('etag', false);
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

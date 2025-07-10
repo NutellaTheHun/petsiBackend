@@ -72,6 +72,7 @@ export class CreateMenuItemDto {
       'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
     example: [5, 6],
     type: () => [Number],
+    isArray: true,
   })
   @IsArray()
   @IsNumber({}, { each: true })

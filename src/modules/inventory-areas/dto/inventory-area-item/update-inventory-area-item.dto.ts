@@ -2,13 +2,12 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { CreateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto';
 import { UpdateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto';
-import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 
 export class UpdateInventoryAreaItemDto {
   @ApiPropertyOptional({
     description: 'Id for InventoryItem entity.',
-    type: InventoryItem,
     example: 1,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()
@@ -28,6 +27,7 @@ export class UpdateInventoryAreaItemDto {
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
     example: 2,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()

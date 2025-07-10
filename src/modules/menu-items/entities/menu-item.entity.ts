@@ -113,7 +113,7 @@ export class MenuItem {
   @ApiProperty({
     example: [menuItemSizeExample(new Set<string>(), false)],
     description: 'The sizes the item is available in',
-    type: () => [MenuItemSize],
+    type: () => MenuItemSize,
     isArray: true,
   })
   @ManyToMany(() => MenuItemSize)
