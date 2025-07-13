@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-13T17:54:19.627Z",
-              "updatedAt": "2025-07-13T17:54:19.627Z",
+              "createdAt": "2025-07-13T19:06:53.134Z",
+              "updatedAt": "2025-07-13T19:06:53.134Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-13T17:54:19.627Z",
-                "updatedAt": "2025-07-13T17:54:19.627Z",
+                "createdAt": "2025-07-13T19:06:53.134Z",
+                "updatedAt": "2025-07-13T19:06:53.134Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9518,24 +9518,25 @@
           "quantity"
         ]
       },
-      "CreateChildMenuItemContainerRuleDto": {
+      "CreateMenuItemContainerRuleDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a MenuItemContainerOptions entity.",
-            "example": "create"
+          "parentContainerOptionsId": {
+            "type": "number",
+            "description": "Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem",
+            "example": 1,
+            "nullable": true
           },
           "validMenuItemId": {
             "type": "number",
             "description": "Id of a MenuItem entity that is a valid component",
-            "example": 1
+            "example": 2
           },
           "validSizeIds": {
             "description": "Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container",
             "example": [
-              2,
-              3
+              3,
+              4
             ],
             "type": "array",
             "items": {
@@ -9544,52 +9545,50 @@
           }
         },
         "required": [
-          "mode",
+          "parentContainerOptionsId",
           "validMenuItemId",
           "validSizeIds"
         ]
       },
-      "CreateChildMenuItemContainerOptionsDto": {
+      "CreateMenuItemContainerOptionsDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a MenuItem entity.",
-            "example": "create"
+          "parentContainerMenuItemId": {
+            "type": "number",
+            "description": "Id of the MenuItem entity that the options apply to.",
+            "example": 1
           },
           "containerRuleDtos": {
             "description": "The list of MenuItems and their sizes that are allowed in the container",
             "example": [
               {
-                "mode": "create",
-                "validMenuItemId": 1,
+                "validMenuItemId": 2,
                 "validSizeIds": [
-                  2,
-                  3
+                  3,
+                  4
                 ]
               },
               {
-                "mode": "create",
-                "validMenuItemId": 4,
+                "validMenuItemId": 5,
                 "validSizeIds": [
-                  5,
-                  6
+                  6,
+                  7
                 ]
               }
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildMenuItemContainerRuleDto"
+              "$ref": "#/components/schemas/CreateMenuItemContainerRuleDto"
             }
           },
           "validQuantity": {
             "type": "number",
             "description": "The total size of the container. When ordered, the summation of ordermenuitemcomponents have to equal this value.",
-            "example": 7
+            "example": 8
           }
         },
         "required": [
-          "mode",
+          "parentContainerMenuItemId",
           "containerRuleDtos",
           "validQuantity"
         ]
@@ -9668,7 +9667,6 @@
           "containerOptionDto": {
             "description": "options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.",
             "example": {
-              "mode": "create",
               "containerRuleDtos": [
                 {
                   "mode": "create",
@@ -9691,7 +9689,7 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/CreateChildMenuItemContainerOptionsDto"
+                "$ref": "#/components/schemas/CreateMenuItemContainerOptionsDto"
               }
             ]
           }
@@ -9747,55 +9745,166 @@
           }
         }
       },
-      "UpdateChildMenuItemContainerOptionsDto": {
+      "UpdateMenuItemContainerRuleDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a MenuItem entity with components.",
-            "example": "update"
-          },
-          "id": {
+          "validMenuItemId": {
             "type": "number",
-            "description": "Id of the MenuItemContainerOptions to update.",
+            "description": "Id of a MenuItem entity that is a valid component",
             "example": 1
           },
-          "containerRuleDtos": {
-            "description": "The list of MenuItems and their sizes that are allowed in the container",
+          "validSizeIds": {
+            "description": "Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container",
             "example": [
+              2,
+              3
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NestedUpdateMenuItemContainerRuleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of a MenuItemContainerRule entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "Update dto of a MenuItemContainerRule entity.",
+            "allOf": [
               {
-                "mode": "create",
+                "$ref": "#/components/schemas/UpdateMenuItemContainerRuleDto"
+              }
+            ]
+          }
+        }
+      },
+      "NestedMenuItemContainerRuleDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "Create dto of a MenuItemContainerRule entity.",
+            "example": {
+              "validMenuItemId": 1,
+              "validSizeIds": [
+                1,
+                2
+              ]
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateMenuItemContainerRuleDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "Update dto of a MenuItemContainerRule entity.",
+            "example": {
+              "id": 1,
+              "dto": {
                 "validMenuItemId": 2,
                 "validSizeIds": [
                   3,
                   4
                 ]
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedUpdateMenuItemContainerRuleDto"
+              }
+            ]
+          }
+        }
+      },
+      "UpdateMenuItemContainerOptionsDto": {
+        "type": "object",
+        "properties": {
+          "containerRuleDtos": {
+            "description": "The list of MenuItems and their sizes that are allowed in the container",
+            "example": [
+              {
+                "create": {
+                  "validMenuItemId": 2,
+                  "validSizeIds": [
+                    3,
+                    4
+                  ]
+                }
               },
               {
-                "mode": "update",
-                "id": 5,
-                "validMenuItemId": 6,
-                "validSizeIds": [
-                  7,
-                  8
-                ]
+                "update": {
+                  "id": 5,
+                  "dto": {
+                    "validMenuItemId": 6,
+                    "validSizeIds": [
+                      7,
+                      8
+                    ]
+                  }
+                }
               }
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildMenuItemContainerRuleDto"
+              "$ref": "#/components/schemas/NestedMenuItemContainerRuleDto"
             }
           },
           "validQuantity": {
             "type": "number",
             "description": "The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.",
-            "example": 9
+            "example": 1
           }
-        },
-        "required": [
-          "mode",
-          "id"
-        ]
+        }
+      },
+      "NestedMenuItemContainerOptionsDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "CreateMenuItemContainerOptionsDto",
+            "example": {
+              "parentContainerMenuItemId": 1,
+              "containerRuleDtos": [
+                {
+                  "validMenuItemId": 2,
+                  "validSizeIds": [
+                    3,
+                    4
+                  ]
+                }
+              ],
+              "validQuantity": 5
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateMenuItemContainerOptionsDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "UpdateMenuItemContainerOptionsDto",
+            "example": {
+              "id": 1,
+              "dto": {
+                "containerRuleDtos": [
+                  1,
+                  2
+                ],
+                "validQuantity": 3
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateMenuItemContainerOptionsDto"
+              }
+            ]
+          }
+        }
       },
       "UpdateMenuItemDto": {
         "type": "object",
@@ -9873,166 +9982,46 @@
           "containerOptionDto": {
             "description": "options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options",
             "example": {
-              "mode": "create",
-              "containerRuleDtos": [
-                {
-                  "mode": "create",
-                  "validMenuItemId": 5,
-                  "validSizeIds": [
-                    6,
-                    7
-                  ]
-                },
-                {
-                  "mode": "update",
+              "create": {
+                "parentContainerMenuItemId": 1,
+                "containerRuleDtos": [
+                  {
+                    "validMenuItemId": 2,
+                    "validSizeIds": [
+                      3,
+                      4
+                    ]
+                  }
+                ],
+                "validQuantity": 5
+              },
+              "update": {
+                "id": 1,
+                "dto": {
+                  "containerRuleDtos": [
+                    {
+                      "validMenuItemId": 5,
+                      "validSizeIds": [
+                        6,
+                        7
+                      ]
+                    }
+                  ],
                   "id": 8,
                   "validMenuItemId": 9,
                   "validSizeIds": [
                     10,
                     11
-                  ]
+                  ],
+                  "validQuantity": 12
                 }
-              ],
-              "validQuantity": 12
+              }
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/UpdateChildMenuItemContainerOptionsDto"
+                "$ref": "#/components/schemas/NestedMenuItemContainerOptionsDto"
               }
             ]
-          }
-        }
-      },
-      "CreateMenuItemContainerOptionsDto": {
-        "type": "object",
-        "properties": {
-          "parentContainerMenuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem entity that the options apply to.",
-            "example": 1
-          },
-          "containerRuleDtos": {
-            "description": "The list of MenuItems and their sizes that are allowed in the container",
-            "example": [
-              {
-                "mode": "create",
-                "validMenuItemId": 2,
-                "validSizeIds": [
-                  3,
-                  4
-                ]
-              },
-              {
-                "mode": "create",
-                "validMenuItemId": 5,
-                "validSizeIds": [
-                  6,
-                  7
-                ]
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateChildMenuItemContainerRuleDto"
-            }
-          },
-          "validQuantity": {
-            "type": "number",
-            "description": "The total size of the container. When ordered, the summation of ordermenuitemcomponents have to equal this value.",
-            "example": 8
-          }
-        },
-        "required": [
-          "parentContainerMenuItemId",
-          "containerRuleDtos",
-          "validQuantity"
-        ]
-      },
-      "UpdateMenuItemContainerOptionsDto": {
-        "type": "object",
-        "properties": {
-          "containerRuleDtos": {
-            "description": "The list of MenuItems and their sizes that are allowed in the container",
-            "example": [
-              {
-                "mode": "create",
-                "validMenuItemId": 2,
-                "validSizeIds": [
-                  3,
-                  4
-                ]
-              },
-              {
-                "mode": "update",
-                "id": 5,
-                "validMenuItemId": 6,
-                "validSizeIds": [
-                  7,
-                  8
-                ]
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateChildMenuItemContainerRuleDto"
-            }
-          },
-          "validQuantity": {
-            "type": "number",
-            "description": "The total size of the container. When ordered, the summation of OrderMenuItemComponents have to equal this value.",
-            "example": 1
-          }
-        }
-      },
-      "CreateMenuItemContainerRuleDto": {
-        "type": "object",
-        "properties": {
-          "parentContainerOptionsId": {
-            "type": "number",
-            "description": "Id of the MenuItemContainerOptions entity.",
-            "example": 1
-          },
-          "validMenuItemId": {
-            "type": "number",
-            "description": "Id of a MenuItem entity that is a valid component",
-            "example": 2
-          },
-          "validSizeIds": {
-            "description": "Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container",
-            "example": [
-              3,
-              4
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        },
-        "required": [
-          "parentContainerOptionsId",
-          "validMenuItemId",
-          "validSizeIds"
-        ]
-      },
-      "UpdateMenuItemContainerRuleDto": {
-        "type": "object",
-        "properties": {
-          "validMenuItemId": {
-            "type": "number",
-            "description": "Id of a MenuItem entity that is a valid component",
-            "example": 1
-          },
-          "validSizeIds": {
-            "description": "Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container",
-            "example": [
-              2,
-              3
-            ],
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
           }
         }
       },
@@ -10550,7 +10539,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T17:54:19.584Z",
+              "countDate": "2025-07-13T19:06:53.087Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10924,7 +10913,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T17:54:19.583Z",
+              "countDate": "2025-07-13T19:06:53.087Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

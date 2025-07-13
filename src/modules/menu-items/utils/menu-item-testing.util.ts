@@ -4,8 +4,8 @@ import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder'
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import { CreateChildMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-child-menu-item-container-options.dto';
-import { CreateChildMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto';
+import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
+import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
@@ -341,26 +341,26 @@ export class MenuItemTestingUtil {
     if (!itemB.validSizes) {
       throw new Error('item b valid sizes is null');
     }
-    const componentOptionDtos_A = [
+    const containerRuleDtos_A = [
       {
-        mode: 'create',
+        parentContainerOptionsId: itemA.id,
         validMenuItemId: itemA.id,
         validSizeIds: itemA.validSizes.slice(1).map((size) => size.id),
         quantity: 2,
-      } as CreateChildMenuItemContainerRuleDto,
+      } as CreateMenuItemContainerRuleDto,
       {
-        mode: 'create',
+        parentContainerOptionsId: itemB.id,
         validMenuItemId: itemB.id,
         validSizeIds: itemB.validSizes.slice(1).map((size) => size.id),
         quantity: 2,
-      } as CreateChildMenuItemContainerRuleDto,
-    ] as CreateChildMenuItemContainerRuleDto[];
+      } as CreateMenuItemContainerRuleDto,
+    ] as CreateMenuItemContainerRuleDto[];
+
     const optionsA = {
-      mode: 'create',
-      isDynamic: true,
-      containerRuleDtos: componentOptionDtos_A,
+      parentContainerMenuItemId: itemA.id,
+      containerRuleDtos: containerRuleDtos_A,
       validQuantity: 4,
-    } as CreateChildMenuItemContainerOptionsDto;
+    } as CreateMenuItemContainerOptionsDto;
 
     const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
     if (!itemC) {
@@ -376,32 +376,31 @@ export class MenuItemTestingUtil {
     if (!itemD.validSizes) {
       throw new Error('item d valid sizes is null');
     }
-    const componentOptionDtos_B = [
+    const containerRuleDtos_B = [
       {
-        mode: 'create',
+        parentContainerOptionsId: itemC.id,
         validMenuItemId: itemC.id,
         validSizeIds: itemC.validSizes.slice(1).map((size) => size.id),
         quantity: 3,
-      } as CreateChildMenuItemContainerRuleDto,
+      } as CreateMenuItemContainerRuleDto,
       {
-        mode: 'create',
+        parentContainerOptionsId: itemD.id,
         validMenuItemId: itemD.id,
         validSizeIds: itemD.validSizes.slice(1).map((size) => size.id),
         quantity: 3,
-      } as CreateChildMenuItemContainerRuleDto,
-    ] as CreateChildMenuItemContainerRuleDto[];
+      } as CreateMenuItemContainerRuleDto,
+    ] as CreateMenuItemContainerRuleDto[];
     const optionsB = {
-      mode: 'create',
-      isDynamic: true,
-      containerRuleDtos: componentOptionDtos_B,
+      parentContainerMenuItemId: itemB.id,
+      containerRuleDtos: containerRuleDtos_B,
       validQuantity: 6,
-    } as CreateChildMenuItemContainerOptionsDto;
+    } as CreateMenuItemContainerOptionsDto;
 
     const sizeOne = await this.sizeService.findOneByName(SIZE_ONE);
     if (!sizeOne) {
       throw new Error('size one is null');
     }
-    const menuItemComponentsC = [
+    const definedContainerDto_C = [
       {
         parentContainerSizeId: sizeOne.id,
         containedMenuItemId: itemA.id,
@@ -454,7 +453,7 @@ export class MenuItemTestingUtil {
           sizeIds[sizeIdx++ % sizeIds.length],
           sizeIds[sizeIdx++ % sizeIds.length],
         ])
-        .definedContainerItemsByBuilder(menuItemComponentsC)
+        .definedContainerItemsByBuilder(definedContainerDto_C)
         .build(),
     );
 

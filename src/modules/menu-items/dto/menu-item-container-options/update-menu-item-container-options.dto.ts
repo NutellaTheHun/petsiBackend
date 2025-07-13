@@ -1,33 +1,33 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildMenuItemContainerRuleDto } from '../menu-item-container-rule/create-child-menu-item-container-rule.dto';
-import { UpdateChildMenuItemContainerRuleDto } from '../menu-item-container-rule/update-child-menu-item-container-rule.dto';
+import { NestedMenuItemContainerRuleDto } from '../menu-item-container-rule/nested-menu-item-container-rule.dto';
 
 export class UpdateMenuItemContainerOptionsDto {
   @ApiPropertyOptional({
     description:
       'The list of MenuItems and their sizes that are allowed in the container',
-    type: [CreateChildMenuItemContainerRuleDto],
+    type: [NestedMenuItemContainerRuleDto],
     example: [
       {
-        mode: 'create',
-        validMenuItemId: 2,
-        validSizeIds: [3, 4],
+        create: {
+          validMenuItemId: 2,
+          validSizeIds: [3, 4],
+        },
       },
       {
-        mode: 'update',
-        id: 5,
-        validMenuItemId: 6,
-        validSizeIds: [7, 8],
+        update: {
+          id: 5,
+          dto: {
+            validMenuItemId: 6,
+            validSizeIds: [7, 8],
+          },
+        },
       },
     ],
   })
   @IsArray()
   @IsOptional()
-  readonly containerRuleDtos?: (
-    | CreateChildMenuItemContainerRuleDto
-    | UpdateChildMenuItemContainerRuleDto
-  )[];
+  readonly containerRuleDtos?: NestedMenuItemContainerRuleDto[];
 
   @ApiPropertyOptional({
     description:

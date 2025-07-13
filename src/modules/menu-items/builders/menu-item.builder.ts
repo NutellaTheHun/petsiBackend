@@ -4,8 +4,8 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
-import { CreateChildMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-child-menu-item-container-options.dto';
-import { UpdateChildMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-child-menu-item-container-options.dto';
+import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
+import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
@@ -239,20 +239,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
   }
 
   public containerOptionsByBuilder(
-    dto:
-      | (
-          | CreateChildMenuItemContainerOptionsDto
-          | UpdateChildMenuItemContainerOptionsDto
-        )
-      | null,
+    dto: CreateMenuItemContainerOptionsDto | NestedMenuItemContainerOptionsDto,
   ): this {
-    if (dto === null) {
-      return this.setPropByVal('containerOptions', null);
-    }
     return this.setPropByBuilder(
-      this.componentOptionsBuilder.buildChildDto.bind(
-        this.componentOptionsBuilder,
-      ),
+      this.componentOptionsBuilder.buildDto.bind(this.componentOptionsBuilder),
       'containerOptions',
       this.entity,
       dto,

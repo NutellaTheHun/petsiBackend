@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+/*import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateChildMenuItemContainerRuleDto {
@@ -37,4 +37,4 @@ export class UpdateChildMenuItemContainerRuleDto {
   @IsPositive()
   @IsOptional()
   readonly validSizeIds?: number[];
-}
+}*/

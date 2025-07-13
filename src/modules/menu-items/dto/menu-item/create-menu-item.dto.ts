@@ -9,7 +9,7 @@ import {
   IsString,
 } from 'class-validator';
 import { CreateMenuItemContainerItemDto } from '../menu-item-container-item/create-menu-item-container-item.dto';
-import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/create-child-menu-item-container-options.dto';
+import { CreateMenuItemContainerOptionsDto } from '../menu-item-container-options/create-menu-item-container-options.dto';
 
 export class CreateMenuItemDto {
   @ApiProperty({
@@ -119,9 +119,8 @@ export class CreateMenuItemDto {
   @ApiProperty({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-    type: () => CreateChildMenuItemContainerOptionsDto,
+    type: () => CreateMenuItemContainerOptionsDto,
     example: {
-      mode: 'create',
       containerRuleDtos: [
         {
           mode: 'create',
@@ -138,5 +137,5 @@ export class CreateMenuItemDto {
     },
   })
   @IsOptional()
-  readonly containerOptionDto?: CreateChildMenuItemContainerOptionsDto;
+  readonly containerOptionDto?: CreateMenuItemContainerOptionsDto;
 }

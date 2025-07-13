@@ -10,8 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/update-menu-item-container-item.dto';
-import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/create-child-menu-item-container-options.dto';
-import { UpdateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/update-child-menu-item-container-options.dto';
+import { NestedMenuItemContainerOptionsDto } from '../menu-item-container-options/nested-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
   @ApiPropertyOptional({
@@ -129,28 +128,35 @@ export class UpdateMenuItemDto {
   @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options',
-    type: () => UpdateChildMenuItemContainerOptionsDto,
+    type: () => NestedMenuItemContainerOptionsDto,
     example: {
-      mode: 'create',
-      containerRuleDtos: [
-        {
-          mode: 'create',
-          validMenuItemId: 5,
-          validSizeIds: [6, 7],
-        },
-        {
-          mode: 'update',
+      create: {
+        parentContainerMenuItemId: 1,
+        containerRuleDtos: [
+          {
+            validMenuItemId: 2,
+            validSizeIds: [3, 4],
+          },
+        ],
+        validQuantity: 5,
+      },
+      update: {
+        id: 1,
+        dto: {
+          containerRuleDtos: [
+            {
+              validMenuItemId: 5,
+              validSizeIds: [6, 7],
+            },
+          ],
           id: 8,
           validMenuItemId: 9,
           validSizeIds: [10, 11],
+          validQuantity: 12,
         },
-      ],
-      validQuantity: 12,
+      },
     },
   })
   @IsOptional()
-  readonly containerOptionDto?:
-    | CreateChildMenuItemContainerOptionsDto
-    | UpdateChildMenuItemContainerOptionsDto
-    | null;
+  readonly containerOptionDto?: NestedMenuItemContainerOptionsDto;
 }

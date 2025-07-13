@@ -1,106 +1,118 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderBase } from "../../../base/builder-base";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { AppLogger } from "../../app-logging/app-logger";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto";
-import { CreateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/create-menu-item-container-rule.dto";
-import { UpdateChildMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto";
-import { UpdateMenuItemContainerRuleDto } from "../dto/menu-item-container-rule/update-menu-item-container-rule.dto";
-import { MenuItemContainerOptions } from "../entities/menu-item-container-options.entity";
-import { MenuItemContainerRule } from "../entities/menu-item-container-rule.entity";
-import { MenuItemContainerOptionsService } from "../services/menu-item-container-options.service";
-import { MenuItemContainerRuleService } from "../services/menu-item-container-rule.service";
-import { MenuItemSizeService } from "../services/menu-item-size.service";
-import { MenuItemService } from "../services/menu-item.service";
-import { MenuItemContainerRuleValidator } from "../validators/menu-item-container-rule.validator";
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../base/builder-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
+import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
+import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
+import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
+import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
+import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
+import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
+import { MenuItemSizeService } from '../services/menu-item-size.service';
+import { MenuItemService } from '../services/menu-item.service';
+import { MenuItemContainerRuleValidator } from '../validators/menu-item-container-rule.validator';
 @Injectable()
-export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerRule> implements IBuildChildDto<MenuItemContainerOptions, MenuItemContainerRule> {
-    constructor(
-        @Inject(forwardRef(() => MenuItemContainerRuleService))
-        private readonly componentOptionService: MenuItemContainerRuleService,
+export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerRule> {
+  constructor(
+    @Inject(forwardRef(() => MenuItemContainerRuleService))
+    private readonly componentOptionService: MenuItemContainerRuleService,
 
-        @Inject(forwardRef(() => MenuItemContainerOptionsService))
-        private readonly itemOptionsSerivce: MenuItemContainerOptionsService,
+    @Inject(forwardRef(() => MenuItemContainerOptionsService))
+    private readonly itemOptionsSerivce: MenuItemContainerOptionsService,
 
-        @Inject(forwardRef(() => MenuItemService))
-        private readonly menuItemService: MenuItemService,
+    @Inject(forwardRef(() => MenuItemService))
+    private readonly menuItemService: MenuItemService,
 
-        private readonly sizeService: MenuItemSizeService,
+    private readonly sizeService: MenuItemSizeService,
 
-        validator: MenuItemContainerRuleValidator,
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(MenuItemContainerRule, 'MenuItemCategoryBuilder', requestContextService, logger, validator); }
+    validator: MenuItemContainerRuleValidator,
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(
+      MenuItemContainerRule,
+      'MenuItemCategoryBuilder',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    async buildChildCreateDto(parent: MenuItemContainerOptions, dto: CreateChildMenuItemContainerRuleDto): Promise<MenuItemContainerRule> {
-        await this.validateCreateDto(dto);
+  protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
+    if (dto.parentContainerOptionsId !== undefined) {
+      this.parentContainerOptionsById(dto.parentContainerOptionsId);
+    }
+    if (dto.validMenuItemId !== undefined) {
+      this.validMenuItemById(dto.validMenuItemId);
+    }
+    if (dto.validSizeIds !== undefined) {
+      this.validMenuItemSizeByIds(dto.validSizeIds);
+    }
+  }
 
-        this.reset();
+  protected updateEntity(dto: UpdateMenuItemContainerRuleDto): void {
+    if (dto.validMenuItemId !== undefined) {
+      this.validMenuItemById(dto.validMenuItemId);
+    }
+    if (dto.validSizeIds !== undefined) {
+      this.validMenuItemSizeByIds(dto.validSizeIds);
+    }
+  }
 
-        this.entity.parentContainerOption = parent;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
+  public async buildMany(
+    parentOption: MenuItemContainerOptions,
+    dtos: (CreateMenuItemContainerRuleDto | NestedMenuItemContainerRuleDto)[],
+  ): Promise<MenuItemContainerRule[]> {
+    const results: MenuItemContainerRule[] = [];
+    for (const dto of dtos) {
+      if (dto instanceof CreateMenuItemContainerRuleDto) {
+        results.push(await this.buildCreateDto(dto));
+      } else {
+        if (dto.create) {
+          results.push(await this.buildCreateDto(dto.create));
+        }
+        if (dto.update) {
+          const toUpdate = await this.componentOptionService.findOne(
+            dto.update.id,
+          );
+          if (!toUpdate) {
+            throw Error('component option is null');
+          }
+          results.push(await this.buildUpdateDto(toUpdate, dto));
+        }
+      }
     }
 
-    buildChildEntity(dto: CreateChildMenuItemContainerRuleDto): void {
-        if (dto.validMenuItemId !== undefined) {
-            this.validMenuItemById(dto.validMenuItemId);
-        }
-        if (dto.validSizeIds !== undefined) {
-            this.validMenuItemSizeByIds(dto.validSizeIds);
-        }
+    // Creating parent container options with rules will not have a parent option id to assign, so we do it here
+    for (const rule of results) {
+      rule.parentContainerOption = parentOption;
     }
 
-    /**
-     * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
-     */
-    protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
-        if (dto.parentContainerOptionsId !== undefined) {
-            this.parentContainerOptionsById(dto.parentContainerOptionsId);
-        }
-        if (dto.validMenuItemId !== undefined) {
-            this.validMenuItemById(dto.validMenuItemId);
-        }
-        if (dto.validSizeIds !== undefined) {
-            this.validMenuItemSizeByIds(dto.validSizeIds);
-        }
-    }
+    return results;
+  }
 
-    protected updateEntity(dto: UpdateMenuItemContainerRuleDto): void {
-        if (dto.validMenuItemId !== undefined) {
-            this.validMenuItemById(dto.validMenuItemId);
-        }
-        if (dto.validSizeIds !== undefined) {
-            this.validMenuItemSizeByIds(dto.validSizeIds);
-        }
-    }
+  private parentContainerOptionsById(id: number): this {
+    return this.setPropById(
+      this.itemOptionsSerivce.findOne.bind(this.itemOptionsSerivce),
+      'parentContainerOption',
+      id,
+    );
+  }
 
-    public async buildManyChildDto(parentOption: MenuItemContainerOptions, dtos: (CreateChildMenuItemContainerRuleDto | UpdateChildMenuItemContainerRuleDto)[]): Promise<MenuItemContainerRule[]> {
-        const results: MenuItemContainerRule[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentOption, dto));
-            } else {
-                const toUpdate = await this.componentOptionService.findOne(dto.id);
-                if (!toUpdate) { throw Error("component option is null"); }
-                results.push(await this.buildUpdateDto(toUpdate, dto))
-            }
-        }
-        return results;
-    }
+  private validMenuItemById(id: number): this {
+    return this.setPropById(
+      this.menuItemService.findOne.bind(this.menuItemService),
+      'validItem',
+      id,
+    );
+  }
 
-    private parentContainerOptionsById(id: number): this {
-        return this.setPropById(this.itemOptionsSerivce.findOne.bind(this.itemOptionsSerivce), 'parentContainerOption', id);
-    }
-
-    private validMenuItemById(id: number): this {
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'validItem', id);
-    }
-
-    private validMenuItemSizeByIds(ids: number[]): this {
-        return this.setPropsByIds(this.sizeService.findEntitiesById.bind(this.sizeService), 'validSizes', ids);
-    }
+  private validMenuItemSizeByIds(ids: number[]): this {
+    return this.setPropsByIds(
+      this.sizeService.findEntitiesById.bind(this.sizeService),
+      'validSizes',
+      ids,
+    );
+  }
 }

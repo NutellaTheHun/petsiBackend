@@ -1,19 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
-import { MenuItemContainerOptions } from '../../entities/menu-item-container-options.entity';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
-/**
- * Depreciated, only created as a child through {@link MenuItemContainerOptions}.
- */
 export class CreateMenuItemContainerRuleDto {
   @ApiProperty({
-    description: 'Id of the MenuItemContainerOptions entity.',
+    description:
+      'Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem',
     example: 1,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsPositive()
-  @IsNotEmpty()
-  readonly parentContainerOptionsId: number;
+  @IsOptional()
+  readonly parentContainerOptionsId?: number;
 
   @ApiProperty({
     description: 'Id of a MenuItem entity that is a valid component',
