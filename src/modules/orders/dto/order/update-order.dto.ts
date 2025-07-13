@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -10,9 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { OrderMenuItemUnionResolver } from '../../utils/order-menu-item-union-resolver';
-import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-order-menu-item.dto';
-import { UpdateChildOrderMenuItemDto } from '../order-menu-item/update-child-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
 
 export class UpdateOrderDto {
   @ApiPropertyOptional({
@@ -141,56 +138,29 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description:
       'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
-    type: () => [UpdateChildOrderMenuItemDto],
+    type: () => [NestedOrderMenuItemDto],
     nullable: true,
     example: [
       {
-        mode: 'update',
-        id: 1,
-        menuItemId: 10,
-        menuItemSizeId: 2,
-        quantity: 3,
-        orderedItemContainerDtos: [
-          {
-            mode: 'update',
-            id: 4,
-            parentContainerMenuItemId: 10,
-            containedMenuItemId: 5,
-            containedMenuItemSizeId: 6,
-            quantity: 7,
+        create: {
+          orderId: 1,
+          menuItemId: 2,
+          menuItemSizeId: 3,
+          quantity: 4,
+        },
+        update: {
+          id: 1,
+          dto: {
+            menuItemId: 2,
+            menuItemSizeId: 3,
+            quantity: 4,
           },
-          {
-            mode: 'create',
-            parentContainerMenuItemId: 10,
-            containedMenuItemId: 8,
-            containedMenuItemSizeId: 9,
-            quantity: 10,
-          },
-        ],
-      },
-      {
-        mode: 'create',
-        menuItemId: 10,
-        menuItemSizeId: 2,
-        quantity: 3,
-        orderedItemContainerDtos: [
-          {
-            mode: 'create',
-            parentContainerMenuItemId: 10,
-            containedMenuItemId: 4,
-            containedMenuItemSizeId: 5,
-            quantity: 6,
-          },
-        ],
+        },
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => OrderMenuItemUnionResolver)
-  readonly orderedMenuItemDtos?: (
-    | CreateChildOrderMenuItemDto
-    | UpdateChildOrderMenuItemDto
-  )[];
+  readonly orderedMenuItemDtos?: NestedOrderMenuItemDto[];
 }

@@ -7,13 +7,14 @@ import { Order } from '../../entities/order.entity';
  */
 export class CreateOrderContainerItemDto {
   @ApiProperty({
-    description: 'Id of the OrderMenuItem that is the parent',
+    description:
+      'Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.',
     example: 1,
   })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentOrderMenuItemId: number;
+  readonly parentOrderMenuItemId?: number;
 
   @ApiProperty({
     description: "Id of the MenuItem that is this item's container",

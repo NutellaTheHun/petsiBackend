@@ -6,11 +6,8 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
-import { Order } from '../../entities/order.entity';
-import { CreateChildOrderContainerItemDto } from '../order-container-item/create-child-order-container-item.dto';
-/**
- * Depreciated, only created as a child through {@link Order}.
- */
+import { CreateOrderContainerItemDto } from '../order-container-item/create-order-container-item.dto';
+
 export class CreateOrderMenuItemDto {
   @ApiProperty({
     description: 'Id of Order entity the OrderMenuItem belongs to.',
@@ -49,17 +46,15 @@ export class CreateOrderMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
-    type: [CreateChildOrderContainerItemDto],
+    type: [CreateOrderContainerItemDto],
     example: [
       {
-        mode: 'create',
         parentContainerMenuItemId: 10,
         containedMenuItemId: 4,
         containedMenuItemSizeId: 5,
         quantity: 6,
       },
       {
-        mode: 'create',
         parentContainerMenuItemId: 10,
         containedMenuItemId: 7,
         containedMenuItemSizeId: 8,
@@ -69,5 +64,5 @@ export class CreateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly orderedItemContainerDtos?: CreateChildOrderContainerItemDto[];
+  readonly orderedItemContainerDtos?: CreateOrderContainerItemDto[];
 }

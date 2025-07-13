@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildOrderContainerItemDto } from '../order-container-item/create-child-order-container-item.dto';
-import { UpdateChildOrderContainerItemDto } from '../order-container-item/update-child-order-container-item.dto';
+import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
 
 export class UpdateOrderMenuItemDto {
   @ApiPropertyOptional({
@@ -32,29 +31,28 @@ export class UpdateOrderMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
-    type: [UpdateChildOrderContainerItemDto],
+    type: [NestedOrderContainerItemDto],
     example: [
       {
-        mode: 'create',
-        parentContainerMenuItemId: 10,
-        containedMenuItemId: 4,
-        containedMenuItemSizeId: 5,
-        quantity: 6,
-      },
-      {
-        mode: 'update',
-        id: 7,
-        parentContainerMenuItemId: 10,
-        containedMenuItemId: 8,
-        containedMenuItemSizeId: 9,
-        quantity: 10,
+        create: {
+          parentContainerMenuItemId: 10,
+          containedMenuItemId: 4,
+          containedMenuItemSizeId: 5,
+          quantity: 6,
+        },
+        update: {
+          id: 1,
+          dto: {
+            parentContainerMenuItemId: 10,
+            containedMenuItemId: 4,
+            containedMenuItemSizeId: 5,
+            quantity: 6,
+          },
+        },
       },
     ],
   })
   @IsArray()
   @IsOptional()
-  readonly orderedItemContainerDtos?: (
-    | CreateChildOrderContainerItemDto
-    | UpdateChildOrderContainerItemDto
-  )[];
+  readonly orderedItemContainerDtos?: NestedOrderContainerItemDto[];
 }

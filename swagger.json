@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-13T19:06:53.134Z",
-              "updatedAt": "2025-07-13T19:06:53.134Z",
+              "createdAt": "2025-07-13T19:29:35.752Z",
+              "updatedAt": "2025-07-13T19:29:35.752Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-13T19:06:53.134Z",
-                "updatedAt": "2025-07-13T19:06:53.134Z",
+                "createdAt": "2025-07-13T19:29:35.752Z",
+                "updatedAt": "2025-07-13T19:29:35.752Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -8828,78 +8828,75 @@
           "orders"
         ]
       },
-      "CreateChildOrderContainerItemDto": {
+      "CreateOrderContainerItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a OrderMenuItem entity.",
-            "example": "create"
+          "parentOrderMenuItemId": {
+            "type": "number",
+            "description": "Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.",
+            "example": 1
           },
           "parentContainerMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that is this item's container",
-            "example": 1
+            "example": 2
           },
           "containedMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that is being ordered",
-            "example": 2
+            "example": 3
           },
           "containedMenuItemSizeId": {
             "type": "number",
             "description": "Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem",
-            "example": 3
+            "example": 4
           },
           "quantity": {
             "type": "number",
             "description": "amount of the containedMenuItem / containedItemSize being ordered",
-            "example": 4
+            "example": 5
           }
         },
         "required": [
-          "mode",
+          "parentOrderMenuItemId",
           "parentContainerMenuItemId",
           "containedMenuItemId",
           "containedMenuItemSizeId",
           "quantity"
         ]
       },
-      "CreateChildOrderMenuItemDto": {
+      "CreateOrderMenuItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an Order entity.",
-            "example": "create"
+          "orderId": {
+            "type": "number",
+            "description": "Id of Order entity the OrderMenuItem belongs to.",
+            "example": 1
           },
           "menuItemId": {
             "type": "number",
             "description": "Id of MenuItem entity being ordered.",
-            "example": 10
+            "example": 2
           },
           "menuItemSizeId": {
             "type": "number",
             "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
-            "example": 2
+            "example": 3
           },
           "quantity": {
             "type": "number",
-            "description": "Amount being ordered.",
-            "example": 3
+            "description": "Amount being ordered."
           },
           "orderedItemContainerDtos": {
-            "description": "Dtos when creating an OrderMenuItem entity that is a MenuItem with MenuItemContainerOptions",
+            "description": "Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem",
             "example": [
               {
-                "mode": "create",
                 "parentContainerMenuItemId": 10,
                 "containedMenuItemId": 4,
                 "containedMenuItemSizeId": 5,
                 "quantity": 6
               },
               {
-                "mode": "create",
                 "parentContainerMenuItemId": 10,
                 "containedMenuItemId": 7,
                 "containedMenuItemSizeId": 8,
@@ -8908,12 +8905,12 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildOrderContainerItemDto"
+              "$ref": "#/components/schemas/CreateOrderContainerItemDto"
             }
           }
         },
         "required": [
-          "mode",
+          "orderId",
           "menuItemId",
           "menuItemSizeId",
           "quantity"
@@ -8993,16 +8990,14 @@
             "nullable": true
           },
           "orderedMenuItemDtos": {
-            "description": "An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.",
+            "description": "An array of CreateOrderMenuItemDtos.",
             "example": [
               {
-                "mode": "create",
                 "menuItemId": 10,
                 "menuItemSizeId": 2,
                 "quantity": 3,
                 "orderedItemContainerDtos": [
                   {
-                    "mode": "create",
                     "parentContainerMenuItemId": 10,
                     "containedMenuItemId": 4,
                     "containedMenuItemSizeId": 5,
@@ -9013,7 +9008,7 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildOrderMenuItemDto"
+              "$ref": "#/components/schemas/CreateOrderMenuItemDto"
             }
           }
         },
@@ -9025,102 +9020,183 @@
           "orderedMenuItemDtos"
         ]
       },
-      "UpdateChildOrderContainerItemDto": {
+      "UpdateOrderContainerItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a OrderMenuItem entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of the OrderMenuItemContainerItem to update.",
-            "example": 1
-          },
           "parentContainerMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that is this item's container, not available to update, but required for validation",
-            "example": 2
+            "example": 1
           },
           "containedMenuItemId": {
             "type": "number",
-            "description": "Id of the MenuItem being ordered",
-            "example": 3
+            "description": "Id of the MenuItem that is being ordered",
+            "example": 2
           },
           "containedMenuItemSizeId": {
             "type": "number",
             "description": "Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem",
-            "example": 4
-          },
-          "quantity": {
-            "type": "number",
-            "description": "amount of the componentMenuItem / componentItemSize being ordered",
-            "example": 5
-          }
-        },
-        "required": [
-          "mode",
-          "id"
-        ]
-      },
-      "UpdateChildOrderMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an Order entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of child OrderMenuItem to be updated",
-            "example": 1
-          },
-          "menuItemId": {
-            "type": "number",
-            "description": "Id of MenuItem entity being ordered.",
-            "example": 2
-          },
-          "menuItemSizeId": {
-            "type": "number",
-            "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
             "example": 3
           },
           "quantity": {
             "type": "number",
-            "description": "Amount being ordered.",
+            "description": "amount of the containedMenuItem / containedItemSize being ordered",
             "example": 4
+          }
+        }
+      },
+      "NestedUpdateOrderContainerItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of a OrderContainerItem entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "Update dto of a OrderContainerItem entity.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateOrderContainerItemDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "dto"
+        ]
+      },
+      "NestedOrderContainerItemDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "Create dto of a OrderContainerItem entity.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateOrderContainerItemDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "Update dto of a OrderContainerItem entity.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedUpdateOrderContainerItemDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "create",
+          "update"
+        ]
+      },
+      "UpdateOrderMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "description": "Id of MenuItem entity being ordered.",
+            "example": 1
+          },
+          "menuItemSizeId": {
+            "type": "number",
+            "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
+            "example": 2
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Amount being ordered.",
+            "example": 3
           },
           "orderedItemContainerDtos": {
             "description": "Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem",
             "example": [
               {
-                "mode": "create",
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 4,
-                "containedMenuItemSizeId": 5,
-                "quantity": 6
-              },
-              {
-                "mode": "update",
-                "id": 7,
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 8,
-                "containedMenuItemSizeId": 9,
-                "quantity": 10
+                "create": {
+                  "parentContainerMenuItemId": 10,
+                  "containedMenuItemId": 4,
+                  "containedMenuItemSizeId": 5,
+                  "quantity": 6
+                },
+                "update": {
+                  "id": 1,
+                  "dto": {
+                    "parentContainerMenuItemId": 10,
+                    "containedMenuItemId": 4,
+                    "containedMenuItemSizeId": 5,
+                    "quantity": 6
+                  }
+                }
               }
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildOrderContainerItemDto"
+              "$ref": "#/components/schemas/NestedOrderContainerItemDto"
             }
+          }
+        }
+      },
+      "NestedUpdateOrderMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of a OrderMenuItem entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "Update dto of a OrderMenuItem entity.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateOrderMenuItemDto"
+              }
+            ]
           }
         },
         "required": [
-          "mode",
           "id",
-          "quantity"
+          "dto"
+        ]
+      },
+      "NestedOrderMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "Create dto of a OrderMenuItem entity.",
+            "example": {
+              "orderId": 1,
+              "menuItemId": 2,
+              "menuItemSizeId": 3,
+              "quantity": 4
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateOrderMenuItemDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "Update dto of a OrderMenuItem entity.",
+            "example": {
+              "id": 1,
+              "dto": {
+                "menuItemId": 2,
+                "menuItemSizeId": 3,
+                "quantity": 4
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedUpdateOrderMenuItemDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "create",
+          "update"
         ]
       },
       "UpdateOrderDto": {
@@ -9204,48 +9280,25 @@
             "nullable": true,
             "example": [
               {
-                "mode": "update",
-                "id": 1,
-                "menuItemId": 10,
-                "menuItemSizeId": 2,
-                "quantity": 3,
-                "orderedItemContainerDtos": [
-                  {
-                    "mode": "update",
-                    "id": 4,
-                    "parentContainerMenuItemId": 10,
-                    "containedMenuItemId": 5,
-                    "containedMenuItemSizeId": 6,
-                    "quantity": 7
-                  },
-                  {
-                    "mode": "create",
-                    "parentContainerMenuItemId": 10,
-                    "containedMenuItemId": 8,
-                    "containedMenuItemSizeId": 9,
-                    "quantity": 10
+                "create": {
+                  "orderId": 1,
+                  "menuItemId": 2,
+                  "menuItemSizeId": 3,
+                  "quantity": 4
+                },
+                "update": {
+                  "id": 1,
+                  "dto": {
+                    "menuItemId": 2,
+                    "menuItemSizeId": 3,
+                    "quantity": 4
                   }
-                ]
-              },
-              {
-                "mode": "create",
-                "menuItemId": 10,
-                "menuItemSizeId": 2,
-                "quantity": 3,
-                "orderedItemContainerDtos": [
-                  {
-                    "mode": "create",
-                    "parentContainerMenuItemId": 10,
-                    "containedMenuItemId": 4,
-                    "containedMenuItemSizeId": 5,
-                    "quantity": 6
-                  }
-                ]
+                }
               }
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildOrderMenuItemDto"
+              "$ref": "#/components/schemas/NestedOrderMenuItemDto"
             }
           }
         }
@@ -9270,165 +9323,6 @@
             "type": "string",
             "description": "Name of the OrderCategory entity.",
             "example": "Wholesale"
-          }
-        }
-      },
-      "CreateOrderMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "orderId": {
-            "type": "number",
-            "description": "Id of Order entity the OrderMenuItem belongs to.",
-            "example": 1
-          },
-          "menuItemId": {
-            "type": "number",
-            "description": "Id of MenuItem entity being ordered.",
-            "example": 2
-          },
-          "menuItemSizeId": {
-            "type": "number",
-            "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
-            "example": 3
-          },
-          "quantity": {
-            "type": "number",
-            "description": "Amount being ordered."
-          },
-          "orderedItemContainerDtos": {
-            "description": "Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem",
-            "example": [
-              {
-                "mode": "create",
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 4,
-                "containedMenuItemSizeId": 5,
-                "quantity": 6
-              },
-              {
-                "mode": "create",
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 7,
-                "containedMenuItemSizeId": 8,
-                "quantity": 9
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateChildOrderContainerItemDto"
-            }
-          }
-        },
-        "required": [
-          "orderId",
-          "menuItemId",
-          "menuItemSizeId",
-          "quantity"
-        ]
-      },
-      "UpdateOrderMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "menuItemId": {
-            "type": "number",
-            "description": "Id of MenuItem entity being ordered.",
-            "example": 1
-          },
-          "menuItemSizeId": {
-            "type": "number",
-            "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
-            "example": 2
-          },
-          "quantity": {
-            "type": "number",
-            "description": "Amount being ordered.",
-            "example": 3
-          },
-          "orderedItemContainerDtos": {
-            "description": "Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem",
-            "example": [
-              {
-                "mode": "create",
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 4,
-                "containedMenuItemSizeId": 5,
-                "quantity": 6
-              },
-              {
-                "mode": "update",
-                "id": 7,
-                "parentContainerMenuItemId": 10,
-                "containedMenuItemId": 8,
-                "containedMenuItemSizeId": 9,
-                "quantity": 10
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UpdateChildOrderContainerItemDto"
-            }
-          }
-        }
-      },
-      "CreateOrderContainerItemDto": {
-        "type": "object",
-        "properties": {
-          "parentOrderMenuItemId": {
-            "type": "number",
-            "description": "Id of the OrderMenuItem that is the parent",
-            "example": 1
-          },
-          "parentContainerMenuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem that is this item's container",
-            "example": 2
-          },
-          "containedMenuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem that is being ordered",
-            "example": 3
-          },
-          "containedMenuItemSizeId": {
-            "type": "number",
-            "description": "Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem",
-            "example": 4
-          },
-          "quantity": {
-            "type": "number",
-            "description": "amount of the containedMenuItem / containedItemSize being ordered",
-            "example": 5
-          }
-        },
-        "required": [
-          "parentOrderMenuItemId",
-          "parentContainerMenuItemId",
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
-        ]
-      },
-      "UpdateOrderContainerItemDto": {
-        "type": "object",
-        "properties": {
-          "parentContainerMenuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem that is this item's container, not available to update, but required for validation",
-            "example": 1
-          },
-          "containedMenuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem that is being ordered",
-            "example": 2
-          },
-          "containedMenuItemSizeId": {
-            "type": "number",
-            "description": "Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem",
-            "example": 3
-          },
-          "quantity": {
-            "type": "number",
-            "description": "amount of the containedMenuItem / containedItemSize being ordered",
-            "example": 4
           }
         }
       },
@@ -10539,7 +10433,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T19:06:53.087Z",
+              "countDate": "2025-07-13T19:29:35.665Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10913,7 +10807,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T19:06:53.087Z",
+              "countDate": "2025-07-13T19:29:35.664Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

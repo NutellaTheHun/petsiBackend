@@ -1,80 +1,86 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderBase } from "../../../base/builder-base";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { AppLogger } from "../../app-logging/app-logger";
-import { MenuItemSizeService } from "../../menu-items/services/menu-item-size.service";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildOrderContainerItemDto } from "../dto/order-container-item/create-child-order-container-item.dto";
-import { UpdateChildOrderContainerItemDto } from "../dto/order-container-item/update-child-order-container-item.dto";
-import { CreateChildOrderMenuItemDto } from "../dto/order-menu-item/create-child-order-menu-item.dto";
-import { CreateOrderMenuItemDto } from "../dto/order-menu-item/create-order-menu-item.dto";
-import { UpdateChildOrderMenuItemDto } from "../dto/order-menu-item/update-child-order-menu-item.dto";
-import { UpdateOrderMenuItemDto } from "../dto/order-menu-item/update-order-menu-item.dto";
-import { OrderMenuItem } from "../entities/order-menu-item.entity";
-import { Order } from "../entities/order.entity";
-import { OrderMenuItemService } from "../services/order-menu-item.service";
-import { OrderService } from "../services/order.service";
-import { OrderMenuItemValidator } from "../validators/order-menu-item.validator";
-import { OrderContainerItemBuilder } from "./order-container-item.builder";
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../base/builder-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
+import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
+import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
+import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
+import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
+import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderService } from '../services/order.service';
+import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
+import { OrderContainerItemBuilder } from './order-container-item.builder';
 
 @Injectable()
-export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements IBuildChildDto<Order, OrderMenuItem> {
-    constructor(
-        @Inject(forwardRef(() => OrderService))
-        private readonly orderService: OrderService,
+export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
+  constructor(
+    @Inject(forwardRef(() => OrderService))
+    private readonly orderService: OrderService,
 
-        @Inject(forwardRef(() => OrderMenuItemService))
-        private readonly orderItemService: OrderMenuItemService,
+    @Inject(forwardRef(() => OrderMenuItemService))
+    private readonly orderItemService: OrderMenuItemService,
 
-        @Inject(forwardRef(() => OrderContainerItemBuilder))
-        private readonly itemComponentBuilder: OrderContainerItemBuilder,
+    @Inject(forwardRef(() => OrderContainerItemBuilder))
+    private readonly containerItemBuilder: OrderContainerItemBuilder,
 
-        private readonly menuItemService: MenuItemService,
-        private readonly sizeService: MenuItemSizeService,
+    private readonly menuItemService: MenuItemService,
+    private readonly sizeService: MenuItemSizeService,
 
-        validator: OrderMenuItemValidator,
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger, validator); }
+    validator: OrderMenuItemValidator,
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(
+      OrderMenuItem,
+      'OrderMenuItemBuilder',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    /**
-     * Depreciated, only created as a child through {@link Order}.
-     */
-    protected createEntity(dto: CreateOrderMenuItemDto): void {
-        if (dto.menuItemId !== undefined) {
-            this.menuItemById(dto.menuItemId);
-        }
-        if (dto.menuItemSizeId !== undefined) {
-            this.menuItemSizeById(dto.menuItemSizeId);
-        }
-        if (dto.orderId !== undefined) {
-            this.orderById(dto.orderId);
-        }
-        if (dto.quantity !== undefined) {
-            this.quantity(dto.quantity);
-        }
-        if (dto.orderedItemContainerDtos !== undefined) {
-            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
-        }
+  /**
+   * Depreciated, only created as a child through {@link Order}.
+   */
+  protected createEntity(dto: CreateOrderMenuItemDto): void {
+    if (dto.menuItemId !== undefined) {
+      this.menuItemById(dto.menuItemId);
     }
-
-    protected updateEntity(dto: UpdateOrderMenuItemDto): void {
-        if (dto.menuItemId !== undefined) {
-            this.menuItemById(dto.menuItemId);
-        }
-        if (dto.menuItemSizeId !== undefined) {
-            this.menuItemSizeById(dto.menuItemSizeId);
-        }
-        if (dto.quantity !== undefined) {
-            this.quantity(dto.quantity);
-        }
-        if (dto.orderedItemContainerDtos !== undefined) {
-            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
-        }
+    if (dto.menuItemSizeId !== undefined) {
+      this.menuItemSizeById(dto.menuItemSizeId);
     }
+    if (dto.orderId !== undefined) {
+      this.orderById(dto.orderId);
+    }
+    if (dto.quantity !== undefined) {
+      this.quantity(dto.quantity);
+    }
+    if (dto.orderedItemContainerDtos !== undefined) {
+      this.containerItemsByBuilder(dto.orderedItemContainerDtos);
+    }
+  }
 
-    buildChildEntity(dto: CreateChildOrderMenuItemDto): void {
+  protected updateEntity(dto: UpdateOrderMenuItemDto): void {
+    if (dto.menuItemId !== undefined) {
+      this.menuItemById(dto.menuItemId);
+    }
+    if (dto.menuItemSizeId !== undefined) {
+      this.menuItemSizeById(dto.menuItemSizeId);
+    }
+    if (dto.quantity !== undefined) {
+      this.quantity(dto.quantity);
+    }
+    if (dto.orderedItemContainerDtos !== undefined) {
+      this.containerItemsByBuilder(dto.orderedItemContainerDtos);
+    }
+  }
+  /*
+    buildChildEntity(dto: CreateOrderMenuItemDto): void {
         if (dto.menuItemId !== undefined) {
             this.menuItemById(dto.menuItemId);
         }
@@ -100,7 +106,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
 
         return await this.build();
     }
-
+*/ /*
     public async buildManyChildDto(parentOrder: Order, dtos: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[]): Promise<OrderMenuItem[]> {
         const results: OrderMenuItem[] = [];
         for (const dto of dtos) {
@@ -113,33 +119,82 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> implements 
             }
         }
         return results;
+    }*/
+  public async buildMany(
+    dtos: (CreateOrderMenuItemDto | NestedOrderMenuItemDto)[],
+  ): Promise<OrderMenuItem[]> {
+    const results: OrderMenuItem[] = [];
+    for (const dto of dtos) {
+      if (dto instanceof CreateOrderMenuItemDto) {
+        results.push(await this.buildCreateDto(dto));
+      } else {
+        if (dto.create) {
+          results.push(await this.buildCreateDto(dto.create));
+        }
+        if (dto.update) {
+          const item = await this.orderItemService.findOne(dto.update.id);
+          if (!item) {
+            throw new Error('orderMenuItem not found');
+          }
+          results.push(await this.buildUpdateDto(item, dto));
+        }
+      }
     }
+    return results;
+  }
 
-    public orderById(id: number): this {
-        return this.setPropById(this.orderService.findOne.bind(this.orderService), 'order', id);
-    }
+  public orderById(id: number): this {
+    return this.setPropById(
+      this.orderService.findOne.bind(this.orderService),
+      'order',
+      id,
+    );
+  }
 
-    public menuItemById(id: number): this {
-        return this.setPropById(this.menuItemService.findOne.bind(this.menuItemService), 'menuItem', id);
-    }
+  public menuItemById(id: number): this {
+    return this.setPropById(
+      this.menuItemService.findOne.bind(this.menuItemService),
+      'menuItem',
+      id,
+    );
+  }
 
-    public menuItemByName(name: string): this {
-        return this.setPropByName(this.menuItemService.findOneByName.bind(this.menuItemService), 'menuItem', name);
-    }
+  public menuItemByName(name: string): this {
+    return this.setPropByName(
+      this.menuItemService.findOneByName.bind(this.menuItemService),
+      'menuItem',
+      name,
+    );
+  }
 
-    public menuItemSizeById(id: number): this {
-        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'size', id);
-    }
+  public menuItemSizeById(id: number): this {
+    return this.setPropById(
+      this.sizeService.findOne.bind(this.sizeService),
+      'size',
+      id,
+    );
+  }
 
-    public menuItemSizeByName(name: string): this {
-        return this.setPropByName(this.sizeService.findOneByName.bind(this.sizeService), 'size', name);
-    }
+  public menuItemSizeByName(name: string): this {
+    return this.setPropByName(
+      this.sizeService.findOneByName.bind(this.sizeService),
+      'size',
+      name,
+    );
+  }
 
-    public quantity(amount: number): this {
-        return this.setPropByVal('quantity', amount);
-    }
+  public quantity(amount: number): this {
+    return this.setPropByVal('quantity', amount);
+  }
 
-    public containerItemsByBuilder(dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): this {
-        return this.setPropByBuilder(this.itemComponentBuilder.buildManyChildDto.bind(this.itemComponentBuilder), 'orderedContainerItems', this.entity, dtos);
-    }
+  public containerItemsByBuilder(
+    dtos: (CreateOrderContainerItemDto | NestedOrderContainerItemDto)[],
+  ): this {
+    return this.setPropByBuilder(
+      this.containerItemBuilder.buildMany.bind(this.containerItemBuilder),
+      'orderedContainerItems',
+      this.entity,
+      dtos,
+    );
+  }
 }

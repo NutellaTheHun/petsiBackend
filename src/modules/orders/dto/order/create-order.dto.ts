@@ -9,7 +9,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateChildOrderMenuItemDto } from '../order-menu-item/create-child-order-menu-item.dto';
+import { CreateOrderMenuItemDto } from '../order-menu-item/create-order-menu-item.dto';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -128,18 +128,15 @@ export class CreateOrderDto {
   readonly weeklyFulfillment?: string;
 
   @ApiProperty({
-    description:
-      'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
-    type: [CreateChildOrderMenuItemDto],
+    description: 'An array of CreateOrderMenuItemDtos.',
+    type: [CreateOrderMenuItemDto],
     example: [
       {
-        mode: 'create',
         menuItemId: 10,
         menuItemSizeId: 2,
         quantity: 3,
         orderedItemContainerDtos: [
           {
-            mode: 'create',
             parentContainerMenuItemId: 10,
             containedMenuItemId: 4,
             containedMenuItemSizeId: 5,
@@ -150,5 +147,5 @@ export class CreateOrderDto {
     ],
   })
   @IsArray()
-  readonly orderedMenuItemDtos: CreateChildOrderMenuItemDto[];
+  readonly orderedMenuItemDtos: CreateOrderMenuItemDto[];
 }
