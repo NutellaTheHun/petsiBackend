@@ -30,12 +30,15 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   ): Promise<void> {
     // no duplicate update dtos (same id)
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
-      const duplicateIds = this.helper.findDuplicates(
-        dto.itemCountDtos,
-        (id) => `${id.id}`,
-      );
+      const ids: number[] = [];
+      for (const d of dto.itemCountDtos) {
+        if (d.update) {
+          ids.push(d.update.id);
+        }
+      }
+      const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);
       if (duplicateIds.length > 0) {
-        duplicateIds.map((dup) =>
+        duplicateIds.map((id) =>
           this.addError(
             new ValidationError({
               errorMessage:
@@ -44,7 +47,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
               contextEntity: 'UpdateInventoryAreaCountDto',
               contextId: id,
               sourceEntity: 'UpdateChildInventoryAreaItemDto',
-              sourceId: dup.id,
+              sourceId: id,
             }),
           ),
         );

@@ -411,13 +411,13 @@ export class InventoryItemTestingUtil {
   /**
    * - Create's inventoryItemSize dtos for create method of an inventory item
    */
-  /*public createChildInventoryItemSizeDtos(
+  public createInventoryItemSizeDtos(
     resultAmount: number,
     packageIds: number[],
     unitIds: number[],
     costs: number[],
-  ): CreateChildInventoryItemSizeDto[] {
-    const results: CreateChildInventoryItemSizeDto[] = [];
+  ): CreateInventoryItemSizeDto[] {
+    const results: CreateInventoryItemSizeDto[] = [];
 
     let packageIdx = 0;
     let costIdx = 0;
@@ -428,12 +428,11 @@ export class InventoryItemTestingUtil {
 
     for (let i = 0; i < resultAmount; i++) {
       results.push({
-        mode: 'create',
         measureUnitId: unitIds[unitIdx++],
         inventoryPackageId: packageIds[packageIdx++],
         cost: costs[costIter++],
         measureAmount: 1,
-      } as CreateChildInventoryItemSizeDto);
+      } as CreateInventoryItemSizeDto);
       if (unitIdx === unitIds.length) {
         unitIdx = 0;
       }
@@ -447,5 +446,5 @@ export class InventoryItemTestingUtil {
       }
     }
     return results;
-  }*/
+  }
 }

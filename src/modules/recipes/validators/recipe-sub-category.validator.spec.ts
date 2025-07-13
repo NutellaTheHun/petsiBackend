@@ -1,94 +1,95 @@
-import { TestingModule } from "@nestjs/testing";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { CreateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/create-child-recipe-sub-category.dto";
-import { UpdateChildRecipeSubCategoryDto } from "../dto/recipe-sub-category/update-child-recipe-sub-category.dto copy";
-import { RecipeSubCategoryService } from "../services/recipe-sub-category.service";
-import { REC_SUBCAT_1, REC_SUBCAT_2, REC_SUBCAT_3 } from "../utils/constants";
-import { RecipeTestUtil } from "../utils/recipe-test.util";
-import { getRecipeTestingModule } from "../utils/recipes-testing.module";
-import { RecipeSubCategoryValidator } from "./recipe-sub-category.validator";
-import { ValidationException } from "../../../util/exceptions/validation-exception";
-import { EXIST } from "../../../util/exceptions/error_constants";
+import { TestingModule } from '@nestjs/testing';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { EXIST } from '../../../util/exceptions/error_constants';
+import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
+import { REC_SUBCAT_1, REC_SUBCAT_2, REC_SUBCAT_3 } from '../utils/constants';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
+import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
 
 describe('recipe sub category validator', () => {
-    let testingUtil: RecipeTestUtil;
-    let dbTestContext: DatabaseTestContext;
+  let testingUtil: RecipeTestUtil;
+  let dbTestContext: DatabaseTestContext;
 
-    let validator: RecipeSubCategoryValidator;
-    let service: RecipeSubCategoryService;
+  let validator: RecipeSubCategoryValidator;
+  let service: RecipeSubCategoryService;
 
-    beforeAll(async () => {
-        const module: TestingModule = await getRecipeTestingModule();
-        validator = module.get<RecipeSubCategoryValidator>(RecipeSubCategoryValidator);
-        service = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
+  beforeAll(async () => {
+    const module: TestingModule = await getRecipeTestingModule();
+    validator = module.get<RecipeSubCategoryValidator>(
+      RecipeSubCategoryValidator,
+    );
+    service = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
 
-        dbTestContext = new DatabaseTestContext();
-        testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
-        await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
-    });
+    dbTestContext = new DatabaseTestContext();
+    testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
+    await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
+  });
 
-    afterAll(async () => {
-        await dbTestContext.executeCleanupFunctions();
-    });
+  afterAll(async () => {
+    await dbTestContext.executeCleanupFunctions();
+  });
 
-    it('should be defined', () => {
-        expect(validator).toBeDefined
-    });
+  it('should be defined', () => {
+    expect(validator).toBeDefined;
+  });
 
-    it('should validate create', async () => {
-        const dto = {
-            mode: 'create',
-            subCategoryName: "CREATE"
-        } as CreateChildRecipeSubCategoryDto;
+  it('should validate create', async () => {
+    const dto = {
+      subCategoryName: 'CREATE',
+    } as CreateRecipeSubCategoryDto;
 
-        await validator.validateCreate(dto);
-    });
+    await validator.validateCreate(dto);
+  });
 
-    it('should fail create: name already exists', async () => {
-        const dto = {
-            mode: 'create',
-            subCategoryName: REC_SUBCAT_3
-        } as CreateChildRecipeSubCategoryDto;
+  it('should fail create: name already exists', async () => {
+    const dto = {
+      subCategoryName: REC_SUBCAT_3,
+    } as CreateRecipeSubCategoryDto;
 
-        try {
-            await validator.validateCreate(dto);
-        } catch (err) {
-            expect(err).toBeInstanceOf(ValidationException);
-            const error = err as ValidationException;
-            expect(error.errors.length).toEqual(1);
-            expect(error.errors[0].errorType).toEqual(EXIST);
-        }
-    });
+    try {
+      await validator.validateCreate(dto);
+    } catch (err) {
+      expect(err).toBeInstanceOf(ValidationException);
+      const error = err as ValidationException;
+      expect(error.errors.length).toEqual(1);
+      expect(error.errors[0].errorType).toEqual(EXIST);
+    }
+  });
 
+  it('should pass update', async () => {
+    const toUpdate = await service.findOneByName(REC_SUBCAT_1);
+    if (!toUpdate) {
+      throw new Error();
+    }
 
-    it('should pass update', async () => {
-        const toUpdate = await service.findOneByName(REC_SUBCAT_1);
-        if (!toUpdate) { throw new Error(); }
+    const dto = {
+      subCategoryName: 'UPDATE',
+    } as UpdateRecipeSubCategoryDto;
 
-        const dto = {
-            mode: 'update',
-            subCategoryName: "UPDATE",
-        } as UpdateChildRecipeSubCategoryDto;
+    await validator.validateUpdate(toUpdate.id, dto);
+  });
 
-        await validator.validateUpdate(toUpdate.id, dto);
-    });
+  it('should fail update: name already exists', async () => {
+    const toUpdate = await service.findOneByName(REC_SUBCAT_1);
+    if (!toUpdate) {
+      throw new Error();
+    }
 
-    it('should fail update: name already exists', async () => {
-        const toUpdate = await service.findOneByName(REC_SUBCAT_1);
-        if (!toUpdate) { throw new Error(); }
+    const dto = {
+      subCategoryName: REC_SUBCAT_2,
+    } as UpdateRecipeSubCategoryDto;
 
-        const dto = {
-            mode: 'update',
-            subCategoryName: REC_SUBCAT_2,
-        } as UpdateChildRecipeSubCategoryDto;
-
-        try {
-            await validator.validateUpdate(toUpdate.id, dto);
-        } catch (err) {
-            expect(err).toBeInstanceOf(ValidationException);
-            const error = err as ValidationException;
-            expect(error.errors.length).toEqual(1);
-            expect(error.errors[0].errorType).toEqual(EXIST);
-        }
-    });
+    try {
+      await validator.validateUpdate(toUpdate.id, dto);
+    } catch (err) {
+      expect(err).toBeInstanceOf(ValidationException);
+      const error = err as ValidationException;
+      expect(error.errors.length).toEqual(1);
+      expect(error.errors[0].errorType).toEqual(EXIST);
+    }
+  });
 });

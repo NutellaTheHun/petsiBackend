@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
 import { CreateRecipeIngredientDto } from './create-recipe-ingredient.dto';
@@ -6,7 +6,7 @@ import { NestedUpdateRecipeIngredientDto } from './nested-update-recipe-ingedien
 import { UpdateRecipeIngredientDto } from './update-recipe-ingedient.dto';
 
 export class NestedRecipeIngredientDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Create dto of a RecipeIngredient entity.',
     type: CreateRecipeIngredientDto,
     example: {
@@ -18,9 +18,9 @@ export class NestedRecipeIngredientDto {
   })
   @ValidateNested()
   @Type(() => CreateRecipeIngredientDto)
-  create: CreateRecipeIngredientDto;
+  create?: CreateRecipeIngredientDto;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Update dto of a RecipeIngredient entity.',
     type: UpdateRecipeIngredientDto,
     example: {
@@ -35,5 +35,5 @@ export class NestedRecipeIngredientDto {
   })
   @ValidateNested()
   @Type(() => NestedUpdateRecipeIngredientDto)
-  update: NestedUpdateRecipeIngredientDto;
+  update?: NestedUpdateRecipeIngredientDto;
 }

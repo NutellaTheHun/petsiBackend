@@ -133,7 +133,7 @@ export class InventoryAreaController extends ControllerBase<InventoryArea> {
     description: 'Sort order: ASC or DESC',
   })
   async findAll(
-    @Query('relations') rawRelations: string | string[],
+    @Query('relations') rawRelations?: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,

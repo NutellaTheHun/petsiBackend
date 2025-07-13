@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, ValidateNested } from 'class-validator';
 import { CreateOrderMenuItemDto } from './create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from './nested-update-order-menu-item.dto';
 
 export class NestedOrderMenuItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Create dto of a OrderMenuItem entity.',
     type: CreateOrderMenuItemDto,
     example: {
@@ -18,9 +18,9 @@ export class NestedOrderMenuItemDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateOrderMenuItemDto)
-  readonly create: CreateOrderMenuItemDto;
+  readonly create?: CreateOrderMenuItemDto;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Update dto of a OrderMenuItem entity.',
     type: NestedUpdateOrderMenuItemDto,
     example: {
@@ -35,5 +35,5 @@ export class NestedOrderMenuItemDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => NestedUpdateOrderMenuItemDto)
-  readonly update: NestedUpdateOrderMenuItemDto;
+  readonly update?: NestedUpdateOrderMenuItemDto;
 }

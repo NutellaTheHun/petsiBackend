@@ -3,11 +3,9 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
-import {
-  NestedUpdateInventoryAreaItemDto,
-  UpdateInventoryAreaCountDto,
-} from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 import { InventoryAreaService } from '../services/inventory-area.service';
@@ -83,19 +81,10 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
 
   public countedItemsByBuilder(
     parent: InventoryAreaCount,
-    dtos: (CreateInventoryAreaItemDto | NestedUpdateInventoryAreaItemDto)[],
+    dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
   ): this {
-    if (dtos instanceof CreateInventoryAreaItemDto) {
-      return this.setPropByBuilder(
-        this.itemCountBuilder.createMany.bind(this.itemCountBuilder),
-        'countedItems',
-        parent,
-        dtos,
-      );
-    }
-
     return this.setPropByBuilder(
-      this.itemCountBuilder.updateMany.bind(this.itemCountBuilder),
+      this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
       'countedItems',
       parent,
       dtos,

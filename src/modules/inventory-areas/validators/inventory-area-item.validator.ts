@@ -6,8 +6,8 @@ import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
@@ -72,10 +72,10 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
 
   public async validateUpdate(
     id: number,
-    update: NestedUpdateInventoryAreaItemDto,
+    update: UpdateInventoryAreaItemDto,
   ): Promise<void> {
     // Cannot update with both item size and item size dto
-    if (update.dto.countedItemSizeId && update.dto.countedItemSizeDto) {
+    if (update.countedItemSizeId && update.countedItemSizeDto) {
       this.addError({
         errorMessage: 'cannot provide inventory item size and create dto',
         errorType: 'INVALID',
@@ -87,9 +87,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
 
     // cannot update item with no sizing
     else if (
-      update.dto.countedInventoryItemId &&
-      !update.dto.countedItemSizeId &&
-      !update.dto.countedItemSizeDto
+      update.countedInventoryItemId &&
+      !update.countedItemSizeId &&
+      !update.countedItemSizeDto
     ) {
       this.addError({
         errorMessage: 'missing inventory item size assignment',
@@ -102,8 +102,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
 
     // Check if counted item and counted size are valid
     else if (
-      update.dto.countedInventoryItemId ||
-      (update.dto.countedItemSizeId && !update.dto.countedItemSizeDto)
+      update.countedInventoryItemId ||
+      (update.countedItemSizeId && !update.countedItemSizeDto)
     ) {
       const toUpdate = await this.areaItemService.findOne(id, [
         'countedItem',
@@ -113,10 +113,8 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem>
         throw new Error();
       }
 
-      const itemId =
-        update.dto.countedInventoryItemId ?? toUpdate.countedItem.id;
-      const sizeId =
-        update.dto.countedItemSizeId ?? toUpdate.countedItemSize.id;
+      const itemId = update.countedInventoryItemId ?? toUpdate.countedItem.id;
+      const sizeId = update.countedItemSizeId ?? toUpdate.countedItemSize.id;
 
       const item = await this.itemService.findOne(itemId, ['itemSizes']);
       if (!this.helper.isValidSize(sizeId, item.itemSizes)) {

@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, ValidateNested } from 'class-validator';
 import { CreateOrderContainerItemDto } from './create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from './nested-update-order-container-item.dto';
 
 export class NestedOrderContainerItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Create dto of a OrderContainerItem entity.',
     type: CreateOrderContainerItemDto,
   })
@@ -14,7 +14,7 @@ export class NestedOrderContainerItemDto {
   @Type(() => CreateOrderContainerItemDto)
   readonly create?: CreateOrderContainerItemDto;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Update dto of a OrderContainerItem entity.',
     type: NestedUpdateOrderContainerItemDto,
   })

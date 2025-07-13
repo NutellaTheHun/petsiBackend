@@ -61,7 +61,7 @@ export class ControllerBase<T extends ObjectLiteral> {
 
   @Get()
   async findAll(
-    @Query('relations') rawRelations: string | string[],
+    @Query('relations') rawRelations?: string | string[],
     @Query('limit') limit?: number,
     @Query('offset') cursor?: string,
     @Query('sortBy') sortBy?: string,
@@ -74,9 +74,14 @@ export class ControllerBase<T extends ObjectLiteral> {
   ): Promise<{ items: T[]; nextCursor?: string }> {
     const requestId = this.requestContextService.getRequestId();
 
-    let relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
+    let relations: string[] = [];
+    if (rawRelations) {
+      relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
 
-    relations = relations.filter((r) => r !== undefined && r !== 'undefined');
+      relations = relations.filter(
+        (r) => r !== undefined && r !== 'undefined',
+      ) as string[];
+    }
 
     const filterArray = Array.isArray(filters)
       ? filters

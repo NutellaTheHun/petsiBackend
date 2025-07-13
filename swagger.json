@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-13T20:07:53.544Z",
-              "updatedAt": "2025-07-13T20:07:53.544Z",
+              "createdAt": "2025-07-13T20:55:26.887Z",
+              "updatedAt": "2025-07-13T20:55:26.887Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-13T20:07:53.545Z",
-                "updatedAt": "2025-07-13T20:07:53.545Z",
+                "createdAt": "2025-07-13T20:55:26.887Z",
+                "updatedAt": "2025-07-13T20:55:26.887Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9086,11 +9086,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "create",
-          "update"
-        ]
+        }
       },
       "UpdateOrderMenuItemDto": {
         "type": "object",
@@ -9193,11 +9189,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "create",
-          "update"
-        ]
+        }
       },
       "UpdateOrderDto": {
         "type": "object",
@@ -10196,11 +10188,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "create",
-          "update"
-        ]
+        }
       },
       "UpdateTemplateDto": {
         "type": "object",
@@ -10434,7 +10422,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T20:07:53.455Z",
+              "countDate": "2025-07-13T20:55:26.838Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10808,7 +10796,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T20:07:53.454Z",
+              "countDate": "2025-07-13T20:55:26.837Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -12136,11 +12124,7 @@
               }
             ]
           }
-        },
-        "required": [
-          "create",
-          "update"
-        ]
+        }
       },
       "UpdateRecipeDto": {
         "type": "object",

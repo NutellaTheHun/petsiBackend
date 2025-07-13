@@ -189,16 +189,16 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
       const resolvedDtos: string[] = [];
       const resolvedIds: number[] = [];
       for (const nested of dto.ingredientDtos) {
-        if (nested.create.ingredientInventoryItemId) {
+        if (nested.create?.ingredientInventoryItemId) {
           resolvedDtos.push(`I:${nested.create.ingredientInventoryItemId}`);
         }
-        if (nested.update.dto.ingredientInventoryItemId) {
+        if (nested.update?.dto.ingredientInventoryItemId) {
           resolvedDtos.push(`I:${nested.update.dto.ingredientInventoryItemId}`);
         }
-        if (nested.create.ingredientRecipeId) {
+        if (nested.create?.ingredientRecipeId) {
           resolvedDtos.push(`R:${nested.create.ingredientRecipeId}`);
         }
-        if (nested.update.dto.ingredientRecipeId) {
+        if (nested.update?.dto.ingredientRecipeId) {
           resolvedDtos.push(`R:${nested.update.dto.ingredientRecipeId}`);
         }
         if (nested.update) {

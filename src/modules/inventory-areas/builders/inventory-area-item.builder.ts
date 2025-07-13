@@ -7,8 +7,8 @@ import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
@@ -81,30 +81,28 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     }
   }
 
-  public async createMany(
-    dtos: CreateInventoryAreaItemDto[],
+  public async buildMany(
+    dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
   ): Promise<InventoryAreaItem[]> {
     const results: InventoryAreaItem[] = [];
     for (const dto of dtos) {
-      results.push(await this.buildCreateDto(dto));
-    }
-    return results;
-  }
-
-  public async updateMany(
-    dtos: NestedUpdateInventoryAreaItemDto[],
-  ): Promise<InventoryAreaItem[]> {
-    const results: InventoryAreaItem[] = [];
-    for (const dto of dtos) {
-      const countedItem = await this.itemCountService.findOne(dto.id, [
-        'parentInventoryCount',
-        'countedItem',
-        'countedItemSize',
-      ]);
-      if (!countedItem) {
-        throw new Error('counted item is null');
+      if (dto instanceof CreateInventoryAreaItemDto) {
+        results.push(await this.buildCreateDto(dto));
+      } else {
+        if (dto.create) {
+          results.push(await this.buildCreateDto(dto.create));
+        }
+        if (dto.update) {
+          const countedItem = await this.itemCountService.findOne(
+            dto.update.id,
+            ['parentInventoryCount', 'countedItem', 'countedItemSize'],
+          );
+          if (!countedItem) {
+            throw new Error('counted item is null');
+          }
+          results.push(await this.buildUpdateDto(countedItem, dto.update));
+        }
       }
-      results.push(await this.buildUpdateDto(countedItem, dto));
     }
     return results;
   }
