@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -7,9 +6,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { TemplateMenuItemUnionResolver } from '../../utils/template-menu-item-union-resolver';
-import { CreateChildTemplateMenuItemDto } from '../template-menu-item/create-child-template-menu-item.dto';
-import { UpdateChildTemplateMenuItemDto } from '../template-menu-item/update-child-template-menu-item.dto';
+import { NestedTemplateMenuItemDto } from '../template-menu-item/nested-template-menu-item.dto copy';
 
 export class UpdateTemplateDto {
   @ApiPropertyOptional({
@@ -32,7 +29,7 @@ export class UpdateTemplateDto {
   @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildTemplateMenuItemDtos and UpdateChildTemplateMenuItemDto, child dtos are used when updating a Template entity with created/updated child TemplateMenuItem entites.',
-    type: [UpdateChildTemplateMenuItemDto],
+    type: [NestedTemplateMenuItemDto],
     example: [
       {
         mode: 'create',
@@ -52,9 +49,5 @@ export class UpdateTemplateDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => TemplateMenuItemUnionResolver)
-  readonly templateItemDtos?: (
-    | CreateChildTemplateMenuItemDto
-    | UpdateChildTemplateMenuItemDto
-  )[];
+  readonly templateItemDtos?: NestedTemplateMenuItemDto[];
 }

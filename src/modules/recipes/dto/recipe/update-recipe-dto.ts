@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -10,9 +9,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { RecipeIngredientUnionResolver } from '../../utils/recipe-ingredient-union-resolver';
-import { CreateChildRecipeIngredientDto } from '../recipe-ingredient/create-child-recipe-ingredient.dto';
-import { UpdateChildRecipeIngredientDto } from '../recipe-ingredient/update-child-recipe-ingedient.dto';
+import { NestedRecipeIngredientDto } from '../recipe-ingredient/nested-recipe-ingredient.dto';
 
 export class UpdateRecipeDto {
   @ApiPropertyOptional({
@@ -111,10 +108,9 @@ export class UpdateRecipeDto {
   @ApiPropertyOptional({
     description:
       'Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.',
-    type: [UpdateChildRecipeIngredientDto],
+    type: [NestedRecipeIngredientDto],
     example: [
       {
-        mode: 'update',
         id: 1,
         ingredientInventoryItemId: 2,
         ingredientRecipeId: null,
@@ -122,7 +118,6 @@ export class UpdateRecipeDto {
         quantityMeasurementId: 4,
       },
       {
-        mode: 'create',
         ingredientInventoryItemId: null,
         ingredientRecipeId: 5,
         quantity: 6,
@@ -133,9 +128,5 @@ export class UpdateRecipeDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => RecipeIngredientUnionResolver)
-  readonly ingredientDtos?: (
-    | CreateChildRecipeIngredientDto
-    | UpdateChildRecipeIngredientDto
-  )[];
+  readonly ingredientDtos?: NestedRecipeIngredientDto[];
 }

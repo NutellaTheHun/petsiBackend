@@ -36,34 +36,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
       validator,
     );
   }
-  /*
-    async buildChildCreateDto(parentItem: OrderMenuItem, dto: CreateChildOrderContainerItemDto): Promise<OrderContainerItem> {
-        await this.validateCreateDto(dto);
 
-        this.reset();
-
-        this.entity.parentOrderItem = parentItem;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
-    }*/
-  /*
-    buildChildEntity(dto: CreateChildOrderContainerItemDto): void {
-        if (dto.containedMenuItemSizeId !== undefined) {
-            this.containedItemSizeById(dto.containedMenuItemSizeId);
-        }
-        if (dto.containedMenuItemId !== undefined) {
-            this.containedMenuItemById(dto.containedMenuItemId);
-        }
-        if (dto.quantity !== undefined) {
-            this.quantity(dto.quantity);
-        }
-    }*/
-
-  /**
-   * Depreciated, only created as a child through {@link Order}.
-   */
   protected createEntity(dto: CreateOrderContainerItemDto): void {
     if (dto.containedMenuItemSizeId !== undefined) {
       this.containedItemSizeById(dto.containedMenuItemSizeId);
@@ -113,20 +86,6 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
     }
     return results;
   }
-
-  /*async buildManyChildDto(parentOrderItem: OrderMenuItem, dtos: (CreateChildOrderContainerItemDto | UpdateChildOrderContainerItemDto)[]): Promise<OrderContainerItem[]> {
-        const results: OrderContainerItem[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentOrderItem, dto));
-            } else {
-                const toUpdate = await this.componentService.findOne(dto.id);
-                if (!toUpdate) { throw Error("order menu item container is null"); }
-                results.push(await this.buildUpdateDto(toUpdate, dto))
-            }
-        }
-        return results;
-    }*/
 
   private containedItemSizeById(id: number): this {
     return this.setPropById(

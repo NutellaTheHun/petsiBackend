@@ -10,7 +10,6 @@ import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu
 import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
-import { Order } from '../entities/order.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderService } from '../services/order.service';
 import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
@@ -44,9 +43,6 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     );
   }
 
-  /**
-   * Depreciated, only created as a child through {@link Order}.
-   */
   protected createEntity(dto: CreateOrderMenuItemDto): void {
     if (dto.menuItemId !== undefined) {
       this.menuItemById(dto.menuItemId);
@@ -79,47 +75,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
       this.containerItemsByBuilder(dto.orderedItemContainerDtos);
     }
   }
-  /*
-    buildChildEntity(dto: CreateOrderMenuItemDto): void {
-        if (dto.menuItemId !== undefined) {
-            this.menuItemById(dto.menuItemId);
-        }
-        if (dto.menuItemSizeId !== undefined) {
-            this.menuItemSizeById(dto.menuItemSizeId);
-        }
-        if (dto.quantity !== undefined) {
-            this.quantity(dto.quantity);
-        }
-        if (dto.orderedItemContainerDtos !== undefined) {
-            this.containerItemsByBuilder(dto.orderedItemContainerDtos);
-        }
-    }
 
-    async buildChildCreateDto(parentOrder: Order, dto: CreateChildOrderMenuItemDto): Promise<OrderMenuItem> {
-        await this.validateCreateDto(dto);
-
-        this.reset();
-
-        this.entity.order = parentOrder;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
-    }
-*/ /*
-    public async buildManyChildDto(parentOrder: Order, dtos: (CreateChildOrderMenuItemDto | UpdateChildOrderMenuItemDto)[]): Promise<OrderMenuItem[]> {
-        const results: OrderMenuItem[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentOrder, dto));
-            } else {
-                const item = await this.orderItemService.findOne(dto.id);
-                if (!item) { throw new Error("orderMenuItem not found"); }
-                results.push(await this.buildUpdateDto(item, dto));
-            }
-        }
-        return results;
-    }*/
   public async buildMany(
     dtos: (CreateOrderMenuItemDto | NestedOrderMenuItemDto)[],
   ): Promise<OrderMenuItem[]> {

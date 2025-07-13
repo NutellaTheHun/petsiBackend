@@ -92,48 +92,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
     }
     return results;
   }
-  /*
-    buildChildEntity(dto: CreateChildMenuItemContainerItemDto): void {
-        if (dto.parentContainerSizeId !== undefined) {
-            this.parentContainerSizeById(dto.parentContainerSizeId);
-        }
-        if (dto.containedMenuItemId !== undefined) {
-            this.containedItemById(dto.containedMenuItemId);
-        }
-        if (dto.containedMenuItemSizeId !== undefined) {
-            this.containedItemSizeById(dto.containedMenuItemSizeId);
-        }
-        if (dto.quantity !== undefined) {
-            this.quantity(dto.quantity);
-        }
-    }
 
-    async buildChildCreateDto(parent: MenuItem, dto: CreateChildMenuItemContainerItemDto): Promise<any> {
-        await this.validateCreateDto(dto);
-
-        this.reset();
-
-        this.entity.parentContainer = parent;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
-    }
-
-    public async buildManyChildDto(parentContainer: MenuItem, dtos: (CreateChildMenuItemContainerItemDto | UpdateChildMenuItemContainerItemDto)[]): Promise<MenuItemContainerItem[]> {
-        const results: MenuItemContainerItem[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentContainer, dto));
-            } else {
-                const comp = await this.componentService.findOne(dto.id);
-                if (!comp) { throw new NotFoundException(); }
-                results.push(await this.buildUpdateDto(comp, dto));
-            }
-        }
-        return results;
-    }
-*/
   public parentContainerById(id: number): this {
     return this.setPropById(
       this.menuItemService.findOne.bind(this.menuItemService),

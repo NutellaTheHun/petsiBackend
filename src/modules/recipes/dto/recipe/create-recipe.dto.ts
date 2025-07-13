@@ -1,15 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-    IsArray,
-    IsBoolean,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsPositive,
-    IsString,
-    Min,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  Min,
 } from 'class-validator';
-import { CreateChildRecipeIngredientDto } from '../recipe-ingredient/create-child-recipe-ingredient.dto';
+import { CreateRecipeIngredientDto } from '../recipe-ingredient/create-recipe-ingredient.dto';
 
 export class CreateRecipeDto {
   @ApiProperty({
@@ -112,19 +112,16 @@ export class CreateRecipeDto {
   readonly subCategoryId?: number;
 
   @ApiPropertyOptional({
-    description:
-      'Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child RecipeIngredient entites through creating the Recipe entity.',
-    type: [CreateChildRecipeIngredientDto],
+    description: 'Array of CreateRecipeIngredientDto.',
+    type: [CreateRecipeIngredientDto],
     example: [
       {
-        mode: 'create',
         ingredientInventoryItemId: 1,
         ingredientRecipeId: null,
         quantity: 2,
         quantityMeasurementId: 3,
       },
       {
-        mode: 'create',
         ingredientInventoryItemId: null,
         ingredientRecipeId: 4,
         quantity: 5,
@@ -134,5 +131,5 @@ export class CreateRecipeDto {
   })
   @IsOptional()
   @IsArray()
-  readonly ingredientDtos?: CreateChildRecipeIngredientDto[];
+  readonly ingredientDtos?: CreateRecipeIngredientDto[];
 }

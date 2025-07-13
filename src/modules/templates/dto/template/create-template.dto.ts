@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { CreateChildTemplateMenuItemDto } from '../template-menu-item/create-child-template-menu-item.dto';
+import { CreateTemplateMenuItemDto } from '../template-menu-item/create-template-menu-item.dto';
 
 export class CreateTemplateDto {
   @ApiProperty({
@@ -29,7 +29,7 @@ export class CreateTemplateDto {
   @ApiPropertyOptional({
     description:
       'Array of CreateChildTemplateMenuItemDtos, child dtos are used when creating a Template entity with child TemplateMenuItem entites.',
-    type: [CreateChildTemplateMenuItemDto],
+    type: [CreateTemplateMenuItemDto],
     example: [
       {
         mode: 'create',
@@ -47,5 +47,5 @@ export class CreateTemplateDto {
   })
   @IsOptional()
   @IsArray()
-  readonly templateItemDtos?: CreateChildTemplateMenuItemDto[];
+  readonly templateItemDtos?: CreateTemplateMenuItemDto[];
 }

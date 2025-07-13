@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-13T19:29:35.752Z",
-              "updatedAt": "2025-07-13T19:29:35.752Z",
+              "createdAt": "2025-07-13T20:07:53.544Z",
+              "updatedAt": "2025-07-13T20:07:53.544Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-13T19:29:35.752Z",
-                "updatedAt": "2025-07-13T19:29:35.752Z",
+                "createdAt": "2025-07-13T20:07:53.545Z",
+                "updatedAt": "2025-07-13T20:07:53.545Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10041,18 +10041,13 @@
           "parentTemplate"
         ]
       },
-      "CreateChildTemplateMenuItemDto": {
+      "CreateTemplateMenuItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a Template entity.",
-            "example": "create"
-          },
           "displayName": {
             "type": "string",
             "description": "Name to be used on the baking list representing the referenced MenuItem.",
-            "example": "BLUE"
+            "example": "CBP"
           },
           "menuItemId": {
             "type": "number",
@@ -10063,13 +10058,18 @@
             "type": "number",
             "description": "The row position of the TemplateMenuItem on the parent Template.",
             "example": 0
+          },
+          "templateId": {
+            "type": "number",
+            "description": "Id of the parent Template entity.",
+            "example": 2
           }
         },
         "required": [
-          "mode",
           "displayName",
           "menuItemId",
-          "tablePosIndex"
+          "tablePosIndex",
+          "templateId"
         ]
       },
       "CreateTemplateDto": {
@@ -10103,7 +10103,7 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildTemplateMenuItemDto"
+              "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
             }
           }
         },
@@ -10111,38 +10111,95 @@
           "templateName"
         ]
       },
-      "UpdateChildTemplateMenuItemDto": {
+      "UpdateTemplateMenuItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a Template entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of the TemplateMenuItem entity to be updated.",
-            "example": 1
-          },
           "displayName": {
             "type": "string",
             "description": "Name to be used on the baking list representing the referenced MenuItem.",
-            "example": "CRUMB"
+            "example": "POTM"
           },
           "menuItemId": {
             "type": "number",
             "description": "Id of the MenuItem entity being displayed on the Template.",
-            "example": 2
+            "example": 1
           },
           "tablePosIndex": {
             "type": "number",
             "description": "The row position of the TemplateMenuItem on the parent Template.",
+            "example": 2
+          },
+          "templateId": {
+            "type": "number",
+            "description": "Id of the parent Template entity.",
             "example": 3
+          }
+        }
+      },
+      "NestedUpdateTemplateMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of the TemplateMenuItem entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "Update dto of a TemplateMenuItem entity.",
+            "example": {
+              "displayName": "CLAPPLE",
+              "menuItemId": 1,
+              "tablePosIndex": 0
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateTemplateMenuItemDto"
+              }
+            ]
           }
         },
         "required": [
-          "mode",
-          "id"
+          "id",
+          "dto"
+        ]
+      },
+      "NestedTemplateMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "Create dto of a TemplateMenuItem entity.",
+            "example": {
+              "displayName": "CLAPPLE",
+              "menuItemId": 1,
+              "tablePosIndex": 0,
+              "templateId": 1
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "Update dto of a TemplateMenuItem entity.",
+            "example": {
+              "id": 1,
+              "dto": {
+                "displayName": "CLAPPLE",
+                "menuItemId": 1,
+                "tablePosIndex": 0
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedUpdateTemplateMenuItemDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "create",
+          "update"
         ]
       },
       "UpdateTemplateDto": {
@@ -10177,64 +10234,8 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildTemplateMenuItemDto"
+              "$ref": "#/components/schemas/NestedTemplateMenuItemDto"
             }
-          }
-        }
-      },
-      "CreateTemplateMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "displayName": {
-            "type": "string",
-            "description": "Name to be used on the baking list representing the referenced MenuItem.",
-            "example": "CBP"
-          },
-          "menuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem entity being displayed on the Template.",
-            "example": 1
-          },
-          "tablePosIndex": {
-            "type": "number",
-            "description": "The row position of the TemplateMenuItem on the parent Template.",
-            "example": 0
-          },
-          "templateId": {
-            "type": "number",
-            "description": "Id of the parent Template entity.",
-            "example": 2
-          }
-        },
-        "required": [
-          "displayName",
-          "menuItemId",
-          "tablePosIndex",
-          "templateId"
-        ]
-      },
-      "UpdateTemplateMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "displayName": {
-            "type": "string",
-            "description": "Name to be used on the baking list representing the referenced MenuItem.",
-            "example": "POTM"
-          },
-          "menuItemId": {
-            "type": "number",
-            "description": "Id of the MenuItem entity being displayed on the Template.",
-            "example": 1
-          },
-          "tablePosIndex": {
-            "type": "number",
-            "description": "The row position of the TemplateMenuItem on the parent Template.",
-            "example": 2
-          },
-          "templateId": {
-            "type": "number",
-            "description": "Id of the parent Template entity.",
-            "example": 3
           }
         }
       },
@@ -10433,7 +10434,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T19:29:35.665Z",
+              "countDate": "2025-07-13T20:07:53.455Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10807,7 +10808,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T19:29:35.664Z",
+              "countDate": "2025-07-13T20:07:53.454Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11957,37 +11958,37 @@
           "quantityMeasure"
         ]
       },
-      "CreateChildRecipeIngredientDto": {
+      "CreateRecipeIngredientDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a Recipe entity.",
-            "example": "create"
+          "parentRecipeId": {
+            "type": "number",
+            "description": "Id of the Recipe entity that is the parent",
+            "example": 1
           },
           "ingredientInventoryItemId": {
             "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 10
+            "example": 2
           },
           "ingredientRecipeId": {
             "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 1
+            "example": 3
           },
           "quantity": {
             "type": "number",
             "description": "The unit amount of the UnitofMeasure of the InventoryItem",
-            "example": 2
+            "example": 4
           },
           "quantityMeasurementId": {
             "type": "number",
             "description": "Id of the UnitofMeasure entity.",
-            "example": 3
+            "example": 5
           }
         },
         "required": [
-          "mode",
+          "parentRecipeId",
           "quantity",
           "quantityMeasurementId"
         ]
@@ -12049,17 +12050,15 @@
             "example": 8
           },
           "ingredientDtos": {
-            "description": "Array of CreateChildRecipeIngredientDtos. Child dtos are used when creating child RecipeIngredient entites through creating the Recipe entity.",
+            "description": "Array of CreateRecipeIngredientDto.",
             "example": [
               {
-                "mode": "create",
                 "ingredientInventoryItemId": 1,
                 "ingredientRecipeId": null,
                 "quantity": 2,
                 "quantityMeasurementId": 3
               },
               {
-                "mode": "create",
                 "ingredientInventoryItemId": null,
                 "ingredientRecipeId": 4,
                 "quantity": 5,
@@ -12068,7 +12067,7 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildRecipeIngredientDto"
+              "$ref": "#/components/schemas/CreateRecipeIngredientDto"
             }
           }
         },
@@ -12078,43 +12077,69 @@
           "servingSizeMeasurementId"
         ]
       },
-      "UpdateChildRecipeIngredientDto": {
+      "UpdateRecipeIngredientDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a Recipe entity.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of the RecipeIngredient to update",
-            "example": 1
-          },
-          "ingredientInventoryItemId": {
-            "type": "object",
-            "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 2
-          },
-          "ingredientRecipeId": {
-            "type": "object",
-            "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 3
-          },
           "quantity": {
             "type": "number",
             "description": "The unit amount of the UnitofMeasure of the InventoryItem",
-            "example": 4
+            "example": 1
           },
           "quantityMeasurementId": {
             "type": "number",
             "description": "Id of the UnitofMeasure entity.",
-            "example": 5
+            "example": 2
+          },
+          "ingredientInventoryItemId": {
+            "type": "object",
+            "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
+            "example": 3
+          },
+          "ingredientRecipeId": {
+            "type": "object",
+            "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
+            "example": 4
+          }
+        }
+      },
+      "NestedRecipeIngredientDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "Create dto of a RecipeIngredient entity.",
+            "example": {
+              "ingredientInventoryItemId": 1,
+              "ingredientRecipeId": null,
+              "quantity": 2,
+              "quantityMeasurementId": 3
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateRecipeIngredientDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "Update dto of a RecipeIngredient entity.",
+            "example": {
+              "id": 1,
+              "dto": {
+                "ingredientInventoryItemId": 2,
+                "ingredientRecipeId": null,
+                "quantity": 3,
+                "quantityMeasurementId": 4
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateRecipeIngredientDto"
+              }
+            ]
           }
         },
         "required": [
-          "mode",
-          "id"
+          "create",
+          "update"
         ]
       },
       "UpdateRecipeDto": {
@@ -12174,7 +12199,6 @@
             "description": "Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.",
             "example": [
               {
-                "mode": "update",
                 "id": 1,
                 "ingredientInventoryItemId": 2,
                 "ingredientRecipeId": null,
@@ -12182,7 +12206,6 @@
                 "quantityMeasurementId": 4
               },
               {
-                "mode": "create",
                 "ingredientInventoryItemId": null,
                 "ingredientRecipeId": 5,
                 "quantity": 6,
@@ -12191,28 +12214,28 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildRecipeIngredientDto"
+              "$ref": "#/components/schemas/NestedRecipeIngredientDto"
             }
           }
         }
       },
-      "CreateChildRecipeSubCategoryDto": {
+      "CreateRecipeSubCategoryDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a RecipeCategory entity.",
-            "example": "create"
-          },
           "subCategoryName": {
             "type": "string",
             "description": "Name of the RecipeSubCategory entity.",
-            "example": "name"
+            "example": "Sweet Pie"
+          },
+          "parentCategoryId": {
+            "type": "number",
+            "description": "Id of the RecipeCategory parent entity.",
+            "example": 1
           }
         },
         "required": [
-          "mode",
-          "subCategoryName"
+          "subCategoryName",
+          "parentCategoryId"
         ]
       },
       "CreateRecipeCategoryDto": {
@@ -12237,7 +12260,7 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildRecipeSubCategoryDto"
+              "$ref": "#/components/schemas/CreateRecipeSubCategoryDto"
             }
           }
         },
@@ -12252,45 +12275,8 @@
             "type": "string",
             "description": "Name of the RecipeCategory entity.",
             "example": "Pies"
-          },
-          "subCategoryDtos": {
-            "description": "Mixed array of CreateChildRecipeSubCategoryDtos and UpdateChildRecipeSubCategoryDtos, child dtos are used when updating the parent RecipeCategory with created/updated child RecipeSubCategory entities.",
-            "example": [
-              {
-                "mode": "create",
-                "subCategoryName": "savory pies"
-              },
-              {
-                "mode": "update",
-                "id": 1,
-                "subCategoryName": "dessert pies"
-              }
-            ],
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateChildRecipeSubCategoryDto"
-            }
           }
         }
-      },
-      "CreateRecipeSubCategoryDto": {
-        "type": "object",
-        "properties": {
-          "subCategoryName": {
-            "type": "string",
-            "description": "Name of the RecipeSubCategory entity.",
-            "example": "Sweet Pie"
-          },
-          "parentCategoryId": {
-            "type": "number",
-            "description": "Id of the RecipeCategory parent entity.",
-            "example": 1
-          }
-        },
-        "required": [
-          "subCategoryName",
-          "parentCategoryId"
-        ]
       },
       "UpdateRecipeSubCategoryDto": {
         "type": "object",
@@ -12299,66 +12285,6 @@
             "type": "string",
             "description": "Name of the RecipeSubCategory entity.",
             "example": "name"
-          }
-        }
-      },
-      "CreateRecipeIngredientDto": {
-        "type": "object",
-        "properties": {
-          "parentRecipeId": {
-            "type": "number",
-            "description": "Id of the Recipe entity that is the parent",
-            "example": 1
-          },
-          "ingredientInventoryItemId": {
-            "type": "number",
-            "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 2
-          },
-          "ingredientRecipeId": {
-            "type": "number",
-            "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 3
-          },
-          "quantity": {
-            "type": "number",
-            "description": "The unit amount of the UnitofMeasure of the InventoryItem",
-            "example": 4
-          },
-          "quantityMeasurementId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity.",
-            "example": 5
-          }
-        },
-        "required": [
-          "parentRecipeId",
-          "quantity",
-          "quantityMeasurementId"
-        ]
-      },
-      "UpdateRecipeIngredientDto": {
-        "type": "object",
-        "properties": {
-          "quantity": {
-            "type": "number",
-            "description": "The unit amount of the UnitofMeasure of the InventoryItem",
-            "example": 1
-          },
-          "quantityMeasurementId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity.",
-            "example": 2
-          },
-          "ingredientInventoryItemId": {
-            "type": "object",
-            "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 3
-          },
-          "ingredientRecipeId": {
-            "type": "object",
-            "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 4
           }
         }
       }
