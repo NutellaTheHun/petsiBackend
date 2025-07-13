@@ -1,5 +1,4 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -10,9 +9,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { MenuItemComponentUnionResolver } from '../../utils/menu-item-component-union-resolver';
-import { CreateChildMenuItemContainerItemDto } from '../menu-item-container-item/create-child-menu-item-container-item.dto';
-import { UpdateChildMenuItemContainerItemDto } from '../menu-item-container-item/update-child-menu-item-container-item.dto';
+import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/update-menu-item-container-item.dto';
 import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/create-child-menu-item-container-options.dto';
 import { UpdateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/update-child-menu-item-container-options.dto';
 
@@ -112,35 +109,22 @@ export class UpdateMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container',
-    type: () => [UpdateChildMenuItemContainerItemDto],
+    type: () => [NestedUpdateMenuItemContainerItemDto],
     example: [
       {
-        mode: 'create',
-        parentContainerSizeId: 1,
-        containedMenuItemId: 2,
-        containedMenuItemSizeId: 3,
-        quantity: 4,
-      },
-      {
-        mode: 'update',
-        id: 5,
-        parentContainerSizeId: 6,
-        containedMenuItemId: 7,
-        containedMenuItemSizeId: 8,
-        quantity: 9,
+        id: 1,
+        dto: {
+          containedMenuItemId: 6,
+          containedMenuItemSizeId: 7,
+          quantity: 8,
+        },
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => MenuItemComponentUnionResolver)
-  readonly definedContainerItemDtos?:
-    | (
-        | CreateChildMenuItemContainerItemDto
-        | UpdateChildMenuItemContainerItemDto
-      )[]
-    | null;
+  readonly definedContainerItemDtos?: NestedUpdateMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:

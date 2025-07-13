@@ -1,5 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
   IsNumber,
@@ -9,9 +8,58 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { InventoryItemSizeUnionResolver } from '../../utils/inventory-item-size-union-resolver';
-import { CreateChildInventoryItemSizeDto } from '../inventory-item-size/create-child-inventory-item-size.dto';
-import { UpdateChildInventoryItemSizeDto } from '../inventory-item-size/update-child-inventory-item-size.dto';
+import { CreateInventoryItemSizeDto } from '../inventory-item-size/create-inventory-item-size.dto';
+import { UpdateInventoryItemSizeDto } from '../inventory-item-size/update-inventory-item-size.dto';
+
+export class NestedUpdateInventoryItemSizeDto {
+  @ApiProperty({
+    description: 'Id of InventoryItemSize entity.',
+    example: 1,
+  })
+  @IsNumber()
+  readonly id: number;
+
+  @ApiProperty({
+    description: 'UpdateInventoryItemSizeDto for InventoryItemSize entity.',
+    type: UpdateInventoryItemSizeDto,
+    example: {
+      measureUnitId: 1,
+      measureAmount: 10,
+      inventoryPackageId: 1,
+      cost: 100,
+    },
+  })
+  @ValidateNested()
+  readonly dto: UpdateInventoryItemSizeDto;
+}
+
+export class NestedInventoryItemSizeDto {
+  @ApiProperty({
+    description: 'CreateInventoryItemSizeDto for InventoryItemSize entity.',
+    type: CreateInventoryItemSizeDto,
+    example: {
+      measureUnitId: 1,
+      measureAmount: 10,
+      inventoryPackageId: 1,
+      cost: 100,
+    },
+  })
+  @IsNumber()
+  readonly create?: CreateInventoryItemSizeDto;
+
+  @ApiProperty({
+    description: 'UpdateInventoryItemSizeDto for InventoryItemSize entity.',
+    type: NestedUpdateInventoryItemSizeDto,
+    example: {
+      measureUnitId: 1,
+      measureAmount: 10,
+      inventoryPackageId: 1,
+      cost: 100,
+    },
+  })
+  @IsNumber()
+  readonly update?: NestedUpdateInventoryItemSizeDto;
+}
 
 export class UpdateInventoryItemDto {
   @ApiPropertyOptional({
@@ -46,23 +94,25 @@ export class UpdateInventoryItemDto {
 
   @ApiPropertyOptional({
     description:
-      'Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
-    type: [UpdateChildInventoryItemSizeDto],
+      'Mixed array of CreateInventoryItemSizeDtos and NestedUpdateInventoryItemSizeDtos.',
+    type: [NestedInventoryItemSizeDto],
     example: [
       {
-        mode: 'create',
-        measureUnitId: 1,
-        measureAmount: 2,
-        inventoryPackageId: 3,
-        cost: 4.99,
-      },
-      {
-        mode: 'update',
-        id: 5,
-        measureUnitId: 6,
-        measureAmount: 7,
-        inventoryPackageId: 8,
-        cost: 9.99,
+        createDto: {
+          measureUnitId: 1,
+          measureAmount: 10,
+          inventoryPackageId: 1,
+          cost: 100,
+        },
+        updateDto: {
+          id: 1,
+          dto: {
+            measureUnitId: 6,
+            measureAmount: 7,
+            inventoryPackageId: 8,
+            cost: 9.99,
+          },
+        },
       },
     ],
     nullable: true,
@@ -71,11 +121,7 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => InventoryItemSizeUnionResolver)
-  readonly itemSizeDtos?: (
-    | CreateChildInventoryItemSizeDto
-    | UpdateChildInventoryItemSizeDto
-  )[];
+  readonly itemSizeDtos?: NestedInventoryItemSizeDto[];
 
   @ApiPropertyOptional({
     description: 'Price paid for the InventoryItem entity.',

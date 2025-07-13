@@ -7,7 +7,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateChildInventoryItemSizeDto } from '../inventory-item-size/create-child-inventory-item-size.dto';
+import { CreateInventoryItemSizeDto } from '../inventory-item-size/create-inventory-item-size.dto';
 
 export class CreateInventoryItemDto {
   @ApiProperty({
@@ -43,10 +43,9 @@ export class CreateInventoryItemDto {
   @ApiPropertyOptional({
     description:
       'Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
-    type: [CreateChildInventoryItemSizeDto],
+    type: [CreateInventoryItemSizeDto],
     example: [
       {
-        mode: 'create',
         measureUnitId: 1,
         measureAmount: 2,
         inventoryPackageId: 3,
@@ -57,5 +56,5 @@ export class CreateInventoryItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly itemSizeDtos?: CreateChildInventoryItemSizeDto[];
+  readonly itemSizeDtos?: CreateInventoryItemSizeDto[];
 }

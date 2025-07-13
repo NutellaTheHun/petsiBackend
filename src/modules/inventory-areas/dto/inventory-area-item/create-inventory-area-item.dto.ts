@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-child-inventory-item-size.dto';
-import { UpdateChildInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/update-child-inventory-item-size.dto';
+import { CreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { InventoryAreaCount } from '../../entities/inventory-area-count.entity';
 
 /**
@@ -51,7 +50,7 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description:
       'Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.',
-    type: CreateChildInventoryItemSizeDto,
+    type: CreateInventoryItemSizeDto,
     example: {
       mode: 'create',
       measureUnitId: 1,
@@ -61,7 +60,5 @@ export class CreateInventoryAreaItemDto {
     },
   })
   @IsOptional()
-  readonly countedItemSizeDto?:
-    | CreateChildInventoryItemSizeDto
-    | UpdateChildInventoryItemSizeDto;
+  readonly countedItemSizeDto?: CreateInventoryItemSizeDto;
 }

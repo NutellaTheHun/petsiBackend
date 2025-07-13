@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-10T20:41:59.057Z",
-              "updatedAt": "2025-07-10T20:41:59.057Z",
+              "createdAt": "2025-07-13T17:54:19.627Z",
+              "updatedAt": "2025-07-13T17:54:19.627Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-10T20:41:59.057Z",
-                "updatedAt": "2025-07-10T20:41:59.057Z",
+                "createdAt": "2025-07-13T17:54:19.627Z",
+                "updatedAt": "2025-07-13T17:54:19.627Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9481,37 +9481,37 @@
           "sizeName"
         ]
       },
-      "CreateChildMenuItemContainerItemDto": {
+      "CreateMenuItemContainerItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating a MenuItem entity with components.",
-            "example": "create"
+          "parentContainerId": {
+            "type": "number",
+            "description": "Id of a MenuItem entity, the parent container to the child MenuItem component.",
+            "example": 1
           },
           "parentContainerSizeId": {
             "type": "number",
             "description": "Id of a MenuItemSize entity of the parent container",
-            "example": 1
+            "example": 2
           },
           "containedMenuItemId": {
             "type": "number",
             "description": "Id of a MenuItem entity. Represents the contained MenuItem item.",
-            "example": 2
+            "example": 3
           },
           "containedMenuItemSizeId": {
             "type": "number",
-            "description": "Id of a MenuItemSize. The size of the contained item",
-            "example": 3
+            "description": "Id of a MenuItemSize entity. The size of the contained item",
+            "example": 4
           },
           "quantity": {
             "type": "number",
             "description": "The amount of MenuItem/MenuItemSize combination",
-            "example": 4
+            "example": 5
           }
         },
         "required": [
-          "mode",
+          "parentContainerId",
           "parentContainerSizeId",
           "containedMenuItemId",
           "containedMenuItemSizeId",
@@ -9651,10 +9651,9 @@
             "nullable": true
           },
           "definedContainerItemDtos": {
-            "description": "Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.",
+            "description": "Array of CreateMenutItemContainerItemDtos",
             "example": [
               {
-                "mode": "create",
                 "parentContainerSizeId": 1,
                 "containedMenuItemId": 2,
                 "containedMenuItemSizeId": 3,
@@ -9663,7 +9662,7 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildMenuItemContainerItemDto"
+              "$ref": "#/components/schemas/CreateMenuItemContainerItemDto"
             }
           },
           "containerOptionDto": {
@@ -9705,39 +9704,48 @@
           "containerOptionDto"
         ]
       },
-      "UpdateChildMenuItemContainerItemDto": {
+      "UpdateMenuItemContainerItemDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updting a MenuItem entity with components.",
-            "example": "update"
-          },
-          "id": {
-            "type": "number",
-            "description": "Id of a MenuItemContainerItem to update.",
-            "example": 1
-          },
           "containedMenuItemId": {
             "type": "number",
-            "description": "Id of a MenuItem entity. Represents the contained MenuItem item.",
-            "example": 2
+            "description": "Id of a MenuItem entity. Represents the contained item.",
+            "example": 1
           },
           "containedMenuItemSizeId": {
             "type": "number",
             "description": "Id of a MenuItemSize entity. The size of the contained item",
-            "example": 3
+            "example": 2
           },
           "quantity": {
             "type": "number",
             "description": "The amount of MenuItem/MenuItemSize combination",
-            "example": 4
+            "example": 3
           }
-        },
-        "required": [
-          "mode",
-          "id"
-        ]
+        }
+      },
+      "NestedUpdateMenuItemContainerItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of a MenuItemContainerItem entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "UpdateMenuItemContainerItemDto",
+            "example": {
+              "containedMenuItemId": 2,
+              "containedMenuItemSizeId": 3,
+              "quantity": 4
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateMenuItemContainerItemDto"
+              }
+            ]
+          }
+        }
       },
       "UpdateChildMenuItemContainerOptionsDto": {
         "type": "object",
@@ -9849,24 +9857,17 @@
             "description": "Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container",
             "example": [
               {
-                "mode": "create",
-                "parentContainerSizeId": 1,
-                "containedMenuItemId": 2,
-                "containedMenuItemSizeId": 3,
-                "quantity": 4
-              },
-              {
-                "mode": "update",
-                "id": 5,
-                "parentContainerSizeId": 6,
-                "containedMenuItemId": 7,
-                "containedMenuItemSizeId": 8,
-                "quantity": 9
+                "id": 1,
+                "dto": {
+                  "containedMenuItemId": 6,
+                  "containedMenuItemSizeId": 7,
+                  "quantity": 8
+                }
               }
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/UpdateChildMenuItemContainerItemDto"
+              "$ref": "#/components/schemas/NestedUpdateMenuItemContainerItemDto"
             }
           },
           "containerOptionDto": {
@@ -9899,63 +9900,6 @@
                 "$ref": "#/components/schemas/UpdateChildMenuItemContainerOptionsDto"
               }
             ]
-          }
-        }
-      },
-      "CreateMenuItemContainerItemDto": {
-        "type": "object",
-        "properties": {
-          "parentContainerId": {
-            "type": "number",
-            "description": "Id of a MenuItem entity, the parent container to the child MenuItem component.",
-            "example": 1
-          },
-          "parentContainerSizeId": {
-            "type": "number",
-            "description": "Id of a MenuItemSize entity of the parent container",
-            "example": 2
-          },
-          "containedMenuItemId": {
-            "type": "number",
-            "description": "Id of a MenuItem entity. Represents the contained MenuItem item.",
-            "example": 3
-          },
-          "containedMenuItemSizeId": {
-            "type": "number",
-            "description": "Id of a MenuItemSize entity. The size of the contained item",
-            "example": 4
-          },
-          "quantity": {
-            "type": "number",
-            "description": "The amount of MenuItem/MenuItemSize combination",
-            "example": 5
-          }
-        },
-        "required": [
-          "parentContainerId",
-          "parentContainerSizeId",
-          "containedMenuItemId",
-          "containedMenuItemSizeId",
-          "quantity"
-        ]
-      },
-      "UpdateMenuItemContainerItemDto": {
-        "type": "object",
-        "properties": {
-          "containedMenuItemId": {
-            "type": "number",
-            "description": "Id of a MenuItem entity. Represents the contained item.",
-            "example": 1
-          },
-          "containedMenuItemSizeId": {
-            "type": "number",
-            "description": "Id of a MenuItemSize entity. The size of the contained item",
-            "example": 2
-          },
-          "quantity": {
-            "type": "number",
-            "description": "The amount of MenuItem/MenuItemSize combination",
-            "example": 3
           }
         }
       },
@@ -10606,7 +10550,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-10T20:41:59.003Z",
+              "countDate": "2025-07-13T17:54:19.584Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10980,7 +10924,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-10T20:41:59.003Z",
+              "countDate": "2025-07-13T17:54:19.583Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11148,41 +11092,21 @@
           }
         }
       },
-      "CreateInventoryAreaCountDto": {
+      "CreateInventoryItemSizeDto": {
         "type": "object",
         "properties": {
-          "inventoryAreaId": {
-            "type": "number",
-            "description": "Id for InventoryArea entity.",
-            "example": 1
-          }
-        },
-        "required": [
-          "inventoryAreaId"
-        ]
-      },
-      "UpdateInventoryAreaCountDto": {
-        "type": "object",
-        "properties": {
-          "inventoryAreaId": {
-            "type": "number",
-            "description": "Id for Inventory-Area entity.",
-            "example": 1
-          }
-        }
-      },
-      "CreateChildInventoryItemSizeDto": {
-        "type": "object",
-        "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an InventoryItem entity.",
-            "example": "create"
+          "inventoryItemId": {
+            "description": "Id of InventoryItem entity.",
+            "example": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItem"
+            }
           },
           "measureUnitId": {
             "type": "number",
             "description": "Id of UnitofMeasure entity.",
-            "example": 1
+            "example": 2
           },
           "measureAmount": {
             "type": "number",
@@ -11192,16 +11116,16 @@
           "inventoryPackageId": {
             "type": "number",
             "description": "Id of InventoryItemPackage entity.",
-            "example": 2
+            "example": 3
           },
           "cost": {
             "type": "number",
             "description": "Price paid for the InventoryItem entity.",
-            "example": 3.99
+            "example": 4.99
           }
         },
         "required": [
-          "mode",
+          "inventoryItemId",
           "measureUnitId",
           "measureAmount",
           "inventoryPackageId",
@@ -11242,7 +11166,7 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/CreateChildInventoryItemSizeDto"
+                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
               }
             ]
           }
@@ -11255,23 +11179,49 @@
           "countedItemSizeDto"
         ]
       },
-      "UpdateChildInventoryItemSizeDto": {
+      "CreateInventoryAreaCountDto": {
         "type": "object",
         "properties": {
-          "mode": {
-            "type": "string",
-            "description": "Declare whether creating or updating a child entity. Relevant when creating/updating an InventoryItem entity.",
-            "example": "update"
-          },
-          "id": {
+          "inventoryAreaId": {
             "type": "number",
-            "description": "Id of InventoryItemSize entity to be updated.",
+            "description": "Id for InventoryArea entity.",
             "example": 1
           },
+          "itemCountDtos": {
+            "description": "Counted InventoryItems for the InventoryAreaCount.",
+            "example": [
+              {
+                "mode": "create",
+                "countedInventoryItemId": 1,
+                "countedAmount": 2,
+                "countedItemSizeId": 3,
+                "countedItemSizeDto": {
+                  "mode": "create",
+                  "measureUnitId": 4,
+                  "measureAmount": 5,
+                  "inventoryPackageId": 6,
+                  "cost": 7.99
+                }
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateInventoryAreaItemDto"
+            }
+          }
+        },
+        "required": [
+          "inventoryAreaId",
+          "itemCountDtos"
+        ]
+      },
+      "UpdateInventoryItemSizeDto": {
+        "type": "object",
+        "properties": {
           "measureUnitId": {
             "type": "number",
             "description": "Id of UnitofMeasure entity.",
-            "example": 2
+            "example": 1
           },
           "measureAmount": {
             "type": "number",
@@ -11281,17 +11231,41 @@
           "inventoryPackageId": {
             "type": "number",
             "description": "Id of InventoryItemPackage entity.",
-            "example": 3
+            "example": 2
           },
           "cost": {
             "type": "number",
-            "description": "Price paid for the InventoryItem entity.",
-            "example": 4.99
+            "description": "Prsice paid for the InventoryItem entity.",
+            "example": 3.99
+          }
+        }
+      },
+      "NestedUpdateInventoryItemSizeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of InventoryItemSize entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "UpdateInventoryItemSizeDto for InventoryItemSize entity.",
+            "example": {
+              "measureUnitId": 1,
+              "measureAmount": 10,
+              "inventoryPackageId": 1,
+              "cost": 100
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateInventoryItemSizeDto"
+              }
+            ]
           }
         },
         "required": [
-          "mode",
-          "id"
+          "id",
+          "dto"
         ]
       },
       "UpdateInventoryAreaItemDto": {
@@ -11324,11 +11298,70 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/UpdateChildInventoryItemSizeDto"
+                "$ref": "#/components/schemas/NestedUpdateInventoryItemSizeDto"
               }
             ]
           }
         }
+      },
+      "NestedUpdateInventoryAreaItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id for InventoryAreaItem entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "UpdateInventoryAreaItemDto for InventoryAreaItem entity.",
+            "example": {
+              "measureUnitId": 4,
+              "measureAmount": 5,
+              "inventoryPackageId": 6,
+              "cost": 7.99
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateInventoryAreaItemDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "dto"
+        ]
+      },
+      "UpdateInventoryAreaCountDto": {
+        "type": "object",
+        "properties": {
+          "inventoryAreaId": {
+            "type": "number",
+            "description": "Id for Inventory-Area entity.",
+            "example": 1
+          },
+          "itemCountDtos": {
+            "description": "Counted InventoryItems for the InventoryAreaCount.",
+            "example": [
+              {
+                "id": 1,
+                "dto": {
+                  "measureUnitId": 4,
+                  "measureAmount": 5,
+                  "inventoryPackageId": 6,
+                  "cost": 7.99
+                }
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestedUpdateInventoryAreaItemDto"
+            }
+          }
+        },
+        "required": [
+          "itemCountDtos"
+        ]
       },
       "CreateInventoryItemDto": {
         "type": "object",
@@ -11354,7 +11387,6 @@
             "description": "Child dtos are used when creating/updating an entity through a parent (InventoryItem).",
             "example": [
               {
-                "mode": "create",
                 "measureUnitId": 1,
                 "measureAmount": 2,
                 "inventoryPackageId": 3,
@@ -11364,7 +11396,7 @@
             "nullable": true,
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CreateChildInventoryItemSizeDto"
+              "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
             }
           }
         },
@@ -11393,22 +11425,24 @@
             "nullable": true
           },
           "itemSizeDtos": {
-            "description": "Mixed array of CreateChildInventoryItemSizeDtos and UpdateChildInventoryItemSizeDtos. Child dtos are used when creating/updating an entity through a parent (InventoryItem).",
+            "description": "Mixed array of CreateInventoryItemSizeDtos and NestedUpdateInventoryItemSizeDtos.",
             "example": [
               {
-                "mode": "create",
-                "measureUnitId": 1,
-                "measureAmount": 2,
-                "inventoryPackageId": 3,
-                "cost": 4.99
-              },
-              {
-                "mode": "update",
-                "id": 5,
-                "measureUnitId": 6,
-                "measureAmount": 7,
-                "inventoryPackageId": 8,
-                "cost": 9.99
+                "createDto": {
+                  "measureUnitId": 1,
+                  "measureAmount": 10,
+                  "inventoryPackageId": 1,
+                  "cost": 100
+                },
+                "updateDto": {
+                  "id": 1,
+                  "dto": {
+                    "measureUnitId": 6,
+                    "measureAmount": 7,
+                    "inventoryPackageId": 8,
+                    "cost": 9.99
+                  }
+                }
               }
             ],
             "nullable": true,
@@ -11470,46 +11504,6 @@
             "description": "Name for InventoryItemPackage entity."
           }
         }
-      },
-      "CreateInventoryItemSizeDto": {
-        "type": "object",
-        "properties": {
-          "inventoryItemId": {
-            "description": "Id of InventoryItem entity.",
-            "example": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InventoryItem"
-            }
-          },
-          "measureUnitId": {
-            "type": "number",
-            "description": "Id of UnitofMeasure entity.",
-            "example": 2
-          },
-          "measureAmount": {
-            "type": "number",
-            "description": "the unit quantity of the UnitofMeasure entity.",
-            "example": 10
-          },
-          "inventoryPackageId": {
-            "type": "number",
-            "description": "Id of InventoryItemPackage entity.",
-            "example": 3
-          },
-          "cost": {
-            "type": "number",
-            "description": "Price paid for the InventoryItem entity.",
-            "example": 4.99
-          }
-        },
-        "required": [
-          "inventoryItemId",
-          "measureUnitId",
-          "measureAmount",
-          "inventoryPackageId",
-          "cost"
-        ]
       },
       "CreateInventoryItemVendorDto": {
         "type": "object",

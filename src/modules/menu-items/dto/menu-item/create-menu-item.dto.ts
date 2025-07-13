@@ -8,7 +8,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateChildMenuItemContainerItemDto } from '../menu-item-container-item/create-child-menu-item-container-item.dto';
+import { CreateMenuItemContainerItemDto } from '../menu-item-container-item/create-menu-item-container-item.dto';
 import { CreateChildMenuItemContainerOptionsDto } from '../menu-item-container-options/create-child-menu-item-container-options.dto';
 
 export class CreateMenuItemDto {
@@ -101,12 +101,10 @@ export class CreateMenuItemDto {
   readonly isParbake?: boolean;
 
   @ApiProperty({
-    description:
-      'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities.',
-    type: () => [CreateChildMenuItemContainerItemDto],
+    description: 'Array of CreateMenutItemContainerItemDtos',
+    type: () => [CreateMenuItemContainerItemDto],
     example: [
       {
-        mode: 'create',
         parentContainerSizeId: 1,
         containedMenuItemId: 2,
         containedMenuItemSizeId: 3,
@@ -116,7 +114,7 @@ export class CreateMenuItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly definedContainerItemDtos?: CreateChildMenuItemContainerItemDto[];
+  readonly definedContainerItemDtos?: CreateMenuItemContainerItemDto[];
 
   @ApiProperty({
     description:

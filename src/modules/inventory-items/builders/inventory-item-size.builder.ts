@@ -1,175 +1,192 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderBase } from "../../../base/builder-base";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { AppLogger } from "../../app-logging/app-logger";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { UnitOfMeasureService } from "../../unit-of-measure/services/unit-of-measure.service";
-import { CreateChildInventoryItemSizeDto } from "../dto/inventory-item-size/create-child-inventory-item-size.dto";
-import { CreateInventoryItemSizeDto } from "../dto/inventory-item-size/create-inventory-item-size.dto";
-import { UpdateChildInventoryItemSizeDto } from "../dto/inventory-item-size/update-child-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../dto/inventory-item-size/update-inventory-item-size.dto";
-import { InventoryItemSize } from "../entities/inventory-item-size.entity";
-import { InventoryItem } from "../entities/inventory-item.entity";
-import { InventoryItemPackageService } from "../services/inventory-item-package.service";
-import { InventoryItemSizeService } from "../services/inventory-item-size.service";
-import { InventoryItemService } from "../services/inventory-item.service";
-import { InventoryItemSizeValidator } from "../validators/inventory-item-size.validator";
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../base/builder-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemPackageService } from '../services/inventory-item-package.service';
+import { InventoryItemSizeService } from '../services/inventory-item-size.service';
+import { InventoryItemService } from '../services/inventory-item.service';
+import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
-export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> implements IBuildChildDto<InventoryItem, InventoryItemSize> {
+export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
+  constructor(
+    @Inject(forwardRef(() => InventoryItemService))
+    private readonly itemService: InventoryItemService,
 
-    constructor(
-        @Inject(forwardRef(() => InventoryItemService))
-        private readonly itemService: InventoryItemService,
+    @Inject(forwardRef(() => InventoryItemSizeService))
+    private readonly sizeService: InventoryItemSizeService,
 
-        @Inject(forwardRef(() => InventoryItemSizeService))
-        private readonly sizeService: InventoryItemSizeService,
+    private readonly packageService: InventoryItemPackageService,
+    private readonly unitService: UnitOfMeasureService,
 
-        private readonly packageService: InventoryItemPackageService,
-        private readonly unitService: UnitOfMeasureService,
+    validator: InventoryItemSizeValidator,
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(
+      InventoryItemSize,
+      'InventoryItemSizeBuilder',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-        validator: InventoryItemSizeValidator,
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(InventoryItemSize, 'InventoryItemSizeBuilder', requestContextService, logger, validator); }
-
-    /**
-     * Depreciated, only created as a child through {@link InventoryItem}.
-     */
-    protected createEntity(dto: CreateInventoryItemSizeDto): void {
-        if (dto.inventoryItemId !== undefined) {
-            this.InventoryItemById(dto.inventoryItemId);
-        }
-        if (dto.inventoryPackageId !== undefined) {
-            this.packageById(dto.inventoryPackageId);
-        }
-        if (dto.measureUnitId !== undefined) {
-            this.unitOfMeasureById(dto.measureUnitId);
-        }
-        if (dto.cost !== undefined) {
-            this.costByValue(dto.cost);
-        } {
-            this.costByValue(0);
-        }
-        if (dto.measureAmount !== undefined) {
-            this.measureAmount(dto.measureAmount);
-        }
+  protected createEntity(dto: CreateInventoryItemSizeDto): void {
+    if (dto.inventoryItemId !== undefined) {
+      this.InventoryItemById(dto.inventoryItemId);
     }
-
-    protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
-        if (dto.inventoryPackageId !== undefined) {
-            this.packageById(dto.inventoryPackageId);
-        }
-        if (dto.measureUnitId !== undefined) {
-            this.unitOfMeasureById(dto.measureUnitId);
-        }
-        if (dto.cost !== undefined) {
-            this.costByValue(dto.cost);
-        }
-        if (dto.measureAmount !== undefined) {
-            this.measureAmount(dto.measureAmount);
-        }
+    if (dto.inventoryPackageId !== undefined) {
+      this.packageById(dto.inventoryPackageId);
     }
-
-    buildChildEntity(dto: CreateChildInventoryItemSizeDto): void {
-        if (dto.inventoryPackageId !== undefined) {
-            this.packageById(dto.inventoryPackageId);
-        }
-        if (dto.measureUnitId !== undefined) {
-            this.unitOfMeasureById(dto.measureUnitId);
-        }
-        if (dto.cost !== undefined) {
-            this.costByValue(dto.cost);
-        } else {
-            this.costByValue(0);
-        }
-        if (dto.measureAmount !== undefined) {
-            this.measureAmount(dto.measureAmount);
-        }
+    if (dto.measureUnitId !== undefined) {
+      this.unitOfMeasureById(dto.measureUnitId);
     }
-
-    /**
-     * This function is called when updating an inventory-area-count, 
-     * through creating/updating an inventory-area-item, 
-     * which created or references an inventory-item-size
-     * in this context the child is not to the parent(inventory-are-item), but the inventoryItem property, so parentItem is not used.
-     * @param parentItem not used in this instance
-     * @param dto 
-     * @returns 
-     */
-    async buildChildCreateDto(parentItem: InventoryItem, dto: CreateChildInventoryItemSizeDto): Promise<InventoryItemSize> {
-        await this.validateCreateDto(dto);
-
-        this.reset();
-
-        this.entity.inventoryItem = parentItem;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
+    if (dto.cost !== undefined) {
+      this.costByValue(dto.cost);
     }
-
-    /**
-     * Builds InventoryItemSize entities from either Create or UpdateDTOs, input dtos can be an array mixed with both create and update.
-     */
-    public async buildManyChildDto(parentItem: InventoryItem, dtos: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)[]): Promise<InventoryItemSize[]> {
-        const results: InventoryItemSize[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentItem, dto));
-            } else {
-                const size = await this.sizeService.findOne(dto.id);
-                if (!size) { throw new Error("item size not found"); }
-                results.push(await this.buildUpdateDto(size, dto));
-            }
-        }
-        return results;
+    {
+      this.costByValue(0);
     }
-
-    /**
-     * Called when creating/updating inventory-area-item
-     * @param parentItem Not required in this instance, but is kept to follow the builderbase.setPropByBuilder signature
-     * @param dto 
-     * @returns 
-     */
-    public async buildDto(parentItem: InventoryItem, dto: (CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto)): Promise<InventoryItemSize> {
-        if (dto.mode === 'create') {
-            return await this.buildCreateDto(dto);
-        }
-        const size = await this.sizeService.findOne(dto.id);
-        if (!size) { throw new Error("item size not found"); }
-        return await this.buildUpdateDto(size, dto);
+    if (dto.measureAmount !== undefined) {
+      this.measureAmount(dto.measureAmount);
     }
+  }
 
-    public unitOfMeasureById(id: number): this {
-        return this.setPropById(this.unitService.findOne.bind(this.unitService), 'measureUnit', id);
+  protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
+    if (dto.inventoryPackageId !== undefined) {
+      this.packageById(dto.inventoryPackageId);
     }
+    if (dto.measureUnitId !== undefined) {
+      this.unitOfMeasureById(dto.measureUnitId);
+    }
+    if (dto.cost !== undefined) {
+      this.costByValue(dto.cost);
+    }
+    if (dto.measureAmount !== undefined) {
+      this.measureAmount(dto.measureAmount);
+    }
+  }
 
-    public unitOfMeasureByName(name: string): this {
-        return this.setPropByName(this.unitService.findOneByName.bind(this.unitService), 'measureUnit', name);
+  public async buildMany(
+    dtos: (CreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto)[],
+  ): Promise<InventoryItemSize[]> {
+    const results: InventoryItemSize[] = [];
+    for (const dto of dtos) {
+      results.push(await this.buildDto(dto));
     }
+    return results;
+  }
 
-    public packageById(id: number): this {
-        return this.setPropById(this.packageService.findOne.bind(this.packageService), 'packageType', id);
+  public async createMany(
+    dtos: CreateInventoryItemSizeDto[],
+  ): Promise<InventoryItemSize[]> {
+    const results: InventoryItemSize[] = [];
+    for (const dto of dtos) {
+      results.push(await this.buildCreateDto(dto));
     }
+    return results;
+  }
 
-    public packageByName(name: string): this {
-        return this.setPropByName(this.packageService.findOneByName.bind(this.packageService), 'packageType', name);
+  public async updateMany(
+    dtos: NestedUpdateInventoryItemSizeDto[],
+  ): Promise<InventoryItemSize[]> {
+    const results: InventoryItemSize[] = [];
+    for (const dto of dtos) {
+      const size = await this.sizeService.findOne(dto.id, [
+        'inventoryItem',
+        'measureUnit',
+        'packageType',
+      ]);
+      if (!size) {
+        throw new Error('item size not found');
+      }
+      results.push(await this.buildUpdateDto(size, dto));
     }
+    return results;
+  }
 
-    public InventoryItemById(id: number): this {
-        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'inventoryItem', id);
+  /**
+   * Called when creating/updating inventory-area-item
+   * @param parentItem Not required in this instance, but is kept to follow the builderbase.setPropByBuilder signature
+   * @param dto
+   * @returns
+   */
+  public async buildDto(
+    dto: CreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto,
+  ): Promise<InventoryItemSize> {
+    if (dto instanceof CreateInventoryItemSizeDto) {
+      return await this.buildCreateDto(dto);
     }
+    const size = await this.sizeService.findOne(dto.id, [
+      'inventoryItem',
+      'measureUnit',
+      'packageType',
+    ]);
+    if (!size) {
+      throw new Error('item size not found');
+    }
+    return await this.buildUpdateDto(size, dto);
+  }
 
-    public InventoryItemByName(name: string): this {
-        return this.setPropByName(this.itemService.findOneByName.bind(this.itemService), 'inventoryItem', name);
-    }
+  public unitOfMeasureById(id: number): this {
+    return this.setPropById(
+      this.unitService.findOne.bind(this.unitService),
+      'measureUnit',
+      id,
+    );
+  }
 
-    public costByValue(val: number): this {
-        return this.setPropByVal('cost', String(val));
-    }
+  public unitOfMeasureByName(name: string): this {
+    return this.setPropByName(
+      this.unitService.findOneByName.bind(this.unitService),
+      'measureUnit',
+      name,
+    );
+  }
 
-    public measureAmount(amount: number): this {
-        return this.setPropByVal('measureAmount', amount);
-    }
+  public packageById(id: number): this {
+    return this.setPropById(
+      this.packageService.findOne.bind(this.packageService),
+      'packageType',
+      id,
+    );
+  }
+
+  public packageByName(name: string): this {
+    return this.setPropByName(
+      this.packageService.findOneByName.bind(this.packageService),
+      'packageType',
+      name,
+    );
+  }
+
+  public InventoryItemById(id: number): this {
+    return this.setPropById(
+      this.itemService.findOne.bind(this.itemService),
+      'inventoryItem',
+      id,
+    );
+  }
+
+  public InventoryItemByName(name: string): this {
+    return this.setPropByName(
+      this.itemService.findOneByName.bind(this.itemService),
+      'inventoryItem',
+      name,
+    );
+  }
+
+  public costByValue(val: number): this {
+    return this.setPropByVal('cost', String(val));
+  }
+
+  public measureAmount(amount: number): this {
+    return this.setPropByVal('measureAmount', amount);
+  }
 }

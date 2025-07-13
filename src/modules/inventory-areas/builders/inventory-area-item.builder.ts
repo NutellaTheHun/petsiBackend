@@ -1,152 +1,161 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { BuilderBase } from "../../../base/builder-base";
-import { IBuildChildDto } from "../../../base/interfaces/IBuildChildEntity.interface";
-import { AppLogger } from "../../app-logging/app-logger";
-import { InventoryItemSizeBuilder } from "../../inventory-items/builders/inventory-item-size.builder";
-import { CreateInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto";
-import { UpdateInventoryItemSizeDto } from "../../inventory-items/dto/inventory-item-size/update-inventory-item-size.dto";
-import { InventoryItemSizeService } from "../../inventory-items/services/inventory-item-size.service";
-import { InventoryItemService } from "../../inventory-items/services/inventory-item.service";
-import { RequestContextService } from "../../request-context/RequestContextService";
-import { CreateChildInventoryAreaItemDto } from "../dto/inventory-area-item/create-child-inventory-area-item.dto";
-import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
-import { UpdateChildInventoryAreaItemDto } from "../dto/inventory-area-item/update-child-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
-import { InventoryAreaCount } from "../entities/inventory-area-count.entity";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaCountService } from "../services/inventory-area-count.service";
-import { InventoryAreaItemService } from "../services/inventory-area-item.service";
-import { InventoryAreaItemValidator } from "../validators/inventory-area-item.validator";
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../base/builder-base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { InventoryItemSizeBuilder } from '../../inventory-items/builders/inventory-item-size.builder';
+import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
+import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryAreaCountService } from '../services/inventory-area-count.service';
+import { InventoryAreaItemService } from '../services/inventory-area-item.service';
+import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
-export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem>
-    implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem> {
-    constructor(
-        requestContextService: RequestContextService,
-        @Inject(forwardRef(() => InventoryAreaCountService))
-        private readonly countService: InventoryAreaCountService,
+//implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>
+export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
+  constructor(
+    requestContextService: RequestContextService,
+    @Inject(forwardRef(() => InventoryAreaCountService))
+    private readonly countService: InventoryAreaCountService,
 
-        @Inject(forwardRef(() => InventoryAreaItemService))
-        private readonly itemCountService: InventoryAreaItemService,
+    @Inject(forwardRef(() => InventoryAreaItemService))
+    private readonly itemCountService: InventoryAreaItemService,
 
-        private readonly itemService: InventoryItemService,
-        private readonly sizeService: InventoryItemSizeService,
-        private readonly itemSizeBuilder: InventoryItemSizeBuilder,
+    private readonly itemService: InventoryItemService,
+    private readonly sizeService: InventoryItemSizeService,
+    private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
-        logger: AppLogger,
-        validator: InventoryAreaItemValidator,
-    ) { super(InventoryAreaItem, 'InventoryAreaItemBuilder', requestContextService, logger, validator); }
+    logger: AppLogger,
+    validator: InventoryAreaItemValidator,
+  ) {
+    super(
+      InventoryAreaItem,
+      'InventoryAreaItemBuilder',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    /**
-     * Depreciated, only created as a child through {@link InventoryAreaCount}.
-     */
-    protected createEntity(dto: CreateInventoryAreaItemDto): void {
-        if (dto.parentInventoryCountId !== undefined) {
-            this.parentInventoryCountById(dto.parentInventoryCountId);
-        }
-        if (dto.countedInventoryItemId !== undefined) {
-            this.countedItemById(dto.countedInventoryItemId);
-        }
-        if (dto.countedAmount !== undefined) {
-            this.amount(dto.countedAmount);
-        }
-
-        // Either a ItemSize DTO or id 
-        if (dto.countedItemSizeDto !== undefined) {
-            this.countedItemSizeByBuilder(dto.countedInventoryItemId, dto.countedItemSizeDto);
-        }
-        else if (dto.countedItemSizeId !== undefined) {
-            this.countedItemSizeById(dto.countedItemSizeId);
-        }
+  /**
+   * Depreciated, only created as a child through {@link InventoryAreaCount}.
+   */
+  protected createEntity(dto: CreateInventoryAreaItemDto): void {
+    if (dto.parentInventoryCountId !== undefined) {
+      this.parentInventoryCountById(dto.parentInventoryCountId);
+    }
+    if (dto.countedInventoryItemId !== undefined) {
+      this.countedItemById(dto.countedInventoryItemId);
+    }
+    if (dto.countedAmount !== undefined) {
+      this.amount(dto.countedAmount);
     }
 
-    protected updateEntity(dto: UpdateInventoryAreaItemDto): void {
-        if (dto.countedInventoryItemId !== undefined) {
-            this.countedItemById(dto.countedInventoryItemId);
-        }
-        if (dto.countedAmount !== undefined) {
-            this.amount(dto.countedAmount);
-        }
+    // Either a ItemSize DTO or id
+    if (dto.countedItemSizeDto !== undefined) {
+      this.countedItemSizeByBuilder(dto.countedItemSizeDto);
+    } else if (dto.countedItemSizeId !== undefined) {
+      this.countedItemSizeById(dto.countedItemSizeId);
+    }
+  }
 
-        if (dto.countedItemSizeId !== undefined) {
-            this.countedItemSizeById(dto.countedItemSizeId);
-        }
-        if (dto.countedItemSizeDto !== undefined) {
-            this.countedItemSizeByBuilder(this.entity.countedItem.id, dto.countedItemSizeDto);
-        }
+  protected updateEntity(dto: UpdateInventoryAreaItemDto): void {
+    if (dto.countedInventoryItemId !== undefined) {
+      this.countedItemById(dto.countedInventoryItemId);
+    }
+    if (dto.countedAmount !== undefined) {
+      this.amount(dto.countedAmount);
     }
 
-    buildChildEntity(dto: CreateChildInventoryAreaItemDto): void {
-        if (dto.countedInventoryItemId !== undefined) {
-            this.countedItemById(dto.countedInventoryItemId);
-        }
-        if (dto.countedAmount !== undefined) {
-            this.amount(dto.countedAmount);
-        }
-
-        // Either a ItemSize DTO or id 
-        if (dto.countedItemSizeDto !== undefined) {
-            this.countedItemSizeByBuilder(dto.countedInventoryItemId, dto.countedItemSizeDto);
-        }
-        else if (dto.countedItemSizeId !== undefined) {
-            this.countedItemSizeById(dto.countedItemSizeId);
-        }
+    if (dto.countedItemSizeId !== undefined) {
+      this.countedItemSizeById(dto.countedItemSizeId);
     }
-
-    public async buildChildCreateDto(parentCount: InventoryAreaCount, dto: CreateChildInventoryAreaItemDto): Promise<InventoryAreaItem> {
-        await this.validateCreateDto(dto);
-
-        this.reset();
-
-        this.entity.parentInventoryCount = parentCount;
-
-        this.buildChildEntity(dto);
-
-        return await this.build();
+    if (dto.countedItemSizeDto !== undefined) {
+      this.countedItemSizeByBuilder(dto.countedItemSizeDto);
     }
+  }
 
-    public async buildManyChildDto(parentCount: InventoryAreaCount, dtos: (CreateChildInventoryAreaItemDto | UpdateChildInventoryAreaItemDto)[]): Promise<InventoryAreaItem[]> {
-        const results: InventoryAreaItem[] = [];
-        for (const dto of dtos) {
-            if (dto.mode === 'create') {
-                results.push(await this.buildChildCreateDto(parentCount, dto))
-            } else {
-                const countedItem = await this.itemCountService.findOne(dto.id, ['parentInventoryCount', 'countedItem', 'countedItemSize']);
-                if (!countedItem) { throw new Error("counted item is null"); }
-                results.push(await this.buildUpdateDto(countedItem, dto));
-            }
-        }
-        return results;
+  public async createMany(
+    dtos: CreateInventoryAreaItemDto[],
+  ): Promise<InventoryAreaItem[]> {
+    const results: InventoryAreaItem[] = [];
+    for (const dto of dtos) {
+      results.push(await this.buildCreateDto(dto));
     }
+    return results;
+  }
 
-    public countedItemById(id: number): this {
-        return this.setPropById(this.itemService.findOne.bind(this.itemService), 'countedItem', id);
+  public async updateMany(
+    dtos: NestedUpdateInventoryAreaItemDto[],
+  ): Promise<InventoryAreaItem[]> {
+    const results: InventoryAreaItem[] = [];
+    for (const dto of dtos) {
+      const countedItem = await this.itemCountService.findOne(dto.id, [
+        'parentInventoryCount',
+        'countedItem',
+        'countedItemSize',
+      ]);
+      if (!countedItem) {
+        throw new Error('counted item is null');
+      }
+      results.push(await this.buildUpdateDto(countedItem, dto));
     }
+    return results;
+  }
 
-    public countedItemByName(name: string): this {
-        return this.setPropByName(this.itemService.findOne.bind(this.itemService), 'countedItem', name);
-    }
+  public countedItemById(id: number): this {
+    return this.setPropById(
+      this.itemService.findOne.bind(this.itemService),
+      'countedItem',
+      id,
+    );
+  }
 
-    public amount(amount: number): this {
-        if (amount === null) {
-            return this.setPropByVal('amount', 1);
-        }
-        return this.setPropByVal('amount', amount);
-    }
+  public countedItemByName(name: string): this {
+    return this.setPropByName(
+      this.itemService.findOne.bind(this.itemService),
+      'countedItem',
+      name,
+    );
+  }
 
-    public countedItemSizeById(id: number): this {
-        return this.setPropById(this.sizeService.findOne.bind(this.sizeService), 'countedItemSize', id);
+  public amount(amount: number): this {
+    if (amount === null) {
+      return this.setPropByVal('amount', 1);
     }
+    return this.setPropByVal('amount', amount);
+  }
 
-    public countedItemSizeByBuilder(inventoryItemId: number, dto: (CreateInventoryItemSizeDto | UpdateInventoryItemSizeDto)): this {
-        const enrichedDto = {
-            ...dto,
-            inventoryItemId,
-        }
-        return this.setPropByBuilder(this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder), 'countedItemSize', this.entity, enrichedDto);
-    }
+  public countedItemSizeById(id: number): this {
+    return this.setPropById(
+      this.sizeService.findOne.bind(this.sizeService),
+      'countedItemSize',
+      id,
+    );
+  }
 
-    public parentInventoryCountById(id: number): this {
-        return this.setPropById(this.countService.findOne.bind(this.countService), 'parentInventoryCount', id);
-    }
+  public countedItemSizeByBuilder(
+    dto: CreateInventoryItemSizeDto | NestedInventoryItemSizeDto,
+  ): this {
+    return this.setPropByBuilder(
+      this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder),
+      'countedItemSize',
+      this.entity,
+      dto,
+    );
+  }
+
+  public parentInventoryCountById(id: number): this {
+    return this.setPropById(
+      this.countService.findOne.bind(this.countService),
+      'parentInventoryCount',
+      id,
+    );
+  }
 }
