@@ -80,6 +80,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   }
 
   public async buildMany(
+    parent: MenuItem,
     dtos: (CreateMenuItemContainerItemDto | NestedMenuItemContainerItemDto)[],
   ): Promise<MenuItemContainerItem[]> {
     const results: MenuItemContainerItem[] = [];
@@ -88,7 +89,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create, this.entity));
+          results.push(await this.buildCreateDto(dto.create, parent));
         }
         if (dto.update) {
           const comp = await this.componentService.findOne(dto.update.id);

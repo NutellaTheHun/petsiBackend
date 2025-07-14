@@ -10,13 +10,16 @@ import { CreateOrderContainerItemDto } from '../order-container-item/create-orde
 
 export class CreateOrderMenuItemDto {
   @ApiProperty({
-    description: 'Id of Order entity the OrderMenuItem belongs to.',
+    description:
+      'Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.',
     example: 1,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly orderId: number;
+  readonly orderId?: number;
 
   @ApiProperty({
     description: 'Id of MenuItem entity being ordered.',

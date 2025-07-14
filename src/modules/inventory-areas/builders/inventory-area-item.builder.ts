@@ -85,6 +85,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   }
 
   public async buildMany(
+    parent: InventoryAreaCount,
     dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
   ): Promise<InventoryAreaItem[]> {
     const results: InventoryAreaItem[] = [];
@@ -93,7 +94,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create, this.entity));
+          results.push(await this.buildCreateDto(dto.create, parent));
         }
         if (dto.update) {
           const countedItem = await this.itemCountService.findOne(

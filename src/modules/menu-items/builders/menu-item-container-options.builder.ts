@@ -70,13 +70,14 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
   }
 
   public async buildDto(
+    parent: MenuItem,
     dto: CreateMenuItemContainerOptionsDto | NestedMenuItemContainerOptionsDto,
   ): Promise<MenuItemContainerOptions> {
     if (dto instanceof CreateMenuItemContainerOptionsDto) {
       return await this.buildCreateDto(dto);
     } else {
       if (dto.create) {
-        return await this.buildCreateDto(dto.create);
+        return await this.buildCreateDto(dto.create, parent);
       }
       if (dto.update) {
         const toUpdate = await this.itemComponentOptionsService.findOne(

@@ -39,10 +39,18 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
     );
   }
 
-  protected createEntity(dto: CreateMenuItemContainerRuleDto): void {
-    if (dto.parentContainerOptionsId !== undefined) {
+  protected createEntity(
+    dto: CreateMenuItemContainerRuleDto,
+    parent?: MenuItemContainerOptions,
+  ): void {
+    // If the parentContainerOptionsId is provided, use it to set the parentContainerOption. (Through menu-item-container-rule endpoint)
+    // If the parentContainerOptionsId is not provided, but a parent is provided, use the parent to set the parentContainerOption. (Through create menu-item-container-options endpoint)
+    if (parent) {
+      this.setPropByVal('parentContainerOption', parent);
+    } else if (dto.parentContainerOptionsId !== undefined) {
       this.parentContainerOptionsById(dto.parentContainerOptionsId);
     }
+
     if (dto.validMenuItemId !== undefined) {
       this.validMenuItemById(dto.validMenuItemId);
     }
@@ -61,7 +69,7 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
   }
 
   public async buildMany(
-    parentOption: MenuItemContainerOptions,
+    parent: MenuItemContainerOptions,
     dtos: (CreateMenuItemContainerRuleDto | NestedMenuItemContainerRuleDto)[],
   ): Promise<MenuItemContainerRule[]> {
     const results: MenuItemContainerRule[] = [];
@@ -70,7 +78,7 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create));
+          results.push(await this.buildCreateDto(dto.create, parent));
         }
         if (dto.update) {
           const toUpdate = await this.componentOptionService.findOne(
@@ -82,11 +90,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
           results.push(await this.buildUpdateDto(toUpdate, dto));
         }
       }
-    }
-
-    // Creating parent container options with rules will not have a parent option id to assign, so we do it here
-    for (const rule of results) {
-      rule.parentContainerOption = parentOption;
     }
 
     return results;

@@ -10,6 +10,7 @@ import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu
 import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderService } from '../services/order.service';
 import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
@@ -43,16 +44,22 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     );
   }
 
-  protected createEntity(dto: CreateOrderMenuItemDto): void {
+  protected createEntity(dto: CreateOrderMenuItemDto, parent?: Order): void {
     if (dto.menuItemId !== undefined) {
       this.menuItemById(dto.menuItemId);
     }
     if (dto.menuItemSizeId !== undefined) {
       this.menuItemSizeById(dto.menuItemSizeId);
     }
-    if (dto.orderId !== undefined) {
+
+    // If the orderId is provided, use it to set the order. (Through order-menu-item endpoint)
+    // If the orderId is not provided, but a parent is provided, use the parent to set the order. (Through create order endpoint)
+    if (parent) {
+      this.setPropByVal('order', parent);
+    } else if (dto.orderId !== undefined) {
       this.orderById(dto.orderId);
     }
+
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
     }
@@ -85,7 +92,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create));
+          results.push(await this.buildCreateDto(dto.create, parent));
         }
         if (dto.update) {
           const item = await this.orderItemService.findOne(dto.update.id);
