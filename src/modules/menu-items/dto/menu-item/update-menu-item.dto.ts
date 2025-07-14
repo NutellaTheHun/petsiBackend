@@ -9,7 +9,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/update-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { NestedMenuItemContainerOptionsDto } from '../menu-item-container-options/nested-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
@@ -123,7 +124,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly definedContainerItemDtos?: NestedUpdateMenuItemContainerItemDto[];
+  readonly definedContainerItemDtos?: NestedMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:

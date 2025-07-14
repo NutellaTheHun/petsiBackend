@@ -1,9 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
-import {
-  NestedInventoryItemSizeDto,
-  NestedUpdateInventoryItemSizeDto,
-} from '../../../inventory-items/dto/inventory-item/update-inventory-item.dto';
+import { NestedInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 
 export class UpdateInventoryAreaItemDto {
   @ApiPropertyOptional({
@@ -39,7 +36,7 @@ export class UpdateInventoryAreaItemDto {
   @ApiPropertyOptional({
     description:
       'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
-    type: NestedUpdateInventoryItemSizeDto,
+    type: NestedInventoryItemSizeDto,
     example: {
       mode: 'update',
       id: 5,

@@ -6,8 +6,8 @@ import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
-import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 

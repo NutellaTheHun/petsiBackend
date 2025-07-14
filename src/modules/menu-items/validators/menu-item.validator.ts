@@ -5,6 +5,7 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem } from '../entities/menu-item.entity';
@@ -222,8 +223,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         throw new Error();
       }
 
-      for (const item of dto.definedContainerItemDtos) {
-        const currentItem = await this.containerService.findOne(item.id, [
+      for (const nested of dto.definedContainerItemDtos) {
+        const update = nested as NestedUpdateMenuItemContainerItemDto;
+        const currentItem = await this.containerService.findOne(update.id, [
           'containedItem',
           'containedItemsize',
           'parentContainerSize',
@@ -231,9 +233,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         resolvedItemDtos.push({
           parentContainerSizeId: currentItem.parentContainerSize.id,
           containedMenuItemId:
-            item.dto.containedMenuItemId ?? currentItem.containedItem.id,
+            update.dto.containedMenuItemId ?? currentItem.containedItem.id,
           containedMenuItemSizeId:
-            item.dto.containedMenuItemSizeId ??
+            update.dto.containedMenuItemSizeId ??
             currentItem.containedItemsize.id,
         });
       }

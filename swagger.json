@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-13T21:34:02.955Z",
-              "updatedAt": "2025-07-13T21:34:02.955Z",
+              "createdAt": "2025-07-14T21:34:24.335Z",
+              "updatedAt": "2025-07-14T21:34:24.335Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-13T21:34:02.956Z",
-                "updatedAt": "2025-07-13T21:34:02.956Z",
+                "createdAt": "2025-07-14T21:34:24.335Z",
+                "updatedAt": "2025-07-14T21:34:24.335Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -8870,8 +8870,9 @@
         "properties": {
           "orderId": {
             "type": "number",
-            "description": "Id of Order entity the OrderMenuItem belongs to.",
-            "example": 1
+            "description": "Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.",
+            "example": 1,
+            "nullable": true
           },
           "menuItemId": {
             "type": "number",
@@ -8910,7 +8911,6 @@
           }
         },
         "required": [
-          "orderId",
           "menuItemId",
           "menuItemSizeId",
           "quantity"
@@ -9372,8 +9372,9 @@
         "properties": {
           "parentContainerId": {
             "type": "number",
-            "description": "Id of a MenuItem entity, the parent container to the child MenuItem component.",
-            "example": 1
+            "description": "Id of a MenuItem entity, the parent container to the child MenuItem component. Is required if sending DTO to menu-item-container-item endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.",
+            "example": 1,
+            "nullable": true
           },
           "parentContainerSizeId": {
             "type": "number",
@@ -9397,7 +9398,6 @@
           }
         },
         "required": [
-          "parentContainerId",
           "parentContainerSizeId",
           "containedMenuItemId",
           "containedMenuItemSizeId",
@@ -9409,7 +9409,7 @@
         "properties": {
           "parentContainerOptionsId": {
             "type": "number",
-            "description": "Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem",
+            "description": "Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem endpoint)",
             "example": 1,
             "nullable": true
           },
@@ -9441,8 +9441,9 @@
         "properties": {
           "parentContainerMenuItemId": {
             "type": "number",
-            "description": "Id of the MenuItem entity that the options apply to.",
-            "example": 1
+            "description": "Id of the MenuItem entity that the options apply to. Is required if sending DTO to menu-item-container-options endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.",
+            "example": 1,
+            "nullable": true
           },
           "containerRuleDtos": {
             "description": "The list of MenuItems and their sizes that are allowed in the container",
@@ -9474,7 +9475,6 @@
           }
         },
         "required": [
-          "parentContainerMenuItemId",
           "containerRuleDtos",
           "validQuantity"
         ]
@@ -9748,6 +9748,31 @@
           }
         }
       },
+      "NestedUpdateMenuItemContainerOptionsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "Id of a MenuItemContainerOptions entity.",
+            "example": 1
+          },
+          "dto": {
+            "description": "UpdateMenuItemContainerOptionsDto",
+            "example": {
+              "containerRuleDtos": [
+                1,
+                2
+              ],
+              "validQuantity": 3
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateMenuItemContainerOptionsDto"
+              }
+            ]
+          }
+        }
+      },
       "NestedMenuItemContainerOptionsDto": {
         "type": "object",
         "properties": {
@@ -9786,7 +9811,7 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/UpdateMenuItemContainerOptionsDto"
+                "$ref": "#/components/schemas/NestedUpdateMenuItemContainerOptionsDto"
               }
             ]
           }
@@ -10053,15 +10078,15 @@
           },
           "templateId": {
             "type": "number",
-            "description": "Id of the parent Template entity.",
-            "example": 2
+            "description": "Id of the parent Template entity. Is required if sending DTO to template-menu-item endpoint. Is not required if sending DTO as a nested dto of a create template request.",
+            "example": 2,
+            "nullable": true
           }
         },
         "required": [
           "displayName",
           "menuItemId",
-          "tablePosIndex",
-          "templateId"
+          "tablePosIndex"
         ]
       },
       "CreateTemplateDto": {
@@ -10422,7 +10447,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T21:34:02.912Z",
+              "countDate": "2025-07-14T21:34:24.281Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10796,7 +10821,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-13T21:34:02.911Z",
+              "countDate": "2025-07-14T21:34:24.280Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10968,8 +10993,9 @@
         "type": "object",
         "properties": {
           "inventoryItemId": {
-            "description": "Id of InventoryItem entity.",
+            "description": "Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.",
             "example": 1,
+            "nullable": true,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/InventoryItem"
@@ -10997,7 +11023,6 @@
           }
         },
         "required": [
-          "inventoryItemId",
           "measureUnitId",
           "measureAmount",
           "inventoryPackageId",
@@ -11009,8 +11034,9 @@
         "properties": {
           "parentInventoryCountId": {
             "type": "number",
-            "description": "Id for InventoryAreaCount entity.",
-            "example": 1
+            "description": "Id for InventoryAreaCount entity. Is required if sending DTO to inventory-area-item endpoint. Is not required if sending DTO as a nested dto of a create inventory-area-count request.",
+            "example": 1,
+            "nullable": true
           },
           "countedInventoryItemId": {
             "type": "number",
@@ -11044,7 +11070,6 @@
           }
         },
         "required": [
-          "parentInventoryCountId",
           "countedInventoryItemId",
           "countedAmount",
           "countedItemSizeId",
@@ -11140,6 +11165,43 @@
           "dto"
         ]
       },
+      "NestedInventoryItemSizeDto": {
+        "type": "object",
+        "properties": {
+          "create": {
+            "description": "CreateInventoryItemSizeDto for InventoryItemSize entity.",
+            "example": {
+              "measureUnitId": 1,
+              "measureAmount": 10,
+              "inventoryPackageId": 1,
+              "cost": 100
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
+              }
+            ]
+          },
+          "update": {
+            "description": "UpdateInventoryItemSizeDto for InventoryItemSize entity.",
+            "example": {
+              "measureUnitId": 1,
+              "measureAmount": 10,
+              "inventoryPackageId": 1,
+              "cost": 100
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedUpdateInventoryItemSizeDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "create",
+          "update"
+        ]
+      },
       "UpdateInventoryAreaItemDto": {
         "type": "object",
         "properties": {
@@ -11170,7 +11232,7 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/NestedUpdateInventoryItemSizeDto"
+                "$ref": "#/components/schemas/NestedInventoryItemSizeDto"
               }
             ]
           }
@@ -11951,8 +12013,9 @@
         "properties": {
           "parentRecipeId": {
             "type": "number",
-            "description": "Id of the Recipe entity that is the parent",
-            "example": 1
+            "description": "Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.",
+            "example": 1,
+            "nullable": true
           },
           "ingredientInventoryItemId": {
             "type": "number",
@@ -11976,7 +12039,6 @@
           }
         },
         "required": [
-          "parentRecipeId",
           "quantity",
           "quantityMeasurementId"
         ]
