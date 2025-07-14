@@ -155,7 +155,10 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     dtos: (CreateRecipeIngredientDto | NestedRecipeIngredientDto)[],
   ): this {
     return this.setPropByBuilder(
-      this.ingredientBuilder.buildMany.bind(this.ingredientBuilder),
+      this.ingredientBuilder.buildMany.bind(
+        this.entity,
+        this.ingredientBuilder,
+      ),
       'ingredients',
       this.entity,
       dtos,

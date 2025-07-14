@@ -3,7 +3,7 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
@@ -225,10 +225,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
   }
 
   public definedContainerItemsByBuilder(
-    dtos: (
-      | CreateMenuItemContainerItemDto
-      | NestedUpdateMenuItemContainerItemDto
-    )[],
+    dtos: (CreateMenuItemContainerItemDto | NestedMenuItemContainerItemDto)[],
   ): this {
     return this.setPropByBuilder(
       this.componentBuilder.buildMany.bind(this.componentBuilder),

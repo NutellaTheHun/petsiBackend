@@ -37,7 +37,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
       this.name(dto.templateName);
     }
     if (dto.templateItemDtos !== undefined) {
-      this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
+      this.itemsByBuilder(dto.templateItemDtos);
     }
   }
 
@@ -49,7 +49,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
       this.name(dto.templateName);
     }
     if (dto.templateItemDtos !== undefined) {
-      this.itemsByBuilder(this.entity.id, dto.templateItemDtos);
+      this.itemsByBuilder(dto.templateItemDtos);
     }
   }
 
@@ -62,18 +62,13 @@ export class TemplateBuilder extends BuilderBase<Template> {
   }
 
   public itemsByBuilder(
-    templateId: number,
     dtos: (CreateTemplateMenuItemDto | NestedTemplateMenuItemDto)[],
   ): this {
-    const enrichedDtos = dtos.map((dto) => ({
-      ...dto,
-      templateId,
-    }));
     return this.setPropByBuilder(
-      this.itemBuilder.buildManyDto.bind(this.itemBuilder),
+      this.itemBuilder.buildMany.bind(this.itemBuilder),
       'templateItems',
       this.entity,
-      enrichedDtos,
+      dtos,
     );
   }
 }

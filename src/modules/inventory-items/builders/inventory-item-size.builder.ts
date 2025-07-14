@@ -4,9 +4,11 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
-import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemPackageService } from '../services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 import { InventoryItemService } from '../services/inventory-item.service';
@@ -37,10 +39,18 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     );
   }
 
-  protected createEntity(dto: CreateInventoryItemSizeDto): void {
-    if (dto.inventoryItemId !== undefined) {
+  protected createEntity(
+    dto: CreateInventoryItemSizeDto,
+    parent?: InventoryItem,
+  ): void {
+    // If the parentInventoryItemId is provided, use it to set the parentInventoryItem. (Through inventory-item-size endpoint)
+    // If the parentInventoryItemId is not provided, but a parent is provided, use the parent to set the parentInventoryItem. (Through create inventory-item endpoint)
+    if (parent) {
+      this.setPropByVal('inventoryItem', parent);
+    } else if (dto.inventoryItemId !== undefined) {
       this.InventoryItemById(dto.inventoryItemId);
     }
+
     if (dto.inventoryPackageId !== undefined) {
       this.packageById(dto.inventoryPackageId);
     }
@@ -74,11 +84,29 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
   }
 
   public async buildMany(
-    dtos: (CreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto)[],
+    parent: InventoryItem,
+    dtos: (CreateInventoryItemSizeDto | NestedInventoryItemSizeDto)[],
   ): Promise<InventoryItemSize[]> {
     const results: InventoryItemSize[] = [];
     for (const dto of dtos) {
-      results.push(await this.buildDto(dto));
+      if (dto instanceof CreateInventoryItemSizeDto) {
+        results.push(await this.buildCreateDto(dto));
+      } else {
+        if (dto.create) {
+          results.push(await this.buildCreateDto(dto.create, parent));
+        }
+        if (dto.update) {
+          const size = await this.sizeService.findOne(dto.update.id, [
+            'inventoryItem',
+            'measureUnit',
+            'packageType',
+          ]);
+          if (!size) {
+            throw new Error('item size not found');
+          }
+          results.push(await this.buildUpdateDto(size, dto));
+        }
+      }
     }
     return results;
   }
@@ -118,20 +146,29 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
    * @returns
    */
   public async buildDto(
-    dto: CreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto,
+    parent: InventoryItem,
+    dto: CreateInventoryItemSizeDto | NestedInventoryItemSizeDto,
   ): Promise<InventoryItemSize> {
     if (dto instanceof CreateInventoryItemSizeDto) {
       return await this.buildCreateDto(dto);
     }
-    const size = await this.sizeService.findOne(dto.id, [
-      'inventoryItem',
-      'measureUnit',
-      'packageType',
-    ]);
-    if (!size) {
-      throw new Error('item size not found');
+    if (dto instanceof NestedInventoryItemSizeDto) {
+      if (dto.create) {
+        return await this.buildCreateDto(dto.create, parent);
+      }
+      if (dto.update) {
+        const size = await this.sizeService.findOne(dto.update.id, [
+          'inventoryItem',
+          'measureUnit',
+          'packageType',
+        ]);
+        if (!size) {
+          throw new Error('item size not found');
+        }
+        return await this.buildUpdateDto(size, dto);
+      }
     }
-    return await this.buildUpdateDto(size, dto);
+    throw new Error('invalid dto');
   }
 
   public unitOfMeasureById(id: number): this {

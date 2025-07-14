@@ -3,11 +3,9 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
-import {
-  NestedInventoryItemSizeDto,
-  UpdateInventoryItemDto,
-} from '../dto/inventory-item/update-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
@@ -51,7 +49,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
       this.name(dto.itemName);
     }
     if (dto.itemSizeDtos !== undefined) {
-      this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
+      this.sizesByBuilder(dto.itemSizeDtos);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);
@@ -66,7 +64,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
       this.name(dto.itemName);
     }
     if (dto.itemSizeDtos !== undefined) {
-      this.sizesByBuilder(this.entity.id, dto.itemSizeDtos);
+      this.sizesByBuilder(dto.itemSizeDtos);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);
@@ -86,18 +84,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
   }
 
   public sizesByBuilder(
-    inventoryItemId: number,
     dtos: CreateInventoryItemSizeDto[] | NestedInventoryItemSizeDto[],
   ): this {
-    if (dtos instanceof CreateInventoryItemSizeDto) {
-      return this.setPropByBuilder(
-        this.itemSizeBuilder.createMany.bind(this.itemSizeBuilder),
-        'itemSizes',
-        this.entity,
-        dtos,
-      );
-    }
-
     return this.setPropByBuilder(
       this.itemSizeBuilder.buildMany.bind(this.itemSizeBuilder),
       'itemSizes',

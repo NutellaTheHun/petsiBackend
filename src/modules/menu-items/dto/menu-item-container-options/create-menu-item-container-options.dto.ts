@@ -4,13 +4,16 @@ import { CreateMenuItemContainerRuleDto } from '../menu-item-container-rule/crea
 
 export class CreateMenuItemContainerOptionsDto {
   @ApiProperty({
-    description: 'Id of the MenuItem entity that the options apply to.',
+    description:
+      'Id of the MenuItem entity that the options apply to. Is required if sending DTO to menu-item-container-options endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.',
     example: 1,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentContainerMenuItemId: number;
+  readonly parentContainerMenuItemId?: number;
 
   @ApiProperty({
     description:

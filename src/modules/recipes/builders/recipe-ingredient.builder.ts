@@ -38,24 +38,29 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     );
   }
 
-  /**
-   * Depreciated, only created as a child through {@link Recipe}.
-   */
-  protected createEntity(dto: CreateRecipeIngredientDto): void {
+  protected createEntity(
+    dto: CreateRecipeIngredientDto,
+    parent?: Recipe,
+  ): void {
     if (dto.ingredientInventoryItemId !== undefined) {
       this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
     }
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
     }
-    if (dto.parentRecipeId !== undefined) {
-      this.parentRecipeById(dto.parentRecipeId);
-    }
     if (dto.ingredientRecipeId !== undefined) {
       this.ingredientRecipeById(dto.ingredientRecipeId);
     }
     if (dto.quantityMeasurementId !== undefined) {
       this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
+    }
+
+    // If the parentRecipeId is provided, use it to set the parentRecipe. (Through recipe-ingredient endpoint)
+    // If the parentRecipeId is not provided, but a parent is provided, use the parent to set the parentRecipe. (Through create recipe endpoint)
+    if (parent) {
+      this.setPropByVal('parentRecipe', parent);
+    } else if (dto.parentRecipeId !== undefined) {
+      this.parentRecipeById(dto.parentRecipeId);
     }
   }
 
@@ -80,6 +85,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
    * Handles both create and update recipe ingredient DTOs, for when updating recipes involving new and modified ingredients.
    */
   public async buildMany(
+    parent: Recipe,
     dtos: (CreateRecipeIngredientDto | NestedRecipeIngredientDto)[],
   ): Promise<RecipeIngredient[]> {
     const results: RecipeIngredient[] = [];
@@ -88,7 +94,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create));
+          results.push(await this.buildCreateDto(dto.create, parent));
         }
         if (dto.update) {
           const ingred = await this.ingredientService.findOne(dto.update.id);

@@ -3,7 +3,7 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemSizeBuilder } from '../../inventory-items/builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
-import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item/update-inventory-item.dto';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -17,7 +17,6 @@ import { InventoryAreaItemService } from '../services/inventory-area-item.servic
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
-//implements IBuildChildDto<InventoryAreaCount, InventoryAreaItem>
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   constructor(
     requestContextService: RequestContextService,
@@ -43,11 +42,15 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     );
   }
 
-  /**
-   * Depreciated, only created as a child through {@link InventoryAreaCount}.
-   */
-  protected createEntity(dto: CreateInventoryAreaItemDto): void {
-    if (dto.parentInventoryCountId !== undefined) {
+  protected createEntity(
+    dto: CreateInventoryAreaItemDto,
+    parent?: InventoryAreaCount,
+  ): void {
+    // If the parentInventoryCountId is provided, use it to set the parentInventoryCount. (Through inventory-area-item endpoint)
+    // If the parentInventoryCountId is not provided, but a parent is provided, use the parent to set the parentInventoryCount. (Through create inventory-area-count endpoint)
+    if (parent) {
+      this.setPropByVal('parentInventoryCount', parent);
+    } else if (dto.parentInventoryCountId !== undefined) {
       this.parentInventoryCountById(dto.parentInventoryCountId);
     }
     if (dto.countedInventoryItemId !== undefined) {
@@ -90,7 +93,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create));
+          results.push(await this.buildCreateDto(dto.create, this.entity));
         }
         if (dto.update) {
           const countedItem = await this.itemCountService.findOne(

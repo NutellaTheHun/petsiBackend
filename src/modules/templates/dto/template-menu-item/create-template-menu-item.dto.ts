@@ -35,11 +35,14 @@ export class CreateTemplateMenuItemDto {
   readonly tablePosIndex: number;
 
   @ApiProperty({
-    description: 'Id of the parent Template entity.',
+    description:
+      'Id of the parent Template entity. Is required if sending DTO to template-menu-item endpoint. Is not required if sending DTO as a nested dto of a create template request.',
     example: 2,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly templateId: number;
+  readonly templateId?: number;
 }

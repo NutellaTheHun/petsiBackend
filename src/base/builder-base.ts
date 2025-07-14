@@ -20,15 +20,15 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     this.reset();
   }
 
-  protected abstract createEntity(dto: any): void;
+  protected abstract createEntity(dto: any, parent?: any): void;
   protected abstract updateEntity(dto: any): void;
 
-  public async buildCreateDto(dto: any): Promise<T> {
+  public async buildCreateDto(dto: any, parent?: any): Promise<T> {
     await this.validateCreateDto(dto);
 
     this.reset();
 
-    this.createEntity(dto);
+    this.createEntity(dto, parent);
 
     return await this.build();
   }

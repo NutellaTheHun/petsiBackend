@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { ValidateNested } from 'class-validator';
 import { CreateMenuItemContainerOptionsDto } from './create-menu-item-container-options.dto';
-import { UpdateMenuItemContainerOptionsDto } from './update-menu-item-container-options.dto';
+import { NestedUpdateMenuItemContainerOptionsDto } from './nested-update-menu-item-container-options.dto copy';
 
 export class NestedMenuItemContainerOptionsDto {
   @ApiPropertyOptional({
@@ -31,5 +31,5 @@ export class NestedMenuItemContainerOptionsDto {
     },
   })
   @ValidateNested()
-  readonly update?: UpdateMenuItemContainerOptionsDto;
+  readonly update?: NestedUpdateMenuItemContainerOptionsDto;
 }

@@ -8,11 +8,10 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import {
-  NestedUpdateMenuItemContainerItemDto,
-  UpdateMenuItemContainerItemDto,
-} from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
+import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItem } from '../menu-items.module';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
@@ -42,10 +41,18 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
     );
   }
 
-  protected createEntity(dto: CreateMenuItemContainerItemDto): void {
-    if (dto.parentContainerId !== undefined) {
+  protected createEntity(
+    dto: CreateMenuItemContainerItemDto,
+    parent?: MenuItem,
+  ): void {
+    // If the parentMenuItemId is provided, use it to set the parentMenuItem. (Through menu-item-container-item endpoint)
+    // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
+    if (parent) {
+      this.setPropByVal('parentContainer', parent);
+    } else if (dto.parentContainerId !== undefined) {
       this.parentContainerById(dto.parentContainerId);
     }
+
     if (dto.parentContainerSizeId !== undefined) {
       this.parentContainerSizeById(dto.parentContainerSizeId);
     }
@@ -73,21 +80,23 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   }
 
   public async buildMany(
-    dtos: (
-      | CreateMenuItemContainerItemDto
-      | NestedUpdateMenuItemContainerItemDto
-    )[],
+    dtos: (CreateMenuItemContainerItemDto | NestedMenuItemContainerItemDto)[],
   ): Promise<MenuItemContainerItem[]> {
     const results: MenuItemContainerItem[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateMenuItemContainerItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        const comp = await this.componentService.findOne(dto.id);
-        if (!comp) {
-          throw new NotFoundException();
+        if (dto.create) {
+          results.push(await this.buildCreateDto(dto.create, this.entity));
         }
-        results.push(await this.buildUpdateDto(comp, dto));
+        if (dto.update) {
+          const comp = await this.componentService.findOne(dto.update.id);
+          if (!comp) {
+            throw new NotFoundException();
+          }
+          results.push(await this.buildUpdateDto(comp, dto));
+        }
       }
     }
     return results;

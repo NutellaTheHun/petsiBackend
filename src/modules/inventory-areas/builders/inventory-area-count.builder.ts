@@ -42,7 +42,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
       this.inventoryAreaById(dto.inventoryAreaId);
     }
     if (dto.itemCountDtos !== undefined) {
-      this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
+      this.countedItemsByBuilder(dto.itemCountDtos);
     }
   }
 
@@ -51,7 +51,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
       this.inventoryAreaById(dto.inventoryAreaId);
     }
     if (dto.itemCountDtos !== undefined) {
-      this.countedItemsByBuilder(this.entity, dto.itemCountDtos);
+      this.countedItemsByBuilder(dto.itemCountDtos);
     }
   }
 
@@ -80,13 +80,12 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
   }
 
   public countedItemsByBuilder(
-    parent: InventoryAreaCount,
     dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
   ): this {
     return this.setPropByBuilder(
       this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
       'countedItems',
-      parent,
+      this.entity,
       dtos,
     );
   }

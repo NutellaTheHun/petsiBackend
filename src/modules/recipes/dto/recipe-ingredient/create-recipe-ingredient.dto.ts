@@ -1,19 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { Recipe } from '../../entities/recipe.entity';
 
-/**
- * Depreciated, only created as a child through {@link Recipe}.
- */
 export class CreateRecipeIngredientDto {
   @ApiProperty({
-    description: 'Id of the Recipe entity that is the parent',
+    description:
+      'Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.',
     example: 1,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentRecipeId: number;
+  readonly parentRecipeId?: number;
 
   @ApiPropertyOptional({
     description:

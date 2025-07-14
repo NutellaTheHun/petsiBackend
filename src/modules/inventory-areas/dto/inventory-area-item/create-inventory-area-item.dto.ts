@@ -1,21 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { CreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
-import { InventoryAreaCount } from '../../entities/inventory-area-count.entity';
 
-/**
- * Depreciated, only created as a child through {@link InventoryAreaCount}.
- */
 export class CreateInventoryAreaItemDto {
   @ApiProperty({
-    description: 'Id for InventoryAreaCount entity.',
+    description:
+      'Id for InventoryAreaCount entity. Is required if sending DTO to inventory-area-item endpoint. Is not required if sending DTO as a nested dto of a create inventory-area-count request.',
     example: 1,
     type: Number,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentInventoryCountId: number;
+  readonly parentInventoryCountId?: number;
 
   @ApiProperty({
     description: 'Id for InventoryItem entity.',
@@ -30,6 +29,7 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description: 'The amount of InventoryItem per unit.',
     example: 6,
+    type: Number,
   })
   @IsNumber()
   @IsPositive()

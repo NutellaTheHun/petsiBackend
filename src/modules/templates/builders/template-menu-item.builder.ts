@@ -36,10 +36,18 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     );
   }
 
-  protected createEntity(dto: CreateTemplateMenuItemDto): void {
-    if (dto.templateId !== undefined) {
+  protected createEntity(
+    dto: CreateTemplateMenuItemDto,
+    parent?: Template,
+  ): void {
+    // If the templateId is provided, use it to set the parentTemplate. (Through template-menu-item endpoint)
+    // If the templateId is not provided, but a parent is provided, use the parent to set the parentTemplate. (Through create template endpoint)
+    if (parent) {
+      this.setPropByVal('parentTemplate', parent);
+    } else if (dto.templateId !== undefined) {
       this.parentTemplateById(dto.templateId);
     }
+
     if (dto.displayName !== undefined) {
       this.displayName(dto.displayName);
     }
@@ -63,8 +71,8 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     }
   }
 
-  public async buildManyDto(
-    parentTemplate: Template,
+  public async buildMany(
+    parent: Template,
     dtos: (CreateTemplateMenuItemDto | NestedTemplateMenuItemDto)[],
   ): Promise<TemplateMenuItem[]> {
     const results: TemplateMenuItem[] = [];
@@ -73,7 +81,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.create) {
-          results.push(await this.buildCreateDto(dto));
+          results.push(await this.buildCreateDto(dto, parent));
         }
         if (dto.update) {
           const item = await this.templateItemService.findOne(dto.update.id);

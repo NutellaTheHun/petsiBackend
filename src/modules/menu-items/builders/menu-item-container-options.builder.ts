@@ -3,11 +3,12 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
-import { NestedUpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-update-menu-item-container-options.dto copy';
+import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
 import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
+import { MenuItem } from '../menu-items.module';
 import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
 import { MenuItemService } from '../services/menu-item.service';
 import { MenuItemContainerOptionsValidator } from '../validators/menu-item-container-options.validator';
@@ -38,12 +39,21 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
     );
   }
 
-  protected createEntity(dto: CreateMenuItemContainerOptionsDto): void {
+  protected createEntity(
+    dto: CreateMenuItemContainerOptionsDto,
+    parent?: MenuItem,
+  ): void {
+    // If the parentMenuItemId is provided, use it to set the parentMenuItem. (Through menu-item-container-options endpoint)
+    // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
+
+    if (parent) {
+      this.setPropByVal('parentContainer', parent);
+    } else if (dto.parentContainerMenuItemId !== undefined) {
+      this.parentContainerById(dto.parentContainerMenuItemId);
+    }
+
     if (dto.containerRuleDtos !== undefined) {
       this.containerRulesByBuilder(dto.containerRuleDtos);
-    }
-    if (dto.parentContainerMenuItemId !== undefined) {
-      this.parentContainerById(dto.parentContainerMenuItemId);
     }
     if (dto.validQuantity !== undefined) {
       this.validQuantity(dto.validQuantity);
@@ -60,20 +70,25 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
   }
 
   public async buildDto(
-    dto:
-      | CreateMenuItemContainerOptionsDto
-      | NestedUpdateMenuItemContainerOptionsDto,
+    dto: CreateMenuItemContainerOptionsDto | NestedMenuItemContainerOptionsDto,
   ): Promise<MenuItemContainerOptions> {
     if (dto instanceof CreateMenuItemContainerOptionsDto) {
       return await this.buildCreateDto(dto);
     } else {
-      const toUpdate = await this.itemComponentOptionsService.findOne(dto.id);
-      if (!toUpdate) {
-        throw new Error('options is null');
+      if (dto.create) {
+        return await this.buildCreateDto(dto.create);
       }
-
-      return await this.buildUpdateDto(toUpdate, dto);
+      if (dto.update) {
+        const toUpdate = await this.itemComponentOptionsService.findOne(
+          dto.update.id,
+        );
+        if (!toUpdate) {
+          throw new Error('options is null');
+        }
+        return await this.buildUpdateDto(toUpdate, dto);
+      }
     }
+    throw new Error('invalid dto');
   }
 
   public containerRulesByBuilder(

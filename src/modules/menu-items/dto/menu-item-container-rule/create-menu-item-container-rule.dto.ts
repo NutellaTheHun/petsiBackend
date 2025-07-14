@@ -4,7 +4,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 export class CreateMenuItemContainerRuleDto {
   @ApiProperty({
     description:
-      'Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem',
+      'Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem endpoint)',
     example: 1,
     nullable: true,
     type: 'number',

@@ -7,14 +7,17 @@ import { InventoryItem } from '../../entities/inventory-item.entity';
  */
 export class CreateInventoryItemSizeDto {
   @ApiProperty({
-    description: 'Id of InventoryItem entity.',
+    description:
+      'Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.',
     type: [InventoryItem],
     example: 1,
+    required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly inventoryItemId: number;
+  readonly inventoryItemId?: number;
 
   @ApiProperty({
     description: 'Id of UnitofMeasure entity.',
