@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class CreateMenuItemContainerRuleDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem endpoint)',
     example: 1,
@@ -27,6 +27,8 @@ export class CreateMenuItemContainerRuleDto {
     description:
       'Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container',
     example: [3, 4],
+    type: 'number',
+    isArray: true,
   })
   @IsNumber()
   @IsPositive()

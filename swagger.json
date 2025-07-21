@@ -7851,7 +7851,7 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         },
@@ -7888,7 +7888,7 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         }
@@ -8045,7 +8045,7 @@
               }
             ]
           },
-          "containedItemsize": {
+          "containedItemSize": {
             "example": {
               "id": 1,
               "name": "medium"
@@ -8068,7 +8068,7 @@
           "parentContainer",
           "parentContainerSize",
           "containedItem",
-          "containedItemsize",
+          "containedItemSize",
           "quantity"
         ]
       },
@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-14T21:34:24.335Z",
-              "updatedAt": "2025-07-14T21:34:24.335Z",
+              "createdAt": "2025-07-18T19:21:58.377Z",
+              "updatedAt": "2025-07-18T19:21:58.377Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-14T21:34:24.335Z",
-                "updatedAt": "2025-07-14T21:34:24.335Z",
+                "createdAt": "2025-07-18T19:21:58.377Z",
+                "updatedAt": "2025-07-18T19:21:58.377Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9426,12 +9426,11 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         },
         "required": [
-          "parentContainerOptionsId",
           "validMenuItemId",
           "validSizeIds"
         ]
@@ -9511,17 +9510,14 @@
             "example": 4
           },
           "validSizeIds": {
+            "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
+            "example": [
+              5,
+              6
+            ],
             "type": "array",
             "items": {
-              "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
-              "example": [
-                5,
-                6
-              ],
-              "type": "array",
-              "items": {
-                "type": "number"
-              }
+              "type": "number"
             }
           },
           "isPOTM": {
@@ -9581,11 +9577,8 @@
           }
         },
         "required": [
-          "categoryId",
           "itemName",
-          "validSizeIds",
-          "definedContainerItemDtos",
-          "containerOptionDto"
+          "validSizeIds"
         ]
       },
       "UpdateMenuItemContainerItemDto": {
@@ -9647,7 +9640,7 @@
             ],
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "number"
             }
           }
         }
@@ -9771,7 +9764,11 @@
               }
             ]
           }
-        }
+        },
+        "required": [
+          "id",
+          "dto"
+        ]
       },
       "NestedMenuItemContainerOptionsDto": {
         "type": "object",
@@ -10447,7 +10444,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-14T21:34:24.281Z",
+              "countDate": "2025-07-18T19:21:58.321Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10821,7 +10818,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-14T21:34:24.280Z",
+              "countDate": "2025-07-18T19:21:58.320Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

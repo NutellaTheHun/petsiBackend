@@ -253,14 +253,14 @@ export class MenuItemTestingUtil {
         parentContainer: itemF,
         parentContainerSize: itemF.validSizes[0],
         containedItem: itemA,
-        containedItemsize: itemA.validSizes[0],
+        containedItemSize: itemA.validSizes[0],
         quantity: 1,
       },
       {
         parentContainer: itemF,
         parentContainerSize: itemF.validSizes[0],
         containedItem: itemB,
-        containedItemsize: itemB.validSizes[0],
+        containedItemSize: itemB.validSizes[0],
         quantity: 1,
       },
 
@@ -268,14 +268,14 @@ export class MenuItemTestingUtil {
         parentContainer: itemG,
         parentContainerSize: itemG.validSizes[0],
         containedItem: itemC,
-        containedItemsize: itemC.validSizes[0],
+        containedItemSize: itemC.validSizes[0],
         quantity: 1,
       },
       {
         parentContainer: itemG,
         parentContainerSize: itemG.validSizes[0],
         containedItem: itemD,
-        containedItemsize: itemD.validSizes[0],
+        containedItemSize: itemD.validSizes[0],
         quantity: 1,
       },
     ] as MenuItemContainerItem[];

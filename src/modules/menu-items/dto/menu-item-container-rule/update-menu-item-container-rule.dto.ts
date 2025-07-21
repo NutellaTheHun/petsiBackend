@@ -15,6 +15,8 @@ export class UpdateMenuItemContainerRuleDto {
     description:
       'Id of a MenuItemSize entity that is a valid size to the validMenuItem, and to the container',
     example: [2, 3],
+    type: 'number',
+    isArray: true,
   })
   @IsNumber()
   @IsPositive()

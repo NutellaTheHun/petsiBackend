@@ -28,7 +28,7 @@ import { MenuItem } from './menu-item.entity';
   'parentContainer',
   'parentContainerSize',
   'containedItem',
-  'containedItemsize',
+  'containedItemSize',
 ])
 @Entity()
 export class MenuItemContainerItem {
@@ -101,7 +101,7 @@ export class MenuItemContainerItem {
     type: MenuItemSize,
   })
   @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
-  containedItemsize: MenuItemSize;
+  containedItemSize: MenuItemSize;
 
   @ApiProperty({
     example: {},

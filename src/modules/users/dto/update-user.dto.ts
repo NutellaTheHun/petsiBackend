@@ -33,6 +33,8 @@ export class UpdateUserDto {
   @ApiPropertyOptional({
     description: 'Id of roles the user has.',
     example: [1, 2],
+    type: 'number',
+    isArray: true,
   })
   @IsArray()
   @IsNumber({}, { each: true })

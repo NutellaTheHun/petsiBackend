@@ -146,7 +146,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public containedItemSizeById(id: number): this {
     return this.setPropById(
       this.itemSizeService.findOne.bind(this.itemSizeService),
-      'containedItemsize',
+      'containedItemSize',
       id,
     );
   }

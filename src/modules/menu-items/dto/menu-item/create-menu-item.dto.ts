@@ -12,7 +12,7 @@ import { CreateMenuItemContainerItemDto } from '../menu-item-container-item/crea
 import { CreateMenuItemContainerOptionsDto } from '../menu-item-container-options/create-menu-item-container-options.dto';
 
 export class CreateMenuItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Id of MenuItemCategory entity.',
     example: 1,
     nullable: true,
@@ -71,7 +71,7 @@ export class CreateMenuItemDto {
     description:
       'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
     example: [5, 6],
-    type: () => [Number],
+    type: () => Number,
     isArray: true,
   })
   @IsArray()
@@ -100,7 +100,7 @@ export class CreateMenuItemDto {
   @IsOptional()
   readonly isParbake?: boolean;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Array of CreateMenutItemContainerItemDtos',
     type: () => [CreateMenuItemContainerItemDto],
     example: [
@@ -116,7 +116,7 @@ export class CreateMenuItemDto {
   @IsArray()
   readonly definedContainerItemDtos?: CreateMenuItemContainerItemDto[];
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
     type: () => CreateMenuItemContainerOptionsDto,

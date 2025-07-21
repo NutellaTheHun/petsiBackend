@@ -227,7 +227,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         const update = nested as NestedUpdateMenuItemContainerItemDto;
         const currentItem = await this.containerService.findOne(update.id, [
           'containedItem',
-          'containedItemsize',
+          'containedItemSize',
           'parentContainerSize',
         ]);
         resolvedItemDtos.push({
@@ -236,7 +236,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             update.dto.containedMenuItemId ?? currentItem.containedItem.id,
           containedMenuItemSizeId:
             update.dto.containedMenuItemSizeId ??
-            currentItem.containedItemsize.id,
+            currentItem.containedItemSize.id,
         });
       }
 

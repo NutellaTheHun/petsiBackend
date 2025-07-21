@@ -65,14 +65,14 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
       const item = await this.containerService.findOne(id, [
         'containedItem',
-        'containedItemsize',
+        'containedItemSize',
       ]);
       if (!item) {
         throw new Error();
       }
 
       const itemId = dto.containedMenuItemId ?? item.containedItem.id;
-      const sizeId = dto.containedMenuItemSizeId ?? item.containedItemsize.id;
+      const sizeId = dto.containedMenuItemSizeId ?? item.containedItemSize.id;
 
       const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
       if (!menuItem) {

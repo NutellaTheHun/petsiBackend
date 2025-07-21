@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 import { CreateMenuItemContainerRuleDto } from '../menu-item-container-rule/create-menu-item-container-rule.dto';
 
 export class CreateMenuItemContainerOptionsDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the MenuItem entity that the options apply to. Is required if sending DTO to menu-item-container-options endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.',
     example: 1,

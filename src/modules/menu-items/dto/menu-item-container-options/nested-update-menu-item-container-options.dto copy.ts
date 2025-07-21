@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNumber,
   IsOptional,
@@ -8,7 +8,7 @@ import {
 import { UpdateMenuItemContainerOptionsDto } from './update-menu-item-container-options.dto';
 
 export class NestedUpdateMenuItemContainerOptionsDto {
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Id of a MenuItemContainerOptions entity.',
     example: 1,
   })
@@ -18,7 +18,7 @@ export class NestedUpdateMenuItemContainerOptionsDto {
   @IsOptional()
   readonly id: number;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'UpdateMenuItemContainerOptionsDto',
     example: {
       containerRuleDtos: [1, 2],
