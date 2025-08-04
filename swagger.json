@@ -8504,8 +8504,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-07-18T19:21:58.377Z",
-              "updatedAt": "2025-07-18T19:21:58.377Z",
+              "createdAt": "2025-08-04T15:50:07.034Z",
+              "updatedAt": "2025-08-04T15:50:07.034Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8799,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-07-18T19:21:58.377Z",
-                "updatedAt": "2025-07-18T19:21:58.377Z",
+                "createdAt": "2025-08-04T15:50:07.034Z",
+                "updatedAt": "2025-08-04T15:50:07.034Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10444,7 +10444,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-18T19:21:58.321Z",
+              "countDate": "2025-08-04T15:50:06.988Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10818,7 +10818,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-07-18T19:21:58.320Z",
+              "countDate": "2025-08-04T15:50:06.988Z",
               "inventoryArea": {},
               "countedItems": [
                 {}

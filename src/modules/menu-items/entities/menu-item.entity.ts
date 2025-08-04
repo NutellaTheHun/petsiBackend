@@ -33,9 +33,6 @@ export class MenuItem {
   @PrimaryGeneratedColumn()
   id: number;
 
-  /**
-   * - Example: "Pie", "Pastry", "Merchandise", "Boxed Pastry", "Catering"
-   */
   @ApiPropertyOptional({
     example: menuItemCategoryExample(new Set<string>(), true),
     description: 'The category assigned to the item',
