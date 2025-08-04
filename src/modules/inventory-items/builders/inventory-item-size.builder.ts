@@ -5,7 +5,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
-import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
@@ -92,11 +91,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       if (dto instanceof CreateInventoryItemSizeDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create, parent));
+        if (dto.createDto) {
+          results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.update) {
-          const size = await this.sizeService.findOne(dto.update.id, [
+        if (dto.updateDto && dto.id) {
+          const size = await this.sizeService.findOne(dto.id, [
             'inventoryItem',
             'measureUnit',
             'packageType',
@@ -121,7 +120,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     return results;
   }
 
-  public async updateMany(
+  /*public async updateMany(
     dtos: NestedUpdateInventoryItemSizeDto[],
   ): Promise<InventoryItemSize[]> {
     const results: InventoryItemSize[] = [];
@@ -137,7 +136,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       results.push(await this.buildUpdateDto(size, dto));
     }
     return results;
-  }
+  }*/
 
   /**
    * Called when creating/updating inventory-area-item
@@ -153,11 +152,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       return await this.buildCreateDto(dto);
     }
     if (dto instanceof NestedInventoryItemSizeDto) {
-      if (dto.create) {
-        return await this.buildCreateDto(dto.create, parent);
+      if (dto.createDto) {
+        return await this.buildCreateDto(dto.createDto, parent);
       }
-      if (dto.update) {
-        const size = await this.sizeService.findOne(dto.update.id, [
+      if (dto.updateDto && dto.id) {
+        const size = await this.sizeService.findOne(dto.id, [
           'inventoryItem',
           'measureUnit',
           'packageType',

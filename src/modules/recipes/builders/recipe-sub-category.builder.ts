@@ -3,8 +3,9 @@ import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
@@ -52,18 +53,24 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
   }
 
   public async buildMany(
-    dtos: (CreateRecipeSubCategoryDto | NestedUpdateRecipeSubCategoryDto)[],
+    parent: RecipeCategory,
+    dtos: (CreateRecipeSubCategoryDto | NestedRecipeSubCategoryDto)[],
   ): Promise<RecipeSubCategory[]> {
     const results: RecipeSubCategory[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateRecipeSubCategoryDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        const subCat = await this.subCategoryService.findOne(dto.id);
-        if (!subCat) {
-          throw new Error('recipe ingredient not found');
+        if (dto.createDto) {
+          results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        results.push(await this.buildUpdateDto(subCat, dto));
+        if (dto.updateDto && dto.id) {
+          const subCat = await this.subCategoryService.findOne(dto.id);
+          if (!subCat) {
+            throw new Error('recipe ingredient not found');
+          }
+          results.push(await this.buildUpdateDto(subCat, dto));
+        }
       }
     }
     return results;

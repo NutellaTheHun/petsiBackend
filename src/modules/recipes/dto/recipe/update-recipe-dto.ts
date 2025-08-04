@@ -111,17 +111,23 @@ export class UpdateRecipeDto {
     type: [NestedRecipeIngredientDto],
     example: [
       {
+        mode: 'update',
         id: 1,
-        ingredientInventoryItemId: 2,
-        ingredientRecipeId: null,
-        quantity: 3,
-        quantityMeasurementId: 4,
+        updateDto: {
+          ngredientInventoryItemId: 2,
+          ingredientRecipeId: null,
+          quantity: 3,
+          quantityMeasurementId: 4,
+        },
       },
       {
-        ingredientInventoryItemId: null,
-        ingredientRecipeId: 5,
-        quantity: 6,
-        quantityMeasurementId: 7,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: null,
+          ingredientRecipeId: 5,
+          quantity: 6,
+          quantityMeasurementId: 7,
+        },
       },
     ],
   })

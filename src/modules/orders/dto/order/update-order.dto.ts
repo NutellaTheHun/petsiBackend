@@ -142,13 +142,18 @@ export class UpdateOrderDto {
     nullable: true,
     example: [
       {
-        create: {
+        mode: 'create',
+        createDto: {
           orderId: 1,
           menuItemId: 2,
           menuItemSizeId: 3,
           quantity: 4,
         },
-        update: {
+      },
+      {
+        mode: 'update',
+        id: 1,
+        updateDto: {
           id: 1,
           dto: {
             menuItemId: 2,

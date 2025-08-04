@@ -33,16 +33,20 @@ export class UpdateTemplateDto {
     example: [
       {
         mode: 'create',
-        displayName: 'CLAPPLE',
-        menuItemId: 1,
-        tablePosIndex: 0,
+        createDto: {
+          displayName: 'CLAPPLE',
+          menuItemId: 1,
+          tablePosIndex: 0,
+        },
       },
       {
         mode: 'update',
         id: 3,
-        displayName: 'MIX',
-        menuItemId: 2,
-        tablePosIndex: 1,
+        updateDto: {
+          displayName: 'MIX',
+          menuItemId: 2,
+          tablePosIndex: 1,
+        },
       },
     ],
   })

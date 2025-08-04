@@ -52,7 +52,6 @@ export class CreateInventoryAreaItemDto {
       'Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.',
     type: CreateInventoryItemSizeDto,
     example: {
-      mode: 'create',
       measureUnitId: 1,
       measureAmount: 2,
       inventoryPackageId: 3,

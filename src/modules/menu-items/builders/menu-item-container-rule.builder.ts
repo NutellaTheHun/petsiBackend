@@ -77,13 +77,11 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
       if (dto instanceof CreateMenuItemContainerRuleDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create, parent));
+        if (dto.createDto) {
+          results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.update) {
-          const toUpdate = await this.componentOptionService.findOne(
-            dto.update.id,
-          );
+        if (dto.updateDto && dto.id) {
+          const toUpdate = await this.componentOptionService.findOne(dto.id);
           if (!toUpdate) {
             throw Error('component option is null');
           }

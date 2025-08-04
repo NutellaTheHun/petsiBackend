@@ -9,8 +9,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+
 import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
-import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { NestedMenuItemContainerOptionsDto } from '../menu-item-container-options/nested-menu-item-container-options.dto';
 
 export class UpdateMenuItemDto {
@@ -109,11 +109,20 @@ export class UpdateMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container',
-    type: () => [NestedUpdateMenuItemContainerItemDto],
+    type: () => [NestedMenuItemContainerItemDto],
     example: [
       {
+        mode: 'update',
         id: 1,
-        dto: {
+        updateDto: {
+          containedMenuItemId: 6,
+          containedMenuItemSizeId: 7,
+          quantity: 8,
+        },
+      },
+      {
+        mode: 'create',
+        createDto: {
           containedMenuItemId: 6,
           containedMenuItemSizeId: 7,
           quantity: 8,
@@ -131,30 +140,19 @@ export class UpdateMenuItemDto {
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options',
     type: () => NestedMenuItemContainerOptionsDto,
     example: {
-      create: {
-        parentContainerMenuItemId: 1,
+      mode: 'update',
+      id: 1,
+      updateDto: {
         containerRuleDtos: [
           {
-            validMenuItemId: 2,
-            validSizeIds: [3, 4],
+            validMenuItemId: 5,
+            validSizeIds: [6, 7],
           },
         ],
-        validQuantity: 5,
-      },
-      update: {
-        id: 1,
-        dto: {
-          containerRuleDtos: [
-            {
-              validMenuItemId: 5,
-              validSizeIds: [6, 7],
-            },
-          ],
-          id: 8,
-          validMenuItemId: 9,
-          validSizeIds: [10, 11],
-          validQuantity: 12,
-        },
+        id: 8,
+        validMenuItemId: 9,
+        validSizeIds: [10, 11],
+        validQuantity: 12,
       },
     },
   })

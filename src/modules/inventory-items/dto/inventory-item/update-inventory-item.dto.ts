@@ -47,20 +47,23 @@ export class UpdateInventoryItemDto {
     type: [NestedInventoryItemSizeDto],
     example: [
       {
-        createDto: {
-          measureUnitId: 1,
-          measureAmount: 10,
-          inventoryPackageId: 1,
-          cost: 100,
-        },
+        mode: 'update',
+        id: 1,
         updateDto: {
-          id: 1,
-          dto: {
-            measureUnitId: 6,
-            measureAmount: 7,
-            inventoryPackageId: 8,
-            cost: 9.99,
-          },
+          measureUnitId: 1,
+          measureAmount: 2,
+          inventoryPackageId: 3,
+          cost: 4,
+        },
+      },
+      {
+        mode: 'create',
+        createDto: {
+          inventoryItemId: 1,
+          measureUnitId: 2,
+          measureAmount: 3,
+          inventoryPackageId: 4,
+          cost: 5,
         },
       },
     ],

@@ -1,10 +1,30 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { CreateTemplateMenuItemDto } from './create-template-menu-item.dto';
-import { NestedUpdateTemplateMenuItemDto } from './nested-update-template-menu-item.dto';
+import { UpdateTemplateMenuItemDto } from './update-template-menu-item.dto';
 
 export class NestedTemplateMenuItemDto {
+  @ApiProperty({
+    description: 'Determines if this dto is to update or create a resource',
+    example: 'create',
+  })
+  @IsNotEmpty()
+  readonly mode: 'create' | 'update';
+
+  @ApiPropertyOptional({
+    description: 'Id for TemplateMenuItem entity when updating',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly id?: number;
+
   @ApiPropertyOptional({
     description: 'Create dto of a TemplateMenuItem entity.',
     type: CreateTemplateMenuItemDto,
@@ -17,21 +37,18 @@ export class NestedTemplateMenuItemDto {
   })
   @ValidateNested()
   @Type(() => CreateTemplateMenuItemDto)
-  readonly create?: CreateTemplateMenuItemDto;
+  readonly createDto?: CreateTemplateMenuItemDto;
 
   @ApiPropertyOptional({
     description: 'Update dto of a TemplateMenuItem entity.',
-    type: NestedUpdateTemplateMenuItemDto,
+    type: UpdateTemplateMenuItemDto,
     example: {
-      id: 1,
-      dto: {
-        displayName: 'CLAPPLE',
-        menuItemId: 1,
-        tablePosIndex: 0,
-      },
+      displayName: 'CLAPPLE',
+      menuItemId: 1,
+      tablePosIndex: 0,
     },
   })
   @ValidateNested()
-  @Type(() => NestedUpdateTemplateMenuItemDto)
-  readonly update?: NestedUpdateTemplateMenuItemDto;
+  @Type(() => UpdateTemplateMenuItemDto)
+  readonly updateDto?: UpdateTemplateMenuItemDto;
 }

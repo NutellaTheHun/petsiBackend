@@ -93,18 +93,19 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
       if (dto instanceof CreateInventoryAreaItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.create) {
-          results.push(await this.buildCreateDto(dto.create, parent));
+        if (dto.createDto) {
+          results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.update) {
-          const countedItem = await this.itemCountService.findOne(
-            dto.update.id,
-            ['parentInventoryCount', 'countedItem', 'countedItemSize'],
-          );
+        if (dto.updateDto && dto.id) {
+          const countedItem = await this.itemCountService.findOne(dto.id, [
+            'parentInventoryCount',
+            'countedItem',
+            'countedItemSize',
+          ]);
           if (!countedItem) {
             throw new Error('counted item is null');
           }
-          results.push(await this.buildUpdateDto(countedItem, dto.update));
+          results.push(await this.buildUpdateDto(countedItem, dto.updateDto));
         }
       }
     }

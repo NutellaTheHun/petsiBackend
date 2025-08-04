@@ -4,35 +4,6 @@ import { CreateInventoryAreaItemDto } from './create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from './update-inventory-area-item.dto';
 
 export class NestedInventoryAreaItemDto {
-  /*@ApiPropertyOptional({
-    description: 'CreateInventoryAreaItemDto for InventoryAreaItem entity.',
-    type: CreateInventoryAreaItemDto,
-    example: {
-      measureUnitId: 4,
-      measureAmount: 5,
-      inventoryPackageId: 6,
-      cost: 7.99,
-    },
-  })
-  @ValidateNested()
-  readonly create?: CreateInventoryAreaItemDto;
-
-  @ApiPropertyOptional({
-    description: 'UpdateInventoryAreaItemDto for InventoryAreaItem entity.',
-    type: UpdateInventoryAreaItemDto,
-    example: {
-      id: 1,
-      dto: {
-        measureUnitId: 4,
-        measureAmount: 5,
-        inventoryPackageId: 6,
-        cost: 7.99,
-      },
-    },
-  })
-  @ValidateNested()
-  readonly update?: NestedUpdateInventoryAreaItemDto;*/
-
   @ApiProperty({
     description: 'Determines if this dto is to update or create a resource',
     example: 'create',
@@ -40,7 +11,7 @@ export class NestedInventoryAreaItemDto {
   readonly mode: 'create' | 'update';
 
   @ApiProperty({
-    description: 'Id for InventoryAreaItem entity.',
+    description: 'Id for InventoryAreaItem entity when updating',
     example: 1,
   })
   @IsNumber()
@@ -50,10 +21,17 @@ export class NestedInventoryAreaItemDto {
     description: 'CreateInventoryAreaItemDto for InventoryAreaItem entity.',
     type: CreateInventoryAreaItemDto,
     example: {
-      measureUnitId: 4,
-      measureAmount: 5,
-      inventoryPackageId: 6,
-      cost: 7.99,
+      parentInventoryCountId: 1,
+      countedInventoryItemId: 2,
+      countedAmount: 3,
+      countedItemSizeId: 4,
+      countedItemSizeDto: {
+        inventoryItemId: 1,
+        measureUnitId: 2,
+        measureAmount: 3,
+        inventoryPackageId: 4,
+        cost: 5,
+      },
     },
   })
   @ValidateNested()
@@ -63,10 +41,19 @@ export class NestedInventoryAreaItemDto {
     description: 'UpdateInventoryAreaItemDto for InventoryAreaItem entity.',
     type: UpdateInventoryAreaItemDto,
     example: {
-      measureUnitId: 4,
-      measureAmount: 5,
-      inventoryPackageId: 6,
-      cost: 7.99,
+      countedInventoryItemId: 1,
+      countedAmount: 2,
+      countedItemSizeId: 3,
+      countedItemSizeDto: {
+        mode: 'create',
+        createDto: {
+          inventoryItemId: 1,
+          measureUnitId: 2,
+          measureAmount: 3,
+          inventoryPackageId: 4,
+          cost: 5.99,
+        },
+      },
     },
   })
   @ValidateNested()

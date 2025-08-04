@@ -40,10 +40,12 @@ export class UpdateInventoryAreaItemDto {
     example: {
       mode: 'update',
       id: 5,
-      measureUnitId: 1,
-      measureAmount: 2,
-      inventoryPackageId: 3,
-      cost: 4.99,
+      updateDto: {
+        measureUnitId: 1,
+        measureAmount: 2,
+        inventoryPackageId: 3,
+        cost: 4,
+      },
     },
   })
   @IsOptional()

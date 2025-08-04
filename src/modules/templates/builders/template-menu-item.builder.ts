@@ -80,11 +80,11 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
       if (dto instanceof CreateTemplateMenuItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.create) {
+        if (dto.createDto) {
           results.push(await this.buildCreateDto(dto, parent));
         }
-        if (dto.update) {
-          const item = await this.templateItemService.findOne(dto.update.id);
+        if (dto.updateDto && dto.id) {
+          const item = await this.templateItemService.findOne(dto.id);
           if (!item) {
             throw new Error('recipe ingredient not found');
           }

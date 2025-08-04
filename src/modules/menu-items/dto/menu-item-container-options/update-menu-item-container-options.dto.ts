@@ -9,13 +9,16 @@ export class UpdateMenuItemContainerOptionsDto {
     type: [NestedMenuItemContainerRuleDto],
     example: [
       {
-        create: {
+        mode: 'create',
+        createDto: {
           validMenuItemId: 2,
           validSizeIds: [3, 4],
         },
       },
       {
-        update: {
+        mode: 'update',
+        id: 1,
+        updateDto: {
           id: 5,
           dto: {
             validMenuItemId: 6,

@@ -1,10 +1,30 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsOptional, ValidateNested } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
 import { CreateMenuItemContainerRuleDto } from './create-menu-item-container-rule.dto';
-import { NestedUpdateMenuItemContainerRuleDto } from './nested-update-menu-item-container-rule.dto';
+import { UpdateMenuItemContainerRuleDto } from './update-menu-item-container-rule.dto';
 
 export class NestedMenuItemContainerRuleDto {
+  @ApiProperty({
+    description: 'Determines if this dto is to update or create a resource',
+    example: 'create',
+  })
+  @IsNotEmpty()
+  readonly mode: 'create' | 'update';
+
+  @ApiPropertyOptional({
+    description: 'Id for MenuItemContainerRule entity when updating',
+    example: 1,
+  })
+  @IsOptional()
+  @IsNumber()
+  readonly id?: number;
+
   @ApiPropertyOptional({
     description: 'Create dto of a MenuItemContainerRule entity.',
     type: CreateMenuItemContainerRuleDto,
@@ -16,11 +36,11 @@ export class NestedMenuItemContainerRuleDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CreateMenuItemContainerRuleDto)
-  readonly create?: CreateMenuItemContainerRuleDto;
+  readonly createDto?: CreateMenuItemContainerRuleDto;
 
   @ApiPropertyOptional({
     description: 'Update dto of a MenuItemContainerRule entity.',
-    type: NestedUpdateMenuItemContainerRuleDto,
+    type: UpdateMenuItemContainerRuleDto,
     example: {
       id: 1,
       dto: {
@@ -31,6 +51,6 @@ export class NestedMenuItemContainerRuleDto {
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => NestedUpdateMenuItemContainerRuleDto)
-  readonly update?: NestedUpdateMenuItemContainerRuleDto;
+  //@Type(() => UpdateMenuItemContainerRuleDto)
+  readonly updateDto?: UpdateMenuItemContainerRuleDto;
 }
