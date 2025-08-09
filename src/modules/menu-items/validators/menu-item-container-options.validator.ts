@@ -76,15 +76,17 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     if (dto.containerRuleDtos && dto.containerRuleDtos.length > 0) {
       const resolvedDtos: { validMenuItemId: number }[] = [];
       for (const nested of dto.containerRuleDtos) {
-        if (nested.create) {
-          resolvedDtos.push({ validMenuItemId: nested.create.validMenuItemId });
-        } else if (nested.update) {
-          const currentRule = await this.ruleService.findOne(nested.update.id, [
+        if (nested.createDto) {
+          resolvedDtos.push({
+            validMenuItemId: nested.createDto.validMenuItemId,
+          });
+        } else if (nested.updateDto && nested.id) {
+          const currentRule = await this.ruleService.findOne(nested.id, [
             'validItem',
           ]);
           resolvedDtos.push({
             validMenuItemId:
-              nested.update.dto?.validMenuItemId ?? currentRule.validItem.id,
+              nested.updateDto?.validMenuItemId ?? currentRule.validItem.id,
           });
         }
       }

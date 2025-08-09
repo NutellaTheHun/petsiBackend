@@ -22,6 +22,8 @@ export class UpdateUnitOfMeasureDto {
     description:
       'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
     example: 1,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()

@@ -99,22 +99,22 @@ export class TemplateValidator extends ValidatorBase<Template> {
       const resolvedTablePosDtos: number[] = [];
       const resolvedIds: number[] = [];
       for (const nested of dto.templateItemDtos) {
-        if (nested.create) {
-          resolvedItemDtos.push(nested.create.menuItemId);
-          resolvedTablePosDtos.push(nested.create.tablePosIndex);
+        if (nested.createDto) {
+          resolvedItemDtos.push(nested.createDto.menuItemId);
+          resolvedTablePosDtos.push(nested.createDto.tablePosIndex);
         }
-        if (nested.update) {
-          const currentItem = await this.itemService.findOne(nested.update.id, [
+        if (nested.updateDto && nested.id) {
+          const currentItem = await this.itemService.findOne(nested.id, [
             'menuItem',
           ]);
 
           resolvedItemDtos.push(
-            nested.update.dto.menuItemId ?? currentItem.menuItem.id,
+            nested.updateDto.menuItemId ?? currentItem.menuItem.id,
           );
           resolvedTablePosDtos.push(
-            nested.update.dto.tablePosIndex ?? currentItem.tablePosIndex,
+            nested.updateDto.tablePosIndex ?? currentItem.tablePosIndex,
           );
-          resolvedIds.push(nested.update.id);
+          resolvedIds.push(nested.id);
         }
       }
 

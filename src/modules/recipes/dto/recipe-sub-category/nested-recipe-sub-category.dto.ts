@@ -7,6 +7,7 @@ export class NestedRecipeSubCategoryDto {
   @ApiProperty({
     description: 'Determines if this dto is to update or create a resource',
     example: 'create',
+    enum: ['create', 'update'],
   })
   @IsNotEmpty()
   readonly mode: 'create' | 'update';

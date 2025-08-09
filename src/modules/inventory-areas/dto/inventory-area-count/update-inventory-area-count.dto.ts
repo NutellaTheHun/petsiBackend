@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { NestedInventoryAreaItemDto } from '../inventory-area-item/nested-inventory-area-item.dto';
-import { NestedUpdateInventoryAreaItemDto } from '../inventory-area-item/nested-update-inventory-area-item.dto';
 
 export class UpdateInventoryAreaCountDto {
   @ApiPropertyOptional({
@@ -14,7 +13,7 @@ export class UpdateInventoryAreaCountDto {
 
   @ApiProperty({
     description: 'Counted InventoryItems for the InventoryAreaCount.',
-    type: [NestedUpdateInventoryAreaItemDto],
+    type: [NestedInventoryAreaItemDto],
     example: [
       {
         id: 1,
@@ -26,6 +25,7 @@ export class UpdateInventoryAreaCountDto {
         },
       },
     ],
+    required: false,
   })
   @IsOptional()
   @IsArray()

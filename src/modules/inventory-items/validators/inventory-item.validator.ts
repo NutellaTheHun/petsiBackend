@@ -91,10 +91,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
       }[] = [];
       for (const nested of dto.itemSizeDtos) {
         if (
-          nested?.update?.dto?.inventoryPackageId ||
-          nested?.update?.dto?.measureUnitId
+          nested.id &&
+          (nested?.updateDto?.inventoryPackageId ||
+            nested?.updateDto?.measureUnitId)
         ) {
-          const currentSize = await this.sizeService.findOne(nested.update.id, [
+          const currentSize = await this.sizeService.findOne(nested.id, [
             'measureUnit',
             'packageType',
           ]);
@@ -103,10 +104,9 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
           }
 
           const pkgId =
-            nested?.update?.dto?.inventoryPackageId ??
-            currentSize.packageType.id;
+            nested?.updateDto?.inventoryPackageId ?? currentSize.packageType.id;
           const measureId =
-            nested?.update?.dto?.measureUnitId ?? currentSize.measureUnit.id;
+            nested?.updateDto?.measureUnitId ?? currentSize.measureUnit.id;
 
           resolvedSizeDtos.push({
             inventoryPackageId: pkgId,

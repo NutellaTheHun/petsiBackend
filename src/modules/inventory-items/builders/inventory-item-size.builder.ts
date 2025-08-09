@@ -103,7 +103,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
           if (!size) {
             throw new Error('item size not found');
           }
-          results.push(await this.buildUpdateDto(size, dto));
+          results.push(await this.buildUpdateDto(size, dto.updateDto));
         }
       }
     }

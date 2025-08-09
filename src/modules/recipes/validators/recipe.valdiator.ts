@@ -189,20 +189,27 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
       const resolvedDtos: string[] = [];
       const resolvedIds: number[] = [];
       for (const nested of dto.ingredientDtos) {
-        if (nested.create?.ingredientInventoryItemId) {
-          resolvedDtos.push(`I:${nested.create.ingredientInventoryItemId}`);
-        }
-        if (nested.update?.dto.ingredientInventoryItemId) {
-          resolvedDtos.push(`I:${nested.update.dto.ingredientInventoryItemId}`);
-        }
-        if (nested.create?.ingredientRecipeId) {
-          resolvedDtos.push(`R:${nested.create.ingredientRecipeId}`);
-        }
-        if (nested.update?.dto.ingredientRecipeId) {
-          resolvedDtos.push(`R:${nested.update.dto.ingredientRecipeId}`);
-        }
-        if (nested.update) {
-          resolvedIds.push(nested.update.id);
+        if (nested.createDto) {
+          if (nested.createDto.ingredientInventoryItemId) {
+            resolvedDtos.push(
+              `I:${nested.createDto.ingredientInventoryItemId}`,
+            );
+          }
+          if (nested.createDto.ingredientRecipeId) {
+            resolvedDtos.push(`R:${nested.createDto.ingredientRecipeId}`);
+          }
+        } else if (nested.updateDto && nested.id) {
+          if (nested.updateDto.ingredientInventoryItemId) {
+            resolvedDtos.push(
+              `I:${nested.updateDto.ingredientInventoryItemId}`,
+            );
+          }
+          if (nested.updateDto.ingredientRecipeId) {
+            resolvedDtos.push(`R:${nested.updateDto.ingredientRecipeId}`);
+          }
+          resolvedIds.push(nested.id);
+        } else {
+          throw new Error();
         }
       }
 

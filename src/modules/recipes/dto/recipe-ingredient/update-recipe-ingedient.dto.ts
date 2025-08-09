@@ -23,6 +23,8 @@ export class UpdateRecipeIngredientDto {
     description:
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',
     example: 3,
+    type: 'number',
+    required: false,
   })
   @IsOptional()
   @IsNumber()
@@ -33,6 +35,8 @@ export class UpdateRecipeIngredientDto {
     description:
       'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.',
     example: 4,
+    type: 'number',
+    required: false,
   })
   @IsOptional()
   @IsNumber()

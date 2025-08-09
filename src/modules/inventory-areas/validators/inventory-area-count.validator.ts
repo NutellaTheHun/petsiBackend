@@ -32,8 +32,8 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
       const ids: number[] = [];
       for (const d of dto.itemCountDtos) {
-        if (d.update) {
-          ids.push(d.update.id);
+        if (d.updateDto && d.id) {
+          ids.push(d.id);
         }
       }
       const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);

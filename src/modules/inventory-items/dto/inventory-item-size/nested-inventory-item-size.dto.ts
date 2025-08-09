@@ -12,6 +12,7 @@ export class NestedInventoryItemSizeDto {
   @ApiProperty({
     description: 'Determines if this dto is to update or create a resource',
     example: 'update',
+    enum: ['create', 'update'],
   })
   @IsNotEmpty()
   readonly mode: 'create' | 'update';

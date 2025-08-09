@@ -5,7 +5,6 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem } from '../entities/menu-item.entity';
@@ -224,20 +223,30 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       }
 
       for (const nested of dto.definedContainerItemDtos) {
-        const update = nested as NestedUpdateMenuItemContainerItemDto;
-        const currentItem = await this.containerService.findOne(update.id, [
-          'containedItem',
-          'containedItemSize',
-          'parentContainerSize',
-        ]);
-        resolvedItemDtos.push({
-          parentContainerSizeId: currentItem.parentContainerSize.id,
-          containedMenuItemId:
-            update.dto.containedMenuItemId ?? currentItem.containedItem.id,
-          containedMenuItemSizeId:
-            update.dto.containedMenuItemSizeId ??
-            currentItem.containedItemSize.id,
-        });
+        if (nested.createDto) {
+          resolvedItemDtos.push({
+            parentContainerSizeId: nested.createDto.parentContainerSizeId,
+            containedMenuItemId: nested.createDto.containedMenuItemId,
+            containedMenuItemSizeId: nested.createDto.containedMenuItemSizeId,
+          });
+        } else if (nested.updateDto && nested.id) {
+          const currentItem = await this.containerService.findOne(nested.id, [
+            'containedItem',
+            'containedItemSize',
+            'parentContainerSize',
+          ]);
+          resolvedItemDtos.push({
+            parentContainerSizeId: currentItem.parentContainerSize.id,
+            containedMenuItemId:
+              nested.updateDto.containedMenuItemId ??
+              currentItem.containedItem.id,
+            containedMenuItemSizeId:
+              nested.updateDto.containedMenuItemSizeId ??
+              currentItem.containedItemSize.id,
+          });
+        } else {
+          throw new Error();
+        }
       }
 
       // no parentSize / item / size duplicate

@@ -5,7 +5,6 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 import { NestedInventoryItemSizeDto } from '../inventory-item-size/nested-inventory-item-size.dto';
@@ -68,13 +67,13 @@ export class UpdateInventoryItemDto {
       },
     ],
     nullable: true,
-    isArray: true,
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   readonly itemSizeDtos?: NestedInventoryItemSizeDto[];
 
+  /*
   @ApiPropertyOptional({
     description: 'Price paid for the InventoryItem entity.',
     example: 5.99,
@@ -84,5 +83,5 @@ export class UpdateInventoryItemDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
   @Min(0)
-  cost?: number;
+  cost?: number;*/
 }

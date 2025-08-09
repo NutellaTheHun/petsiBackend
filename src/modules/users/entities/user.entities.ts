@@ -34,6 +34,11 @@ export class User {
   @Column({ nullable: true, type: 'varchar' })
   email?: string | null;
 
+  @ApiPropertyOptional({
+    example: '1234abc',
+    description: 'Only used when creating or updating a user',
+    type: 'string',
+  })
   @Column({ nullable: false })
   password: string;
 

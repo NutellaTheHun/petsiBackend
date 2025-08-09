@@ -7749,6 +7749,11 @@
             "format": "email",
             "nullable": true
           },
+          "password": {
+            "type": "string",
+            "example": "1234abc",
+            "description": "Only used when creating or updating a user"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string",
@@ -8504,8 +8509,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-08-04T15:50:07.034Z",
-              "updatedAt": "2025-08-04T15:50:07.034Z",
+              "createdAt": "2025-08-09T19:43:30.141Z",
+              "updatedAt": "2025-08-09T19:43:30.141Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8799,8 +8804,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-08-04T15:50:07.034Z",
-                "updatedAt": "2025-08-04T15:50:07.034Z",
+                "createdAt": "2025-08-09T19:43:30.142Z",
+                "updatedAt": "2025-08-09T19:43:30.142Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9045,16 +9050,45 @@
           }
         }
       },
-      "NestedUpdateOrderContainerItemDto": {
+      "NestedOrderContainerItemDto": {
         "type": "object",
         "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
           "id": {
             "type": "number",
-            "description": "Id of a OrderContainerItem entity.",
+            "description": "Id for OrderContainerItem entity when updating",
             "example": 1
           },
-          "dto": {
+          "createDto": {
+            "description": "Create dto of a OrderContainerItem entity.",
+            "example": {
+              "parentContainerMenuItemId": 1,
+              "containedMenuItemId": 2,
+              "containedMenuItemSizeId": 3,
+              "quantity": 4
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateOrderContainerItemDto"
+              }
+            ]
+          },
+          "updateDto": {
             "description": "Update dto of a OrderContainerItem entity.",
+            "example": {
+              "parentContainerMenuItemId": 1,
+              "containedMenuItemId": 2,
+              "containedMenuItemSizeId": 3,
+              "quantity": 4
+            },
             "allOf": [
               {
                 "$ref": "#/components/schemas/UpdateOrderContainerItemDto"
@@ -9063,30 +9097,8 @@
           }
         },
         "required": [
-          "id",
-          "dto"
+          "mode"
         ]
-      },
-      "NestedOrderContainerItemDto": {
-        "type": "object",
-        "properties": {
-          "create": {
-            "description": "Create dto of a OrderContainerItem entity.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CreateOrderContainerItemDto"
-              }
-            ]
-          },
-          "update": {
-            "description": "Update dto of a OrderContainerItem entity.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NestedUpdateOrderContainerItemDto"
-              }
-            ]
-          }
-        }
       },
       "UpdateOrderMenuItemDto": {
         "type": "object",
@@ -9134,32 +9146,24 @@
           }
         }
       },
-      "NestedUpdateOrderMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "description": "Id of a OrderMenuItem entity.",
-            "example": 1
-          },
-          "dto": {
-            "description": "Update dto of a OrderMenuItem entity.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UpdateOrderMenuItemDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "dto"
-        ]
-      },
       "NestedOrderMenuItemDto": {
         "type": "object",
         "properties": {
-          "create": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "Id for OrderMenuItem entity when updating",
+            "example": 1
+          },
+          "createDto": {
             "description": "Create dto of a OrderMenuItem entity.",
             "example": {
               "orderId": 1,
@@ -9173,23 +9177,44 @@
               }
             ]
           },
-          "update": {
+          "updateDto": {
             "description": "Update dto of a OrderMenuItem entity.",
             "example": {
-              "id": 1,
-              "dto": {
-                "menuItemId": 2,
-                "menuItemSizeId": 3,
-                "quantity": 4
-              }
+              "menuItemId": 2,
+              "menuItemSizeId": 3,
+              "quantity": 4,
+              "orderedItemContainerDtos": [
+                {
+                  "mode": "create",
+                  "createDto": {
+                    "parentContainerMenuItemId": 2,
+                    "containedMenuItemId": 3,
+                    "containedMenuItemSizeId": 3,
+                    "quantity": 4
+                  }
+                },
+                {
+                  "mode": "update",
+                  "id": 4,
+                  "updateDto": {
+                    "parentContainerMenuItemId": 2,
+                    "containedMenuItemId": 3,
+                    "containedMenuItemSizeId": 3,
+                    "quantity": 4
+                  }
+                }
+              ]
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/NestedUpdateOrderMenuItemDto"
+                "$ref": "#/components/schemas/UpdateOrderMenuItemDto"
               }
             ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "UpdateOrderDto": {
         "type": "object",
@@ -9272,13 +9297,18 @@
             "nullable": true,
             "example": [
               {
-                "create": {
+                "mode": "create",
+                "createDto": {
                   "orderId": 1,
                   "menuItemId": 2,
                   "menuItemSizeId": 3,
                   "quantity": 4
-                },
-                "update": {
+                }
+              },
+              {
+                "mode": "update",
+                "id": 1,
+                "updateDto": {
                   "id": 1,
                   "dto": {
                     "menuItemId": 2,
@@ -9601,15 +9631,38 @@
           }
         }
       },
-      "NestedUpdateMenuItemContainerItemDto": {
+      "NestedMenuItemContainerItemDto": {
         "type": "object",
         "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
           "id": {
             "type": "number",
-            "description": "Id of a MenuItemContainerItem entity.",
+            "description": "Id for MenuItemContainerItem entity when updating",
             "example": 1
           },
-          "dto": {
+          "createDto": {
+            "description": "CreateMenuItemContainerItemDto",
+            "example": {
+              "parentContainerSizeId": 2,
+              "containedMenuItemId": 3,
+              "containedMenuItemSizeId": 4,
+              "quantity": 5
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateMenuItemContainerItemDto"
+              }
+            ]
+          },
+          "updateDto": {
             "description": "UpdateMenuItemContainerItemDto",
             "example": {
               "containedMenuItemId": 2,
@@ -9622,7 +9675,10 @@
               }
             ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "UpdateMenuItemContainerRuleDto": {
         "type": "object",
@@ -9645,28 +9701,24 @@
           }
         }
       },
-      "NestedUpdateMenuItemContainerRuleDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "description": "Id of a MenuItemContainerRule entity.",
-            "example": 1
-          },
-          "dto": {
-            "description": "Update dto of a MenuItemContainerRule entity.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UpdateMenuItemContainerRuleDto"
-              }
-            ]
-          }
-        }
-      },
       "NestedMenuItemContainerRuleDto": {
         "type": "object",
         "properties": {
-          "create": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "Id for MenuItemContainerRule entity when updating",
+            "example": 1
+          },
+          "createDto": {
             "description": "Create dto of a MenuItemContainerRule entity.",
             "example": {
               "validMenuItemId": 1,
@@ -9681,7 +9733,7 @@
               }
             ]
           },
-          "update": {
+          "updateDto": {
             "description": "Update dto of a MenuItemContainerRule entity.",
             "example": {
               "id": 1,
@@ -9695,11 +9747,14 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/NestedUpdateMenuItemContainerRuleDto"
+                "$ref": "#/components/schemas/UpdateMenuItemContainerRuleDto"
               }
             ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "UpdateMenuItemContainerOptionsDto": {
         "type": "object",
@@ -9708,7 +9763,8 @@
             "description": "The list of MenuItems and their sizes that are allowed in the container",
             "example": [
               {
-                "create": {
+                "mode": "create",
+                "createDto": {
                   "validMenuItemId": 2,
                   "validSizeIds": [
                     3,
@@ -9717,7 +9773,9 @@
                 }
               },
               {
-                "update": {
+                "mode": "update",
+                "id": 1,
+                "updateDto": {
                   "id": 5,
                   "dto": {
                     "validMenuItemId": 6,
@@ -9741,42 +9799,26 @@
           }
         }
       },
-      "NestedUpdateMenuItemContainerOptionsDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "description": "Id of a MenuItemContainerOptions entity.",
-            "example": 1
-          },
-          "dto": {
-            "description": "UpdateMenuItemContainerOptionsDto",
-            "example": {
-              "containerRuleDtos": [
-                1,
-                2
-              ],
-              "validQuantity": 3
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UpdateMenuItemContainerOptionsDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "dto"
-        ]
-      },
       "NestedMenuItemContainerOptionsDto": {
         "type": "object",
         "properties": {
-          "create": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "Id for MenuItemContainerOptions entity when updating",
+            "example": 1
+          },
+          "createDto": {
             "description": "CreateMenuItemContainerOptionsDto",
             "example": {
-              "parentContainerMenuItemId": 1,
               "containerRuleDtos": [
                 {
                   "validMenuItemId": 2,
@@ -9794,7 +9836,7 @@
               }
             ]
           },
-          "update": {
+          "updateDto": {
             "description": "UpdateMenuItemContainerOptionsDto",
             "example": {
               "id": 1,
@@ -9808,11 +9850,14 @@
             },
             "allOf": [
               {
-                "$ref": "#/components/schemas/NestedUpdateMenuItemContainerOptionsDto"
+                "$ref": "#/components/schemas/UpdateMenuItemContainerOptionsDto"
               }
             ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "UpdateMenuItemDto": {
         "type": "object",
@@ -9874,8 +9919,17 @@
             "description": "Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container",
             "example": [
               {
+                "mode": "update",
                 "id": 1,
-                "dto": {
+                "updateDto": {
+                  "containedMenuItemId": 6,
+                  "containedMenuItemSizeId": 7,
+                  "quantity": 8
+                }
+              },
+              {
+                "mode": "create",
+                "createDto": {
                   "containedMenuItemId": 6,
                   "containedMenuItemSizeId": 7,
                   "quantity": 8
@@ -9884,45 +9938,31 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NestedUpdateMenuItemContainerItemDto"
+              "$ref": "#/components/schemas/NestedMenuItemContainerItemDto"
             }
           },
           "containerOptionDto": {
             "description": "options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options",
             "example": {
-              "create": {
-                "parentContainerMenuItemId": 1,
+              "mode": "update",
+              "id": 1,
+              "updateDto": {
                 "containerRuleDtos": [
                   {
-                    "validMenuItemId": 2,
+                    "validMenuItemId": 5,
                     "validSizeIds": [
-                      3,
-                      4
+                      6,
+                      7
                     ]
                   }
                 ],
-                "validQuantity": 5
-              },
-              "update": {
-                "id": 1,
-                "dto": {
-                  "containerRuleDtos": [
-                    {
-                      "validMenuItemId": 5,
-                      "validSizeIds": [
-                        6,
-                        7
-                      ]
-                    }
-                  ],
-                  "id": 8,
-                  "validMenuItemId": 9,
-                  "validSizeIds": [
-                    10,
-                    11
-                  ],
-                  "validQuantity": 12
-                }
+                "id": 8,
+                "validMenuItemId": 9,
+                "validSizeIds": [
+                  10,
+                  11
+                ],
+                "validQuantity": 12
               }
             },
             "allOf": [
@@ -10150,15 +10190,38 @@
           }
         }
       },
-      "NestedUpdateTemplateMenuItemDto": {
+      "NestedTemplateMenuItemDto": {
         "type": "object",
         "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
           "id": {
             "type": "number",
-            "description": "Id of the TemplateMenuItem entity.",
+            "description": "Id for TemplateMenuItem entity when updating",
             "example": 1
           },
-          "dto": {
+          "createDto": {
+            "description": "Create dto of a TemplateMenuItem entity.",
+            "example": {
+              "displayName": "CLAPPLE",
+              "menuItemId": 1,
+              "tablePosIndex": 0,
+              "templateId": 1
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
+              }
+            ]
+          },
+          "updateDto": {
             "description": "Update dto of a TemplateMenuItem entity.",
             "example": {
               "displayName": "CLAPPLE",
@@ -10173,44 +10236,8 @@
           }
         },
         "required": [
-          "id",
-          "dto"
+          "mode"
         ]
-      },
-      "NestedTemplateMenuItemDto": {
-        "type": "object",
-        "properties": {
-          "create": {
-            "description": "Create dto of a TemplateMenuItem entity.",
-            "example": {
-              "displayName": "CLAPPLE",
-              "menuItemId": 1,
-              "tablePosIndex": 0,
-              "templateId": 1
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
-              }
-            ]
-          },
-          "update": {
-            "description": "Update dto of a TemplateMenuItem entity.",
-            "example": {
-              "id": 1,
-              "dto": {
-                "displayName": "CLAPPLE",
-                "menuItemId": 1,
-                "tablePosIndex": 0
-              }
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NestedUpdateTemplateMenuItemDto"
-              }
-            ]
-          }
-        }
       },
       "UpdateTemplateDto": {
         "type": "object",
@@ -10230,16 +10257,20 @@
             "example": [
               {
                 "mode": "create",
-                "displayName": "CLAPPLE",
-                "menuItemId": 1,
-                "tablePosIndex": 0
+                "createDto": {
+                  "displayName": "CLAPPLE",
+                  "menuItemId": 1,
+                  "tablePosIndex": 0
+                }
               },
               {
                 "mode": "update",
                 "id": 3,
-                "displayName": "MIX",
-                "menuItemId": 2,
-                "tablePosIndex": 1
+                "updateDto": {
+                  "displayName": "MIX",
+                  "menuItemId": 2,
+                  "tablePosIndex": 1
+                }
               }
             ],
             "type": "array",
@@ -10444,7 +10475,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-04T15:50:06.988Z",
+              "countDate": "2025-08-09T19:43:30.095Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10818,7 +10849,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-04T15:50:06.988Z",
+              "countDate": "2025-08-09T19:43:30.095Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10949,11 +10980,10 @@
               }
             ],
             "description": "Inventory items that were recorded during the count.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/InventoryAreaItem"
-              }
-            ]
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryAreaItem"
+            }
           }
         },
         "required": [
@@ -10990,13 +11020,10 @@
         "type": "object",
         "properties": {
           "inventoryItemId": {
+            "type": "number",
             "description": "Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.",
             "example": 1,
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/InventoryItem"
-            }
+            "nullable": true
           },
           "measureUnitId": {
             "type": "number",
@@ -11053,7 +11080,6 @@
           "countedItemSizeDto": {
             "description": "Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.",
             "example": {
-              "mode": "create",
               "measureUnitId": 1,
               "measureAmount": 2,
               "inventoryPackageId": 3,
@@ -11134,15 +11160,38 @@
           }
         }
       },
-      "NestedUpdateInventoryItemSizeDto": {
+      "NestedInventoryItemSizeDto": {
         "type": "object",
         "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "update",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
           "id": {
             "type": "number",
-            "description": "Id of InventoryItemSize entity.",
+            "description": "Id for InventoryItemSize entity when updating",
             "example": 1
           },
-          "dto": {
+          "createDto": {
+            "description": "CreateInventoryItemSizeDto for InventoryItemSize entity.",
+            "example": {
+              "measureUnitId": 1,
+              "measureAmount": 10,
+              "inventoryPackageId": 1,
+              "cost": 100
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
+              }
+            ]
+          },
+          "updateDto": {
             "description": "UpdateInventoryItemSizeDto for InventoryItemSize entity.",
             "example": {
               "measureUnitId": 1,
@@ -11158,45 +11207,7 @@
           }
         },
         "required": [
-          "id",
-          "dto"
-        ]
-      },
-      "NestedInventoryItemSizeDto": {
-        "type": "object",
-        "properties": {
-          "create": {
-            "description": "CreateInventoryItemSizeDto for InventoryItemSize entity.",
-            "example": {
-              "measureUnitId": 1,
-              "measureAmount": 10,
-              "inventoryPackageId": 1,
-              "cost": 100
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
-              }
-            ]
-          },
-          "update": {
-            "description": "UpdateInventoryItemSizeDto for InventoryItemSize entity.",
-            "example": {
-              "measureUnitId": 1,
-              "measureAmount": 10,
-              "inventoryPackageId": 1,
-              "cost": 100
-            },
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/NestedUpdateInventoryItemSizeDto"
-              }
-            ]
-          }
-        },
-        "required": [
-          "create",
-          "update"
+          "mode"
         ]
       },
       "UpdateInventoryAreaItemDto": {
@@ -11222,10 +11233,12 @@
             "example": {
               "mode": "update",
               "id": 5,
-              "measureUnitId": 1,
-              "measureAmount": 2,
-              "inventoryPackageId": 3,
-              "cost": 4.99
+              "updateDto": {
+                "measureUnitId": 1,
+                "measureAmount": 2,
+                "inventoryPackageId": 3,
+                "cost": 4
+              }
             },
             "allOf": [
               {
@@ -11235,21 +11248,60 @@
           }
         }
       },
-      "NestedUpdateInventoryAreaItemDto": {
+      "NestedInventoryAreaItemDto": {
         "type": "object",
         "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
           "id": {
             "type": "number",
-            "description": "Id for InventoryAreaItem entity.",
+            "description": "Id for InventoryAreaItem entity when updating",
             "example": 1
           },
-          "dto": {
+          "createDto": {
+            "description": "CreateInventoryAreaItemDto for InventoryAreaItem entity.",
+            "example": {
+              "parentInventoryCountId": 1,
+              "countedInventoryItemId": 2,
+              "countedAmount": 3,
+              "countedItemSizeId": 4,
+              "countedItemSizeDto": {
+                "inventoryItemId": 1,
+                "measureUnitId": 2,
+                "measureAmount": 3,
+                "inventoryPackageId": 4,
+                "cost": 5
+              }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateInventoryAreaItemDto"
+              }
+            ]
+          },
+          "updateDto": {
             "description": "UpdateInventoryAreaItemDto for InventoryAreaItem entity.",
             "example": {
-              "measureUnitId": 4,
-              "measureAmount": 5,
-              "inventoryPackageId": 6,
-              "cost": 7.99
+              "countedInventoryItemId": 1,
+              "countedAmount": 2,
+              "countedItemSizeId": 3,
+              "countedItemSizeDto": {
+                "mode": "create",
+                "createDto": {
+                  "inventoryItemId": 1,
+                  "measureUnitId": 2,
+                  "measureAmount": 3,
+                  "inventoryPackageId": 4,
+                  "cost": 5.99
+                }
+              }
             },
             "allOf": [
               {
@@ -11259,8 +11311,7 @@
           }
         },
         "required": [
-          "id",
-          "dto"
+          "mode"
         ]
       },
       "UpdateInventoryAreaCountDto": {
@@ -11286,13 +11337,10 @@
             ],
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/NestedUpdateInventoryAreaItemDto"
+              "$ref": "#/components/schemas/NestedInventoryAreaItemDto"
             }
           }
-        },
-        "required": [
-          "itemCountDtos"
-        ]
+        }
       },
       "CreateInventoryItemDto": {
         "type": "object",
@@ -11359,34 +11407,31 @@
             "description": "Mixed array of CreateInventoryItemSizeDtos and NestedUpdateInventoryItemSizeDtos.",
             "example": [
               {
-                "createDto": {
-                  "measureUnitId": 1,
-                  "measureAmount": 10,
-                  "inventoryPackageId": 1,
-                  "cost": 100
-                },
+                "mode": "update",
+                "id": 1,
                 "updateDto": {
-                  "id": 1,
-                  "dto": {
-                    "measureUnitId": 6,
-                    "measureAmount": 7,
-                    "inventoryPackageId": 8,
-                    "cost": 9.99
-                  }
+                  "measureUnitId": 1,
+                  "measureAmount": 2,
+                  "inventoryPackageId": 3,
+                  "cost": 4
+                }
+              },
+              {
+                "mode": "create",
+                "createDto": {
+                  "inventoryItemId": 1,
+                  "measureUnitId": 2,
+                  "measureAmount": 3,
+                  "inventoryPackageId": 4,
+                  "cost": 5
                 }
               }
             ],
             "nullable": true,
+            "type": "array",
             "items": {
-              "type": "array"
-            },
-            "type": "array"
-          },
-          "cost": {
-            "type": "number",
-            "description": "Price paid for the InventoryItem entity.",
-            "example": 5.99,
-            "nullable": true
+              "$ref": "#/components/schemas/NestedInventoryItemSizeDto"
+            }
           }
         }
       },
@@ -11502,7 +11547,7 @@
             "example": "kg"
           },
           "categoryId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.",
             "example": 1
           },
@@ -12138,12 +12183,12 @@
             "example": 2
           },
           "ingredientInventoryItemId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
             "example": 3
           },
           "ingredientRecipeId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
             "example": 4
           }
@@ -12152,7 +12197,21 @@
       "NestedRecipeIngredientDto": {
         "type": "object",
         "properties": {
-          "create": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "Id for RecipeIngredient entity when updating",
+            "example": 1
+          },
+          "createDto": {
             "description": "Create dto of a RecipeIngredient entity.",
             "example": {
               "ingredientInventoryItemId": 1,
@@ -12166,16 +12225,13 @@
               }
             ]
           },
-          "update": {
+          "updateDto": {
             "description": "Update dto of a RecipeIngredient entity.",
             "example": {
-              "id": 1,
-              "dto": {
-                "ingredientInventoryItemId": 2,
-                "ingredientRecipeId": null,
-                "quantity": 3,
-                "quantityMeasurementId": 4
-              }
+              "quantity": 1,
+              "quantityMeasurementId": 2,
+              "ingredientInventoryItemId": null,
+              "ingredientRecipeId": 4
             },
             "allOf": [
               {
@@ -12183,7 +12239,10 @@
               }
             ]
           }
-        }
+        },
+        "required": [
+          "mode"
+        ]
       },
       "UpdateRecipeDto": {
         "type": "object",
@@ -12194,7 +12253,7 @@
             "example": "Blueberry Pie"
           },
           "producedMenuItemId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the MenuItem that the recipe produces.",
             "example": "Blueberry Pie"
           },
@@ -12204,37 +12263,37 @@
             "example": false
           },
           "batchResultQuantity": {
-            "type": "object",
+            "type": "number",
             "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
             "example": 1
           },
           "batchResultMeasurementId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.",
             "example": 2
           },
           "servingSizeQuantity": {
-            "type": "object",
+            "type": "number",
             "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
             "example": 3
           },
           "servingSizeMeasurementId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the UnitofMeasure used to represent the unit size of what is sold.",
             "example": 4
           },
           "salesPrice": {
-            "type": "object",
+            "type": "number",
             "description": "The price of purchasing the serving size amount.",
             "example": 5.99
           },
           "categoryId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the RecipeCategory entity",
             "example": 6
           },
           "subCategoryId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory",
             "example": 7
           },
@@ -12242,17 +12301,23 @@
             "description": "Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.",
             "example": [
               {
+                "mode": "update",
                 "id": 1,
-                "ingredientInventoryItemId": 2,
-                "ingredientRecipeId": null,
-                "quantity": 3,
-                "quantityMeasurementId": 4
+                "updateDto": {
+                  "ngredientInventoryItemId": 2,
+                  "ingredientRecipeId": null,
+                  "quantity": 3,
+                  "quantityMeasurementId": 4
+                }
               },
               {
-                "ingredientInventoryItemId": null,
-                "ingredientRecipeId": 5,
-                "quantity": 6,
-                "quantityMeasurementId": 7
+                "mode": "create",
+                "createDto": {
+                  "ingredientInventoryItemId": null,
+                  "ingredientRecipeId": 5,
+                  "quantity": 6,
+                  "quantityMeasurementId": 7
+                }
               }
             ],
             "type": "array",
@@ -12311,16 +12376,6 @@
           "categoryName"
         ]
       },
-      "UpdateRecipeCategoryDto": {
-        "type": "object",
-        "properties": {
-          "categoryName": {
-            "type": "string",
-            "description": "Name of the RecipeCategory entity.",
-            "example": "Pies"
-          }
-        }
-      },
       "UpdateRecipeSubCategoryDto": {
         "type": "object",
         "properties": {
@@ -12328,6 +12383,82 @@
             "type": "string",
             "description": "Name of the RecipeSubCategory entity.",
             "example": "name"
+          }
+        }
+      },
+      "NestedRecipeSubCategoryDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines if this dto is to update or create a resource",
+            "example": "create",
+            "enum": [
+              "create",
+              "update"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "Id for RecipeSubCategory entity when updating",
+            "example": 1
+          },
+          "createDto": {
+            "description": "Create dto of a RecipeSubCategory entity.",
+            "example": {
+              "subCategoryName": "created Sub Category"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CreateRecipeSubCategoryDto"
+              }
+            ]
+          },
+          "updateDto": {
+            "description": "Update dto of a RecipeSubCategory entity.",
+            "example": {
+              "subCategoryName": "Updated Sub Category"
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UpdateRecipeSubCategoryDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "UpdateRecipeCategoryDto": {
+        "type": "object",
+        "properties": {
+          "categoryName": {
+            "type": "string",
+            "description": "Name of the RecipeCategory entity.",
+            "example": "Pies"
+          },
+          "subCategoryDtos": {
+            "description": "Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent RecipeCategory with child RecipeSubCategory entities.",
+            "example": [
+              {
+                "mode": "create",
+                "createDto": {
+                  "subCategoryName": "savory pies"
+                }
+              },
+              {
+                "mode": "update",
+                "id": 1,
+                "updateDto": {
+                  "subCategoryName": "sweet pies"
+                }
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestedRecipeSubCategoryDto"
+            }
           }
         }
       }

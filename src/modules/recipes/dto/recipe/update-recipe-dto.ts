@@ -23,6 +23,8 @@ export class UpdateRecipeDto {
   @ApiPropertyOptional({
     description: 'Id of the MenuItem that the recipe produces.',
     example: 'Blueberry Pie',
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()
@@ -41,6 +43,8 @@ export class UpdateRecipeDto {
     description:
       'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
     example: 1,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()
@@ -51,6 +55,8 @@ export class UpdateRecipeDto {
     description:
       'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
     example: 2,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()
@@ -61,6 +67,8 @@ export class UpdateRecipeDto {
     description:
       'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
     example: 3,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()
@@ -71,6 +79,8 @@ export class UpdateRecipeDto {
     description:
       'Id of the UnitofMeasure used to represent the unit size of what is sold.',
     example: 4,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsPositive()
@@ -80,6 +90,8 @@ export class UpdateRecipeDto {
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
     example: 5.99,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsOptional()
@@ -89,6 +101,8 @@ export class UpdateRecipeDto {
   @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',
     example: 6,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsOptional()
@@ -99,6 +113,8 @@ export class UpdateRecipeDto {
     description:
       'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
     example: 7,
+    type: 'number',
+    required: false,
   })
   @IsNumber()
   @IsOptional()

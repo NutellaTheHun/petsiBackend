@@ -102,25 +102,25 @@ export class OrderValidator extends ValidatorBase<Order> {
       const resolvedDtos: { menuItemId: number; menuItemSizeId: number }[] = [];
       const updateIds: number[] = [];
       for (const d of dto.orderedMenuItemDtos) {
-        if (d.create) {
+        if (d.createDto) {
           resolvedDtos.push({
-            menuItemId: d.create.menuItemId,
-            menuItemSizeId: d.create.menuItemSizeId,
+            menuItemId: d.createDto.menuItemId,
+            menuItemSizeId: d.createDto.menuItemSizeId,
           });
         }
 
-        if (d.update) {
-          const currentItem = await this.itemService.findOne(d.update.id, [
+        if (d.updateDto && d.id) {
+          const currentItem = await this.itemService.findOne(d.id, [
             'menuItem',
             'size',
           ]);
 
           resolvedDtos.push({
-            menuItemId: d.update.dto.menuItemId ?? currentItem.menuItem.id,
-            menuItemSizeId: d.update.dto.menuItemSizeId ?? currentItem.size.id,
+            menuItemId: d.updateDto.menuItemId ?? currentItem.menuItem.id,
+            menuItemSizeId: d.updateDto.menuItemSizeId ?? currentItem.size.id,
           });
 
-          updateIds.push(d.update.id);
+          updateIds.push(d.id);
         }
       }
 

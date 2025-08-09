@@ -9,6 +9,7 @@ import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.bu
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
@@ -359,19 +360,25 @@ export class InventoryItemTestingUtil {
       await this.itemService.update(item.id, {
         itemSizeDtos: [
           {
-            inventoryItemId: item.id,
-            measureUnitId: dto1.measureUnit.id,
-            measureAmount: 1,
-            inventoryPackageId: dto1.packageType.id,
-            cost: 1,
-          } as CreateInventoryItemSizeDto,
+            mode: 'create',
+            createDto: {
+              inventoryItemId: item.id,
+              measureUnitId: dto1.measureUnit.id,
+              measureAmount: 1,
+              inventoryPackageId: dto1.packageType.id,
+              cost: 1,
+            },
+          } as NestedInventoryItemSizeDto,
           {
-            inventoryItemId: item.id,
-            measureUnitId: dto2.measureUnit.id,
-            measureAmount: 1,
-            inventoryPackageId: dto2.packageType.id,
-            cost: 1,
-          } as CreateInventoryItemSizeDto,
+            mode: 'create',
+            createDto: {
+              inventoryItemId: item.id,
+              measureUnitId: dto2.measureUnit.id,
+              measureAmount: 1,
+              inventoryPackageId: dto2.packageType.id,
+              cost: 1,
+            },
+          } as NestedInventoryItemSizeDto,
         ],
       } as UpdateInventoryItemDto);
     }

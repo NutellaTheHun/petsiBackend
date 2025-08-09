@@ -144,25 +144,25 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
       }[] = [];
       const resolvedIds: number[] = [];
       for (const d of dto.orderedItemContainerDtos) {
-        if (d.create) {
+        if (d.createDto) {
           resolvedDtos.push({
-            containedMenuItemId: d.create.containedMenuItemId,
-            containedMenuItemSizeId: d.create.containedMenuItemSizeId,
+            containedMenuItemId: d.createDto.containedMenuItemId,
+            containedMenuItemSizeId: d.createDto.containedMenuItemSizeId,
           });
         }
-        if (d.update) {
-          const currentItem = await this.containerItemService.findOne(
-            d.update.id,
-            ['containedItem', 'containedItemSize'],
-          );
+        if (d.updateDto && d.id) {
+          const currentItem = await this.containerItemService.findOne(d.id, [
+            'containedItem',
+            'containedItemSize',
+          ]);
           resolvedDtos.push({
             containedMenuItemId:
-              d.update.dto.containedMenuItemId ?? currentItem.containedItem.id,
+              d.updateDto.containedMenuItemId ?? currentItem.containedItem.id,
             containedMenuItemSizeId:
-              d.update.dto.containedMenuItemSizeId ??
+              d.updateDto.containedMenuItemSizeId ??
               currentItem.containedItemSize.id,
           });
-          resolvedIds.push(d.update.id);
+          resolvedIds.push(d.id);
         }
       }
 

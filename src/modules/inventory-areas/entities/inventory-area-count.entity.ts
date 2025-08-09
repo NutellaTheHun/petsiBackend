@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray } from 'class-validator';
 import {
   CreateDateColumn,
   Entity,
@@ -47,6 +48,7 @@ export class InventoryAreaCount {
   @ManyToOne(() => InventoryArea, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
+    nullable: false,
   })
   inventoryArea: InventoryArea;
 
@@ -56,10 +58,11 @@ export class InventoryAreaCount {
   @ApiProperty({
     example: [inventoryAreaItemExample(new Set<string>(), false)],
     description: 'Inventory items that were recorded during the count.',
-    type: () => InventoryAreaItem,
+    type: () => [InventoryAreaItem],
   })
   @OneToMany(() => InventoryAreaItem, (item) => item.parentInventoryCount, {
     cascade: true,
   })
+  @IsArray()
   countedItems: InventoryAreaItem[];
 }
