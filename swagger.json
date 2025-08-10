@@ -8509,8 +8509,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-08-09T19:43:30.141Z",
-              "updatedAt": "2025-08-09T19:43:30.141Z",
+              "createdAt": "2025-08-10T17:58:28.013Z",
+              "updatedAt": "2025-08-10T17:58:28.013Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8804,8 +8804,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-08-09T19:43:30.142Z",
-                "updatedAt": "2025-08-09T19:43:30.142Z",
+                "createdAt": "2025-08-10T17:58:28.014Z",
+                "updatedAt": "2025-08-10T17:58:28.014Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9392,10 +9392,7 @@
             "description": "Name of MenuItemSize entity.",
             "example": "medium"
           }
-        },
-        "required": [
-          "sizeName"
-        ]
+        }
       },
       "CreateMenuItemContainerItemDto": {
         "type": "object",
@@ -10475,7 +10472,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-09T19:43:30.095Z",
+              "countDate": "2025-08-10T17:58:27.968Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10849,7 +10846,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-09T19:43:30.095Z",
+              "countDate": "2025-08-10T17:58:27.967Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -11075,7 +11072,8 @@
           "countedItemSizeId": {
             "type": "number",
             "description": "Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "countedItemSizeDto": {
             "description": "Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.",
@@ -11085,6 +11083,7 @@
               "inventoryPackageId": 3,
               "cost": 4.99
             },
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
@@ -11226,7 +11225,8 @@
           "countedItemSizeId": {
             "type": "number",
             "description": "Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "countedItemSizeDto": {
             "description": "If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.",
@@ -11240,6 +11240,7 @@
                 "cost": 4
               }
             },
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/NestedInventoryItemSizeDto"
@@ -12056,18 +12057,19 @@
           "parentRecipeId": {
             "type": "number",
             "description": "Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.",
-            "example": 1,
-            "nullable": true
+            "example": 1
           },
           "ingredientInventoryItemId": {
-            "type": "number",
+            "type": "object",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "ingredientRecipeId": {
-            "type": "number",
+            "type": "object",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "quantity": {
             "type": "number",
@@ -12096,18 +12098,21 @@
           "producedMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that the recipe produces.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "isIngredient": {
             "type": "boolean",
             "description": "If the recipe is used as an ingredient.(Not sold directly)",
-            "example": false
+            "example": false,
+            "default": false
           },
           "batchResultQuantity": {
             "type": "number",
             "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
             "example": 2,
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
           "batchResultMeasurementId": {
             "type": "number",
@@ -12118,7 +12123,8 @@
             "type": "number",
             "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
             "example": 4,
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
           "servingSizeMeasurementId": {
             "type": "number",
@@ -12129,17 +12135,20 @@
             "type": "number",
             "description": "The price of purchasing the serving size amount.",
             "example": 6,
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
           "categoryId": {
             "type": "number",
             "description": "Id of the RecipeCategory entity",
-            "example": 7
+            "example": 7,
+            "nullable": true
           },
           "subCategoryId": {
             "type": "number",
             "description": "Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory",
-            "example": 8
+            "example": 8,
+            "nullable": true
           },
           "ingredientDtos": {
             "description": "Array of CreateRecipeIngredientDto.",
@@ -12165,6 +12174,7 @@
         },
         "required": [
           "recipeName",
+          "producedMenuItemId",
           "batchResultMeasurementId",
           "servingSizeMeasurementId"
         ]
@@ -12185,12 +12195,14 @@
           "ingredientInventoryItemId": {
             "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "ingredientRecipeId": {
             "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 4
+            "example": 4,
+            "nullable": true
           }
         }
       },
@@ -12255,7 +12267,8 @@
           "producedMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that the recipe produces.",
-            "example": "Blueberry Pie"
+            "example": "Blueberry Pie",
+            "nullable": true
           },
           "isIngredient": {
             "type": "boolean",
@@ -12265,37 +12278,44 @@
           "batchResultQuantity": {
             "type": "number",
             "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "batchResultMeasurementId": {
             "type": "number",
             "description": "Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "servingSizeQuantity": {
             "type": "number",
             "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "servingSizeMeasurementId": {
             "type": "number",
             "description": "Id of the UnitofMeasure used to represent the unit size of what is sold.",
-            "example": 4
+            "example": 4,
+            "nullable": true
           },
           "salesPrice": {
             "type": "number",
             "description": "The price of purchasing the serving size amount.",
-            "example": 5.99
+            "example": 5.99,
+            "nullable": true
           },
           "categoryId": {
             "type": "number",
             "description": "Id of the RecipeCategory entity",
-            "example": 6
+            "example": 6,
+            "nullable": true
           },
           "subCategoryId": {
             "type": "number",
             "description": "Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory",
-            "example": 7
+            "example": 7,
+            "nullable": true
           },
           "ingredientDtos": {
             "description": "Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.",

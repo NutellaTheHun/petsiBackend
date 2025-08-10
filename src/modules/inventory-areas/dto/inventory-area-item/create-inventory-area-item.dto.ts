@@ -34,18 +34,19 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedAmount?: number;
+  readonly countedAmount: number;
 
   @ApiProperty({
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.',
     example: 3,
     type: Number,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedItemSizeId?: number;
+  readonly countedItemSizeId?: number | null;
 
   @ApiProperty({
     description:
@@ -57,7 +58,8 @@ export class CreateInventoryAreaItemDto {
       inventoryPackageId: 3,
       cost: 4.99,
     },
+    nullable: true,
   })
   @IsOptional()
-  readonly countedItemSizeDto?: CreateInventoryItemSizeDto;
+  readonly countedItemSizeDto?: CreateInventoryItemSizeDto | null;
 }

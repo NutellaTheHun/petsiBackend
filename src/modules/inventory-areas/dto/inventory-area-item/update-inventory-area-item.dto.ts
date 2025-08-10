@@ -20,18 +20,19 @@ export class UpdateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedAmount?: number;
+  readonly countedAmount: number;
 
   @ApiPropertyOptional({
     description:
       'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
     example: 2,
     type: Number,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedItemSizeId?: number;
+  readonly countedItemSizeId?: number | null;
 
   @ApiPropertyOptional({
     description:
@@ -47,7 +48,8 @@ export class UpdateInventoryAreaItemDto {
         cost: 4,
       },
     },
+    nullable: true,
   })
   @IsOptional()
-  readonly countedItemSizeDto?: NestedInventoryItemSizeDto;
+  readonly countedItemSizeDto?: NestedInventoryItemSizeDto | null;
 }

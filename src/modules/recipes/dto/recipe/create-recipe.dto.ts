@@ -20,22 +20,25 @@ export class CreateRecipeDto {
   @IsNotEmpty()
   readonly recipeName: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: 'Id of the MenuItem that the recipe produces.',
     example: 1,
+    type: Number,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly producedMenuItemId?: number;
+  readonly producedMenuItemId?: number | null;
 
   @ApiPropertyOptional({
     description: 'If the recipe is used as an ingredient.(Not sold directly)',
     example: false,
+    default: false,
   })
   @IsBoolean()
   @IsOptional()
-  readonly isIngredient?: boolean;
+  readonly isIngredient: boolean;
 
   @ApiPropertyOptional({
     description:
@@ -43,10 +46,11 @@ export class CreateRecipeDto {
     example: 2,
     type: 'number',
     format: 'decimal',
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
-  @IsNotEmpty()
+  @IsOptional()
   readonly batchResultQuantity?: number | null;
 
   @ApiProperty({
@@ -65,10 +69,11 @@ export class CreateRecipeDto {
     example: 4,
     type: 'number',
     format: 'decimal',
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
-  @IsNotEmpty()
+  @IsOptional()
   readonly servingSizeQuantity?: number | null;
 
   @ApiProperty({
@@ -86,30 +91,35 @@ export class CreateRecipeDto {
     example: 6,
     type: 'number',
     format: 'decimal',
+    nullable: true,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsOptional()
   @Min(0)
-  readonly salesPrice?: number;
+  readonly salesPrice?: number | null;
 
   @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',
     example: 7,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly categoryId?: number;
+  readonly categoryId?: number | null;
 
   @ApiPropertyOptional({
     description:
       'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
     example: 8,
+    nullable: true,
+    type: 'number',
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly subCategoryId?: number;
+  readonly subCategoryId?: number | null;
 
   @ApiPropertyOptional({
     description: 'Array of CreateRecipeIngredientDto.',

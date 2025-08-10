@@ -25,6 +25,7 @@ export class UpdateRecipeIngredientDto {
     example: 3,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsNumber()
@@ -37,6 +38,7 @@ export class UpdateRecipeIngredientDto {
     example: 4,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsOptional()
   @IsNumber()

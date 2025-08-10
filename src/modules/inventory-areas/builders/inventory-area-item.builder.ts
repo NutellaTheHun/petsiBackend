@@ -62,9 +62,13 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
     // Either a ItemSize DTO or id
     if (dto.countedItemSizeDto !== undefined) {
-      this.countedItemSizeByBuilder(dto.countedItemSizeDto);
+      if (dto.countedItemSizeDto) {
+        this.countedItemSizeByBuilder(dto.countedItemSizeDto);
+      }
     } else if (dto.countedItemSizeId !== undefined) {
-      this.countedItemSizeById(dto.countedItemSizeId);
+      if (dto.countedItemSizeId) {
+        this.countedItemSizeById(dto.countedItemSizeId);
+      }
     }
   }
 
@@ -77,10 +81,14 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     }
 
     if (dto.countedItemSizeId !== undefined) {
-      this.countedItemSizeById(dto.countedItemSizeId);
+      if (dto.countedItemSizeId) {
+        this.countedItemSizeById(dto.countedItemSizeId);
+      }
     }
     if (dto.countedItemSizeDto !== undefined) {
-      this.countedItemSizeByBuilder(dto.countedItemSizeDto);
+      if (dto.countedItemSizeDto) {
+        this.countedItemSizeByBuilder(dto.countedItemSizeDto);
+      }
     }
   }
 

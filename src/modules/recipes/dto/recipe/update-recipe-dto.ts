@@ -25,6 +25,7 @@ export class UpdateRecipeDto {
     example: 'Blueberry Pie',
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
@@ -45,6 +46,7 @@ export class UpdateRecipeDto {
     example: 1,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
@@ -57,6 +59,7 @@ export class UpdateRecipeDto {
     example: 2,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
@@ -69,6 +72,7 @@ export class UpdateRecipeDto {
     example: 3,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
@@ -81,6 +85,7 @@ export class UpdateRecipeDto {
     example: 4,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsPositive()
@@ -92,6 +97,7 @@ export class UpdateRecipeDto {
     example: 5.99,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsOptional()
@@ -103,6 +109,7 @@ export class UpdateRecipeDto {
     example: 6,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsOptional()
@@ -115,6 +122,7 @@ export class UpdateRecipeDto {
     example: 7,
     type: 'number',
     required: false,
+    nullable: true,
   })
   @IsNumber()
   @IsOptional()
