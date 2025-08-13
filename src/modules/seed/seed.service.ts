@@ -85,4 +85,62 @@ export class SeedService {
   }
 
   async seedTestDb() {}
+
+  async seedInventoryAreaTestDb() {}
+
+  async seedInventoryAreaCountTestDb() {}
+
+  async seedInventoryAreaItemTestDb() {}
+
+  async seedInventoryItemCategoryTestDb() {}
+
+  async seedInventoryItemPackageTestDb() {}
+
+  async seedInventoryItemSizeTestDb() {}
+
+  async seedInventoryItemVendorTestDb() {}
+
+  async seedInventoryItemTestDb() {}
+
+  async seedLabelTestDb() {}
+
+  async seedLabelTypeTestDb() {}
+
+  async seedMenuItemCategoryTestDb() {}
+
+  async seedMenuItemContainerOptionTestDb() {}
+
+  async seedMenuItemContainerRuleTestDb() {}
+
+  async seedMenuItemSizeTestDb() {}
+
+  async seedMenuItemTestDb() {}
+
+  async seedOrderCategoryTestDb() {}
+
+  async seedOrderContainerItemTestDb() {}
+
+  async seedOrderMenuItemTestDb() {}
+
+  async seedOrderTestDb() {}
+
+  async seedRecipeTestDb() {}
+
+  async seedRecipeCategoryTestDb() {}
+
+  async seedRecipeIngredientTestDb() {}
+
+  async seedRecipeSubCategoryTestDb() {}
+
+  async seedTemplateTestDb() {}
+
+  async seedTemplateMenuItemTestDb() {}
+
+  async seedUnitOfMeasureTestDb() {}
+
+  async seedUnitOfMeasureCategoryTestDb() {}
+
+  async seedRoleTestDb() {}
+
+  async seedUserTestDb() {}
 }

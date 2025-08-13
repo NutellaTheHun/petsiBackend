@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
-import { UpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/update-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import {
@@ -391,7 +391,8 @@ describe('Inventory area count service', () => {
     ]);
 
     const nestedItemCountDtos = itemCountDtos.map((dto) => ({
-      create: dto,
+      mode: 'create',
+      createDto: dto,
     })) as NestedInventoryAreaItemDto[];
 
     const updateCountDto = {
@@ -493,9 +494,12 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
     const itemSizeUpdateDto = {
+      mode: 'update',
       id: itemSizeTestId,
-      measureUnitId: uom.id,
-    } as UpdateInventoryItemSizeDto;
+      updateDto: {
+        measureUnitId: uom.id,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const updateAreaItemDto = {
       id: updateItemTestId,
@@ -548,20 +552,26 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
     const itemSizeUpdateDto = {
+      mode: 'update',
       id: itemSizeTestId,
-      inventoryPackageId: pkg.id,
-    } as UpdateInventoryItemSizeDto;
+      updateDto: {
+        inventoryPackageId: pkg.id,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const updateAreaItemDto = {
+      mode: 'update',
       id: updateItemTestId,
-      countedItemSizeDto: itemSizeUpdateDto,
-    } as UpdateInventoryAreaItemDto;
+      updateDto: itemSizeUpdateDto,
+    } as NestedInventoryAreaItemDto;
 
     const theRest = areaCount.countedItems.splice(1).map(
       (areaItem) =>
         ({
+          mode: 'update',
           id: areaItem.id,
-        }) as UpdateInventoryAreaItemDto,
+          updateDto: {},
+        }) as NestedInventoryAreaItemDto,
     );
 
     const updateAreaCountDto = {
