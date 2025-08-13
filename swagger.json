@@ -8509,8 +8509,8 @@
               "id": 1,
               "orderCategory": {},
               "recipient": "alberto",
-              "createdAt": "2025-08-10T17:58:28.013Z",
-              "updatedAt": "2025-08-10T17:58:28.013Z",
+              "createdAt": "2025-08-10T22:43:36.145Z",
+              "updatedAt": "2025-08-10T22:43:36.145Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8804,8 +8804,8 @@
                 "id": 1,
                 "orderCategory": {},
                 "recipient": "alberto",
-                "createdAt": "2025-08-10T17:58:28.014Z",
-                "updatedAt": "2025-08-10T17:58:28.014Z",
+                "createdAt": "2025-08-10T22:43:36.145Z",
+                "updatedAt": "2025-08-10T22:43:36.145Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10472,7 +10472,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-10T17:58:27.968Z",
+              "countDate": "2025-08-10T22:43:36.098Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -10846,7 +10846,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2025-08-10T17:58:27.967Z",
+              "countDate": "2025-08-10T22:43:36.097Z",
               "inventoryArea": {},
               "countedItems": [
                 {}
@@ -12060,13 +12060,13 @@
             "example": 1
           },
           "ingredientInventoryItemId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
             "example": 2,
             "nullable": true
           },
           "ingredientRecipeId": {
-            "type": "object",
+            "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
             "example": 3,
             "nullable": true

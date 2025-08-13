@@ -83,4 +83,6 @@ export class SeedService {
 
     // Seed Units Of Measure (and categories)
   }
+
+  async seedTestDb() {}
 }
