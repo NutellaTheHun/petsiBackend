@@ -5,6 +5,7 @@ import { UnitOfMeasureCategoryService } from '../../unit-of-measure/services/uni
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { BOX_PKG, CAN_PKG, DRY_A, FOOD_A, OTHER_A } from '../utils/constants';
@@ -92,11 +93,14 @@ describe('Inventory Item Size Service', () => {
     );
 
     const createItemSizeDto = {
-      measureUnitId: unit.id,
-      inventoryPackageId: packageType?.id,
-      cost: 5,
-      measureAmount: 1,
-    } as CreateInventoryItemSizeDto;
+      mode: 'create',
+      createDto: {
+        measureUnitId: unit.id,
+        inventoryPackageId: packageType?.id,
+        cost: 5,
+        measureAmount: 1,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const updateItemDto = {
       itemSizeDtos: [createItemSizeDto],

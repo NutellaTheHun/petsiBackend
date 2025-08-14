@@ -617,16 +617,21 @@ describe('Inventory area count service', () => {
     }
 
     const updateAreaItemDto = {
+      mode: 'update',
       id: updateItemTestId,
-      countedInventoryItemId: item.id,
-      countedItemSizeId: item.itemSizes[0].id,
-    } as UpdateInventoryAreaItemDto;
+      updateDto: {
+        countedInventoryItemId: item.id,
+        countedItemSizeId: item.itemSizes[0].id,
+      },
+    } as NestedInventoryAreaItemDto;
 
     const theRest = areaCount.countedItems.splice(1).map(
       (areaItem) =>
         ({
+          mode: 'update',
           id: areaItem.id,
-        }) as UpdateInventoryAreaItemDto,
+          updateDto: {},
+        }) as NestedInventoryAreaItemDto,
     );
 
     const updateAreaCountDto = {
@@ -673,9 +678,12 @@ describe('Inventory area count service', () => {
     updateItemTestId = areaCount.countedItems[0].id;
 
     const updateAreaItemDto = {
+      mode: 'update',
       id: updateItemTestId,
-      countedAmount: 50,
-    } as UpdateInventoryAreaItemDto;
+      updateDto: {
+        countedAmount: 50,
+      },
+    } as NestedInventoryAreaItemDto;
 
     const item = await itemService.findOneByName(DRY_B, ['itemSizes']);
     if (!item) {
@@ -685,16 +693,21 @@ describe('Inventory area count service', () => {
       throw new Error('item sizes is null');
     }
     const createAreaItemDto = {
-      parentInventoryCountId: testCountId,
-      countedAmount: 100,
-      measureAmount: 200,
-      countedInventoryItemId: item.id,
-      countedItemSizeId: item.itemSizes[0].id,
-    } as CreateInventoryAreaItemDto;
+      mode: 'create',
+      createDto: {
+        parentInventoryCountId: testCountId,
+        countedAmount: 100,
+        measureAmount: 200,
+        countedInventoryItemId: item.id,
+        countedItemSizeId: item.itemSizes[0].id,
+      },
+    } as NestedInventoryAreaItemDto;
 
     const theRest = {
+      mode: 'update',
       id: areaCount.countedItems[1].id,
-    } as UpdateInventoryAreaItemDto;
+      updateDto: {},
+    } as NestedInventoryAreaItemDto;
 
     deletedAreaItemId = areaCount.countedItems[2].id;
 

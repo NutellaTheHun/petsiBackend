@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateChildMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-child-menu-item-container-item.dto';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { item_a, item_c, item_e, item_f, item_g } from '../utils/constants';
@@ -73,11 +73,13 @@ describe('menu item container item service', () => {
 
     const definedContainerDto = {
       mode: 'create',
-      parentContainerSizeId: parent.validSizes[0].id,
-      containedMenuItemId: item.id,
-      containedMenuItemSizeId: item.validSizes[0].id,
-      quantity: 1,
-    } as CreateChildMenuItemContainerItemDto;
+      createDto: {
+        parentContainerSizeId: parent.validSizes[0].id,
+        containedMenuItemId: item.id,
+        containedMenuItemSizeId: item.validSizes[0].id,
+        quantity: 1,
+      },
+    } as NestedMenuItemContainerItemDto;
 
     const updateItemDto = {
       definedContainerItemDtos: [definedContainerDto],

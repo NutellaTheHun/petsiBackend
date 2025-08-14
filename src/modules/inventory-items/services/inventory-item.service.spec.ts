@@ -3,8 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON } from '../../unit-of-measure/utils/constants';
-import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
-import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import {
@@ -435,16 +434,22 @@ describe('Inventory Item Service', () => {
 
     const updateSizeDtos = [
       {
+        mode: 'update',
         id: item.itemSizes[0].id,
-        measureUnitId: newUnits[0].id,
-        inventoryPackageTypeId: newPkgs[0].id,
-        cost: 12.5,
-      } as UpdateInventoryItemSizeDto,
+        updateDto: {
+          measureUnitId: newUnits[0].id,
+          inventoryPackageTypeId: newPkgs[0].id,
+          cost: 12.5,
+        },
+      } as NestedInventoryItemSizeDto,
       {
+        mode: 'update',
         id: item.itemSizes[1].id,
-        measureUnitId: newUnits[1].id,
-        inventoryPackageTypeId: newPkgs[1].id,
-      } as UpdateInventoryItemSizeDto,
+        updateDto: {
+          measureUnitId: newUnits[1].id,
+          inventoryPackageTypeId: newPkgs[1].id,
+        },
+      } as NestedInventoryItemSizeDto,
     ];
 
     const updateDto = {
@@ -496,8 +501,10 @@ describe('Inventory Item Service', () => {
 
     const updateSizeDtos = [
       {
+        mode: 'update',
         id: sizes[1].id,
-      } as UpdateInventoryItemSizeDto,
+        updateDto: {},
+      } as NestedInventoryItemSizeDto,
     ];
 
     const updateDto = {
@@ -566,16 +573,22 @@ describe('Inventory Item Service', () => {
 
     const sizeDtos = [
       {
+        mode: 'update',
         id: sizes[0].id,
-        measureUnitId: newUnits[0].id,
-        inventoryPackageId: newPkgs[0].id,
-      } as UpdateInventoryItemSizeDto,
+        updateDto: {
+          measureUnitId: newUnits[0].id,
+          inventoryPackageId: newPkgs[0].id,
+        },
+      } as NestedInventoryItemSizeDto,
       {
-        measureUnitId: createUnit.id,
-        inventoryPackageId: createPkg.id,
-        cost: 7.01,
-        measureAmount: 1,
-      } as CreateInventoryItemSizeDto,
+        mode: 'create',
+        createDto: {
+          measureUnitId: createUnit.id,
+          inventoryPackageId: createPkg.id,
+          cost: 7.01,
+          measureAmount: 1,
+        },
+      } as NestedInventoryItemSizeDto,
     ];
 
     const updateDto = {

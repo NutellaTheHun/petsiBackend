@@ -11,6 +11,7 @@ import {
 } from '../../inventory-items/utils/constants';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { AREA_A } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
@@ -93,10 +94,13 @@ describe('Inventory area item service', () => {
     );
 
     const createAreaItemDto = {
-      countedInventoryItemId: item.id,
-      countedAmount: 1,
-      countedItemSizeId: item.itemSizes[0].id,
-    } as CreateInventoryAreaItemDto;
+      mode: 'create',
+      createDto: {
+        countedInventoryItemId: item.id,
+        countedAmount: 1,
+        countedItemSizeId: item.itemSizes[0].id,
+      },
+    } as NestedInventoryAreaItemDto;
 
     if (!counts[0].countedItems) {
       throw new Error();
@@ -104,8 +108,10 @@ describe('Inventory area item service', () => {
     const theRest = counts[0].countedItems.map(
       (item) =>
         ({
+          mode: 'update',
           id: item.id,
-        }) as UpdateInventoryAreaItemDto,
+          updateDto: {},
+        }) as NestedInventoryAreaItemDto,
     );
 
     const updateCountDto = {
