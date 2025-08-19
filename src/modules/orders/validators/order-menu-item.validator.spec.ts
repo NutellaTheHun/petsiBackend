@@ -11,7 +11,7 @@ import {
   item_d,
 } from '../../menu-items/utils/constants';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
-import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
+import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderContainerItemService } from '../services/order-container-item.service';
@@ -221,19 +221,25 @@ describe('order category validator', () => {
 
     const containerDtos = [
       {
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderContainerItemDto,
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
       {
+        mode: 'update',
         id: containerItems[0].id,
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemC.id,
-        containedMenuItemSizeId: contItemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderContainerItemDto,
-    ] as CreateOrderContainerItemDto[];
+        updateDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemC.id,
+          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
+    ] as NestedOrderContainerItemDto[];
 
     const dto = {
       id: parentOrderItem.id,
@@ -285,25 +291,34 @@ describe('order category validator', () => {
 
     const containerDtos = [
       {
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderContainerItemDto,
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
       {
+        mode: 'update',
         id: containerItems[0].id,
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemC.id,
-        containedMenuItemSizeId: contItemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderContainerItemDto,
+        updateDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemC.id,
+          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
       {
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderContainerItemDto,
-    ] as CreateOrderContainerItemDto[];
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
+    ] as NestedOrderContainerItemDto[];
 
     const dto = {
       id: parentOrderItem.id,
@@ -368,26 +383,35 @@ describe('order category validator', () => {
 
     const containerDtos = [
       {
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderContainerItemDto,
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
       {
+        mode: 'update',
         id: containerItems[0].id,
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemC.id,
-        containedMenuItemSizeId: contItemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderContainerItemDto,
+        updateDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemC.id,
+          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
       {
+        mode: 'update',
         id: containerItems[0].id,
-        parentContainerMenuItemId: parentMenuItem.id,
-        containedMenuItemId: contItemD.id,
-        containedMenuItemSizeId: contItemD.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderContainerItemDto,
-    ] as CreateOrderContainerItemDto[];
+        updateDto: {
+          parentContainerMenuItemId: parentMenuItem.id,
+          containedMenuItemId: contItemD.id,
+          containedMenuItemSizeId: contItemD.validSizes[0].id,
+          quantity: 1,
+        },
+      } as NestedOrderContainerItemDto,
+    ] as NestedOrderContainerItemDto[];
 
     const dto = {
       id: parentOrderItem.id,

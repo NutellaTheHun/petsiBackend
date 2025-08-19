@@ -7,7 +7,7 @@ import { DRY_A, FOOD_A } from '../../inventory-items/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
-import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { InventoryAreaCountService } from '../services/inventory-area-count.service';
 import { InventoryAreaService } from '../services/inventory-area.service';
 import { AREA_A } from '../utils/constants';
@@ -103,15 +103,21 @@ describe('inventory area count validator', () => {
 
     const itemDtos = [
       {
-        countedInventoryItemId: itemA.id,
-        countedAmount: 1,
-      } as CreateInventoryAreaItemDto,
+        mode: 'create',
+        createDto: {
+          countedInventoryItemId: itemA.id,
+          countedAmount: 1,
+        },
+      } as NestedInventoryAreaItemDto,
       {
+        mode: 'update',
         id: toUpdate.countedItems[0].id,
-        countedInventoryItemId: itemB.id,
-        countedAmount: 1,
-      } as UpdateInventoryAreaItemDto,
-    ] as (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[];
+        updateDto: {
+          countedInventoryItemId: itemB.id,
+          countedAmount: 1,
+        },
+      } as NestedInventoryAreaItemDto,
+    ] as NestedInventoryAreaItemDto[];
 
     const dto = {
       itemCountDtos: itemDtos,
@@ -140,20 +146,29 @@ describe('inventory area count validator', () => {
 
     const itemDtos = [
       {
-        countedInventoryItemId: itemA.id,
-        countedAmount: 1,
-      } as CreateInventoryAreaItemDto,
+        mode: 'create',
+        createDto: {
+          countedInventoryItemId: itemA.id,
+          countedAmount: 1,
+        },
+      } as NestedInventoryAreaItemDto,
       {
+        mode: 'update',
         id: toUpdate.countedItems[0].id,
-        countedInventoryItemId: itemB.id,
-        countedAmount: 1,
-      } as UpdateInventoryAreaItemDto,
+        updateDto: {
+          countedInventoryItemId: itemB.id,
+          countedAmount: 1,
+        },
+      } as NestedInventoryAreaItemDto,
       {
+        mode: 'update',
         id: toUpdate.countedItems[0].id,
-        countedInventoryItemId: itemA.id,
-        countedAmount: 1,
-      } as UpdateInventoryAreaItemDto,
-    ] as (CreateInventoryAreaItemDto | UpdateInventoryAreaItemDto)[];
+        updateDto: {
+          countedInventoryItemId: itemA.id,
+          countedAmount: 1,
+        },
+      } as NestedInventoryAreaItemDto,
+    ] as NestedInventoryAreaItemDto[];
 
     const dto = {
       itemCountDtos: itemDtos,

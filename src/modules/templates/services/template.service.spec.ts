@@ -4,8 +4,7 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { template_a } from '../utils/constants';
@@ -119,16 +118,22 @@ describe('Template Service', () => {
 
     const itemDtos = [
       {
-        displayName: 'itemA',
-        menuItemId: itemA.id,
-        tablePosIndex: 0,
+        mode: 'create',
+        createDto: {
+          displayName: 'itemA',
+          menuItemId: itemA.id,
+          tablePosIndex: 0,
+        },
       },
       {
-        displayName: 'itemB',
-        menuItemId: itemB.id,
-        tablePosIndex: 1,
+        mode: 'create',
+        createDto: {
+          displayName: 'itemB',
+          menuItemId: itemB.id,
+          tablePosIndex: 1,
+        },
       },
-    ] as CreateTemplateMenuItemDto[];
+    ] as NestedTemplateMenuItemDto[];
 
     const dto = {
       templateItemDtos: itemDtos,
@@ -182,17 +187,20 @@ describe('Template Service', () => {
     const uItemDto = {
       mode: 'update',
       id: modifiedItemId,
-      displayName: 'update display name',
-      tablePosIndex: 10,
-      menuItemId: modifiedMenuItemId,
-    } as UpdateTemplateMenuItemDto;
+      updateDto: {
+        displayName: 'update display name',
+        tablePosIndex: 10,
+        menuItemId: modifiedMenuItemId,
+      },
+    } as NestedTemplateMenuItemDto;
 
     const theRest = template.templateItems.slice(1).map(
       (item) =>
         ({
           mode: 'update',
           id: item.id,
-        }) as UpdateTemplateMenuItemDto,
+          updateDto: {},
+        }) as NestedTemplateMenuItemDto,
     );
 
     const dto = {
@@ -247,7 +255,8 @@ describe('Template Service', () => {
         ({
           mode: 'update',
           id: item.id,
-        }) as UpdateTemplateMenuItemDto,
+          updateDto: {},
+        }) as NestedTemplateMenuItemDto,
     );
 
     const dto = {

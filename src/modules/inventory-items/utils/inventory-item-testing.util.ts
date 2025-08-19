@@ -259,12 +259,7 @@ export class InventoryItemTestingUtil {
       this.cleanupInventoryItemVendorTestDatabase(),
     );
 
-    /*const toInsert: InventoryItemVendor[] = [];
-        for(const vendor of vendors){
-            const exists = await this.vendorService.findOneByName(vendor.vendorName);
-            if(!exists){ toInsert.push(vendor); }
-        }*/
-    await this.vendorService.insertEntities(/*toInsert*/ vendors);
+    await this.vendorService.insertEntities(vendors);
   }
 
   public async initInventoryItemPackageTestDatabase(
@@ -281,12 +276,7 @@ export class InventoryItemTestingUtil {
       this.cleanupInventoryItemPackageTestDatabase(),
     );
 
-    /*const toInsert: InventoryItemPackage[] = [];
-        for(const packaging of defaultPackages){
-            const exists = await this.packageService.findOneByName(packaging.packageName);
-            if(!exists){ toInsert.push(packaging); }
-        }*/
-    await this.packageService.insertEntities(/*toInsert*/ defaultPackages);
+    await this.packageService.insertEntities(defaultPackages);
   }
 
   public async initInventoryItemCategoryTestDatabase(
@@ -324,9 +314,6 @@ export class InventoryItemTestingUtil {
     );
 
     for (const item of items) {
-      /*const exists = await this.itemService.findOneByName(item.itemName);
-            if(exists){ continue; }*/
-
       await this.itemService.create({
         itemName: item.itemName,
         inventoryItemCategoryId: item.category?.id,
@@ -382,17 +369,6 @@ export class InventoryItemTestingUtil {
         ],
       } as UpdateInventoryItemDto);
     }
-    /*for(const size of testingSizes){
-            await this.sizeService.create({
-                    measureUnitId: size.measureUnit.id,
-                    inventoryPackageId: size.packageType.id,
-                    inventoryItemId: size.inventoryItem.id,
-                    cost: 1,
-                    measureAmount: 1,
-                } as CreateInventoryItemSizeDto 
-        )}*/
-
-    // updateInventoryItem
   }
 
   public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {

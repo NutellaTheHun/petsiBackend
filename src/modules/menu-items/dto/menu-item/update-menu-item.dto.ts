@@ -135,6 +135,7 @@ export class UpdateMenuItemDto {
   @ValidateNested({ each: true })
   readonly definedContainerItemDtos?: NestedMenuItemContainerItemDto[];
 
+  // should be nullable?
   @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items and item sizes, and quantity of the container. Pass a null value to remove container options',

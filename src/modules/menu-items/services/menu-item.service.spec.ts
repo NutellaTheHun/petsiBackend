@@ -1,13 +1,14 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateChildMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-child-menu-item-container-item.dto';
-import { UpdateChildMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-child-menu-item-container-item.dto';
+import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
-import { CreateChildMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-child-menu-item-container-options.dto';
-import { UpdateChildMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-child-menu-item-container-options.dto';
-import { CreateChildMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-child-menu-item-container-rule.dto';
-import { UpdateChildMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-child-menu-item-container-rule.dto';
+import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
+import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
+import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
+import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import {
@@ -431,21 +432,25 @@ describe('menu item service', () => {
     }
 
     const compDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
-        parentContainerSizeId: containerItem.validSizes[0].id,
-        containedMenuItemId: compItemA.id,
-        containedMenuItemSizeId: compItemA.validSizes[0].id,
-        quantity: 1,
-      },
-      {
+        createDto: {
+          parentContainerSizeId: containerItem.validSizes[0].id,
+          containedMenuItemId: compItemA.id,
+          containedMenuItemSizeId: compItemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
-        parentContainerSizeId: containerItem.validSizes[0].id,
-        containedMenuItemId: compItemB.id,
-        containedMenuItemSizeId: compItemB.validSizes[0].id,
-        quantity: 1,
-      },
-    ] as CreateChildMenuItemContainerItemDto[];
+        createDto: {
+          parentContainerSizeId: containerItem.validSizes[0].id,
+          containedMenuItemId: compItemB.id,
+          containedMenuItemSizeId: compItemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
 
     const uDto = {
       definedContainerItemDtos: compDtos,
@@ -480,20 +485,22 @@ describe('menu item service', () => {
       throw new NotFoundException();
     }
 
-    const compDto = {
+    const compDto = plainToInstance(NestedMenuItemContainerItemDto, {
       mode: 'update',
       id: containerItem.definedContainerItems[0].id,
-      quantity: 50,
-    } as UpdateMenuItemContainerItemDto;
+      updateDto: {
+        quantity: 50,
+      },
+    });
 
     containerComponentModifyTestId = containerItem.definedContainerItems[0].id;
 
-    const theRest = containerItem.definedContainerItems.slice(1).map(
-      (comp) =>
-        ({
-          mode: 'update',
-          id: comp.id,
-        }) as UpdateMenuItemContainerItemDto,
+    const theRest = containerItem.definedContainerItems.slice(1).map((comp) =>
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'update',
+        id: comp.id,
+        updateDto: {},
+      }),
     );
 
     const uDto = {
@@ -532,7 +539,8 @@ describe('menu item service', () => {
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateMenuItemContainerItemDto,
+          updateDto: {},
+        }) as NestedMenuItemContainerItemDto,
     );
 
     const uDto = {
@@ -772,20 +780,18 @@ describe('menu item service', () => {
     }
     const compDtos = [
       {
-        mode: 'create',
         parentContainerSizeId: sizes[0].id,
         containedMenuItemId: itemC.id,
         containedMenuItemSizeId: itemC.validSizes[0].id,
         quantity: 3,
-      } as CreateChildMenuItemContainerItemDto,
+      } as CreateMenuItemContainerItemDto,
       {
-        mode: 'create',
         parentContainerSizeId: sizes[0].id,
         containedMenuItemId: itemD.id,
         containedMenuItemSizeId: itemD.validSizes[0].id,
         quantity: 3,
-      } as CreateChildMenuItemContainerItemDto,
-    ] as CreateChildMenuItemContainerItemDto[];
+      } as CreateMenuItemContainerItemDto,
+    ] as CreateMenuItemContainerItemDto[];
 
     const dto = {
       itemName: 'menuItemWithComponents',
@@ -846,18 +852,21 @@ describe('menu item service', () => {
 
     const createCompDto = {
       mode: 'create',
-      parentContainerSizeId: sizes[0].id,
-      containedMenuItemId: itemG.id,
-      containedMenuItemSizeId: itemG.validSizes[0].id,
-      quantity: 3,
-    } as CreateChildMenuItemContainerItemDto;
+      createDto: {
+        parentContainerSizeId: sizes[0].id,
+        containedMenuItemId: itemG.id,
+        containedMenuItemSizeId: itemG.validSizes[0].id,
+        quantity: 3,
+      },
+    } as NestedMenuItemContainerItemDto;
 
     const theRest = itemToUpdate.definedContainerItems.map(
       (comp) =>
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateChildMenuItemContainerItemDto,
+          updateDto: {},
+        }) as NestedMenuItemContainerItemDto,
     );
 
     const updateItemDto = {
@@ -901,10 +910,12 @@ describe('menu item service', () => {
     const updateCompDto = {
       mode: 'update',
       id: compToModifyId,
-      quantity: 5,
-      containedMenuItemId: itemF.id,
-      containedMenuItemSizeId: itemF.validSizes[0].id,
-    } as UpdateChildMenuItemContainerItemDto;
+      updateDto: {
+        quantity: 5,
+        containedMenuItemId: itemF.id,
+        containedMenuItemSizeId: itemF.validSizes[0].id,
+      },
+    } as NestedMenuItemContainerItemDto;
 
     const theRest = itemToUpdate.definedContainerItems
       .slice(1, itemToUpdate.definedContainerItems.length)
@@ -913,7 +924,8 @@ describe('menu item service', () => {
           ({
             mode: 'update',
             id: comp.id,
-          }) as UpdateChildMenuItemContainerItemDto,
+            updateDto: {},
+          }) as NestedMenuItemContainerItemDto,
       );
 
     const updateItemDto = {
@@ -958,7 +970,8 @@ describe('menu item service', () => {
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateChildMenuItemContainerItemDto,
+          updateDto: {},
+        }) as NestedMenuItemContainerItemDto,
     );
 
     const updateItemDto = {
@@ -1000,24 +1013,22 @@ describe('menu item service', () => {
     }
     const compOptionDtos = [
       {
-        mode: 'create',
         validMenuItemId: itemA.id,
         validSizeIds: itemA.validSizes.map((size) => size.id),
         quantity: 3,
-      } as CreateChildMenuItemContainerRuleDto,
+      } as CreateMenuItemContainerRuleDto,
       {
-        mode: 'create',
         validMenuItemId: itemB.id,
         validSizeIds: itemB.validSizes.map((size) => size.id),
         quantity: 3,
-      } as CreateChildMenuItemContainerRuleDto,
-    ] as CreateChildMenuItemContainerRuleDto[];
+      } as CreateMenuItemContainerRuleDto,
+    ] as CreateMenuItemContainerRuleDto[];
 
     const optionDto = {
       mode: 'create',
       containerRuleDtos: compOptionDtos,
       validQuantity: 6,
-    } as CreateChildMenuItemContainerOptionsDto;
+    } as CreateMenuItemContainerOptionsDto;
 
     const sizeTwo = await sizeService.findOneByName(SIZE_TWO);
     if (!sizeTwo) {
@@ -1075,23 +1086,26 @@ describe('menu item service', () => {
 
     const createOptionDto = {
       mode: 'create',
-      validMenuItemId: itemF.id,
-      validSizeIds: itemF.validSizes.map((size) => size.id),
-    } as CreateChildMenuItemContainerRuleDto;
+      createDto: {
+        validMenuItemId: itemF.id,
+        validSizeIds: itemF.validSizes.map((size) => size.id),
+      },
+    } as NestedMenuItemContainerRuleDto;
 
     const theRest = itemToUpdate.containerOptions.containerRules.map(
       (comp) =>
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateChildMenuItemContainerRuleDto,
+          updateDto: {},
+        }) as NestedMenuItemContainerRuleDto,
     );
 
     const updateItemOptionsDto = {
       mode: 'update',
       id: itemToUpdate.containerOptions.id,
       containerRuleDtos: [createOptionDto, ...theRest],
-    } as UpdateChildMenuItemContainerOptionsDto;
+    } as NestedMenuItemContainerOptionsDto;
 
     const updateItemDto = {
       containerOptionDto: updateItemOptionsDto,
@@ -1131,7 +1145,8 @@ describe('menu item service', () => {
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateChildMenuItemContainerRuleDto,
+          updateDto: {} as UpdateMenuItemContainerItemDto,
+        }) as NestedMenuItemContainerRuleDto,
     );
 
     const itemC = await itemService.findOneByName(item_c, ['validSizes']);
@@ -1142,8 +1157,16 @@ describe('menu item service', () => {
       throw new Error();
     }
 
-    theRest[0].validMenuItemId = itemC.id;
-    theRest[0].validSizeIds = itemC.validSizes.map((size) => size.id);
+    //theRest[0].updateDto.validMenuItemId = itemC.id;
+    //theRest[0].updateDto.validSizeIds = itemC.validSizes.map((size) => size.id);
+    theRest[0] = {
+      mode: 'update',
+      id: theRest[0].id,
+      updateDto: {
+        validMenuItemId: itemC.id,
+        validSizeIds: itemC.validSizes.map((size) => size.id),
+      },
+    };
 
     const modifiedCompId = theRest[0].id;
 
@@ -1151,7 +1174,7 @@ describe('menu item service', () => {
       mode: 'update',
       id: itemToUpdate.containerOptions.id,
       containerRuleDtos: theRest,
-    } as UpdateChildMenuItemContainerOptionsDto;
+    } as NestedMenuItemContainerOptionsDto;
 
     const updateItemDto = {
       containerOptionDto: updateItemOptionsDto,
@@ -1199,14 +1222,17 @@ describe('menu item service', () => {
         ({
           mode: 'update',
           id: comp.id,
-        }) as UpdateChildMenuItemContainerRuleDto,
+          updateDto: {},
+        }) as NestedMenuItemContainerRuleDto,
     );
 
     const updateItemOptionsDto = {
       mode: 'update',
       id: itemToUpdate.containerOptions.id,
-      containerRuleDtos: theRest,
-    } as UpdateChildMenuItemContainerOptionsDto;
+      updateDto: {
+        containerRuleDtos: theRest,
+      },
+    } as NestedMenuItemContainerOptionsDto;
 
     const updateItemDto = {
       containerOptionDto: updateItemOptionsDto,

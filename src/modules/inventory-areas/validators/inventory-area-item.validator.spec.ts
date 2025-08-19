@@ -3,7 +3,7 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { INVALID, MISSING } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
-import { UpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/update-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -256,12 +256,15 @@ describe('inventory area item validator', () => {
     }
 
     const sizeDto = {
+      mode: 'update',
       id: sizes[0].id,
-      measureAmount: 1,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
-      cost: 10,
-    } as UpdateInventoryItemSizeDto;
+      updateDto: {
+        measureAmount: 1,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 10,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const item = await itemService.findOneByName(FOOD_A);
     if (!item) {
@@ -293,11 +296,14 @@ describe('inventory area item validator', () => {
     }
 
     const sizeDto = {
-      measureAmount: 2,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
-      cost: 3,
-    } as CreateInventoryItemSizeDto;
+      mode: 'create',
+      createDto: {
+        measureAmount: 2,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 3,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const item = await itemService.findOneByName(FOOD_A);
     if (!item) {
@@ -333,12 +339,15 @@ describe('inventory area item validator', () => {
     }
 
     const sizeDto = {
-      inventoryItemId: item.id,
-      measureAmount: 2,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
-      cost: 3,
-    } as CreateInventoryItemSizeDto;
+      mode: 'create',
+      createDto: {
+        inventoryItemId: item.id,
+        measureAmount: 2,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 3,
+      },
+    } as NestedInventoryItemSizeDto;
 
     const dto = {
       countedInventoryItemId: item.id,

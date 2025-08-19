@@ -153,11 +153,7 @@ export class InventoryAreaTestUtil {
     );
     const toInsert: InventoryArea[] = [];
 
-    /*for(const area of areas){
-            const exists = await this.areaService.findOneByName(area.areaName);
-            if(!exists){ toInsert.push(area); }
-        }*/
-    await this.areaService.insertEntities(/*toInsert*/ areas);
+    await this.areaService.insertEntities(areas);
   }
 
   /**

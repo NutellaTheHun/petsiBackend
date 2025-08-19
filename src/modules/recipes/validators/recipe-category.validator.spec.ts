@@ -5,7 +5,7 @@ import { ValidationException } from '../../../util/exceptions/validation-excepti
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { REC_CAT_A, REC_CAT_B } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -112,13 +112,19 @@ describe('recipe category validator', () => {
 
     const subCatDtos = [
       {
-        subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      } as NestedRecipeSubCategoryDto,
       {
+        mode: 'update',
         id: toUpdate.subCategories[0].id,
-        subCategoryName: 'SUB CAT 2',
-      } as UpdateRecipeSubCategoryDto,
-    ] as (CreateRecipeSubCategoryDto | UpdateRecipeSubCategoryDto)[];
+        updateDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
+      } as NestedRecipeSubCategoryDto,
+    ] as NestedRecipeSubCategoryDto[];
 
     const dto = {
       categoryName: 'UPDATE',
@@ -136,13 +142,19 @@ describe('recipe category validator', () => {
 
     const subCatDtos = [
       {
-        subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      } as NestedRecipeSubCategoryDto,
       {
+        mode: 'update',
         id: toUpdate.subCategories[0].id,
-        subCategoryName: 'SUB CAT 2',
-      } as UpdateRecipeSubCategoryDto,
-    ] as (CreateRecipeSubCategoryDto | UpdateRecipeSubCategoryDto)[];
+        updateDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
+      } as NestedRecipeSubCategoryDto,
+    ] as NestedRecipeSubCategoryDto[];
 
     const dto = {
       categoryName: REC_CAT_B,
@@ -167,13 +179,19 @@ describe('recipe category validator', () => {
 
     const subCatDtos = [
       {
-        subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      } as NestedRecipeSubCategoryDto,
       {
+        mode: 'update',
         id: toUpdate.subCategories[0].id,
-        subCategoryName: 'SUB CAT 1',
-      } as UpdateRecipeSubCategoryDto,
-    ] as (CreateRecipeSubCategoryDto | UpdateRecipeSubCategoryDto)[];
+        updateDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      } as NestedRecipeSubCategoryDto,
+    ] as NestedRecipeSubCategoryDto[];
 
     const dto = {
       categoryName: 'UPDATE',

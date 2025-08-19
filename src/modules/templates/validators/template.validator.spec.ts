@@ -5,7 +5,7 @@ import { ValidationException } from '../../../util/exceptions/validation-excepti
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateService } from '../services/template.service';
@@ -220,17 +220,23 @@ describe('template validator', () => {
 
     const itemDtos = [
       {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
+      } as NestedTemplateMenuItemDto,
       {
+        mode: 'update',
         id: toUpdate.templateItems[0].id,
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
-      } as UpdateTemplateMenuItemDto,
-    ] as (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[];
+        updateDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
+      } as NestedTemplateMenuItemDto,
+    ] as NestedTemplateMenuItemDto[];
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -259,22 +265,31 @@ describe('template validator', () => {
 
     const itemDtos = [
       {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
+      } as NestedTemplateMenuItemDto,
       {
+        mode: 'update',
         id: toUpdate.templateItems[0].id,
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
-      } as UpdateTemplateMenuItemDto,
+        updateDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
+      } as NestedTemplateMenuItemDto,
       {
-        displayName: 'B2',
-        menuItemId: itemB.id,
-        tablePosIndex: 3,
-      } as CreateTemplateMenuItemDto,
-    ] as (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[];
+        mode: 'create',
+        createDto: {
+          displayName: 'B2',
+          menuItemId: itemB.id,
+          tablePosIndex: 3,
+        },
+      } as NestedTemplateMenuItemDto,
+    ] as NestedTemplateMenuItemDto[];
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -314,22 +329,31 @@ describe('template validator', () => {
 
     const itemDtos = [
       {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
+      } as NestedTemplateMenuItemDto,
       {
+        mode: 'update',
         id: toUpdate.templateItems[0].id,
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
-      } as UpdateTemplateMenuItemDto,
+        updateDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
+      } as NestedTemplateMenuItemDto,
       {
-        displayName: 'B2',
-        menuItemId: itemC.id,
-        tablePosIndex: 2,
-      } as CreateTemplateMenuItemDto,
-    ] as (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[];
+        mode: 'create',
+        createDto: {
+          displayName: 'B2',
+          menuItemId: itemC.id,
+          tablePosIndex: 2,
+        },
+      } as NestedTemplateMenuItemDto,
+    ] as NestedTemplateMenuItemDto[];
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -365,17 +389,23 @@ describe('template validator', () => {
 
     const itemDtos = [
       {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
+      } as NestedTemplateMenuItemDto,
       {
+        mode: 'update',
         id: toUpdate.templateItems[0].id,
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
-      } as UpdateTemplateMenuItemDto,
-    ] as (CreateTemplateMenuItemDto | UpdateTemplateMenuItemDto)[];
+        updateDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
+      } as NestedTemplateMenuItemDto,
+    ] as NestedTemplateMenuItemDto[];
     const dto = {
       templateName: template_b,
       isPie: true,

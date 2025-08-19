@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
@@ -342,25 +343,25 @@ export class MenuItemTestingUtil {
       throw new Error('item b valid sizes is null');
     }
     const containerRuleDtos_A = [
-      {
-        parentContainerOptionsId: itemA.id,
+      plainToInstance(CreateMenuItemContainerRuleDto, {
+        //parentContainerOptionsId: itemA.id,
         validMenuItemId: itemA.id,
         validSizeIds: itemA.validSizes.slice(1).map((size) => size.id),
-        quantity: 2,
-      } as CreateMenuItemContainerRuleDto,
-      {
-        parentContainerOptionsId: itemB.id,
+        //quantity: 2,
+      }),
+      plainToInstance(CreateMenuItemContainerRuleDto, {
+        //parentContainerOptionsId: itemB.id,
         validMenuItemId: itemB.id,
         validSizeIds: itemB.validSizes.slice(1).map((size) => size.id),
-        quantity: 2,
-      } as CreateMenuItemContainerRuleDto,
-    ] as CreateMenuItemContainerRuleDto[];
+        //quantity: 2,
+      }),
+    ];
 
-    const optionsA = {
-      parentContainerMenuItemId: itemA.id,
+    const optionsA = plainToInstance(CreateMenuItemContainerOptionsDto, {
+      //parentContainerMenuItemId: itemA.id,
       containerRuleDtos: containerRuleDtos_A,
       validQuantity: 4,
-    } as CreateMenuItemContainerOptionsDto;
+    });
 
     const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
     if (!itemC) {
@@ -377,46 +378,47 @@ export class MenuItemTestingUtil {
       throw new Error('item d valid sizes is null');
     }
     const containerRuleDtos_B = [
-      {
-        parentContainerOptionsId: itemC.id,
+      plainToInstance(CreateMenuItemContainerRuleDto, {
+        //parentContainerOptionsId: itemC.id,
         validMenuItemId: itemC.id,
         validSizeIds: itemC.validSizes.slice(1).map((size) => size.id),
-        quantity: 3,
-      } as CreateMenuItemContainerRuleDto,
-      {
-        parentContainerOptionsId: itemD.id,
+        //quantity: 3,
+      }),
+      plainToInstance(CreateMenuItemContainerRuleDto, {
+        //parentContainerOptionsId: itemD.id,
         validMenuItemId: itemD.id,
         validSizeIds: itemD.validSizes.slice(1).map((size) => size.id),
-        quantity: 3,
-      } as CreateMenuItemContainerRuleDto,
-    ] as CreateMenuItemContainerRuleDto[];
-    const optionsB = {
-      parentContainerMenuItemId: itemB.id,
+        //quantity: 3,
+      }),
+    ];
+
+    const optionsB = plainToInstance(CreateMenuItemContainerOptionsDto, {
+      //parentContainerMenuItemId: itemB.id,
       containerRuleDtos: containerRuleDtos_B,
       validQuantity: 6,
-    } as CreateMenuItemContainerOptionsDto;
+    });
 
     const sizeOne = await this.sizeService.findOneByName(SIZE_ONE);
     if (!sizeOne) {
       throw new Error('size one is null');
     }
     const definedContainerDto_C = [
-      {
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: sizeOne.id,
         containedMenuItemId: itemA.id,
         containedMenuItemSizeId: itemA.validSizes[0].id,
         quantity: 2,
-      } as CreateMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: sizeOne.id,
         containedMenuItemId: itemD.id,
         containedMenuItemSizeId: itemD.validSizes[0].id,
         quantity: 3,
-      } as CreateMenuItemContainerItemDto,
-    ] as CreateMenuItemContainerItemDto[];
+      }),
+    ];
 
     const containerItemNames = getItemContainerTestNames();
-    const options = [optionsA, optionsB];
+    const options = [optionsA, optionsB] as CreateMenuItemContainerOptionsDto[];
 
     results.push(
       await this.itemBuilder

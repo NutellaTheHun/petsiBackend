@@ -3,6 +3,7 @@ import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -55,8 +56,11 @@ describe('recipe sub category service', () => {
     );
 
     const createSubCatDto = {
-      subCategoryName: 'test sub Cat',
-    } as CreateRecipeSubCategoryDto;
+      mode: 'create',
+      createDto: {
+        subCategoryName: 'test sub Cat',
+      },
+    } as NestedRecipeSubCategoryDto;
 
     const updateCategoryDto = {
       subCategoryDtos: [createSubCatDto],

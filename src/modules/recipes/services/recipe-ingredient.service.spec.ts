@@ -1,6 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -81,7 +80,6 @@ describe('recipe ingredient service', () => {
     }
 
     const dto = {
-      mode: 'create',
       parentRecipeId: recipeA.id,
       ingredientInventoryItemId: item.id,
       quantity: 1,
@@ -93,17 +91,21 @@ describe('recipe ingredient service', () => {
     );
 
     const createIngredDto = {
-      ingredientInventoryItemId: item.id,
-      quantity: 1,
-      quantityMeasurementId: unit.id,
-    } as CreateRecipeIngredientDto;
+      mode: 'create',
+      createDto: {
+        ingredientInventoryItemId: item.id,
+        quantity: 1,
+        quantityMeasurementId: unit.id,
+      },
+    } as NestedRecipeIngredientDto;
 
     const theRest = recipeA.ingredients.map(
       (ingred) =>
         ({
           mode: 'update',
           id: ingred.id,
-        }) as UpdateRecipeIngredientDto,
+          updateDto: {},
+        }) as NestedRecipeIngredientDto,
     );
 
     const updateRecipeDto = {
@@ -138,6 +140,7 @@ describe('recipe ingredient service', () => {
     const testRecipe = await recipeService.findOne(testRecipeId, [
       'ingredients',
     ]);
+
     if (!testRecipe) {
       throw new NotFoundException();
     }
@@ -174,17 +177,21 @@ describe('recipe ingredient service', () => {
     } as CreateRecipeIngredientDto;
 
     const createIngredDto = {
-      ingredientRecipeId: subRec.id,
-      quantity: 1,
-      quantityMeasurementId: unit.id,
-    } as CreateRecipeIngredientDto;
+      mode: 'create',
+      createDto: {
+        ingredientRecipeId: subRec.id,
+        quantity: 1,
+        quantityMeasurementId: unit.id,
+      },
+    } as NestedRecipeIngredientDto;
 
     const theRest = recipeA.ingredients.map(
       (ingred) =>
         ({
           mode: 'update',
           id: ingred.id,
-        }) as UpdateRecipeIngredientDto,
+          updateDto: {},
+        }) as NestedRecipeIngredientDto,
     );
 
     const updateRecipeDto = {
@@ -235,28 +242,18 @@ describe('recipe ingredient service', () => {
       throw new Error('unit of measure not found');
     }
 
-    const dto = plainToInstance(CreateRecipeIngredientDto, {
-      mode: 'create',
-      recipeId: recipeA.id,
-      inventoryItemId: item.id,
-      subRecipeIngredientId: subRec.id,
-      quantity: 1,
-      unitOfMeasureId: unit.id,
-    });
-
     const recIngredDto = {
-      ingredientInventoryItemId: item.id,
-      ingredientRecipeId: subRec.id,
-      quantity: 1,
-      quantityMeasurementId: unit.id,
-    } as CreateRecipeIngredientDto;
-
-    const nested = {
-      create: recIngredDto,
+      mode: 'create',
+      createDto: {
+        ingredientInventoryItemId: item.id,
+        ingredientRecipeId: subRec.id,
+        quantity: 1,
+        quantityMeasurementId: unit.id,
+      },
     } as NestedRecipeIngredientDto;
 
     const updateRecipeDto = {
-      ingredientDtos: [nested],
+      ingredientDtos: [recIngredDto],
     } as UpdateRecipeDto;
 
     await expect(
@@ -367,17 +364,14 @@ describe('recipe ingredient service', () => {
       throw new Error('inventory item not found');
     }
 
-    const dto = plainToInstance(UpdateRecipeIngredientDto, {
-      mode: 'update',
-      subRecipeIngredientId: newRec.id,
-      inventoryItemId: newItem.id,
-    });
-
     const updateRecIngredDto = {
       mode: 'update',
-      ingredientRecipeId: newRec.id,
-      ingredientInventoryItemId: newItem.id,
-    } as UpdateRecipeIngredientDto;
+      id: 1,
+      updateDto: {
+        ingredientRecipeId: newRec.id,
+        ingredientInventoryItemId: newItem.id,
+      },
+    } as NestedRecipeIngredientDto;
 
     const updateRecipeDto = {
       ingredientDtos: [updateRecIngredDto],

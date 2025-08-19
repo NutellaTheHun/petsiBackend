@@ -5,6 +5,7 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_d, item_e } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
@@ -74,10 +75,13 @@ describe('Template menu item service', () => {
     );
 
     const createItemDto = {
-      displayName: 'test display name',
-      menuItemId: itemD.id,
-      tablePosIndex: 0,
-    } as CreateTemplateMenuItemDto;
+      mode: 'create',
+      createDto: {
+        displayName: 'test display name',
+        menuItemId: itemD.id,
+        tablePosIndex: 0,
+      },
+    } as NestedTemplateMenuItemDto;
 
     const updateTemplateDto = {
       templateItemDtos: [createItemDto],
@@ -87,9 +91,11 @@ describe('Template menu item service', () => {
       template.id,
       updateTemplateDto,
     );
+
     if (!updateResult) {
       throw new Error();
     }
+
     if (!updateResult.templateItems) {
       throw new Error();
     }

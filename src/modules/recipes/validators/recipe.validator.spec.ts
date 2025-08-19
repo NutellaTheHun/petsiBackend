@@ -11,7 +11,7 @@ import { FOOD_B } from '../../inventory-items/utils/constants';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
+import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategoryService } from '../services/recipe-category.service';
@@ -399,17 +399,23 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        updateDto: {
+          ingredientRecipeId: recIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -460,17 +466,23 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        updateDto: {
+          ingredientRecipeId: recIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: REC_C,
@@ -528,17 +540,23 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        updateDto: {
+          ingredientRecipeId: recIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -602,17 +620,23 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        updateDto: {
+          ingredientRecipeId: recIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -675,23 +699,32 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngredB.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
+        updateDto: {
+          ingredientRecipeId: recIngredB.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngredC.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        updateDto: {
+          ingredientRecipeId: recIngredC.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -749,22 +782,31 @@ describe('recipe validator', () => {
 
     const ingredDtos = [
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
+        mode: 'update',
         id: toUpdate.ingredients[0].id,
-        ingredientRecipeId: recIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as UpdateRecipeIngredientDto,
+        updateDto: {
+          ingredientRecipeId: recIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
       {
-        ingredientInventoryItemId: invIngred.id,
-        quantity: 1,
-        quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as (CreateRecipeIngredientDto | UpdateRecipeIngredientDto)[];
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: invIngred.id,
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      } as NestedRecipeIngredientDto,
+    ] as NestedRecipeIngredientDto[];
 
     const dto = {
       recipeName: 'UPDATE',
