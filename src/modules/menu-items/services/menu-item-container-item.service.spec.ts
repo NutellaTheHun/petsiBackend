@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
@@ -71,15 +72,18 @@ describe('menu item container item service', () => {
 
     await expect(componentService.create(dto)).rejects.toThrow();
 
-    const definedContainerDto = {
-      mode: 'create',
-      createDto: {
-        parentContainerSizeId: parent.validSizes[0].id,
-        containedMenuItemId: item.id,
-        containedMenuItemSizeId: item.validSizes[0].id,
-        quantity: 1,
+    const definedContainerDto = plainToInstance(
+      NestedMenuItemContainerItemDto,
+      {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: parent.validSizes[0].id,
+          containedMenuItemId: item.id,
+          containedMenuItemSizeId: item.validSizes[0].id,
+          quantity: 1,
+        },
       },
-    } as NestedMenuItemContainerItemDto;
+    );
 
     const updateItemDto = {
       definedContainerItemDtos: [definedContainerDto],

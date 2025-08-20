@@ -1,99 +1,112 @@
-import { Injectable } from "@nestjs/common";
-import { DatabaseTestContext } from "../../../util/DatabaseTestContext";
-import { MenuItemService } from "../../menu-items/services/menu-item.service";
-import { MenuItemTestingUtil } from "../../menu-items/utils/menu-item-testing.util";
-import { TemplateMenuItem } from "../entities/template-menu-item.entity";
-import { Template } from "../entities/template.entity";
-import { TemplateMenuItemService } from "../services/template-menu-item.service";
-import { TemplateService } from "../services/template.service";
-import { getTestTemplateNames } from "./constants";
+import { Injectable } from '@nestjs/common';
+import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import { Template } from '../entities/template.entity';
+import { TemplateMenuItemService } from '../services/template-menu-item.service';
+import { TemplateService } from '../services/template.service';
+import { getTestTemplateNames } from './constants';
 
 @Injectable()
 export class TemplateTestingUtil {
+  private initTemplates = false;
+  private initItems = false;
 
-    private initTemplates = false;
-    private initItems = false;
+  constructor(
+    private readonly templateService: TemplateService,
+    private readonly templateItemService: TemplateMenuItemService,
 
-    constructor(
-        private readonly templateService: TemplateService,
-        private readonly templateItemService: TemplateMenuItemService,
+    private readonly menuItemService: MenuItemService,
+    private readonly menuItemTestUtil: MenuItemTestingUtil,
+  ) {}
 
-        private readonly menuItemService: MenuItemService,
-        private readonly menuItemTestUtil: MenuItemTestingUtil,
-    ) { }
+  public async getTemplateEntities(
+    testContext: DatabaseTestContext,
+  ): Promise<Template[]> {
+    const templateNames = getTestTemplateNames();
+    const results: Template[] = [];
 
-    public async getTemplateEntities(testContext: DatabaseTestContext): Promise<Template[]> {
-        const templateNames = getTestTemplateNames();
-        const results: Template[] = [];
+    for (const name of templateNames) {
+      results.push({
+        templateName: name,
+      } as Template);
+    }
+    return results;
+  }
 
-        for (const name of templateNames) {
-            results.push({
-                templateName: name,
-            } as Template);
-        }
-        return results;
+  public async initTemplateTestDatabase(
+    testContext: DatabaseTestContext,
+  ): Promise<void> {
+    if (this.initTemplates) {
+      return;
+    }
+    this.initTemplates = true;
+
+    testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
+
+    const templates = await this.getTemplateEntities(testContext);
+
+    await this.templateService.insertEntities(templates);
+  }
+
+  public async cleanupTemplateTestDatabase(): Promise<void> {
+    await this.templateService.getQueryBuilder().delete().execute();
+  }
+
+  public async getTemplateMenuItemEntities(
+    testContext: DatabaseTestContext,
+  ): Promise<TemplateMenuItem[]> {
+    await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
+    await this.initTemplateTestDatabase(testContext);
+
+    const itemsRequest = await this.menuItemService.findAll();
+    const items = itemsRequest.items;
+    if (!items) {
+      throw new Error();
+    }
+    let itemIdx = 0;
+
+    const templatesRequest = await this.templateService.findAll();
+    const templates = templatesRequest.items;
+    if (!templates) {
+      throw new Error();
     }
 
-    public async initTemplateTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if (this.initTemplates) {
-            return;
-        }
-        this.initTemplates = true;
+    const results: TemplateMenuItem[] = [];
 
-        testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
-
-        const templates = await this.getTemplateEntities(testContext);
-
-        await this.templateService.insertEntities(templates);
+    for (const template of templates) {
+      for (let i = 0; i < 3; i++) {
+        results.push({
+          displayName: 'testDisplayName' + itemIdx,
+          menuItem: items[itemIdx % items.length],
+          tablePosIndex: itemIdx,
+          parentTemplate: template,
+        } as TemplateMenuItem);
+        itemIdx++;
+      }
     }
+    return results;
+  }
 
-    public async cleanupTemplateTestDatabase(): Promise<void> {
-        await this.templateService.getQueryBuilder().delete().execute();
+  public async initTemplateMenuItemTestDatabase(
+    testContext: DatabaseTestContext,
+  ): Promise<void> {
+    if (this.initItems) {
+      return;
     }
+    this.initItems = true;
 
-    public async getTemplateMenuItemEntities(testContext: DatabaseTestContext): Promise<TemplateMenuItem[]> {
-        await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
-        await this.initTemplateTestDatabase(testContext);
+    testContext.addCleanupFunction(() =>
+      this.cleanupTemplateMenuItemTestDatabase(),
+    );
 
-        const itemsRequest = await this.menuItemService.findAll();
-        const items = itemsRequest.items;
-        if (!items) { throw new Error(); }
-        let itemIdx = 0;
+    const items = await this.getTemplateMenuItemEntities(testContext);
 
-        const templatesRequest = await this.templateService.findAll();
-        const templates = templatesRequest.items;
-        if (!templates) { throw new Error(); }
+    await this.templateItemService.insertEntities(items);
+  }
 
-        const results: TemplateMenuItem[] = [];
-
-        for (const template of templates) {
-            for (let i = 0; i < 3; i++) {
-                results.push({
-                    displayName: "testDisplayName" + itemIdx,
-                    menuItem: items[itemIdx % items.length],
-                    tablePosIndex: itemIdx,
-                    parentTemplate: template,
-                } as TemplateMenuItem);
-                itemIdx++;
-            }
-        }
-        return results;
-    }
-
-    public async initTemplateMenuItemTestDatabase(testContext: DatabaseTestContext): Promise<void> {
-        if (this.initItems) {
-            return;
-        }
-        this.initItems = true;
-
-        testContext.addCleanupFunction(() => this.cleanupTemplateMenuItemTestDatabase());
-
-        const items = await this.getTemplateMenuItemEntities(testContext);
-
-        await this.templateItemService.insertEntities(items);
-    }
-
-    public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
-        await this.templateItemService.getQueryBuilder().delete().execute();
-    }
+  public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
+    await this.templateItemService.getQueryBuilder().delete().execute();
+  }
 }

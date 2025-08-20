@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
@@ -269,11 +270,13 @@ export class OrderTestingUtil {
         throw new Error();
       }
 
-      results.push({
-        menuItemId: item.id,
-        quantity: 1,
-        menuItemSizeId: item.validSizes[0].id,
-      } as CreateOrderMenuItemDto);
+      results.push(
+        plainToInstance(CreateOrderMenuItemDto, {
+          menuItemId: item.id,
+          quantity: 1,
+          menuItemSizeId: item.validSizes[0].id,
+        }),
+      );
     }
 
     return results;

@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -93,25 +94,24 @@ describe('Inventory area item service', () => {
       BadRequestException,
     );
 
-    const createAreaItemDto = {
+    const createAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
       mode: 'create',
       createDto: {
         countedInventoryItemId: item.id,
         countedAmount: 1,
         countedItemSizeId: item.itemSizes[0].id,
       },
-    } as NestedInventoryAreaItemDto;
+    });
 
     if (!counts[0].countedItems) {
       throw new Error();
     }
-    const theRest = counts[0].countedItems.map(
-      (item) =>
-        ({
-          mode: 'update',
-          id: item.id,
-          updateDto: {},
-        }) as NestedInventoryAreaItemDto,
+    const theRest = counts[0].countedItems.map((item) =>
+      plainToInstance(NestedInventoryAreaItemDto, {
+        mode: 'update',
+        id: item.id,
+        updateDto: {},
+      }),
     );
 
     const updateCountDto = {

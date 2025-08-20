@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import {
   DRY_A,
@@ -459,26 +460,32 @@ export class RecipeTestUtil {
 
     for (let i = 0; i < quantities.length; i++) {
       if (itemIndex < itemIds.length) {
-        results.push({
-          ingredientInventoryItemId: itemIds[itemIndex++],
-          quantityMeasurementId: unitIds[i % unitIds.length],
-          quantity: quantities[i],
-        } as CreateRecipeIngredientDto);
+        results.push(
+          plainToInstance(CreateRecipeIngredientDto, {
+            ingredientInventoryItemId: itemIds[itemIndex++],
+            quantityMeasurementId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
+          }),
+        );
       } else if (subRecipeIndex < subRecipeIds.length) {
-        results.push({
-          ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
-          quantityMeasurementId: unitIds[i % unitIds.length],
-          quantity: quantities[i],
-        } as CreateRecipeIngredientDto);
+        results.push(
+          plainToInstance(CreateRecipeIngredientDto, {
+            ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
+            quantityMeasurementId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
+          }),
+        );
       } else {
         itemIndex = 0;
         subRecipeIndex = 0;
 
-        results.push({
-          ingredientInventoryItemId: itemIds[itemIndex++],
-          quantityMeasurementId: unitIds[i % unitIds.length],
-          quantity: quantities[i],
-        } as CreateRecipeIngredientDto);
+        results.push(
+          plainToInstance(CreateRecipeIngredientDto, {
+            ingredientInventoryItemId: itemIds[itemIndex++],
+            quantityMeasurementId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
+          }),
+        );
       }
     }
     return results;

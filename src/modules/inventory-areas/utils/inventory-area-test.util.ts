@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -237,23 +238,27 @@ export class InventoryAreaTestUtil {
 
     for (const item of itemConfigs) {
       if (item.sizeDto) {
-        results.push({
-          parentInventoryCountId: areaCountId,
-          countedAmount: unitAmount++,
-          measureAmount: measureAmount++,
-          countedInventoryItemId: item.itemId,
-          //itemSizeId: item.itemSizeId,
-          countedItemSizeDto: item.sizeDto,
-        } as CreateInventoryAreaItemDto);
+        results.push(
+          plainToInstance(CreateInventoryAreaItemDto, {
+            parentInventoryCountId: areaCountId,
+            countedAmount: unitAmount++,
+            measureAmount: measureAmount++,
+            countedInventoryItemId: item.itemId,
+            //itemSizeId: item.itemSizeId,
+            countedItemSizeDto: item.sizeDto,
+          }),
+        );
       } else {
-        results.push({
-          parentInventoryCountId: areaCountId,
-          countedAmount: unitAmount++,
-          measureAmount: measureAmount++,
-          countedInventoryItemId: item.itemId,
-          countedItemSizeId: item.itemSizeId,
-          //itemSizeDto: item.sizeDto
-        } as CreateInventoryAreaItemDto);
+        results.push(
+          plainToInstance(CreateInventoryAreaItemDto, {
+            parentInventoryCountId: areaCountId,
+            countedAmount: unitAmount++,
+            measureAmount: measureAmount++,
+            countedInventoryItemId: item.itemId,
+            countedItemSizeId: item.itemSizeId,
+            //itemSizeDto: item.sizeDto
+          }),
+        );
       }
     }
     return results;

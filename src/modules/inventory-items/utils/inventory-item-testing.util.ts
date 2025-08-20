@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import * as UNIT_CONSTANT from '../../unit-of-measure/utils/constants';
 import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
@@ -346,7 +347,7 @@ export class InventoryItemTestingUtil {
 
       await this.itemService.update(item.id, {
         itemSizeDtos: [
-          {
+          plainToInstance(NestedInventoryItemSizeDto, {
             mode: 'create',
             createDto: {
               inventoryItemId: item.id,
@@ -355,8 +356,8 @@ export class InventoryItemTestingUtil {
               inventoryPackageId: dto1.packageType.id,
               cost: 1,
             },
-          } as NestedInventoryItemSizeDto,
-          {
+          }),
+          plainToInstance(NestedInventoryItemSizeDto, {
             mode: 'create',
             createDto: {
               inventoryItemId: item.id,
@@ -365,7 +366,7 @@ export class InventoryItemTestingUtil {
               inventoryPackageId: dto2.packageType.id,
               cost: 1,
             },
-          } as NestedInventoryItemSizeDto,
+          }),
         ],
       } as UpdateInventoryItemDto);
     }
@@ -410,12 +411,14 @@ export class InventoryItemTestingUtil {
     let costIter = 0;
 
     for (let i = 0; i < resultAmount; i++) {
-      results.push({
-        measureUnitId: unitIds[unitIdx++],
-        inventoryPackageId: packageIds[packageIdx++],
-        cost: costs[costIter++],
-        measureAmount: 1,
-      } as CreateInventoryItemSizeDto);
+      results.push(
+        plainToInstance(CreateInventoryItemSizeDto, {
+          measureUnitId: unitIds[unitIdx++],
+          inventoryPackageId: packageIds[packageIdx++],
+          cost: costs[costIter++],
+          measureAmount: 1,
+        }),
+      );
       if (unitIdx === unitIds.length) {
         unitIdx = 0;
       }

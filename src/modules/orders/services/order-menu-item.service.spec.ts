@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
@@ -88,14 +89,14 @@ describe('order menu item service', () => {
       BadRequestException,
     );
 
-    const createItemDto = {
+    const createItemDto = plainToInstance(NestedOrderMenuItemDto, {
       mode: 'create',
       createDto: {
         menuItemId: item.id,
         menuItemSizeId: item.validSizes[0].id,
         quantity: 1,
       },
-    } as NestedOrderMenuItemDto;
+    });
 
     const updateOrderDto = {
       orderedMenuItemDtos: [createItemDto],
@@ -277,12 +278,12 @@ describe('order menu item service', () => {
     }
 
     const compDtos = [
-      {
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: containerItems[0].id,
         containedMenuItemId: options.containerRules[0].validItem.id,
         containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
+      }),
     ] as CreateOrderContainerItemDto[];
 
     const orders = (await orderService.findAll({ relations: ['orderedItems'] }))
@@ -296,7 +297,7 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const itemDto = {
+    const itemDto = plainToInstance(NestedOrderMenuItemDto, {
       mode: 'create',
       createDto: {
         menuItemId: containerItems[0].id,
@@ -304,7 +305,7 @@ describe('order menu item service', () => {
         quantity: 1,
         orderedItemContainerDtos: compDtos,
       },
-    } as NestedOrderMenuItemDto;
+    });
 
     const updateOrderDto = {
       orderedMenuItemDtos: [itemDto],
@@ -363,7 +364,7 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const cDto = {
+    const cDto = plainToInstance(NestedOrderContainerItemDto, {
       mode: 'create',
       createDto: {
         parentContainerMenuItemId: parentMenuItem.id,
@@ -371,15 +372,14 @@ describe('order menu item service', () => {
         containedMenuItemSizeId: options.containerRules[1].validSizes[0].id,
         quantity: 2,
       },
-    } as NestedOrderContainerItemDto;
+    });
 
-    const theRest = toUpdate.orderedContainerItems.map(
-      (comp) =>
-        ({
-          mode: 'update',
-          id: comp.id,
-          updateDto: {},
-        }) as NestedOrderContainerItemDto,
+    const theRest = toUpdate.orderedContainerItems.map((comp) =>
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'update',
+        id: comp.id,
+        updateDto: {},
+      }),
     );
 
     const dto = {
@@ -428,20 +428,19 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const theRest = toUpdate.orderedContainerItems.map(
-      (comp) =>
-        ({
-          mode: 'update',
-          id: comp.id,
-          updateDto: {},
-        }) as NestedOrderContainerItemDto,
+    const theRest = toUpdate.orderedContainerItems.map((comp) =>
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'update',
+        id: comp.id,
+        updateDto: {},
+      }),
     );
 
     //theRest[0].containedMenuItemSizeId =
     //options.containerRules[0].validSizes[0].id;
     //theRest[0].quantity = 50;
     //theRest[0].parentContainerMenuItemId = parentMenuItem.id;
-    theRest[0] = {
+    theRest[0] = plainToInstance(NestedOrderContainerItemDto, {
       mode: 'update',
       id: theRest[0].id,
       updateDto: {
@@ -449,7 +448,7 @@ describe('order menu item service', () => {
         quantity: 50,
         parentContainerMenuItemId: parentMenuItem.id,
       },
-    };
+    });
 
     const moddedId = theRest[0].id;
 
@@ -487,13 +486,12 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const theRest = toUpdate.orderedContainerItems.slice(1).map(
-      (comp) =>
-        ({
-          mode: 'update',
-          id: comp.id,
-          updateDto: {},
-        }) as NestedOrderContainerItemDto,
+    const theRest = toUpdate.orderedContainerItems.slice(1).map((comp) =>
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'update',
+        id: comp.id,
+        updateDto: {},
+      }),
     );
 
     const removedId = toUpdate.orderedContainerItems[0].id;

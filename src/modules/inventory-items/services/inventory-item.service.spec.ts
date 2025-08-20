@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON } from '../../unit-of-measure/utils/constants';
@@ -433,7 +434,7 @@ describe('Inventory Item Service', () => {
     );
 
     const updateSizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: item.itemSizes[0].id,
         updateDto: {
@@ -441,15 +442,15 @@ describe('Inventory Item Service', () => {
           inventoryPackageTypeId: newPkgs[0].id,
           cost: 12.5,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: item.itemSizes[1].id,
         updateDto: {
           measureUnitId: newUnits[1].id,
           inventoryPackageTypeId: newPkgs[1].id,
         },
-      } as NestedInventoryItemSizeDto,
+      }),
     ];
 
     const updateDto = {
@@ -500,11 +501,11 @@ describe('Inventory Item Service', () => {
     savedSizeId = sizes[1].id;
 
     const updateSizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: sizes[1].id,
         updateDto: {},
-      } as NestedInventoryItemSizeDto,
+      }),
     ];
 
     const updateDto = {
@@ -572,15 +573,15 @@ describe('Inventory Item Service', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: sizes[0].id,
         updateDto: {
           measureUnitId: newUnits[0].id,
           inventoryPackageId: newPkgs[0].id,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: createUnit.id,
@@ -588,7 +589,7 @@ describe('Inventory Item Service', () => {
           cost: 7.01,
           measureAmount: 1,
         },
-      } as NestedInventoryItemSizeDto,
+      }),
     ];
 
     const updateDto = {
