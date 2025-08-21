@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
-import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
@@ -790,7 +789,7 @@ describe('menu item service', () => {
         containedMenuItemSizeId: itemD.validSizes[0].id,
         quantity: 3,
       }),
-    ] as CreateMenuItemContainerItemDto[];
+    ];
 
     const dto = {
       itemName: 'menuItemWithComponents',
@@ -1139,7 +1138,7 @@ describe('menu item service', () => {
       plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'update',
         id: comp.id,
-        updateDto: {} as UpdateMenuItemContainerItemDto,
+        updateDto: {},
       }),
     );
 
@@ -1169,7 +1168,9 @@ describe('menu item service', () => {
       {
         mode: 'update',
         id: itemToUpdate.containerOptions.id,
-        containerRuleDtos: theRest,
+        updateDto: {
+          containerRuleDtos: theRest,
+        },
       },
     );
 

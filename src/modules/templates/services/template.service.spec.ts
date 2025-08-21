@@ -1,5 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
@@ -117,23 +118,23 @@ describe('Template Service', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'itemA',
           menuItemId: itemA.id,
           tablePosIndex: 0,
         },
-      },
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'itemB',
           menuItemId: itemB.id,
           tablePosIndex: 1,
         },
-      },
-    ] as NestedTemplateMenuItemDto[];
+      }),
+    ];
 
     const dto = {
       templateItemDtos: itemDtos,
@@ -184,7 +185,7 @@ describe('Template Service', () => {
     }
     modifiedMenuItemId = newItem.id;
 
-    const uItemDto = {
+    const uItemDto = plainToInstance(NestedTemplateMenuItemDto, {
       mode: 'update',
       id: modifiedItemId,
       updateDto: {
@@ -192,15 +193,14 @@ describe('Template Service', () => {
         tablePosIndex: 10,
         menuItemId: modifiedMenuItemId,
       },
-    } as NestedTemplateMenuItemDto;
+    });
 
-    const theRest = template.templateItems.slice(1).map(
-      (item) =>
-        ({
-          mode: 'update',
-          id: item.id,
-          updateDto: {},
-        }) as NestedTemplateMenuItemDto,
+    const theRest = template.templateItems.slice(1).map((item) =>
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'update',
+        id: item.id,
+        updateDto: {},
+      }),
     );
 
     const dto = {
@@ -250,13 +250,12 @@ describe('Template Service', () => {
 
     deletedItemId = template.templateItems[0].id;
 
-    const uItemDtos = template.templateItems.slice(1).map(
-      (item) =>
-        ({
-          mode: 'update',
-          id: item.id,
-          updateDto: {},
-        }) as NestedTemplateMenuItemDto,
+    const uItemDtos = template.templateItems.slice(1).map((item) =>
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'update',
+        id: item.id,
+        updateDto: {},
+      }),
     );
 
     const dto = {

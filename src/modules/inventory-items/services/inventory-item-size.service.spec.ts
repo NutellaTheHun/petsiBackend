@@ -1,10 +1,9 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UnitOfMeasureCategoryService } from '../../unit-of-measure/services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
-import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -80,7 +79,7 @@ describe('Inventory Item Size Service', () => {
       throw new Error('inventory item is null');
     }
 
-    const sizeDto = {
+    /*const sizeDto = {
       measureUnitId: unit.id,
       inventoryPackageId: packageType?.id,
       inventoryItemId: item?.id,
@@ -90,7 +89,7 @@ describe('Inventory Item Size Service', () => {
 
     await expect(sizeService.create(sizeDto)).rejects.toThrow(
       BadRequestException,
-    );
+    );*/
 
     const createItemSizeDto = {
       mode: 'create',

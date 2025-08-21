@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE, INVALID } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -11,7 +12,7 @@ import {
   item_d,
 } from '../../menu-items/utils/constants';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
-import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategoryService } from '../services/order-category.service';
@@ -68,17 +69,17 @@ describe('order validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateOrderMenuItemDto, {
         menuItemId: itemA.id,
         menuItemSizeId: itemA.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderMenuItemDto, {
         menuItemId: itemB.id,
         menuItemSizeId: itemB.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderMenuItemDto,
-    ] as CreateOrderMenuItemDto[];
+      }),
+    ];
     const dto = {
       orderCategoryId: category.id,
       recipient: 'CREATE',
@@ -106,22 +107,23 @@ describe('order validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateOrderMenuItemDto, {
         menuItemId: itemA.id,
         menuItemSizeId: itemA.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderMenuItemDto, {
         menuItemId: itemB.id,
         menuItemSizeId: itemB.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderMenuItemDto, {
         menuItemId: itemA.id,
         menuItemSizeId: itemA.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderMenuItemDto,
-    ] as CreateOrderMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       orderCategoryId: category.id,
       recipient: 'CREATE',
@@ -166,23 +168,32 @@ describe('order validator', () => {
     const itemToUpdate = (await orderItemService.findAll()).items[0];
 
     const itemDtos = [
-      {
-        menuItemId: itemA.id,
-        menuItemSizeId: itemA.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
-        menuItemId: itemB.id,
-        menuItemSizeId: itemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemB.id,
+          menuItemSizeId: itemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'update',
         id: itemToUpdate.id,
-        menuItemId: itemC.id,
-        menuItemSizeId: itemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderMenuItemDto,
-    ] as (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[];
+        updateDto: {
+          menuItemId: itemC.id,
+          menuItemSizeId: itemC.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
 
     const dto = {
       orderCategoryId: category.id,
@@ -221,28 +232,40 @@ describe('order validator', () => {
     const itemToUpdate = (await orderItemService.findAll()).items[0];
 
     const itemDtos = [
-      {
-        menuItemId: itemA.id,
-        menuItemSizeId: itemA.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
-        menuItemId: itemB.id,
-        menuItemSizeId: itemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemB.id,
+          menuItemSizeId: itemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'update',
         id: itemToUpdate.id,
-        menuItemId: itemC.id,
-        menuItemSizeId: itemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderMenuItemDto,
-      {
-        menuItemId: itemA.id,
-        menuItemSizeId: itemA.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-    ] as (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[];
+        updateDto: {
+          menuItemId: itemC.id,
+          menuItemSizeId: itemC.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
 
     const dto = {
       orderCategoryId: category.id,
@@ -293,29 +316,41 @@ describe('order validator', () => {
     const itemToUpdate = (await orderItemService.findAll()).items[0];
 
     const itemDtos = [
-      {
-        menuItemId: itemA.id,
-        menuItemSizeId: itemA.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
-        menuItemId: itemB.id,
-        menuItemSizeId: itemB.validSizes[0].id,
-        quantity: 1,
-      } as CreateOrderMenuItemDto,
-      {
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemB.id,
+          menuItemSizeId: itemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'update',
         id: itemToUpdate.id,
-        menuItemId: itemC.id,
-        menuItemSizeId: itemC.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderMenuItemDto,
-      {
+        updateDto: {
+          menuItemId: itemC.id,
+          menuItemSizeId: itemC.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'update',
         id: itemToUpdate.id,
-        menuItemId: itemD.id,
-        menuItemSizeId: itemD.validSizes[0].id,
-        quantity: 1,
-      } as UpdateOrderMenuItemDto,
-    ] as (CreateOrderMenuItemDto | UpdateOrderMenuItemDto)[];
+        updateDto: {
+          menuItemId: itemD.id,
+          menuItemSizeId: itemD.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
 
     const dto = {
       orderCategoryId: category.id,

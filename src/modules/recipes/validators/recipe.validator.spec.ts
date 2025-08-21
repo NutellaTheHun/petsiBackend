@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import {
   DUPLICATE,
@@ -88,17 +89,17 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientInventoryItemId: invIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as CreateRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'CREATE',
@@ -136,17 +137,17 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientInventoryItemId: invIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as CreateRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: REC_C,
@@ -196,17 +197,17 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientInventoryItemId: invIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as CreateRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'CREATE',
@@ -264,17 +265,17 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientInventoryItemId: invIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as CreateRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'CREATE',
@@ -326,22 +327,22 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientInventoryItemId: invIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(CreateRecipeIngredientDto, {
         ingredientRecipeId: recIngred.id,
         quantity: 1,
         quantityMeasurementId: servingMeasurement.id,
-      } as CreateRecipeIngredientDto,
-    ] as CreateRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'CREATE',
@@ -398,15 +399,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -414,8 +415,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -465,15 +466,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -481,8 +482,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: REC_C,
@@ -539,15 +540,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -555,8 +556,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -619,15 +620,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -635,8 +636,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -698,15 +699,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -714,8 +715,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -723,8 +724,8 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'UPDATE',
@@ -781,15 +782,15 @@ describe('recipe validator', () => {
     }
 
     const ingredDtos = [
-      {
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'update',
         id: toUpdate.ingredients[0].id,
         updateDto: {
@@ -797,16 +798,16 @@ describe('recipe validator', () => {
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-      {
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: {
           ingredientInventoryItemId: invIngred.id,
           quantity: 1,
           quantityMeasurementId: servingMeasurement.id,
         },
-      } as NestedRecipeIngredientDto,
-    ] as NestedRecipeIngredientDto[];
+      }),
+    ];
 
     const dto = {
       recipeName: 'UPDATE',

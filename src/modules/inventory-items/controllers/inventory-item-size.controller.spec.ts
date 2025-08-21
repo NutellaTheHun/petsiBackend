@@ -108,7 +108,7 @@ describe('Inventory Item Size Controller', () => {
             unit.packageType.id === createDto.inventoryPackageId,
         );
         if (exists) {
-          throw new Error();
+          throw new BadRequestException();
         }
 
         const item = items.find((i) => i.id === createDto.inventoryItemId);

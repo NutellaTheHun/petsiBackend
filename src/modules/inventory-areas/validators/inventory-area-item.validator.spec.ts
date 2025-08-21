@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { INVALID, MISSING } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -255,7 +256,7 @@ describe('inventory area item validator', () => {
       throw new Error();
     }
 
-    const sizeDto = {
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
       mode: 'update',
       id: sizes[0].id,
       updateDto: {
@@ -264,7 +265,7 @@ describe('inventory area item validator', () => {
         inventoryPackageId: pkg.id,
         cost: 10,
       },
-    } as NestedInventoryItemSizeDto;
+    });
 
     const item = await itemService.findOneByName(FOOD_A);
     if (!item) {
@@ -295,7 +296,7 @@ describe('inventory area item validator', () => {
       throw new Error();
     }
 
-    const sizeDto = {
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
       mode: 'create',
       createDto: {
         measureAmount: 2,
@@ -303,7 +304,7 @@ describe('inventory area item validator', () => {
         inventoryPackageId: pkg.id,
         cost: 3,
       },
-    } as NestedInventoryItemSizeDto;
+    });
 
     const item = await itemService.findOneByName(FOOD_A);
     if (!item) {
@@ -338,7 +339,7 @@ describe('inventory area item validator', () => {
       throw new Error();
     }
 
-    const sizeDto = {
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
       mode: 'create',
       createDto: {
         inventoryItemId: item.id,
@@ -347,7 +348,7 @@ describe('inventory area item validator', () => {
         inventoryPackageId: pkg.id,
         cost: 3,
       },
-    } as NestedInventoryItemSizeDto;
+    });
 
     const dto = {
       countedInventoryItemId: item.id,

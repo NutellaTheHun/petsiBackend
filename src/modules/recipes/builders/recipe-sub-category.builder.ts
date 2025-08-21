@@ -69,7 +69,7 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
           if (!subCat) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(subCat, dto));
+          results.push(await this.buildUpdateDto(subCat, dto.updateDto));
         }
       }
     }

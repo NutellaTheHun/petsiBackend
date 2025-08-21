@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_d, item_e } from '../../menu-items/utils/constants';
@@ -74,14 +75,14 @@ describe('Template menu item service', () => {
       BadRequestException,
     );
 
-    const createItemDto = {
+    const createItemDto = plainToInstance(NestedTemplateMenuItemDto, {
       mode: 'create',
       createDto: {
         displayName: 'test display name',
         menuItemId: itemD.id,
         tablePosIndex: 0,
       },
-    } as NestedTemplateMenuItemDto;
+    });
 
     const updateTemplateDto = {
       templateItemDtos: [createItemDto],

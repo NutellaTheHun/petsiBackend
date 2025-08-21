@@ -101,7 +101,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
           if (!ingred) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(ingred, dto));
+          results.push(await this.buildUpdateDto(ingred, dto.updateDto));
         }
       }
     }

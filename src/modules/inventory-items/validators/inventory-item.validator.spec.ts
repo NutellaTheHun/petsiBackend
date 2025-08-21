@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -85,19 +86,19 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitPound.id,
         measureAmount: 1,
         inventoryPackageId: pkgBox.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitKilo.id,
         measureAmount: 1,
         inventoryPackageId: pkgCan.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-    ] as CreateInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -137,19 +138,19 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitPound.id,
         measureAmount: 1,
         inventoryPackageId: pkgBox.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitKilo.id,
         measureAmount: 1,
         inventoryPackageId: pkgCan.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-    ] as CreateInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -188,19 +189,19 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitPound.id,
         measureAmount: 1,
         inventoryPackageId: pkgBox.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(CreateInventoryItemSizeDto, {
         measureUnitId: unitPound.id,
         measureAmount: 1,
         inventoryPackageId: pkgBox.id,
         cost: 1,
-      } as CreateInventoryItemSizeDto,
-    ] as CreateInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -252,7 +253,7 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: unitPound.id,
@@ -260,8 +261,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: toUpdate.itemSizes[0].id,
         updateDto: {
@@ -270,8 +271,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgCan.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-    ] as NestedInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -316,7 +317,7 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: unitPound.id,
@@ -324,8 +325,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: toUpdate.itemSizes[0].id,
         updateDto: {
@@ -334,8 +335,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgCan.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-    ] as NestedInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -387,7 +388,7 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: unitPound.id,
@@ -395,8 +396,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: toUpdate.itemSizes[0].id,
         updateDto: {
@@ -405,8 +406,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgCan.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: toUpdate.itemSizes[0].id,
         updateDto: {
@@ -414,8 +415,8 @@ describe('inventory item validator', () => {
           measureAmount: 1,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-    ] as NestedInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {
@@ -467,7 +468,7 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      {
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: unitPound.id,
@@ -475,8 +476,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'create',
         createDto: {
           measureUnitId: unitPound.id,
@@ -484,8 +485,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-      {
+      }),
+      plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
         id: toUpdate.itemSizes[0].id,
         updateDto: {
@@ -493,8 +494,8 @@ describe('inventory item validator', () => {
           inventoryPackageId: pkgBox.id,
           cost: 1,
         },
-      } as NestedInventoryItemSizeDto,
-    ] as NestedInventoryItemSizeDto[];
+      }),
+    ];
 
     const category = await categoryService.findOneByName(DAIRY_CAT);
     if (!category) {

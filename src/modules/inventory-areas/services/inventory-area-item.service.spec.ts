@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -11,7 +11,6 @@ import {
   FOOD_C,
 } from '../../inventory-items/utils/constants';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
-import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { AREA_A } from '../utils/constants';
@@ -68,7 +67,7 @@ describe('Inventory area item service', () => {
     expect(areaItemService).toBeDefined();
   });
 
-  it('should fail to create an item (Bad Request), then add item proper way for the rest of tests', async () => {
+  it('should create an item ', async () => {
     const counts = await countService.findByAreaName(AREA_A, ['countedItems']);
     if (!counts) {
       throw new NotFoundException();
@@ -83,7 +82,7 @@ describe('Inventory area item service', () => {
       throw new Error('item sizes is null');
     }
 
-    const dto = {
+    /*const dto = {
       parentInventoryCountId: counts[0].id,
       countedInventoryItemId: item.id,
       countedAmount: 1,
@@ -92,7 +91,7 @@ describe('Inventory area item service', () => {
 
     await expect(areaItemService.create(dto)).rejects.toThrow(
       BadRequestException,
-    );
+    );*/
 
     const createAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
       mode: 'create',

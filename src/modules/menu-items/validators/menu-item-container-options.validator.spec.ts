@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -56,15 +57,15 @@ describe('menu item container options validator', () => {
     }
 
     const ruleDtos = [
-      {
+      plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemA.id,
         validSizeIds: [itemA.validSizes[0].id],
-      } as CreateMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemB.id,
         validSizeIds: [itemB.validSizes[0].id],
-      } as CreateMenuItemContainerRuleDto,
-    ] as CreateMenuItemContainerRuleDto[];
+      }),
+    ];
     const dto = {
       containerRuleDtos: ruleDtos,
       validQuantity: 3,
@@ -85,19 +86,20 @@ describe('menu item container options validator', () => {
     }
 
     const ruleDtos = [
-      {
+      plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemA.id,
         validSizeIds: [itemA.validSizes[0].id],
-      } as CreateMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemB.id,
         validSizeIds: [itemB.validSizes[0].id],
-      } as CreateMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemA.id,
         validSizeIds: [itemA.validSizes[1].id],
-      } as CreateMenuItemContainerRuleDto,
-    ] as CreateMenuItemContainerRuleDto[];
+      }),
+    ];
+
     const dto = {
       containerRuleDtos: ruleDtos,
       validQuantity: 3,
@@ -134,22 +136,22 @@ describe('menu item container options validator', () => {
     }
 
     const ruleDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'create',
         createDto: {
           validMenuItemId: itemA.id,
           validSizeIds: [itemA.validSizes[0].id],
         },
-      } as NestedMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'update',
         id: toUpdate.containerRules[0].id,
         updateDto: {
           validMenuItemId: itemB.id,
           validSizeIds: [itemB.validSizes[0].id],
         },
-      } as NestedMenuItemContainerRuleDto,
-    ] as NestedMenuItemContainerRuleDto[];
+      }),
+    ];
 
     const dto = {
       containerRuleDtos: ruleDtos,
@@ -180,30 +182,30 @@ describe('menu item container options validator', () => {
     }
 
     const ruleDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'create',
         createDto: {
           validMenuItemId: itemA.id,
           validSizeIds: [itemA.validSizes[0].id],
         },
-      } as NestedMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'update',
         id: toUpdate.containerRules[0].id,
         updateDto: {
           validMenuItemId: itemB.id,
           validSizeIds: [itemB.validSizes[0].id],
         },
-      } as NestedMenuItemContainerRuleDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'update',
         id: toUpdate.containerRules[0].id,
         updateDto: {
           validMenuItemId: itemB.id,
           validSizeIds: [itemB.validSizes[1].id],
         },
-      } as NestedMenuItemContainerRuleDto,
-    ] as NestedMenuItemContainerRuleDto[];
+      }),
+    ];
 
     const dto = {
       containerRuleDtos: ruleDtos,

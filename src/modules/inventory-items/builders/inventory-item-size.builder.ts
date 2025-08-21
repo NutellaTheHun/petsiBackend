@@ -58,8 +58,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     }
     if (dto.cost !== undefined) {
       this.costByValue(dto.cost);
-    }
-    {
+    } else {
       this.costByValue(0);
     }
     if (dto.measureAmount !== undefined) {
@@ -164,7 +163,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         if (!size) {
           throw new Error('item size not found');
         }
-        return await this.buildUpdateDto(size, dto);
+        return await this.buildUpdateDto(size, dto.updateDto);
       }
     }
     throw new Error('invalid dto');

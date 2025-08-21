@@ -84,7 +84,7 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
         if (!toUpdate) {
           throw new Error('options is null');
         }
-        return await this.buildUpdateDto(toUpdate, dto);
+        return await this.buildUpdateDto(toUpdate, dto.updateDto);
       }
     }
     throw new Error('invalid dto');

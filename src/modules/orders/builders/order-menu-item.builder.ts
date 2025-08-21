@@ -99,7 +99,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
           if (!item) {
             throw new Error('orderMenuItem not found');
           }
-          results.push(await this.buildUpdateDto(item, dto));
+          results.push(await this.buildUpdateDto(item, dto.updateDto));
         }
       }
     }

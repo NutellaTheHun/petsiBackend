@@ -91,7 +91,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
           if (!item) {
             throw new Error('order menu item container is null');
           }
-          results.push(await this.buildUpdateDto(item, dto));
+          results.push(await this.buildUpdateDto(item, dto.updateDto));
         }
       }
     }

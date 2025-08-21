@@ -144,7 +144,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
       // e.g. ['inventoryArea,1', 'inventoryArea,2']
       const filterMap: Record<string, string[]> = {};
       for (const filter of options.filters) {
-        const [key, value] = filter.split(',');
+        const [key, value] = filter.split('=');
         if (!key || value === undefined) continue;
         if (!filterMap[key]) filterMap[key] = [];
         filterMap[key].push(value);

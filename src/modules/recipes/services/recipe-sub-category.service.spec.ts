@@ -1,5 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -55,12 +56,12 @@ describe('recipe sub category service', () => {
       BadRequestException,
     );
 
-    const createSubCatDto = {
+    const createSubCatDto = plainToInstance(NestedRecipeSubCategoryDto, {
       mode: 'create',
       createDto: {
         subCategoryName: 'test sub Cat',
       },
-    } as NestedRecipeSubCategoryDto;
+    });
 
     const updateCategoryDto = {
       subCategoryDtos: [createSubCatDto],

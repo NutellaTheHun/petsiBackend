@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import {
   DUPLICATE,
@@ -115,19 +116,19 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemA.id,
         containedMenuItemSizeId: containedItemA.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemB.id,
         containedMenuItemSizeId: containedItemB.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-    ] as CreateMenuItemContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       categoryId: category.id,
@@ -225,19 +226,19 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemA.id,
         containedMenuItemSizeId: containedItemA.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemB.id,
         containedMenuItemSizeId: containedItemB.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-    ] as CreateMenuItemContainerItemDto[];
+      }),
+    ];
 
     const optionDto = {
       containerRuleDtos: [],
@@ -281,21 +282,21 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(CreateMenuItemContainerItemDto, {
         mode: 'create',
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemA.id,
         containedMenuItemSizeId: containedItemA.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateMenuItemContainerItemDto, {
         mode: 'create',
         parentContainerSizeId: size.id,
         containedMenuItemId: containedItemA.id,
         containedMenuItemSizeId: containedItemA.validSizes[0].id,
         quantity: 1,
-      } as CreateMenuItemContainerItemDto,
-    ] as CreateMenuItemContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       categoryId: category.id,
@@ -403,7 +404,7 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: size.id,
@@ -411,8 +412,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemA.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'update',
         id: containerRequest.items[0].id,
         updateDto: {
@@ -421,8 +422,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-    ] as NestedMenuItemContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       categoryId: category.id,
@@ -451,13 +452,13 @@ describe('menu item validator', () => {
       throw new Error();
     }
 
-    const optionDto = {
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
       mode: 'create',
       createDto: {
         containerRuleDtos: [],
         validQuantity: 1,
       },
-    } as NestedMenuItemContainerOptionsDto;
+    });
 
     const dto = {
       categoryId: category.id,
@@ -534,7 +535,7 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: size.id,
@@ -542,8 +543,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemA.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: size.id,
@@ -551,16 +552,16 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-    ] as NestedMenuItemContainerItemDto[];
+      }),
+    ];
 
-    const optionDto = {
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
       mode: 'create',
       createDto: {
         containerRuleDtos: [],
         validQuantity: 1,
       },
-    } as NestedMenuItemContainerOptionsDto;
+    });
 
     const dto = {
       categoryId: category.id,
@@ -591,13 +592,13 @@ describe('menu item validator', () => {
 
     const toUpdate = containerItemRequest.items[0].parentContainer;
 
-    const optionDto = {
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
       mode: 'create',
       createDto: {
         containerRuleDtos: [],
         validQuantity: 1,
       },
-    } as NestedMenuItemContainerOptionsDto;
+    });
 
     const dto = {
       containerOptionDto: optionDto,
@@ -623,13 +624,13 @@ describe('menu item validator', () => {
 
     const toUpdate = containerItemRequest.items[0].parentContainer;
 
-    const optionDto = {
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
       mode: 'create',
       createDto: {
         containerRuleDtos: [],
         validQuantity: 1,
       },
-    } as NestedMenuItemContainerOptionsDto;
+    });
 
     const dto = {
       containerOptionDto: optionDto,
@@ -671,7 +672,7 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: parentMenuitem.validSizes[0].id,
@@ -679,8 +680,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemA.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: parentMenuitem.validSizes[0].id,
@@ -688,8 +689,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-    ] as NestedMenuItemContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       definedContainerItemDtos: containerDtos,
@@ -754,7 +755,7 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: toUpdate.validSizes[0].id,
@@ -762,8 +763,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemA.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerSizeId: toUpdate.validSizes[0].id,
@@ -771,8 +772,8 @@ describe('menu item validator', () => {
           containedMenuItemSizeId: containedItemA.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedMenuItemContainerItemDto,
-    ] as NestedMenuItemContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       definedContainerItemDtos: containerDtos,

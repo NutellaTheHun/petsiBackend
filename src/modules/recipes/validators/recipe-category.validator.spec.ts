@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -39,13 +40,13 @@ describe('recipe category validator', () => {
 
   it('should validate create', async () => {
     const subCatDtos = [
-      {
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 2',
-      } as CreateRecipeSubCategoryDto,
-    ] as CreateRecipeSubCategoryDto[];
+      }),
+    ];
     const dto = {
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
@@ -55,13 +56,13 @@ describe('recipe category validator', () => {
 
   it('should fail create: name already exists', async () => {
     const subCatDtos = [
-      {
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 2',
-      } as CreateRecipeSubCategoryDto,
-    ] as CreateRecipeSubCategoryDto[];
+      }),
+    ];
     const dto = {
       categoryName: REC_CAT_A,
       subCategoryDtos: subCatDtos,
@@ -79,16 +80,16 @@ describe('recipe category validator', () => {
 
   it('should fail create: duplicate sub categories', async () => {
     const subCatDtos = [
-      {
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 2',
-      } as CreateRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(CreateRecipeSubCategoryDto, {
         subCategoryName: 'SUB CAT 1',
-      } as CreateRecipeSubCategoryDto,
-    ] as CreateRecipeSubCategoryDto[];
+      }),
+    ];
     const dto = {
       categoryName: 'CREATE',
       subCategoryDtos: subCatDtos,
@@ -111,20 +112,20 @@ describe('recipe category validator', () => {
     }
 
     const subCatDtos = [
-      {
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'create',
         createDto: {
           subCategoryName: 'SUB CAT 1',
         },
-      } as NestedRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
         id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
-      } as NestedRecipeSubCategoryDto,
-    ] as NestedRecipeSubCategoryDto[];
+      }),
+    ];
 
     const dto = {
       categoryName: 'UPDATE',
@@ -141,20 +142,20 @@ describe('recipe category validator', () => {
     }
 
     const subCatDtos = [
-      {
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'create',
         createDto: {
           subCategoryName: 'SUB CAT 1',
         },
-      } as NestedRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
         id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
-      } as NestedRecipeSubCategoryDto,
-    ] as NestedRecipeSubCategoryDto[];
+      }),
+    ];
 
     const dto = {
       categoryName: REC_CAT_B,
@@ -178,20 +179,20 @@ describe('recipe category validator', () => {
     }
 
     const subCatDtos = [
-      {
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'create',
         createDto: {
           subCategoryName: 'SUB CAT 1',
         },
-      } as NestedRecipeSubCategoryDto,
-      {
+      }),
+      plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
         id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 1',
         },
-      } as NestedRecipeSubCategoryDto,
-    ] as NestedRecipeSubCategoryDto[];
+      }),
+    ];
 
     const dto = {
       categoryName: 'UPDATE',

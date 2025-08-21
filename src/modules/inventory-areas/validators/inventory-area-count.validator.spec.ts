@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -65,15 +66,15 @@ describe('inventory area count validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateInventoryAreaItemDto, {
         countedInventoryItemId: itemA.id,
         countedAmount: 1,
-      } as CreateInventoryAreaItemDto,
-      {
+      }),
+      plainToInstance(CreateInventoryAreaItemDto, {
         countedInventoryItemId: itemB.id,
         countedAmount: 1,
-      } as CreateInventoryAreaItemDto,
-    ] as CreateInventoryAreaItemDto[];
+      }),
+    ];
 
     const dto = {
       inventoryAreaId: area.id,
@@ -102,22 +103,22 @@ describe('inventory area count validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'create',
         createDto: {
           countedInventoryItemId: itemA.id,
           countedAmount: 1,
         },
-      } as NestedInventoryAreaItemDto,
-      {
+      }),
+      plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
         id: toUpdate.countedItems[0].id,
         updateDto: {
           countedInventoryItemId: itemB.id,
           countedAmount: 1,
         },
-      } as NestedInventoryAreaItemDto,
-    ] as NestedInventoryAreaItemDto[];
+      }),
+    ];
 
     const dto = {
       itemCountDtos: itemDtos,
@@ -145,30 +146,30 @@ describe('inventory area count validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'create',
         createDto: {
           countedInventoryItemId: itemA.id,
           countedAmount: 1,
         },
-      } as NestedInventoryAreaItemDto,
-      {
+      }),
+      plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
         id: toUpdate.countedItems[0].id,
         updateDto: {
           countedInventoryItemId: itemB.id,
           countedAmount: 1,
         },
-      } as NestedInventoryAreaItemDto,
-      {
+      }),
+      plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
         id: toUpdate.countedItems[0].id,
         updateDto: {
           countedInventoryItemId: itemA.id,
           countedAmount: 1,
         },
-      } as NestedInventoryAreaItemDto,
-    ] as NestedInventoryAreaItemDto[];
+      }),
+    ];
 
     const dto = {
       itemCountDtos: itemDtos,

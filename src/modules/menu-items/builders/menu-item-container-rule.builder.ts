@@ -85,7 +85,7 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
           if (!toUpdate) {
             throw Error('component option is null');
           }
-          results.push(await this.buildUpdateDto(toUpdate, dto));
+          results.push(await this.buildUpdateDto(toUpdate, dto.updateDto));
         }
       }
     }

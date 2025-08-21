@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE, INVALID } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -74,19 +75,19 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: item.id,
         containedMenuItemId: contItemB.id,
         containedMenuItemSizeId: contItemB.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: item.id,
         containedMenuItemId: contItemC.id,
         containedMenuItemSizeId: contItemC.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
-    ] as CreateOrderContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       menuItemId: item.id,
@@ -145,25 +146,25 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: item.id,
         containedMenuItemId: contItemB.id,
         containedMenuItemSizeId: contItemB.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: item.id,
         containedMenuItemId: contItemC.id,
         containedMenuItemSizeId: contItemC.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(CreateOrderContainerItemDto, {
         parentContainerMenuItemId: item.id,
         containedMenuItemId: contItemB.id,
         containedMenuItemSizeId: contItemB.validSizes[0].id,
         quantity: 1,
-      } as CreateOrderContainerItemDto,
-    ] as CreateOrderContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       menuItemId: item.id,
@@ -220,7 +221,7 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerMenuItemId: parentMenuItem.id,
@@ -228,8 +229,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: containerItems[0].id,
         updateDto: {
@@ -238,8 +239,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemC.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-    ] as NestedOrderContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       id: parentOrderItem.id,
@@ -290,7 +291,7 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerMenuItemId: parentMenuItem.id,
@@ -298,8 +299,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: containerItems[0].id,
         updateDto: {
@@ -308,8 +309,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemC.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerMenuItemId: parentMenuItem.id,
@@ -317,8 +318,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-    ] as NestedOrderContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       id: parentOrderItem.id,
@@ -382,7 +383,7 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      {
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'create',
         createDto: {
           parentContainerMenuItemId: parentMenuItem.id,
@@ -390,8 +391,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemB.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: containerItems[0].id,
         updateDto: {
@@ -400,8 +401,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemC.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-      {
+      }),
+      plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: containerItems[0].id,
         updateDto: {
@@ -410,8 +411,8 @@ describe('order category validator', () => {
           containedMenuItemSizeId: contItemD.validSizes[0].id,
           quantity: 1,
         },
-      } as NestedOrderContainerItemDto,
-    ] as NestedOrderContainerItemDto[];
+      }),
+    ];
 
     const dto = {
       id: parentOrderItem.id,

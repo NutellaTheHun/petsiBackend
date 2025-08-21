@@ -88,7 +88,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
           if (!item) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(item, dto));
+          results.push(await this.buildUpdateDto(item, dto.updateDto));
         }
       }
     }

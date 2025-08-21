@@ -1,4 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
@@ -53,17 +54,17 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A',
         menuItemId: itemA.id,
         tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'B',
         menuItemId: itemB.id,
         tablePosIndex: 2,
-      } as CreateTemplateMenuItemDto,
-    ] as CreateTemplateMenuItemDto[];
+      }),
+    ];
     const dto = {
       templateName: 'CREATE',
       isPie: true,
@@ -84,22 +85,23 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A',
         menuItemId: itemA.id,
         tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'B',
         menuItemId: itemB.id,
         tablePosIndex: 2,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A2',
         menuItemId: itemA.id,
         tablePosIndex: 3,
-      } as CreateTemplateMenuItemDto,
-    ] as CreateTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: 'CREATE',
       isPie: true,
@@ -131,22 +133,23 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A',
         menuItemId: itemA.id,
         tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'B',
         menuItemId: itemB.id,
         tablePosIndex: 2,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A2',
         menuItemId: itemC.id,
         tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
-    ] as CreateTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: 'CREATE',
       isPie: true,
@@ -174,17 +177,17 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'A',
         menuItemId: itemA.id,
         tablePosIndex: 1,
-      } as CreateTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(CreateTemplateMenuItemDto, {
         displayName: 'B',
         menuItemId: itemB.id,
         tablePosIndex: 2,
-      } as CreateTemplateMenuItemDto,
-    ] as CreateTemplateMenuItemDto[];
+      }),
+    ];
     const dto = {
       templateName: template_a,
       isPie: true,
@@ -219,15 +222,15 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'A',
           menuItemId: itemA.id,
           tablePosIndex: 1,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: toUpdate.templateItems[0].id,
         updateDto: {
@@ -235,8 +238,9 @@ describe('template validator', () => {
           menuItemId: itemB.id,
           tablePosIndex: 2,
         },
-      } as NestedTemplateMenuItemDto,
-    ] as NestedTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -264,15 +268,15 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'A',
           menuItemId: itemA.id,
           tablePosIndex: 1,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: toUpdate.templateItems[0].id,
         updateDto: {
@@ -280,16 +284,17 @@ describe('template validator', () => {
           menuItemId: itemB.id,
           tablePosIndex: 2,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'B2',
           menuItemId: itemB.id,
           tablePosIndex: 3,
         },
-      } as NestedTemplateMenuItemDto,
-    ] as NestedTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -328,15 +333,15 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'A',
           menuItemId: itemA.id,
           tablePosIndex: 1,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: toUpdate.templateItems[0].id,
         updateDto: {
@@ -344,16 +349,17 @@ describe('template validator', () => {
           menuItemId: itemB.id,
           tablePosIndex: 2,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'B2',
           menuItemId: itemC.id,
           tablePosIndex: 2,
         },
-      } as NestedTemplateMenuItemDto,
-    ] as NestedTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: 'UPDATE',
       isPie: true,
@@ -388,15 +394,15 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      {
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'create',
         createDto: {
           displayName: 'A',
           menuItemId: itemA.id,
           tablePosIndex: 1,
         },
-      } as NestedTemplateMenuItemDto,
-      {
+      }),
+      plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: toUpdate.templateItems[0].id,
         updateDto: {
@@ -404,8 +410,9 @@ describe('template validator', () => {
           menuItemId: itemB.id,
           tablePosIndex: 2,
         },
-      } as NestedTemplateMenuItemDto,
-    ] as NestedTemplateMenuItemDto[];
+      }),
+    ];
+
     const dto = {
       templateName: template_b,
       isPie: true,

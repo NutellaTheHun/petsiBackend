@@ -96,7 +96,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
           if (!comp) {
             throw new NotFoundException();
           }
-          results.push(await this.buildUpdateDto(comp, dto));
+          results.push(await this.buildUpdateDto(comp, dto.updateDto));
         }
       }
     }

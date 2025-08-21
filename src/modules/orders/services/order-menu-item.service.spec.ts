@@ -284,7 +284,7 @@ describe('order menu item service', () => {
         containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
         quantity: 1,
       }),
-    ] as CreateOrderContainerItemDto[];
+    ];
 
     const orders = (await orderService.findAll({ relations: ['orderedItems'] }))
       .items;

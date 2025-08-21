@@ -1,10 +1,11 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
@@ -149,17 +150,17 @@ describe('recipe category service', () => {
   });
 
   it('should create a recipe category with subCategories', async () => {
-    const subCatDtoOne = {
+    const subCatDtoOne = plainToInstance(CreateRecipeSubCategoryDto, {
       subCategoryName: 'subCatOne',
-    } as CreateRecipeSubCategoryDto;
+    });
 
-    const subCatDtoTwo = {
+    const subCatDtoTwo = plainToInstance(CreateRecipeSubCategoryDto, {
       subCategoryName: 'subCatTwo',
-    } as CreateRecipeSubCategoryDto;
+    });
 
-    const subCatDtoThree = {
+    const subCatDtoThree = plainToInstance(CreateRecipeSubCategoryDto, {
       subCategoryName: 'subCatThree',
-    } as CreateRecipeSubCategoryDto;
+    });
 
     const createCategoryDto = {
       categoryName: 'category with subCats',
@@ -200,16 +201,20 @@ describe('recipe category service', () => {
 
     modifiedSubCatId = category.subCategories[0].id;
 
-    const updateSubCatDto = {
+    const updateSubCatDto = plainToInstance(NestedRecipeSubCategoryDto, {
+      mode: 'update',
       id: modifiedSubCatId,
-      subCategoryName: 'UPDATED SUBCAT',
-    } as UpdateRecipeSubCategoryDto;
+      updateDto: {
+        subCategoryName: 'UPDATED SUBCAT',
+      },
+    });
 
-    const theRest = category.subCategories.slice(1).map(
-      (subCat) =>
-        ({
-          id: subCat.id,
-        }) as UpdateRecipeSubCategoryDto,
+    const theRest = category.subCategories.slice(1).map((subCat) =>
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'update',
+        id: subCat.id,
+        uppdateDto: {},
+      }),
     );
 
     const updateCategoryDto = {
@@ -254,11 +259,12 @@ describe('recipe category service', () => {
 
     removedSubCatId = category.subCategories[0].id;
 
-    const theRest = category.subCategories.slice(1).map(
-      (subCat) =>
-        ({
-          id: subCat.id,
-        }) as UpdateRecipeSubCategoryDto,
+    const theRest = category.subCategories.slice(1).map((subCat) =>
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'update',
+        id: subCat.id,
+        updateDto: {},
+      }),
     );
 
     const updateCategoryDto = {
