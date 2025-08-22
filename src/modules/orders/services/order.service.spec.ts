@@ -8,7 +8,6 @@ import { item_a, item_b } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
-import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
@@ -79,7 +78,7 @@ describe('order service', () => {
 
     const fulfillDate = new Date();
 
-    const itemDtos = await testingUtil.getCreateChildOrderMenuItemDtos(3);
+    const itemDtos = await testingUtil.createNestedOrderMenuItemDtos(3);
     const dto = {
       orderCategoryId: type.id,
       recipient: 'test recipient',
@@ -706,17 +705,23 @@ describe('order service', () => {
     ];
 
     const oItemDtos = [
-      plainToInstance(CreateOrderMenuItemDto, {
-        menuItemId: optionItemA.parentContainer.id,
-        menuItemSizeId: optionItems[0].validSizes[0].id,
-        quantity: 1,
-        orderedItemContainerDtos: compDtos_a,
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: optionItemA.parentContainer.id,
+          menuItemSizeId: optionItems[0].validSizes[0].id,
+          quantity: 1,
+          orderedItemContainerDtos: compDtos_a,
+        },
       }),
-      plainToInstance(CreateOrderMenuItemDto, {
-        menuItemId: optionItemB.parentContainer.id,
-        menuItemSizeId: optionItems[1].validSizes[0].id,
-        quantity: 1,
-        orderedItemContainerDtos: compDtos_b,
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: optionItemB.parentContainer.id,
+          menuItemSizeId: optionItems[1].validSizes[0].id,
+          quantity: 1,
+          orderedItemContainerDtos: compDtos_b,
+        },
       }),
     ];
 

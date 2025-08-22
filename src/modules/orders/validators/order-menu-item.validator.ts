@@ -58,9 +58,12 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
       dto.orderedItemContainerDtos &&
       dto.orderedItemContainerDtos.length > 0
     ) {
+      const nestedCreates = dto.orderedItemContainerDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
       // validate container item / size
       const duplicateItems = this.helper.findDuplicates(
-        dto.orderedItemContainerDtos,
+        nestedCreates,
         (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`,
       );
       if (duplicateItems) {
@@ -78,7 +81,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
       }
 
       //validate container parent id
-      for (const item of dto.orderedItemContainerDtos) {
+      for (const item of nestedCreates) {
         if (item.parentContainerMenuItemId !== menuItem.id) {
           this.addError({
             errorMessage:

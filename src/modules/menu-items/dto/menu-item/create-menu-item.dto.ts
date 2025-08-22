@@ -8,8 +8,8 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateMenuItemContainerItemDto } from '../menu-item-container-item/create-menu-item-container-item.dto';
-import { CreateMenuItemContainerOptionsDto } from '../menu-item-container-options/create-menu-item-container-options.dto';
+import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedMenuItemContainerOptionsDto } from '../menu-item-container-options/nested-menu-item-container-options.dto';
 
 export class CreateMenuItemDto {
   @ApiPropertyOptional({
@@ -102,40 +102,50 @@ export class CreateMenuItemDto {
 
   @ApiPropertyOptional({
     description: 'Array of CreateMenutItemContainerItemDtos',
-    type: () => [CreateMenuItemContainerItemDto],
+    type: () => [NestedMenuItemContainerItemDto],
     example: [
       {
-        parentContainerSizeId: 1,
-        containedMenuItemId: 2,
-        containedMenuItemSizeId: 3,
-        quantity: 4,
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: 1,
+          containedMenuItemId: 2,
+          containedMenuItemSizeId: 3,
+          quantity: 4,
+        },
       },
     ],
   })
   @IsOptional()
   @IsArray()
-  readonly definedContainerItemDtos?: CreateMenuItemContainerItemDto[];
+  readonly definedContainerItemDtos?: NestedMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-    type: () => CreateMenuItemContainerOptionsDto,
+    type: () => NestedMenuItemContainerOptionsDto,
     example: {
-      containerRuleDtos: [
-        {
-          mode: 'create',
-          validMenuItemId: 5,
-          validSizeIds: [6, 7],
-        },
-        {
-          mode: 'create',
-          validMenuItemId: 8,
-          validSizeIds: [9, 10],
-        },
-      ],
-      validQuantity: 11,
+      mode: 'create',
+      createDto: {
+        containerRuleDtos: [
+          {
+            mode: 'create',
+            createDto: {
+              validMenuItemId: 5,
+              validSizeIds: [6, 7],
+            },
+          },
+          {
+            mode: 'create',
+            createDto: {
+              validMenuItemId: 8,
+              validSizeIds: [9, 10],
+            },
+          },
+        ],
+        validQuantity: 11,
+      },
     },
   })
   @IsOptional()
-  readonly containerOptionDto?: CreateMenuItemContainerOptionsDto;
+  readonly containerOptionDto?: NestedMenuItemContainerOptionsDto;
 }

@@ -9,7 +9,6 @@ import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builde
 import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.builder';
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
-import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -395,13 +394,13 @@ export class InventoryItemTestingUtil {
   /**
    * - Create's inventoryItemSize dtos for create method of an inventory item
    */
-  public createInventoryItemSizeDtos(
+  public createNestedInventoryItemSizeDtos(
     resultAmount: number,
     packageIds: number[],
     unitIds: number[],
     costs: number[],
-  ): CreateInventoryItemSizeDto[] {
-    const results: CreateInventoryItemSizeDto[] = [];
+  ): NestedInventoryItemSizeDto[] {
+    const results: NestedInventoryItemSizeDto[] = [];
 
     let packageIdx = 0;
     let costIdx = 0;
@@ -412,11 +411,14 @@ export class InventoryItemTestingUtil {
 
     for (let i = 0; i < resultAmount; i++) {
       results.push(
-        plainToInstance(CreateInventoryItemSizeDto, {
-          measureUnitId: unitIds[unitIdx++],
-          inventoryPackageId: packageIds[packageIdx++],
-          cost: costs[costIter++],
-          measureAmount: 1,
+        plainToInstance(NestedInventoryItemSizeDto, {
+          mode: 'create',
+          createDto: {
+            measureUnitId: unitIds[unitIdx++],
+            inventoryPackageId: packageIds[packageIdx++],
+            cost: costs[costIter++],
+            measureAmount: 1,
+          },
         }),
       );
       if (unitIdx === unitIds.length) {

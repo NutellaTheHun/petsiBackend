@@ -3,7 +3,6 @@ import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { INVALID, MISSING } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
-import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
@@ -108,13 +107,16 @@ describe('inventory area item validator', () => {
       throw new Error();
     }
 
-    const sizeDto = {
-      inventoryItemId: item.id,
-      measureAmount: 1,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
-      cost: 1,
-    } as CreateInventoryItemSizeDto;
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      mode: 'create',
+      createDto: {
+        inventoryItemId: item.id,
+        measureAmount: 1,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 1,
+      },
+    });
 
     const dto = {
       parentInventoryCountId: testCountId,
@@ -168,13 +170,16 @@ describe('inventory area item validator', () => {
       throw new Error();
     }
 
-    const sizeDto = {
-      inventoryItemId: item.id,
-      measureAmount: 1,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
-      cost: 1,
-    } as CreateInventoryItemSizeDto;
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      mode: 'create',
+      createDto: {
+        inventoryItemId: item.id,
+        measureAmount: 1,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 1,
+      },
+    });
 
     const dto = {
       parentInventoryCountId: testCountId,

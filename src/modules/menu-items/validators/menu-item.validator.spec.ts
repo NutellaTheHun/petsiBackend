@@ -7,9 +7,7 @@ import {
   INVALID,
 } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
-import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
-import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
@@ -116,17 +114,23 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemA.id,
-        containedMenuItemSizeId: containedItemA.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemA.id,
+          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemB.id,
-        containedMenuItemSizeId: containedItemB.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemB.id,
+          containedMenuItemSizeId: containedItemB.validSizes[0].id,
+          quantity: 1,
+        },
       }),
     ];
 
@@ -151,10 +155,13 @@ describe('menu item validator', () => {
       throw new Error();
     }
 
-    const optionDto = {
-      containerRuleDtos: [],
-      validQuantity: 1,
-    } as CreateMenuItemContainerOptionsDto;
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
+      mode: 'create',
+      createDto: {
+        containerRuleDtos: [],
+        validQuantity: 1,
+      },
+    });
 
     const dto = {
       categoryId: category.id,
@@ -226,24 +233,33 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemA.id,
-        containedMenuItemSizeId: containedItemA.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemA.id,
+          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemB.id,
-        containedMenuItemSizeId: containedItemB.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemB.id,
+          containedMenuItemSizeId: containedItemB.validSizes[0].id,
+          quantity: 1,
+        },
       }),
     ];
 
     const optionDto = {
-      containerRuleDtos: [],
-      validQuantity: 1,
-    } as CreateMenuItemContainerOptionsDto;
+      mode: 'create',
+      createDto: {
+        containerRuleDtos: [],
+        validQuantity: 1,
+      },
+    } as NestedMenuItemContainerOptionsDto;
 
     const dto = {
       categoryId: category.id,
@@ -282,19 +298,23 @@ describe('menu item validator', () => {
     }
 
     const containerDtos = [
-      plainToInstance(CreateMenuItemContainerItemDto, {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemA.id,
-        containedMenuItemSizeId: containedItemA.validSizes[0].id,
-        quantity: 1,
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemA.id,
+          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateMenuItemContainerItemDto, {
+      plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
-        parentContainerSizeId: size.id,
-        containedMenuItemId: containedItemA.id,
-        containedMenuItemSizeId: containedItemA.validSizes[0].id,
-        quantity: 1,
+        createDto: {
+          parentContainerSizeId: size.id,
+          containedMenuItemId: containedItemA.id,
+          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          quantity: 1,
+        },
       }),
     ];
 

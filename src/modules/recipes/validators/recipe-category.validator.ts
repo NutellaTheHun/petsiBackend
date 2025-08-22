@@ -37,9 +37,16 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
     }
 
     // Check for subcategories with duplicate names
-    if (dto.subCategoryDtos) {
+    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
+      const nestedCreates = dto.subCategoryDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
+
+      if (!nestedCreates) {
+        throw new Error();
+      }
       const duplicateSubCats = this.helper.findDuplicates(
-        dto.subCategoryDtos,
+        nestedCreates,
         (item) => `${item.subCategoryName}`,
       );
       if (duplicateSubCats) {

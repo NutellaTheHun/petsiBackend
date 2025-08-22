@@ -28,7 +28,7 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     dto: CreateMenuItemContainerOptionsDto,
   ): Promise<void> {
     // No rules
-    if (dto.containerRuleDtos.length === 0) {
+    if (!dto.containerRuleDtos || dto.containerRuleDtos.length === 0) {
       this.addError({
         errorMessage: 'Menu item container has no settings.',
         errorType: 'INVALID',
@@ -37,9 +37,13 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
       } as ValidationError);
     }
 
+    const nestedCreates = dto.containerRuleDtos
+      .map((nested) => nested.createDto)
+      .filter((nested) => nested !== undefined);
+
     // duplicate item rules
     const dupliateItemRules = this.helper.findDuplicates(
-      dto.containerRuleDtos,
+      nestedCreates,
       (rule) => `${rule.validMenuItemId}`,
     );
     if (dupliateItemRules) {

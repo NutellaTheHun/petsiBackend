@@ -4,7 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
@@ -150,16 +149,25 @@ describe('recipe category service', () => {
   });
 
   it('should create a recipe category with subCategories', async () => {
-    const subCatDtoOne = plainToInstance(CreateRecipeSubCategoryDto, {
-      subCategoryName: 'subCatOne',
+    const subCatDtoOne = plainToInstance(NestedRecipeSubCategoryDto, {
+      mode: 'create',
+      createDto: {
+        subCategoryName: 'subCatOne',
+      },
     });
 
-    const subCatDtoTwo = plainToInstance(CreateRecipeSubCategoryDto, {
-      subCategoryName: 'subCatTwo',
+    const subCatDtoTwo = plainToInstance(NestedRecipeSubCategoryDto, {
+      mode: 'create',
+      createDto: {
+        subCategoryName: 'subCatTwo',
+      },
     });
 
-    const subCatDtoThree = plainToInstance(CreateRecipeSubCategoryDto, {
-      subCategoryName: 'subCatThree',
+    const subCatDtoThree = plainToInstance(NestedRecipeSubCategoryDto, {
+      mode: 'create',
+      createDto: {
+        subCategoryName: 'subCatThree',
+      },
     });
 
     const createCategoryDto = {

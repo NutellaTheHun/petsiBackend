@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
-import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
@@ -224,22 +224,22 @@ export class InventoryAreaTestUtil {
     await this.itemCountService.getQueryBuilder().delete().execute();
   }
 
-  public createInventoryAreaItemDtos(
+  public createNestedInventoryAreaItemDtos(
     areaCountId: number,
     itemConfigs: {
       itemId: number;
       itemSizeId?: number;
-      sizeDto?: CreateInventoryItemSizeDto;
+      sizeDto?: NestedInventoryItemSizeDto;
     }[],
   ) {
     let unitAmount = 1;
     let measureAmount = 1;
-    const results: CreateInventoryAreaItemDto[] = [];
+    const results: NestedInventoryAreaItemDto[] = [];
 
     for (const item of itemConfigs) {
       if (item.sizeDto) {
         results.push(
-          plainToInstance(CreateInventoryAreaItemDto, {
+          plainToInstance(NestedInventoryAreaItemDto, {
             parentInventoryCountId: areaCountId,
             countedAmount: unitAmount++,
             measureAmount: measureAmount++,
@@ -250,7 +250,7 @@ export class InventoryAreaTestUtil {
         );
       } else {
         results.push(
-          plainToInstance(CreateInventoryAreaItemDto, {
+          plainToInstance(NestedInventoryAreaItemDto, {
             parentInventoryCountId: areaCountId,
             countedAmount: unitAmount++,
             measureAmount: measureAmount++,

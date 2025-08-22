@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BuilderBase } from '../../../base/builder-base';
 import { AppLogger } from '../../app-logging/app-logger';
+import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -90,10 +91,10 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       if (dto instanceof CreateInventoryItemSizeDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createDto) {
+        if (dto.mode === 'create' && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.updateDto && dto.id) {
+        if (dto.mode === 'update' && dto.updateDto && dto.id) {
           const size = await this.sizeService.findOne(dto.id, [
             'inventoryItem',
             'measureUnit',
@@ -119,24 +120,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     return results;
   }
 
-  /*public async updateMany(
-    dtos: NestedUpdateInventoryItemSizeDto[],
-  ): Promise<InventoryItemSize[]> {
-    const results: InventoryItemSize[] = [];
-    for (const dto of dtos) {
-      const size = await this.sizeService.findOne(dto.id, [
-        'inventoryItem',
-        'measureUnit',
-        'packageType',
-      ]);
-      if (!size) {
-        throw new Error('item size not found');
-      }
-      results.push(await this.buildUpdateDto(size, dto));
-    }
-    return results;
-  }*/
-
   /**
    * Called when creating/updating inventory-area-item
    * @param parentItem Not required in this instance, but is kept to follow the builderbase.setPropByBuilder signature
@@ -144,17 +127,27 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
    * @returns
    */
   public async buildDto(
-    parent: InventoryItem,
+    parent: InventoryItem | InventoryAreaItem,
     dto: CreateInventoryItemSizeDto | NestedInventoryItemSizeDto,
   ): Promise<InventoryItemSize> {
+    /*if (
+      dto instanceof NestedInventoryItemSizeDto &&
+      parent instanceof InventoryAreaItem
+    ) {
+      return await this.buildCreateDto(dto.createDto);
+    }*/
     if (dto instanceof CreateInventoryItemSizeDto) {
       return await this.buildCreateDto(dto);
     }
     if (dto instanceof NestedInventoryItemSizeDto) {
-      if (dto.createDto) {
-        return await this.buildCreateDto(dto.createDto, parent);
+      if (dto.mode === 'create' && dto.createDto) {
+        if (parent instanceof InventoryAreaItem) {
+          return await this.buildCreateDto(dto.createDto);
+        } else {
+          return await this.buildCreateDto(dto.createDto, parent);
+        }
       }
-      if (dto.updateDto && dto.id) {
+      if (dto.mode === 'update' && dto.updateDto && dto.id) {
         const size = await this.sizeService.findOne(dto.id, [
           'inventoryItem',
           'measureUnit',

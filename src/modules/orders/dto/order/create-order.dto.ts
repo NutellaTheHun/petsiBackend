@@ -9,7 +9,7 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
-import { CreateOrderMenuItemDto } from '../order-menu-item/create-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -129,23 +129,26 @@ export class CreateOrderDto {
 
   @ApiProperty({
     description: 'An array of CreateOrderMenuItemDtos.',
-    type: [CreateOrderMenuItemDto],
+    type: [NestedOrderMenuItemDto],
     example: [
       {
-        menuItemId: 10,
-        menuItemSizeId: 2,
-        quantity: 3,
-        orderedItemContainerDtos: [
-          {
-            parentContainerMenuItemId: 10,
-            containedMenuItemId: 4,
-            containedMenuItemSizeId: 5,
-            quantity: 6,
-          },
-        ],
+        mode: 'create',
+        createDto: {
+          menuItemId: 10,
+          menuItemSizeId: 2,
+          quantity: 3,
+          orderedItemContainerDtos: [
+            {
+              parentContainerMenuItemId: 10,
+              containedMenuItemId: 4,
+              containedMenuItemSizeId: 5,
+              quantity: 6,
+            },
+          ],
+        },
       },
     ],
   })
   @IsArray()
-  readonly orderedMenuItemDtos: CreateOrderMenuItemDto[];
+  readonly orderedMenuItemDtos: NestedOrderMenuItemDto[];
 }

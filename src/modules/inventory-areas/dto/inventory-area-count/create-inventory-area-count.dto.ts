@@ -6,7 +6,7 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
-import { CreateInventoryAreaItemDto } from '../inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../inventory-area-item/nested-inventory-area-item.dto';
 
 export class CreateInventoryAreaCountDto {
   @ApiProperty({
@@ -19,19 +19,23 @@ export class CreateInventoryAreaCountDto {
 
   @ApiProperty({
     description: 'Counted InventoryItems for the InventoryAreaCount.',
-    type: [CreateInventoryAreaItemDto],
+    type: [NestedInventoryAreaItemDto],
     example: [
       {
         mode: 'create',
-        countedInventoryItemId: 1,
-        countedAmount: 2,
-        countedItemSizeId: 3,
-        countedItemSizeDto: {
-          mode: 'create',
-          measureUnitId: 4,
-          measureAmount: 5,
-          inventoryPackageId: 6,
-          cost: 7.99,
+        createDto: {
+          countedInventoryItemId: 1,
+          countedAmount: 2,
+          countedItemSizeId: 3,
+          countedItemSizeDto: {
+            mode: 'create',
+            createDto: {
+              measureUnitId: 4,
+              measureAmount: 5,
+              inventoryPackageId: 6,
+              cost: 7.99,
+            },
+          },
         },
       },
     ],
@@ -39,5 +43,5 @@ export class CreateInventoryAreaCountDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly itemCountDtos?: CreateInventoryAreaItemDto[];
+  readonly itemCountDtos?: NestedInventoryAreaItemDto[];
 }

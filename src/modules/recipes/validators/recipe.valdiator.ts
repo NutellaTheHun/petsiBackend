@@ -75,8 +75,12 @@ export class RecipeValidator extends ValidatorBase<Recipe> {
 
     //No duplicate recipeIngredients
     if (dto.ingredientDtos) {
+      const nestedCreateDtos = dto.ingredientDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
+
       const resolvedDtos: string[] = [];
-      for (const d of dto.ingredientDtos) {
+      for (const d of nestedCreateDtos) {
         if (d.ingredientInventoryItemId) {
           resolvedDtos.push(`I:${d.ingredientInventoryItemId}`);
         } else if (d.ingredientRecipeId) {

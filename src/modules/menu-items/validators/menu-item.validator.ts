@@ -62,8 +62,15 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
     ) {
       // validate parentSize / definedContainedItem parentSize
       for (const item of dto.definedContainerItemDtos) {
+        const nestedCreateDto = item.createDto;
+        if (!nestedCreateDto) {
+          throw new Error();
+        }
         if (
-          !this.helper.isValidSize(item.parentContainerSizeId, dto.validSizeIds)
+          !this.helper.isValidSize(
+            nestedCreateDto.parentContainerSizeId,
+            dto.validSizeIds,
+          )
         ) {
           this.addError({
             errorMessage:
@@ -71,15 +78,19 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             errorType: 'INVALID',
             contextEntity: 'CreateMenuItemDto',
             sourceEntity: 'MenuItemSize',
-            sourceId: item.parentContainerSizeId,
+            sourceId: nestedCreateDto.parentContainerSizeId,
             conflictEntity: 'MenuItem',
           } as ValidationError);
         }
       }
 
+      const nestedCreates = dto.definedContainerItemDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
+
       // no parentSize / item / size duplicate
       const duplicateItems = this.helper.findDuplicates(
-        dto.definedContainerItemDtos,
+        nestedCreates,
         (item) =>
           `${item.parentContainerSizeId}:${item.containedMenuItemId}:${item.containedMenuItemSizeId}`,
       );

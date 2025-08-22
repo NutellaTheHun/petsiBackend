@@ -2,9 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
-import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
@@ -777,17 +775,23 @@ describe('menu item service', () => {
       throw new Error();
     }
     const compDtos = [
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: sizes[0].id,
-        containedMenuItemId: itemC.id,
-        containedMenuItemSizeId: itemC.validSizes[0].id,
-        quantity: 3,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: sizes[0].id,
+          containedMenuItemId: itemC.id,
+          containedMenuItemSizeId: itemC.validSizes[0].id,
+          quantity: 3,
+        },
       }),
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: sizes[0].id,
-        containedMenuItemId: itemD.id,
-        containedMenuItemSizeId: itemD.validSizes[0].id,
-        quantity: 3,
+      plainToInstance(NestedMenuItemContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerSizeId: sizes[0].id,
+          containedMenuItemId: itemD.id,
+          containedMenuItemSizeId: itemD.validSizes[0].id,
+          quantity: 3,
+        },
       }),
     ];
 
@@ -1019,10 +1023,12 @@ describe('menu item service', () => {
       }),
     ];
 
-    const optionDto = plainToInstance(CreateMenuItemContainerOptionsDto, {
+    const optionDto = plainToInstance(NestedMenuItemContainerOptionsDto, {
       mode: 'create',
-      containerRuleDtos: compOptionDtos,
-      validQuantity: 6,
+      createDto: {
+        containerRuleDtos: compOptionDtos,
+        validQuantity: 6,
+      },
     });
 
     const sizeTwo = await sizeService.findOneByName(SIZE_TWO);

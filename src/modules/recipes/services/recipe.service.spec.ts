@@ -123,7 +123,7 @@ describe('recipe service', () => {
     const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
     const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
-    const ingredientDtos = testingUtil.createChildRecipeIngredientDtos(
+    const ingredientDtos = testingUtil.createNestedRecipeIngredientDtos(
       ingredientItems.map((i) => i.id).slice(0, 3),
       [],
       ingredientMeasureUnits.map((u) => u.id).slice(0, 3),
@@ -209,7 +209,7 @@ describe('recipe service', () => {
     const ingredientMeasureUnitsRequest = await unitOfMeasureService.findAll();
     const ingredientMeasureUnits = ingredientMeasureUnitsRequest.items;
 
-    const createIngredDtos = testingUtil.createChildRecipeIngredientDtos(
+    const createIngredDtos = testingUtil.createNestedRecipeIngredientDtos(
       ingredientItems.map((i) => i.id).slice(3, 7),
       [],
       ingredientMeasureUnits.map((u) => u.id).slice(0, 3),

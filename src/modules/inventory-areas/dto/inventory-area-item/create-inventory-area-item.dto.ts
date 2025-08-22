@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { CreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 
 export class CreateInventoryAreaItemDto {
   @ApiProperty({
@@ -51,15 +51,18 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description:
       'Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.',
-    type: CreateInventoryItemSizeDto,
+    type: NestedInventoryItemSizeDto,
     example: {
-      measureUnitId: 1,
-      measureAmount: 2,
-      inventoryPackageId: 3,
-      cost: 4.99,
+      mode: 'create',
+      createDto: {
+        measureUnitId: 1,
+        measureAmount: 2,
+        inventoryPackageId: 3,
+        cost: 4.99,
+      },
     },
     nullable: true,
   })
   @IsOptional()
-  readonly countedItemSizeDto?: CreateInventoryItemSizeDto | null;
+  readonly countedItemSizeDto?: NestedInventoryItemSizeDto | null;
 }

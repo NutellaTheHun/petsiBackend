@@ -9,7 +9,7 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { CreateRecipeIngredientDto } from '../recipe-ingredient/create-recipe-ingredient.dto';
+import { NestedRecipeIngredientDto } from '../recipe-ingredient/nested-recipe-ingredient.dto';
 
 export class CreateRecipeDto {
   @ApiProperty({
@@ -123,23 +123,29 @@ export class CreateRecipeDto {
 
   @ApiPropertyOptional({
     description: 'Array of CreateRecipeIngredientDto.',
-    type: [CreateRecipeIngredientDto],
+    type: [NestedRecipeIngredientDto],
     example: [
       {
-        ingredientInventoryItemId: 1,
-        ingredientRecipeId: null,
-        quantity: 2,
-        quantityMeasurementId: 3,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: 1,
+          ingredientRecipeId: null,
+          quantity: 2,
+          quantityMeasurementId: 3,
+        },
       },
       {
-        ingredientInventoryItemId: null,
-        ingredientRecipeId: 4,
-        quantity: 5,
-        quantityMeasurementId: 6,
+        mode: 'create',
+        createDto: {
+          ingredientInventoryItemId: null,
+          ingredientRecipeId: 4,
+          quantity: 5,
+          quantityMeasurementId: 6,
+        },
       },
     ],
   })
   @IsOptional()
   @IsArray()
-  readonly ingredientDtos?: CreateRecipeIngredientDto[];
+  readonly ingredientDtos?: NestedRecipeIngredientDto[];
 }

@@ -4,7 +4,7 @@ import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
@@ -249,9 +249,9 @@ export class OrderTestingUtil {
 
   // Dtos
 
-  public async getCreateChildOrderMenuItemDtos(
+  public async createNestedOrderMenuItemDtos(
     amount: number,
-  ): Promise<CreateOrderMenuItemDto[]> {
+  ): Promise<NestedOrderMenuItemDto[]> {
     const itemsRequest = await this.menuItemService.findAll({
       relations: ['validSizes'],
     });
@@ -260,7 +260,7 @@ export class OrderTestingUtil {
       throw new Error();
     }
 
-    const results: CreateOrderMenuItemDto[] = [];
+    const results: NestedOrderMenuItemDto[] = [];
     for (let i = 0; i < amount; i++) {
       const item = items[i % items.length];
       if (!item.validSizes) {
@@ -271,10 +271,13 @@ export class OrderTestingUtil {
       }
 
       results.push(
-        plainToInstance(CreateOrderMenuItemDto, {
-          menuItemId: item.id,
-          quantity: 1,
-          menuItemSizeId: item.validSizes[0].id,
+        plainToInstance(NestedOrderMenuItemDto, {
+          mode: 'create',
+          createDto: {
+            menuItemId: item.id,
+            quantity: 1,
+            menuItemSizeId: item.validSizes[0].id,
+          },
         }),
       );
     }

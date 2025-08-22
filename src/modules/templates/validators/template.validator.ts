@@ -35,10 +35,14 @@ export class TemplateValidator extends ValidatorBase<Template> {
       } as ValidationError);
     }
 
-    if (dto.templateItemDtos) {
+    if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
+      const nestedCreates = dto.templateItemDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
+
       // no duplicate menuItems
       const duplicateItems = this.helper.findDuplicates(
-        dto.templateItemDtos,
+        nestedCreates,
         (item) => `${item.menuItemId}`,
       );
       if (duplicateItems) {
@@ -55,7 +59,7 @@ export class TemplateValidator extends ValidatorBase<Template> {
 
       // no duplicate tablePosIndex
       const duplicatePos = this.helper.findDuplicates(
-        dto.templateItemDtos,
+        nestedCreates,
         (item) => `${item.tablePosIndex}`,
       );
       if (duplicatePos) {

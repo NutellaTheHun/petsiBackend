@@ -33,9 +33,12 @@ export class OrderValidator extends ValidatorBase<Order> {
       } as ValidationError);
     }
 
+    const nestedCreates = dto.orderedMenuItemDtos
+      .map((nested) => nested.createDto)
+      .filter((nested) => nested !== undefined);
     // Validate no duplicate OrderMenuItems
     const duplicateItems = this.helper.findDuplicates(
-      dto.orderedMenuItemDtos,
+      nestedCreates,
       (item) => `${item.menuItemId}:${item.menuItemSizeId}`,
     );
     if (duplicateItems) {

@@ -41,8 +41,12 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
 
     // no duplicate item sizing
     if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
+      const nestedCreates = dto.itemSizeDtos
+        .map((nested) => nested.createDto)
+        .filter((nested) => nested !== undefined);
+
       const dupliateSizing = this.helper.findDuplicates(
-        dto.itemSizeDtos,
+        nestedCreates,
         (size) => `${size.inventoryPackageId}:${size.measureUnitId}`,
       );
       if (dupliateSizing) {

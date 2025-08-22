@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
-import { CreateOrderContainerItemDto } from '../order-container-item/create-order-container-item.dto';
+import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
 
 export class CreateOrderMenuItemDto {
   @ApiProperty({
@@ -49,23 +49,29 @@ export class CreateOrderMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
-    type: [CreateOrderContainerItemDto],
+    type: [NestedOrderContainerItemDto],
     example: [
       {
-        parentContainerMenuItemId: 10,
-        containedMenuItemId: 4,
-        containedMenuItemSizeId: 5,
-        quantity: 6,
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: 10,
+          containedMenuItemId: 4,
+          containedMenuItemSizeId: 5,
+          quantity: 6,
+        },
       },
       {
-        parentContainerMenuItemId: 10,
-        containedMenuItemId: 7,
-        containedMenuItemSizeId: 8,
-        quantity: 9,
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: 10,
+          containedMenuItemId: 7,
+          containedMenuItemSizeId: 8,
+          quantity: 9,
+        },
       },
     ],
   })
   @IsArray()
   @IsOptional()
-  readonly orderedItemContainerDtos?: CreateOrderContainerItemDto[];
+  readonly orderedItemContainerDtos?: NestedOrderContainerItemDto[];
 }

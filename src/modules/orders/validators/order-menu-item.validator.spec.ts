@@ -11,7 +11,6 @@ import {
   item_c,
   item_d,
 } from '../../menu-items/utils/constants';
-import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
@@ -75,17 +74,23 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      plainToInstance(CreateOrderContainerItemDto, {
-        parentContainerMenuItemId: item.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: item.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateOrderContainerItemDto, {
-        parentContainerMenuItemId: item.id,
-        containedMenuItemId: contItemC.id,
-        containedMenuItemSizeId: contItemC.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: item.id,
+          containedMenuItemId: contItemC.id,
+          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          quantity: 1,
+        },
       }),
     ];
 
@@ -146,23 +151,32 @@ describe('order category validator', () => {
     }
 
     const containerDtos = [
-      plainToInstance(CreateOrderContainerItemDto, {
-        parentContainerMenuItemId: item.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: item.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateOrderContainerItemDto, {
-        parentContainerMenuItemId: item.id,
-        containedMenuItemId: contItemC.id,
-        containedMenuItemSizeId: contItemC.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: item.id,
+          containedMenuItemId: contItemC.id,
+          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          quantity: 1,
+        },
       }),
-      plainToInstance(CreateOrderContainerItemDto, {
-        parentContainerMenuItemId: item.id,
-        containedMenuItemId: contItemB.id,
-        containedMenuItemSizeId: contItemB.validSizes[0].id,
-        quantity: 1,
+      plainToInstance(NestedOrderContainerItemDto, {
+        mode: 'create',
+        createDto: {
+          parentContainerMenuItemId: item.id,
+          containedMenuItemId: contItemB.id,
+          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          quantity: 1,
+        },
       }),
     ];
 

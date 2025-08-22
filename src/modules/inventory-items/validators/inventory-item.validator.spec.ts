@@ -5,7 +5,6 @@ import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
-import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -86,17 +85,23 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitPound.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgBox.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitPound.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgBox.id,
+          cost: 1,
+        },
       }),
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitKilo.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgCan.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitKilo.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgCan.id,
+          cost: 1,
+        },
       }),
     ];
 
@@ -138,17 +143,23 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitPound.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgBox.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitPound.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgBox.id,
+          cost: 1,
+        },
       }),
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitKilo.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgCan.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitKilo.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgCan.id,
+          cost: 1,
+        },
       }),
     ];
 
@@ -189,17 +200,23 @@ describe('inventory item validator', () => {
     }
 
     const sizeDtos = [
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitPound.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgBox.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitPound.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgBox.id,
+          cost: 1,
+        },
       }),
-      plainToInstance(CreateInventoryItemSizeDto, {
-        measureUnitId: unitPound.id,
-        measureAmount: 1,
-        inventoryPackageId: pkgBox.id,
-        cost: 1,
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'create',
+        createDto: {
+          measureUnitId: unitPound.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgBox.id,
+          cost: 1,
+        },
       }),
     ];
 

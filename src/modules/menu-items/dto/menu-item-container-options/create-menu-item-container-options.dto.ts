@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
-import { CreateMenuItemContainerRuleDto } from '../menu-item-container-rule/create-menu-item-container-rule.dto';
+import { NestedMenuItemContainerRuleDto } from '../menu-item-container-rule/nested-menu-item-container-rule.dto';
 
 export class CreateMenuItemContainerOptionsDto {
   @ApiPropertyOptional({
@@ -18,20 +18,26 @@ export class CreateMenuItemContainerOptionsDto {
   @ApiProperty({
     description:
       'The list of MenuItems and their sizes that are allowed in the container',
-    type: [CreateMenuItemContainerRuleDto],
+    type: [NestedMenuItemContainerRuleDto],
     example: [
       {
-        validMenuItemId: 2,
-        validSizeIds: [3, 4],
+        mode: 'create',
+        createDto: {
+          validMenuItemId: 2,
+          validSizeIds: [3, 4],
+        },
       },
       {
-        validMenuItemId: 5,
-        validSizeIds: [6, 7],
+        mode: 'create',
+        createDto: {
+          validMenuItemId: 5,
+          validSizeIds: [6, 7],
+        },
       },
     ],
   })
   @IsArray()
-  readonly containerRuleDtos: CreateMenuItemContainerRuleDto[];
+  readonly containerRuleDtos: NestedMenuItemContainerRuleDto[];
 
   @ApiProperty({
     description:

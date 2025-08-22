@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { Template } from '../../entities/template.entity';
 
-/**
- * Depreciated, only created as a child through {@link Template}.
- */
 export class CreateTemplateMenuItemDto {
   @ApiProperty({
     description:

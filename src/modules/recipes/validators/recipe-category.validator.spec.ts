@@ -5,7 +5,6 @@ import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { REC_CAT_A, REC_CAT_B } from '../utils/constants';
@@ -40,14 +39,21 @@ describe('recipe category validator', () => {
 
   it('should validate create', async () => {
     const subCatDtos = [
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 1',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
       }),
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 2',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
       }),
     ];
     const dto = {
+      categoryName: REC_CAT_A,
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
@@ -56,11 +62,17 @@ describe('recipe category validator', () => {
 
   it('should fail create: name already exists', async () => {
     const subCatDtos = [
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 1',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
       }),
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 2',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
       }),
     ];
     const dto = {
@@ -80,14 +92,23 @@ describe('recipe category validator', () => {
 
   it('should fail create: duplicate sub categories', async () => {
     const subCatDtos = [
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 1',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
       }),
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 2',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
       }),
-      plainToInstance(CreateRecipeSubCategoryDto, {
-        subCategoryName: 'SUB CAT 1',
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
       }),
     ];
     const dto = {

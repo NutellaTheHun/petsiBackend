@@ -2,7 +2,6 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -18,7 +17,6 @@ import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-mea
 import { FL_OUNCE, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
-import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
 import { AREA_A, AREA_B } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
@@ -104,24 +102,34 @@ describe('Inventory area count service', () => {
       throw new Error();
     }
 
-    const sizeDto = plainToInstance(CreateInventoryItemSizeDto, {
-      measureAmount: 1,
-      measureUnitId: unit.id,
-      inventoryPackageId: pkg.id,
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      mode: 'create',
+      createDto: {
+        measureAmount: 1,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 1,
+      },
     });
 
     const itemDtos = [
-      plainToInstance(CreateInventoryAreaItemDto, {
-        countedInventoryItemId: foodA.id,
-        countedAmount: 1,
-        countedItemSizeId: foodA.itemSizes[0].id,
+      plainToInstance(NestedInventoryAreaItemDto, {
+        mode: 'create',
+        createDto: {
+          countedInventoryItemId: foodA.id,
+          countedAmount: 1,
+          countedItemSizeId: foodA.itemSizes[0].id,
+        },
       }),
-      plainToInstance(CreateInventoryAreaItemDto, {
-        countedInventoryItemId: foodB.id,
-        countedAmount: 1,
-        countedItemSizeDto: sizeDto,
+      plainToInstance(NestedInventoryAreaItemDto, {
+        mode: 'create',
+        createDto: {
+          countedInventoryItemId: foodB.id,
+          countedAmount: 1,
+          countedItemSizeDto: sizeDto,
+        },
       }),
-    ] as CreateInventoryAreaItemDto[];
+    ];
 
     const dto = {
       inventoryAreaId: areaA.id,
@@ -375,20 +383,22 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
 
-    const sizeDto = plainToInstance(CreateInventoryItemSizeDto, {
-      measureUnitId: uom.id,
-      inventoryPackageId: pkg.id,
-      inventoryItemId: items[2].id,
-      cost: 12,
-      measureAmount: 1,
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      mode: 'create',
+      createDto: {
+        measureUnitId: uom.id,
+        inventoryPackageId: pkg.id,
+        inventoryItemId: items[2].id,
+        cost: 12,
+        measureAmount: 1,
+      },
     });
     const item_c = { itemId: items[2].id, sizeDto };
 
-    const itemCountDtos = testingUtil.createInventoryAreaItemDtos(testCountId, [
-      item_a,
-      item_b,
-      item_c,
-    ]);
+    const itemCountDtos = testingUtil.createNestedInventoryAreaItemDtos(
+      testCountId,
+      [item_a, item_b, item_c],
+    );
 
     const nestedItemCountDtos = itemCountDtos.map((dto) =>
       plainToInstance(NestedInventoryAreaItemDto, {

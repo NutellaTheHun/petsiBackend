@@ -140,7 +140,7 @@ describe('Inventory Item Service', () => {
       .map((unit) => unit.id)
       .slice(0, 2);
 
-    const sizeDtos = testingUtil.createInventoryItemSizeDtos(
+    const sizeDtos = testingUtil.createNestedInventoryItemSizeDtos(
       2,
       packageIds,
       measureIds,

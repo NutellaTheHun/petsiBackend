@@ -5,7 +5,6 @@ import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
 import { ValidationException } from '../../../util/exceptions/validation-exception';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
-import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
@@ -54,15 +53,21 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
       }),
     ];
     const dto = {
@@ -85,20 +90,29 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A2',
-        menuItemId: itemA.id,
-        tablePosIndex: 3,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A2',
+          menuItemId: itemA.id,
+          tablePosIndex: 3,
+        },
       }),
     ];
 
@@ -133,20 +147,29 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A2',
-        menuItemId: itemC.id,
-        tablePosIndex: 1,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A2',
+          menuItemId: itemC.id,
+          tablePosIndex: 1,
+        },
       }),
     ];
 
@@ -177,15 +200,21 @@ describe('template validator', () => {
     }
 
     const itemDtos = [
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'A',
-        menuItemId: itemA.id,
-        tablePosIndex: 1,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'A',
+          menuItemId: itemA.id,
+          tablePosIndex: 1,
+        },
       }),
-      plainToInstance(CreateTemplateMenuItemDto, {
-        displayName: 'B',
-        menuItemId: itemB.id,
-        tablePosIndex: 2,
+      plainToInstance(NestedTemplateMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          displayName: 'B',
+          menuItemId: itemB.id,
+          tablePosIndex: 2,
+        },
       }),
     ];
     const dto = {
