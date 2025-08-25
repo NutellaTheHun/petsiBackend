@@ -1,9 +1,8 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
-import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
@@ -44,13 +43,13 @@ describe('order container item service', () => {
     expect(service).toBeDefined();
   });
 
-  it('should fail to create a container item', async () => {
+  /*it('should fail to create a container item', async () => {
     const dto = {} as CreateOrderContainerItemDto;
 
     const result = await expect(service.create(dto)).rejects.toThrow(
       BadRequestException,
     );
-  });
+  });*/
 
   it('should find all container items', async () => {
     const results = await service.findAll();

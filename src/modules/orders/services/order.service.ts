@@ -28,7 +28,7 @@ export class OrderService extends ServiceBase<Order> {
   ): void {
     query
       .leftJoin('entity.orderedItems', 'orderedItem')
-      .leftJoin('orderedItem.menuItem', 'menuItem') // 👈 now menuItem alias is correctly defined
+      .leftJoin('orderedItem.menuItem', 'menuItem')
       .andWhere(
         `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.itemName) LIKE :search)`,
         { search: `%${search.toLowerCase()}%` },

@@ -471,7 +471,7 @@ describe('order service', () => {
   });
 
   it('should search all orders', async () => {
-    const results = await orderService.findAll({ search: 'item a' });
+    const results = await orderService.findAll({ search: 'item b' });
 
     expect(results).not.toBeNull();
     expect(results.items.length).toEqual(1);

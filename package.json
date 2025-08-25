@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "NODE_ENV=development ts-node src/scripts/seed.ts",
+    "seedTestDb": "NODE_ENV=development ts-node src/scripts/seedTestDb.ts",
+    "clearTestDb": "NODE_ENV=development ts-node src/scripts/clearTestDb.ts",
     "generate:types": "openapi-typescript http://localhost:3000/docs-json --o ../petsi-frontend/src/api-types.ts"
   },
   "dependencies": {

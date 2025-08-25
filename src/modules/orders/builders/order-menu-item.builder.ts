@@ -84,6 +84,7 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
   }
 
   public async buildMany(
+    parent: Order,
     dtos: (CreateOrderMenuItemDto | NestedOrderMenuItemDto)[],
   ): Promise<OrderMenuItem[]> {
     const results: OrderMenuItem[] = [];
@@ -91,10 +92,10 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
       if (dto instanceof CreateOrderMenuItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createDto) {
+        if (dto.mode === 'create' && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.updateDto && dto.id) {
+        if (dto.mode === 'update' && dto.updateDto && dto.id) {
           const item = await this.orderItemService.findOne(dto.id);
           if (!item) {
             throw new Error('orderMenuItem not found');

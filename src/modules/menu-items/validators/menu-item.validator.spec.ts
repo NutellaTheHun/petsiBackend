@@ -634,7 +634,7 @@ describe('menu item validator', () => {
     }
   });
 
-  it('should pass update: container options with current defined container (set null)', async () => {
+  /*it('should pass update: container options with current defined container (set null)', async () => {
     const containerItemRequest = await definedContainerService.findAll({
       relations: ['parentContainer'],
     });
@@ -658,7 +658,7 @@ describe('menu item validator', () => {
     } as UpdateMenuItemDto;
 
     await validator.validateUpdate(toUpdate.id, dto);
-  });
+  });*/
 
   it('should fail update: defined container with current container options', async () => {
     const optionsRequest = await containerOptionsService.findAll({

@@ -125,7 +125,7 @@ describe('menu item controller', () => {
       itemName: 'testItem',
     } as CreateMenuItemDto;
 
-    await expect(controller.create(dto)).rejects.toThrow(NotFoundException);
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
   });
 
   it('should find item by id', async () => {

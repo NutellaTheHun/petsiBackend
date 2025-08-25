@@ -5,7 +5,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeService } from '../services/recipe.service';
@@ -57,7 +57,7 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
   }
 
   public subCategoriesByBuilder(
-    dtos: (CreateRecipeSubCategoryDto | UpdateRecipeSubCategoryDto)[],
+    dtos: (CreateRecipeSubCategoryDto | NestedRecipeSubCategoryDto)[],
   ): this {
     return this.setPropByBuilder(
       this.subCategoryBuilder.buildMany.bind(this.subCategoryBuilder),

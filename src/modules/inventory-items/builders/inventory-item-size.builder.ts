@@ -130,12 +130,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     parent: InventoryItem | InventoryAreaItem,
     dto: CreateInventoryItemSizeDto | NestedInventoryItemSizeDto,
   ): Promise<InventoryItemSize> {
-    /*if (
-      dto instanceof NestedInventoryItemSizeDto &&
-      parent instanceof InventoryAreaItem
-    ) {
-      return await this.buildCreateDto(dto.createDto);
-    }*/
     if (dto instanceof CreateInventoryItemSizeDto) {
       return await this.buildCreateDto(dto);
     }

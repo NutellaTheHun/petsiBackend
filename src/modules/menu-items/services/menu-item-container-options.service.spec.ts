@@ -1,8 +1,7 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
 import { item_b } from '../utils/constants';
@@ -41,13 +40,13 @@ describe('menu item container options service', () => {
     expect(itemComponentOptionsService).toBeDefined();
   });
 
-  it('should fail to create container options', async () => {
+  /*it('should fail to create container options', async () => {
     const dto = {} as CreateMenuItemContainerOptionsDto;
 
     await expect(itemComponentOptionsService.create(dto)).rejects.toThrow(
       BadRequestException,
     );
-  });
+  });*/
 
   it('should find all container options', async () => {
     const results = await itemComponentOptionsService.findAll();

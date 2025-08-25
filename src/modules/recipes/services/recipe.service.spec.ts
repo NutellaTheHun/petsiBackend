@@ -216,12 +216,12 @@ describe('recipe service', () => {
       [4, 5, 6, 7],
     );
 
-    const nestedCreateIngredDtos = createIngredDtos.map((cDto) => {
+    /*const nestedCreateIngredDtos = createIngredDtos.map((cDto) => {
       plainToInstance(NestedRecipeIngredientDto, {
         mode: 'create',
         createDto: cDto,
       });
-    });
+    });*/
 
     const updateIngredDtos = testIngredients.map((ingred) =>
       plainToInstance(NestedRecipeIngredientDto, {
@@ -237,7 +237,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: [...updateIngredDtos, ...nestedCreateIngredDtos],
+      ingredientDtos: [...updateIngredDtos, ...createIngredDtos],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);

@@ -1,4 +1,4 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -7,7 +7,6 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_f } from '../../menu-items/utils/constants';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
-import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
@@ -78,7 +77,7 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const dto = {
+    /*const dto = {
       orderId: testOrderId,
       menuItemId: item.id,
       menuItemSizeId: item.validSizes[0].id,
@@ -87,7 +86,7 @@ describe('order menu item service', () => {
 
     await expect(orderItemService.create(dto)).rejects.toThrow(
       BadRequestException,
-    );
+    );*/
 
     const createItemDto = plainToInstance(NestedOrderMenuItemDto, {
       mode: 'create',

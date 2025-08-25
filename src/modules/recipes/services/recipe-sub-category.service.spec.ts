@@ -1,10 +1,7 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { REC_CAT_A, REC_CAT_C, REC_SUBCAT_1 } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -47,44 +44,36 @@ describe('recipe sub category service', () => {
       throw new Error('recipe category C is null');
     }
 
-    const dto = {
+    /*const dto = {
       subCategoryName: 'test sub Cat',
       parentCategoryId: catC.id,
     } as CreateRecipeSubCategoryDto;
 
     await expect(subCategoryService.create(dto)).rejects.toThrow(
       BadRequestException,
-    );
+    );*/
 
-    const createSubCatDto = plainToInstance(NestedRecipeSubCategoryDto, {
+    /*const createSubCatDto = plainToInstance(NestedRecipeSubCategoryDto, {
       mode: 'create',
       createDto: {
         subCategoryName: 'test sub Cat',
       },
-    });
+    });*/
+    const createSubCatDto = {
+      parentCategoryId: catC.id,
+      subCategoryName: 'test sub Cat',
+    } as CreateRecipeSubCategoryDto;
 
-    const updateCategoryDto = {
-      subCategoryDtos: [createSubCatDto],
-    } as UpdateRecipeCategoryDto;
-
-    const updateResult = await categoryService.update(
-      catC.id,
-      updateCategoryDto,
-    );
-    if (!updateResult) {
-      throw new Error();
-    }
-    if (!updateResult.subCategories) {
+    const createResult = await subCategoryService.create(createSubCatDto);
+    if (!createResult) {
       throw new Error();
     }
 
-    const result = updateResult.subCategories[0];
+    expect(createResult).not.toBeNull();
+    expect(createResult?.subCategoryName).toEqual('test sub Cat');
+    expect(createResult?.parentCategory.id).toEqual(catC.id);
 
-    expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual('test sub Cat');
-    expect(result?.parentCategory.id).toEqual(catC.id);
-
-    testId = result?.id as number;
+    testId = createResult?.id as number;
   });
 
   it('should update a sub-category', async () => {

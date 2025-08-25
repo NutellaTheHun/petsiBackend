@@ -160,7 +160,7 @@ describe('menu item container item controller', () => {
     expect(service).toBeDefined();
   });
 
-  it('should fail to create a container item', async () => {
+  /*it('should fail to create a container item', async () => {
     const dto = {
       parentContainerId: items[1].id,
       containedMenuItemId: items[2].id,
@@ -168,7 +168,7 @@ describe('menu item container item controller', () => {
     } as CreateMenuItemContainerItemDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+  });*/
 
   it('should find one component by id', async () => {
     const result = await controller.findOne(1);

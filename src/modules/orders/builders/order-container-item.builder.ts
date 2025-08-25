@@ -83,10 +83,10 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
       if (dto instanceof CreateOrderContainerItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createDto) {
+        if (dto.mode === 'create' && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.updateDto && dto.id) {
+        if (dto.mode === 'update' && dto.updateDto && dto.id) {
           const item = await this.componentService.findOne(dto.id);
           if (!item) {
             throw new Error('order menu item container is null');

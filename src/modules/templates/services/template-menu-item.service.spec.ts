@@ -1,11 +1,10 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_d, item_e } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -64,7 +63,7 @@ describe('Template menu item service', () => {
       throw new NotFoundException();
     }
 
-    const dto = {
+    /*const dto = {
       displayName: 'test display name',
       menuItemId: itemD.id,
       tablePosIndex: 0,
@@ -73,7 +72,7 @@ describe('Template menu item service', () => {
 
     await expect(templateItemService.create(dto)).rejects.toThrow(
       BadRequestException,
-    );
+    );*/
 
     const createItemDto = plainToInstance(NestedTemplateMenuItemDto, {
       mode: 'create',

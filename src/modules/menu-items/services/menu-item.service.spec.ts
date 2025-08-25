@@ -1101,11 +1101,16 @@ describe('menu item service', () => {
       }),
     );
 
-    const updateItemOptionsDto = {
-      mode: 'update',
-      id: itemToUpdate.containerOptions.id,
-      containerRuleDtos: [createOptionDto, ...theRest],
-    } as NestedMenuItemContainerOptionsDto;
+    const updateItemOptionsDto = plainToInstance(
+      NestedMenuItemContainerOptionsDto,
+      {
+        mode: 'update',
+        id: itemToUpdate.containerOptions.id,
+        updateDto: {
+          containerRuleDtos: [createOptionDto, ...theRest],
+        },
+      },
+    );
 
     const updateItemDto = {
       containerOptionDto: updateItemOptionsDto,

@@ -26,49 +26,49 @@ import { OrderContainerItemValidator } from './validators/order-container-item.v
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
 import { OrderValidator } from './validators/order.validator';
 
-
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Order,
-            OrderCategory,
-            OrderMenuItem,
-            OrderContainerItem,
-        ]),
-        MenuItemsModule,
-        CacheModule.register(),
-        AppLoggingModule,
-        RequestContextModule,
-    ],
-    controllers: [
-        OrderController,
-        OrderCategoryController,
-        OrderMenuItemController,
-        OrderContainerItemController
-    ],
-    providers: [
-        OrderService,
-        OrderCategoryService,
-        OrderMenuItemService,
-        OrderContainerItemService,
+  imports: [
+    TypeOrmModule.forFeature([
+      Order,
+      OrderCategory,
+      OrderMenuItem,
+      OrderContainerItem,
+    ]),
+    MenuItemsModule,
+    CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
+  ],
+  controllers: [
+    OrderController,
+    OrderCategoryController,
+    OrderMenuItemController,
+    OrderContainerItemController,
+  ],
+  providers: [
+    OrderService,
+    OrderCategoryService,
+    OrderMenuItemService,
+    OrderContainerItemService,
 
-        OrderBuilder,
-        OrderCategoryBuilder,
-        OrderMenuItemBuilder,
-        OrderContainerItemBuilder,
+    OrderBuilder,
+    OrderCategoryBuilder,
+    OrderMenuItemBuilder,
+    OrderContainerItemBuilder,
 
-        OrderValidator,
-        OrderCategoryValidator,
-        OrderMenuItemValidator,
-        OrderContainerItemValidator,
+    OrderValidator,
+    OrderCategoryValidator,
+    OrderMenuItemValidator,
+    OrderContainerItemValidator,
 
-        OrderTestingUtil,
-    ],
-    exports: [
-        OrderService,
-        OrderCategoryService,
-        OrderMenuItemService,
-        OrderContainerItemService,
-    ]
+    OrderTestingUtil,
+  ],
+  exports: [
+    OrderService,
+    OrderCategoryService,
+    OrderMenuItemService,
+    OrderContainerItemService,
+    OrderTestingUtil,
+  ],
 })
-export class OrdersModule { }
+export class OrdersModule {}
