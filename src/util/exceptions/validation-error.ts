@@ -49,11 +49,19 @@
   }*/
 //}*/
 
-export class ValidationError<T, K extends keyof T> {
-  constructor(init?: Partial<ValidationError<T, K>>) {
+export class ValidationError {
+  constructor(init?: Partial<ValidationError>) {
     Object.assign(this, init);
   }
-  readonly field: K;
+  readonly field: string;
   readonly id?: string;
   readonly message: string;
 }
+
+/*export function buildValidationError<T, K extends keyof T>(
+  field: K,
+  message: string,
+  id?: string,
+) {
+  return new ValidationError({ field: field as string, message, id });
+}*/
