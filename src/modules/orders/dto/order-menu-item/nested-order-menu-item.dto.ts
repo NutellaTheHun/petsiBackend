@@ -1,31 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateOrderMenuItemDto } from './create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from './update-order-menu-item.dto';
 
-export class NestedOrderMenuItemDto {
-  @ApiProperty({
-    description: 'Determines if this dto is to update or create a resource',
-    example: 'create',
-    enum: ['create', 'update'],
-  })
-  @IsNotEmpty()
-  readonly mode: 'create' | 'update';
-
-  @ApiPropertyOptional({
-    description: 'Id for OrderMenuItem entity when updating',
-    example: 1,
-  })
-  @IsOptional()
-  @IsNumber()
-  readonly id?: number;
-
+export class NestedOrderMenuItemDto extends NestedDtoBase {
   @ApiPropertyOptional({
     description: 'Create dto of a OrderMenuItem entity.',
     type: CreateOrderMenuItemDto,

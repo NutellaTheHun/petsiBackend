@@ -1,31 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  ValidateNested,
-} from 'class-validator';
+import { ValidateNested } from 'class-validator';
+import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateRecipeIngredientDto } from './create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from './update-recipe-ingedient.dto';
 
-export class NestedRecipeIngredientDto {
-  @ApiProperty({
-    description: 'Determines if this dto is to update or create a resource',
-    example: 'create',
-    enum: ['create', 'update'],
-  })
-  @IsNotEmpty()
-  readonly mode: 'create' | 'update';
-
-  @ApiPropertyOptional({
-    description: 'Id for RecipeIngredient entity when updating',
-    example: 1,
-  })
-  @IsOptional()
-  @IsNumber()
-  readonly id?: number;
-
+export class NestedRecipeIngredientDto extends NestedDtoBase {
   @ApiPropertyOptional({
     description: 'Create dto of a RecipeIngredient entity.',
     type: CreateRecipeIngredientDto,

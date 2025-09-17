@@ -61,10 +61,10 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
       if (dto instanceof CreateRecipeSubCategoryDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.mode === 'create' && dto.createDto) {
+        if (dto.createId && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.mode === 'update' && dto.updateDto && dto.id) {
+        if (dto.id && dto.updateDto) {
           const subCat = await this.subCategoryService.findOne(dto.id);
           if (!subCat) {
             throw new Error('recipe ingredient not found');

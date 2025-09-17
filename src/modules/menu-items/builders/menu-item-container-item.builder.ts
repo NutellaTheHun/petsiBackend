@@ -88,10 +88,10 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
       if (dto instanceof CreateMenuItemContainerItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.mode === 'create' && dto.createDto) {
+        if (dto.createDto && dto.createId) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.mode === 'update' && dto.updateDto && dto.id) {
+        if (dto.id && dto.updateDto) {
           const comp = await this.componentService.findOne(dto.id);
           if (!comp) {
             throw new NotFoundException();

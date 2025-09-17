@@ -1,25 +1,10 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, ValidateNested } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, ValidateNested } from 'class-validator';
+import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateInventoryAreaItemDto } from './create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from './update-inventory-area-item.dto';
 
-export class NestedInventoryAreaItemDto {
-  @ApiProperty({
-    description: 'Determines if this dto is to update or create a resource',
-    example: 'create',
-    enum: ['create', 'update'],
-  })
-  readonly mode: 'create' | 'update';
-
-  @ApiProperty({
-    description: 'Id for InventoryAreaItem entity when updating',
-    example: 1,
-    required: false,
-  })
-  @IsNumber()
-  @IsOptional()
-  readonly id?: number;
-
+export class NestedInventoryAreaItemDto extends NestedDtoBase {
   @ApiPropertyOptional({
     description: 'CreateInventoryAreaItemDto for InventoryAreaItem entity.',
     type: CreateInventoryAreaItemDto,

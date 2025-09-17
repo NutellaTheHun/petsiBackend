@@ -76,10 +76,10 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
     if (dto instanceof CreateMenuItemContainerOptionsDto) {
       return await this.buildCreateDto(dto);
     } else {
-      if (dto.mode === 'create' && dto.createDto) {
+      if (dto.createId && dto.createDto) {
         return await this.buildCreateDto(dto.createDto, parent);
       }
-      if (dto.mode === 'update' && dto.updateDto && dto.id) {
+      if (dto.id && dto.updateDto) {
         const toUpdate = await this.itemComponentOptionsService.findOne(dto.id);
         if (!toUpdate) {
           throw new Error('options is null');

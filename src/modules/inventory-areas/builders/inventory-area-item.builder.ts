@@ -101,10 +101,10 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
       if (dto instanceof CreateInventoryAreaItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.mode === 'create' && dto.createDto) {
+        if (dto.createId && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.mode === 'update' && dto.updateDto && dto.id) {
+        if (dto.id && dto.updateDto) {
           const countedItem = await this.itemCountService.findOne(dto.id, [
             'parentInventoryCount',
             'countedItem',

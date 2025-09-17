@@ -91,10 +91,10 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       if (dto instanceof CreateInventoryItemSizeDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.mode === 'create' && dto.createDto) {
+        if (dto.createId && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.mode === 'update' && dto.updateDto && dto.id) {
+        if (dto.id && dto.updateDto) {
           const size = await this.sizeService.findOne(dto.id, [
             'inventoryItem',
             'measureUnit',
@@ -134,14 +134,14 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       return await this.buildCreateDto(dto);
     }
     if (dto instanceof NestedInventoryItemSizeDto) {
-      if (dto.mode === 'create' && dto.createDto) {
+      if (dto.createId && dto.createDto) {
         if (parent instanceof InventoryAreaItem) {
           return await this.buildCreateDto(dto.createDto);
         } else {
           return await this.buildCreateDto(dto.createDto, parent);
         }
       }
-      if (dto.mode === 'update' && dto.updateDto && dto.id) {
+      if (dto.id && dto.updateDto) {
         const size = await this.sizeService.findOne(dto.id, [
           'inventoryItem',
           'measureUnit',

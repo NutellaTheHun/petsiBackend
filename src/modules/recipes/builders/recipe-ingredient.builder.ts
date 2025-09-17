@@ -93,10 +93,10 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       if (dto instanceof CreateRecipeIngredientDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.mode === 'create' && dto.createDto) {
+        if (dto.createId && dto.createDto) {
           results.push(await this.buildCreateDto(dto.createDto, parent));
         }
-        if (dto.mode === 'update' && dto.updateDto && dto.id) {
+        if (dto.id && dto.updateDto) {
           const ingred = await this.ingredientService.findOne(dto.id);
           if (!ingred) {
             throw new Error('recipe ingredient not found');
