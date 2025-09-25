@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -29,6 +28,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
   }
 
   public async validateCreate(
+    createId: string,
     dto: CreateMenuItemContainerItemDto,
   ): Promise<void> {
     // validate container item size
@@ -41,17 +41,15 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (
       !this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)
     ) {
-      this.addError({
-        errorMessage: 'Invalid menu item size',
-        errorType: 'INVALID',
-        contextEntity: 'CreateChildMenuItemContainerItemDto',
-        sourceEntity: 'MenuItemSize',
-        conflictEntity: 'MenuItem',
-        value: {
-          containedMenuItemId: dto.containedMenuItemId,
-          containedMenuItemSizeId: dto.containedMenuItemSizeId,
-        },
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'containedItemSize',
+          'Invalid menu item size',
+          'INVALID',
+          undefined,
+          createId,
+        ),
+      );
     }
 
     this.throwIfErrors();
@@ -80,17 +78,14 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       }
 
       if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
-        this.addError({
-          errorMessage: 'Invalid menu item size',
-          errorType: 'INVALID',
-          contextEntity: 'UpdateMenuItemContainerItemDto',
-          sourceEntity: 'MenuItemSize',
-          conflictEntity: 'MenuItem',
-          value: {
-            containedMenuItemId: itemId,
-            containedMenuItemSizeId: sizeId,
-          },
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'containedItemSize',
+            'Invalid menu item size',
+            'INVALID',
+            id,
+          ),
+        );
       }
     }
 

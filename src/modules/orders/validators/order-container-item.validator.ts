@@ -37,7 +37,10 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     super(repo, 'OrderContainerItem', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateOrderContainerItemDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateOrderContainerItemDto,
+  ): Promise<void> {
     // validate item / size
     const containedItem = await this.itemService.findOne(
       dto.containedMenuItemId,

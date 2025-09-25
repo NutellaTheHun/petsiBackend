@@ -33,7 +33,10 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
     super(repo, 'OrderMenuItem', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateOrderMenuItemDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateOrderMenuItemDto,
+  ): Promise<void> {
     const menuItem = await this.menuItemService.findOne(dto.menuItemId, [
       'validSizes',
     ]);

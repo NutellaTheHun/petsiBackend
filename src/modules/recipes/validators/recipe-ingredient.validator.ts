@@ -20,7 +20,10 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
     super(repo, 'RecipeIngredient', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateRecipeIngredientDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateRecipeIngredientDto,
+  ): Promise<void> {
     if (dto.ingredientInventoryItemId && dto.ingredientRecipeId) {
       this.addError({
         errorMessage: 'Ingredient references both an inventory item and recipe',

@@ -24,7 +24,10 @@ export class OrderValidator extends ValidatorBase<Order> {
     super(repo, 'Order', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateOrderDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateOrderDto,
+  ): Promise<void> {
     if (dto.orderedMenuItemDtos.length === 0) {
       this.addError({
         errorMessage: 'Order has no items',

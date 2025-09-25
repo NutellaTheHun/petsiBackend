@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
@@ -25,16 +24,20 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
   }
 
   public async validateCreate(
+    createId: string,
     dto: CreateMenuItemContainerOptionsDto,
   ): Promise<void> {
     // No rules
     if (!dto.containerRuleDtos || dto.containerRuleDtos.length === 0) {
-      this.addError({
-        errorMessage: 'Menu item container has no settings.',
-        errorType: 'INVALID',
-        contextEntity: 'CreateMenuItemContainerOptionsDto',
-        sourceEntity: 'MenuItemContainerRule',
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'containerRules',
+          'Menu item container has no settings.',
+          'INVALID',
+          undefined,
+          createId,
+        ),
+      );
     }
 
     const nestedCreates = dto.containerRuleDtos
@@ -48,13 +51,15 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     );
     if (dupliateItemRules) {
       for (const duplicate of dupliateItemRules) {
-        this.addError({
-          errorMessage: 'Menu item container has duplicate item settings.',
-          errorType: 'DUPLICATE',
-          contextEntity: 'CreateMenuItemContainerOptionsDto',
-          sourceEntity: 'MenuItemContainerRule',
-          value: { duplicateMenuItemId: duplicate.validMenuItemId },
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'containerRules',
+            'Menu item container has duplicate item settings.',
+            'DUPLICATE',
+            undefined,
+            duplicate.validMenuItemId.toString(),
+          ),
+        );
       }
     }
 
@@ -67,13 +72,14 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
   ): Promise<void> {
     // No rules
     if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
-      this.addError({
-        errorMessage: 'Menu item container has no settings.',
-        errorType: 'INVALID',
-        contextEntity: 'UpdateMenuItemContainerOptionsDto',
-        contextId: id,
-        sourceEntity: 'MenuItemContainerRule',
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'containerRules',
+          'Menu item container has no settings.',
+          'INVALID',
+          id,
+        ),
+      );
     }
 
     // Check no duplicate item rules
@@ -100,14 +106,15 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         (rule) => `${rule.validMenuItemId}`,
       );
       for (const duplicate of dupliateItemRules) {
-        this.addError({
-          errorMessage: 'Menu item container has duplicate item settings.',
-          errorType: 'DUPLICATE',
-          contextEntity: 'UpdateMenuItemContainerOptionsDto',
-          contextId: id,
-          sourceEntity: 'MenuItemContainerRule',
-          value: { duplicateMenuItemId: duplicate.validMenuItemId },
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'containerRules',
+            'Menu item container has duplicate item settings.',
+            'DUPLICATE',
+            undefined,
+            duplicate.validMenuItemId.toString(),
+          ),
+        );
       }
     }
 

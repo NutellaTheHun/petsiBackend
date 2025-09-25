@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
@@ -20,18 +19,24 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
     super(repo, 'LabelType', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateLabelTypeDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateLabelTypeDto,
+  ): Promise<void> {
     if (
       await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)
     ) {
-      this.addError({
-        errorMessage: 'Label type name already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateLabelTypeDto',
-        sourceEntity: 'LabelType',
-        value: dto.labelTypeName,
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'labelTypeName',
+          'Label type name already exists.',
+          'EXIST',
+          undefined,
+          createId,
+        ),
+      );
     }
+
     this.throwIfErrors();
   }
 
@@ -44,14 +49,14 @@ export class LabelTypeValidator extends ValidatorBase<LabelType> {
         where: { labelTypeName: dto.labelTypeName },
       });
       if (exists && exists.id !== id) {
-        this.addError({
-          errorMessage: 'Label type name already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateLabelTypeDto',
-          contextId: id,
-          sourceEntity: 'LabelType',
-          value: dto.labelTypeName,
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'labelTypeName',
+            'Label type name already exists.',
+            'EXIST',
+            id,
+          ),
+        );
       }
     }
     this.throwIfErrors();

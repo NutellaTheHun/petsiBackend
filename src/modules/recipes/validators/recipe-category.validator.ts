@@ -24,7 +24,10 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategory> {
     super(repo, 'RecipeCategory', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateRecipeCategoryDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateRecipeCategoryDto,
+  ): Promise<void> {
     // Exists
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       this.addError({

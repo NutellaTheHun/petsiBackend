@@ -23,8 +23,12 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
   protected abstract createEntity(dto: any, parent?: any): void;
   protected abstract updateEntity(dto: any): void;
 
-  public async buildCreateDto(dto: any, parent?: any): Promise<T> {
-    await this.validateCreateDto(dto);
+  public async buildCreateDto(
+    dto: any,
+    parent?: any,
+    createId?: string,
+  ): Promise<T> {
+    await this.validateCreateDto(dto, createId);
 
     this.reset();
 
@@ -44,9 +48,12 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     return await this.build();
   }
 
-  protected async validateCreateDto(dto: any): Promise<void> {
+  protected async validateCreateDto(
+    dto: any,
+    createId?: string,
+  ): Promise<void> {
     if (this.validator) {
-      await this.validator.validateCreate(dto);
+      await this.validator.validateCreate(dto, createId);
     }
   }
 

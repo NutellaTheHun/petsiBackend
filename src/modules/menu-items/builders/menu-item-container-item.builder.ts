@@ -89,7 +89,9 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
         results.push(await this.buildCreateDto(dto));
       } else {
         if (dto.createDto && dto.createId) {
-          results.push(await this.buildCreateDto(dto.createDto, parent));
+          results.push(
+            await this.buildCreateDto(dto.createDto, parent, dto.createId),
+          ); // add createId ref?
         }
         if (dto.id && dto.updateDto) {
           const comp = await this.componentService.findOne(dto.id);

@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
@@ -25,16 +24,20 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
   }
 
   public async validateCreate(
+    createId: string,
     dto: CreateMenuItemContainerRuleDto,
   ): Promise<void> {
     // No sizes
     if (dto.validSizeIds.length === 0) {
-      this.addError({
-        errorMessage: 'Menu item container setting has no sizes selected.',
-        errorType: 'INVALID',
-        contextEntity: 'CreateMenuItemContainerRuleDto',
-        sourceEntity: 'MenuItemSize',
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'validItem',
+          'Menu item container setting has no sizes selected.',
+          'INVALID',
+          undefined,
+          createId,
+        ),
+      );
     }
 
     // valid sizes
@@ -47,15 +50,15 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
     for (const scarySizeId of dto.validSizeIds) {
       if (!this.helper.isValidSize(scarySizeId, item.validSizes)) {
-        this.addError({
-          errorMessage: 'Invalid size for item',
-          errorType: 'INVALID',
-          contextEntity: 'CreateMenuItemContainerRuleDto',
-          sourceEntity: 'MenuItemSize',
-          sourceId: scarySizeId,
-          conflictEntity: 'MenuItem',
-          conflictId: item.id,
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'validSizes',
+            'Invalid size for item.',
+            'INVALID',
+            undefined,
+            createId,
+          ),
+        );
       }
     }
 
@@ -68,12 +71,14 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
   ): Promise<void> {
     // No sizes
     if (dto.validSizeIds?.length === 0) {
-      this.addError({
-        errorMessage: 'Menu item container setting has no sizes selected.',
-        errorType: 'INVALID',
-        contextEntity: 'UpdateMenuItemContainerRuleDto',
-        sourceEntity: 'MenuItemSize',
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'validSizes',
+          'Menu item container setting has no sizes selected.',
+          'INVALID',
+          id,
+        ),
+      );
     }
 
     // validate sizes
@@ -97,16 +102,14 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
       for (const scarySize of sizeIds) {
         if (!this.helper.isValidSize(scarySize, item.validSizes)) {
-          this.addError({
-            errorMessage: 'Invalid size for item',
-            errorType: 'INVALID',
-            contextEntity: 'CreateMenuItemContainerRuleDto',
-            contextId: id,
-            sourceEntity: 'MenuItemSize',
-            sourceId: scarySize,
-            conflictEntity: 'MenuItem',
-            conflictId: item.id,
-          } as ValidationError);
+          this.addError(
+            this.buildValidationError(
+              'validSizes',
+              'Invalid size for item',
+              'INVALID',
+              id,
+            ),
+          );
         }
       }
     }

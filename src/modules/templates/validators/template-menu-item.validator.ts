@@ -19,7 +19,10 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItem> {
     super(repo, 'TemplateMenuItem', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateTemplateMenuItemDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateTemplateMenuItemDto,
+  ): Promise<void> {
     this.throwIfErrors();
   }
 

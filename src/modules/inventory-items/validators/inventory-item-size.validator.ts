@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -24,7 +23,10 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
     super(repo, 'InventoryItemSize', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateInventoryItemSizeDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateInventoryItemSizeDto,
+  ): Promise<void> {
     this.throwIfErrors();
   }
 
@@ -48,13 +50,15 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSize>
         },
       });
       if (exists) {
-        this.addError({
-          errorMessage: 'Inventory item size already exists',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateInventoryItemSizeDto',
-          contextId: id,
-          sourceEntity: 'InventoryItemSize',
-        } as ValidationError);
+        const prop = dto.measureUnitId ? 'measureUnit' : 'packageType';
+        this.addError(
+          this.buildValidationError(
+            prop,
+            'Inventory item size already exists',
+            'EXIST',
+            id,
+          ),
+        );
       }
     }
     this.throwIfErrors();

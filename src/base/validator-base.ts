@@ -20,7 +20,7 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
   }
 
-  public abstract validateCreate(dto: any): Promise<void>;
+  public abstract validateCreate(createId: string, dto: any): Promise<void>;
   public abstract validateUpdate(id: number, dto: any): Promise<void>;
 
   protected addError(error: ValidationError) {
@@ -30,9 +30,17 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
   protected buildValidationError<K extends keyof T>(
     field: K,
     message: string,
-    id?: string,
+    errorType: string,
+    id?: number,
+    createId?: string,
   ) {
-    return new ValidationError({ field: field as string, message, id });
+    return new ValidationError({
+      field: field as string,
+      message,
+      errorType,
+      id,
+      createId,
+    });
   }
 
   /**

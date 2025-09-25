@@ -24,7 +24,10 @@ export class TemplateValidator extends ValidatorBase<Template> {
     super(repo, 'Template', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateTemplateDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateTemplateDto,
+  ): Promise<void> {
     if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
       this.addError({
         errorMessage: 'Template with that name already exists.',

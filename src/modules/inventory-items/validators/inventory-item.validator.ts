@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
@@ -24,19 +23,24 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
     super(repo, 'InventoryItem', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateInventoryItemDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateInventoryItemDto,
+  ): Promise<void> {
     // no existing name
     const exists = await this.repo.findOne({
       where: { itemName: dto.itemName },
     });
     if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-      this.addError({
-        errorMessage: 'Inventory item already exists',
-        errorType: 'EXIST',
-        contextEntity: 'CreateInventoryItemDto',
-        sourceEntity: 'InventoryItem',
-        value: dto.itemName,
-      } as ValidationError);
+      this.addError(
+        this.buildValidationError(
+          'itemName',
+          'Inventory item already exists',
+          'EXIST',
+          undefined,
+          createId,
+        ),
+      );
     }
 
     // no duplicate item sizing
@@ -51,16 +55,15 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
       );
       if (dupliateSizing) {
         for (const duplicate of dupliateSizing) {
-          this.addError({
-            errorMessage: 'duplicate inventory item sizes',
-            errorType: 'DUPLICATE',
-            contextEntity: 'CreateInventoryItemDto',
-            sourceEntity: 'CreateChildInventoryItemSizeDto',
-            value: {
-              packageId: duplicate.inventoryPackageId,
-              measureId: duplicate.measureUnitId,
-            },
-          } as ValidationError);
+          this.addError(
+            this.buildValidationError(
+              'itemSizes',
+              'duplicate inventory item sizes',
+              'DUPLICATE',
+              undefined,
+              duplicate.inventoryPackageId.toString(), // update createDtos to have createId?
+            ),
+          );
         }
       }
     }
@@ -75,14 +78,14 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
     // no existing name
     if (dto.itemName) {
       if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-        this.addError({
-          errorMessage: 'Inventory item already exists',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateInventoryItemDto',
-          contextId: id,
-          sourceEntity: 'InventoryItem',
-          value: dto.itemName,
-        } as ValidationError);
+        this.addError(
+          this.buildValidationError(
+            'itemName',
+            'Inventory item already exists',
+            'EXIST',
+            id,
+          ),
+        );
       }
     }
 
@@ -126,14 +129,14 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
       );
       if (dupliateIds) {
         for (const duplicate of dupliateIds) {
-          this.addError({
-            errorMessage: 'duplicate update item size requests',
-            errorType: 'DUPLICATE',
-            contextEntity: 'UpdateInventoryItemDto',
-            contextId: id,
-            sourceEntity: 'UpdateChildInventoryItemSizeDto',
-            sourceId: duplicate.id,
-          } as ValidationError);
+          this.addError(
+            this.buildValidationError(
+              'itemSizes',
+              'duplicate update item size requests',
+              'EXIST',
+              duplicate.id,
+            ),
+          );
         }
       }
 
@@ -144,18 +147,14 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
       );
       if (dupliateSizing) {
         for (const duplicate of dupliateSizing) {
-          this.addError({
-            errorMessage: 'duplicate inventory item sizes',
-            errorType: 'DUPLICATE',
-            contextEntity: 'UpdateInventoryItemDto',
-            contextId: id,
-            sourceEntity:
-              'CreateChildInventoryItemSizeDto | UpdateChildInventoryItemSizeDto',
-            value: {
-              packageId: duplicate.inventoryPackageId,
-              measureId: duplicate.measureUnitId,
-            },
-          } as ValidationError);
+          this.addError(
+            this.buildValidationError(
+              'itemSizes',
+              'duplicate inventory item sizes',
+              'EXIST',
+              duplicate.inventoryPackageId,
+            ),
+          );
         }
       }
     }

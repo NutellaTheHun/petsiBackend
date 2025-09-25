@@ -19,7 +19,10 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     super(_repo, 'InventoryAreaCount', requestContextService, logger);
   }
 
-  public async validateCreate(dto: CreateInventoryAreaCountDto): Promise<void> {
+  public async validateCreate(
+    createId: string,
+    dto: CreateInventoryAreaCountDto,
+  ): Promise<void> {
     this.throwIfErrors();
   }
 
@@ -37,22 +40,14 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       }
       const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);
       if (duplicateIds.length > 0) {
-        duplicateIds.map((id) =>
+        duplicateIds.map((dupId) =>
           this.addError(
             this.buildValidationError(
-              'id',
+              'countedItems',
               'duplicate update requests for counted inventory item.',
-              id.toString(),
+              'DUPLICATE',
+              dupId,
             ),
-            /*new ValidationError({
-              errorMessage:
-                'duplicate update requests for counted inventory item.',
-              errorType: 'DUPLICATE',
-              contextEntity: 'UpdateInventoryAreaCountDto',
-              contextId: id,
-              sourceEntity: 'UpdateChildInventoryAreaItemDto',
-              sourceId: id,
-            }),*/
           ),
         );
       }
