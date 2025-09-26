@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
 import { MenuItem } from '../entities/menu-item.entity';
+import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
 export class MenuItemService extends ServiceBase<MenuItem> {
@@ -18,8 +19,16 @@ export class MenuItemService extends ServiceBase<MenuItem> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: MenuItemValidator,
   ) {
-    super(repo, builder, 'MenuItemService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'MenuItemService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async findOneByName(

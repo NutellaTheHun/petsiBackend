@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemContainerItemBuilder } from '../builders/menu-item-container-item.builder';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
 export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerItem> {
@@ -18,6 +19,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: MenuItemContainerItemValidator,
   ) {
     super(
       repo,
@@ -25,6 +27,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
       'MenuItemContainerItemService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

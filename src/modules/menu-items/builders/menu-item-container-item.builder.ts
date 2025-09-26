@@ -15,7 +15,6 @@ import { MenuItem } from '../menu-items.module';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
-import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
 export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerItem> {
@@ -28,7 +27,6 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
     private readonly itemSizeService: MenuItemSizeService,
 
-    validator: MenuItemContainerItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -37,7 +35,6 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
       'MenuItemComponentBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

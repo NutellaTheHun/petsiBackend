@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
 /**
  * Intended flow of facilitating an inventory count:
@@ -26,6 +27,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
 
     logger: AppLogger,
     requestContextService: RequestContextService,
+    validator: InventoryAreaCountValidator,
   ) {
     super(
       repo,
@@ -33,6 +35,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
       'InventoryAreaCountService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

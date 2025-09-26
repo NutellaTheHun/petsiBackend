@@ -6,7 +6,6 @@ import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-a
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaCountService } from '../services/inventory-area-count.service';
-import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
 @Injectable()
 export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
@@ -14,16 +13,10 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
     @Inject(forwardRef(() => InventoryAreaCountService))
     private readonly countService: InventoryAreaCountService,
     logger: AppLogger,
-    validator: InventoryAreaValidator,
+
     requestContextService: RequestContextService,
   ) {
-    super(
-      InventoryArea,
-      'InventoryAreaBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(InventoryArea, 'InventoryAreaBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateInventoryAreaDto): void {

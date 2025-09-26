@@ -5,22 +5,11 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
-import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 
 @Injectable()
 export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
-  constructor(
-    validator: MenuItemSizeValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(
-      MenuItemSize,
-      'MenuItemSizeBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
+    super(MenuItemSize, 'MenuItemSizeBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateMenuItemSizeDto): void {

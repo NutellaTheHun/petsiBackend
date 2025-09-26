@@ -7,7 +7,6 @@ import { RoleService } from '../../roles/services/role.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
-import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
 export class UserBuilder extends BuilderBase<User> {
@@ -15,11 +14,10 @@ export class UserBuilder extends BuilderBase<User> {
     @Inject(forwardRef(() => RoleService))
     private readonly rolesService: RoleService,
 
-    validator: UserValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(User, 'UserBuilder', requestContextService, logger, validator);
+    super(User, 'UserBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateUserDto): void {

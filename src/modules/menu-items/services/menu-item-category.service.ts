@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemCategoryValidator } from '../validators/menu-item-category.validator';
 
 @Injectable()
 export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
@@ -18,6 +19,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: MenuItemCategoryValidator,
   ) {
     super(
       repo,
@@ -25,6 +27,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategory> {
       'MenuItemCategoryService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

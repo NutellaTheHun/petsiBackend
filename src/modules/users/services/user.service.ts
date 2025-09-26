@@ -7,6 +7,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { UserBuilder } from '../builders/user.builder';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../entities/user.entities';
+import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
 export class UserService extends ServiceBase<User> {
@@ -17,8 +18,16 @@ export class UserService extends ServiceBase<User> {
     userBuilder: UserBuilder,
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: UserValidator,
   ) {
-    super(userRepo, userBuilder, 'UserService', requestContextService, logger);
+    super(
+      userRepo,
+      userBuilder,
+      'UserService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async create(createUserDto: CreateUserDto) {

@@ -6,7 +6,6 @@ import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemService } from '../services/menu-item.service';
-import { MenuItemCategoryValidator } from '../validators/menu-item-category.validator';
 
 @Injectable()
 export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
@@ -14,7 +13,6 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
     @Inject(forwardRef(() => MenuItemService))
     private readonly itemService: MenuItemService,
 
-    validator: MenuItemCategoryValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -23,7 +21,6 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
       'MenuItemCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

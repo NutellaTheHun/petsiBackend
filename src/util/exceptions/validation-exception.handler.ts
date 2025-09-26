@@ -1,12 +1,12 @@
 import { AppLogger } from '../../modules/app-logging/app-logger';
-import { ValidationError } from './validation-error';
+import { ValidationErrorNode } from './validation-error';
 import { ValidationException } from './validation-exception';
 
 export class ValidationExceptionHandler {
   constructor(private logger: AppLogger) {}
 
   public handle(
-    errors: ValidationError[],
+    errors: ValidationErrorNode,
     validationPrefix: string,
     requestId: string,
   ): ValidationException {

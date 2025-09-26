@@ -10,7 +10,6 @@ import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeService } from '../services/recipe.service';
-import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
 export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
@@ -24,7 +23,6 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
     @Inject(forwardRef(() => RecipeService))
     private readonly recipeService: RecipeService,
 
-    validator: RecipeSubCategoryValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -33,7 +31,6 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
       'RecipeSubCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

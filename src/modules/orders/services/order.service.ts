@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderBuilder } from '../builders/order.builder';
 import { Order } from '../entities/order.entity';
+import { OrderValidator } from '../validators/order.validator';
 
 @Injectable()
 export class OrderService extends ServiceBase<Order> {
@@ -18,8 +19,16 @@ export class OrderService extends ServiceBase<Order> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: OrderValidator,
   ) {
-    super(repo, builder, 'OrderService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'OrderService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   protected applySearch(

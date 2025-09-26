@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderMenuItemBuilder } from '../builders/order-menu-item.builder';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
 
 @Injectable()
 export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
@@ -18,8 +19,16 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: OrderMenuItemValidator,
   ) {
-    super(repo, builder, 'OrderMenuItemService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'OrderMenuItemService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   protected applySortBy(

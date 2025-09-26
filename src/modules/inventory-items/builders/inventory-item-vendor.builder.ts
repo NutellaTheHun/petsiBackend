@@ -6,7 +6,6 @@ import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/creat
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItemService } from '../services/inventory-item.service';
-import { InventoryItemVendorValidator } from '../validators/inventory-item-vendor.validator';
 
 @Injectable()
 export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor> {
@@ -14,7 +13,6 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
     @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
 
-    validator: InventoryItemVendorValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -23,7 +21,6 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
       'InventoryItemVendorBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

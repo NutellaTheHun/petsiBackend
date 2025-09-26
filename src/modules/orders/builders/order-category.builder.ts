@@ -5,22 +5,11 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderCategoryValidator } from '../validators/order-category.validator';
 
 @Injectable()
 export class OrderCategoryBuilder extends BuilderBase<OrderCategory> {
-  constructor(
-    validator: OrderCategoryValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(
-      OrderCategory,
-      'OrderCategoryBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
+    super(OrderCategory, 'OrderCategoryBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateOrderCategoryDto): void {

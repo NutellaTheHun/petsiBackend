@@ -13,7 +13,6 @@ import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderService } from '../services/order.service';
-import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
 import { OrderContainerItemBuilder } from './order-container-item.builder';
 
 @Injectable()
@@ -31,17 +30,10 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     private readonly menuItemService: MenuItemService,
     private readonly sizeService: MenuItemSizeService,
 
-    validator: OrderMenuItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(
-      OrderMenuItem,
-      'OrderMenuItemBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(OrderMenuItem, 'OrderMenuItemBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateOrderMenuItemDto, parent?: Order): void {

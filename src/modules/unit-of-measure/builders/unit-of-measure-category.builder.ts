@@ -6,7 +6,6 @@ import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasureService } from '../services/unit-of-measure.service';
-import { UnitOfMeasureCategoryValidator } from '../validators/unit-of-measure-category.validator';
 
 @Injectable()
 export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCategory> {
@@ -14,7 +13,6 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
     @Inject(forwardRef(() => UnitOfMeasureService))
     private readonly unitService: UnitOfMeasureService,
 
-    validator: UnitOfMeasureCategoryValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -23,7 +21,6 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
       'UnitCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

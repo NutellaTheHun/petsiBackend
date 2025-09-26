@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
 import { InventoryArea } from '../entities/inventory-area.entity';
+import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
 export class InventoryAreaService extends ServiceBase<InventoryArea> {
   constructor(
@@ -17,8 +18,16 @@ export class InventoryAreaService extends ServiceBase<InventoryArea> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: InventoryAreaValidator,
   ) {
-    super(repo, builder, 'InventoryAreaService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'InventoryAreaService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async findOneByName(

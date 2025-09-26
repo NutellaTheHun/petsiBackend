@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeBuilder } from '../builders/recipe.builder';
 import { Recipe } from '../entities/recipe.entity';
+import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
 export class RecipeService extends ServiceBase<Recipe> {
@@ -18,8 +19,16 @@ export class RecipeService extends ServiceBase<Recipe> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: RecipeValidator,
   ) {
-    super(repo, builder, 'RecipeService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'RecipeService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async findOneByName(

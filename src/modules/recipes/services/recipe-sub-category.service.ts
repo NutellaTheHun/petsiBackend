@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
+import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
@@ -18,6 +19,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: RecipeSubCategoryValidator,
   ) {
     super(
       repo,
@@ -25,6 +27,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategory> {
       'RecipeSubCategoryService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

@@ -9,7 +9,6 @@ import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order } from '../entities/order.entity';
 import { OrderCategoryService } from '../services/order-category.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
-import { OrderValidator } from '../validators/order.validator';
 import { OrderMenuItemBuilder } from './order-menu-item.builder';
 
 @Injectable()
@@ -23,11 +22,10 @@ export class OrderBuilder extends BuilderBase<Order> {
     @Inject(forwardRef(() => OrderMenuItemBuilder))
     private readonly itemBuilder: OrderMenuItemBuilder,
 
-    validator: OrderValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(Order, 'OrderBuilder', requestContextService, logger, validator);
+    super(Order, 'OrderBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateOrderDto): void {

@@ -9,7 +9,6 @@ import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-re
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeService } from '../services/recipe.service';
-import { RecipeCategoryValidator } from '../validators/recipe-category.validator';
 import { RecipeSubCategoryBuilder } from './recipe-sub-category.builder';
 
 @Injectable()
@@ -21,7 +20,6 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
     @Inject(forwardRef(() => RecipeSubCategoryBuilder))
     private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
 
-    validator: RecipeCategoryValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -30,7 +28,6 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
       'RecipeCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

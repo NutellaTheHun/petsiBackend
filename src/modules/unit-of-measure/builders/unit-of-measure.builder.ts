@@ -6,7 +6,6 @@ import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-me
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
-import { UnitOfMeasureValidator } from '../validators/unit-of-measure.validator';
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
@@ -14,17 +13,10 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
     @Inject(forwardRef(() => UnitOfMeasureCategoryService))
     private readonly categoryService: UnitOfMeasureCategoryService,
 
-    validator: UnitOfMeasureValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(
-      UnitOfMeasure,
-      'UnitOfMeasureBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateUnitOfMeasureDto): void {

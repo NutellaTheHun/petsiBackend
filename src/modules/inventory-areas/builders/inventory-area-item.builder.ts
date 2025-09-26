@@ -14,12 +14,10 @@ import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryAreaCountService } from '../services/inventory-area-count.service';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
-import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   constructor(
-    requestContextService: RequestContextService,
     @Inject(forwardRef(() => InventoryAreaCountService))
     private readonly countService: InventoryAreaCountService,
 
@@ -31,14 +29,13 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
     logger: AppLogger,
-    validator: InventoryAreaItemValidator,
+    requestContextService: RequestContextService,
   ) {
     super(
       InventoryAreaItem,
       'InventoryAreaItemBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

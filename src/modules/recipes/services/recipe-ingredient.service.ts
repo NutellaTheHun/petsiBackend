@@ -7,6 +7,7 @@ import { InventoryItemService } from '../../inventory-items/services/inventory-i
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 import { RecipeService } from './recipe.service';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: RecipeIngredientValidator,
   ) {
     super(
       repo,
@@ -32,6 +34,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredient> {
       'RecipeIngredientService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

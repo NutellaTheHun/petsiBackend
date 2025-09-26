@@ -7,7 +7,6 @@ import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-temp
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template } from '../entities/template.entity';
-import { TemplateValidator } from '../validators/template.validator';
 import { TemplateMenuItemBuilder } from './template-menu-item.builder';
 
 @Injectable()
@@ -16,17 +15,10 @@ export class TemplateBuilder extends BuilderBase<Template> {
     @Inject(forwardRef(() => TemplateMenuItemBuilder))
     private readonly itemBuilder: TemplateMenuItemBuilder,
 
-    validator: TemplateValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(
-      Template,
-      'TemplateBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(Template, 'TemplateBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateTemplateDto): void {

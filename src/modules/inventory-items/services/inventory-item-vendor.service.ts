@@ -6,26 +6,44 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.builder';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItemVendorValidator } from '../validators/inventory-item-vendor.validator';
 
 @Injectable()
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendor> {
-    constructor(
-        @InjectRepository(InventoryItemVendor)
-        private readonly repo: Repository<InventoryItemVendor>,
+  constructor(
+    @InjectRepository(InventoryItemVendor)
+    private readonly repo: Repository<InventoryItemVendor>,
 
-        builder: InventoryItemVendorBuilder,
+    builder: InventoryItemVendorBuilder,
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'InventoryItemVendorService', requestContextService, logger) }
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+    validator: InventoryItemVendorValidator,
+  ) {
+    super(
+      repo,
+      builder,
+      'InventoryItemVendorService',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    async findOneByName(name: string, relations?: Array<keyof InventoryItemVendor>): Promise<InventoryItemVendor | null> {
-        return await this.repo.findOne({ where: { vendorName: name }, relations });
+  async findOneByName(
+    name: string,
+    relations?: Array<keyof InventoryItemVendor>,
+  ): Promise<InventoryItemVendor | null> {
+    return await this.repo.findOne({ where: { vendorName: name }, relations });
+  }
+
+  protected applySortBy(
+    query: SelectQueryBuilder<InventoryItemVendor>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'vendorName') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
     }
-
-    protected applySortBy(query: SelectQueryBuilder<InventoryItemVendor>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
-        if (sortBy === 'vendorName') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-    }
+  }
 }

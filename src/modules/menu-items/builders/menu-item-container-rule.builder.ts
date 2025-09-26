@@ -11,7 +11,6 @@ import { MenuItemContainerOptionsService } from '../services/menu-item-container
 import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
-import { MenuItemContainerRuleValidator } from '../validators/menu-item-container-rule.validator';
 @Injectable()
 export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerRule> {
   constructor(
@@ -26,7 +25,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
 
     private readonly sizeService: MenuItemSizeService,
 
-    validator: MenuItemContainerRuleValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -35,7 +33,6 @@ export class MenuItemContainerRuleBuilder extends BuilderBase<MenuItemContainerR
       'MenuItemCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

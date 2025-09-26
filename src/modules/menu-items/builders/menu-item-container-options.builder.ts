@@ -11,7 +11,6 @@ import { MenuItemContainerOptions } from '../entities/menu-item-container-option
 import { MenuItem } from '../menu-items.module';
 import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
 import { MenuItemService } from '../services/menu-item.service';
-import { MenuItemContainerOptionsValidator } from '../validators/menu-item-container-options.validator';
 import { MenuItemContainerRuleBuilder } from './menu-item-container-rule.builder';
 
 @Injectable()
@@ -26,7 +25,6 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
     @Inject(forwardRef(() => MenuItemContainerRuleBuilder))
     private readonly containerRuleBuilder: MenuItemContainerRuleBuilder,
 
-    validator: MenuItemContainerOptionsValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -35,7 +33,6 @@ export class MenuItemContainerOptionsBuilder extends BuilderBase<MenuItemContain
       'MenuItemComponentOptionsBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

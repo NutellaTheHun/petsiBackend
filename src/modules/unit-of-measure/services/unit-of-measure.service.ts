@@ -7,6 +7,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureValidator } from '../validators/unit-of-measure.validator';
 
 @Injectable()
 export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
@@ -19,8 +20,16 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: UnitOfMeasureValidator,
   ) {
-    super(repo, builder, 'UnitOfMeasureService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'UnitOfMeasureService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async findOneByName(

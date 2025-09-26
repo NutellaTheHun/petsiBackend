@@ -10,7 +10,6 @@ import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
 import { TemplateService } from '../services/template.service';
-import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
 export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
@@ -23,7 +22,6 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
     private menuItemService: MenuItemService,
 
-    validator: TemplateMenuItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -32,7 +30,6 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
       'TemplateMenuItemBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

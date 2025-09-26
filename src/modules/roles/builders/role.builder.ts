@@ -4,15 +4,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
-import { RoleValidator } from '../validators/role.validator';
 
 export class RoleBuilder extends BuilderBase<Role> {
-  constructor(
-    validator: RoleValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(Role, 'RoleBuilder', requestContextService, logger, validator);
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
+    super(Role, 'RoleBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateRoleDto): void {

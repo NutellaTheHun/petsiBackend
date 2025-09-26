@@ -14,7 +14,6 @@ import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemCategoryService } from '../services/menu-item-category.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
-import { MenuItemValidator } from '../validators/menu-item.validator';
 import { MenuItemContainerItemBuilder } from './menu-item-container-item.builder';
 import { MenuItemContainerOptionsBuilder } from './menu-item-container-options.builder';
 
@@ -35,17 +34,10 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
 
     private readonly sizeService: MenuItemSizeService,
 
-    validator: MenuItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(
-      MenuItem,
-      'MenuItemBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(MenuItem, 'MenuItemBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateMenuItemDto): void {

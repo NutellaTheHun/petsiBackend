@@ -10,7 +10,6 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
-import { InventoryItemValidator } from '../validators/inventory-item.validator';
 import { InventoryItemSizeBuilder } from './inventory-item-size.builder';
 
 @Injectable()
@@ -28,17 +27,10 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     @Inject(forwardRef(() => InventoryItemSizeBuilder))
     private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
-    validator: InventoryItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(
-      InventoryItem,
-      'InventoryItemBuilder',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(InventoryItem, 'InventoryItemBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateInventoryItemDto): void {

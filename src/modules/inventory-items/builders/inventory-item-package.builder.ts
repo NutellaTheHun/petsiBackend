@@ -5,21 +5,15 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
-import { InventoryItemPackageValidator } from '../validators/inventory-item-package.validator';
 
 @Injectable()
 export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackage> {
-  constructor(
-    validator: InventoryItemPackageValidator,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
     super(
       InventoryItemPackage,
       'InventoryItemPackageBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

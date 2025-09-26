@@ -10,8 +10,10 @@ import {
 import { AppLogger } from '../modules/app-logging/app-logger';
 import { RequestContextService } from '../modules/request-context/RequestContextService';
 import { DataBaseExceptionHandler } from '../util/exceptions/database-exception.handler';
+import { ValidationException } from '../util/exceptions/validation-exception';
 import { BuilderBase } from './builder-base';
 import { PaginatedResult } from './paginated-result';
+import { ValidatorBase } from './validator-base';
 
 export abstract class ServiceBase<T extends ObjectLiteral> {
   private databaseExceptionHandler: DataBaseExceptionHandler;
@@ -22,6 +24,7 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
     public readonly servicePrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
+    private readonly validator?: ValidatorBase<T>,
   ) {
     this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
   }
@@ -31,6 +34,16 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
    */
   public async create(createDto: any): Promise<T> {
     const requestId = this.requestContextService.getRequestId();
+
+    if (this.validator) {
+      const validationErrors = await this.validator.validateCreateNode(
+        'root',
+        createDto,
+      );
+      if (validationErrors) {
+        throw new ValidationException(validationErrors); // logging?
+      }
+    }
 
     // create entity
     const entity = await this.builder.buildCreateDto(createDto);
@@ -53,6 +66,17 @@ export abstract class ServiceBase<T extends ObjectLiteral> {
    */
   async update(id: number, updateDto: any): Promise<T> {
     const requestId = this.requestContextService.getRequestId();
+
+    if (this.validator) {
+      const validationErrors = await this.validator.validateUpdateNode(
+        'root',
+        updateDto,
+        id,
+      );
+      if (validationErrors) {
+        throw new ValidationException(validationErrors); // logging?
+      }
+    }
 
     // retrieve entity from DB
     let toUpdate: T;

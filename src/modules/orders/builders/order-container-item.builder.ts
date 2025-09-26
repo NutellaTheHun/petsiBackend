@@ -11,7 +11,6 @@ import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { OrderContainerItemService } from '../services/order-container-item.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
-import { OrderContainerItemValidator } from '../validators/order-container-item.validator';
 
 @Injectable()
 export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
@@ -25,7 +24,6 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
     private readonly menuItemService: MenuItemService,
     private readonly sizeService: MenuItemSizeService,
 
-    validator: OrderContainerItemValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -34,7 +32,6 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
       'OrderContainerItemBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

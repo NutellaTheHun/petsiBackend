@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
 import { InventoryItem } from '../entities/inventory-item.entity';
+import { InventoryItemValidator } from '../validators/inventory-item.validator';
 
 @Injectable()
 export class InventoryItemService extends ServiceBase<InventoryItem> {
@@ -17,8 +18,16 @@ export class InventoryItemService extends ServiceBase<InventoryItem> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: InventoryItemValidator,
   ) {
-    super(repo, builder, 'InventoryItemService', requestContextService, logger);
+    super(
+      repo,
+      builder,
+      'InventoryItemService',
+      requestContextService,
+      logger,
+      validator,
+    );
   }
 
   async findOneByName(

@@ -12,7 +12,6 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemPackageService } from '../services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 import { InventoryItemService } from '../services/inventory-item.service';
-import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
 export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
@@ -26,7 +25,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     private readonly packageService: InventoryItemPackageService,
     private readonly unitService: UnitOfMeasureService,
 
-    validator: InventoryItemSizeValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -35,7 +33,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       'InventoryItemSizeBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

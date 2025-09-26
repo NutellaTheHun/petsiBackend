@@ -6,7 +6,6 @@ import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/c
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemService } from '../services/inventory-item.service';
-import { InventoryItemCategoryValidator } from '../validators/inventory-item-category.validator';
 
 @Injectable()
 export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCategory> {
@@ -14,7 +13,6 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
     @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
 
-    validator: InventoryItemCategoryValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -23,7 +21,6 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
       'InventoryItemCategoryBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

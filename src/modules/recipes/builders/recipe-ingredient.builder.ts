@@ -11,7 +11,6 @@ import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 import { RecipeService } from '../services/recipe.service';
-import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 
 @Injectable()
 export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
@@ -25,7 +24,6 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     private readonly itemService: InventoryItemService,
     private readonly unitService: UnitOfMeasureService,
 
-    validator: RecipeIngredientValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
@@ -34,7 +32,6 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       'RecipeIngredientBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

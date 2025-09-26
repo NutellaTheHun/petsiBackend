@@ -8,3 +8,13 @@ export class ValidationError {
   readonly message: string;
   readonly errorType: string;
 }
+
+export class ValidationErrorNode {
+  field: string;
+
+  id?: string | number;
+
+  message?: string;
+
+  children?: ValidationErrorNode[];
+}

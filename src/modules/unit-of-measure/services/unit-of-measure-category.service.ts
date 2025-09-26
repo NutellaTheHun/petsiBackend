@@ -6,27 +6,48 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureCategoryBuilder } from '../builders/unit-of-measure-category.builder';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasureCategoryValidator } from '../validators/unit-of-measure-category.validator';
 
 @Injectable()
 export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCategory> {
-    constructor(
-        @InjectRepository(UnitOfMeasureCategory)
-        private readonly repo: Repository<UnitOfMeasureCategory>,
+  constructor(
+    @InjectRepository(UnitOfMeasureCategory)
+    private readonly repo: Repository<UnitOfMeasureCategory>,
 
-        @Inject(forwardRef(() => UnitOfMeasureCategoryBuilder))
-        builder: UnitOfMeasureCategoryBuilder,
+    @Inject(forwardRef(() => UnitOfMeasureCategoryBuilder))
+    builder: UnitOfMeasureCategoryBuilder,
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'UnitCategoryService', requestContextService, logger); }
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+    validator: UnitOfMeasureCategoryValidator,
+  ) {
+    super(
+      repo,
+      builder,
+      'UnitCategoryService',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    async findOneByName(categoryName: string, relations?: Array<keyof UnitOfMeasureCategory>): Promise<UnitOfMeasureCategory | null> {
-        return this.repo.findOne({ where: { categoryName: categoryName }, relations });
+  async findOneByName(
+    categoryName: string,
+    relations?: Array<keyof UnitOfMeasureCategory>,
+  ): Promise<UnitOfMeasureCategory | null> {
+    return this.repo.findOne({
+      where: { categoryName: categoryName },
+      relations,
+    });
+  }
+
+  protected applySortBy(
+    query: SelectQueryBuilder<UnitOfMeasureCategory>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'categoryName') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
     }
-
-    protected applySortBy(query: SelectQueryBuilder<UnitOfMeasureCategory>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
-        if (sortBy === 'categoryName') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-    }
+  }
 }

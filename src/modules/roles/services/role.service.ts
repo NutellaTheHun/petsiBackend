@@ -6,28 +6,48 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RoleBuilder } from '../builders/role.builder';
 import { Role } from '../entities/role.entity';
+import { RoleValidator } from '../validators/role.validator';
 
 @Injectable()
 export class RoleService extends ServiceBase<Role> {
+  constructor(
+    @InjectRepository(Role)
+    private readonly repo: Repository<Role>,
 
-    constructor(
-        @InjectRepository(Role)
-        private readonly repo: Repository<Role>,
+    @Inject(forwardRef(() => RoleBuilder))
+    builder: RoleBuilder,
 
-        @Inject(forwardRef(() => RoleBuilder))
-        builder: RoleBuilder,
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+    validator: RoleValidator,
+  ) {
+    super(
+      repo,
+      builder,
+      'RoleService',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'RoleService', requestContextService, logger); }
+  async findOneByName(
+    roleName: string,
+    relations?: Array<keyof Role>,
+  ): Promise<Role | null> {
+    return await this.repo.findOne({
+      where: { roleName: roleName },
+      relations: relations,
+    });
+  }
 
-    async findOneByName(roleName: string, relations?: Array<keyof Role>): Promise<Role | null> {
-        return await this.repo.findOne({ where: { roleName: roleName }, relations: relations });
+  protected applySortBy(
+    query: SelectQueryBuilder<Role>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'roleName') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
     }
-
-    protected applySortBy(query: SelectQueryBuilder<Role>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
-        if (sortBy === 'roleName') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-    }
+  }
 }

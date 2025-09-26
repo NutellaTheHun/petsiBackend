@@ -6,32 +6,56 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { TemplateBuilder } from '../builders/template.builder';
 import { Template } from '../entities/template.entity';
+import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
 export class TemplateService extends ServiceBase<Template> {
-    constructor(
-        @InjectRepository(Template)
-        private readonly repo: Repository<Template>,
+  constructor(
+    @InjectRepository(Template)
+    private readonly repo: Repository<Template>,
 
-        builder: TemplateBuilder,
+    builder: TemplateBuilder,
 
-        requestContextService: RequestContextService,
-        logger: AppLogger,
-    ) { super(repo, builder, 'TemplateService', requestContextService, logger); }
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+    validator: TemplateValidator,
+  ) {
+    super(
+      repo,
+      builder,
+      'TemplateService',
+      requestContextService,
+      logger,
+      validator,
+    );
+  }
 
-    async findOneByName(name: string, relations?: Array<keyof Template>): Promise<Template | null> {
-        return await this.repo.findOne({ where: { templateName: name }, relations: relations });
+  async findOneByName(
+    name: string,
+    relations?: Array<keyof Template>,
+  ): Promise<Template | null> {
+    return await this.repo.findOne({
+      where: { templateName: name },
+      relations: relations,
+    });
+  }
+
+  protected applySearch(
+    query: SelectQueryBuilder<Template>,
+    search: string,
+  ): void {
+    query.andWhere('(LOWER(entity.templateName) LIKE :search)', {
+      search: `%${search.toLowerCase()}%`,
+    });
+  }
+
+  protected applySortBy(
+    query: SelectQueryBuilder<Template>,
+    sortBy: string,
+    sortOrder: 'ASC' | 'DESC',
+  ): void {
+    if (sortBy === 'templateName') {
+      query.orderBy(`entity.${sortBy}`, sortOrder);
     }
-
-    protected applySearch(query: SelectQueryBuilder<Template>, search: string): void {
-        query.andWhere(
-            '(LOWER(entity.templateName) LIKE :search)', { search: `%${search.toLowerCase()}%` }
-        );
-    }
-
-    protected applySortBy(query: SelectQueryBuilder<Template>, sortBy: string, sortOrder: "ASC" | "DESC"): void {
-        if (sortBy === 'templateName') {
-            query.orderBy(`entity.${sortBy}`, sortOrder);
-        }
-    }
+  }
 }

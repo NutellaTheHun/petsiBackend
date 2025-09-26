@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
@@ -18,6 +19,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: InventoryItemSizeValidator,
   ) {
     super(
       reop,
@@ -25,6 +27,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSize> {
       'InventoryItemSizeService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

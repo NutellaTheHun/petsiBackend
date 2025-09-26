@@ -1,13 +1,15 @@
 import { ObjectLiteral, Repository } from 'typeorm';
 import { AppLogger } from '../modules/app-logging/app-logger';
 import { RequestContextService } from '../modules/request-context/RequestContextService';
-import { ValidationError } from '../util/exceptions/validation-error';
-import { ValidationException } from '../util/exceptions/validation-exception';
+import {
+  ValidationError,
+  ValidationErrorNode,
+} from '../util/exceptions/validation-error';
 import { ValidationExceptionHandler } from '../util/exceptions/validation-exception.handler';
 import { ValidatorHelper } from '../util/validatator-helper.util';
 
 export abstract class ValidatorBase<T extends ObjectLiteral> {
-  protected errors: ValidationError[] = [];
+  protected errors: ValidationErrorNode;
   protected helper = new ValidatorHelper();
   private exceptionHandler: ValidationExceptionHandler;
 
@@ -23,9 +25,19 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
   public abstract validateCreate(createId: string, dto: any): Promise<void>;
   public abstract validateUpdate(id: number, dto: any): Promise<void>;
 
-  protected addError(error: ValidationError) {
-    this.errors.push(error);
-  }
+  public abstract validateCreateNode(
+    field: string,
+    dto?: any,
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode>;
+
+  public abstract validateUpdateNode(
+    field: string,
+    dto?: any,
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode>;
 
   protected buildValidationError<K extends keyof T>(
     field: K,
@@ -43,23 +55,7 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
     });
   }
 
-  /**
-   * Throws {@link ValidationException}
-   */
-  protected throwIfErrors(): void {
-    if (this.errors.length > 0) {
-      const contextId = this.requestContextService.getRequestId();
-      const err = this.exceptionHandler.handle(
-        this.errors,
-        this.validationPrefix,
-        contextId,
-      );
-      this.reset();
-      throw err;
-    }
-  }
-
-  private reset() {
+  /*private reset() {
     this.errors = [];
-  }
+  }*/
 }

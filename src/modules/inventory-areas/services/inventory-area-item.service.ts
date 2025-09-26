@@ -7,6 +7,7 @@ import { InventoryItemService } from '../../inventory-items/services/inventory-i
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
   constructor(
@@ -20,6 +21,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
 
     logger: AppLogger,
     requestContextService: RequestContextService,
+    validator: InventoryAreaItemValidator,
   ) {
     super(
       repo,
@@ -27,6 +29,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItem> {
       'InventoryAreaItemService',
       requestContextService,
       logger,
+      validator,
     );
   }
 

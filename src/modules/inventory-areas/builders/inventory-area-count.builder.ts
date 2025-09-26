@@ -9,7 +9,6 @@ import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-in
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 import { InventoryAreaService } from '../services/inventory-area.service';
-import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 import { InventoryAreaItemBuilder } from './inventory-area-item.builder';
 
 @Injectable()
@@ -25,7 +24,6 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
     private readonly itemCountBuilder: InventoryAreaItemBuilder,
 
     logger: AppLogger,
-    validator: InventoryAreaCountValidator,
     requestContextService: RequestContextService,
   ) {
     super(
@@ -33,7 +31,6 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
       'InventoryAreaCountBuilder',
       requestContextService,
       logger,
-      validator,
     );
   }
 

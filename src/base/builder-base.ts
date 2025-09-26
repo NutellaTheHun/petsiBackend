@@ -4,7 +4,6 @@ import { AppLogger } from '../modules/app-logging/app-logger';
 import { RequestContextService } from '../modules/request-context/RequestContextService';
 import { AppHttpException } from '../util/exceptions/app-http-exception';
 import { ENTITY_NOT_FOUND } from '../util/exceptions/error_constants';
-import { ValidatorBase } from './validator-base';
 
 export abstract class BuilderBase<T extends ObjectLiteral> {
   protected entity: T;
@@ -15,7 +14,6 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     public builderPrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
-    private readonly validator?: ValidatorBase<T>,
   ) {
     this.reset();
   }
@@ -28,39 +26,19 @@ export abstract class BuilderBase<T extends ObjectLiteral> {
     parent?: any,
     createId?: string,
   ): Promise<T> {
-    await this.validateCreateDto(dto, createId);
-
     this.reset();
-
     this.createEntity(dto, parent);
 
     return await this.build();
   }
 
   public async buildUpdateDto(toUpdate: T, dto: any): Promise<T> {
-    await this.validateUpdateDto(toUpdate.id, dto);
-
     this.reset();
     this.setEntity(toUpdate);
 
     this.updateEntity(dto);
 
     return await this.build();
-  }
-
-  protected async validateCreateDto(
-    dto: any,
-    createId?: string,
-  ): Promise<void> {
-    if (this.validator) {
-      await this.validator.validateCreate(dto, createId);
-    }
-  }
-
-  protected async validateUpdateDto(id: number, dto: any): Promise<void> {
-    if (this.validator) {
-      await this.validator.validateUpdate(id, dto);
-    }
   }
 
   public reset(): this {

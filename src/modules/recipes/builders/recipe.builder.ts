@@ -12,7 +12,6 @@ import { Recipe } from '../entities/recipe.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
-import { RecipeValidator } from '../validators/recipe.valdiator';
 import { RecipeIngredientBuilder } from './recipe-ingredient.builder';
 
 @Injectable()
@@ -33,11 +32,10 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     private readonly unitService: UnitOfMeasureService,
     private readonly menuItemService: MenuItemService,
 
-    validator: RecipeValidator,
     requestContextService: RequestContextService,
     logger: AppLogger,
   ) {
-    super(Recipe, 'RecipeBuilder', requestContextService, logger, validator);
+    super(Recipe, 'RecipeBuilder', requestContextService, logger);
   }
 
   protected createEntity(dto: CreateRecipeDto): void {

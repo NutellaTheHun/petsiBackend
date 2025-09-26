@@ -6,6 +6,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemContainerRuleBuilder } from '../builders/menu-item-container-rule.builder';
 import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
+import { MenuItemContainerRuleValidator } from '../validators/menu-item-container-rule.validator';
 
 @Injectable()
 export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerRule> {
@@ -18,6 +19,7 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+    validator: MenuItemContainerRuleValidator,
   ) {
     super(
       repo,
@@ -25,6 +27,7 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
       'MenuItemContainerRuleService',
       requestContextService,
       logger,
+      validator,
     );
   }
 
