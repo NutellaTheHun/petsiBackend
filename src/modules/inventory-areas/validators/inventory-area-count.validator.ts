@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
-import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 
 @Injectable()
@@ -19,18 +18,23 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     super(_repo, 'InventoryAreaCount', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
-    dto: CreateInventoryAreaCountDto,
-  ): Promise<void> {
-    this.throwIfErrors();
+  public validateCreateNode(
+    field: string,
+    dto?: any,
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode | null> {
+    return Promise.resolve(null);
   }
 
-  public async validateUpdate(
-    id: number,
-    dto: UpdateInventoryAreaCountDto,
-  ): Promise<void> {
-    // no duplicate update dtos (same id)
+  public validateUpdateNode(
+    field: string,
+    dto?: any,
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode | null> {
+    const result = new ValidationErrorNode('root');
+
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
       const ids: number[] = [];
       for (const d of dto.itemCountDtos) {
@@ -41,18 +45,14 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);
       if (duplicateIds.length > 0) {
         duplicateIds.map((dupId) =>
-          this.addError(
-            this.buildValidationError(
-              'countedItems',
-              'duplicate update requests for counted inventory item.',
-              'DUPLICATE',
-              dupId,
-            ),
+          result.addChild(
+            'countedItems',
+            dupId,
+            'duplicate update requests for counted inventory item.',
           ),
         );
       }
     }
-
-    this.throwIfErrors();
+    return Promise.resolve(null);
   }
 }

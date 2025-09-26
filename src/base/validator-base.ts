@@ -22,22 +22,22 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
   }
 
-  public abstract validateCreate(createId: string, dto: any): Promise<void>;
-  public abstract validateUpdate(id: number, dto: any): Promise<void>;
+  //public abstract validateCreate(createId: string, dto: any): Promise<void>;
+  //public abstract validateUpdate(id: number, dto: any): Promise<void>;
 
   public abstract validateCreateNode(
     field: string,
     dto?: any,
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode>;
+  ): Promise<ValidationErrorNode | null>;
 
   public abstract validateUpdateNode(
     field: string,
     dto?: any,
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode>;
+  ): Promise<ValidationErrorNode | null>;
 
   protected buildValidationError<K extends keyof T>(
     field: K,
