@@ -1,15 +1,13 @@
-import { ObjectLiteral, Repository } from 'typeorm';
+import { error } from 'console';
+import { Repository } from 'typeorm';
 import { AppLogger } from '../modules/app-logging/app-logger';
 import { RequestContextService } from '../modules/request-context/RequestContextService';
-import {
-  ValidationError,
-  ValidationErrorNode,
-} from '../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../util/exceptions/validation-error';
 import { ValidationExceptionHandler } from '../util/exceptions/validation-exception.handler';
 import { ValidatorHelper } from '../util/validatator-helper.util';
+import { EntityBase } from './entity-base';
 
-export abstract class ValidatorBase<T extends ObjectLiteral> {
-  protected errors: ValidationErrorNode;
+export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
   protected helper = new ValidatorHelper();
   private exceptionHandler: ValidationExceptionHandler;
 
@@ -22,40 +20,53 @@ export abstract class ValidatorBase<T extends ObjectLiteral> {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
   }
 
-  //public abstract validateCreate(createId: string, dto: any): Promise<void>;
-  //public abstract validateUpdate(id: number, dto: any): Promise<void>;
-
-  public abstract validateCreateNode(
-    field: string,
-    dto?: any,
+  protected abstract doValidateCreateNode(
+    result: ValidationErrorNode,
+    dto: T['createDto'],
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode | null>;
+  ): Promise<void>;
 
-  public abstract validateUpdateNode(
-    field: string,
-    dto?: any,
+  protected abstract doValidateUpdateNode(
+    result: ValidationErrorNode,
+    dto: T['updateDto'],
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode | null>;
+  ): Promise<void>;
 
-  protected buildValidationError<K extends keyof T>(
-    field: K,
-    message: string,
-    errorType: string,
-    id?: number,
-    createId?: string,
-  ) {
-    return new ValidationError({
-      field: field as string,
-      message,
-      errorType,
-      id,
-      createId,
-    });
+  public async validateCreateNode(
+    field: string,
+    dto: T['createDto'],
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode | null> {
+    const result = new ValidationErrorNode(field, id);
+    await this.doValidateCreateNode(result, dto, id, message);
+    return result.isEmpty() ? null : result;
   }
 
-  /*private reset() {
-    this.errors = [];
-  }*/
+  public async validateUpdateNode(
+    field: string,
+    dto: T['updateDto'],
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode | null> {
+    const result = new ValidationErrorNode(field, id);
+    await this.doValidateUpdateNode(result, dto, id, message);
+    return result.isEmpty() ? null : result;
+  }
+
+  public async validateNestedNode(
+    field: string,
+    dto?: T['nestedDto'],
+    id?: string | number,
+    message?: string,
+  ): Promise<ValidationErrorNode | null> {
+    if (dto?.createId) {
+      return this.validateCreateNode(field, dto, id, message);
+    } else if (dto?.id) {
+      return this.validateUpdateNode(field, dto, id, message);
+    }
+    throw new error('validate nested node has neither create id or id.');
+  }
 }

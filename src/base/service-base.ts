@@ -2,7 +2,6 @@ import { NotFoundException } from '@nestjs/common';
 import {
   FindOptionsWhere,
   In,
-  ObjectLiteral,
   QueryBuilder,
   Repository,
   SelectQueryBuilder,
@@ -12,10 +11,11 @@ import { RequestContextService } from '../modules/request-context/RequestContext
 import { DataBaseExceptionHandler } from '../util/exceptions/database-exception.handler';
 import { ValidationException } from '../util/exceptions/validation-exception';
 import { BuilderBase } from './builder-base';
+import { EntityBase } from './entity-base';
 import { PaginatedResult } from './paginated-result';
 import { ValidatorBase } from './validator-base';
 
-export abstract class ServiceBase<T extends ObjectLiteral> {
+export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
   private databaseExceptionHandler: DataBaseExceptionHandler;
 
   constructor(

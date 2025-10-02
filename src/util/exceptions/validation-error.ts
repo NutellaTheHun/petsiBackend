@@ -14,12 +14,12 @@ export class ValidationErrorNode {
     field: string,
     id?: string | number,
     message?: string,
-    children?: ValidationErrorNode[],
+    children: ValidationErrorNode[] = [],
   ) {
     this.field = field;
     this.id = id;
     this.message = message;
-    this.children = children ?? [];
+    this.children = children;
   }
   field: string;
 
@@ -27,17 +27,19 @@ export class ValidationErrorNode {
 
   message?: string;
 
-  children?: ValidationErrorNode[];
+  children: ValidationErrorNode[];
 
-  public addChild(
-    field: string,
-    id?: string | number,
-    message?: string,
-    children?: ValidationErrorNode[],
-  ) {
-    if (!this.children) {
-      this.children = [];
-    }
-    this.children.push(new ValidationErrorNode(field, id, message, children));
+  public addChild(err: ValidationErrorNode) {
+    this.children.push(err);
+  }
+
+  public addFieldError(field: string, message: string) {
+    this.addChild(new ValidationErrorNode(field, undefined, message));
+  }
+
+  public isEmpty(): boolean {
+    const noMessage = !this.message;
+    const noChildren = this.children?.length === 0;
+    return noMessage && noChildren;
   }
 }

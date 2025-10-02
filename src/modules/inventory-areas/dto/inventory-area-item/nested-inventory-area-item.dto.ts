@@ -4,7 +4,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateInventoryAreaItemDto } from './create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from './update-inventory-area-item.dto';
 
-export class NestedInventoryAreaItemDto extends NestedDtoBase {
+export class NestedInventoryAreaItemDto extends NestedDtoBase<
+  CreateInventoryAreaItemDto,
+  UpdateInventoryAreaItemDto
+> {
   @ApiPropertyOptional({
     description: 'CreateInventoryAreaItemDto for InventoryAreaItem entity.',
     type: CreateInventoryAreaItemDto,

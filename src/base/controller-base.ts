@@ -15,13 +15,13 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
-import { ObjectLiteral } from 'typeorm';
 import { AppLogger } from '../modules/app-logging/app-logger';
 import { RequestContextService } from '../modules/request-context/RequestContextService';
 import { invalidateFindAllCache, trackFindAllKey } from '../util/cache.util';
+import { EntityBase } from './entity-base';
 import { ServiceBase } from './service-base';
 
-export class ControllerBase<T extends ObjectLiteral> {
+export class ControllerBase<T extends EntityBase<any, any, any, any>> {
   constructor(
     protected readonly entityService: ServiceBase<T>,
     @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,

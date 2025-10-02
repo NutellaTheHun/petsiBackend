@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
-export abstract class NestedDtoBase {
+export abstract class NestedDtoBase<CDto, UDto> {
   @ApiProperty({
     description: 'temporary id for create dtos for mapping on the frontend',
     example: 'th3w-4257ds',
@@ -16,4 +16,8 @@ export abstract class NestedDtoBase {
   @IsNumber()
   @IsOptional()
   readonly id?: number;
+
+  readonly createDto?: CDto;
+
+  readonly updateDto?: UDto;
 }

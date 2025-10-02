@@ -6,6 +6,9 @@ import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItemValidator } from './inventory-area-item.validator';
+import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCount> {
@@ -14,27 +17,25 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     private readonly _repo: Repository<InventoryAreaCount>,
     logger: AppLogger,
     requestContextService: RequestContextService,
+
+    private readonly areaItemValidator: InventoryAreaItemValidator,
   ) {
     super(_repo, 'InventoryAreaCount', requestContextService, logger);
   }
 
-  public validateCreateNode(
-    field: string,
-    dto?: any,
+  public async doValidateCreateNode(
+    result: ValidationErrorNode,
+    dto: CreateInventoryAreaCountDto,
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode | null> {
-    return Promise.resolve(null);
-  }
+  ): Promise<void> {}
 
-  public validateUpdateNode(
-    field: string,
-    dto?: any,
+  public async doValidateUpdateNode(
+    result: ValidationErrorNode,
+    dto: any,
     id?: string | number,
     message?: string,
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode('root');
-
+  ): Promise<void> {
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
       const ids: number[] = [];
       for (const d of dto.itemCountDtos) {
@@ -46,13 +47,25 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       if (duplicateIds.length > 0) {
         duplicateIds.map((dupId) =>
           result.addChild(
-            'countedItems',
-            dupId,
-            'duplicate update requests for counted inventory item.',
+            new ValidationErrorNode(
+              'countedItems',
+              dupId,
+              'duplicate update requests for counted inventory item.',
+            ),
           ),
         );
       }
     }
-    return Promise.resolve(null);
+    if (dto) {
+      // handle nested -> create | update validation
+      // list of areaItem Dtos
+      const child = await this.areaItemValidator.validateNestedNode(
+        'countedItems',
+        ,
+      );
+      if (child) {
+        result.addChild(child);
+      }
+    }
   }
 }

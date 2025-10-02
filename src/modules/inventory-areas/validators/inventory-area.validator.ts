@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
-import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryArea } from '../entities/inventory-area.entity';
 
 @Injectable()
@@ -19,44 +18,25 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
     super(repo, 'InventoryArea', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
-    dto: CreateInventoryAreaDto,
+  public async doValidateCreateNode(
+    result: ValidationErrorNode,
+    dto: any,
+    id?: string | number,
+    message?: string,
   ): Promise<void> {
-    // Already exists check
     if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-      this.addError(
-        this.buildValidationError(
-          'areaName',
-          'Inventory area name already exists.',
-          'EXIST',
-          undefined,
-          createId,
-        ),
-      );
+      result.addFieldError('areaName', 'Inventory area name already exists.');
     }
-
-    this.throwIfErrors();
   }
 
-  public async validateUpdate(
-    id: number,
-    dto: UpdateInventoryAreaDto,
+  public async doValidateUpdateNode(
+    result: ValidationErrorNode,
+    dto: any,
+    id?: string | number,
+    message?: string,
   ): Promise<void> {
-    // Already exists check
-    if (dto.areaName) {
-      if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-        this.addError(
-          this.buildValidationError(
-            'areaName',
-            'Inventory area name already exists.',
-            'MISSING',
-            id,
-          ),
-        );
-      }
+    if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
+      result.addFieldError('areaName', 'Inventory area name already exists.');
     }
-
-    this.throwIfErrors();
   }
 }
