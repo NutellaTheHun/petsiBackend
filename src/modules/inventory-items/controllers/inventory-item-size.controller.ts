@@ -38,7 +38,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
-import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import {
+  InventoryItemSize,
+  InventoryItemSizeEntity,
+} from '../entities/inventory-item-size.entity';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 
 @ApiTags('Inventory Item Size')
@@ -46,7 +49,7 @@ import { InventoryItemSizeService } from '../services/inventory-item-size.servic
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('inventory-item-sizes')
 @ApiExtraModels(InventoryItemSize)
-export class InventoryItemSizeController extends ControllerBase<InventoryItemSize> {
+export class InventoryItemSizeController extends ControllerBase<InventoryItemSizeEntity> {
   constructor(
     sizeService: InventoryItemSizeService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

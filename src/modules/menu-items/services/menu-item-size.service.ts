@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
-import { MenuItemSize } from '../entities/menu-item-size.entity';
+import {
+  MenuItemSize,
+  MenuItemSizeEntity,
+} from '../entities/menu-item-size.entity';
 import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 
 @Injectable()
-export class MenuItemSizeService extends ServiceBase<MenuItemSize> {
+export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
   constructor(
     @InjectRepository(MenuItemSize)
     private readonly repo: Repository<MenuItemSize>,

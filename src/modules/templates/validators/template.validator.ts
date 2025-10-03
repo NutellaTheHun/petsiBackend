@@ -7,11 +7,11 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
-import { Template } from '../entities/template.entity';
+import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
 
 @Injectable()
-export class TemplateValidator extends ValidatorBase<Template> {
+export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,

@@ -36,7 +36,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
-import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import {
+  UnitOfMeasure,
+  UnitOfMeasureEntity,
+} from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 
 @ApiTags('Unit of Measure')
@@ -44,7 +47,7 @@ import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('units-of-measure')
 @ApiExtraModels(UnitOfMeasure)
-export class UnitOfMeasureController extends ControllerBase<UnitOfMeasure> {
+export class UnitOfMeasureController extends ControllerBase<UnitOfMeasureEntity> {
   constructor(
     unitService: UnitOfMeasureService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

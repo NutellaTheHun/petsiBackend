@@ -7,10 +7,13 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
-import { OrderCategory } from '../entities/order-category.entity';
+import {
+  OrderCategory,
+  OrderCategoryEntity,
+} from '../entities/order-category.entity';
 
 @Injectable()
-export class OrderCategoryValidator extends ValidatorBase<OrderCategory> {
+export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
   constructor(
     @InjectRepository(OrderCategory)
     private readonly repo: Repository<OrderCategory>,

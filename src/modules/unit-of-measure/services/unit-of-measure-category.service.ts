@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureCategoryBuilder } from '../builders/unit-of-measure-category.builder';
-import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import {
+  UnitOfMeasureCategory,
+  UnitOfMeasureCategoryEntity,
+} from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasureCategoryValidator } from '../validators/unit-of-measure-category.validator';
 
 @Injectable()
-export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCategory> {
+export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCategoryEntity> {
   constructor(
     @InjectRepository(UnitOfMeasureCategory)
     private readonly repo: Repository<UnitOfMeasureCategory>,

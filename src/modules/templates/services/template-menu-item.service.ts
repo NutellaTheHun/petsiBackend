@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { TemplateMenuItemBuilder } from '../builders/template-menu-item.builder';
-import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import {
+  TemplateMenuItem,
+  TemplateMenuItemEntity,
+} from '../entities/template-menu-item.entity';
 import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
-export class TemplateMenuItemService extends ServiceBase<TemplateMenuItem> {
+export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity> {
   constructor(
     @InjectRepository(TemplateMenuItem)
     repo: Repository<TemplateMenuItem>,

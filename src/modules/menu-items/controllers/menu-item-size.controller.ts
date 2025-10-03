@@ -40,7 +40,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
-import { MenuItemSize } from '../entities/menu-item-size.entity';
+import {
+  MenuItemSize,
+  MenuItemSizeEntity,
+} from '../entities/menu-item-size.entity';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 
 @ApiTags('Menu Item Size')
@@ -48,7 +51,7 @@ import { MenuItemSizeService } from '../services/menu-item-size.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-sizes')
 @ApiExtraModels(MenuItemSize)
-export class MenuItemSizeController extends ControllerBase<MenuItemSize> {
+export class MenuItemSizeController extends ControllerBase<MenuItemSizeEntity> {
   constructor(
     sizeService: MenuItemSizeService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

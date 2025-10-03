@@ -36,7 +36,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
-import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import {
+  InventoryItemVendor,
+  InventoryItemVendorEntity,
+} from '../entities/inventory-item-vendor.entity';
 import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 
 @ApiTags('Inventory Item Vendor')
@@ -44,7 +47,7 @@ import { InventoryItemVendorService } from '../services/inventory-item-vendor.se
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('inventory-item-vendors')
 @ApiExtraModels(InventoryItemVendor)
-export class InventoryItemVendorController extends ControllerBase<InventoryItemVendor> {
+export class InventoryItemVendorController extends ControllerBase<InventoryItemVendorEntity> {
   constructor(
     vendorService: InventoryItemVendorService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

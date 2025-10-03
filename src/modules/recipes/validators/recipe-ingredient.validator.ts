@@ -7,10 +7,13 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
-import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import {
+  RecipeIngredient,
+  RecipeIngredientEntity,
+} from '../entities/recipe-ingredient.entity';
 
 @Injectable()
-export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredient> {
+export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEntity> {
   constructor(
     @InjectRepository(RecipeIngredient)
     private readonly repo: Repository<RecipeIngredient>,

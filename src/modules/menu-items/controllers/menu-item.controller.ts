@@ -40,7 +40,7 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
-import { MenuItem } from '../entities/menu-item.entity';
+import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemService } from '../services/menu-item.service';
 
 @ApiTags('Menu Item')
@@ -48,7 +48,7 @@ import { MenuItemService } from '../services/menu-item.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-items')
 @ApiExtraModels(MenuItem)
-export class MenuItemController extends ControllerBase<MenuItem> {
+export class MenuItemController extends ControllerBase<MenuItemEntity> {
   constructor(
     itemService: MenuItemService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

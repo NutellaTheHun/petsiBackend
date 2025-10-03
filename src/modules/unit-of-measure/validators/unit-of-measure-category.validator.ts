@@ -7,10 +7,13 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
-import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import {
+  UnitOfMeasureCategory,
+  UnitOfMeasureCategoryEntity,
+} from '../entities/unit-of-measure-category.entity';
 
 @Injectable()
-export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureCategory> {
+export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureCategoryEntity> {
   constructor(
     @InjectRepository(UnitOfMeasureCategory)
     private readonly repo: Repository<UnitOfMeasureCategory>,

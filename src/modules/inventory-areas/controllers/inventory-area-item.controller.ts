@@ -37,7 +37,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
-import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import {
+  InventoryAreaItem,
+  InventoryAreaItemEntity,
+} from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
 @ApiTags('Inventory Area Item')
@@ -45,7 +48,7 @@ import { InventoryAreaItemService } from '../services/inventory-area-item.servic
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('inventory-area-items')
 @ApiExtraModels(InventoryAreaItem)
-export class InventoryAreaItemController extends ControllerBase<InventoryAreaItem> {
+export class InventoryAreaItemController extends ControllerBase<InventoryAreaItemEntity> {
   constructor(
     itemCountService: InventoryAreaItemService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

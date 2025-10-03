@@ -40,7 +40,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
-import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import {
+  MenuItemCategory,
+  MenuItemCategoryEntity,
+} from '../entities/menu-item-category.entity';
 import { MenuItemCategoryService } from '../services/menu-item-category.service';
 
 @ApiTags('Menu Item Category')
@@ -48,7 +51,7 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-categories')
 @ApiExtraModels(MenuItemCategory)
-export class MenuItemCategoryController extends ControllerBase<MenuItemCategory> {
+export class MenuItemCategoryController extends ControllerBase<MenuItemCategoryEntity> {
   constructor(
     categoryService: MenuItemCategoryService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

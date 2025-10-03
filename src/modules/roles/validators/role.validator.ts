@@ -7,10 +7,10 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
-import { Role } from '../entities/role.entity';
+import { Role, RoleEntity } from '../entities/role.entity';
 
 @Injectable()
-export class RoleValidator extends ValidatorBase<Role> {
+export class RoleValidator extends ValidatorBase<RoleEntity> {
   constructor(
     @InjectRepository(Role)
     private readonly repo: Repository<Role>,

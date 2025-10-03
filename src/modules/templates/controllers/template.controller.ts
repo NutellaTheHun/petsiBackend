@@ -40,7 +40,7 @@ import {
 } from '../../roles/utils/constants';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
-import { Template } from '../entities/template.entity';
+import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateService } from '../services/template.service';
 
 @ApiTags('Template')
@@ -48,7 +48,7 @@ import { TemplateService } from '../services/template.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('templates')
 @ApiExtraModels(Template)
-export class TemplateController extends ControllerBase<Template> {
+export class TemplateController extends ControllerBase<TemplateEntity> {
   constructor(
     templateService: TemplateService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

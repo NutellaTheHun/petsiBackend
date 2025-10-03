@@ -5,13 +5,13 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaCount, InventoryAreaCountEntity } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 
 @Injectable()
-export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCount> {
+export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
     private readonly _repo: Repository<InventoryAreaCount>,

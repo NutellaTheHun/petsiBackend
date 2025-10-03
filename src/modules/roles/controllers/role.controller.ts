@@ -35,7 +35,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
-import { Role } from '../entities/role.entity';
+import { Role, RoleEntity } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
 import { ROLE_ADMIN } from '../utils/constants';
 
@@ -44,7 +44,7 @@ import { ROLE_ADMIN } from '../utils/constants';
 @Roles(ROLE_ADMIN)
 @Controller('roles')
 @ApiExtraModels(Role)
-export class RoleController extends ControllerBase<Role> {
+export class RoleController extends ControllerBase<RoleEntity> {
   constructor(
     rolesService: RoleService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

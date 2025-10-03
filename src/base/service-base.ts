@@ -229,7 +229,7 @@ export abstract class ServiceBase<
     id: number,
     relations?: Array<keyof TEntity['__Entity']>,
     childRelations?: string[],
-  ): Promise<TEntity> {
+  ): Promise<TEntity['__Entity']> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 

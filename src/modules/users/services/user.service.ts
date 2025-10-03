@@ -6,11 +6,11 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UserBuilder } from '../builders/user.builder';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { User } from '../entities/user.entities';
+import { User, UserEntity } from '../entities/user.entities';
 import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
-export class UserService extends ServiceBase<User> {
+export class UserService extends ServiceBase<UserEntity> {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,

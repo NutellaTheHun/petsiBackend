@@ -5,7 +5,10 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
-import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import {
+  InventoryAreaCount,
+  InventoryAreaCountEntity,
+} from '../entities/inventory-area-count.entity';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
 /**
@@ -17,7 +20,7 @@ import { InventoryAreaCountValidator } from '../validators/inventory-area-count.
  * - inventoryItemCountDTOs are created (via separate call to inventoryItemCountController)
  * - with returned list of inventoryItemCountIDs, update areaCount entity with itemIDs
  */
-export class InventoryAreaCountService extends ServiceBase<InventoryAreaCount> {
+export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
     private readonly repo: Repository<InventoryAreaCount>,

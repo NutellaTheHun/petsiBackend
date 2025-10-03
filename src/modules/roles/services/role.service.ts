@@ -5,11 +5,11 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RoleBuilder } from '../builders/role.builder';
-import { Role } from '../entities/role.entity';
+import { Role, RoleEntity } from '../entities/role.entity';
 import { RoleValidator } from '../validators/role.validator';
 
 @Injectable()
-export class RoleService extends ServiceBase<Role> {
+export class RoleService extends ServiceBase<RoleEntity> {
   constructor(
     @InjectRepository(Role)
     private readonly repo: Repository<Role>,

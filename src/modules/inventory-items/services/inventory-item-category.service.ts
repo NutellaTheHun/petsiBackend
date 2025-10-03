@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
-import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import {
+  InventoryItemCategory,
+  InventoryItemCategoryEntity,
+} from '../entities/inventory-item-category.entity';
 import { InventoryItemCategoryValidator } from '../validators/inventory-item-category.validator';
 
 @Injectable()
-export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategory> {
+export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategoryEntity> {
   constructor(
     @InjectRepository(InventoryItemCategory)
     private readonly repo: Repository<InventoryItemCategory>,

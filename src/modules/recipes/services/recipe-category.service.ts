@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeCategoryBuilder } from '../builders/recipe-category.builder';
-import { RecipeCategory } from '../entities/recipe-category.entity';
+import {
+  RecipeCategory,
+  RecipeCategoryEntity,
+} from '../entities/recipe-category.entity';
 import { RecipeCategoryValidator } from '../validators/recipe-category.validator';
 
 @Injectable()
-export class RecipeCategoryService extends ServiceBase<RecipeCategory> {
+export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
   constructor(
     @InjectRepository(RecipeCategory)
     private readonly repo: Repository<RecipeCategory>,

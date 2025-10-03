@@ -41,7 +41,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
-import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
+import {
+  MenuItemContainerRule,
+  MenuItemContainerRuleEntity,
+} from '../entities/menu-item-container-rule.entity';
 import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
 
 @ApiTags('Menu Item Container Rules')
@@ -49,7 +52,7 @@ import { MenuItemContainerRuleService } from '../services/menu-item-container-ru
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-container-rules')
 @ApiExtraModels(MenuItemContainerRule)
-export class MenuItemContainerRuleController extends ControllerBase<MenuItemContainerRule> {
+export class MenuItemContainerRuleController extends ControllerBase<MenuItemContainerRuleEntity> {
   constructor(
     optionSerivce: MenuItemContainerRuleService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

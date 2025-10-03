@@ -40,7 +40,7 @@ import {
 } from '../../roles/utils/constants';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
-import { LabelType } from '../entities/label-type.entity';
+import { LabelType, LabelTypeEntity } from '../entities/label-type.entity';
 import { LabelTypeService } from '../services/label-type.service';
 
 @ApiTags('Label Type')
@@ -48,7 +48,7 @@ import { LabelTypeService } from '../services/label-type.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('label-types')
 @ApiExtraModels(LabelType)
-export class LabelTypeController extends ControllerBase<LabelType> {
+export class LabelTypeController extends ControllerBase<LabelTypeEntity> {
   constructor(
     labelTypeService: LabelTypeService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

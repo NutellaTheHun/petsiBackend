@@ -36,7 +36,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { RecipeCategory } from '../entities/recipe-category.entity';
+import {
+  RecipeCategory,
+  RecipeCategoryEntity,
+} from '../entities/recipe-category.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
 
 @ApiTags('Recipe Category')
@@ -44,7 +47,7 @@ import { RecipeCategoryService } from '../services/recipe-category.service';
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('recipe-categories')
 @ApiExtraModels(RecipeCategory)
-export class RecipeCategoryController extends ControllerBase<RecipeCategory> {
+export class RecipeCategoryController extends ControllerBase<RecipeCategoryEntity> {
   constructor(
     categoryService: RecipeCategoryService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

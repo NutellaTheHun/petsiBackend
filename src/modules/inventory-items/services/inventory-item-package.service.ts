@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.builder';
-import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import {
+  InventoryItemPackage,
+  InventoryItemPackageEntity,
+} from '../entities/inventory-item-package.entity';
 import { InventoryItemPackageValidator } from '../validators/inventory-item-package.validator';
 
 @Injectable()
-export class InventoryItemPackageService extends ServiceBase<InventoryItemPackage> {
+export class InventoryItemPackageService extends ServiceBase<InventoryItemPackageEntity> {
   constructor(
     @InjectRepository(InventoryItemPackage)
     private readonly repo: Repository<InventoryItemPackage>,

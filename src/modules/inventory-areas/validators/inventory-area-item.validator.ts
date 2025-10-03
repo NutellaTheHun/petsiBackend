@@ -7,11 +7,14 @@ import { InventoryItemService } from '../../inventory-items/services/inventory-i
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
-import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import {
+  InventoryAreaItem,
+  InventoryAreaItemEntity,
+} from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
 @Injectable()
-export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItem> {
+export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemEntity> {
   constructor(
     @InjectRepository(InventoryAreaItem)
     private readonly repo: Repository<InventoryAreaItem>,

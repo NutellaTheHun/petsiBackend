@@ -11,15 +11,15 @@ import { EntityBase } from '../../../base/entity-base';
 import { inventoryAreaItemExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-item.example';
 import { inventoryAreaExample } from '../../../util/swagger-examples/inventory-areas/inventory-area.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
-import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
+import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { InventoryAreaItem } from './inventory-area-item.entity';
 import { InventoryArea } from './inventory-area.entity';
 
-export type InventoryAreaEntity = EntityBase<
-  InventoryArea,
-  CreateInventoryAreaDto,
-  UpdateInventoryAreaDto
+export type InventoryAreaCountEntity = EntityBase<
+  InventoryAreaCount,
+  CreateInventoryAreaCountDto,
+  UpdateInventoryAreaCountDto
 >;
 
 /**

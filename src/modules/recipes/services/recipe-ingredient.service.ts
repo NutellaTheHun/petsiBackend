@@ -6,12 +6,15 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
-import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import {
+  RecipeIngredient,
+  RecipeIngredientEntity,
+} from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 import { RecipeService } from './recipe.service';
 
 @Injectable()
-export class RecipeIngredientService extends ServiceBase<RecipeIngredient> {
+export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity> {
   constructor(
     @InjectRepository(RecipeIngredient)
     private readonly repo: Repository<RecipeIngredient>,

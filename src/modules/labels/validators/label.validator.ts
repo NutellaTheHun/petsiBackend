@@ -6,10 +6,10 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
-import { Label } from '../entities/label.entity';
+import { Label, LabelEntity } from '../entities/label.entity';
 
 @Injectable()
-export class LabelValidator extends ValidatorBase<Label> {
+export class LabelValidator extends ValidatorBase<LabelEntity> {
   constructor(
     @InjectRepository(Label)
     private readonly repo: Repository<Label>,

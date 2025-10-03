@@ -7,10 +7,13 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
-import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
+import {
+  RecipeSubCategory,
+  RecipeSubCategoryEntity,
+} from '../entities/recipe-sub-category.entity';
 
 @Injectable()
-export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategory> {
+export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryEntity> {
   constructor(
     @InjectRepository(RecipeSubCategory)
     private readonly repo: Repository<RecipeSubCategory>,

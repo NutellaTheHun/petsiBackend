@@ -5,11 +5,11 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { LabelBuilder } from '../builders/label.builder';
-import { Label } from '../entities/label.entity';
+import { Label, LabelEntity } from '../entities/label.entity';
 import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
-export class LabelService extends ServiceBase<Label> {
+export class LabelService extends ServiceBase<LabelEntity> {
   constructor(
     @InjectRepository(Label)
     private readonly repo: Repository<Label>,

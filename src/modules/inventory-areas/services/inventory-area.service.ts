@@ -5,10 +5,13 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
-import { InventoryArea } from '../entities/inventory-area.entity';
+import {
+  InventoryArea,
+  InventoryAreaEntity,
+} from '../entities/inventory-area.entity';
 import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
-export class InventoryAreaService extends ServiceBase<InventoryArea> {
+export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
   constructor(
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,

@@ -6,11 +6,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
-import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import {
+  UnitOfMeasure,
+  UnitOfMeasureEntity,
+} from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureValidator } from '../validators/unit-of-measure.validator';
 
 @Injectable()
-export class UnitOfMeasureService extends ServiceBase<UnitOfMeasure> {
+export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
   constructor(
     @InjectRepository(UnitOfMeasure)
     private readonly repo: Repository<UnitOfMeasure>,

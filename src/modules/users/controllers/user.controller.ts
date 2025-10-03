@@ -36,7 +36,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN } from '../../roles/utils/constants';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { User } from '../entities/user.entities';
+import { User, UserEntity } from '../entities/user.entities';
 import { UserService } from '../services/user.service';
 
 @ApiTags('User')
@@ -44,7 +44,7 @@ import { UserService } from '../services/user.service';
 @Roles(ROLE_ADMIN)
 @Controller('users')
 @ApiExtraModels(User)
-export class UserController extends ControllerBase<User> {
+export class UserController extends ControllerBase<UserEntity> {
   constructor(
     userService: UserService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

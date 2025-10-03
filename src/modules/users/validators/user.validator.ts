@@ -7,10 +7,10 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { User } from '../entities/user.entities';
+import { User, UserEntity } from '../entities/user.entities';
 
 @Injectable()
-export class UserValidator extends ValidatorBase<User> {
+export class UserValidator extends ValidatorBase<UserEntity> {
   constructor(
     @InjectRepository(User)
     private readonly repo: Repository<User>,

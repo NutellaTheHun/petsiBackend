@@ -5,11 +5,11 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { TemplateBuilder } from '../builders/template.builder';
-import { Template } from '../entities/template.entity';
+import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
-export class TemplateService extends ServiceBase<Template> {
+export class TemplateService extends ServiceBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,

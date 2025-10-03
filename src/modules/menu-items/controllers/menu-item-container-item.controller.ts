@@ -41,7 +41,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
-import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import {
+  MenuItemContainerItem,
+  MenuItemContainerItemEntity,
+} from '../entities/menu-item-container-item.entity';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 
 @ApiTags('Menu Item Container Item')
@@ -49,7 +52,7 @@ import { MenuItemContainerItemService } from '../services/menu-item-container-it
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-item-container-items')
 @ApiExtraModels(MenuItemContainerItem)
-export class MenuItemContainerItemController extends ControllerBase<MenuItemContainerItem> {
+export class MenuItemContainerItemController extends ControllerBase<MenuItemContainerItemEntity> {
   constructor(
     componentService: MenuItemContainerItemService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

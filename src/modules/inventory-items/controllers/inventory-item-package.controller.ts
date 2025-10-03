@@ -36,7 +36,10 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
-import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import {
+  InventoryItemPackage,
+  InventoryItemPackageEntity,
+} from '../entities/inventory-item-package.entity';
 import { InventoryItemPackageService } from '../services/inventory-item-package.service';
 
 @ApiTags('Inventory Item Package')
@@ -44,7 +47,7 @@ import { InventoryItemPackageService } from '../services/inventory-item-package.
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('inventory-item-packages')
 @ApiExtraModels(InventoryItemPackage)
-export class InventoryItemPackageController extends ControllerBase<InventoryItemPackage> {
+export class InventoryItemPackageController extends ControllerBase<InventoryItemPackageEntity> {
   constructor(
     packageService: InventoryItemPackageService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

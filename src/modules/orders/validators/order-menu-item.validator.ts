@@ -9,12 +9,15 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
-import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import {
+  OrderMenuItem,
+  OrderMenuItemEntity,
+} from '../entities/order-menu-item.entity';
 import { OrderContainerItemService } from '../services/order-container-item.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 
 @Injectable()
-export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItem> {
+export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
   constructor(
     @InjectRepository(OrderMenuItem)
     private readonly repo: Repository<OrderMenuItem>,

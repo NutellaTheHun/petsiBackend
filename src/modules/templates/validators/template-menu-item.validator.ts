@@ -6,10 +6,13 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
-import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import {
+  TemplateMenuItem,
+  TemplateMenuItemEntity,
+} from '../entities/template-menu-item.entity';
 
 @Injectable()
-export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItem> {
+export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEntity> {
   constructor(
     @InjectRepository(TemplateMenuItem)
     private readonly repo: Repository<TemplateMenuItem>,

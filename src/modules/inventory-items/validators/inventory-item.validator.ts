@@ -6,11 +6,14 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
-import { InventoryItem } from '../entities/inventory-item.entity';
+import {
+  InventoryItem,
+  InventoryItemEntity,
+} from '../entities/inventory-item.entity';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 
 @Injectable()
-export class InventoryItemValidator extends ValidatorBase<InventoryItem> {
+export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
   constructor(
     @InjectRepository(InventoryItem)
     private readonly repo: Repository<InventoryItem>,

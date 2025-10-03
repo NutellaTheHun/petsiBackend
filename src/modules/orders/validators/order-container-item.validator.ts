@@ -12,11 +12,14 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
+import {
+  OrderContainerItem,
+  OrderContainerItemEntity,
+} from '../entities/order-container-item.entity';
 import { OrderContainerItemService } from '../services/order-container-item.service';
 
 @Injectable()
-export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItem> {
+export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItemEntity> {
   constructor(
     @InjectRepository(OrderContainerItem)
     repo: Repository<OrderContainerItem>,

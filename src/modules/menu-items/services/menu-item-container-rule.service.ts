@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemContainerRuleBuilder } from '../builders/menu-item-container-rule.builder';
-import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
+import {
+  MenuItemContainerRule,
+  MenuItemContainerRuleEntity,
+} from '../entities/menu-item-container-rule.entity';
 import { MenuItemContainerRuleValidator } from '../validators/menu-item-container-rule.validator';
 
 @Injectable()
-export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerRule> {
+export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerRuleEntity> {
   constructor(
     @InjectRepository(MenuItemContainerRule)
     repo: Repository<MenuItemContainerRule>,

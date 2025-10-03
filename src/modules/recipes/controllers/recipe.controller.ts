@@ -36,7 +36,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
-import { Recipe } from '../entities/recipe.entity';
+import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
 
 @ApiTags('Recipe')
@@ -44,7 +44,7 @@ import { RecipeService } from '../services/recipe.service';
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('recipes')
 @ApiExtraModels(Recipe)
-export class RecipeController extends ControllerBase<Recipe> {
+export class RecipeController extends ControllerBase<RecipeEntity> {
   constructor(
     recipeService: RecipeService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,
