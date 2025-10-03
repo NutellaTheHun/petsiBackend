@@ -1,11 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { orderMenuItemExample } from '../../../util/swagger-examples/orders/order-menu-item.example';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
+import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
+import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { OrderMenuItem } from './order-menu-item.entity';
+
+export type OrderContainerItemEntity = EntityBase<
+  OrderContainerItem,
+  CreateOrderContainerItemDto,
+  UpdateOrderContainerItemDto,
+  NestedOrderContainerItemDto
+>;
 
 /**
  * When a {@link OrderMenuItem} is representing a {@link MenuItem} that is a container of other {@link MenuItem}, the contained items

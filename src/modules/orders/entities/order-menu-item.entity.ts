@@ -6,14 +6,25 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { orderContainerItemExample } from '../../../util/swagger-examples/orders/order-container-item.example';
 import { orderExample } from '../../../util/swagger-examples/orders/order.example';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
+import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
+import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderContainerItem } from './order-container-item.entity';
 import { Order } from './order.entity';
+
+export type OrderMenuItemEntity = EntityBase<
+  OrderMenuItem,
+  CreateOrderMenuItemDto,
+  UpdateOrderMenuItemDto,
+  NestedOrderMenuItemDto
+>;
 
 /**
  * A {@link MenuItem} specified with a quantity and {@link MenuItemSize} on an {@link Order}.

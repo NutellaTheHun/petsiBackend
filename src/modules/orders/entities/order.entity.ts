@@ -8,10 +8,15 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { orderCategoryExample } from '../../../util/swagger-examples/orders/order-category.example';
 import { orderMenuItemExample } from '../../../util/swagger-examples/orders/order-menu-item.example';
+import { CreateOrderDto } from '../dto/order/create-order.dto';
+import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
+
+export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
 
 /**
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.

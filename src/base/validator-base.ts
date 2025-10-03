@@ -12,7 +12,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
   private exceptionHandler: ValidationExceptionHandler;
 
   constructor(
-    private readonly entityRepo: Repository<T>,
+    private readonly entityRepo: Repository<T['__Entity']>,
     private readonly validationPrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
@@ -20,23 +20,45 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
   }
 
+  /**
+   * Entity implementation of buisness logic validation
+   * @param result
+   * @param dto
+   * @param id
+   * @param message
+   */
   protected abstract doValidateCreateNode(
     result: ValidationErrorNode,
-    dto: T['createDto'],
+    dto: T['__CDto'],
     id?: string | number,
     message?: string,
   ): Promise<void>;
 
+  /**
+   * Entity implementation of buisness logic validation
+   * @param result
+   * @param dto
+   * @param id
+   * @param message
+   */
   protected abstract doValidateUpdateNode(
     result: ValidationErrorNode,
-    dto: T['updateDto'],
+    dto: T['__UDto'],
     id?: string | number,
     message?: string,
   ): Promise<void>;
 
+  /**
+   * root level validation function of DTOs, is still called within other root level validation calls.
+   * @param field
+   * @param dto
+   * @param id
+   * @param message
+   * @returns
+   */
   public async validateCreateNode(
     field: string,
-    dto: T['createDto'],
+    dto: T['__CDto'],
     id?: string | number,
     message?: string,
   ): Promise<ValidationErrorNode | null> {
@@ -45,9 +67,17 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     return result.isEmpty() ? null : result;
   }
 
+  /**
+   * root level validation function of DTOs, is still called within other root level validation calls.
+   * @param field
+   * @param dto
+   * @param id
+   * @param message
+   * @returns
+   */
   public async validateUpdateNode(
     field: string,
-    dto: T['updateDto'],
+    dto: T['__UDto'],
     id?: string | number,
     message?: string,
   ): Promise<ValidationErrorNode | null> {
@@ -56,16 +86,24 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     return result.isEmpty() ? null : result;
   }
 
+  /**
+   * Wrapper function to parse nested DTOs.
+   * @param field
+   * @param dto
+   * @param id
+   * @param message
+   * @returns
+   */
   public async validateNestedNode(
     field: string,
-    dto?: T['nestedDto'],
+    dto: T['__NDto'],
     id?: string | number,
     message?: string,
   ): Promise<ValidationErrorNode | null> {
-    if (dto?.createId) {
-      return this.validateCreateNode(field, dto, id, message);
-    } else if (dto?.id) {
-      return this.validateUpdateNode(field, dto, id, message);
+    if (dto?.createId && dto.createDto) {
+      return this.validateCreateNode(field, dto.createDto, id, message);
+    } else if (dto?.id && dto.updateDto) {
+      return this.validateUpdateNode(field, dto.updateDto, id, message);
     }
     throw new error('validate nested node has neither create id or id.');
   }

@@ -8,8 +8,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { roleExample } from '../../../util/swagger-examples/roles/role.example';
 import { Role } from '../../roles/entities/role.entity';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
+
+export type UserEntity = EntityBase<User, CreateUserDto, UpdateUserDto>;
 
 /**
  * A set of credentials and list of {@link Role} to control access to features such as order management, recipe costing, and inventory management.

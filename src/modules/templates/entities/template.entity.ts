@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { templateMenuItemExample } from '../../../util/swagger-examples/templates/template-menu-item.example';
+import { CreateTemplateDto } from '../dto/template/create-template.dto';
+import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateMenuItem } from './template-menu-item.entity';
+
+export type TemplateEntity = EntityBase<
+  Template,
+  CreateTemplateDto,
+  UpdateTemplateDto
+>;
 
 /**
  * A list of {@link TemplateMenuItem} to build forms used for baking lists.

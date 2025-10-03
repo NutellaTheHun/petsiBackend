@@ -7,10 +7,21 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemContainerRuleExample } from '../../../util/swagger-examples/menu-items/menu-item-container-rule.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
+import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
+import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { MenuItemContainerRule } from './menu-item-container-rule.entity';
 import { MenuItem } from './menu-item.entity';
+
+export type MenuItemContainerOptionsEntity = EntityBase<
+  MenuItemContainerOptions,
+  CreateMenuItemContainerOptionsDto,
+  UpdateMenuItemContainerOptionsDto,
+  NestedMenuItemContainerOptionsDto
+>;
 
 /**
  * When a {@link MenuItem} is a dynamic container (meaning the container can contain a custom amount of menuItems)

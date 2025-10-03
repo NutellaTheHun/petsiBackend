@@ -15,16 +15,18 @@ import { EntityBase } from './entity-base';
 import { PaginatedResult } from './paginated-result';
 import { ValidatorBase } from './validator-base';
 
-export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
+export abstract class ServiceBase<
+  TEntity extends EntityBase<any, any, any, any>,
+> {
   private databaseExceptionHandler: DataBaseExceptionHandler;
 
   constructor(
-    private readonly entityRepo: Repository<T>,
-    private readonly builder: BuilderBase<T>,
+    private readonly entityRepo: Repository<TEntity['__Entity']>,
+    private readonly builder: BuilderBase<TEntity['__Entity']>,
     public readonly servicePrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
-    private readonly validator?: ValidatorBase<T>,
+    private readonly validator?: ValidatorBase<TEntity>,
   ) {
     this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
   }
@@ -32,7 +34,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
   /**
    * @returns The created entity or throws AppHttpException from validation errors.
    */
-  public async create(createDto: any): Promise<T> {
+  public async create(createDto: any): Promise<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
 
     if (this.validator) {
@@ -64,7 +66,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
   /**
    * @returns Updated entity or throws AppHttpException if validation fails, or NotFoundException if the supplied ID doesn't aquire an entity.
    */
-  async update(id: number, updateDto: any): Promise<T> {
+  async update(id: number, updateDto: any): Promise<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
 
     if (this.validator) {
@@ -79,7 +81,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     }
 
     // retrieve entity from DB
-    let toUpdate: T;
+    let toUpdate: TEntity['__Entity'];
     try {
       toUpdate = await this.findOne(id);
     } catch (err) {
@@ -118,7 +120,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     dateBy?: string;
     startDate?: string;
     endDate?: string;
-  }): Promise<PaginatedResult<T>> {
+  }): Promise<PaginatedResult<TEntity['__Entity']>> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -181,7 +183,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     }
 
     // run query
-    let results: T[] = [];
+    let results: TEntity['__Entity'][] = [];
     try {
       results = await query.getMany();
     } catch (err) {
@@ -217,7 +219,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     return {
       items: results,
       nextCursor,
-    } as PaginatedResult<T>;
+    } as PaginatedResult<TEntity['__Entity']>;
   }
 
   /**
@@ -225,9 +227,9 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
    */
   async findOne(
     id: number,
-    relations?: Array<keyof T>,
+    relations?: Array<keyof TEntity['__Entity']>,
     childRelations?: string[],
-  ): Promise<T> {
+  ): Promise<TEntity> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
@@ -240,7 +242,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     let result;
     try {
       result = await this.entityRepo.findOne({
-        where: { id } as unknown as FindOptionsWhere<T>,
+        where: { id } as unknown as FindOptionsWhere<TEntity>,
         relations: combinedRelations,
       });
     } catch (err) {
@@ -268,14 +270,14 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
 
   async findEntitiesById(
     ids: number[],
-    relations?: Array<keyof T>,
-  ): Promise<T[]> {
+    relations?: Array<keyof TEntity['__Entity']>,
+  ): Promise<TEntity[]> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 
     // run query and return
     const result = await this.entityRepo.find({
-      where: { id: In(ids) } as unknown as FindOptionsWhere<T>,
+      where: { id: In(ids) } as unknown as FindOptionsWhere<TEntity>,
       relations: relations as string[],
     });
 
@@ -304,19 +306,23 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     }
   }
 
-  async insertEntity(entity: T): Promise<T | null> {
+  async insertEntity(
+    entity: TEntity['__Entity'],
+  ): Promise<TEntity['__Entity'] | null> {
     return await this.entityRepo.save(entity);
   }
 
-  async insertEntities(entities: T[]): Promise<T[] | null> {
-    const results: T[] = [];
+  async insertEntities(
+    entities: TEntity['__Entity'][],
+  ): Promise<TEntity['__Entity'][] | null> {
+    const results: TEntity['__Entity'][] = [];
     for (const entity of entities) {
       results.push(await this.entityRepo.save(entity));
     }
     return results;
   }
 
-  getQueryBuilder(): QueryBuilder<T> {
+  getQueryBuilder(): QueryBuilder<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
     try {
       return this.entityRepo.createQueryBuilder();
@@ -330,19 +336,22 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
     }
   }
 
-  protected applySearch(_query: SelectQueryBuilder<T>, _search: string): void {
+  protected applySearch(
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
+    _search: string,
+  ): void {
     // Default: do nothing. To be overridden by subclass if needed.
   }
 
   protected applyFilters(
-    _query: SelectQueryBuilder<T>,
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
     filters: Record<string, string[]>,
   ): void {
     // Default: do nothing. To be overridden by subclass if needed.
   }
 
   protected applyDate(
-    _query: SelectQueryBuilder<T>,
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
     startDate: string,
     endDate?: string,
     dateBy?: string,
@@ -351,7 +360,7 @@ export abstract class ServiceBase<T extends EntityBase<any, any, any, any>> {
   }
 
   protected applySortBy(
-    _query: SelectQueryBuilder<T>,
+    _query: SelectQueryBuilder<TEntity['__Entity']>,
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {

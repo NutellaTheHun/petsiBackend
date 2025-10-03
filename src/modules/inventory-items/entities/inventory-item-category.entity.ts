@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
+import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
+import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItem } from './inventory-item.entity';
+
+export type InventoryItemCategoryEntity = EntityBase<
+  InventoryItemCategory,
+  CreateInventoryItemCategoryDto,
+  UpdateInventoryItemCategoryDto
+>;
 
 /**
  * Category to {@link InventoryItem}

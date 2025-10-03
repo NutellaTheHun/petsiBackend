@@ -9,6 +9,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { recipeCategoryExample } from '../../../util/swagger-examples/recipes/recipe-category.example';
 import { recipeIngredientExample } from '../../../util/swagger-examples/recipes/recipe-ingredient.example';
@@ -17,9 +18,13 @@ import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-mea
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
+import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from './recipe-category.entity';
 import { RecipeIngredient } from './recipe-ingredient.entity';
 import { RecipeSubCategory } from './recipe-sub-category.entity';
+
+export type RecipeEntity = EntityBase<Recipe, CreateRecipeDto, UpdateRecipeDto>;
 
 /**
  * The list of {@link RecipeIngredient} and details of yield, cost, and sales price.

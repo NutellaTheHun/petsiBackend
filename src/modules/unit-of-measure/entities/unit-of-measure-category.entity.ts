@@ -7,8 +7,17 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
+import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { UnitOfMeasure } from './unit-of-measure.entity';
+
+export type UnitOfMeasureCategoryEntity = EntityBase<
+  UnitOfMeasureCategory,
+  CreateUnitOfMeasureDto,
+  UpdateUnitOfMeasureDto
+>;
 
 /**
  * The type of metric that a {@link UnitOfMeasure} represents, such as a measurement "by volume" or "by weight" or "by unit"

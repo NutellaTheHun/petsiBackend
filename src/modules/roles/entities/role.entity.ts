@@ -1,7 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { userExample } from '../../../util/swagger-examples/users/user.example';
 import { User } from '../../users/entities/user.entities';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { UpdateRoleDto } from '../dto/update-role.dto';
+
+export type RoleEntity = EntityBase<Role, CreateRoleDto, UpdateRoleDto>;
 
 /**
  * A position within a buisness to controll access to certain entities/endpoints

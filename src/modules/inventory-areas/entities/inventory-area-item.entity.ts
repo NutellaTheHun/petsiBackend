@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryAreaCountExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-count.example';
 import { inventoryItemSizeExample } from '../../../util/swagger-examples/inventory-items/inventory-item-size.example';
 import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
@@ -7,8 +8,17 @@ import { InventoryItemPackage } from '../../inventory-items/entities/inventory-i
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from './inventory-area-count.entity';
 
+export type InventoryAreaItemEntity = EntityBase<
+  InventoryAreaItem,
+  CreateInventoryAreaItemDto,
+  UpdateInventoryAreaItemDto,
+  NestedInventoryAreaItemDto
+>;
 /**
  * A single item within the process of an {@link InventoryAreaCount},
  * representing an {@link InventoryItem}, its quantity, and the {@link InventoryItemSize} of the item (its {@link InventoryItemPackage} and {@link UnitOfMeasure})

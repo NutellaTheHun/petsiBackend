@@ -1,7 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
+import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { MenuItem } from './menu-item.entity';
+
+export type MenuItemCategoryEntity = EntityBase<
+  MenuItemCategory,
+  CreateMenuItemCategoryDto,
+  UpdateMenuItemCategoryDto
+>;
 
 /**
  * Product categories such as "Pie", "Pastry", "Merchandise", "Boxed Pastry"

@@ -6,12 +6,23 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemContainerOptionsExample } from '../../../util/swagger-examples/menu-items/menu-item-container-options.example';
 import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
+import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
+import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
 import { MenuItemContainerOptions } from './menu-item-container-options.entity';
 import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
+
+export type MenuItemContainerRuleEntity = EntityBase<
+  MenuItemContainerRule,
+  CreateMenuItemContainerRuleDto,
+  UpdateMenuItemContainerRuleDto,
+  NestedMenuItemContainerRuleDto
+>;
 
 /**
  * One rule within a {@link MenuItemContainerOptions} that allow one {@link MenuItem} and valid {@link MenuItemSize}

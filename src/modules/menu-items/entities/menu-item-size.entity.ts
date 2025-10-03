@@ -1,5 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
+import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
+import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
+
+export type MenuItemSizeEntity = EntityBase<
+  MenuItemSize,
+  CreateMenuItemSizeDto,
+  UpdateMenuItemSizeDto
+>;
 
 /**
  * - All items except pie are size "regular"

@@ -1,11 +1,22 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
 import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
 import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { Recipe } from './recipe.entity';
+
+export type RecipeIngredientEntity = EntityBase<
+  RecipeIngredient,
+  CreateRecipeIngredientDto,
+  UpdateRecipeIngredientDto,
+  NestedRecipeIngredientDto
+>;
 
 /**
  * A ingredient within a {@link Recipe}, can either be an {@link InventoryItem} or another {@link Recipe}.

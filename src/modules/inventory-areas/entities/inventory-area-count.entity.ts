@@ -7,11 +7,20 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryAreaItemExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-item.example';
 import { inventoryAreaExample } from '../../../util/swagger-examples/inventory-areas/inventory-area.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
+import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryAreaItem } from './inventory-area-item.entity';
 import { InventoryArea } from './inventory-area.entity';
+
+export type InventoryAreaEntity = EntityBase<
+  InventoryArea,
+  CreateInventoryAreaDto,
+  UpdateInventoryAreaDto
+>;
 
 /**
  * The event of counting {@link InventoryItem} in an {@link InventoryArea}.

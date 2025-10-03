@@ -21,9 +21,9 @@ import { invalidateFindAllCache, trackFindAllKey } from '../util/cache.util';
 import { EntityBase } from './entity-base';
 import { ServiceBase } from './service-base';
 
-export class ControllerBase<T extends EntityBase<any, any, any, any>> {
+export class ControllerBase<TEntity extends EntityBase<any, any, any, any>> {
   constructor(
-    protected readonly entityService: ServiceBase<T>,
+    protected readonly entityService: ServiceBase<TEntity>,
     @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
     public controllerPrefix: string,
     private readonly requestContextService: RequestContextService,
@@ -31,7 +31,7 @@ export class ControllerBase<T extends EntityBase<any, any, any, any>> {
   ) {}
 
   @Post()
-  async create(@Body() createDto: any): Promise<T> {
+  async create(@Body() createDto: any): Promise<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
     this.logger.logAction(
       this.controllerPrefix,
@@ -71,7 +71,7 @@ export class ControllerBase<T extends EntityBase<any, any, any, any>> {
     @Query('dateBy') dateBy?: string,
     @Query('startDate') startDate?: string, // ISO format string
     @Query('endDate') endDate?: string, // ISO format string
-  ): Promise<{ items: T[]; nextCursor?: string }> {
+  ): Promise<{ items: TEntity['__Entity'][]; nextCursor?: string }> {
     const requestId = this.requestContextService.getRequestId();
 
     let relations: string[] = [];
@@ -185,7 +185,9 @@ export class ControllerBase<T extends EntityBase<any, any, any, any>> {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<T> {
+  async findOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
     this.logger.logAction(
       this.controllerPrefix,
@@ -241,7 +243,7 @@ export class ControllerBase<T extends EntityBase<any, any, any, any>> {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: any,
-  ): Promise<T> {
+  ): Promise<TEntity['__Entity']> {
     const requestId = this.requestContextService.getRequestId();
     this.logger.logAction(
       this.controllerPrefix,

@@ -6,10 +6,21 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
+import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
+import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
+
+export type MenuItemContainerItemEntity = EntityBase<
+  MenuItemContainerItemEntity,
+  CreateMenuItemContainerItemDto,
+  UpdateMenuItemContainerItemDto,
+  NestedMenuItemContainerItemDto
+>;
 
 /**
  * When a {@link MenuItem} is a product composed of a set of other {@link MenuItem}

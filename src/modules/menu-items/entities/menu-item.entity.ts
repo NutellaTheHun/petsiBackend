@@ -12,14 +12,23 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { menuItemCategoryExample } from '../../../util/swagger-examples/menu-items/menu-item-category.example';
 import { menuItemContainerItemExample } from '../../../util/swagger-examples/menu-items/menu-item-container-item.example';
 import { menuItemContainerOptionsExample } from '../../../util/swagger-examples/menu-items/menu-item-container-options.example';
 import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
+import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from './menu-item-category.entity';
 import { MenuItemContainerItem } from './menu-item-container-item.entity';
 import { MenuItemContainerOptions } from './menu-item-container-options.entity';
 import { MenuItemSize } from './menu-item-size.entity';
+
+export type MenuItemEntity = EntityBase<
+  MenuItem,
+  CreateMenuItemDto,
+  UpdateMenuItemDto
+>;
 
 /**
  * An item that is a product to be sold.

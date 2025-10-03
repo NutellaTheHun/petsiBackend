@@ -1,9 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryAreaCountExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-count.example';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
+import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
+import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryAreaCount } from './inventory-area-count.entity';
 
+export type InventoryAreaEntity = EntityBase<
+  InventoryArea,
+  CreateInventoryAreaDto,
+  UpdateInventoryAreaDto
+>;
 /**
  * A declared area that holds inventory. "Walk-in", "Back Room"
  *

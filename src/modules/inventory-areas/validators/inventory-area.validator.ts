@@ -5,10 +5,11 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { InventoryAreaEntity } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 
 @Injectable()
-export class InventoryAreaValidator extends ValidatorBase<InventoryArea> {
+export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
   constructor(
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,

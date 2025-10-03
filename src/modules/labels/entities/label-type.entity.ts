@@ -1,7 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
+import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { Label } from './label.entity';
 
+export type LabelTypeEntity = EntityBase<
+  LabelType,
+  CreateLabelTypeDto,
+  UpdateLabelTypeDto
+>;
 /**
  * Specifies the size of a {@link Label} with a name.
  * - Example: a 4"x2" label for wholesale, or a 2"x1" cutie label, or a 4"x6" pot pie sticker.

@@ -6,10 +6,15 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { labelTypeExample } from '../../../util/swagger-examples/labels/label-type.example';
 import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { CreateLabelDto } from '../dto/label/create-label.dto';
+import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { LabelType } from './label-type.entity';
+
+export type LabelEntity = EntityBase<Label, CreateLabelDto, UpdateLabelDto>;
 
 /**
  * References a {@link menuItem} with a {@link LabelType} and a url to the label image for printing.

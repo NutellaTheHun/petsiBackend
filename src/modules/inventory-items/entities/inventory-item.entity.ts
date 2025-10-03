@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { EntityBase } from '../../../base/entity-base';
 import { inventoryItemCategoryExample } from '../../../util/swagger-examples/inventory-items/inventory-item-category.example';
 import { inventoryItemSizeExample } from '../../../util/swagger-examples/inventory-items/inventory-item-size.example';
 import { inventoryItemVendorExample } from '../../../util/swagger-examples/inventory-items/inventory-item-vendor.example';
@@ -13,10 +14,18 @@ import { InventoryAreaCount } from '../../inventory-areas/entities/inventory-are
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RecipeIngredient } from '../../recipes/entities/recipe-ingredient.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
+import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from './inventory-item-category.entity';
 import { InventoryItemPackage } from './inventory-item-package.entity';
 import { InventoryItemSize } from './inventory-item-size.entity';
 import { InventoryItemVendor } from './inventory-item-vendor.entity';
+
+export type InventoryItemEntity = EntityBase<
+  InventoryItem,
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto
+>;
 
 /**
  * An element of the inventory catalog, referenced via {@link InventoryAreaItem} for inventory counts, and {@link RecipeIngredient} for recipes.

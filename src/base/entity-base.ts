@@ -1,13 +1,13 @@
-import { ObjectLiteral } from 'typeorm';
+import { NestedDtoBase } from './nested-dto-base';
 
-export interface EntityBase<
-  TEntity extends ObjectLiteral,
+export abstract class EntityBase<
+  TEntity,
   CDto,
   UDto,
-  NDto = never,
+  NDto extends NestedDtoBase<CDto, UDto> = never,
 > {
-  entity: TEntity;
-  createDto: CDto;
-  updateDto: UDto;
-  nestedDto?: NDto;
+  declare __Entity: TEntity;
+  declare __CDto: CDto;
+  declare __UDto: UDto;
+  declare __NDto: NDto;
 }

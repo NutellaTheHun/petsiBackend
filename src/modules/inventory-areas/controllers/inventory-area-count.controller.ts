@@ -44,7 +44,11 @@ import { InventoryAreaCountService } from '../services/inventory-area-count.serv
 @Roles(ROLE_MANAGER, ROLE_ADMIN)
 @Controller('inventory-area-counts')
 @ApiExtraModels(InventoryAreaCount)
-export class InventoryAreaCountController extends ControllerBase<InventoryAreaCount> {
+export class InventoryAreaCountController extends ControllerBase<
+  InventoryAreaCount,
+  CreateInventoryAreaCountDto,
+  UpdateInventoryAreaCountDto
+> {
   constructor(
     areaCountService: InventoryAreaCountService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,
