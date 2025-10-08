@@ -5,10 +5,13 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaCount, InventoryAreaCountEntity } from '../entities/inventory-area-count.entity';
-import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import {
+  InventoryAreaCount,
+  InventoryAreaCountEntity,
+} from '../entities/inventory-area-count.entity';
+import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity> {
@@ -24,19 +27,20 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   }
 
   public async doValidateCreateNode(
-    result: ValidationErrorNode,
     dto: CreateInventoryAreaCountDto,
-    id?: string | number,
-    message?: string,
-  ): Promise<void> {}
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+    return null; // validate AreaCountItemDtos
+  }
 
   public async doValidateUpdateNode(
-    result: ValidationErrorNode,
-    dto: any,
-    id?: string | number,
-    message?: string,
-  ): Promise<void> {
+    dto: UpdateInventoryAreaCountDto,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // inventoryAreaItemCount entity
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
+      // Check for duplicate update DTOs on the same entity
       const ids: number[] = [];
       for (const d of dto.itemCountDtos) {
         if (d.updateDto && d.id) {
@@ -46,7 +50,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);
       if (duplicateIds.length > 0) {
         duplicateIds.map((dupId) =>
-          result.addChild(
+          results.push(
             new ValidationErrorNode(
               'countedItems',
               dupId,
@@ -55,17 +59,17 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
           ),
         );
       }
-    }
-    if (dto) {
-      // handle nested -> create | update validation
-      // list of areaItem Dtos
-      const child = await this.areaItemValidator.validateNestedNode(
+
+      // Validate each InvAreaItemCountDto
+      const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
-        ,
+        dto.itemCountDtos,
       );
-      if (child) {
-        result.addChild(child);
+      if (valErrs) {
+        results.push(valErrs);
       }
     }
+
+    return results.length > 0 ? results : null;
   }
 }
