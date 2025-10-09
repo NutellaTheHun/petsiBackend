@@ -21,12 +21,13 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
   }
 
   /**
-   * Entity implementation of buisness logic validation
+   * Entity implementation of buisness logic validation. If the resulting array is empty, returns null.
    * @param result
    * @param dto
    */
   protected abstract doValidateCreateNode(
     dto: T['__CDto'],
+    id?: string,
   ): Promise<ValidationErrorNode[] | null>;
 
   /**
@@ -36,7 +37,22 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
    */
   protected abstract doValidateUpdateNode(
     dto: T['__UDto'],
+    id?: number,
   ): Promise<ValidationErrorNode[] | null>;
+
+  /**
+   * If the resulting array has elements, it is returned, otherwise returns null
+   * @param result
+   * @returns
+   */
+  protected checkValidateResult(
+    result: ValidationErrorNode[],
+  ): ValidationErrorNode[] | null {
+    if (result.length > 0) {
+      return result;
+    }
+    return null;
+  }
 
   /**
    * root level validation function of DTOs, is still called within other root level validation calls.
@@ -83,12 +99,13 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
   public async validateUpdateNode(
     field: string,
     dto: T['__UDto'],
+    id: number,
   ): Promise<ValidationErrorNode | null> {
     const result = new ValidationErrorNode(field);
 
-    const valErrs = await this.doValidateUpdateNode(dto);
+    const valErrs = await this.doValidateUpdateNode(dto, id);
     if (valErrs) {
-      result.addChild(valErrs);
+      result.addChildren(valErrs);
     }
 
     return result.isEmpty() ? null : result;
@@ -103,7 +120,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     for (const dto of dtos) {
       const valErrs = await this.doValidateUpdateNode(dto);
       if (valErrs) {
-        result.addChild(valErrs);
+        result.addChildren(valErrs);
       }
     }
 
@@ -123,14 +140,14 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     const result = new ValidationErrorNode(field);
 
     if (dto?.createId && dto.createDto) {
-      const valErrs = await this.doValidateCreateNode(dto);
+      const valErrs = await this.doValidateCreateNode(dto, dto.createId);
       if (valErrs) {
-        result.addChild(valErrs);
+        result.addChildren(valErrs);
       }
     } else if (dto?.id && dto.updateDto) {
-      const child = await this.doValidateUpdateNode(dto);
+      const child = await this.doValidateUpdateNode(dto, dto.id);
       if (child) {
-        result.addChild(child);
+        result.addChildren(child);
       }
     } else {
       throw new error('validate nested node has neither create id or id.');
@@ -148,12 +165,12 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
       if (dto?.createId && dto.createDto) {
         const child = await this.doValidateCreateNode(dto);
         if (child) {
-          result.addChild(child);
+          result.addChildren(child);
         }
       } else if (dto?.id && dto.updateDto) {
         const child = await this.doValidateUpdateNode(dto);
         if (child) {
-          result.addChild(child);
+          result.addChildren(child);
         }
       } else {
         throw new error('validate nested node has neither create id or id.');

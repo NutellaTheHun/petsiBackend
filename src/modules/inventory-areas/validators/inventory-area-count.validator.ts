@@ -28,19 +28,33 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
   public async doValidateCreateNode(
     dto: CreateInventoryAreaCountDto,
+    id?: string,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
-    return null; // validate AreaCountItemDtos
+
+    // Validate each InvAreaItemCountDto
+    if (dto.itemCountDtos) {
+      const valErrs = await this.areaItemValidator.validateManyNestedNode(
+        'countedItems',
+        dto.itemCountDtos,
+      );
+      if (valErrs) {
+        results.push(valErrs);
+      }
+    }
+
+    return this.checkValidateResult(results);
   }
 
   public async doValidateUpdateNode(
     dto: UpdateInventoryAreaCountDto,
+    id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
     // inventoryAreaItemCount entity
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
-      // Check for duplicate update DTOs on the same entity
+      // Check for duplicate DTOs on the same entity
       const ids: number[] = [];
       for (const d of dto.itemCountDtos) {
         if (d.updateDto && d.id) {
@@ -70,6 +84,6 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       }
     }
 
-    return results.length > 0 ? results : null;
+    return this.checkValidateResult(results);
   }
 }

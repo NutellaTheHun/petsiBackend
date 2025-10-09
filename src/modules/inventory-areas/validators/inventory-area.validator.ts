@@ -5,8 +5,12 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaEntity } from '../entities/inventory-area-count.entity';
-import { InventoryArea } from '../entities/inventory-area.entity';
+import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
+import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
+import {
+  InventoryArea,
+  InventoryAreaEntity,
+} from '../entities/inventory-area.entity';
 
 @Injectable()
 export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
@@ -19,25 +23,41 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
     super(repo, 'InventoryArea', requestContextService, logger);
   }
 
-  public async doValidateCreateNode(
-    result: ValidationErrorNode,
-    dto: any,
-    id?: string | number,
-    message?: string,
-  ): Promise<void> {
+  protected async doValidateCreateNode(
+    dto: CreateInventoryAreaDto,
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-      result.addFieldError('areaName', 'Inventory area name already exists.');
+      const err = new ValidationErrorNode(
+        'areaName',
+        id,
+        'Inventory area name already exists.',
+      );
+      results.push(err);
     }
+
+    return this.checkValidateResult(results);
   }
 
-  public async doValidateUpdateNode(
-    result: ValidationErrorNode,
-    dto: any,
-    id?: string | number,
-    message?: string,
-  ): Promise<void> {
-    if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-      result.addFieldError('areaName', 'Inventory area name already exists.');
+  protected async doValidateUpdateNode(
+    dto: UpdateInventoryAreaDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    if (dto.areaName) {
+      if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
+        const err = new ValidationErrorNode(
+          'areaName',
+          id,
+          'Inventory area name already exists.',
+        );
+        results.push(err);
+      }
     }
+
+    return this.checkValidateResult(results);
   }
 }
