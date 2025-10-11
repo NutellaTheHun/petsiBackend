@@ -4,7 +4,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateMenuItemContainerOptionsDto } from './create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from './update-menu-item-container-options.dto';
 
-export class NestedMenuItemContainerOptionsDto extends NestedDtoBase {
+export class NestedMenuItemContainerOptionsDto extends NestedDtoBase<
+  CreateMenuItemContainerOptionsDto,
+  UpdateMenuItemContainerOptionsDto
+> {
   @ApiPropertyOptional({
     description: 'CreateMenuItemContainerOptionsDto',
     example: {

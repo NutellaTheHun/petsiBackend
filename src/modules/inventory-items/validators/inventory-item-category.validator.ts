@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
@@ -22,32 +23,33 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     super(repo, 'InventoryItemCategory', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateInventoryItemCategoryDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Already exists check
     if (
       await this.helper.exists(this.repo, 'categoryName', dto.itemCategoryName)
     ) {
-      this.addError(
-        this.buildValidationError(
-          'categoryName',
-          'Inventory category name already exists',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'categoryName',
+        id,
+        'Inventory category name already exists',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryItemCategoryDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Already exists check
     if (dto.itemCategoryName) {
       if (
@@ -57,17 +59,15 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
           dto.itemCategoryName,
         )
       ) {
-        this.addError(
-          this.buildValidationError(
-            'categoryName',
-            'Inventory category name already exists',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'categoryName',
+          id,
+          'Inventory category name already exists',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

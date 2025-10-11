@@ -5,7 +5,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateMenuItemContainerRuleDto } from './create-menu-item-container-rule.dto';
 import { UpdateMenuItemContainerRuleDto } from './update-menu-item-container-rule.dto';
 
-export class NestedMenuItemContainerRuleDto extends NestedDtoBase {
+export class NestedMenuItemContainerRuleDto extends NestedDtoBase<
+  CreateMenuItemContainerRuleDto,
+  UpdateMenuItemContainerRuleDto
+> {
   @ApiPropertyOptional({
     description: 'Create dto of a MenuItemContainerRule entity.',
     type: CreateMenuItemContainerRuleDto,

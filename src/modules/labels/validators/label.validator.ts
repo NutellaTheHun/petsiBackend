@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -19,10 +20,12 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
     super(repo, 'Label', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateLabelDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     const exists = await this.repo.findOne({
       where: {
         menuItem: { id: dto.menuItemId },
@@ -30,21 +33,23 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
       },
     });
     if (exists) {
-      this.addError(
-        this.buildValidationError(
-          'labelType',
-          'Label type already exists for this item.',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'labelType',
+        id,
+        'Label type already exists for this item.',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(id: number, dto: UpdateLabelDto): Promise<void> {
+  protected async doValidateUpdateNode(
+    dto: UpdateLabelDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.labelTypeId || dto.menuItemId) {
       const currentLabel = await this.repo.findOne({
         where: { id },
@@ -64,17 +69,15 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
         },
       });
       if (exists) {
-        this.addError(
-          this.buildValidationError(
-            'labelType',
-            'Label type already exists for this item.',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'labelType',
+          id,
+          'Label type already exists for this item.',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

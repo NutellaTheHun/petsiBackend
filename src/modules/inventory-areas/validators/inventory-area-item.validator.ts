@@ -30,7 +30,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     super(repo, 'InventoryAreaItem', requestContextService, logger);
   }
 
-  public async doValidateCreateNode(
+  protected async doValidateCreateNode(
     dto: CreateInventoryAreaItemDto,
     createId?: string,
   ): Promise<ValidationErrorNode[] | null> {
@@ -73,7 +73,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     return this.checkValidateResult(results);
   }
 
-  public async doValidateUpdateNode(
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryAreaItemDto,
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {

@@ -16,7 +16,7 @@ import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
 
 export type MenuItemContainerItemEntity = EntityBase<
-  MenuItemContainerItemEntity,
+  MenuItemContainerItem,
   CreateMenuItemContainerItemDto,
   UpdateMenuItemContainerItemDto,
   NestedMenuItemContainerItemDto

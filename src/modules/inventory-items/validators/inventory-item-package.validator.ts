@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
@@ -22,42 +23,43 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     super(repo, 'InventoryItemPackage', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateInventoryItemPackageDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Already exists check
     if (await this.helper.exists(this.repo, 'packageName', dto.packageName)) {
-      this.addError(
-        this.buildValidationError(
-          'packageName',
-          'Inventory package name already exists',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'packageName',
+        id,
+        'Inventory package name already exists',
       );
+      results.push(err);
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryItemPackageDto,
-  ): Promise<void> {
-    // Already exists check
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.packageName) {
+      // Already exists check
       if (await this.helper.exists(this.repo, 'packageName', dto.packageName)) {
-        this.addError(
-          this.buildValidationError(
-            'packageName',
-            'Inventory package name already exists',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'packageName',
+          id,
+          'Inventory package name already exists',
         );
+        results.push(err);
       }
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 }

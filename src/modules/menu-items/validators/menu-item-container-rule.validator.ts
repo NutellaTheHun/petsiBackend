@@ -2,15 +2,19 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
-import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
+import {
+  MenuItemContainerRule,
+  MenuItemContainerRuleEntity,
+} from '../entities/menu-item-container-rule.entity';
 import { MenuItemService } from '../services/menu-item.service';
 
 @Injectable()
-export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContainerRule> {
+export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContainerRuleEntity> {
   constructor(
     @InjectRepository(MenuItemContainerRule)
     private readonly repo: Repository<MenuItemContainerRule>,
@@ -23,21 +27,20 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     super(repo, 'MenuItemContainerRule', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateMenuItemContainerRuleDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // No sizes
     if (dto.validSizeIds.length === 0) {
-      this.addError(
-        this.buildValidationError(
-          'validItem',
-          'Menu item container setting has no sizes selected.',
-          'INVALID',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'validItem',
+        id,
+        'Menu item container setting has no sizes selected.',
       );
+      results.push(err);
     }
 
     // valid sizes
@@ -50,35 +53,32 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
     for (const scarySizeId of dto.validSizeIds) {
       if (!this.helper.isValidSize(scarySizeId, item.validSizes)) {
-        this.addError(
-          this.buildValidationError(
-            'validSizes',
-            'Invalid size for item.',
-            'INVALID',
-            undefined,
-            createId,
-          ),
+        const err = new ValidationErrorNode(
+          'validSizes',
+          id,
+          'Invalid size for item.',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateMenuItemContainerRuleDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // No sizes
-    if (dto.validSizeIds?.length === 0) {
-      this.addError(
-        this.buildValidationError(
-          'validSizes',
-          'Menu item container setting has no sizes selected.',
-          'INVALID',
-          id,
-        ),
+    if (dto.validSizeIds && dto.validSizeIds.length === 0) {
+      const err = new ValidationErrorNode(
+        'validItem',
+        id,
+        'Menu item container setting has no sizes selected.',
       );
+      results.push(err);
     }
 
     // validate sizes
@@ -102,18 +102,16 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
       for (const scarySize of sizeIds) {
         if (!this.helper.isValidSize(scarySize, item.validSizes)) {
-          this.addError(
-            this.buildValidationError(
-              'validSizes',
-              'Invalid size for item',
-              'INVALID',
-              id,
-            ),
+          const err = new ValidationErrorNode(
+            'validSizes',
+            id,
+            'Invalid size for item.',
           );
+          results.push(err);
         }
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

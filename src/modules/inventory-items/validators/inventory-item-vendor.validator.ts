@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
@@ -22,42 +23,43 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
     super(repo, 'InventoryItemVendor', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateInventoryItemVendorDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // Vendor name exists
     if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
-      this.addError(
-        this.buildValidationError(
-          'vendorName',
-          'Inventory vendor already exists',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'vendorName',
+        id,
+        'Inventory vendor already exists',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryItemVendorDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // Vendor name exists
     if (dto.vendorName) {
       if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
-        this.addError(
-          this.buildValidationError(
-            'vendorName',
-            'Inventory vendor already exists',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'vendorName',
+          id,
+          'Inventory vendor already exists',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

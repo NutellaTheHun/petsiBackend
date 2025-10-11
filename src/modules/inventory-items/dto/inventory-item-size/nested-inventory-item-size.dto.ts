@@ -4,7 +4,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateInventoryItemSizeDto } from './create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from './update-inventory-item-size.dto';
 
-export class NestedInventoryItemSizeDto extends NestedDtoBase {
+export class NestedInventoryItemSizeDto extends NestedDtoBase<
+  CreateInventoryItemSizeDto,
+  UpdateInventoryItemSizeDto
+> {
   @ApiPropertyOptional({
     description: 'CreateInventoryItemSizeDto for InventoryItemSize entity.',
     type: CreateInventoryItemSizeDto,

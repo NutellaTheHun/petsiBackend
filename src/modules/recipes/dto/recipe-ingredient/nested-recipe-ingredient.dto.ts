@@ -5,7 +5,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateRecipeIngredientDto } from './create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from './update-recipe-ingedient.dto';
 
-export class NestedRecipeIngredientDto extends NestedDtoBase {
+export class NestedRecipeIngredientDto extends NestedDtoBase<
+  CreateRecipeIngredientDto,
+  UpdateRecipeIngredientDto
+> {
   @ApiPropertyOptional({
     description: 'Create dto of a RecipeIngredient entity.',
     type: CreateRecipeIngredientDto,

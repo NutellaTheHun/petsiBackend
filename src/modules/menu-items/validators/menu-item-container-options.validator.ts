@@ -2,15 +2,20 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
-import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
+import {
+  MenuItemContainerOptions,
+  MenuItemContainerOptionsEntity,
+} from '../entities/menu-item-container-options.entity';
 import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
+import { MenuItemContainerRuleValidator } from './menu-item-container-rule.validator';
 
 @Injectable()
-export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemContainerOptions> {
+export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemContainerOptionsEntity> {
   constructor(
     @InjectRepository(MenuItemContainerOptions)
     private readonly repo: Repository<MenuItemContainerOptions>,
@@ -19,67 +24,72 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     private readonly ruleService: MenuItemContainerRuleService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly containerRuleValidator: MenuItemContainerRuleValidator,
   ) {
     super(repo, 'MenuItemContainerOptions', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateMenuItemContainerOptionsDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // No rules
     if (!dto.containerRuleDtos || dto.containerRuleDtos.length === 0) {
-      this.addError(
-        this.buildValidationError(
-          'containerRules',
-          'Menu item container has no settings.',
-          'INVALID',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'containerRules',
+        id,
+        'Menu item container has no settings.',
       );
+      results.push(err);
     }
 
+    // duplicate item rules
     const nestedCreates = dto.containerRuleDtos
       .map((nested) => nested.createDto)
       .filter((nested) => nested !== undefined);
 
-    // duplicate item rules
     const dupliateItemRules = this.helper.findDuplicates(
       nestedCreates,
       (rule) => `${rule.validMenuItemId}`,
     );
     if (dupliateItemRules) {
       for (const duplicate of dupliateItemRules) {
-        this.addError(
-          this.buildValidationError(
-            'containerRules',
-            'Menu item container has duplicate item settings.',
-            'DUPLICATE',
-            undefined,
-            duplicate.validMenuItemId.toString(),
-          ),
+        const err = new ValidationErrorNode(
+          'containerRules',
+          id, // needs NESTED id, not parent entity
+          'Menu item container has duplicate item settings.',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    const nestedErrs = await this.containerRuleValidator.validateManyNestedNode(
+      'containerRules',
+      dto.containerRuleDtos,
+    );
+    if (nestedErrs) {
+      results.push(nestedErrs);
+    }
+
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateMenuItemContainerOptionsDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // No rules
     if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
-      this.addError(
-        this.buildValidationError(
-          'containerRules',
-          'Menu item container has no settings.',
-          'INVALID',
-          id,
-        ),
+      const err = new ValidationErrorNode(
+        'containerRules',
+        id,
+        'Menu item container has no settings.',
       );
+      results.push(err);
     }
 
     // Check no duplicate item rules
@@ -106,18 +116,25 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
         (rule) => `${rule.validMenuItemId}`,
       );
       for (const duplicate of dupliateItemRules) {
-        this.addError(
-          this.buildValidationError(
-            'containerRules',
-            'Menu item container has duplicate item settings.',
-            'DUPLICATE',
-            undefined,
-            duplicate.validMenuItemId.toString(),
-          ),
+        const err = new ValidationErrorNode(
+          'containerRules',
+          id, //  NEEDS NESTED ID
+          'Menu item container has duplicate item settings.',
         );
+        results.push(err);
+      }
+    }
+    if (dto.containerRuleDtos) {
+      const nestedErrs =
+        await this.containerRuleValidator.validateManyNestedNode(
+          'containerRules',
+          dto.containerRuleDtos,
+        );
+      if (nestedErrs) {
+        results.push(nestedErrs);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
@@ -19,46 +20,47 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     super(repo, 'LabelType', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateLabelTypeDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // name exists
     if (
       await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)
     ) {
-      this.addError(
-        this.buildValidationError(
-          'labelTypeName',
-          'Label type name already exists.',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'labelTypeName',
+        id,
+        'Label type name already exists.',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateLabelTypeDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // name exists
     if (dto.labelTypeName) {
-      const exists = await this.repo.findOne({
-        where: { labelTypeName: dto.labelTypeName },
-      });
-      if (exists && exists.id !== id) {
-        this.addError(
-          this.buildValidationError(
-            'labelTypeName',
-            'Label type name already exists.',
-            'EXIST',
-            id,
-          ),
+      if (
+        await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)
+      ) {
+        const err = new ValidationErrorNode(
+          'labelTypeName',
+          id,
+          'Label type name already exists.',
         );
+        results.push(err);
       }
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 }

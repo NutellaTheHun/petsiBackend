@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
@@ -11,6 +12,7 @@ import {
   InventoryItemEntity,
 } from '../entities/inventory-item.entity';
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
+import { InventoryItemSizeValidator } from './inventory-item-size.validator';
 
 @Injectable()
 export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
@@ -22,28 +24,25 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     private readonly sizeService: InventoryItemSizeService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly itemSizeValidator: InventoryItemSizeValidator
   ) {
     super(repo, 'InventoryItem', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  public async doValidateCreateNode(
     dto: CreateInventoryItemDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // no existing name
-    const exists = await this.repo.findOne({
-      where: { itemName: dto.itemName },
-    });
     if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-      this.addError(
-        this.buildValidationError(
-          'itemName',
-          'Inventory item already exists',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'itemName',
+        id,
+        'Inventory item with this name already exists',
       );
+      results.push(err);
     }
 
     // no duplicate item sizing
@@ -58,6 +57,10 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       );
       if (dupliateSizing) {
         for (const duplicate of dupliateSizing) {
+            const err = new ValidationErrorNode(
+                'itemSizes',
+                duplicate. // need to get ID of nested entity
+            )
           this.addError(
             this.buildValidationError(
               'itemSizes',
@@ -69,32 +72,34 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
           );
         }
       }
-    }
 
-    this.throwIfErrors();
-  }
-
-  public async validateUpdate(
-    id: number,
-    dto: UpdateInventoryItemDto,
-  ): Promise<void> {
-    // no existing name
-    if (dto.itemName) {
-      if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-        this.addError(
-          this.buildValidationError(
-            'itemName',
-            'Inventory item already exists',
-            'EXIST',
-            id,
-          ),
-        );
+      // inventoryItemSizeValidator Call
+      const errs = await this.itemSizeValidator.validateManyNestedNode('itemSizes', dto.itemSizeDtos);
+      if(errs){
+        results.push(errs);
       }
     }
 
+    return this.checkValidateResult(results);
+  }
+
+  protected async doValidateUpdateNode(dto: UpdateInventoryItemDto, id?: number): Promise<ValidationErrorNode[] | null> {
+      const results: ValidationErrorNode[] = [];
+
+      if(dto.itemName){
+        // no existing name
+            if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
+            const err = new ValidationErrorNode(
+                'itemName',
+                id,
+                'Inventory item with this name already exists',
+            );
+            results.push(err);
+            }
+      }
+
     // no duplicate item sizing, or duplicate update ids
     if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
-      const resolvedUpdateDtos: { id: number }[] = [];
       const resolvedSizeDtos: {
         inventoryPackageId: number;
         measureUnitId: number;
@@ -125,24 +130,6 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
         }
       }
 
-      // Validate duplicate update ids
-      const dupliateIds = this.helper.findDuplicates(
-        resolvedUpdateDtos,
-        (id) => `${id.id}`,
-      );
-      if (dupliateIds) {
-        for (const duplicate of dupliateIds) {
-          this.addError(
-            this.buildValidationError(
-              'itemSizes',
-              'duplicate update item size requests',
-              'EXIST',
-              duplicate.id,
-            ),
-          );
-        }
-      }
-
       // Validate duplicate sizing
       const dupliateSizing = this.helper.findDuplicates(
         resolvedSizeDtos,
@@ -160,8 +147,16 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
           );
         }
       }
-    }
 
-    this.throwIfErrors();
+      // inventoryItemSizeValidator Call
+      const errs = await this.itemSizeValidator.validateManyNestedNode('itemSizes', dto.itemSizeDtos);
+      if(errs){
+        results.push(errs);
+      }
+
+      
   }
+
+  return this.checkValidateResult(results);
+}
 }

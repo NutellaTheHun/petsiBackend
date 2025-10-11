@@ -26,7 +26,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     super(_repo, 'InventoryAreaCount', requestContextService, logger);
   }
 
-  public async doValidateCreateNode(
+  protected async doValidateCreateNode(
     dto: CreateInventoryAreaCountDto,
     id?: string,
   ): Promise<ValidationErrorNode[] | null> {
@@ -46,7 +46,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     return this.checkValidateResult(results);
   }
 
-  public async doValidateUpdateNode(
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryAreaCountDto,
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {

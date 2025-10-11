@@ -2,19 +2,23 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
-import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import {
+  MenuItemContainerItem,
+  MenuItemContainerItemEntity,
+} from '../entities/menu-item-container-item.entity';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemService } from '../services/menu-item.service';
 
 @Injectable()
-export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItem> {
+export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItemEntity> {
   constructor(
     @InjectRepository(MenuItemContainerItem)
-    repo: Repository<MenuItemContainerItem>,
+    private readonly repo: Repository<MenuItemContainerItem>,
 
     @Inject(forwardRef(() => MenuItemContainerItemService))
     private readonly containerService: MenuItemContainerItemService,
@@ -27,10 +31,12 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     super(repo, 'MenuItemContainerItem', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateMenuItemContainerItemDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // validate container item size
     const item = await this.itemService.findOne(dto.containedMenuItemId, [
       'validSizes',
@@ -41,26 +47,25 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (
       !this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)
     ) {
-      this.addError(
-        this.buildValidationError(
-          'containedItemSize',
-          'Invalid menu item size',
-          'INVALID',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'containedItemSize',
+        id,
+        'Invalid menu item size',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateMenuItemContainerItemDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // validate size
-    if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
+    if ((dto.containedMenuItemId || dto.containedMenuItemSizeId) && id) {
       const item = await this.containerService.findOne(id, [
         'containedItem',
         'containedItemSize',
@@ -78,17 +83,15 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       }
 
       if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
-        this.addError(
-          this.buildValidationError(
-            'containedItemSize',
-            'Invalid menu item size',
-            'INVALID',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'containedItemSize',
+          id,
+          'Invalid menu item size',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

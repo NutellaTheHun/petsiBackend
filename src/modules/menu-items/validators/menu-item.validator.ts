@@ -2,16 +2,17 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
-import { MenuItem } from '../entities/menu-item.entity';
+import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemService } from '../services/menu-item.service';
 
 @Injectable()
-export class MenuItemValidator extends ValidatorBase<MenuItem> {
+export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
   constructor(
     @InjectRepository(MenuItem)
     private readonly repo: Repository<MenuItem>,
@@ -27,21 +28,20 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
     super(repo, 'MenuItem', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateMenuItemDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // exists
     if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-      this.addError(
-        this.buildValidationError(
-          'itemName',
-          'Menu item already exists.',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'itemName',
+        id,
+        'Menu item already exists.',
       );
+      results.push(err);
     }
 
     // Cannot assign both containerOptions and a definedContainer
@@ -50,15 +50,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       dto.definedContainerItemDtos &&
       dto.definedContainerItemDtos.length > 0
     ) {
-      this.addError(
-        this.buildValidationError(
-          'containerOptions',
-          'Cannot assign a container item as both a defined and dynamic.',
-          'INVALID',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'containerOptions',
+        id,
+        'Cannot assign a container item as both a defined and dynamic.',
       );
+      results.push(err);
     }
 
     if (
@@ -77,15 +74,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
             dto.validSizeIds,
           )
         ) {
-          this.addError(
-            this.buildValidationError(
-              'definedContainerItems',
-              'Invalid size assigned for container size of the contained item.',
-              'INVALID',
-              undefined,
-              createId,
-            ),
+          const err = new ValidationErrorNode(
+            'definedContainerItems',
+            id,
+            'Invalid size assigned for container size of the contained item.',
           );
+          results.push(err);
         }
       }
 
@@ -101,15 +95,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       );
       if (duplicateItems) {
         for (const duplicate of duplicateItems) {
-          this.addError(
-            this.buildValidationError(
-              'definedContainerItems',
-              'Dupliate item in defined container.',
-              'DUPLICATE',
-              undefined,
-              createId,
-            ),
+          const err = new ValidationErrorNode(
+            'definedContainerItems',
+            id, // NEED NESTED ID
+            'Dupliate item in defined container.',
           );
+          results.push(err);
         }
       }
     }
@@ -122,37 +113,34 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       );
       if (duplicateSizesIds) {
         for (const id of duplicateSizesIds) {
-          this.addError(
-            this.buildValidationError(
-              'validSizes',
-              'Duplicate sizes for menu item.',
-              'DUPLICATE',
-              undefined,
-              id.toString(),
-            ),
+          const err = new ValidationErrorNode(
+            'validSizes',
+            id, // NEED NESTED ID
+            'Duplicate sizes for menu item.',
           );
+          results.push(err);
         }
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateMenuItemDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Cannot change name to another existing item
     if (dto.itemName) {
       if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
-        this.addError(
-          this.buildValidationError(
-            'itemName',
-            'Menu item already exists.',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'itemName',
+          id,
+          'Menu item already exists.',
         );
+        results.push(err);
       }
     }
 
@@ -163,14 +151,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       dto.definedContainerItemDtos.length > 0
     ) {
       //return `Cannot create MenuItem with both containerOptions and definedContainerItems`;
-      this.addError(
-        this.buildValidationError(
-          'containerOptions',
-          'Cannot assign a container item as both a defined and dynamic.',
-          'INVALID',
-          id,
-        ),
+      const err = new ValidationErrorNode(
+        'containerOptions',
+        id,
+        'Cannot assign a container item as both a defined and dynamic.',
       );
+      results.push(err);
     }
 
     // containerOptions or definedContainer or neither
@@ -190,14 +176,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         currentItem?.containerOptions
       ) {
         if (dto.containerOptionDto !== null) {
-          this.addError(
-            this.buildValidationError(
-              'definedContainerItems',
-              'Cannot assign a container item to be defined while it is dynamic.',
-              'INVALID',
-              id,
-            ),
+          const err = new ValidationErrorNode(
+            'definedContainerItems',
+            id,
+            'Cannot assign a container item to be defined while it is dynamic.',
           );
+          results.push(err);
         }
       }
 
@@ -208,21 +192,20 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
         currentItem.definedContainerItems?.length > 0
       ) {
         if (dto.definedContainerItemDtos !== null) {
-          this.addError(
-            this.buildValidationError(
-              'containerOptions',
-              'Cannot assign a container item to be dynamic while it is defined.',
-              'INVALID',
-              id,
-            ),
+          const err = new ValidationErrorNode(
+            'containerOptions',
+            id,
+            'Cannot assign a container item to be dynamic while it is defined.',
           );
+          results.push(err);
         }
       }
     }
 
     if (
       dto.definedContainerItemDtos &&
-      dto.definedContainerItemDtos?.length > 0
+      dto.definedContainerItemDtos?.length > 0 &&
+      id
     ) {
       const resolvedItemDtos: {
         parentContainerSizeId: number;
@@ -270,14 +253,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       );
       if (duplicateItems) {
         for (const duplicate of duplicateItems) {
-          this.addError(
-            this.buildValidationError(
-              'definedContainerItems',
-              'Dupliate item in defined container.',
-              'DUPLICATE',
-              duplicate.containedMenuItemId,
-            ),
+          const err = new ValidationErrorNode(
+            'definedContainerItems',
+            id, // NESTED ID
+            'Dupliate item in defined container.',
           );
+          results.push(err);
         }
       }
     }
@@ -290,18 +271,16 @@ export class MenuItemValidator extends ValidatorBase<MenuItem> {
       );
       if (duplicateSizesIds) {
         for (const dupId of duplicateSizesIds) {
-          this.addError(
-            this.buildValidationError(
-              'definedContainerItems',
-              'Duplicate sizes for menu item',
-              'DUPLICATE',
-              dupId,
-            ),
+          const err = new ValidationErrorNode(
+            'definedContainerItems',
+            id, // NESTED ID
+            'Duplicate sizes for menu item',
           );
+          results.push(err);
         }
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

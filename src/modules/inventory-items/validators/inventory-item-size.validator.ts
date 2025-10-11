@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -26,18 +27,23 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     super(repo, 'InventoryItemSize', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateInventoryItemSizeDto,
-  ): Promise<void> {
-    this.throwIfErrors();
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateInventoryItemSizeDto,
-  ): Promise<void> {
-    if (dto.measureUnitId || dto.inventoryPackageId) {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
+    // Cant update a item size to a already existing combination of packageType and measure unit size.
+    if ((dto.measureUnitId || dto.inventoryPackageId) && id) {
       const currentSize = await this.sizeService.findOne(id, [
         'inventoryItem',
         'measureUnit',
@@ -54,16 +60,15 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       });
       if (exists) {
         const prop = dto.measureUnitId ? 'measureUnit' : 'packageType';
-        this.addError(
-          this.buildValidationError(
-            prop,
-            'Inventory item size already exists',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          prop,
+          id,
+          'Inventory item size already exists',
         );
+        results.push(err);
       }
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 }

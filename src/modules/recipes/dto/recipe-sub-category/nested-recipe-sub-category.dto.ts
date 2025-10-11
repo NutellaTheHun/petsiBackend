@@ -3,7 +3,10 @@ import { NestedDtoBase } from '../../../../base/nested-dto-base';
 import { CreateRecipeSubCategoryDto } from './create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from './update-recipe-sub-category.dto';
 
-export class NestedRecipeSubCategoryDto extends NestedDtoBase {
+export class NestedRecipeSubCategoryDto extends NestedDtoBase<
+  CreateRecipeSubCategoryDto,
+  UpdateRecipeSubCategoryDto
+> {
   @ApiPropertyOptional({
     description: 'Create dto of a RecipeSubCategory entity.',
     type: CreateRecipeSubCategoryDto,

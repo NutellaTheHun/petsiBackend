@@ -2,14 +2,18 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
-import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import {
+  MenuItemCategory,
+  MenuItemCategoryEntity,
+} from '../entities/menu-item-category.entity';
 
 @Injectable()
-export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
+export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEntity> {
   constructor(
     @InjectRepository(MenuItemCategory)
     private readonly repo: Repository<MenuItemCategory>,
@@ -19,44 +23,43 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategory> {
     super(repo, 'MenuItemCategory', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateMenuItemCategoryDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
-      this.addError(
-        this.buildValidationError(
-          'categoryName',
-          'Menu category name already exists.',
-          'EXIST',
-          undefined,
-          createId,
-        ),
+      const err = new ValidationErrorNode(
+        'categoryName',
+        id,
+        'Menu category name already exists.',
       );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateMenuItemCategoryDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.categoryName) {
       if (
         await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
       ) {
-        this.addError(
-          this.buildValidationError(
-            'categoryName',
-            'Menu category name already exists.',
-            'EXIST',
-            id,
-          ),
+        const err = new ValidationErrorNode(
+          'categoryName',
+          id,
+          'Menu category name already exists.',
         );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }
