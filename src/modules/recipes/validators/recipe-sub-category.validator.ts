@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -23,10 +23,12 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
     super(repo, 'RecipeSubCategory', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateRecipeSubCategoryDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (
       await this.helper.exists(
         this.repo,
@@ -34,23 +36,23 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
         dto.subCategoryName,
       )
     ) {
-      this.addError({
-        errorMessage:
-          'Recipe subcategory already exists. (name is in use accross all subcategories)',
-        errorType: 'EXIST',
-        contextEntity: 'CreateRecipeSubCategoryDto',
-        sourceEntity: 'RecipeSubCategory',
-        value: dto.subCategoryName,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'subCategoryName',
+        undefined,
+        'Recipe subcategory already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateRecipeSubCategoryDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.subCategoryName) {
       if (
         await this.helper.exists(
@@ -59,18 +61,15 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
           dto.subCategoryName,
         )
       ) {
-        this.addError({
-          errorMessage:
-            'Recipe subcategory already exists. (name is in use accross all subcategories)',
-          errorType: 'EXIST',
-          contextEntity: 'CreateRecipeSubCategoryDto',
-          contextId: id,
-          sourceEntity: 'RecipeSubCategory',
-          value: dto.subCategoryName,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'subCategoryName',
+          undefined,
+          'Recipe subcategory already exists.',
+        );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

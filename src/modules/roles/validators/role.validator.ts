@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';
@@ -20,34 +20,41 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
     super(repo, 'Role', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateRoleDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
-      this.addError({
-        errorMessage: 'Role already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateRoleDto',
-        value: dto.roleName,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'roleName',
+        undefined,
+        'Role with this name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(id: number, dto: UpdateRoleDto): Promise<void> {
+  protected async doValidateUpdateNode(
+    dto: UpdateRoleDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.roleName) {
       if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
-        this.addError({
-          errorMessage: 'Role already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateRoleDto',
-          contextId: id,
-          value: dto.roleName,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'roleName',
+          undefined,
+          'Role with this name already exists.',
+        );
+        results.push(err);
       }
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
@@ -23,50 +23,50 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     super(repo, 'UnitOfMeasure', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateUnitOfMeasureDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // name exists
     if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
-      this.addError({
-        errorMessage: 'Unit of measure with that name already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateUnitOfMeasureDto',
-        sourceEntity: 'UnitOfMeasure',
-        value: dto.unitName,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'name',
+        undefined,
+        'Unit of measure with this name already exists.',
+      );
+      results.push(err);
     }
 
     // abbreviation exists
     if (await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)) {
-      this.addError({
-        errorMessage: 'Unit of measure with that abbreviation already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateUnitOfMeasureDto',
-        sourceEntity: 'UnitOfMeasure',
-        value: dto.abbreviation,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'abbreviation',
+        undefined,
+        'abbreviation with this name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateUnitOfMeasureDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // name exists
     if (dto.unitName) {
       if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
-        this.addError({
-          errorMessage: 'Unit of measure with that name already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateUnitOfMeasureDto',
-          contextId: id,
-          sourceEntity: 'UnitOfMeasure',
-          value: dto.unitName,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'name',
+          undefined,
+          'Unit of measure with this name already exists.',
+        );
+        results.push(err);
       }
     }
 
@@ -75,18 +75,15 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       if (
         await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)
       ) {
-        this.addError({
-          errorMessage:
-            'Unit of measure with that abbreviation already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateUnitOfMeasureDto',
-          contextId: id,
-          sourceEntity: 'UnitOfMeasure',
-          value: dto.abbreviation,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'abbreviation',
+          undefined,
+          'abbreviation with this name already exists.',
+        );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
@@ -28,34 +28,24 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     super(repo, 'Recipe', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateRecipeDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Exists
     if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
-      this.addError({
-        errorMessage: 'Recipe already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateRecipeDto',
-        sourceEntity: 'Recipe',
-        value: dto.recipeName,
-      } as ValidationError);
-    }
-
-    // subcategory if category isnt assigned
-    if (!dto.categoryId && dto.subCategoryId) {
-      this.addError({
-        errorMessage: 'Cannot assign a subcategory without a category',
-        errorType: 'INVALID',
-        contextEntity: 'CreateRecipeDto',
-        sourceEntity: 'RecipeSubCategory',
-        sourceId: dto.subCategoryId,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'recipeName',
+        undefined,
+        'Recipe with this name already exists.',
+      );
+      results.push(err);
     }
 
     // Validate category / subcategory
-    else if (dto.categoryId && dto.subCategoryId) {
+    if (dto.categoryId && dto.subCategoryId) {
       const category = await this.categoryService.findOne(dto.categoryId, [
         'subCategories',
       ]);
@@ -64,68 +54,32 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       }
 
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
-        this.addError({
-          errorMessage: 'Invalid category / subcategory',
-          errorType: 'INVALID',
-          contextEntity: 'CreateRecipeDto',
-          sourceEntity: 'RecipeSubCategory',
-          sourceId: dto.subCategoryId,
-          conflictEntity: 'RecipeCategory',
-          conflictId: dto.categoryId,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'subCategory',
+          undefined,
+          'Invalid category / subcategory combination',
+        );
+        results.push(err);
       }
     }
 
-    //No duplicate recipeIngredients
-    if (dto.ingredientDtos) {
-      const nestedCreateDtos = dto.ingredientDtos
-        .map((nested) => nested.createDto)
-        .filter((nested) => nested !== undefined);
-
-      const resolvedDtos: string[] = [];
-      for (const d of nestedCreateDtos) {
-        if (d.ingredientInventoryItemId) {
-          resolvedDtos.push(`I:${d.ingredientInventoryItemId}`);
-        } else if (d.ingredientRecipeId) {
-          resolvedDtos.push(`R:${d.ingredientRecipeId}`);
-        }
-      }
-      const duplicateIngreds = this.helper.findDuplicates(
-        resolvedDtos,
-        (ingred) => `${ingred}`,
-      );
-      if (duplicateIngreds) {
-        for (const dup of duplicateIngreds) {
-          const [prefix, idStr] = dup.split(':');
-          const ingredId = parseInt(idStr, 10);
-          const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
-
-          this.addError({
-            errorMessage: 'Duplicate ingredients',
-            errorType: 'DUPLICATE',
-            contextEntity: 'CreateRecipeDto',
-            sourceEntity: entity,
-            sourceId: ingredId,
-          } as ValidationError);
-        }
-      }
-    }
-
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(id: number, dto: UpdateRecipeDto): Promise<void> {
-    // Exists
+  protected async doValidateUpdateNode(
+    dto: UpdateRecipeDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.recipeName) {
       if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
-        this.addError({
-          errorMessage: 'Recipe already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateRecipeDto',
-          contextId: id,
-          sourceEntity: 'Recipe',
-          value: dto.recipeName,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'recipeName',
+          undefined,
+          'Recipe with this name already exists.',
+        );
+        results.push(err);
       }
     }
 
@@ -138,129 +92,16 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new Error('subcategories is null');
       }
 
-      // category / subcategory
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
-        this.addError({
-          errorMessage: 'Invalid category / subcategory',
-          errorType: 'INVALID',
-          contextEntity: 'UpdateRecipeDto',
-          contextId: id,
-          sourceEntity: 'RecipeSubCategory',
-          sourceId: dto.subCategoryId,
-          conflictEntity: 'RecipeCategory',
-          conflictId: dto.categoryId,
-        } as ValidationError);
-      }
-    } else if (!dto.categoryId && dto.subCategoryId) {
-      const currentCategory = (
-        await this.recipeService.findOne(
-          id,
-          ['category'],
-          ['category.subCategories'],
-        )
-      ).category;
-
-      // null category / subcategory
-      if (!currentCategory) {
-        this.addError({
-          errorMessage:
-            'Cannot assign a subcategory without an assigned category',
-          errorType: 'INVALID',
-          contextEntity: 'UpdateRecipeDto',
-          contextId: id,
-          sourceEntity: 'RecipeSubCategory',
-          sourceId: dto.subCategoryId,
-        } as ValidationError);
-      }
-      // category / subcategory
-      else if (
-        !currentCategory.subCategories.find(
-          (cat) => cat.id === dto.subCategoryId,
-        )
-      ) {
-        this.addError({
-          errorMessage: 'Invalid category / subcategory',
-          errorType: 'INVALID',
-          contextEntity: 'UpdateRecipeDto',
-          contextId: id,
-          sourceEntity: 'RecipeSubCategory',
-          sourceId: dto.subCategoryId,
-          conflictEntity: 'RecipeCategory',
-          conflictId: currentCategory.id,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'subCategory',
+          undefined,
+          'Invalid category / subcategory combination',
+        );
+        results.push(err);
       }
     }
 
-    if (dto.ingredientDtos) {
-      // resolve
-      const resolvedDtos: string[] = [];
-      const resolvedIds: number[] = [];
-      for (const nested of dto.ingredientDtos) {
-        if (nested.createDto) {
-          if (nested.createDto.ingredientInventoryItemId) {
-            resolvedDtos.push(
-              `I:${nested.createDto.ingredientInventoryItemId}`,
-            );
-          }
-          if (nested.createDto.ingredientRecipeId) {
-            resolvedDtos.push(`R:${nested.createDto.ingredientRecipeId}`);
-          }
-        } else if (nested.updateDto && nested.id) {
-          if (nested.updateDto.ingredientInventoryItemId) {
-            resolvedDtos.push(
-              `I:${nested.updateDto.ingredientInventoryItemId}`,
-            );
-          }
-          if (nested.updateDto.ingredientRecipeId) {
-            resolvedDtos.push(`R:${nested.updateDto.ingredientRecipeId}`);
-          }
-          resolvedIds.push(nested.id);
-        } else {
-          throw new Error();
-        }
-      }
-
-      // No duplicate recipeIngredients
-      const duplicateIngreds = this.helper.findDuplicates(
-        resolvedDtos,
-        (ingred) => `${ingred}`,
-      );
-      if (duplicateIngreds) {
-        for (const dup of duplicateIngreds) {
-          const [prefix, idStr] = dup.split(':');
-          const ingredId = parseInt(idStr, 10);
-          const entity = prefix === 'I' ? 'InventoryItem' : 'Recipe';
-
-          this.addError({
-            errorMessage: 'Duplicate ingredients',
-            errorType: 'DUPLICATE',
-            contextEntity: 'UpdateRecipeDto',
-            contextId: id,
-            sourceEntity: entity,
-            sourceId: ingredId,
-          } as ValidationError);
-        }
-      }
-
-      // No duplicate ingredient updates
-      const duplicateIds = this.helper.findDuplicates(
-        resolvedIds,
-        (id) => `${id}`,
-      );
-      if (duplicateIds) {
-        for (const dupId of duplicateIds) {
-          this.addError({
-            errorMessage: 'Multiple update requests for the same ingredient',
-            errorType: 'DUPLICATE',
-            contextEntity: 'UpdateRecipeDto',
-            contextId: id,
-            sourceEntity: 'RecipeIngredient',
-            sourceId: dupId,
-          } as ValidationError);
-        }
-      }
-    }
-
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

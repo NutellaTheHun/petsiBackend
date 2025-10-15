@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
@@ -27,125 +27,45 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     super(repo, 'RecipeCategory', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateRecipeCategoryDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // Exists
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
-      this.addError({
-        errorMessage: 'Recipe category already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateRecipeCategoryDto',
-        sourceEntity: 'RecipeCategory',
-        value: dto.categoryName,
-      } as ValidationError);
-    }
-
-    // Check for subcategories with duplicate names
-    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
-      const nestedCreates = dto.subCategoryDtos
-        .map((nested) => nested.createDto)
-        .filter((nested) => nested !== undefined);
-
-      if (!nestedCreates) {
-        throw new Error();
-      }
-      const duplicateSubCats = this.helper.findDuplicates(
-        nestedCreates,
-        (item) => `${item.subCategoryName}`,
+      const err = new ValidationErrorNode(
+        'categoryName',
+        undefined,
+        'Recipe category already exists.',
       );
-      if (duplicateSubCats) {
-        for (const dup of duplicateSubCats) {
-          this.addError({
-            errorMessage: 'Duplicate sub category.',
-            errorType: 'DUPLICATE',
-            contextEntity: 'CreateRecipeCategoryDto',
-            sourceEntity: 'RecipeSubCategory',
-            value: dup.subCategoryName,
-          } as ValidationError);
-        }
-      }
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateRecipeCategoryDto,
-  ): Promise<void> {
-    // Exists
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.categoryName) {
+      // Exists
       if (
         await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
       ) {
-        this.addError({
-          errorMessage: 'Recipe category already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateRecipeCategoryDto',
-          contextId: id,
-          sourceEntity: 'RecipeCategory',
-          value: dto.categoryName,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'categoryName',
+          undefined,
+          'Recipe category already exists.',
+        );
+        results.push(err);
       }
     }
 
-    /*if (dto.subCategoryDtos) {
-            // resolve
-            const resolvedNames: string[] = [];
-            const resolvedIds: number[] = [];
-            for (const d of dto.subCategoryDtos) {
-                if (d.mode === 'create') {
-                    resolvedNames.push(d.subCategoryName);
-                }
-                else if (d.mode === 'update') {
-                    let subCatName = d.subCategoryName;
-                    if (!subCatName) {
-                        subCatName = (await this.subCategoryService.findOne(d.id)).subCategoryName
-                    }
-                    resolvedNames.push(subCatName);
-                    resolvedIds.push(d.id);
-                }
-            }
-
-            // duplicate subcategories
-            const duplicateSubCats = this.helper.findDuplicates(
-                resolvedNames,
-                (name) => `${name}`
-            );
-            if (duplicateSubCats) {
-                for (const dup of duplicateSubCats) {
-                    this.addError({
-                        errorMessage: 'Duplicate subcategory.',
-                        errorType: 'DUPLICATE',
-                        contextEntity: 'UpdateRecipeCategoryDto',
-                        contextId: id,
-                        sourceEntity: 'RecipeSubCategory',
-                        value: dup,
-                    } as ValidationError);
-                }
-            }
-
-            // duplicate subcategory update dtos
-            const duplicateIds = this.helper.findDuplicates(
-                resolvedIds,
-                (id) => `${id}`
-            );
-            if (duplicateIds) {
-                for (const dup of duplicateIds) {
-                    this.addError({
-                        errorMessage: 'Multiple update requests for sub category',
-                        errorType: 'DUPLICATE',
-                        contextEntity: 'UpdateRecipeCategoryDto',
-                        contextId: id,
-                        sourceEntity: 'UpdateRecipeSubCategoryDto',
-                        sourceId: dup,
-                    } as ValidationError);
-                }
-            }
-        }*/
-
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

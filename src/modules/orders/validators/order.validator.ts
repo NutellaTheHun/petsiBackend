@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
@@ -24,38 +24,19 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     super(repo, 'Order', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateOrderDto,
-  ): Promise<void> {
-    if (dto.orderedMenuItemDtos.length === 0) {
-      this.addError({
-        errorMessage: 'Order has no items',
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderDto',
-      } as ValidationError);
-    }
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
 
-    const nestedCreates = dto.orderedMenuItemDtos
-      .map((nested) => nested.createDto)
-      .filter((nested) => nested !== undefined);
-    // Validate no duplicate OrderMenuItems
-    const duplicateItems = this.helper.findDuplicates(
-      nestedCreates,
-      (item) => `${item.menuItemId}:${item.menuItemSizeId}`,
-    );
-    if (duplicateItems) {
-      for (const duplicate of duplicateItems) {
-        this.addError({
-          errorMessage: 'duplicate ordered item',
-          errorType: 'DUPLICATE',
-          contextEntity: 'CreateOrderDto',
-          sourceEntity: 'OrderMenuItem',
-          sourceId: duplicate.menuItemId,
-          conflictEntity: 'MenuItemSize',
-          conflictId: duplicate.menuItemSizeId,
-        } as ValidationError);
-      }
+    if (dto.orderedMenuItemDtos.length === 0) {
+      const err = new ValidationErrorNode(
+        'orderedItems',
+        undefined,
+        'Order has no items',
+      );
+      results.push(err);
     }
 
     // valid day of the week value
@@ -69,105 +50,33 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'saturday',
     ];
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
-      this.addError({
-        errorMessage: `Invalid weeklyFulfillment value`,
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderDto',
-        conflictEntity: 'Order',
-        value: dto.weeklyFulfillment,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'weeklyFulfillment',
+        undefined,
+        'Invalid weeklyFulfillment value',
+      );
+      results.push(err);
     }
 
     //valid fulfillment type value
     const validFulfillmentType = ['pickup', 'delivery'];
     if (!validFulfillmentType.includes(dto.fulfillmentType)) {
-      this.addError({
-        errorMessage: `Invalid fulfillmentType value`,
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderDto',
-        conflictEntity: 'Order',
-        value: dto.fulfillmentType,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'fulfillmentType',
+        undefined,
+        'Invalid fulfillmentType value',
+      );
+      results.push(err);
     }
-    this.throwIfErrors();
+
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(id: number, dto: UpdateOrderDto): Promise<void> {
-    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length === 0) {
-      this.addError({
-        errorMessage: 'Order has no items',
-        errorType: 'INVALID',
-        contextEntity: 'UpdateOrderDto',
-        contextId: id,
-      } as ValidationError);
-    }
-
-    // Validate ordered items
-    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length > 0) {
-      // resolve
-      const resolvedDtos: { menuItemId: number; menuItemSizeId: number }[] = [];
-      const updateIds: number[] = [];
-      for (const d of dto.orderedMenuItemDtos) {
-        if (d.createDto) {
-          resolvedDtos.push({
-            menuItemId: d.createDto.menuItemId,
-            menuItemSizeId: d.createDto.menuItemSizeId,
-          });
-        }
-
-        if (d.updateDto && d.id) {
-          const currentItem = await this.itemService.findOne(d.id, [
-            'menuItem',
-            'size',
-          ]);
-
-          resolvedDtos.push({
-            menuItemId: d.updateDto.menuItemId ?? currentItem.menuItem.id,
-            menuItemSizeId: d.updateDto.menuItemSizeId ?? currentItem.size.id,
-          });
-
-          updateIds.push(d.id);
-        }
-      }
-
-      // Check resolved dtos for duplicate
-      const duplicateItems = this.helper.findDuplicates(
-        resolvedDtos,
-        (item) => `${item.menuItemId}:${item.menuItemSizeId}`,
-      );
-      if (duplicateItems) {
-        for (const duplicate of duplicateItems) {
-          this.addError({
-            errorMessage: 'duplicate ordered item',
-            errorType: 'DUPLICATE',
-            contextEntity: 'UpdateOrderDto',
-            contextId: id,
-            sourceEntity: 'OrderMenuItem',
-            sourceId: duplicate.menuItemId,
-            conflictEntity: 'MenuItemSize',
-            conflictId: duplicate.menuItemSizeId,
-          } as ValidationError);
-        }
-      }
-
-      //Check duplicate updates
-      const duplicateIds = this.helper.findDuplicates(
-        updateIds,
-        (updateId) => `${updateId}`,
-      );
-      if (duplicateIds) {
-        for (const updateId of duplicateIds) {
-          this.addError({
-            errorMessage: 'multiple update requests for the same ordered item',
-            errorType: 'INVALID',
-            contextEntity: 'UpdateOrderDto',
-            contextId: id,
-            sourceEntity: 'OrderMenuItem',
-            sourceId: updateId,
-          } as ValidationError);
-        }
-      }
-    }
+  protected async doValidateUpdateNode(
+    dto: UpdateOrderDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
 
     // valididate weeklyFulfillment
     const validDays = [
@@ -180,14 +89,12 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'saturday',
     ];
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
-      this.addError({
-        errorMessage: `Invalid weeklyFulfillment value`,
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderDto',
-        contextId: id,
-        conflictEntity: 'Order',
-        value: dto.weeklyFulfillment,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'weeklyFulfillment',
+        undefined,
+        'Invalid weeklyFulfillment value',
+      );
+      results.push(err);
     }
 
     // validate fulfillmentType
@@ -196,16 +103,14 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       dto.fulfillmentType &&
       !validFulfillmentType.includes(dto.fulfillmentType)
     ) {
-      this.addError({
-        errorMessage: `Invalid fulfillmentType value`,
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderDto',
-        contextId: id,
-        conflictEntity: 'Order',
-        value: dto.fulfillmentType,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'fulfillmentType',
+        undefined,
+        'Invalid fulfillmentType value',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

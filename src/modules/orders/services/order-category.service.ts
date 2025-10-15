@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderCategoryBuilder } from '../builders/order-category.builder';
-import { OrderCategory } from '../entities/order-category.entity';
+import {
+  OrderCategory,
+  OrderCategoryEntity,
+} from '../entities/order-category.entity';
 import { OrderCategoryValidator } from '../validators/order-category.validator';
 
 @Injectable()
-export class OrderCategoryService extends ServiceBase<OrderCategory> {
+export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
   constructor(
     @InjectRepository(OrderCategory)
     private readonly repo: Repository<OrderCategory>,

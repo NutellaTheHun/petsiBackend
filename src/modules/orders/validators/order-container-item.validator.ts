@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemContainerOptions } from '../../menu-items/entities/menu-item-container-options.entity';
 import { MenuItemContainerRule } from '../../menu-items/entities/menu-item-container-rule.entity';
@@ -40,10 +40,12 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     super(repo, 'OrderContainerItem', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateOrderContainerItemDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // validate item / size
     const containedItem = await this.itemService.findOne(
       dto.containedMenuItemId,
@@ -58,15 +60,12 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         containedItem.validSizes,
       )
     ) {
-      this.addError({
-        errorMessage: 'Invalid size for contained item.',
-        errorType: 'INVALID',
-        contextEntity: 'CreateOrderContainerItemDto',
-        sourceEntity: 'MenuItemSize',
-        sourceId: dto.containedMenuItemSizeId,
-        conflictEntity: 'MenuItem',
-        conflictId: containedItem.id,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'containedItemSize',
+        undefined,
+        'Invalid size for contained item.',
+      );
+      results.push(err);
     }
 
     // validate rule item / size
@@ -84,51 +83,47 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         if (
           !this.helper.isValidSize(dto.containedMenuItemSizeId, rule.validSizes)
         ) {
-          this.addError({
-            errorMessage: 'Invalid item size for container.',
-            errorType: 'INVALID',
-            contextEntity: 'CreateOrderContainerItemDto',
-            sourceEntity: 'MenuItemSize',
-            sourceId: dto.containedMenuItemSizeId,
-            conflictEntity: 'MenuItemContainerRule',
-            conflictId: rule.id,
-          } as ValidationError);
+          const err = new ValidationErrorNode(
+            'containedItemSize',
+            undefined,
+            'Invalid item size for container.',
+          );
+          results.push(err);
         }
       } else {
-        this.addError({
-          errorMessage: 'Invalid item for container.',
-          errorType: 'INVALID',
-          contextEntity: 'CreateOrderContainerItemDto',
-          sourceEntity: 'MenuItem',
-          sourceId: dto.containedMenuItemId,
-          conflictEntity: 'MenuItem',
-          conflictId: dto.parentContainerMenuItemId,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'containedItemSize',
+          undefined,
+          'Invalid item for container.',
+        );
+        results.push(err);
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateOrderContainerItemDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // requires ParentContainer id to validate contained item or size
     if (
       (dto.containedMenuItemId || dto.containedMenuItemSizeId) &&
       !dto.parentContainerMenuItemId
     ) {
-      this.addError({
-        errorMessage: 'Missing parent container item id.',
-        errorType: 'INVALID',
-        contextEntity: 'UpdateOrderContainerItemDto',
-        contextId: id,
-        sourceEntity: 'MenuItem',
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'parentOrderItem',
+        undefined,
+        'Missing parent container item id.',
+      );
+      results.push(err);
     }
 
     if (
+      id &&
       (dto.containedMenuItemId || dto.containedMenuItemSizeId) &&
       dto.parentContainerMenuItemId
     ) {
@@ -155,16 +150,12 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
       // validate item / size
       if (!this.helper.isValidSize(sizeId, containedItem.validSizes)) {
-        this.addError({
-          errorMessage: 'Invalid size for item.',
-          errorType: 'INVALID',
-          contextEntity: 'UpdateOrderContainerItemDto',
-          contextId: id,
-          sourceEntity: 'MenuItemSize',
-          sourceId: sizeId,
-          conflictEntity: 'MenuItem',
-          conflictId: containedItem.id,
-        } as ValidationError);
+        const err = new ValidationErrorNode(
+          'containedItemSize',
+          undefined,
+          'Invalid size for item.',
+        );
+        results.push(err);
       }
 
       // If dynamic container
@@ -177,16 +168,12 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         // validate rule / item
         // (implied dto.containedMenuItemId for rule to be null)
         if (!rule) {
-          this.addError({
-            errorMessage: 'Invalid item for container.',
-            errorType: 'INVALID',
-            contextEntity: 'UpdateOrderContainerItemDto',
-            contextId: id,
-            sourceEntity: 'MenuItem',
-            sourceId: dto.containedMenuItemId,
-            conflictEntity: 'MenuItem',
-            conflictId: dto.parentContainerMenuItemId,
-          } as ValidationError);
+          const err = new ValidationErrorNode(
+            'containedItem',
+            undefined,
+            'Invalid item for container.',
+          );
+          results.push(err);
         } else {
           // validate rule / size
           if (dto.containedMenuItemSizeId) {
@@ -196,23 +183,19 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
                 rule.validSizes,
               )
             ) {
-              this.addError({
-                errorMessage: 'Invalid size for container.',
-                errorType: 'INVALID',
-                contextEntity: 'UpdateOrderContainerItemDto',
-                contextId: id,
-                sourceEntity: 'MenuItemSize',
-                sourceId: dto.containedMenuItemSizeId,
-                conflictEntity: 'MenuItem',
-                conflictId: dto.parentContainerMenuItemId,
-              } as ValidationError);
+              const err = new ValidationErrorNode(
+                'containedItemSize',
+                undefined,
+                'Invalid size for container.',
+              );
+              results.push(err);
             }
           }
         }
       }
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
   private async getContainerOptions(

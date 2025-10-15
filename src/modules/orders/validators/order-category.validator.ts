@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
@@ -23,42 +23,39 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
     super(repo, 'OrderCategory', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateOrderCategoryDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
-      this.addError({
-        errorMessage: 'Order category already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateOrderCategoryDto',
-        sourceEntity: 'OrderCategory',
-        value: dto.categoryName,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'OrderCategory',
+        undefined,
+        'Order category with that name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(
-    id: number,
+  protected async doValidateUpdateNode(
     dto: UpdateOrderCategoryDto,
-  ): Promise<void> {
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.categoryName) {
-      if (
-        await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
-      ) {
-        this.addError({
-          errorMessage: 'Order category already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateOrderCategoryDto',
-          contextId: id,
-          sourceEntity: 'OrderCategory',
-          value: dto.categoryName,
-        } as ValidationError);
-      }
+      const err = new ValidationErrorNode(
+        'OrderCategory',
+        undefined,
+        'Order category with that name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

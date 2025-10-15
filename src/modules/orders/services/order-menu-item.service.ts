@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderMenuItemBuilder } from '../builders/order-menu-item.builder';
-import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import {
+  OrderMenuItem,
+  OrderMenuItemEntity,
+} from '../entities/order-menu-item.entity';
 import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
 
 @Injectable()
-export class OrderMenuItemService extends ServiceBase<OrderMenuItem> {
+export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
   constructor(
     @InjectRepository(OrderMenuItem)
     repo: Repository<OrderMenuItem>,

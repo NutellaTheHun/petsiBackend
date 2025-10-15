@@ -5,11 +5,14 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderContainerItemBuilder } from '../builders/order-container-item.builder';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
+import {
+  OrderContainerItem,
+  OrderContainerItemEntity,
+} from '../entities/order-container-item.entity';
 import { OrderContainerItemValidator } from '../validators/order-container-item.validator';
 
 @Injectable()
-export class OrderContainerItemService extends ServiceBase<OrderContainerItem> {
+export class OrderContainerItemService extends ServiceBase<OrderContainerItemEntity> {
   constructor(
     @InjectRepository(OrderContainerItem)
     repo: Repository<OrderContainerItem>,

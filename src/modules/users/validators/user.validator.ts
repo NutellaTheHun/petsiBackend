@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationError } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUserDto } from '../dto/create-user.dto';
@@ -20,39 +20,40 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     super(repo, 'User', requestContextService, logger);
   }
 
-  public async validateCreate(
-    createId: string,
+  protected async doValidateCreateNode(
     dto: CreateUserDto,
-  ): Promise<void> {
+    id?: string,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     // username exists
     if (await this.helper.exists(this.repo, 'username', dto.username)) {
-      this.addError({
-        errorMessage: 'username name already exists.',
-        errorType: 'EXIST',
-        contextEntity: 'CreateUserDto',
-        sourceEntity: 'User',
-        value: dto.username,
-      } as ValidationError);
+      const err = new ValidationErrorNode(
+        'username',
+        undefined,
+        'username name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 
-  public async validateUpdate(id: number, dto: UpdateUserDto): Promise<void> {
-    // username exists
+  protected async doValidateUpdateNode(
+    dto: UpdateUserDto,
+    id?: number,
+  ): Promise<ValidationErrorNode[] | null> {
+    const results: ValidationErrorNode[] = [];
+
     if (dto.username) {
-      if (await this.helper.exists(this.repo, 'username', dto.username)) {
-        this.addError({
-          errorMessage: 'username name already exists.',
-          errorType: 'EXIST',
-          contextEntity: 'UpdateUserDto',
-          contextId: id,
-          sourceEntity: 'User',
-          value: dto.username,
-        } as ValidationError);
-      }
+      const err = new ValidationErrorNode(
+        'username',
+        undefined,
+        'username name already exists.',
+      );
+      results.push(err);
     }
 
-    this.throwIfErrors();
+    return this.checkValidateResult(results);
   }
 }

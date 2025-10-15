@@ -9,14 +9,14 @@ import {
 } from 'typeorm';
 import { EntityBase } from '../../../base/entity-base';
 import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
-import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
-import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
+import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
+import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasure } from './unit-of-measure.entity';
 
 export type UnitOfMeasureCategoryEntity = EntityBase<
   UnitOfMeasureCategory,
-  CreateUnitOfMeasureDto,
-  UpdateUnitOfMeasureDto
+  CreateUnitOfMeasureCategoryDto,
+  UpdateUnitOfMeasureCategoryDto
 >;
 
 /**
