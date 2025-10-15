@@ -35,7 +35,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
     if (exists) {
       const err = new ValidationErrorNode(
         'labelType',
-        id,
+        undefined,
         'Label type already exists for this item.',
       );
       results.push(err);
@@ -71,7 +71,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
       if (exists) {
         const err = new ValidationErrorNode(
           'labelType',
-          id,
+          undefined,
           'Label type already exists for this item.',
         );
         results.push(err);

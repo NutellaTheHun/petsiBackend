@@ -54,26 +54,6 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
     // inventoryAreaItemCount entity
     if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
-      // Check for duplicate DTOs on the same entity
-      const ids: number[] = [];
-      for (const d of dto.itemCountDtos) {
-        if (d.updateDto && d.id) {
-          ids.push(d.id);
-        }
-      }
-      const duplicateIds = this.helper.findDuplicates(ids, (id) => `${id}`);
-      if (duplicateIds.length > 0) {
-        duplicateIds.map((dupId) =>
-          results.push(
-            new ValidationErrorNode(
-              'countedItems',
-              dupId,
-              'duplicate update requests for counted inventory item.',
-            ),
-          ),
-        );
-      }
-
       // Validate each InvAreaItemCountDto
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',

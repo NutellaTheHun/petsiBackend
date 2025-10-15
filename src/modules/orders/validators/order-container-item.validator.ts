@@ -92,7 +92,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         }
       } else {
         const err = new ValidationErrorNode(
-          'containedItemSize',
+          'containedItem',
           undefined,
           'Invalid item for container.',
         );

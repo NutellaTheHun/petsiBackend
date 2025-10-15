@@ -9,6 +9,7 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderMenuItemValidator } from './order-menu-item.validator';
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<OrderEntity> {
@@ -20,6 +21,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     private readonly itemService: OrderMenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly orderItemValidator: OrderMenuItemValidator,
   ) {
     super(repo, 'Order', requestContextService, logger);
   }
@@ -69,6 +71,14 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       results.push(err);
     }
 
+    const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
+      'orderedItems',
+      dto.orderedMenuItemDtos,
+    );
+    if (nestedDtoErrs) {
+      results.push(nestedDtoErrs);
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -109,6 +119,17 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
         'Invalid fulfillmentType value',
       );
       results.push(err);
+    }
+
+    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length > 0) {
+      const nestedDtoErrs =
+        await this.orderItemValidator.validateManyNestedNode(
+          'orderedItems',
+          dto.orderedMenuItemDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
+      }
     }
 
     return this.checkValidateResult(results);

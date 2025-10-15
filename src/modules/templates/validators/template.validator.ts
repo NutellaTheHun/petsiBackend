@@ -9,6 +9,7 @@ import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
+import { TemplateMenuItemValidator } from './template-menu-item.validator';
 
 @Injectable()
 export class TemplateValidator extends ValidatorBase<TemplateEntity> {
@@ -20,6 +21,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
     private readonly itemService: TemplateMenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly templateItemValidator: TemplateMenuItemValidator,
   ) {
     super(repo, 'Template', requestContextService, logger);
   }
@@ -37,6 +39,17 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
         'Template with this name already exists.',
       );
       results.push(err);
+    }
+
+    if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
+      const nestedDtoErrs =
+        await this.templateItemValidator.validateManyNestedNode(
+          'templateItems',
+          dto.templateItemDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
+      }
     }
 
     return this.checkValidateResult(results);
@@ -58,6 +71,17 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
           'Template with this name already exists.',
         );
         results.push(err);
+      }
+    }
+
+    if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
+      const nestedDtoErrs =
+        await this.templateItemValidator.validateManyNestedNode(
+          'templateItems',
+          dto.templateItemDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
       }
     }
 

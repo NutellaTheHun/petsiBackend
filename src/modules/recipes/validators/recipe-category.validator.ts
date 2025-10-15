@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -11,7 +11,7 @@ import {
   RecipeCategory,
   RecipeCategoryEntity,
 } from '../entities/recipe-category.entity';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
+import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
 
 @Injectable()
 export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity> {
@@ -19,10 +19,9 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     @InjectRepository(RecipeCategory)
     private readonly repo: Repository<RecipeCategory>,
 
-    @Inject(forwardRef(() => RecipeSubCategoryService))
-    private readonly subCategoryService: RecipeSubCategoryService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly subCategoryValidator: RecipeSubCategoryValidator,
   ) {
     super(repo, 'RecipeCategory', requestContextService, logger);
   }
@@ -41,6 +40,17 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
         'Recipe category already exists.',
       );
       results.push(err);
+    }
+
+    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
+      const nestedDtoErrs =
+        await this.subCategoryValidator.validateManyNestedNode(
+          'subCategories',
+          dto.subCategoryDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
+      }
     }
 
     return this.checkValidateResult(results);
@@ -63,6 +73,17 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
           'Recipe category already exists.',
         );
         results.push(err);
+      }
+    }
+
+    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
+      const nestedDtoErrs =
+        await this.subCategoryValidator.validateManyNestedNode(
+          'subCategories',
+          dto.subCategoryDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
       }
     }
 

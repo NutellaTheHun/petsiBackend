@@ -37,7 +37,6 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
       );
       results.push(err);
     }
-
     return this.checkValidateResult(results);
   }
 

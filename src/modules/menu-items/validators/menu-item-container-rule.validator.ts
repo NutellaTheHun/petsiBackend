@@ -37,7 +37,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     if (dto.validSizeIds.length === 0) {
       const err = new ValidationErrorNode(
         'validItem',
-        id,
+        undefined,
         'Menu item container setting has no sizes selected.',
       );
       results.push(err);
@@ -55,7 +55,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
       if (!this.helper.isValidSize(scarySizeId, item.validSizes)) {
         const err = new ValidationErrorNode(
           'validSizes',
-          id,
+          scarySizeId,
           'Invalid size for item.',
         );
         results.push(err);
@@ -75,14 +75,17 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     if (dto.validSizeIds && dto.validSizeIds.length === 0) {
       const err = new ValidationErrorNode(
         'validItem',
-        id,
+        undefined,
         'Menu item container setting has no sizes selected.',
       );
       results.push(err);
     }
 
     // validate sizes
-    if (dto.validMenuItemId || dto.validSizeIds) {
+    if (
+      dto.validMenuItemId ||
+      (dto.validSizeIds && dto.validSizeIds.length > 0)
+    ) {
       const currentRule = await this.repo.findOne({
         where: { id },
         relations: ['validItem', 'validSizes'],
@@ -104,7 +107,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         if (!this.helper.isValidSize(scarySize, item.validSizes)) {
           const err = new ValidationErrorNode(
             'validSizes',
-            id,
+            scarySize,
             'Invalid size for item.',
           );
           results.push(err);

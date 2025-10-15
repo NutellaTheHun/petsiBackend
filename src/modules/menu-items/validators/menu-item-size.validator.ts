@@ -33,7 +33,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
     if (await this.helper.exists(this.repo, 'name', dto.sizeName)) {
       const err = new ValidationErrorNode(
         'name',
-        id,
+        undefined,
         'Menu item size already exists.',
       );
       results.push(err);
@@ -52,7 +52,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
       if (await this.helper.exists(this.repo, 'name', dto.sizeName)) {
         const err = new ValidationErrorNode(
           'name',
-          id,
+          undefined,
           'Menu item size already exists.',
         );
         results.push(err);

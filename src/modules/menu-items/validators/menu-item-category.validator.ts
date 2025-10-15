@@ -32,7 +32,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       const err = new ValidationErrorNode(
         'categoryName',
-        id,
+        undefined,
         'Menu category name already exists.',
       );
       results.push(err);
@@ -53,7 +53,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
       ) {
         const err = new ValidationErrorNode(
           'categoryName',
-          id,
+          undefined,
           'Menu category name already exists.',
         );
         results.push(err);

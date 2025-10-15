@@ -15,6 +15,7 @@ import {
 } from '../entities/order-menu-item.entity';
 import { OrderContainerItemService } from '../services/order-container-item.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderContainerItemValidator } from './order-container-item.validator';
 
 @Injectable()
 export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
@@ -32,6 +33,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
     private readonly sizeService: MenuItemSizeService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+    private readonly orderContainerItemValidator: OrderContainerItemValidator,
   ) {
     super(repo, 'OrderMenuItem', requestContextService, logger);
   }
@@ -63,23 +65,13 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       dto.orderedItemContainerDtos &&
       dto.orderedItemContainerDtos.length > 0
     ) {
-      const nestedCreates = dto.orderedItemContainerDtos
-        .map((nested) => nested.createDto)
-        .filter((nested) => nested !== undefined);
-      // validate container item / size
-      const duplicateItems = this.helper.findDuplicates(
-        nestedCreates,
-        (item) => `${item.containedMenuItemId}:${item.containedMenuItemSizeId}`,
-      );
-      if (duplicateItems) {
-        for (const duplicate of duplicateItems) {
-          const err = new ValidationErrorNode(
-            'orderedContainerItems',
-            undefined, // NESTED ID NEEDED
-            'Order has duplicate items.',
-          );
-          results.push(err);
-        }
+      const nestedDtoErrs =
+        await this.orderContainerItemValidator.validateManyNestedNode(
+          'orderedContainerItems',
+          dto.orderedItemContainerDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
       }
     }
 
@@ -116,6 +108,20 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
           'Invalid item size.',
         );
         results.push(err);
+      }
+    }
+
+    if (
+      dto.orderedItemContainerDtos &&
+      dto.orderedItemContainerDtos.length > 0
+    ) {
+      const nestedDtoErrs =
+        await this.orderContainerItemValidator.validateManyNestedNode(
+          'orderedContainerItems',
+          dto.orderedItemContainerDtos,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
       }
     }
 
