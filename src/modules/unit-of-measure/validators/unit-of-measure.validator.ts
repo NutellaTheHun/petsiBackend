@@ -33,7 +33,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
       const err = new ValidationErrorNode(
         'name',
-        undefined,
+        id,
         'Unit of measure with this name already exists.',
       );
       results.push(err);
@@ -43,7 +43,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     if (await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)) {
       const err = new ValidationErrorNode(
         'abbreviation',
-        undefined,
+        id,
         'abbreviation with this name already exists.',
       );
       results.push(err);
@@ -63,7 +63,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
         const err = new ValidationErrorNode(
           'name',
-          undefined,
+          id,
           'Unit of measure with this name already exists.',
         );
         results.push(err);
@@ -77,7 +77,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       ) {
         const err = new ValidationErrorNode(
           'abbreviation',
-          undefined,
+          id,
           'abbreviation with this name already exists.',
         );
         results.push(err);

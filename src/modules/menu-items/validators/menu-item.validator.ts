@@ -42,7 +42,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
       const err = new ValidationErrorNode(
         'itemName',
-        undefined,
+        id,
         'Menu item already exists.',
       );
       results.push(err);
@@ -87,7 +87,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
         const err = new ValidationErrorNode(
           'itemName',
-          undefined,
+          id,
           'Menu item already exists.',
         );
         results.push(err);

@@ -49,7 +49,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     ) {
       const err = new ValidationErrorNode(
         'containedItemSize',
-        undefined,
+        id,
         'Invalid size',
       );
       results.push(err);
@@ -85,7 +85,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
         const err = new ValidationErrorNode(
           'containedItemSize',
-          undefined,
+          id,
           'Invalid size',
         );
         results.push(err);

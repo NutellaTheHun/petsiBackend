@@ -38,7 +38,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
       const err = new ValidationErrorNode(
         'recipeName',
-        undefined,
+        id,
         'Recipe with this name already exists.',
       );
       results.push(err);
@@ -56,7 +56,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
-          undefined,
+          id,
           'Invalid category / subcategory combination',
         );
         results.push(err);
@@ -76,7 +76,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
         const err = new ValidationErrorNode(
           'recipeName',
-          undefined,
+          id,
           'Recipe with this name already exists.',
         );
         results.push(err);
@@ -95,7 +95,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
-          undefined,
+          id,
           'Invalid category / subcategory combination',
         );
         results.push(err);

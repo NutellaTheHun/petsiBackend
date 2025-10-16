@@ -42,7 +42,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     if (!dto.countedItemSizeId && !dto.countedItemSizeDto) {
       const err = new ValidationErrorNode(
         'countedItemSize',
-        undefined,
+        createId,
         'Missing inventory item size assignment',
       );
       results.push(err);
@@ -56,7 +56,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       if (!this.helper.isValidSize(dto.countedItemSizeId, item.itemSizes)) {
         const err = new ValidationErrorNode(
           'countedItemSize',
-          undefined,
+          createId,
           'Size is not valid for this item.',
         );
         results.push(err);
@@ -90,7 +90,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     ) {
       const err = new ValidationErrorNode(
         'countedItemSize',
-        undefined,
+        id,
         'missing inventory item size assignment',
       );
       results.push(err);
@@ -117,7 +117,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
         const err = new ValidationErrorNode(
           'countedItemSize',
-          undefined,
+          id,
           'Invalid size for inventory item',
         );
         results.push(err);

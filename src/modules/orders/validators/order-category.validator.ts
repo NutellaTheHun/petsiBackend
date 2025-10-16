@@ -32,7 +32,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       const err = new ValidationErrorNode(
         'OrderCategory',
-        undefined,
+        id,
         'Order category with that name already exists.',
       );
       results.push(err);
@@ -50,7 +50,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
     if (dto.categoryName) {
       const err = new ValidationErrorNode(
         'OrderCategory',
-        undefined,
+        id,
         'Order category with that name already exists.',
       );
       results.push(err);

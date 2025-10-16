@@ -39,7 +39,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
       const err = new ValidationErrorNode(
         'itemName',
-        undefined,
+        id,
         'Inventory item with this name already exists',
       );
       results.push(err);
@@ -70,7 +70,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
         const err = new ValidationErrorNode(
           'itemName',
-          undefined,
+          id,
           'Inventory item with this name already exists',
         );
         results.push(err);

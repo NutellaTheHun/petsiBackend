@@ -32,7 +32,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       const err = new ValidationErrorNode(
         'categoryName',
-        undefined,
+        id,
         'Category with this name already exists.',
       );
       results.push(err);
@@ -53,7 +53,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
       ) {
         const err = new ValidationErrorNode(
           'categoryName',
-          undefined,
+          id,
           'Category with this name already exists.',
         );
         results.push(err);

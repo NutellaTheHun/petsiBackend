@@ -37,7 +37,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     if (dto.validSizeIds.length === 0) {
       const err = new ValidationErrorNode(
         'validItem',
-        undefined,
+        id,
         'Menu item container setting has no sizes selected.',
       );
       results.push(err);
@@ -55,7 +55,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
       if (!this.helper.isValidSize(scarySizeId, item.validSizes)) {
         const err = new ValidationErrorNode(
           'validSizes',
-          scarySizeId,
+          id, // cant get both the id of the rule and the id of the valid size that is erroneous?
           'Invalid size for item.',
         );
         results.push(err);
@@ -75,7 +75,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     if (dto.validSizeIds && dto.validSizeIds.length === 0) {
       const err = new ValidationErrorNode(
         'validItem',
-        undefined,
+        id,
         'Menu item container setting has no sizes selected.',
       );
       results.push(err);
@@ -107,7 +107,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         if (!this.helper.isValidSize(scarySize, item.validSizes)) {
           const err = new ValidationErrorNode(
             'validSizes',
-            scarySize,
+            id, // cant get both the id of the rule and the id of the valid size that is erroneous?
             'Invalid size for item.',
           );
           results.push(err);

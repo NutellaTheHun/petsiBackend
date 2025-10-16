@@ -29,7 +29,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
     if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
       const err = new ValidationErrorNode(
         'roleName',
-        undefined,
+        id,
         'Role with this name already exists.',
       );
       results.push(err);
@@ -48,7 +48,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
       if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
         const err = new ValidationErrorNode(
           'roleName',
-          undefined,
+          id,
           'Role with this name already exists.',
         );
         results.push(err);

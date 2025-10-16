@@ -62,7 +62,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
         const prop = dto.measureUnitId ? 'measureUnit' : 'packageType';
         const err = new ValidationErrorNode(
           prop,
-          undefined,
+          id,
           'Inventory item size already exists',
         );
         results.push(err);

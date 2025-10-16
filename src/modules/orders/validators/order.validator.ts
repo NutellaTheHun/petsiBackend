@@ -35,7 +35,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     if (dto.orderedMenuItemDtos.length === 0) {
       const err = new ValidationErrorNode(
         'orderedItems',
-        undefined,
+        id,
         'Order has no items',
       );
       results.push(err);
@@ -54,7 +54,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
       const err = new ValidationErrorNode(
         'weeklyFulfillment',
-        undefined,
+        id,
         'Invalid weeklyFulfillment value',
       );
       results.push(err);
@@ -65,7 +65,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     if (!validFulfillmentType.includes(dto.fulfillmentType)) {
       const err = new ValidationErrorNode(
         'fulfillmentType',
-        undefined,
+        id,
         'Invalid fulfillmentType value',
       );
       results.push(err);
@@ -101,7 +101,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
       const err = new ValidationErrorNode(
         'weeklyFulfillment',
-        undefined,
+        id,
         'Invalid weeklyFulfillment value',
       );
       results.push(err);
@@ -115,7 +115,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     ) {
       const err = new ValidationErrorNode(
         'fulfillmentType',
-        undefined,
+        id,
         'Invalid fulfillmentType value',
       );
       results.push(err);

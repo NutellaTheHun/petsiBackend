@@ -36,7 +36,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       const err = new ValidationErrorNode(
         'categoryName',
-        undefined,
+        id,
         'Recipe category already exists.',
       );
       results.push(err);
@@ -69,7 +69,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
       ) {
         const err = new ValidationErrorNode(
           'categoryName',
-          undefined,
+          id,
           'Recipe category already exists.',
         );
         results.push(err);

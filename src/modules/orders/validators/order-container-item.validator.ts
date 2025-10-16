@@ -62,7 +62,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     ) {
       const err = new ValidationErrorNode(
         'containedItemSize',
-        undefined,
+        id,
         'Invalid size for contained item.',
       );
       results.push(err);
@@ -93,7 +93,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       } else {
         const err = new ValidationErrorNode(
           'containedItem',
-          undefined,
+          id,
           'Invalid item for container.',
         );
         results.push(err);
@@ -116,7 +116,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     ) {
       const err = new ValidationErrorNode(
         'parentOrderItem',
-        undefined,
+        id,
         'Missing parent container item id.',
       );
       results.push(err);
@@ -152,7 +152,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       if (!this.helper.isValidSize(sizeId, containedItem.validSizes)) {
         const err = new ValidationErrorNode(
           'containedItemSize',
-          undefined,
+          id,
           'Invalid size for item.',
         );
         results.push(err);
@@ -185,7 +185,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             ) {
               const err = new ValidationErrorNode(
                 'containedItemSize',
-                undefined,
+                id,
                 'Invalid size for container.',
               );
               results.push(err);

@@ -30,7 +30,7 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     if (await this.helper.exists(this.repo, 'username', dto.username)) {
       const err = new ValidationErrorNode(
         'username',
-        undefined,
+        id,
         'username name already exists.',
       );
       results.push(err);
@@ -48,7 +48,7 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     if (dto.username) {
       const err = new ValidationErrorNode(
         'username',
-        undefined,
+        id,
         'username name already exists.',
       );
       results.push(err);

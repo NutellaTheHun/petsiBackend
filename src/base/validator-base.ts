@@ -111,22 +111,6 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     return result.isEmpty() ? null : result;
   }
 
-  public async validateManyUpdateNode(
-    field: string,
-    dtos: T['__UDto'][],
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
-
-    for (const dto of dtos) {
-      const valErrs = await this.doValidateUpdateNode(dto);
-      if (valErrs) {
-        result.addChildren(valErrs);
-      }
-    }
-
-    return result.isEmpty() ? null : result;
-  }
-
   /**
    * Wrapper function to parse nested DTOs.
    * @param field
@@ -150,7 +134,9 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
         result.addChildren(child);
       }
     } else {
-      throw new error('validate nested node has neither create id or id.');
+      throw new error(
+        'validate nested node has neither create id or database id.',
+      );
     }
 
     return result.isEmpty() ? null : result;
@@ -161,14 +147,15 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     dtos: T['__NDto'][],
   ): Promise<ValidationErrorNode | null> {
     const result = new ValidationErrorNode(field);
+
     for (const dto of dtos) {
       if (dto?.createId && dto.createDto) {
-        const child = await this.doValidateCreateNode(dto);
+        const child = await this.doValidateCreateNode(dto, dto.createId);
         if (child) {
           result.addChildren(child);
         }
       } else if (dto?.id && dto.updateDto) {
-        const child = await this.doValidateUpdateNode(dto);
+        const child = await this.doValidateUpdateNode(dto, dto.id);
         if (child) {
           result.addChildren(child);
         }
@@ -176,6 +163,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
         throw new error('validate nested node has neither create id or id.');
       }
     }
+
     return result.isEmpty() ? null : result;
   }
 }

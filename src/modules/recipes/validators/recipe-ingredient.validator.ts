@@ -32,7 +32,7 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     if (!dto.ingredientInventoryItemId && !dto.ingredientRecipeId) {
       const err = new ValidationErrorNode(
         'ingredientInventoryItem',
-        undefined,
+        id,
         'missing reference for ingredient',
       );
       results.push(err);

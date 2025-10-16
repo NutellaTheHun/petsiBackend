@@ -39,7 +39,7 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     if (!dto.containerRuleDtos || dto.containerRuleDtos.length === 0) {
       const err = new ValidationErrorNode(
         'containerRules',
-        undefined,
+        id,
         'Menu item container has no settings.',
       );
       results.push(err);
@@ -67,7 +67,7 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
     if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
       const err = new ValidationErrorNode(
         'containerRules',
-        undefined,
+        id,
         'Menu item container has no settings.',
       );
       results.push(err);

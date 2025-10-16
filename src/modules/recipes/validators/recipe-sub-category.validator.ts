@@ -38,7 +38,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
     ) {
       const err = new ValidationErrorNode(
         'subCategoryName',
-        undefined,
+        id,
         'Recipe subcategory already exists.',
       );
       results.push(err);
@@ -63,7 +63,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
       ) {
         const err = new ValidationErrorNode(
           'subCategoryName',
-          undefined,
+          id,
           'Recipe subcategory already exists.',
         );
         results.push(err);

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -8,7 +8,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template, TemplateEntity } from '../entities/template.entity';
-import { TemplateMenuItemService } from '../services/template-menu-item.service';
 import { TemplateMenuItemValidator } from './template-menu-item.validator';
 
 @Injectable()
@@ -16,9 +15,6 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,
-
-    @Inject(forwardRef(() => TemplateMenuItemService))
-    private readonly itemService: TemplateMenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
     private readonly templateItemValidator: TemplateMenuItemValidator,
@@ -35,7 +31,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
     if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
       const err = new ValidationErrorNode(
         'templateName',
-        undefined,
+        id,
         'Template with this name already exists.',
       );
       results.push(err);
@@ -67,7 +63,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       ) {
         const err = new ValidationErrorNode(
           'templateName',
-          undefined,
+          id,
           'Template with this name already exists.',
         );
         results.push(err);

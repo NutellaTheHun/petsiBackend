@@ -53,11 +53,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
 
     // validate item / size
     if (!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)) {
-      const err = new ValidationErrorNode(
-        'size',
-        undefined,
-        'Invalid item size.',
-      );
+      const err = new ValidationErrorNode('size', id, 'Invalid item size.');
       results.push(err);
     }
 
@@ -102,11 +98,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       }
 
       if (!this.helper.isValidSize(sizeId, menuItem.validSizes)) {
-        const err = new ValidationErrorNode(
-          'size',
-          undefined,
-          'Invalid item size.',
-        );
+        const err = new ValidationErrorNode('size', id, 'Invalid item size.');
         results.push(err);
       }
     }
