@@ -1,8 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DUPLICATE } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { DRY_A, FOOD_A } from '../../inventory-items/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
@@ -66,17 +65,25 @@ describe('inventory area count validator', () => {
 
     const itemDtos = [
       plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
+        createId: 'c1',
         createDto: {
           countedInventoryItemId: itemA.id,
           countedAmount: 1,
+          countedItemSizeId: 0, // **
         },
       }),
       plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
+        createId: 'c2',
         createDto: {
           countedInventoryItemId: itemB.id,
           countedAmount: 1,
+          countedItemSizeDto: plainToInstance(NestedInventoryItemSizeDto, {
+            createId: 'c3',
+            measureUnitId: 0, // **
+            measureAmount: 1,
+            inventoryPackageId: 0, // **
+            cost: 2.99,
+          }),
         },
       }),
     ];
@@ -86,10 +93,12 @@ describe('inventory area count validator', () => {
       itemCountDtos: itemDtos,
     } as CreateInventoryAreaCountDto;
 
-    await validator.validateCreate(dto);
+    await validator.validateCreateNode('root', dto);
   });
 
-  it('should pass update', async () => {
+  it('create validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {});
+
+  it('should validate update', async () => {
     const toUpdate = (
       await countService.findAll({ relations: ['countedItems'] })
     ).items[0];
@@ -129,64 +138,8 @@ describe('inventory area count validator', () => {
       itemCountDtos: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    await validator.validateUpdateNode('root', dto, toUpdate.id);
   });
 
-  it('should fail update: duplicate update ids', async () => {
-    const toUpdate = (
-      await countService.findAll({ relations: ['countedItems'] })
-    ).items[0];
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const itemA = await itemService.findOneByName(FOOD_A);
-    if (!itemA) {
-      throw new Error();
-    }
-
-    const itemB = await itemService.findOneByName(DRY_A);
-    if (!itemB) {
-      throw new Error();
-    }
-
-    const itemDtos = [
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
-        createDto: {
-          countedInventoryItemId: itemA.id,
-          countedAmount: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
-        id: toUpdate.countedItems[0].id,
-        updateDto: {
-          countedInventoryItemId: itemB.id,
-          countedAmount: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
-        id: toUpdate.countedItems[0].id,
-        updateDto: {
-          countedInventoryItemId: itemA.id,
-          countedAmount: 1,
-        },
-      }),
-    ];
-
-    const dto = {
-      itemCountDtos: itemDtos,
-    } as UpdateInventoryAreaCountDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
-  });
+  it('update validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {});
 });

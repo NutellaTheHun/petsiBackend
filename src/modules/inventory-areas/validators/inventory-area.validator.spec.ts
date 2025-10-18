@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryAreaService } from '../services/inventory-area.service';
@@ -40,7 +39,8 @@ describe('inventory area validator', () => {
       areaName: 'testValidateArea',
     } as CreateInventoryAreaDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create (name already exists)', async () => {
@@ -48,14 +48,10 @@ describe('inventory area validator', () => {
       areaName: AREA_A,
     } as CreateInventoryAreaDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should pass update', async () => {
@@ -68,7 +64,7 @@ describe('inventory area validator', () => {
       areaName: 'testValidateArea',
     } as UpdateInventoryAreaDto;
 
-    await validator.validateUpdate(area.id, dto);
+    await validator.validateUpdateNode('root', dto, area.id);
   });
 
   it('should fail update (name already exists)', async () => {
@@ -81,13 +77,9 @@ describe('inventory area validator', () => {
       areaName: AREA_A,
     } as UpdateInventoryAreaDto;
 
-    try {
-      await validator.validateUpdate(area.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, area.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 });

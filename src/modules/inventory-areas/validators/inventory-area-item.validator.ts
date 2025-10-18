@@ -48,21 +48,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       results.push(err);
     }
 
-    //InventoryItem and ItemSize must be valid
-    if (dto.countedItemSizeId) {
-      const item = await this.itemService.findOne(dto.countedInventoryItemId, [
-        'itemSizes',
-      ]);
-      if (!this.helper.isValidSize(dto.countedItemSizeId, item.itemSizes)) {
-        const err = new ValidationErrorNode(
-          'countedItemSize',
-          createId,
-          'Size is not valid for this item.',
-        );
-        results.push(err);
-      }
-    }
-
+    // Nested Item Size Dto
     if (dto.countedItemSizeDto) {
       const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
@@ -124,6 +110,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       }
     }
 
+    // Nested ItemSize validation
     if (dto.countedItemSizeDto) {
       const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',

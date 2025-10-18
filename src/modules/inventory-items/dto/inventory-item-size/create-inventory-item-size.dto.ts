@@ -5,7 +5,6 @@ export class CreateInventoryItemSizeDto {
   @ApiProperty({
     description:
       'Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.',
-    //type: InventoryItem,
     example: 1,
     required: false,
     nullable: true,
@@ -49,5 +48,5 @@ export class CreateInventoryItemSizeDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
   @Min(0)
-  cost: number;
+  readonly cost: number;
 }

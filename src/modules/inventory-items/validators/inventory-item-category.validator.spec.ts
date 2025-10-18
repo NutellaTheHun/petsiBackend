@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
@@ -46,7 +45,8 @@ describe('inventory item category validator', () => {
       itemCategoryName: 'CREATE TEST',
     } as CreateInventoryItemCategoryDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create (name already exists)', async () => {
@@ -54,14 +54,10 @@ describe('inventory item category validator', () => {
       itemCategoryName: FOOD_CAT,
     } as CreateInventoryItemCategoryDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should validate update', async () => {
@@ -74,7 +70,8 @@ describe('inventory item category validator', () => {
       itemCategoryName: 'UPDATE TEST',
     } as UpdateInventoryItemCategoryDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update (name already exists)', async () => {
@@ -87,13 +84,9 @@ describe('inventory item category validator', () => {
       itemCategoryName: DAIRY_CAT,
     } as UpdateInventoryItemCategoryDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 });

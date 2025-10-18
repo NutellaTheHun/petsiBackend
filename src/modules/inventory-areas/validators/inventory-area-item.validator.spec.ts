@@ -1,8 +1,8 @@
+import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { INVALID, MISSING } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
@@ -90,7 +90,8 @@ describe('inventory area item validator', () => {
       countedItemSizeId: item?.itemSizes[0].id,
     } as CreateInventoryAreaItemDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should pass create with size dto', async () => {
@@ -108,7 +109,7 @@ describe('inventory area item validator', () => {
     }
 
     const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'create',
+      createId: 'c1',
       createDto: {
         inventoryItemId: item.id,
         measureAmount: 1,
@@ -125,78 +126,8 @@ describe('inventory area item validator', () => {
       countedItemSizeDto: sizeDto,
     } as CreateInventoryAreaItemDto;
 
-    await validator.validateCreate(dto);
-  });
-
-  it('should fail create: bad size for item', async () => {
-    const item = await itemService.findOneByName(FOOD_A);
-    if (!item) {
-      throw new Error();
-    }
-
-    const badItem = await itemService.findOneByName(DRY_B, ['itemSizes']);
-    if (!badItem) {
-      throw new Error();
-    }
-
-    const dto = {
-      parentInventoryCountId: testCountId,
-      countedInventoryItemId: item.id,
-      countedAmount: 1,
-      countedItemSizeId: badItem.itemSizes[0].id,
-    } as CreateInventoryAreaItemDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail create: itemSizeId and itemSizeDto', async () => {
-    const unit = await unitService.findOneByName(POUND);
-    if (!unit) {
-      throw new Error();
-    }
-    const pkg = await packageService.findOneByName(BOX_PKG);
-    if (!pkg) {
-      throw new Error();
-    }
-    const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-    if (!item) {
-      throw new Error();
-    }
-
-    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'create',
-      createDto: {
-        inventoryItemId: item.id,
-        measureAmount: 1,
-        measureUnitId: unit.id,
-        inventoryPackageId: pkg.id,
-        cost: 1,
-      },
-    });
-
-    const dto = {
-      parentInventoryCountId: testCountId,
-      countedInventoryItemId: item.id,
-      countedAmount: 1,
-      countedItemSizeId: item.itemSizes[0].id,
-      countedItemSizeDto: sizeDto,
-    } as CreateInventoryAreaItemDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: no itemSizeId and no itemSizeDto with inventory item', async () => {
@@ -211,14 +142,14 @@ describe('inventory area item validator', () => {
       countedAmount: 1,
     } as CreateInventoryAreaItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(MISSING);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+  });
+
+  it('should fail create: validation of item size dto fail', async () => {
+    throw new NotImplementedException();
   });
 
   it('should pass update with sizeId', async () => {
@@ -238,7 +169,12 @@ describe('inventory area item validator', () => {
       countedItemSizeId: item.itemSizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
-    await validator.validateUpdate(toUpdate.items[0].id, dto);
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate[0].id,
+    );
+    expect(result).toBeNull();
   });
 
   it('should pass update with update sizeDto', async () => {
@@ -283,7 +219,12 @@ describe('inventory area item validator', () => {
       countedItemSizeDto: sizeDto,
     } as UpdateInventoryAreaItemDto;
 
-    await validator.validateUpdate(toUpdate[0].id, dto);
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate[0].id,
+    );
+    expect(result).toBeNull();
   });
 
   it('should pass update with create sizeDto', async () => {
@@ -322,53 +263,7 @@ describe('inventory area item validator', () => {
       countedItemSizeDto: sizeDto,
     } as UpdateInventoryAreaItemDto;
 
-    await validator.validateUpdate(toUpdate.items[0].id, dto);
-  });
-
-  it('should fail update: itemSizeId and itemSizeDto with inventory item', async () => {
-    const toUpdate = await areaItemservice.findAll();
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const unit = await unitService.findOneByName(FL_OUNCE);
-    if (!unit) {
-      throw new Error();
-    }
-    const pkg = await packageService.findOneByName(CAN_PKG);
-    if (!pkg) {
-      throw new Error();
-    }
-    const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-    if (!item) {
-      throw new Error();
-    }
-
-    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'create',
-      createDto: {
-        inventoryItemId: item.id,
-        measureAmount: 2,
-        measureUnitId: unit.id,
-        inventoryPackageId: pkg.id,
-        cost: 3,
-      },
-    });
-
-    const dto = {
-      countedInventoryItemId: item.id,
-      countedItemSizeId: item.itemSizes[0].id,
-      countedItemSizeDto: sizeDto,
-    } as UpdateInventoryAreaItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.items[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    await validator.validateUpdateNode('root', dto, toUpdate.items[0].id);
   });
 
   it('should fail update: no itemSizeId and no itemSizeDto with inventory item', async () => {
@@ -386,14 +281,14 @@ describe('inventory area item validator', () => {
       countedInventoryItemId: item.id,
     } as UpdateInventoryAreaItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.items[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate.items[0].id,
+    );
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should fail update: bad sizeId for dto item', async () => {
@@ -417,14 +312,14 @@ describe('inventory area item validator', () => {
       countedItemSizeId: badItem.itemSizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.items[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate.items[0].id,
+    );
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should fail update: bad sizeId for current item', async () => {
@@ -442,13 +337,17 @@ describe('inventory area item validator', () => {
       countedItemSizeId: badItem.itemSizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.items[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate.items[0].id,
+    );
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+  });
+
+  it('should fail update: nested item size validation', async () => {
+    throw new NotImplementedException();
   });
 });

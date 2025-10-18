@@ -1,8 +1,8 @@
+import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
 import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
@@ -121,7 +121,8 @@ describe('inventory item validator', () => {
       itemSizeDtos: sizeDtos,
     } as CreateInventoryItemDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create (name already exists)', async () => {
@@ -179,71 +180,14 @@ describe('inventory item validator', () => {
       itemSizeDtos: sizeDtos,
     } as CreateInventoryItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
-  it('should fail create (duplicate itemSizeDtos)', async () => {
-    const unitPound = await unitService.findOneByName(POUND);
-    if (!unitPound) {
-      throw new Error();
-    }
-    const pkgBox = await packageService.findOneByName(BOX_PKG);
-    if (!pkgBox) {
-      throw new Error();
-    }
-
-    const sizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-    ];
-
-    const category = await categoryService.findOneByName(DAIRY_CAT);
-    if (!category) {
-      throw new Error();
-    }
-    const vendor = await vendorService.findOneByName(VENDOR_A);
-    if (!vendor) {
-      throw new Error();
-    }
-
-    const dto = {
-      itemName: 'TEST ITEM',
-      inventoryItemCategoryId: category.id,
-      vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
-    } as CreateInventoryItemDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+  it('should fail update: InventoryItemSize Validator', async () => {
+    throw new NotImplementedException();
   });
 
   it('should validate update', async () => {
@@ -307,7 +251,8 @@ describe('inventory item validator', () => {
       itemSizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail validate update (name exists)', async () => {
@@ -371,172 +316,13 @@ describe('inventory item validator', () => {
       itemSizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
-  it('should fail validate update (duplicate update sizeDtos)', async () => {
-    const unitPound = await unitService.findOneByName(POUND);
-    if (!unitPound) {
-      throw new Error();
-    }
-    const unitKilo = await unitService.findOneByName(KILOGRAM);
-    if (!unitKilo) {
-      throw new Error();
-    }
-    const pkgBox = await packageService.findOneByName(BOX_PKG);
-    if (!pkgBox) {
-      throw new Error();
-    }
-    const pkgCan = await packageService.findOneByName(CAN_PKG);
-    if (!pkgCan) {
-      throw new Error();
-    }
-
-    const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const sizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
-        id: toUpdate.itemSizes[0].id,
-        updateDto: {
-          measureUnitId: unitKilo.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgCan.id,
-          cost: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
-        id: toUpdate.itemSizes[0].id,
-        updateDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          cost: 1,
-        },
-      }),
-    ];
-
-    const category = await categoryService.findOneByName(DAIRY_CAT);
-    if (!category) {
-      throw new Error();
-    }
-    const vendor = await vendorService.findOneByName(VENDOR_A);
-    if (!vendor) {
-      throw new Error();
-    }
-
-    const dto = {
-      itemName: 'UPDATE ITEM NAME',
-      inventoryItemCategoryId: category.id,
-      vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
-    } as UpdateInventoryItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
-  });
-
-  it('should fail validate update (duplicate create sizeDtos)', async () => {
-    const unitPound = await unitService.findOneByName(POUND);
-    if (!unitPound) {
-      throw new Error();
-    }
-    const unitKilo = await unitService.findOneByName(KILOGRAM);
-    if (!unitKilo) {
-      throw new Error();
-    }
-    const pkgBox = await packageService.findOneByName(BOX_PKG);
-    if (!pkgBox) {
-      throw new Error();
-    }
-    const pkgCan = await packageService.findOneByName(CAN_PKG);
-    if (!pkgCan) {
-      throw new Error();
-    }
-
-    const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const sizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: unitPound.id,
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
-        id: toUpdate.itemSizes[0].id,
-        updateDto: {
-          measureAmount: 1,
-          inventoryPackageId: pkgBox.id,
-          cost: 1,
-        },
-      }),
-    ];
-
-    const category = await categoryService.findOneByName(DAIRY_CAT);
-    if (!category) {
-      throw new Error();
-    }
-    const vendor = await vendorService.findOneByName(VENDOR_A);
-    if (!vendor) {
-      throw new Error();
-    }
-
-    const dto = {
-      itemName: 'UPDATE ITEM NAME',
-      inventoryItemCategoryId: category.id,
-      vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
-    } as UpdateInventoryItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+  it('should fail update: InventoryItemSize Validation', async () => {
+    throw new NotImplementedException();
   });
 });

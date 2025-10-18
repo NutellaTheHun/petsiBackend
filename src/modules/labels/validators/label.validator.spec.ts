@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -59,7 +58,8 @@ describe('label validator', () => {
       labelTypeId: labelType.id,
     } as CreateLabelDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: menuItem/labelType combination exists', async () => {
@@ -81,14 +81,10 @@ describe('label validator', () => {
       labelTypeId: badLabel.labelType.id,
     } as CreateLabelDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should pass update', async () => {
@@ -112,7 +108,8 @@ describe('label validator', () => {
       labelTypeId: labelType.id,
     } as UpdateLabelDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update: menuItem / labelType combination exists', async () => {
@@ -136,13 +133,9 @@ describe('label validator', () => {
       labelTypeId: badItem.labelType.id,
     } as UpdateLabelDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 });
