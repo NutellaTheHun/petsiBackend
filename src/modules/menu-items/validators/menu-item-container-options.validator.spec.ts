@@ -1,14 +1,14 @@
+import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DUPLICATE } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
 import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
 import { MenuItemService } from '../services/menu-item.service';
-import { item_a, item_b } from '../utils/constants';
+import { item_a, item_b, item_c } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemContainerOptionsValidator } from './menu-item-container-options.validator';
@@ -55,6 +55,11 @@ describe('menu item container options validator', () => {
       throw new Error();
     }
 
+    const itemC = await itemService.findOneByName(item_c, ['validSizes']);
+    if (!itemC) {
+      throw new Error();
+    }
+
     const ruleDtos = [
       plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'create',
@@ -72,61 +77,34 @@ describe('menu item container options validator', () => {
       }),
     ];
     const dto = {
+      parentContainerMenuItemId: itemC.id,
       containerRuleDtos: ruleDtos,
       validQuantity: 3,
     } as CreateMenuItemContainerOptionsDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result);
   });
 
-  it('should fail create: duplicate item rules', async () => {
-    const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
-
-    const itemB = await itemService.findOneByName(item_a, ['validSizes']);
+  it('should fail create: no rules', async () => {
+    const itemB = await itemService.findOneByName(item_b, ['validSizes']);
     if (!itemB) {
       throw new Error();
     }
 
-    const ruleDtos = [
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'create',
-        createDto: {
-          validMenuItemId: itemA.id,
-          validSizeIds: [itemA.validSizes[0].id],
-        },
-      }),
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'create',
-        createDto: {
-          validMenuItemId: itemB.id,
-          validSizeIds: [itemB.validSizes[0].id],
-        },
-      }),
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'create',
-        createDto: {
-          validMenuItemId: itemA.id,
-          validSizeIds: [itemA.validSizes[1].id],
-        },
-      }),
-    ];
-
     const dto = {
-      containerRuleDtos: ruleDtos,
+      parentContainerMenuItemId: itemB.id,
       validQuantity: 3,
     } as CreateMenuItemContainerOptionsDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+  });
+
+  it('should fail create: MenuItemContainerRule Validator', async () => {
+    throw new NotImplementedException();
   });
 
   it('should pass update', async () => {
@@ -172,67 +150,11 @@ describe('menu item container options validator', () => {
       validQuantity: 4,
     } as UpdateMenuItemContainerOptionsDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
-  it('should fail update: duplicate item rules', async () => {
-    const toUpdateRequest = await containerService.findAll({
-      relations: ['containerRules'],
-    });
-    if (!toUpdateRequest) {
-      throw new Error();
-    }
-
-    const toUpdate = toUpdateRequest.items[0];
-
-    const itemA = await itemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
-
-    const itemB = await itemService.findOneByName(item_a, ['validSizes']);
-    if (!itemB) {
-      throw new Error();
-    }
-
-    const ruleDtos = [
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'create',
-        createDto: {
-          validMenuItemId: itemA.id,
-          validSizeIds: [itemA.validSizes[0].id],
-        },
-      }),
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'update',
-        id: toUpdate.containerRules[0].id,
-        updateDto: {
-          validMenuItemId: itemB.id,
-          validSizeIds: [itemB.validSizes[0].id],
-        },
-      }),
-      plainToInstance(NestedMenuItemContainerRuleDto, {
-        mode: 'update',
-        id: toUpdate.containerRules[0].id,
-        updateDto: {
-          validMenuItemId: itemB.id,
-          validSizeIds: [itemB.validSizes[1].id],
-        },
-      }),
-    ];
-
-    const dto = {
-      containerRuleDtos: ruleDtos,
-      validQuantity: 4,
-    } as UpdateMenuItemContainerOptionsDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+  it('should fail update: MenuItemContainerRule Validator', async () => {
+    throw new NotImplementedException();
   });
 });

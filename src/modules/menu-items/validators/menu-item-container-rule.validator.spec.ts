@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { INVALID } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
 import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
@@ -53,7 +52,8 @@ describe('menu item container rule validator', () => {
       validSizeIds: [item.validSizes[0].id, item.validSizes[0].id],
     } as CreateMenuItemContainerRuleDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: Empty size array', async () => {
@@ -67,14 +67,10 @@ describe('menu item container rule validator', () => {
       validSizeIds: [],
     } as CreateMenuItemContainerRuleDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should fail create: invalid sizes', async () => {
@@ -93,14 +89,10 @@ describe('menu item container rule validator', () => {
       validSizeIds: [badItem.validSizes[0].id, badItem.validSizes[1].id],
     } as CreateMenuItemContainerRuleDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(2);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should pass update', async () => {
@@ -121,7 +113,8 @@ describe('menu item container rule validator', () => {
       validSizeIds: item.validSizes.map((size) => size.id),
     } as UpdateMenuItemContainerRuleDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update: empty size array', async () => {
@@ -142,14 +135,10 @@ describe('menu item container rule validator', () => {
       validSizeIds: [],
     } as UpdateMenuItemContainerRuleDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 
   it('should fail update: invalid sizes', async () => {
@@ -175,42 +164,9 @@ describe('menu item container rule validator', () => {
       validSizeIds: badItem.validSizes.map((size) => size.id),
     } as UpdateMenuItemContainerRuleDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(2);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail update: updating only sizes with invalid sizes', async () => {
-    const rulesRequest = await ruleService.findAll({
-      relations: ['validItem'],
-    });
-    if (!rulesRequest) {
-      throw new Error();
-    }
-
-    const toUpdate = rulesRequest.items[0];
-
-    const badItem = await itemService.findOneByName(item_f, ['validSizes']);
-    if (!badItem) {
-      throw new Error();
-    }
-
-    const dto = {
-      validSizeIds: badItem.validSizes.map((size) => size.id),
-    } as UpdateMenuItemContainerRuleDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(2);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
   });
 });

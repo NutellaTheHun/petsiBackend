@@ -63,16 +63,6 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // No rules
-    if (dto.containerRuleDtos && dto.containerRuleDtos.length === 0) {
-      const err = new ValidationErrorNode(
-        'containerRules',
-        id,
-        'Menu item container has no settings.',
-      );
-      results.push(err);
-    }
-
     if (dto.containerRuleDtos && dto.containerRuleDtos.length > 0) {
       const nestedErrs =
         await this.containerRuleValidator.validateManyNestedNode(
