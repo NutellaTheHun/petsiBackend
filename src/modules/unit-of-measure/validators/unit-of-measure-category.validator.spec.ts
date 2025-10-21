@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
@@ -46,7 +45,8 @@ describe('unit of measure category validator', () => {
       categoryName: 'TEST NAME',
     } as CreateUnitOfMeasureCategoryDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create (name already exists)', async () => {
@@ -54,14 +54,11 @@ describe('unit of measure category validator', () => {
       categoryName: VOLUME,
     } as CreateUnitOfMeasureCategoryDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('categoryName');
   });
 
   it('should pass update', async () => {
@@ -74,7 +71,8 @@ describe('unit of measure category validator', () => {
       categoryName: 'TEST NAME',
     } as UpdateUnitOfMeasureCategoryDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update (name already exists)', async () => {
@@ -87,13 +85,10 @@ describe('unit of measure category validator', () => {
       categoryName: VOLUME,
     } as UpdateUnitOfMeasureCategoryDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('categoryName');
   });
 });

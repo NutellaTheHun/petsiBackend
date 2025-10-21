@@ -57,6 +57,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       results.push(err);
     }
 
+    // Nested containerItems dtos
     if (
       dto.orderedItemContainerDtos &&
       dto.orderedItemContainerDtos.length > 0
@@ -103,6 +104,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       }
     }
 
+    // Nested containerItems dtos
     if (
       dto.orderedItemContainerDtos &&
       dto.orderedItemContainerDtos.length > 0

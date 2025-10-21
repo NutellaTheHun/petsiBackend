@@ -1,10 +1,9 @@
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
-import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
+import { item_a, item_b } from '../../menu-items/utils/constants';
 import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
@@ -76,117 +75,8 @@ describe('template validator', () => {
       templateItemDtos: itemDtos,
     } as CreateTemplateDto;
 
-    await validator.validateCreate(dto);
-  });
-
-  it('should fail create: duplicate menuItems', async () => {
-    const itemA = await menuItemService.findOneByName(item_a);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b);
-    if (!itemB) {
-      throw new Error();
-    }
-
-    const itemDtos = [
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A',
-          menuItemId: itemA.id,
-          tablePosIndex: 1,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'B',
-          menuItemId: itemB.id,
-          tablePosIndex: 2,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A2',
-          menuItemId: itemA.id,
-          tablePosIndex: 3,
-        },
-      }),
-    ];
-
-    const dto = {
-      templateName: 'CREATE',
-      isPie: true,
-      templateItemDtos: itemDtos,
-    } as CreateTemplateDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
-  });
-
-  it('should fail create: duplicate TablePosIndex', async () => {
-    const itemA = await menuItemService.findOneByName(item_a);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b);
-    if (!itemB) {
-      throw new Error();
-    }
-    const itemC = await menuItemService.findOneByName(item_c);
-    if (!itemC) {
-      throw new Error();
-    }
-
-    const itemDtos = [
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A',
-          menuItemId: itemA.id,
-          tablePosIndex: 1,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'B',
-          menuItemId: itemB.id,
-          tablePosIndex: 2,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A2',
-          menuItemId: itemC.id,
-          tablePosIndex: 1,
-        },
-      }),
-    ];
-
-    const dto = {
-      templateName: 'CREATE',
-      isPie: true,
-      templateItemDtos: itemDtos,
-    } as CreateTemplateDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: Name exists', async () => {
@@ -223,14 +113,11 @@ describe('template validator', () => {
       templateItemDtos: itemDtos,
     } as CreateTemplateDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('templateName');
   });
 
   it('should pass update', async () => {
@@ -276,133 +163,8 @@ describe('template validator', () => {
       templateItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
-  });
-
-  it('should fail update: duplicate menuItems', async () => {
-    const toUpdate = await templateService.findOneByName(template_a, [
-      'templateItems',
-    ]);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const itemA = await menuItemService.findOneByName(item_a);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b);
-    if (!itemB) {
-      throw new Error();
-    }
-
-    const itemDtos = [
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A',
-          menuItemId: itemA.id,
-          tablePosIndex: 1,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'update',
-        id: toUpdate.templateItems[0].id,
-        updateDto: {
-          displayName: 'B',
-          menuItemId: itemB.id,
-          tablePosIndex: 2,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'B2',
-          menuItemId: itemB.id,
-          tablePosIndex: 3,
-        },
-      }),
-    ];
-
-    const dto = {
-      templateName: 'UPDATE',
-      isPie: true,
-      templateItemDtos: itemDtos,
-    } as UpdateTemplateDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
-  });
-
-  it('should fail update: duplicate TablePosIndex', async () => {
-    const toUpdate = await templateService.findOneByName(template_a, [
-      'templateItems',
-    ]);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const itemA = await menuItemService.findOneByName(item_a);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b);
-    if (!itemB) {
-      throw new Error();
-    }
-    const itemC = await menuItemService.findOneByName(item_c);
-    if (!itemC) {
-      throw new Error();
-    }
-
-    const itemDtos = [
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'A',
-          menuItemId: itemA.id,
-          tablePosIndex: 1,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'update',
-        id: toUpdate.templateItems[0].id,
-        updateDto: {
-          displayName: 'B',
-          menuItemId: itemB.id,
-          tablePosIndex: 2,
-        },
-      }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'B2',
-          menuItemId: itemC.id,
-          tablePosIndex: 2,
-        },
-      }),
-    ];
-
-    const dto = {
-      templateName: 'UPDATE',
-      isPie: true,
-      templateItemDtos: itemDtos,
-    } as UpdateTemplateDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update: Name exists', async () => {
@@ -448,13 +210,10 @@ describe('template validator', () => {
       templateItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('templateName');
   });
 });

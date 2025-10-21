@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { INVALID } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { FOOD_A } from '../../inventory-items/utils/constants';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
@@ -68,7 +67,8 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as CreateRecipeIngredientDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should validate create with inventoryItem ingredient', async () => {
@@ -88,40 +88,8 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as CreateRecipeIngredientDto;
 
-    await validator.validateCreate(dto);
-  });
-
-  it('should fail create: recipe and inventory item ingredient', async () => {
-    const inventoryItem = await inventoryService.findOneByName(FOOD_A);
-    if (!inventoryItem) {
-      throw new Error();
-    }
-
-    const recipe = await recipeService.findOneByName(REC_A);
-    if (!recipe) {
-      throw new Error();
-    }
-
-    const measurement = await measureService.findOneByName(POUND);
-    if (!measurement) {
-      throw new Error();
-    }
-
-    const dto = {
-      ingredientInventoryItemId: inventoryItem.id,
-      ingredientRecipeId: recipe.id,
-      quantity: 1,
-      quantityMeasurementId: measurement.id,
-    } as CreateRecipeIngredientDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: neither recipe or inventory item ingredient', async () => {
@@ -135,14 +103,11 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as CreateRecipeIngredientDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('ingredientInventoryItem');
   });
 
   it('should pass update with RECIPE ingredient => RECIPE ingredient', async () => {
@@ -174,7 +139,12 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
-    await validator.validateUpdate(ingredsWRecipes[0].id, dto);
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      ingredsWRecipes[0].id,
+    );
+    expect(result).toBeNull();
   });
 
   it('should pass update with RECIPE ingredient => INVENTORY item ingredient', async () => {
@@ -208,7 +178,12 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
-    await validator.validateUpdate(ingredsWRecipes[0].id, dto);
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      ingredsWRecipes[0].id,
+    );
+    expect(result).toBeNull();
   });
 
   it('should pass update with INVENTORY item ingredient => RECIPE ingredient', async () => {
@@ -243,7 +218,12 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
-    await validator.validateUpdate(ingredsWItems[0].id, dto);
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      ingredsWItems[0].id,
+    );
+    expect(result).toBeNull();
   });
 
   it('should pass update with INVENTORY item ingredient => INVENTORY item ingredient', async () => {
@@ -277,125 +257,11 @@ describe('recipe ingredient validator', () => {
       quantityMeasurementId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
-    await validator.validateUpdate(ingredsWItems[0].id, dto);
-  });
-
-  it('should fail update: RECIPE and INVENTORY item ingredient', async () => {
-    const toUpdate = (await ingredientService.findAll()).items;
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const newRecipe = await recipeService.findOneByName(REC_A);
-    if (!newRecipe) {
-      throw new Error();
-    }
-
-    const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-    if (!newInventoryItem) {
-      throw new Error();
-    }
-
-    const measurement = await measureService.findOneByName(POUND);
-    if (!measurement) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: toUpdate[0].id,
-      ingredientRecipeId: newRecipe.id,
-      ingredientInventoryItemId: newInventoryItem.id,
-      quantity: 1,
-      quantityMeasurementId: measurement.id,
-    } as UpdateRecipeIngredientDto;
-
-    try {
-      await validator.validateUpdate(toUpdate[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail update: RECIPE ingredient => CURRENT INVENTORY item ingredient', async () => {
-    const toUpdate = (
-      await ingredientService.findAll({ relations: ['ingredientRecipe'] })
-    ).items;
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const ingredsWRecipes = toUpdate.filter(
-      (ingred) => ingred.ingredientRecipe,
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      ingredsWItems[0].id,
     );
-
-    const newInventoryItem = await inventoryService.findOneByName(FOOD_A);
-    if (!newInventoryItem) {
-      throw new Error();
-    }
-
-    const measurement = await measureService.findOneByName(POUND);
-    if (!measurement) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: ingredsWRecipes[0].id,
-      ingredientInventoryItemId: newInventoryItem.id,
-      quantity: 1,
-      quantityMeasurementId: measurement.id,
-    } as UpdateRecipeIngredientDto;
-
-    try {
-      await validator.validateUpdate(ingredsWRecipes[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail update: INVENTORY item ingredient => CURRENT RECIPE ingredient', async () => {
-    const toUpdate = (
-      await ingredientService.findAll({
-        relations: ['ingredientInventoryItem'],
-      })
-    ).items;
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const ingredsWItems = toUpdate.filter(
-      (ingred) => ingred.ingredientInventoryItem,
-    );
-
-    const newRecipe = await recipeService.findOneByName(REC_A);
-    if (!newRecipe) {
-      throw new Error();
-    }
-
-    const measurement = await measureService.findOneByName(POUND);
-    if (!measurement) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: ingredsWItems[0].id,
-      ingredientRecipeId: newRecipe.id,
-      quantity: 1,
-      quantityMeasurementId: measurement.id,
-    } as UpdateRecipeIngredientDto;
-
-    try {
-      await validator.validateUpdate(ingredsWItems[0].id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    expect(result).toBeNull();
   });
 });

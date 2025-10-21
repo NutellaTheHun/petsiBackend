@@ -44,6 +44,16 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       results.push(err);
     }
 
+    // subcategory with no category assignment
+    if (dto.subCategoryId && !dto.categoryId) {
+      const err = new ValidationErrorNode(
+        'category',
+        id,
+        'Requires category if assigning sub-category',
+      );
+      results.push(err);
+    }
+
     // Validate category / subcategory
     if (dto.categoryId && dto.subCategoryId) {
       const category = await this.categoryService.findOne(dto.categoryId, [

@@ -29,9 +29,10 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // name exists
     if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
       const err = new ValidationErrorNode(
-        'OrderCategory',
+        'categoryName',
         id,
         'Order category with that name already exists.',
       );
@@ -47,9 +48,10 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // name exists
     if (dto.categoryName) {
       const err = new ValidationErrorNode(
-        'OrderCategory',
+        'categoryName',
         id,
         'Order category with that name already exists.',
       );

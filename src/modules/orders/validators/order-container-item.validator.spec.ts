@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { INVALID } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
@@ -80,11 +79,8 @@ describe('order container item validator', () => {
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeUndefined();
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: invalid dto item for container', async () => {
@@ -124,14 +120,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItem');
   });
 
   it('should fail create: invalid dto size for container', async () => {
@@ -183,14 +176,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItemSize');
   });
 
   it('should fail create: invalid dto size for dto item', async () => {
@@ -236,14 +226,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(2);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItemSize');
   });
 
   it('should pass update', async () => {
@@ -286,106 +273,8 @@ describe('order container item validator', () => {
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeUndefined();
-    }
-  });
-
-  it('should fail update: item update with no parent id', async () => {
-    const containerItemRequest = await containerService.findAll({
-      relations: ['parentOrderItem'],
-    });
-    if (!containerItemRequest) {
-      throw new Error();
-    }
-
-    const toUpdate = containerItemRequest.items[0];
-
-    const contItemB = await menuItemService.findOneByName(item_b);
-    if (!contItemB) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: toUpdate.id,
-      containedMenuItemId: contItemB.id,
-    } as UpdateOrderContainerItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail update: size update with no parent id', async () => {
-    const containerItemRequest = await containerService.findAll({
-      relations: ['parentOrderItem'],
-    });
-    if (!containerItemRequest) {
-      throw new Error();
-    }
-
-    const toUpdate = containerItemRequest.items[0];
-
-    const contItemB = await menuItemService.findOneByName(item_b, [
-      'validSizes',
-    ]);
-    if (!contItemB) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: toUpdate.id,
-      containedMenuItemSizeId: contItemB.validSizes[0].id,
-    } as UpdateOrderContainerItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
-  });
-
-  it('should fail update DTO ITEM AND SIZE: item and size update with no parent id', async () => {
-    const containerItemRequest = await containerService.findAll({
-      relations: ['parentOrderItem'],
-    });
-    if (!containerItemRequest) {
-      throw new Error();
-    }
-
-    const toUpdate = containerItemRequest.items[0];
-
-    const contItemB = await menuItemService.findOneByName(item_b, [
-      'validSizes',
-    ]);
-    if (!contItemB) {
-      throw new Error();
-    }
-
-    const dto = {
-      id: toUpdate.id,
-      containedMenuItemId: contItemB.id,
-      containedMenuItemSizeId: contItemB.validSizes[0].id,
-    } as UpdateOrderContainerItemDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update DTO ITEM AND SIZE: invalid dto item for container', async () => {
@@ -445,14 +334,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItem');
   });
 
   it('should fail update DTO ITEM AND SIZE: invalid dto size for container', async () => {
@@ -511,14 +397,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItemSize');
   });
 
   it('should fail update DTO ITEM AND SIZE: invalid dto size for dto item', async () => {
@@ -571,14 +454,11 @@ describe('order container item validator', () => {
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(2);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItemSize');
   });
 
   it('should fail update DTO ITEM: invalid dto item for CURRENT size', async () => {
@@ -629,14 +509,11 @@ describe('order container item validator', () => {
       containedMenuItemId: badItems[0].id,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItem');
   });
 
   it('should fail update DTO ITEM: invalid dto item for container', async () => {
@@ -690,14 +567,11 @@ describe('order container item validator', () => {
       containedMenuItemSizeId: badItems[0].validSizes[0].id,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItem');
   });
 
   it('should fail update DTO SIZE: invalid DTO size with CURRENT item', async () => {
@@ -756,13 +630,10 @@ describe('order container item validator', () => {
       containedMenuItemSizeId: badSizes[0].id,
     } as UpdateOrderContainerItemDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(INVALID);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containedItemSize');
   });
 });

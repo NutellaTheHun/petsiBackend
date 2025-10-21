@@ -1,7 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
@@ -42,6 +41,63 @@ describe('unit of measure validator', () => {
     expect(validator).toBeDefined;
   });
 
+  it('should validate create', async () => {
+    const category = await categoryService.findOneByName(UNIT);
+    if (!category) {
+      throw new Error();
+    }
+
+    const dto = {
+      unitName: 'TEST ITEM',
+      abbreviation: 'ABREV',
+      categoryId: category.id,
+      conversionFactorToBase: '1234',
+    } as CreateUnitOfMeasureDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
+  });
+
+  it('should fail create (name already exists)', async () => {
+    const category = await categoryService.findOneByName(UNIT);
+    if (!category) {
+      throw new Error();
+    }
+
+    const dto = {
+      unitName: GALLON,
+      abbreviation: 'ABREV',
+      categoryId: category.id,
+      conversionFactorToBase: '1234',
+    } as CreateUnitOfMeasureDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('name');
+  });
+
+  it('should fail create (abbrev already exists)', async () => {
+    const category = await categoryService.findOneByName(UNIT);
+    if (!category) {
+      throw new Error();
+    }
+
+    const dto = {
+      unitName: 'TEST CREATE',
+      abbreviation: OUNCE_ABBREV,
+      categoryId: category.id,
+      conversionFactorToBase: '1234',
+    } as CreateUnitOfMeasureDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('abbreviation');
+  });
+
   it('should pass update', async () => {
     const toUpdate = await unitService.findOneByName(GRAM);
     if (!toUpdate) {
@@ -60,11 +116,8 @@ describe('unit of measure validator', () => {
       conversionFactorToBase: '1234',
     } as UpdateUnitOfMeasureDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeUndefined();
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update (name already exists)', async () => {
@@ -85,14 +138,11 @@ describe('unit of measure validator', () => {
       conversionFactorToBase: '1234',
     } as UpdateUnitOfMeasureDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('name');
   });
 
   it('should fail update (abbrev already exists)', async () => {
@@ -113,79 +163,10 @@ describe('unit of measure validator', () => {
       conversionFactorToBase: '1234',
     } as UpdateUnitOfMeasureDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
-  });
-
-  it('should validate create', async () => {
-    const category = await categoryService.findOneByName(UNIT);
-    if (!category) {
-      throw new Error();
-    }
-
-    const dto = {
-      unitName: 'TEST ITEM',
-      abbreviation: 'ABREV',
-      categoryId: category.id,
-      conversionFactorToBase: '1234',
-    } as CreateUnitOfMeasureDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeUndefined();
-    }
-  });
-
-  it('should fail create (name already exists)', async () => {
-    const category = await categoryService.findOneByName(UNIT);
-    if (!category) {
-      throw new Error();
-    }
-
-    const dto = {
-      unitName: GALLON,
-      abbreviation: 'ABREV',
-      categoryId: category.id,
-      conversionFactorToBase: '1234',
-    } as CreateUnitOfMeasureDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
-  });
-
-  it('should fail create (abbrev already exists)', async () => {
-    const category = await categoryService.findOneByName(UNIT);
-    if (!category) {
-      throw new Error();
-    }
-
-    const dto = {
-      unitName: 'TEST CREATE',
-      abbreviation: OUNCE_ABBREV,
-      categoryId: category.id,
-      conversionFactorToBase: '1234',
-    } as CreateUnitOfMeasureDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('abbreviation');
   });
 });

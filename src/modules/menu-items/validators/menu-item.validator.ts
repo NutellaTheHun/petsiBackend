@@ -48,6 +48,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       results.push(err);
     }
 
+    // nested containerItem dtos
     if (
       dto.definedContainerItemDtos &&
       dto.definedContainerItemDtos.length > 0
@@ -62,6 +63,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       }
     }
 
+    // nested options dto
     if (dto.containerOptionDto) {
       const nestedDtoErr =
         await this.menuItemContainerOptionValidator.validateNestedNode(
@@ -82,7 +84,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // Cannot change name to another existing item
+    // exists
     if (dto.itemName) {
       if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
         const err = new ValidationErrorNode(
@@ -94,6 +96,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       }
     }
 
+    // nested containerItem dtos
     if (
       dto.definedContainerItemDtos &&
       dto.definedContainerItemDtos.length > 0
@@ -108,6 +111,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       }
     }
 
+    // nested options dto
     if (dto.containerOptionDto) {
       const nestedDtoErr =
         await this.menuItemContainerOptionValidator.validateNestedNode(

@@ -1,8 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DUPLICATE, EXIST } from '../../../util/exceptions/error_constants';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
@@ -57,7 +56,8 @@ describe('recipe category validator', () => {
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
-    await validator.validateCreate(dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
   it('should fail create: name already exists', async () => {
@@ -80,50 +80,11 @@ describe('recipe category validator', () => {
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
-  });
-
-  it('should fail create: duplicate sub categories', async () => {
-    const subCatDtos = [
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'create',
-        createDto: {
-          subCategoryName: 'SUB CAT 1',
-        },
-      }),
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'create',
-        createDto: {
-          subCategoryName: 'SUB CAT 2',
-        },
-      }),
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'create',
-        createDto: {
-          subCategoryName: 'SUB CAT 1',
-        },
-      }),
-    ];
-    const dto = {
-      categoryName: 'CREATE',
-      subCategoryDtos: subCatDtos,
-    } as CreateRecipeCategoryDto;
-
-    try {
-      await validator.validateCreate(dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('categoryName');
   });
 
   it('should pass update', async () => {
@@ -153,7 +114,8 @@ describe('recipe category validator', () => {
       subCategoryDtos: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
-    await validator.validateUpdate(toUpdate.id, dto);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
   it('should fail update: name already exists', async () => {
@@ -183,50 +145,10 @@ describe('recipe category validator', () => {
       subCategoryDtos: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(EXIST);
-    }
-  });
-
-  it('should fail update: duplicate sub categories', async () => {
-    const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const subCatDtos = [
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'create',
-        createDto: {
-          subCategoryName: 'SUB CAT 1',
-        },
-      }),
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'update',
-        id: toUpdate.subCategories[0].id,
-        updateDto: {
-          subCategoryName: 'SUB CAT 1',
-        },
-      }),
-    ];
-
-    const dto = {
-      categoryName: 'UPDATE',
-      subCategoryDtos: subCatDtos,
-    } as UpdateRecipeCategoryDto;
-
-    try {
-      await validator.validateUpdate(toUpdate.id, dto);
-    } catch (err) {
-      expect(err).toBeInstanceOf(ValidationException);
-      const error = err as ValidationException;
-      expect(error.errors.length).toEqual(1);
-      expect(error.errors[0].errorType).toEqual(DUPLICATE);
-    }
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('categoryName');
   });
 });

@@ -28,6 +28,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // exists
     if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
       const err = new ValidationErrorNode(
         'templateName',
@@ -37,6 +38,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       results.push(err);
     }
 
+    // nested dto validation
     if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
@@ -57,6 +59,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // exists
     if (dto.templateName) {
       if (
         await this.helper.exists(this.repo, 'templateName', dto.templateName)
@@ -70,6 +73,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       }
     }
 
+    // nested dto validation
     if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
