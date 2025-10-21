@@ -146,6 +146,7 @@ describe('inventory area item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('countedItemSize');
   });
 
   it('should fail create: validation of item size dto fail', async () => {
@@ -289,6 +290,7 @@ describe('inventory area item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('countedItemSize');
   });
 
   it('should fail update: bad sizeId for dto item', async () => {
@@ -320,6 +322,7 @@ describe('inventory area item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('countedItemSize');
   });
 
   it('should fail update: bad sizeId for current item', async () => {
@@ -345,6 +348,7 @@ describe('inventory area item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('countedItemSize');
   });
 
   it('should fail update: nested item size validation', async () => {

@@ -184,6 +184,7 @@ describe('inventory item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('itemName');
   });
 
   it('should fail update: InventoryItemSize Validator', async () => {
@@ -320,6 +321,7 @@ describe('inventory item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('itemName');
   });
 
   it('should fail update: InventoryItemSize Validation', async () => {

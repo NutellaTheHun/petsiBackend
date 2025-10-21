@@ -103,5 +103,6 @@ describe('inventory item package validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(['packageType', 'measureUnit']).toContain(result?.field);
   });
 });

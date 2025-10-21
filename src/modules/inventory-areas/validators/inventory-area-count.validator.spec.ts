@@ -1,3 +1,4 @@
+import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -93,10 +94,13 @@ describe('inventory area count validator', () => {
       itemCountDtos: itemDtos,
     } as CreateInventoryAreaCountDto;
 
-    await validator.validateCreateNode('root', dto);
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
 
-  it('create validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {});
+  it('create validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {
+    throw new NotImplementedException();
+  });
 
   it('should validate update', async () => {
     const toUpdate = (
@@ -138,8 +142,11 @@ describe('inventory area count validator', () => {
       itemCountDtos: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
-    await validator.validateUpdateNode('root', dto, toUpdate.id);
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
   });
 
-  it('update validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {});
+  it('update validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {
+    throw new NotImplementedException();
+  });
 });

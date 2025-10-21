@@ -71,6 +71,7 @@ describe('menu item container rule validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('validSizes');
   });
 
   it('should fail create: invalid sizes', async () => {
@@ -93,6 +94,7 @@ describe('menu item container rule validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('validSizes');
   });
 
   it('should pass update', async () => {
@@ -139,6 +141,7 @@ describe('menu item container rule validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('validSizes');
   });
 
   it('should fail update: invalid sizes', async () => {
@@ -168,5 +171,6 @@ describe('menu item container rule validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('validSizes');
   });
 });

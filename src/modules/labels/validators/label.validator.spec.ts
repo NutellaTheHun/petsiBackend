@@ -85,6 +85,7 @@ describe('label validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('labelType');
   });
 
   it('should pass update', async () => {
@@ -137,5 +138,6 @@ describe('label validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('labelType');
   });
 });

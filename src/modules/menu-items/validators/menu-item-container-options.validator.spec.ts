@@ -101,6 +101,7 @@ describe('menu item container options validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('containerRules');
   });
 
   it('should fail create: MenuItemContainerRule Validator', async () => {
