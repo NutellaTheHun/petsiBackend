@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -12,6 +12,7 @@ import {
 } from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
+@Injectable()
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntity> {
   constructor(
     @InjectRepository(InventoryAreaItem)
@@ -20,10 +21,13 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     @Inject(forwardRef(() => InventoryAreaItemBuilder))
     builder: InventoryAreaItemBuilder,
 
+    @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
+
+    @Inject(forwardRef(() => InventoryAreaItemValidator))
     validator: InventoryAreaItemValidator,
   ) {
     super(

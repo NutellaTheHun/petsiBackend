@@ -21,6 +21,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
 
     @Inject(forwardRef(() => InventoryItemSizeService))
     private readonly sizeService: InventoryItemSizeService,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

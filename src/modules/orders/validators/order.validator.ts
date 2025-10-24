@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -8,7 +8,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order, OrderEntity } from '../entities/order.entity';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
 
 @Injectable()
@@ -16,9 +15,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   constructor(
     @InjectRepository(Order)
     private readonly repo: Repository<Order>,
-
-    @Inject(forwardRef(() => OrderMenuItemService))
-    private readonly itemService: OrderMenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
     private readonly orderItemValidator: OrderMenuItemValidator,

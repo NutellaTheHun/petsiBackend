@@ -87,6 +87,33 @@ describe('recipe category validator', () => {
     expect(result?.field).toEqual('categoryName');
   });
 
+  it('should fail create: subcategory validator: already exists', async () => {
+    const subCatDtos = [
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      }),
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
+      }),
+    ];
+    const dto = {
+      categoryName: 'testCatValidFail',
+      subCategoryDtos: subCatDtos,
+    } as CreateRecipeCategoryDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('subCategories');
+  });
+
   it('should pass update', async () => {
     const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
     if (!toUpdate) {
@@ -150,5 +177,39 @@ describe('recipe category validator', () => {
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
     expect(result?.field).toEqual('categoryName');
+  });
+
+  it('should fail update: subcategory validator: already exists', async () => {
+    const toUpdate = await service.findOneByName(REC_CAT_A, ['subCategories']);
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const subCatDtos = [
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'create',
+        createDto: {
+          subCategoryName: 'SUB CAT 1',
+        },
+      }),
+      plainToInstance(NestedRecipeSubCategoryDto, {
+        mode: 'update',
+        id: toUpdate.subCategories[0].id,
+        updateDto: {
+          subCategoryName: 'SUB CAT 2',
+        },
+      }),
+    ];
+
+    const dto = {
+      categoryName: REC_CAT_B,
+      subCategoryDtos: subCatDtos,
+    } as UpdateRecipeCategoryDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('subCategories');
   });
 });

@@ -30,6 +30,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
 
     logger: AppLogger,
     requestContextService: RequestContextService,
+    @Inject(forwardRef(() => InventoryAreaCountValidator))
     validator: InventoryAreaCountValidator,
   ) {
     super(

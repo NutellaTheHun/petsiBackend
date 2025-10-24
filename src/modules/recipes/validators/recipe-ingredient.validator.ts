@@ -29,6 +29,7 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // no ingredient reference
     if (!dto.ingredientInventoryItemId && !dto.ingredientRecipeId) {
       const err = new ValidationErrorNode(
         'ingredientInventoryItem',

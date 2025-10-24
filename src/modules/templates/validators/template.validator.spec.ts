@@ -120,6 +120,11 @@ describe('template validator', () => {
     expect(result?.field).toEqual('templateName');
   });
 
+  /* No  templateMenuItem validator implementation
+  it('should fail create: templateMenuItem validator: ....', async () => {
+    throw new NotImplementedException();
+  });*/
+
   it('should pass update', async () => {
     const toUpdate = await templateService.findOneByName(template_a, [
       'templateItems',
@@ -216,4 +221,9 @@ describe('template validator', () => {
     expect(result?.children[0].message).not.toBeNull();
     expect(result?.field).toEqual('templateName');
   });
+
+  /* No  templateMenuItem validator implementation
+  it('should fail update: templateMenuItem validator: ....', async () => {
+    throw new NotImplementedException();
+  });*/
 });

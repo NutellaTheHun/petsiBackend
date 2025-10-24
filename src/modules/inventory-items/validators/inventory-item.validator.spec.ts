@@ -1,4 +1,3 @@
-import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -187,9 +186,10 @@ describe('inventory item validator', () => {
     expect(result?.field).toEqual('itemName');
   });
 
-  it('should fail update: InventoryItemSize Validator', async () => {
+  // Noting to validate for create?
+  /*it('should fail create: InventoryItemSize Validator', async () => {
     throw new NotImplementedException();
-  });
+  });*/
 
   it('should validate update', async () => {
     const unitPound = await unitService.findOneByName(POUND);
@@ -324,7 +324,62 @@ describe('inventory item validator', () => {
     expect(result?.field).toEqual('itemName');
   });
 
-  it('should fail update: InventoryItemSize Validation', async () => {
-    throw new NotImplementedException();
+  it('should fail update: InventoryItemSize Validation: combination already exists', async () => {
+    const unitPound = await unitService.findOneByName(POUND);
+    if (!unitPound) {
+      throw new Error();
+    }
+    const unitKilo = await unitService.findOneByName(KILOGRAM);
+    if (!unitKilo) {
+      throw new Error();
+    }
+    const pkgBox = await packageService.findOneByName(BOX_PKG);
+    if (!pkgBox) {
+      throw new Error();
+    }
+    const pkgCan = await packageService.findOneByName(CAN_PKG);
+    if (!pkgCan) {
+      throw new Error();
+    }
+
+    const toUpdate = await itemService.findOneByName(FOOD_A, ['itemSizes']);
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const sizeDtos = [
+      plainToInstance(NestedInventoryItemSizeDto, {
+        mode: 'update',
+        id: toUpdate.itemSizes[0].id,
+        updateDto: {
+          measureUnitId: unitKilo.id,
+          measureAmount: 1,
+          inventoryPackageId: pkgCan.id,
+          cost: 1,
+        },
+      }),
+    ];
+
+    const category = await categoryService.findOneByName(DAIRY_CAT);
+    if (!category) {
+      throw new Error();
+    }
+    const vendor = await vendorService.findOneByName(VENDOR_A);
+    if (!vendor) {
+      throw new Error();
+    }
+
+    const dto = {
+      itemName: 'UPDATE ITEM NAME',
+      inventoryItemCategoryId: category.id,
+      vendorId: vendor.id,
+      itemSizeDtos: sizeDtos,
+    } as UpdateInventoryItemDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('itemSizes');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 });

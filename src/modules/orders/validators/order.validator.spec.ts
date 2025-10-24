@@ -2,6 +2,7 @@ import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { type_a } from '../../labels/utils/constants';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
@@ -99,8 +100,52 @@ describe('order validator', () => {
     throw new NotImplementedException();
   });
 
-  it('should fail create: nested orderMenuItem validator', async () => {
-    throw new NotImplementedException();
+  it('should fail create: nested orderMenuItem validator: invalid size for item', async () => {
+    const category = await categoryService.findOneByName(type_a);
+    if (!category) {
+      throw new Error();
+    }
+
+    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
+    if (!itemA) {
+      throw new Error();
+    }
+    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
+    if (!itemB) {
+      throw new Error();
+    }
+
+    const itemDtos = [
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemB.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
+    const dto = {
+      orderCategoryId: category.id,
+      recipient: 'CREATE',
+      fulfillmentDate: new Date(),
+      fulfillmentType: 'pickup',
+      orderedMenuItemDtos: itemDtos,
+    } as CreateOrderDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('orderedItems');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 
   it('should pass update', async () => {
@@ -176,7 +221,71 @@ describe('order validator', () => {
     throw new NotImplementedException();
   });
 
-  it('should fail update: nested orderMenuItem validator', async () => {
-    throw new NotImplementedException();
+  it('should fail update: nested orderMenuItem validator: invalid size', async () => {
+    const toUpdate = (await orderService.findAll()).items[0];
+
+    const category = await categoryService.findOneByName(type_a);
+    if (!category) {
+      throw new Error();
+    }
+
+    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
+    if (!itemA) {
+      throw new Error();
+    }
+
+    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
+    if (!itemB) {
+      throw new Error();
+    }
+
+    const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
+    if (!itemC) {
+      throw new Error();
+    }
+
+    const itemToUpdate = (await orderItemService.findAll()).items[0];
+
+    const itemDtos = [
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemA.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'create',
+        createDto: {
+          menuItemId: itemB.id,
+          menuItemSizeId: itemB.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+      plainToInstance(NestedOrderMenuItemDto, {
+        mode: 'update',
+        id: itemToUpdate.id,
+        updateDto: {
+          menuItemId: itemC.id,
+          menuItemSizeId: itemA.validSizes[0].id,
+          quantity: 1,
+        },
+      }),
+    ];
+
+    const dto = {
+      orderCategoryId: category.id,
+      recipient: 'CREATE',
+      fulfillmentDate: new Date(),
+      fulfillmentType: 'pickup',
+      orderedMenuItemDtos: itemDtos,
+    } as UpdateOrderDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('orderedItems');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 });

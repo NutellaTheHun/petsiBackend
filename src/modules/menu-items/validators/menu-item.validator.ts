@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -8,8 +8,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemService } from '../services/menu-item.service';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
 import { MenuItemContainerOptionsValidator } from './menu-item-container-options.validator';
 
@@ -18,12 +16,6 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
   constructor(
     @InjectRepository(MenuItem)
     private readonly repo: Repository<MenuItem>,
-
-    @Inject(forwardRef(() => MenuItemContainerItemService))
-    private readonly containerService: MenuItemContainerItemService,
-
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly itemService: MenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
     private readonly menuItemContainerValidator: MenuItemContainerItemValidator,

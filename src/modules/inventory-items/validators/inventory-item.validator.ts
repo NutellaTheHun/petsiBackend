@@ -11,7 +11,6 @@ import {
   InventoryItem,
   InventoryItemEntity,
 } from '../entities/inventory-item.entity';
-import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 import { InventoryItemSizeValidator } from './inventory-item-size.validator';
 
 @Injectable()
@@ -19,11 +18,10 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
   constructor(
     @InjectRepository(InventoryItem)
     private readonly repo: Repository<InventoryItem>,
-
-    @Inject(forwardRef(() => InventoryItemSizeService))
-    private readonly sizeService: InventoryItemSizeService,
     logger: AppLogger,
     requestContextService: RequestContextService,
+
+    @Inject(forwardRef(() => InventoryItemSizeValidator))
     private readonly itemSizeValidator: InventoryItemSizeValidator,
   ) {
     super(repo, 'InventoryItem', requestContextService, logger);

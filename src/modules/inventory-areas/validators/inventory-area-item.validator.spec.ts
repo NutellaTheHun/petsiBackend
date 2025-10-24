@@ -1,4 +1,3 @@
-import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -149,9 +148,43 @@ describe('inventory area item validator', () => {
     expect(result?.field).toEqual('countedItemSize');
   });
 
-  it('should fail create: validation of item size dto fail', async () => {
-    throw new NotImplementedException();
+  /*
+  it('should fail create: InventoryItemSize validation: NOTHING TO VALIDATE YET', async () => {
+    const unit = await unitService.findOneByName(POUND);
+    if (!unit) {
+      throw new Error();
+    }
+    const pkg = await packageService.findOneByName(BOX_PKG);
+    if (!pkg) {
+      throw new Error();
+    }
+    const item = await itemService.findOneByName(FOOD_A);
+    if (!item) {
+      throw new Error();
+    }
+
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      createId: 'c1',
+      createDto: {
+        inventoryItemId: item.id,
+        measureAmount: 1,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 1,
+      },
+    });
+
+    const dto = {
+      parentInventoryCountId: testCountId,
+      countedInventoryItemId: item.id,
+      countedAmount: 1,
+      countedItemSizeDto: sizeDto,
+    } as CreateInventoryAreaItemDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
   });
+  */
 
   it('should pass update with sizeId', async () => {
     const toUpdate = await areaItemservice.findAll();
@@ -351,7 +384,50 @@ describe('inventory area item validator', () => {
     expect(result?.field).toEqual('countedItemSize');
   });
 
-  it('should fail update: nested item size validation', async () => {
-    throw new NotImplementedException();
+  it('should fail update: nested item size validation (combination already exists)', async () => {
+    const toUpdate = await areaItemservice.findAll();
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const unit = await unitService.findOneByName(FL_OUNCE);
+    if (!unit) {
+      throw new Error();
+    }
+    const pkg = await packageService.findOneByName(CAN_PKG);
+    if (!pkg) {
+      throw new Error();
+    }
+
+    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
+      mode: 'create',
+      createDto: {
+        measureAmount: 2,
+        measureUnitId: unit.id,
+        inventoryPackageId: pkg.id,
+        cost: 3,
+      },
+    });
+
+    const item = await itemService.findOneByName(FOOD_A);
+    if (!item) {
+      throw new Error();
+    }
+
+    const dto = {
+      countedInventoryItemId: item.id,
+      countedAmount: 2,
+      countedItemSizeDto: sizeDto,
+    } as UpdateInventoryAreaItemDto;
+
+    const result = await validator.validateUpdateNode(
+      'root',
+      dto,
+      toUpdate.items[0].id,
+    );
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('countedItemSize');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 });

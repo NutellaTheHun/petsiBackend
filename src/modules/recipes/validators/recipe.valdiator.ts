@@ -9,17 +9,12 @@ import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeCategoryService } from '../services/recipe-category.service';
-import { RecipeService } from '../services/recipe.service';
 
 @Injectable()
 export class RecipeValidator extends ValidatorBase<RecipeEntity> {
   constructor(
     @InjectRepository(Recipe)
     private readonly repo: Repository<Recipe>,
-
-    @Inject(forwardRef(() => RecipeService))
-    private readonly recipeService: RecipeService,
-
     @Inject(forwardRef(() => RecipeCategoryService))
     private readonly categoryService: RecipeCategoryService,
     logger: AppLogger,

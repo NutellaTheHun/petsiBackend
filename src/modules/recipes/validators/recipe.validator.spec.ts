@@ -236,6 +236,69 @@ describe('recipe validator', () => {
     expect(result?.field).toEqual('category');
   });
 
+  it('should fail create: recipeIngredient validator: no ingredient reference', async () => {
+    const category = await categoryService.findOneByName(REC_CAT_A, [
+      'subCategories',
+    ]);
+    if (!category) {
+      throw new Error();
+    }
+
+    const batchMeasurement = await measureService.findOneByName(POUND);
+    if (!batchMeasurement) {
+      throw new Error();
+    }
+
+    const servingMeasurement = await measureService.findOneByName(POUND);
+    if (!servingMeasurement) {
+      throw new Error();
+    }
+
+    const invIngred = await inventoryService.findOneByName(FOOD_B);
+    if (!invIngred) {
+      throw new Error();
+    }
+
+    const recIngred = await recipeService.findOneByName(REC_B);
+    if (!recIngred) {
+      throw new Error();
+    }
+
+    const ingredDtos = [
+      plainToInstance(NestedRecipeIngredientDto, {
+        mode: 'create',
+        createDto: {
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      }),
+      plainToInstance(NestedRecipeIngredientDto, {
+        mode: 'create',
+        createDto: {
+          quantity: 1,
+          quantityMeasurementId: servingMeasurement.id,
+        },
+      }),
+    ];
+
+    const dto = {
+      recipeName: 'CREATE',
+      categoryId: category.id,
+      subCategoryId: category.subCategories[0].id,
+      batchResultMeasurementId: batchMeasurement.id,
+      batchResultQuantity: 1,
+      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeQuantity: 1,
+      ingredientDtos: ingredDtos,
+    } as CreateRecipeDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('ingredients');
+  });
+
   it('should fail update: subcategory with wrong parent category', async () => {
     const category = await categoryService.findOneByName(REC_CAT_A, [
       'subCategories',
@@ -524,4 +587,9 @@ describe('recipe validator', () => {
     expect(result?.children[0].message).not.toBeNull();
     expect(result?.field).toEqual('subCategory');
   });
+
+  /** No update validation implementation
+  it('should fail update: recipeIngredient validator: ...', async () => {
+    throw new NotImplementedException();
+  })*/
 });

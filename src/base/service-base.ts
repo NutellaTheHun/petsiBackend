@@ -369,4 +369,10 @@ export abstract class ServiceBase<
     // Default:
     _query.orderBy('entity.id', 'ASC');
   }
+
+  protected abstract createEntity(dto: TEntity['__CDto']): TEntity['__Entity'];
+  protected abstract updateEntity(
+    entity: TEntity['__Entity'],
+    dto: TEntity['__CDto'],
+  ): TEntity['__Entity'];
 }

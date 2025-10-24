@@ -41,7 +41,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
-import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import {
+  OrderMenuItem,
+  OrderMenuItemEntity,
+} from '../entities/order-menu-item.entity';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 
 @ApiTags('Order Menu Item')
@@ -49,7 +52,7 @@ import { OrderMenuItemService } from '../services/order-menu-item.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('order-menu-items')
 @ApiExtraModels(OrderMenuItem)
-export class OrderMenuItemController extends ControllerBase<OrderMenuItem> {
+export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity> {
   constructor(
     orderItemService: OrderMenuItemService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

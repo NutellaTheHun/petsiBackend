@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
@@ -17,10 +17,13 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     @InjectRepository(InventoryItem)
     private readonly repo: Repository<InventoryItem>,
 
+    @Inject(forwardRef(() => InventoryItemBuilder))
     builder: InventoryItemBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+
+    @Inject(forwardRef(() => InventoryItemValidator))
     validator: InventoryItemValidator,
   ) {
     super(

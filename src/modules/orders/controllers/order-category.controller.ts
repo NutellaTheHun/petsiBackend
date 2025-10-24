@@ -40,7 +40,10 @@ import {
 } from '../../roles/utils/constants';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
-import { OrderCategory } from '../entities/order-category.entity';
+import {
+  OrderCategory,
+  OrderCategoryEntity,
+} from '../entities/order-category.entity';
 import { OrderCategoryService } from '../services/order-category.service';
 
 @ApiTags('Order Category')
@@ -48,7 +51,7 @@ import { OrderCategoryService } from '../services/order-category.service';
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('order-categories')
 @ApiExtraModels(OrderCategory)
-export class OrderCategoryController extends ControllerBase<OrderCategory> {
+export class OrderCategoryController extends ControllerBase<OrderCategoryEntity> {
   constructor(
     orderTypeService: OrderCategoryService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,

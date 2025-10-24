@@ -4,7 +4,6 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
@@ -13,7 +12,6 @@ import {
   OrderMenuItem,
   OrderMenuItemEntity,
 } from '../entities/order-menu-item.entity';
-import { OrderContainerItemService } from '../services/order-container-item.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderContainerItemValidator } from './order-container-item.validator';
 
@@ -26,11 +24,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
     @Inject(forwardRef(() => OrderMenuItemService))
     private readonly orderItemService: OrderMenuItemService,
 
-    @Inject(forwardRef(() => OrderContainerItemService))
-    private readonly containerItemService: OrderContainerItemService,
-
     private readonly menuItemService: MenuItemService,
-    private readonly sizeService: MenuItemSizeService,
     logger: AppLogger,
     requestContextService: RequestContextService,
     private readonly orderContainerItemValidator: OrderContainerItemValidator,

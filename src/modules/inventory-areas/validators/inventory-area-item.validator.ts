@@ -24,9 +24,14 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     @Inject(forwardRef(() => InventoryAreaItemService))
     private readonly areaItemService: InventoryAreaItemService,
 
+    @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
+
     logger: AppLogger,
+
     requestContextService: RequestContextService,
+
+    @Inject(forwardRef(() => InventoryItemSizeValidator))
     private readonly itemSizeValidator: InventoryItemSizeValidator,
   ) {
     super(repo, 'InventoryAreaItem', requestContextService, logger);

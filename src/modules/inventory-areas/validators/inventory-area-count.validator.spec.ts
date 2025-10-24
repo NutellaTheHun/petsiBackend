@@ -1,7 +1,7 @@
-import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { DRY_A, FOOD_A } from '../../inventory-items/utils/constants';
@@ -98,8 +98,51 @@ describe('inventory area count validator', () => {
     expect(result).toBeNull();
   });
 
-  it('create validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {
-    throw new NotImplementedException();
+  it('create validation fail: should throw inventoryAreaItem validation error, no itemSize', async () => {
+    const area = await areaService.findOneByName(AREA_A);
+    if (!area) {
+      throw new Error();
+    }
+
+    const itemA = await itemService.findOneByName(FOOD_A);
+    if (!itemA) {
+      throw new Error();
+    }
+
+    const itemB = await itemService.findOneByName(DRY_A);
+    if (!itemB) {
+      throw new Error();
+    }
+
+    const itemDtos = [
+      plainToInstance(NestedInventoryAreaItemDto, {
+        createId: 'c1',
+        createDto: {
+          countedInventoryItemId: itemA.id,
+          countedAmount: 1,
+          countedItemSizeId: 0, // **
+        },
+      }),
+      // erroneous DTO
+      plainToInstance(NestedInventoryAreaItemDto, {
+        createId: 'c2',
+        createDto: {
+          countedInventoryItemId: itemB.id,
+          countedAmount: 1,
+        },
+      }),
+    ];
+
+    const dto = {
+      inventoryAreaId: area.id,
+      itemCountDtos: itemDtos,
+    } as CreateInventoryAreaCountDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('countedItems');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 
   it('should validate update', async () => {
@@ -146,7 +189,52 @@ describe('inventory area count validator', () => {
     expect(result).toBeNull();
   });
 
-  it('update validation: should throw validation error, (validating inventoryAreaItemDtos)', async () => {
-    throw new NotImplementedException();
+  it('update validation: should fail inventoryAreaItem validation, inventoryItem with no size', async () => {
+    const toUpdate = (
+      await countService.findAll({ relations: ['countedItems'] })
+    ).items[0];
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const itemA = await itemService.findOneByName(FOOD_A);
+    if (!itemA) {
+      throw new Error();
+    }
+
+    const itemB = await itemService.findOneByName(DRY_A);
+    if (!itemB) {
+      throw new Error();
+    }
+
+    const itemDtos = [
+      plainToInstance(NestedInventoryAreaItemDto, {
+        mode: 'create',
+        createDto: {
+          countedInventoryItemId: itemA.id,
+          countedAmount: 1,
+          //needs size assignment
+        },
+      }),
+      // erroneous DTO
+      plainToInstance(NestedInventoryAreaItemDto, {
+        mode: 'update',
+        id: toUpdate.countedItems[0].id,
+        updateDto: {
+          countedInventoryItemId: itemB.id,
+          countedAmount: 1,
+        },
+      }),
+    ];
+
+    const dto = {
+      itemCountDtos: itemDtos,
+    } as UpdateInventoryAreaCountDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.field).toEqual('countedItems');
+    expect(result?.children[0].children.length).toEqual(1);
   });
 });

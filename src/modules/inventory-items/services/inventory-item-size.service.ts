@@ -22,6 +22,8 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
 
     requestContextService: RequestContextService,
     logger: AppLogger,
+
+    @Inject(forwardRef(() => InventoryItemSizeValidator))
     validator: InventoryItemSizeValidator,
   ) {
     super(

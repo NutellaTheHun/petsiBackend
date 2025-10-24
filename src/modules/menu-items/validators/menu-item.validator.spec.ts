@@ -1,4 +1,3 @@
-import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
@@ -200,16 +199,16 @@ describe('menu item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('itemName');
+    expect(result?.children[0].field).toEqual('itemName');
   });
 
-  it('should fail create: ContainerItem validator', async () => {
+  /*it('should fail create: ContainerItem validator', async () => {
     throw new NotImplementedException();
   });
 
   it('should fail create: containerOptions validator', async () => {
     throw new NotImplementedException();
-  });
+  });*/
 
   it('should pass update: normal', async () => {
     const toUpdate = await itemService.findOneByName(item_a);
@@ -369,7 +368,7 @@ describe('menu item validator', () => {
     expect(result).toBeInstanceOf(ValidationErrorNode);
     expect(result?.children.length).toEqual(1);
     expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('itemName');
+    expect(result?.children[0].field).toEqual('itemName');
   });
 
   // how should this be handled?
@@ -470,12 +469,12 @@ describe('menu item validator', () => {
       expect(error.errors[0].errorType).toEqual(INVALID);
     }
   });*/
-
+  /*
   it('should fail update: nested containerItem validator', async () => {
     throw new NotImplementedException();
   });
 
   it('should fail update: nested containerOptions validator', async () => {
     throw new NotImplementedException();
-  });
+  });*/
 });
