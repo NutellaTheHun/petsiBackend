@@ -44,9 +44,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (!item) {
       throw new Error();
     }
-    if (
-      !this.helper.isValidSize(dto.containedMenuItemSizeId, item.validSizes)
-    ) {
+    if (!this.helper.isValidSize(dto.containedItemSizeId, item.validSizes)) {
       const err = new ValidationErrorNode(
         'containedItemSize',
         id,
@@ -65,7 +63,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     const results: ValidationErrorNode[] = [];
 
     // validate size
-    if ((dto.containedMenuItemId || dto.containedMenuItemSizeId) && id) {
+    if ((dto.containedItemId || dto.containedItemSizeId) && id) {
       const item = await this.containerService.findOne(id, [
         'containedItem',
         'containedItemSize',
@@ -74,8 +72,8 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         throw new Error();
       }
 
-      const itemId = dto.containedMenuItemId ?? item.containedItem.id;
-      const sizeId = dto.containedMenuItemSizeId ?? item.containedItemSize.id;
+      const itemId = dto.containedItemId ?? item.containedItem.id;
+      const sizeId = dto.containedItemSizeId ?? item.containedItemSize.id;
 
       const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
       if (!menuItem) {

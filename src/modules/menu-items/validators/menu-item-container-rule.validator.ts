@@ -51,11 +51,11 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
       throw new Error('item not found');
     }
 
-    for (const scarySizeId of dto.validSizeIds) {
-      if (!this.helper.isValidSize(scarySizeId, item.validSizes)) {
+    for (const dirtySizeId of dto.validSizeIds) {
+      if (!this.helper.isValidSize(dirtySizeId, item.validSizes)) {
         const err = new ValidationErrorNode(
           'validSizes',
-          id, // cant get both the id of the rule and the id of the valid size that is erroneous?
+          dirtySizeId,
           'Invalid size for item.',
         );
         results.push(err);

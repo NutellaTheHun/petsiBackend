@@ -48,7 +48,8 @@ export abstract class ServiceBase<
     }
 
     // create entity
-    const entity = await this.builder.buildCreateDto(createDto);
+    //const entity = await this.builder.buildCreateDto(createDto);
+    const entity = await this.createEntity(createDto);
 
     // save in DB
     try {
@@ -94,11 +95,12 @@ export abstract class ServiceBase<
     }
 
     //update DTO
-    await this.builder.buildUpdateDto(toUpdate, updateDto);
+    //await this.builder.buildUpdateDto(toUpdate, updateDto);
+    const result = await this.updateEntity(toUpdate, updateDto);
 
     //Save in DB
     try {
-      return await this.entityRepo.save(toUpdate);
+      return await this.entityRepo.save(result);
     } catch (err) {
       throw this.databaseExceptionHandler.handle(
         err,
@@ -371,6 +373,7 @@ export abstract class ServiceBase<
   }
 
   protected abstract createEntity(dto: TEntity['__CDto']): TEntity['__Entity'];
+
   protected abstract updateEntity(
     entity: TEntity['__Entity'],
     dto: TEntity['__CDto'],

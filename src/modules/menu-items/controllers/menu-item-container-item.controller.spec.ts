@@ -43,39 +43,39 @@ describe('menu item container item controller', () => {
     components = [
       {
         id: 1,
-        parentContainer: items[0],
+        parent: items[0],
         containedItem: items[6],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 2,
-        parentContainer: items[0],
+        parent: items[0],
         containedItem: items[5],
         quantity: 1,
       } as MenuItemContainerItem,
 
       {
         id: 3,
-        parentContainer: items[1],
+        parent: items[1],
         containedItem: items[4],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 4,
-        parentContainer: items[1],
+        parent: items[1],
         containedItem: items[3],
         quantity: 1,
       } as MenuItemContainerItem,
 
       {
         id: 5,
-        parentContainer: items[2],
+        parent: items[2],
         containedItem: items[6],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 6,
-        parentContainer: items[2],
+        parent: items[2],
         containedItem: items[4],
         quantity: 1,
       } as MenuItemContainerItem,
@@ -85,13 +85,13 @@ describe('menu item container item controller', () => {
       .spyOn(service, 'create')
       .mockImplementation(async (dto: CreateMenuItemContainerItemDto) => {
         const container = items.find(
-          (item) => item.id === dto.parentContainerId,
+          (item) => item.id === dto.parentMenuItemId,
         );
         const item = items.find((item) => item.id === dto.containedMenuItemId);
 
         const comp = {
           id: componentId++,
-          parentContainer: container,
+          parent: container,
           containedItem: item,
         } as MenuItemContainerItem;
 
@@ -139,10 +139,8 @@ describe('menu item container item controller', () => {
             throw new NotFoundException();
           }
 
-          if (dto.containedMenuItemId) {
-            const item = items.find(
-              (item) => item.id === dto.containedMenuItemId,
-            );
+          if (dto.containedItemId) {
+            const item = items.find((item) => item.id === dto.containedItemId);
             if (!item) {
               throw new Error();
             }

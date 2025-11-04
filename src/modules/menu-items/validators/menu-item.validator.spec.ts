@@ -245,7 +245,7 @@ describe('menu item validator', () => {
       throw new Error();
     }
 
-    const toUpdate = containerRequest.items[0].parentContainer;
+    const toUpdate = containerRequest.items[0].parent;
 
     const category = await categoryService.findOneByName(CAT_BLUE);
     if (!category) {

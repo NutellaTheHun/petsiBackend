@@ -10,14 +10,9 @@ export function menuItemContainerItemExample(
   return {
     id: 1,
 
-    parentContainer: handleSetHas(shallow, fnSet, menuItemExample, true),
+    parent: handleSetHas(shallow, fnSet, menuItemExample, true),
 
-    parentContainerSize: handleShallow(
-      shallow,
-      fnSet,
-      menuItemSizeExample,
-      true,
-    ),
+    parentItemSize: handleShallow(shallow, fnSet, menuItemSizeExample, true),
 
     containedItem: handleSetHas(shallow, fnSet, menuItemExample, false),
 

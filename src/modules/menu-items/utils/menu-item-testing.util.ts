@@ -251,30 +251,30 @@ export class MenuItemTestingUtil {
 
     const results = [
       {
-        parentContainer: itemF,
-        parentContainerSize: itemF.validSizes[0],
+        parent: itemF,
+        parentItemSize: itemF.validSizes[0],
         containedItem: itemA,
         containedItemSize: itemA.validSizes[0],
         quantity: 1,
       },
       {
-        parentContainer: itemF,
-        parentContainerSize: itemF.validSizes[0],
+        parent: itemF,
+        parentItemSize: itemF.validSizes[0],
         containedItem: itemB,
         containedItemSize: itemB.validSizes[0],
         quantity: 1,
       },
 
       {
-        parentContainer: itemG,
-        parentContainerSize: itemG.validSizes[0],
+        parent: itemG,
+        parentItemSize: itemG.validSizes[0],
         containedItem: itemC,
         containedItemSize: itemC.validSizes[0],
         quantity: 1,
       },
       {
-        parentContainer: itemG,
-        parentContainerSize: itemG.validSizes[0],
+        parent: itemG,
+        parentItemSize: itemG.validSizes[0],
         containedItem: itemD,
         containedItemSize: itemD.validSizes[0],
         quantity: 1,

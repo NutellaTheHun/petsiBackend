@@ -12,7 +12,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly parentContainerId?: number;
+  readonly parentMenuItemId?: number;
 
   @ApiProperty({
     description: 'Id of a MenuItemSize entity of the parent container',
@@ -21,7 +21,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentContainerSizeId: number;
+  readonly parentItemSizeId: number;
 
   @ApiProperty({
     description:
@@ -40,7 +40,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly containedMenuItemSizeId: number;
+  readonly containedItemSizeId: number;
 
   @ApiProperty({
     description: 'The amount of MenuItem/MenuItemSize combination',

@@ -52,20 +52,6 @@ export class Order {
   @Column({ nullable: false })
   recipient: string;
 
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'The date the order was created in the DB',
-  })
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'The date the order was last modified.',
-  })
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   /**
    * The date that the order is due.
    */
@@ -205,4 +191,18 @@ export class Order {
   })
   @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true })
   orderedItems: OrderMenuItem[];
+
+  @ApiProperty({
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'The date the order was created in the DB',
+  })
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'The date the order was last modified.',
+  })
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

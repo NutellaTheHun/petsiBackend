@@ -9,7 +9,7 @@ export class UpdateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly containedMenuItemId?: number;
+  readonly containedItemId?: number;
 
   @ApiPropertyOptional({
     description: 'Id of a MenuItemSize entity. The size of the contained item',
@@ -18,7 +18,7 @@ export class UpdateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly containedMenuItemSizeId?: number;
+  readonly containedItemSizeId?: number;
 
   @ApiPropertyOptional({
     description: 'The amount of MenuItem/MenuItemSize combination',

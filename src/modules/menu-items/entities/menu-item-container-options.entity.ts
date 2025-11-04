@@ -61,7 +61,7 @@ export class MenuItemContainerOptions {
     type: () => MenuItemContainerRule,
     isArray: true,
   })
-  @OneToMany(() => MenuItemContainerRule, (c) => c.parentContainerOption, {
+  @OneToMany(() => MenuItemContainerRule, (c) => c.parentMenuItem, {
     cascade: true,
     eager: true,
   })

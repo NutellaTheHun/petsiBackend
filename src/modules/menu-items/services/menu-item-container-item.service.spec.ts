@@ -137,8 +137,8 @@ describe('menu item container item service', () => {
 
     const dto = {
       mode: 'update',
-      containedMenuItemId: newItem.id,
-      containedMenuItemSizeId: newItem.validSizes[0].id,
+      containedItemId: newItem.id,
+      containedItemSizeId: newItem.validSizes[0].id,
     } as UpdateMenuItemContainerItemDto;
 
     const result = await componentService.update(testId, dto);
@@ -168,7 +168,7 @@ describe('menu item container item service', () => {
 
     const dto = {
       mode: 'update',
-      containedMenuItemSizeId: item.validSizes[1].id,
+      containedItemSizeId: item.validSizes[1].id,
     } as UpdateMenuItemContainerItemDto;
 
     const result = await componentService.update(testId, dto);

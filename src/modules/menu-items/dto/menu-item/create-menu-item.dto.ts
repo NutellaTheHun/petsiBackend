@@ -1,15 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsArray,
-  IsBoolean,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
-import { NestedMenuItemContainerOptionsDto } from '../menu-item-container-options/nested-menu-item-container-options.dto';
+import { NestedMenuItemContainerRuleDto } from '../menu-item-container-rule/nested-menu-item-container-rule.dto';
 
 export class CreateMenuItemDto {
   @ApiPropertyOptional({
@@ -24,6 +24,16 @@ export class CreateMenuItemDto {
   readonly categoryId?: number;
 
   @ApiProperty({
+    description: 'Can be single, fixed_container, or variable_container',
+    example: 'fixed_container',
+    nullable: true,
+    type: 'string',
+  })
+  @IsNotEmpty()
+  @IsString()
+  readonly type: string;
+
+  @ApiProperty({
     description: 'Name of MenuItem entity.',
     example: 'classic apple',
     type: 'string',
@@ -31,41 +41,6 @@ export class CreateMenuItemDto {
   @IsString()
   @IsNotEmpty()
   readonly itemName: string;
-
-  @ApiPropertyOptional({
-    description:
-      'Id of MenuItem entity that is the vegan version of the referencing MenuItem.',
-    example: 2,
-    nullable: true,
-    type: 'number',
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly veganOptionMenuId?: number;
-
-  @ApiPropertyOptional({
-    description:
-      "Id of MenuItem entity that is the Take 'n Bake version of the referencing MenuItem.",
-    example: 3,
-    nullable: true,
-    type: 'number',
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly takeNBakeOptionMenuId?: number;
-
-  @ApiPropertyOptional({
-    description:
-      "Id of MenuItem entity that is the vegan Take 'n Bake version of the referencing MenuItem.",
-    example: 4,
-    type: 'number',
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly veganTakeNBakeOptionMenuId?: number;
 
   @ApiProperty({
     description:
@@ -79,26 +54,6 @@ export class CreateMenuItemDto {
   @IsPositive({ each: true })
   @IsNotEmpty()
   readonly validSizeIds: number[];
-
-  @ApiPropertyOptional({
-    description:
-      'Is Pie of the Month, monthly rotating special, relevant for Pie baking lists.',
-    example: false,
-    type: 'boolean',
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly isPOTM?: boolean;
-
-  @ApiPropertyOptional({
-    description: 'If pie requires parbaked shells',
-    example: false,
-    nullable: true,
-    type: 'boolean',
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly isParbake?: boolean;
 
   @ApiPropertyOptional({
     description: 'Array of CreateMenutItemContainerItemDtos',
@@ -117,35 +72,26 @@ export class CreateMenuItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly definedContainerItemDtos?: NestedMenuItemContainerItemDto[];
+  @ValidateNested({ each: true })
+  readonly fixedContentDtos?: NestedMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:
       'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-    type: () => NestedMenuItemContainerOptionsDto,
-    example: {
-      mode: 'create',
-      createDto: {
-        containerRuleDtos: [
-          {
-            mode: 'create',
-            createDto: {
-              validMenuItemId: 5,
-              validSizeIds: [6, 7],
-            },
-          },
-          {
-            mode: 'create',
-            createDto: {
-              validMenuItemId: 8,
-              validSizeIds: [9, 10],
-            },
-          },
-        ],
-        validQuantity: 11,
+    type: () => [NestedMenuItemContainerRuleDto],
+    example: [
+      {
+        mode: 'create',
+        createDto: {
+          validMenuItemId: 5,
+          validSizeIds: [6, 7],
+          maxQuantity: 8,
+        },
       },
-    },
+    ],
   })
   @IsOptional()
-  readonly containerOptionDto?: NestedMenuItemContainerOptionsDto;
+  @IsArray()
+  @ValidateNested({ each: true })
+  readonly variableRuleDtos?: NestedMenuItemContainerRuleDto[];
 }

@@ -46,18 +46,18 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
     // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
     if (parent) {
       this.setPropByVal('parentContainer', parent);
-    } else if (dto.parentContainerId !== undefined) {
-      this.parentContainerById(dto.parentContainerId);
+    } else if (dto.parentMenuItemId !== undefined) {
+      this.parentContainerById(dto.parentMenuItemId);
     }
 
-    if (dto.parentContainerSizeId !== undefined) {
-      this.parentContainerSizeById(dto.parentContainerSizeId);
+    if (dto.parentItemSizeId !== undefined) {
+      this.parentContainerSizeById(dto.parentItemSizeId);
     }
     if (dto.containedMenuItemId !== undefined) {
       this.containedItemById(dto.containedMenuItemId);
     }
-    if (dto.containedMenuItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedMenuItemSizeId);
+    if (dto.containedItemSizeId !== undefined) {
+      this.containedItemSizeById(dto.containedItemSizeId);
     }
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
@@ -65,11 +65,11 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   }
 
   protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
-    if (dto.containedMenuItemId !== undefined) {
-      this.containedItemById(dto.containedMenuItemId);
+    if (dto.containedItemId !== undefined) {
+      this.containedItemById(dto.containedItemId);
     }
-    if (dto.containedMenuItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedMenuItemSizeId);
+    if (dto.containedItemSizeId !== undefined) {
+      this.containedItemSizeById(dto.containedItemSizeId);
     }
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);

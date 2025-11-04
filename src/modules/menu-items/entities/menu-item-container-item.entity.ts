@@ -61,11 +61,12 @@ export class MenuItemContainerItem {
     description: 'The MenuItem that is the container to this item',
     type: () => MenuItem,
   })
-  @ManyToOne(() => MenuItem, (menuItem) => menuItem.definedContainerItems, {
+  @ManyToOne(() => MenuItem, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
+    nullable: false,
   })
-  parentContainer: MenuItem;
+  parent: MenuItem;
 
   /**
    * The Parent's {@link MenuItemSize} for the context of this component.
@@ -80,7 +81,7 @@ export class MenuItemContainerItem {
     type: MenuItemSize,
   })
   @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
-  parentContainerSize: MenuItemSize;
+  parentItemSize: MenuItemSize;
 
   /**
    * The {@link MenuItem} the component represents.

@@ -1,18 +1,15 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class CreateMenuItemContainerRuleDto {
-  @ApiPropertyOptional({
-    description:
-      'Id of the MenuItemContainerOptions entity. Pass this property when creating through the MenuItemContainerRule endpoint (rather than through the MenuItem endpoint)',
-    example: 1,
-    nullable: true,
-    type: 'number',
+  @ApiProperty({
+    description: 'Id of the item the rule pertains to.',
+    example: '1',
   })
   @IsNumber()
   @IsPositive()
-  @IsOptional()
-  readonly parentContainerOptionsId?: number;
+  @IsNotEmpty()
+  readonly parentMenuItemId: number;
 
   @ApiProperty({
     description: 'Id of a MenuItem entity that is a valid component',
@@ -34,4 +31,14 @@ export class CreateMenuItemContainerRuleDto {
   @IsPositive()
   @IsNotEmpty()
   readonly validSizeIds: number[];
+
+  @ApiProperty({
+    description: 'Optional setting if specific item has a max amount.',
+    example: 6,
+    type: 'number',
+  })
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  readonly maxQuantity?: number;
 }

@@ -17,14 +17,14 @@ import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
-    private readonly _repo: Repository<InventoryAreaCount>,
+    private readonly repo: Repository<InventoryAreaCount>,
     logger: AppLogger,
     requestContextService: RequestContextService,
 
     @Inject(forwardRef(() => InventoryAreaItemValidator))
     private readonly areaItemValidator: InventoryAreaItemValidator,
   ) {
-    super(_repo, 'InventoryAreaCount', requestContextService, logger);
+    super(repo, 'InventoryAreaCount', requestContextService, logger);
   }
 
   protected async doValidateCreateNode(

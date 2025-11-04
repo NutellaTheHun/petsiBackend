@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import {
   Entity,
   JoinTable,
@@ -45,12 +46,11 @@ export class MenuItemContainerRule {
     description: 'The container options this rule applies to.',
     type: () => MenuItemContainerOptions,
   })
-  @ManyToOne(
-    () => MenuItemContainerOptions,
-    (options) => options.containerRules,
-    { onDelete: 'CASCADE', orphanedRowAction: 'delete' },
-  )
-  parentContainerOption: MenuItemContainerOptions;
+  @ManyToOne(() => MenuItem, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentMenuItem: MenuItem;
 
   /**
    * The {@link MenuItem} that this rule states is allowed in the parent container.
@@ -79,4 +79,14 @@ export class MenuItemContainerRule {
   @ManyToMany(() => MenuItemSize, { eager: true })
   @JoinTable()
   validSizes: MenuItemSize[];
+
+  @ApiProperty({
+    description: 'Optional setting if specific item has a max amount.',
+    example: 6,
+    type: 'number',
+  })
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  maxQuantity?: number;
 }

@@ -1,5 +1,4 @@
 import { handleSetHas, handleShallow } from '../handlers/handlers';
-import { menuItemContainerOptionsExample } from './menu-item-container-options.example';
 import { menuItemSizeExample } from './menu-item-size.example';
 import { menuItemExample } from './menu-item.example';
 
@@ -11,15 +10,12 @@ export function menuItemContainerRuleExample(
   return {
     id: 1,
 
-    parentContainerOption: handleSetHas(
-      shallow,
-      fnSet,
-      menuItemContainerOptionsExample,
-      true,
-    ),
+    parentMenuItem: handleSetHas(shallow, fnSet, menuItemExample, true),
 
     validItem: handleShallow(shallow, fnSet, menuItemExample, false),
 
     validSizes: [handleShallow(shallow, fnSet, menuItemSizeExample, false)],
+
+    maxQuantity: 3,
   };
 }

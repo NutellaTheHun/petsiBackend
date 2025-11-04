@@ -5,6 +5,7 @@ import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
+import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import {
   InventoryArea,
   InventoryAreaEntity,
@@ -12,6 +13,23 @@ import {
 import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
 export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
+  protected createEntity(dto: CreateInventoryAreaDto): InventoryArea {
+    // No Children
+    // Validate
+    // Build
+    // Return
+    throw new Error('Method not implemented.');
+  }
+  protected updateEntity(
+    entity: InventoryArea,
+    dto: CreateInventoryAreaDto,
+  ): InventoryArea {
+    // No Children
+    // Validate
+    // Build
+    // Return
+    throw new Error('Method not implemented.');
+  }
   constructor(
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,
