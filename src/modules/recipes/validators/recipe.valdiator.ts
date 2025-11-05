@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -7,16 +7,17 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
-import { RecipeCategoryService } from '../services/recipe-category.service';
 
 @Injectable()
 export class RecipeValidator extends ValidatorBase<RecipeEntity> {
   constructor(
     @InjectRepository(Recipe)
     private readonly repo: Repository<Recipe>,
-    @Inject(forwardRef(() => RecipeCategoryService))
-    private readonly categoryService: RecipeCategoryService,
+    @InjectRepository(RecipeCategory)
+    private readonly recipeCategoryRepo: Repository<RecipeCategory>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -51,12 +52,19 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
 
     // Validate category / subcategory
     if (dto.categoryId && dto.subCategoryId) {
-      const category = await this.categoryService.findOne(dto.categoryId, [
+      /*const category = await this.categoryService.findOne(dto.categoryId, [
         'subCategories',
-      ]);
-      if (!category.subCategories) {
-        throw new Error('subcategories is null');
+      ]);*/
+      const category = await this.recipeCategoryRepo.findOne({
+        where: { id: dto.categoryId },
+        relations: ['subCategories'],
+      });
+      if (!category) {
+        throw new NotFoundException();
       }
+      /*if (!category.subCategories) {
+        throw new Error('subcategories is null');
+      }*/
 
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
@@ -90,12 +98,19 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
 
     // Validate category / subcategory
     if (dto.categoryId && dto.subCategoryId) {
-      const category = await this.categoryService.findOne(dto.categoryId, [
+      /*const category = await this.categoryService.findOne(dto.categoryId, [
         'subCategories',
-      ]);
-      if (!category.subCategories) {
-        throw new Error('subcategories is null');
+      ]);*/
+      const category = await this.recipeCategoryRepo.findOne({
+        where: { id: dto.categoryId },
+        relations: ['subCategories'],
+      });
+      if (!category) {
+        throw new NotFoundException();
       }
+      /*if (!category.subCategories) {
+        throw new Error('subcategories is null');
+      }*/
 
       if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -11,16 +11,16 @@ import {
   MenuItemContainerRule,
   MenuItemContainerRuleEntity,
 } from '../entities/menu-item-container-rule.entity';
-import { MenuItemService } from '../services/menu-item.service';
+import { MenuItem } from '../menu-items.module';
 
 @Injectable()
 export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContainerRuleEntity> {
   constructor(
     @InjectRepository(MenuItemContainerRule)
     private readonly repo: Repository<MenuItemContainerRule>,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly itemService: MenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -44,9 +44,13 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     }
 
     // valid sizes
-    const item = await this.itemService.findOne(dto.validMenuItemId, [
+    /*const item = await this.itemService.findOne(dto.validMenuItemId, [
       'validSizes',
-    ]);
+    ]);*/
+    const item = await this.menuItemRepo.findOne({
+      where: { id: dto.validMenuItemId },
+      relations: ['validSizes'],
+    });
     if (!item) {
       throw new Error('item not found');
     }
@@ -98,7 +102,11 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
         dto.validSizeIds ?? currentRule?.validSizes.map((size) => size.id);
       const itemId = dto.validMenuItemId ?? currentRule?.validItem.id;
 
-      const item = await this.itemService.findOne(itemId, ['validSizes']);
+      //const item = await this.itemService.findOne(itemId, ['validSizes']);
+      const item = await this.menuItemRepo.findOne({
+        where: { id: itemId },
+        relations: ['validSizes'],
+      });
       if (!item) {
         throw new Error('item not found');
       }

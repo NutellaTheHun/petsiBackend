@@ -17,6 +17,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
   constructor(
     @InjectRepository(RecipeSubCategory)
     private readonly repo: Repository<RecipeSubCategory>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

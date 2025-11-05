@@ -19,9 +19,10 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     @InjectRepository(RecipeCategory)
     private readonly repo: Repository<RecipeCategory>,
 
+    private readonly subCategoryValidator: RecipeSubCategoryValidator,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
-    private readonly subCategoryValidator: RecipeSubCategoryValidator,
   ) {
     super(repo, 'RecipeCategory', requestContextService, logger);
   }

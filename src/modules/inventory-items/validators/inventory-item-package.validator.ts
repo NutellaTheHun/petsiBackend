@@ -17,6 +17,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
   constructor(
     @InjectRepository(InventoryItemPackage)
     private readonly repo: Repository<InventoryItemPackage>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

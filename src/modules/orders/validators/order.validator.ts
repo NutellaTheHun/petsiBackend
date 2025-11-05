@@ -15,9 +15,11 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   constructor(
     @InjectRepository(Order)
     private readonly repo: Repository<Order>,
+
+    private readonly orderItemValidator: OrderMenuItemValidator,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
-    private readonly orderItemValidator: OrderMenuItemValidator,
   ) {
     super(repo, 'Order', requestContextService, logger);
   }

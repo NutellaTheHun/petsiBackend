@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -6,9 +6,8 @@ import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemContainerOptions } from '../../menu-items/entities/menu-item-container-options.entity';
 import { MenuItemContainerRule } from '../../menu-items/entities/menu-item-container-rule.entity';
-import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
-import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items/menu-items.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
@@ -16,24 +15,19 @@ import {
   OrderContainerItem,
   OrderContainerItemEntity,
 } from '../entities/order-container-item.entity';
-import { OrderContainerItemService } from '../services/order-container-item.service';
 
 @Injectable()
 export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItemEntity> {
   constructor(
     @InjectRepository(OrderContainerItem)
-    repo: Repository<OrderContainerItem>,
+    private readonly repo: Repository<OrderContainerItem>,
 
-    @Inject(forwardRef(() => OrderContainerItemService))
-    private readonly containerItemService: OrderContainerItemService,
+    @InjectRepository(MenuItemSize)
+    private readonly menuItemSizeRepo: Repository<MenuItemSize>,
 
-    @Inject(forwardRef(() => MenuItemSizeService))
-    private readonly sizeService: MenuItemSizeService,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly itemService: MenuItemService,
-
-    private readonly optionsService: MenuItemContainerOptionsService,
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -47,12 +41,16 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     const results: ValidationErrorNode[] = [];
 
     // validate item / size
-    const containedItem = await this.itemService.findOne(
+    /*const containedItem = await this.itemService.findOne(
       dto.containedMenuItemId,
       ['validSizes'],
-    );
+    );*/
+    const containedItem = await this.menuItemRepo.findOne({
+      where: { id: dto.containedMenuItemId },
+      relations: ['validSizes'],
+    });
     if (!containedItem) {
-      throw new Error();
+      throw new NotFoundException();
     }
     if (
       !this.helper.isValidSize(
@@ -69,13 +67,17 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     }
 
     // validate rule item / size
-    const options = await this.getContainerOptions(
+    /*const options = await this.getContainerOptions(
       dto.parentContainerMenuItemId,
-    );
-    if (options) {
+    );*/
+    const parentItem = await this.menuItemRepo.findOne({
+      where: { id: dto.parentContainerMenuItemId },
+      relations: ['variableRules'],
+    });
+    if (parentItem && parentItem.variableRules) {
       const rule = this.GetItemRule(
         dto.containedMenuItemId,
-        options.containerRules,
+        parentItem.variableRules,
       );
       // validate item
       if (rule) {
@@ -127,25 +129,38 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       (dto.containedMenuItemId || dto.containedMenuItemSizeId) &&
       dto.parentContainerMenuItemId
     ) {
-      const containerItem = await this.containerItemService.findOne(id, [
+      /*const containerItem = await this.containerItemService.findOne(id, [
         'containedItem',
         'containedItemSize',
-      ]);
-
+      ]);*/
+      const containerItem = await this.repo.findOne({
+        where: { id },
+        relations: ['containedItem', 'containedItemSize'],
+      });
+      if (!containerItem) {
+        throw new NotFoundException();
+      }
       const itemId = dto.containedMenuItemId ?? containerItem.containedItem.id;
       const sizeId =
         dto.containedMenuItemSizeId ?? containerItem.containedItemSize.id;
 
-      const containedSize = await this.sizeService.findOne(sizeId);
+      //const containedSize = await this.sizeService.findOne(sizeId);
+      const containedSize = await this.menuItemSizeRepo.findOne({
+        where: { id: sizeId },
+      });
       if (!containedSize) {
-        throw new Error();
+        throw new NotFoundException();
       }
 
-      const containedItem = await this.itemService.findOne(itemId, [
+      /*const containedItem = await this.itemService.findOne(itemId, [
         'validSizes',
-      ]);
+      ]);*/
+      const containedItem = await this.menuItemRepo.findOne({
+        where: { id: itemId },
+        relations: ['validSizes'],
+      });
       if (!containedItem) {
-        throw new Error();
+        throw new NotFoundException();
       }
 
       // validate item / size
@@ -159,11 +174,15 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       }
 
       // If dynamic container
-      const options = await this.getContainerOptions(
+      /*const options = await this.getContainerOptions(
         dto.parentContainerMenuItemId,
-      );
-      if (options) {
-        const rule = this.GetItemRule(itemId, options.containerRules);
+      );*/
+      const parentItem = await this.menuItemRepo.findOne({
+        where: { id: dto.parentContainerMenuItemId },
+        relations: ['variableRules'],
+      });
+      if (parentItem && parentItem.variableRules) {
+        const rule = this.GetItemRule(itemId, parentItem.variableRules);
 
         // validate rule / item
         // (implied dto.containedMenuItemId for rule to be null)
@@ -198,7 +217,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     return this.checkValidateResult(results);
   }
 
-  private async getContainerOptions(
+  /*private async getContainerOptions(
     parentContainerMenuItemId: number,
   ): Promise<MenuItemContainerOptions | null> {
     const parentContainer = await this.itemService.findOne(
@@ -213,7 +232,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       parentContainer.containerOptions.id,
       ['containerRules'],
     );
-  }
+  }*/
 
   /**
    * Searches an array of {@link MenuItemContainerRule} for the given {@link MenuItem} and returns it

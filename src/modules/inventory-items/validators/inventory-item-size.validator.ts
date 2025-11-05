@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -11,16 +11,12 @@ import {
   InventoryItemSize,
   InventoryItemSizeEntity,
 } from '../entities/inventory-item-size.entity';
-import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 
 @Injectable()
 export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeEntity> {
   constructor(
     @InjectRepository(InventoryItemSize)
     private readonly repo: Repository<InventoryItemSize>,
-
-    @Inject(forwardRef(() => InventoryItemSizeService))
-    private readonly sizeService: InventoryItemSizeService,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -45,11 +41,18 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
 
     // Cant update a item size to a already existing combination of packageType and measure unit size.
     if ((dto.measureUnitId || dto.inventoryPackageId) && id) {
-      const currentSize = await this.sizeService.findOne(id, [
+      /*const currentSize = await this.sizeService.findOne(id, [
         'inventoryItem',
         'measureUnit',
         'packageType',
-      ]);
+      ]);*/
+      const currentSize = await this.repo.findOne({
+        where: { id },
+        relations: ['inventoryItem', 'measureUnit', 'packageType'],
+      });
+      if (!currentSize) {
+        throw new NotFoundException();
+      }
       const exists = await this.repo.findOne({
         where: {
           measureUnit: { id: dto.measureUnitId ?? currentSize.measureUnit.id },

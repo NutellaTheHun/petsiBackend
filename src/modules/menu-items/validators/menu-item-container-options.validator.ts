@@ -18,10 +18,11 @@ export class MenuItemContainerOptionsValidator extends ValidatorBase<MenuItemCon
   constructor(
     @InjectRepository(MenuItemContainerOptions)
     private readonly repo: Repository<MenuItemContainerOptions>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
 
     private readonly containerRuleValidator: MenuItemContainerRuleValidator,
+
+    logger: AppLogger,
+    requestContextService: RequestContextService,
   ) {
     super(repo, 'MenuItemContainerOptions', requestContextService, logger);
   }

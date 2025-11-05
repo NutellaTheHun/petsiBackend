@@ -17,6 +17,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
   constructor(
     @InjectRepository(MenuItemCategory)
     private readonly repo: Repository<MenuItemCategory>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

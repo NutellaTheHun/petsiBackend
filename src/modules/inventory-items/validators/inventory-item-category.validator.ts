@@ -17,6 +17,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
   constructor(
     @InjectRepository(InventoryItemCategory)
     private readonly repo: Repository<InventoryItemCategory>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

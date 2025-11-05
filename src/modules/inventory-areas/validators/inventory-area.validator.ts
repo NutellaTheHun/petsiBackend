@@ -17,6 +17,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
   constructor(
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

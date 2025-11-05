@@ -14,6 +14,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
   constructor(
     @InjectRepository(Label)
     private readonly repo: Repository<Label>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

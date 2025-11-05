@@ -18,11 +18,12 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
   constructor(
     @InjectRepository(InventoryItem)
     private readonly repo: Repository<InventoryItem>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
 
     @Inject(forwardRef(() => InventoryItemSizeValidator))
     private readonly itemSizeValidator: InventoryItemSizeValidator,
+
+    logger: AppLogger,
+    requestContextService: RequestContextService,
   ) {
     super(repo, 'InventoryItem', requestContextService, logger);
   }

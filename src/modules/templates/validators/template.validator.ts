@@ -15,9 +15,9 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,
+    private readonly templateItemValidator: TemplateMenuItemValidator,
     logger: AppLogger,
     requestContextService: RequestContextService,
-    private readonly templateItemValidator: TemplateMenuItemValidator,
   ) {
     super(repo, 'Template', requestContextService, logger);
   }

@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemSizeValidator } from '../../inventory-items/validators/inventory-item-size.validator';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
@@ -13,26 +13,20 @@ import {
   InventoryAreaItem,
   InventoryAreaItemEntity,
 } from '../entities/inventory-area-item.entity';
-import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
 @Injectable()
 export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemEntity> {
   constructor(
     @InjectRepository(InventoryAreaItem)
     private readonly repo: Repository<InventoryAreaItem>,
-
-    @Inject(forwardRef(() => InventoryAreaItemService))
-    private readonly areaItemService: InventoryAreaItemService,
-
-    @Inject(forwardRef(() => InventoryItemService))
-    private readonly itemService: InventoryItemService,
-
-    logger: AppLogger,
-
-    requestContextService: RequestContextService,
+    @InjectRepository(InventoryItem)
+    private readonly inventoryItemRepo: Repository<InventoryItem>,
 
     @Inject(forwardRef(() => InventoryItemSizeValidator))
     private readonly itemSizeValidator: InventoryItemSizeValidator,
+
+    logger: AppLogger,
+    requestContextService: RequestContextService,
   ) {
     super(repo, 'InventoryAreaItem', requestContextService, logger);
   }
@@ -93,10 +87,18 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         (dto.countedItemSizeId && !dto.countedItemSizeDto)) &&
       id
     ) {
-      const toUpdate = await this.areaItemService.findOne(id, [
+      /*const toUpdate = await this.areaItemService.findOne(id, [
         'countedItem',
         'countedItemSize',
       ]);
+      if (!toUpdate) {
+        throw new Error('entity to update not found');
+      }*/
+
+      const toUpdate = await this.repo.findOne({
+        where: { id },
+        relations: ['countedItem', 'countedItemSize'],
+      });
       if (!toUpdate) {
         throw new Error('entity to update not found');
       }
@@ -104,14 +106,20 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       const itemId = dto.countedInventoryItemId ?? toUpdate.countedItem.id;
       const sizeId = dto.countedItemSizeId ?? toUpdate.countedItemSize.id;
 
-      const item = await this.itemService.findOne(itemId, ['itemSizes']);
-      if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
-        const err = new ValidationErrorNode(
-          'countedItemSize',
-          id,
-          'Invalid size for inventory item',
-        );
-        results.push(err);
+      //const item = await this.itemService.findOne(itemId, ['itemSizes']);
+      const item = await this.inventoryItemRepo.findOne({
+        where: { id },
+        relations: ['itemSizes'],
+      });
+      if (item?.itemSizes) {
+        if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
+          const err = new ValidationErrorNode(
+            'countedItemSize',
+            id,
+            'Invalid size for inventory item',
+          );
+          results.push(err);
+        }
       }
     }
 

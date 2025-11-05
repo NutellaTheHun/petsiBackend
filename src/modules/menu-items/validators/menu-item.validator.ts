@@ -9,17 +9,17 @@ import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
-import { MenuItemContainerOptionsValidator } from './menu-item-container-options.validator';
 
 @Injectable()
 export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
   constructor(
     @InjectRepository(MenuItem)
     private readonly repo: Repository<MenuItem>,
+
+    private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
-    private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
-    private readonly menuItemContainerOptionValidator: MenuItemContainerOptionsValidator,
   ) {
     super(repo, 'MenuItem', requestContextService, logger);
   }
@@ -41,14 +41,11 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // nested containerItem dtos
-    if (
-      dto.definedContainerItemDtos &&
-      dto.definedContainerItemDtos.length > 0
-    ) {
+    if (dto.fixedContentDtos && dto.fixedContentDtos.length > 0) {
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
           'definedContainerItems',
-          dto.definedContainerItemDtos,
+          dto.fixedContentDtos,
         );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
@@ -56,7 +53,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // nested options dto
-    if (dto.containerOptionDto) {
+    /*if (dto.containerOptionDto) {
       const nestedDtoErr =
         await this.menuItemContainerOptionValidator.validateNestedNode(
           'containerOptions',
@@ -65,7 +62,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
       }
-    }
+    }*/
 
     return this.checkValidateResult(results);
   }
@@ -89,14 +86,11 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // nested containerItem dtos
-    if (
-      dto.definedContainerItemDtos &&
-      dto.definedContainerItemDtos.length > 0
-    ) {
+    if (dto.fixedContentDtos && dto.fixedContentDtos.length > 0) {
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
           'definedContainerItems',
-          dto.definedContainerItemDtos,
+          dto.fixedContentDtos,
         );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
@@ -104,7 +98,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // nested options dto
-    if (dto.containerOptionDto) {
+    /*if (dto.containerOptionDto) {
       const nestedDtoErr =
         await this.menuItemContainerOptionValidator.validateNestedNode(
           'containerOptions',
@@ -113,7 +107,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
       }
-    }
+    }*/
 
     return this.checkValidateResult(results);
   }

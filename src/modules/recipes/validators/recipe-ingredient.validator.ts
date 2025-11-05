@@ -17,6 +17,7 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
   constructor(
     @InjectRepository(RecipeIngredient)
     private readonly repo: Repository<RecipeIngredient>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

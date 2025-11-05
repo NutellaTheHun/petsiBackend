@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
@@ -11,20 +11,16 @@ import {
   MenuItemContainerItem,
   MenuItemContainerItemEntity,
 } from '../entities/menu-item-container-item.entity';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemService } from '../services/menu-item.service';
+import { MenuItem } from '../menu-items.module';
 
 @Injectable()
 export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItemEntity> {
   constructor(
     @InjectRepository(MenuItemContainerItem)
     private readonly repo: Repository<MenuItemContainerItem>,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
-    @Inject(forwardRef(() => MenuItemContainerItemService))
-    private readonly containerService: MenuItemContainerItemService,
-
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly itemService: MenuItemService,
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -38,9 +34,13 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     const results: ValidationErrorNode[] = [];
 
     // validate container item size
-    const item = await this.itemService.findOne(dto.containedMenuItemId, [
+    /*const item = await this.itemService.findOne(dto.containedMenuItemId, [
       'validSizes',
-    ]);
+    ]);*/
+    const item = await this.menuItemRepo.findOne({
+      where: { id: dto.containedMenuItemId },
+      relations: ['validSizes'],
+    });
     if (!item) {
       throw new Error();
     }
@@ -64,10 +64,14 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
     // validate size
     if ((dto.containedItemId || dto.containedItemSizeId) && id) {
-      const item = await this.containerService.findOne(id, [
+      /*const item = await this.containerService.findOne(id, [
         'containedItem',
         'containedItemSize',
-      ]);
+      ]);*/
+      const item = await this.repo.findOne({
+        where: { id },
+        relations: ['containedItem', 'containedItemSize'],
+      });
       if (!item) {
         throw new Error();
       }
@@ -75,7 +79,11 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       const itemId = dto.containedItemId ?? item.containedItem.id;
       const sizeId = dto.containedItemSizeId ?? item.containedItemSize.id;
 
-      const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
+      //const menuItem = await this.itemService.findOne(itemId, ['validSizes']);
+      const menuItem = await this.menuItemRepo.findOne({
+        where: { id: itemId },
+        relations: ['validSizes'],
+      });
       if (!menuItem) {
         throw new Error();
       }

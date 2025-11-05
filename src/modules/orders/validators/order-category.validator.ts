@@ -17,6 +17,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
   constructor(
     @InjectRepository(OrderCategory)
     private readonly repo: Repository<OrderCategory>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

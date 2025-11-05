@@ -17,6 +17,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
   constructor(
     @InjectRepository(MenuItemSize)
     private readonly repo: Repository<MenuItemSize>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
