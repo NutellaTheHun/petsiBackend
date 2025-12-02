@@ -372,10 +372,21 @@ export abstract class ServiceBase<
     _query.orderBy('entity.id', 'ASC');
   }
 
-  protected abstract createEntity(dto: TEntity['__CDto']): TEntity['__Entity'];
+  /*protected abstract createEntity(
+    dto: TEntity['__CDto'],
+  ): Promise<TEntity['__Entity']>;
 
   protected abstract updateEntity(
     entity: TEntity['__Entity'],
+    dto: TEntity['__UDto'],
+  ): Promise<TEntity['__Entity']>;*/
+
+  protected abstract createEntity(
     dto: TEntity['__CDto'],
-  ): TEntity['__Entity'];
+  ): Promise<TEntity['__Entity']>;
+
+  protected abstract updateEntity(
+    entity: TEntity['__Entity'],
+    dto: TEntity['__UDto'],
+  ): Promise<TEntity['__Entity']>;
 }

@@ -1,25 +1,21 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository, SelectQueryBuilder } from 'typeorm';
+import { Between, DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
+import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import {
   InventoryAreaCount,
   InventoryAreaCountEntity,
 } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction copy';
+import { InventoryAreaItemUpdateInTransaction } from '../utils/transactions/inventory-area-item.update.transaction';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
-/**
- * Intended flow of facilitating an inventory count:
- * - select pre-existing inventory area
- * - Create InventoryAreaCount with an InvArea, and empty list of inventoryItemCount
- * - employee performs inventory count, creating list of inventoryItemCount
- * - employee saves/completes/finished inventory count, updateDTO is sent with areaId, countId, and inventoryItemCountDTOs
- * - inventoryItemCountDTOs are created (via separate call to inventoryItemCountController)
- * - with returned list of inventoryItemCountIDs, update areaCount entity with itemIDs
- */
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
@@ -32,6 +28,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     requestContextService: RequestContextService,
     @Inject(forwardRef(() => InventoryAreaCountValidator))
     validator: InventoryAreaCountValidator,
+
+    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -41,6 +39,81 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateInventoryAreaCountDto,
+  ): Promise<InventoryAreaCount> {
+    return this.dataSource.transaction(async (manager) => {
+      const count = manager.create(InventoryAreaCount, {
+        inventoryArea: { id: dto.inventoryAreaId },
+      });
+      await manager.save(count);
+
+      if (dto.itemCountDtos) {
+        for (const itemDto of dto.itemCountDtos) {
+          if (itemDto.createDto) {
+            const item = await InventoryAreaItemCreateInTransaction(manager, {
+              parentInventoryCountId: count.id,
+              ...itemDto.createDto,
+            });
+            count.countedItems.push(item);
+          } else if (itemDto.updateDto) {
+          }
+        }
+      }
+      // either assign each created item entity, or query final result and return
+      return count;
+    });
+  }
+
+  protected updateEntity(
+    entity: InventoryAreaCount,
+    dto: UpdateInventoryAreaCountDto,
+  ): Promise<InventoryAreaCount> {
+    return this.dataSource.transaction(async (manager) => {
+      if (dto.inventoryAreaId) {
+        entity.inventoryArea = { id: dto.inventoryAreaId } as any;
+      }
+
+      if (dto.itemCountDtos) {
+        const existingItems = await manager.find(InventoryAreaItem, {
+          where: { parentInventoryCount: { id: entity.id } },
+          relations: ['countedItemSize'],
+        });
+        const existingMap = new Map(existingItems.map((i) => [i.id, i]));
+
+        for (const nested of dto.itemCountDtos) {
+          if (nested.createDto) {
+            const newItem = await InventoryAreaItemCreateInTransaction(
+              manager,
+              nested.createDto,
+            );
+            existingMap.set(newItem.id, newItem);
+          } else if (nested.id && nested.updateDto) {
+            const item = existingMap.get(nested.id);
+            if (!item) {
+              throw new Error(`Item ${nested.id} not found`);
+            }
+            const updatedItem = await InventoryAreaItemUpdateInTransaction(
+              manager,
+              item,
+              nested.updateDto,
+            );
+            existingMap.set(updatedItem.id, updatedItem);
+          } else {
+            throw new Error(
+              'nested dto doesnt have a create DTO or a id and update DTO combination',
+            );
+          }
+        }
+
+        entity.countedItems = Array.from(existingMap.values());
+      }
+
+      manager.save(entity);
+      return entity;
+    });
   }
 
   async findByAreaName(
