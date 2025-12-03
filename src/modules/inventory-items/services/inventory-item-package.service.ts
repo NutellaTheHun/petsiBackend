@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.builder';
+import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
+import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import {
   InventoryItemPackage,
   InventoryItemPackageEntity,
@@ -22,6 +24,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemPackageValidator,
+    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -31,6 +34,30 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateInventoryItemPackageDto,
+  ): Promise<InventoryItemPackage> {
+    return this.dataSource.transaction(async (manager) => {
+      const result = manager.create(InventoryItemPackage, {
+        packageName: dto.packageName,
+      });
+      await manager.save(result);
+      return result;
+    });
+  }
+  protected async updateEntity(
+    entity: InventoryItemPackage,
+    dto: UpdateInventoryItemPackageDto,
+  ): Promise<InventoryItemPackage> {
+    return this.dataSource.transaction(async (manager) => {
+      if (dto.packageName) {
+        entity.packageName = dto.packageName;
+      }
+      await manager.save(entity);
+      return entity;
+    });
   }
 
   async findOneByName(

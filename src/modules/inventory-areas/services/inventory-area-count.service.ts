@@ -12,7 +12,8 @@ import {
   InventoryAreaCountEntity,
 } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
-import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction copy';
+import { InventoryArea } from '../entities/inventory-area.entity';
+import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction';
 import { InventoryAreaItemUpdateInTransaction } from '../utils/transactions/inventory-area-item.update.transaction';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
@@ -48,7 +49,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       const count = manager.create(InventoryAreaCount, {
         inventoryArea: { id: dto.inventoryAreaId },
       });
-      await manager.save(count);
 
       if (dto.itemCountDtos) {
         for (const itemDto of dto.itemCountDtos) {
@@ -62,6 +62,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
           }
         }
       }
+      await manager.save(count);
       // either assign each created item entity, or query final result and return
       return count;
     });
@@ -73,7 +74,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
   ): Promise<InventoryAreaCount> {
     return this.dataSource.transaction(async (manager) => {
       if (dto.inventoryAreaId) {
-        entity.inventoryArea = { id: dto.inventoryAreaId } as any;
+        entity.inventoryArea = manager.create(InventoryArea, {
+          id: dto.inventoryAreaId,
+        });
       }
 
       if (dto.itemCountDtos) {

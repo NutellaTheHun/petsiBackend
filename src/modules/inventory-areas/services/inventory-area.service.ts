@@ -1,6 +1,6 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -13,23 +13,6 @@ import {
 import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
 export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
-  protected createEntity(dto: CreateInventoryAreaDto): InventoryArea {
-    // No Children
-    // Validate
-    // Build
-    // Return
-    throw new Error('Method not implemented.');
-  }
-  protected updateEntity(
-    entity: InventoryArea,
-    dto: CreateInventoryAreaDto,
-  ): InventoryArea {
-    // No Children
-    // Validate
-    // Build
-    // Return
-    throw new Error('Method not implemented.');
-  }
   constructor(
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,
@@ -40,6 +23,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryAreaValidator,
+    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -49,6 +33,30 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateInventoryAreaDto,
+  ): Promise<InventoryArea> {
+    return this.dataSource.transaction(async (manager) => {
+      const result = manager.create(InventoryArea, {
+        areaName: dto.areaName,
+      });
+      await manager.save(result);
+      return result;
+    });
+  }
+  protected async updateEntity(
+    entity: InventoryArea,
+    dto: CreateInventoryAreaDto,
+  ): Promise<InventoryArea> {
+    return this.dataSource.transaction(async (manager) => {
+      if (dto.areaName) {
+        entity.areaName = dto.areaName;
+      }
+      await manager.save(entity);
+      return entity;
+    });
   }
 
   async findOneByName(

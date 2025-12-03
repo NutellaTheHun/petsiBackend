@@ -1,10 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
+import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
+import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import {
   InventoryItemCategory,
   InventoryItemCategoryEntity,
@@ -23,6 +25,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemCategoryValidator,
+    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -32,6 +35,30 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateInventoryItemCategoryDto,
+  ): Promise<InventoryItemCategory> {
+    return this.dataSource.transaction(async (manager) => {
+      const result = manager.create(InventoryItemCategory, {
+        categoryName: dto.itemCategoryName,
+      });
+      await manager.save(result);
+      return result;
+    });
+  }
+  protected async updateEntity(
+    entity: InventoryItemCategory,
+    dto: UpdateInventoryItemCategoryDto,
+  ): Promise<InventoryItemCategory> {
+    return this.dataSource.transaction(async (manager) => {
+      if (dto.itemCategoryName) {
+        entity.categoryName = dto.itemCategoryName;
+      }
+      await manager.save(entity);
+      return entity;
+    });
   }
 
   async findOneByName(

@@ -1,15 +1,19 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
+import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import {
   InventoryAreaItem,
   InventoryAreaItemEntity,
 } from '../entities/inventory-area-item.entity';
+import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction';
+import { InventoryAreaItemUpdateInTransaction } from '../utils/transactions/inventory-area-item.update.transaction';
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
@@ -29,6 +33,8 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
 
     @Inject(forwardRef(() => InventoryAreaItemValidator))
     validator: InventoryAreaItemValidator,
+
+    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -38,6 +44,28 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateInventoryAreaItemDto,
+  ): Promise<InventoryAreaItem> {
+    return this.dataSource.transaction(async (manager) => {
+      const result = await InventoryAreaItemCreateInTransaction(manager, dto);
+      return result;
+    });
+  }
+  protected async updateEntity(
+    entity: InventoryAreaItem,
+    dto: UpdateInventoryAreaItemDto,
+  ): Promise<InventoryAreaItem> {
+    return this.dataSource.transaction(async (manager) => {
+      const result = await InventoryAreaItemUpdateInTransaction(
+        manager,
+        entity,
+        dto,
+      );
+      return result;
+    });
   }
 
   async findByItemName(
