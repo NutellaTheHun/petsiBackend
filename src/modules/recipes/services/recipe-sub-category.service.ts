@@ -1,14 +1,18 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import {
   RecipeSubCategory,
   RecipeSubCategoryEntity,
 } from '../entities/recipe-sub-category.entity';
+import { RecipeSubCategoryCreateInTransaction } from '../utils/transactions/recipe-sub-category.create.transaction';
+import { RecipeSubCategoryUpdateInTransaction } from '../utils/transactions/recipe-sub-category.update.transaction';
 import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
@@ -32,6 +36,21 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateRecipeSubCategoryDto,
+    manager: EntityManager,
+  ): Promise<RecipeSubCategory> {
+    return await RecipeSubCategoryCreateInTransaction(dto, manager);
+  }
+
+  protected async updateEntity(
+    dto: UpdateRecipeSubCategoryDto,
+    manager: EntityManager,
+    entity: RecipeSubCategory,
+  ): Promise<void> {
+    await RecipeSubCategoryUpdateInTransaction(dto, manager, entity);
   }
 
   async findOneByName(

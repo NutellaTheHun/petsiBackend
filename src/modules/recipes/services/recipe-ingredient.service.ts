@@ -1,15 +1,19 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import {
   RecipeIngredient,
   RecipeIngredientEntity,
 } from '../entities/recipe-ingredient.entity';
+import { RecipeIngredientCreateInTransaction } from '../utils/transactions/recipe-ingredient.create.transaction';
+import { RecipeIngredientUpdateInTransaction } from '../utils/transactions/recipe-ingredient.update.transaction';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 import { RecipeService } from './recipe.service';
 
@@ -39,6 +43,21 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateRecipeIngredientDto,
+    manager: EntityManager,
+  ): Promise<RecipeIngredient> {
+    return await RecipeIngredientCreateInTransaction(dto, manager);
+  }
+
+  protected async updateEntity(
+    dto: UpdateRecipeIngredientDto,
+    manager: EntityManager,
+    entity: RecipeIngredient,
+  ): Promise<void> {
+    await RecipeIngredientUpdateInTransaction(dto, manager, entity);
   }
 
   async findByRecipeName(

@@ -1,11 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RecipeBuilder } from '../builders/recipe.builder';
+import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
+import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
+import { RecipeIngredientCreateInTransaction } from '../utils/transactions/recipe-ingredient.create.transaction';
 import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
@@ -29,6 +33,73 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateRecipeDto,
+    manager: EntityManager,
+  ): Promise<Recipe> {
+    let ingredients: RecipeIngredient[] = [];
+    if (dto.ingredientDtos) {
+      for (const nestedDto of dto.ingredientDtos) {
+        if (nestedDto.createDto) {
+          const newIngred = await RecipeIngredientCreateInTransaction(
+            nestedDto.createDto,
+            manager,
+          );
+
+          ingredients.push(newIngred);
+        } else {
+          throw new Error(
+            'Create Recipe: nested recipe ingredient dto missing create DTO',
+          );
+        }
+      }
+    }
+
+    const result = manager.create(Recipe, {
+      recipeName: dto.recipeName,
+
+      isIngredient: dto.isIngredient,
+
+      producedMenuItem: dto.producedMenuItemId
+        ? { id: dto.producedMenuItemId }
+        : null,
+
+      batchResultQuantity: dto.batchResultQuantity
+        ? dto.batchResultQuantity
+        : null,
+
+      batchResultMeasurement: dto.batchResultMeasurementId
+        ? { id: dto.batchResultMeasurementId }
+        : null,
+
+      servingSizeQuantity: dto.servingSizeQuantity
+        ? dto.servingSizeQuantity
+        : null,
+
+      servingSizeMeasurement: dto.servingSizeMeasurementId
+        ? { id: dto.servingSizeMeasurementId }
+        : null,
+
+      salesPrice: dto.salesPrice ? dto.salesPrice.toString() : null,
+
+      category: dto.categoryId ? { id: dto.categoryId } : null,
+
+      subCategory: dto.subCategoryId ? { id: dto.subCategoryId } : null,
+
+      ingredients,
+    });
+
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateRecipeDto,
+    manager: EntityManager,
+    entity: Recipe,
+  ): Promise<void> {
+    throw new Error('Method not implemented.');
   }
 
   async findOneByName(

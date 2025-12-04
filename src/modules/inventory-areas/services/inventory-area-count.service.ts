@@ -52,15 +52,12 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     const count = manager.create(InventoryAreaCount, {
       inventoryArea: { id: dto.inventoryAreaId },
     });
-
+    let countedItems: InventoryAreaItem[] = [];
     if (dto.itemCountDtos) {
       for (const itemDto of dto.itemCountDtos) {
         if (itemDto.createDto) {
           const item = await InventoryAreaItemCreateInTransaction(
-            {
-              parentInventoryCountId: count.id,
-              ...itemDto.createDto,
-            },
+            itemDto.createDto,
             manager,
           );
           count.countedItems.push(item);
@@ -68,6 +65,10 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         }
       }
     }
+
+    const result = manager.create(InventoryAreaCount, {
+      inventoryArea: { id: dto.inventoryAreaId },
+    });
 
     return count;
   }
