@@ -9,7 +9,7 @@ export async function InventoryAreaItemCreateInTransaction(
   manager: EntityManager,
 ): Promise<InventoryAreaItem> {
   let countedItemSize: InventoryItemSize;
-  if (dto.countedItemSizeId) {
+  if (dto.countedItemSizeId !== undefined && dto.countedItemSizeId) {
     countedItemSize = manager.create(InventoryItemSize, {
       id: dto.countedItemSizeId,
     });

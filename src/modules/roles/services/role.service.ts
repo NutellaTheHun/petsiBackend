@@ -1,10 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { RoleBuilder } from '../builders/role.builder';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role, RoleEntity } from '../entities/role.entity';
 import { RoleValidator } from '../validators/role.validator';
 
@@ -29,6 +31,26 @@ export class RoleService extends ServiceBase<RoleEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateRoleDto,
+    manager: EntityManager,
+  ): Promise<Role> {
+    const result = manager.create(Role, {
+      roleName: dto.roleName,
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateRoleDto,
+    manager: EntityManager,
+    entity: Role,
+  ): Promise<void> {
+    if (dto.roleName) {
+      entity.roleName = dto.roleName;
+    }
   }
 
   async findOneByName(

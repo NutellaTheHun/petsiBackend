@@ -1,11 +1,14 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Big from 'big.js';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
+import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
+import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import {
   UnitOfMeasure,
   UnitOfMeasureEntity,
@@ -33,6 +36,43 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateUnitOfMeasureDto,
+    manager: EntityManager,
+  ): Promise<UnitOfMeasure> {
+    const result = manager.create(UnitOfMeasure, {
+      name: dto.unitName,
+      abbreviation: dto.abbreviation,
+      category: { id: dto.categoryId },
+      conversionFactorToBase: dto.conversionFactorToBase,
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateUnitOfMeasureDto,
+    manager: EntityManager,
+    entity: UnitOfMeasure,
+  ): Promise<void> {
+    if (dto.abbreviation) {
+      entity.abbreviation = dto.abbreviation;
+    }
+
+    if (dto.categoryId) {
+      entity.category = manager.create(UnitOfMeasureCategory, {
+        id: dto.categoryId,
+      });
+    }
+
+    if (dto.conversionFactorToBase) {
+      entity.conversionFactorToBase = dto.conversionFactorToBase;
+    }
+
+    if (dto.unitName) {
+      entity.name = dto.unitName;
+    }
   }
 
   async findOneByName(

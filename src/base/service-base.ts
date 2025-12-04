@@ -68,7 +68,16 @@ export abstract class ServiceBase<
         );
       }
     });
-    return await this.entityRepo.findOne({ where: { id: newEntityId } });
+
+    const resultEntity = await this.entityRepo.findOne({
+      where: { id: newEntityId },
+    });
+
+    if (resultEntity && 'password' in resultEntity) {
+      resultEntity.password = undefined;
+    }
+
+    return resultEntity;
   }
 
   /**
@@ -130,7 +139,16 @@ export abstract class ServiceBase<
         );
       }
     });
-    return await this.entityRepo.findOne({ where: { id: toUpdate.id } });
+    //return await this.entityRepo.findOne({ where: { id: toUpdate.id } });
+    const resultEntity = await this.entityRepo.findOne({
+      where: { id: toUpdate.id },
+    });
+
+    if (resultEntity && 'password' in resultEntity) {
+      resultEntity.password = undefined;
+    }
+
+    return resultEntity;
   }
 
   async findAll(options?: {

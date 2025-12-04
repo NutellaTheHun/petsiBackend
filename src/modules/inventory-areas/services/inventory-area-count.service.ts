@@ -49,9 +49,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     dto: CreateInventoryAreaCountDto,
     manager: EntityManager,
   ): Promise<InventoryAreaCount> {
-    const count = manager.create(InventoryAreaCount, {
-      inventoryArea: { id: dto.inventoryAreaId },
-    });
     let countedItems: InventoryAreaItem[] = [];
     if (dto.itemCountDtos) {
       for (const itemDto of dto.itemCountDtos) {
@@ -60,17 +57,21 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
             itemDto.createDto,
             manager,
           );
-          count.countedItems.push(item);
-        } else if (itemDto.updateDto) {
+          countedItems.push(item);
+        } else {
+          throw new Error(
+            'Create InventoryAreaCount: nested InventoryAreaItem DTO missing createDTO',
+          );
         }
       }
     }
 
     const result = manager.create(InventoryAreaCount, {
       inventoryArea: { id: dto.inventoryAreaId },
+      countedItems,
     });
 
-    return count;
+    return result;
   }
 
   protected async updateEntity(
@@ -101,7 +102,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         } else if (nested.id && nested.updateDto) {
           const toUpdate = existingMap.get(nested.id);
           if (!toUpdate) {
-            throw new Error(`Item ${nested.id} not found`);
+            throw new Error(
+              `Update inventoryAreaCount: areaItem with id ${nested.id} not found in existing items`,
+            );
           }
           await InventoryAreaItemUpdateInTransaction(
             nested.updateDto,
@@ -110,7 +113,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
           );
         } else {
           throw new Error(
-            'nested dto doesnt have a create DTO or a id and update DTO combination',
+            'Update inventoryAreaCount: nested dto doesnt have a create DTO or a id and update DTO combination',
           );
         }
       }

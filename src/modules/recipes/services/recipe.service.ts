@@ -4,12 +4,15 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeBuilder } from '../builders/recipe.builder';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeIngredientCreateInTransaction } from '../utils/transactions/recipe-ingredient.create.transaction';
+import { RecipeIngredientUpdateInTransaction } from '../utils/transactions/recipe-ingredient.update.transaction';
 import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
@@ -99,7 +102,54 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     manager: EntityManager,
     entity: Recipe,
   ): Promise<void> {
-    throw new Error('Method not implemented.');
+    if (dto.batchResultMeasurementId) {
+      entity.batchResultMeasurement = manager.create(UnitOfMeasure, {
+        id: dto.batchResultMeasurementId,
+      });
+    }
+
+    if (dto.batchResultQuantity) {
+      entity.batchResultQuantity = dto.batchResultQuantity;
+    }
+
+    if (dto.categoryId) {
+      entity.category = manager.create(RecipeCategory, { id: dto.categoryId });
+    }
+
+    if (dto.ingredientDtos) {
+      const existingIngreds = await manager.find(RecipeIngredient, {
+        where: { parentRecipe: { id: entity.id } },
+      });
+      const existingMap = new Map(existingIngreds.map((i) => [i.id, i]));
+
+      for (const nestedDto of dto.ingredientDtos) {
+        if (nestedDto.createDto) {
+          const newIngred = await RecipeIngredientCreateInTransaction(
+            nestedDto.createDto,
+            manager,
+          );
+          existingMap.set(newIngred.id, newIngred);
+        } else if (nestedDto.updateDto && nestedDto.id) {
+          const toUpdate = existingMap.get(nestedDto.id);
+          if (!toUpdate) {
+            throw new Error(
+              `Updating Recipe: nested ingredient update with id ${nestedDto.id} not found in existing ingredients`,
+            );
+          }
+          await RecipeIngredientUpdateInTransaction(
+            nestedDto.updateDto,
+            manager,
+            toUpdate,
+          );
+        } else {
+          throw new Error(
+            'Updating Recipe: nested RecipeIngredient dto has neither createDto of updateDto with id',
+          );
+        }
+      }
+
+      entity.ingredients = Array.from(existingMap.values());
+    }
   }
 
   async findOneByName(

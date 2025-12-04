@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
+import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { Role } from '../../roles/entities/role.entity';
 import { UserBuilder } from '../builders/user.builder';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
 import { UserValidator } from '../validators/user.validator';
 
@@ -30,11 +33,51 @@ export class UserService extends ServiceBase<UserEntity> {
     );
   }
 
+  protected async createEntity(
+    dto: CreateUserDto,
+    manager: EntityManager,
+  ): Promise<User> {
+    const password = await hashPassword(dto.password);
+    const roles = dto.roleIds ? dto.roleIds.map((i) => ({ id: i })) : [];
+
+    const result = manager.create(User, {
+      username: dto.username,
+      email: dto.email,
+      roles,
+      password,
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateUserDto,
+    manager: EntityManager,
+    entity: User,
+  ): Promise<void> {
+    if (dto.email) {
+      entity.email = dto.email;
+    }
+
+    if (dto.password) {
+      entity.password = await hashPassword(dto.password);
+    }
+
+    if (dto.roleIds) {
+      entity.roles = dto.roleIds.map((i) => manager.create(Role, { id: i }));
+    }
+
+    if (dto.username) {
+      entity.username = dto.username;
+    }
+  }
+
+  /*
   async create(createUserDto: CreateUserDto) {
     const user = (await super.create(createUserDto)) as User;
     user.password = '';
     return user;
   }
+    */
 
   async findOneByName(
     username: string,
