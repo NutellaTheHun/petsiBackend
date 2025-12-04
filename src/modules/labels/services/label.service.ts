@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItem } from '../../menu-items/menu-items.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { LabelBuilder } from '../builders/label.builder';
+import { CreateLabelDto } from '../dto/label/create-label.dto';
+import { UpdateLabelDto } from '../dto/label/update-label.dto';
+import { LabelType } from '../entities/label-type.entity';
 import { Label, LabelEntity } from '../entities/label.entity';
 import { LabelValidator } from '../validators/label.validator';
 
@@ -28,6 +32,40 @@ export class LabelService extends ServiceBase<LabelEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateLabelDto,
+    manager: EntityManager,
+  ): Promise<Label> {
+    const result = manager.create(Label, {
+      menuItem: { id: dto.menuItemId },
+      imageUrl: dto.imageUrl,
+      labelType: { id: dto.labelTypeId },
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateLabelDto,
+    manager: EntityManager,
+    entity: Label,
+  ): Promise<void> {
+    if (dto.imageUrl) {
+      entity.imageUrl = dto.imageUrl;
+    }
+
+    if (dto.labelTypeId !== undefined) {
+      entity.labelType = manager.create(LabelType, {
+        id: dto.labelTypeId,
+      });
+    }
+
+    if (dto.menuItemId !== undefined) {
+      entity.menuItem = manager.create(MenuItem, {
+        id: dto.menuItemId,
+      });
+    }
   }
 
   async findByMenuItemId(

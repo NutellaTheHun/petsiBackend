@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { LabelTypeBuilder } from '../builders/label-type.builder';
+import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType, LabelTypeEntity } from '../entities/label-type.entity';
 import { LabelTypeValidator } from '../validators/label-type.validator';
 
@@ -28,6 +30,33 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateLabelTypeDto,
+    manager: EntityManager,
+  ): Promise<LabelType> {
+    const result = manager.create(LabelType, {
+      labelTypeLength: dto.labelTypeLength,
+      labelTypeWidth: dto.labelTypeWidth,
+      labelTypeName: dto.labelTypeName,
+    });
+    return result;
+  }
+  protected async updateEntity(
+    dto: UpdateLabelTypeDto,
+    manager: EntityManager,
+    entity: LabelType,
+  ): Promise<void> {
+    if (dto.labelTypeLength !== undefined) {
+      entity.labelTypeLength = dto.labelTypeLength;
+    }
+    if (dto.labelTypeWidth !== undefined) {
+      entity.labelTypeWidth = dto.labelTypeWidth;
+    }
+    if (dto.labelTypeName !== undefined) {
+      entity.labelTypeName = dto.labelTypeName;
+    }
   }
 
   async findOneByName(

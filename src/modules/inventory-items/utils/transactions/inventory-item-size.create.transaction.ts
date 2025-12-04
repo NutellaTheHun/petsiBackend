@@ -3,8 +3,8 @@ import { CreateInventoryItemSizeDto } from '../../dto/inventory-item-size/create
 import { InventoryItemSize } from '../../entities/inventory-item-size.entity';
 
 export async function InventoryItemSizeCreateInTransaction(
-  manager: EntityManager,
   dto: CreateInventoryItemSizeDto,
+  manager: EntityManager,
 ): Promise<InventoryItemSize> {
   const result = manager.create(InventoryItemSize, {
     measureAmount: dto.measureAmount,
@@ -13,6 +13,5 @@ export async function InventoryItemSizeCreateInTransaction(
     inventoryItem: { id: dto.inventoryItemId },
     cost: dto.cost.toString(),
   });
-  await manager.save(result);
   return result;
 }

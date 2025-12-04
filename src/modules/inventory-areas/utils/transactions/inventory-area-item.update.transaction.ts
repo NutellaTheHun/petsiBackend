@@ -6,10 +6,10 @@ import { UpdateInventoryAreaItemDto } from '../../dto/inventory-area-item/update
 import { InventoryAreaItem } from '../../entities/inventory-area-item.entity';
 
 export async function InventoryAreaItemUpdateInTransaction(
+  dto: UpdateInventoryAreaItemDto,
   manager: EntityManager,
   entity: InventoryAreaItem,
-  dto: UpdateInventoryAreaItemDto,
-): Promise<InventoryAreaItem> {
+): Promise<void> {
   if (dto.countedAmount !== undefined) {
     entity.amount = dto.countedAmount;
   }
@@ -28,8 +28,8 @@ export async function InventoryAreaItemUpdateInTransaction(
 
   if (dto.countedItemSizeDto?.createDto !== undefined) {
     const itemSize = await InventoryItemSizeCreateInTransaction(
-      manager,
       dto.countedItemSizeDto.createDto,
+      manager,
     );
     entity.countedItemSize = itemSize;
   }
@@ -39,8 +39,4 @@ export async function InventoryAreaItemUpdateInTransaction(
       id: dto.countedItemSizeId,
     });
   }
-
-  await manager.save(entity);
-
-  return entity;
 }

@@ -94,4 +94,15 @@ export class CreateMenuItemDto {
   @IsArray()
   @ValidateNested({ each: true })
   readonly variableRuleDtos?: NestedMenuItemContainerRuleDto[];
+
+  @ApiPropertyOptional({
+    description:
+      'Total size limit of item, when item is of type fixed_container or variable_container',
+    type: 'number',
+    example: 7,
+  })
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  readonly variableMaxAmount?: number;
 }

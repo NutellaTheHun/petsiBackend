@@ -1,14 +1,18 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemContainerRuleBuilder } from '../builders/menu-item-container-rule.builder';
+import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
+import { UpdateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/update-menu-item-container-rule.dto';
 import {
   MenuItemContainerRule,
   MenuItemContainerRuleEntity,
 } from '../entities/menu-item-container-rule.entity';
+import { MenuItemContainerRuleCreateInTransaction } from '../utils/transactions/menu-item-container-rule.create.transaction';
+import { MenuItemContainerRuleUpdateInTransaction } from '../utils/transactions/menu-item-container-rule.update.transaction';
 import { MenuItemContainerRuleValidator } from '../validators/menu-item-container-rule.validator';
 
 @Injectable()
@@ -32,6 +36,21 @@ export class MenuItemContainerRuleService extends ServiceBase<MenuItemContainerR
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateMenuItemContainerRuleDto,
+    manager: EntityManager,
+  ): Promise<MenuItemContainerRule> {
+    return await MenuItemContainerRuleCreateInTransaction(dto, manager);
+  }
+
+  protected async updateEntity(
+    dto: UpdateMenuItemContainerRuleDto,
+    manager: EntityManager,
+    entity: MenuItemContainerRule,
+  ): Promise<void> {
+    await MenuItemContainerRuleUpdateInTransaction(dto, manager, entity);
   }
 
   protected applySortBy(

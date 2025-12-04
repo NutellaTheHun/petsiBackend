@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -25,7 +25,6 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemCategoryValidator,
-    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -39,26 +38,21 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
 
   protected async createEntity(
     dto: CreateInventoryItemCategoryDto,
+    manager: EntityManager,
   ): Promise<InventoryItemCategory> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = manager.create(InventoryItemCategory, {
-        categoryName: dto.itemCategoryName,
-      });
-      await manager.save(result);
-      return result;
+    const result = manager.create(InventoryItemCategory, {
+      categoryName: dto.itemCategoryName,
     });
+    return result;
   }
   protected async updateEntity(
-    entity: InventoryItemCategory,
     dto: UpdateInventoryItemCategoryDto,
-  ): Promise<InventoryItemCategory> {
-    return this.dataSource.transaction(async (manager) => {
-      if (dto.itemCategoryName) {
-        entity.categoryName = dto.itemCategoryName;
-      }
-      await manager.save(entity);
-      return entity;
-    });
+    manager: EntityManager,
+    entity: InventoryItemCategory,
+  ): Promise<void> {
+    if (dto.itemCategoryName !== undefined) {
+      entity.categoryName = dto.itemCategoryName;
+    }
   }
 
   async findOneByName(

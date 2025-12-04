@@ -4,8 +4,8 @@ import { CreateInventoryAreaItemDto } from '../../dto/inventory-area-item/create
 import { InventoryAreaItem } from '../../entities/inventory-area-item.entity';
 
 export async function InventoryAreaItemCreateInTransaction(
-  manager: EntityManager,
   dto: CreateInventoryAreaItemDto,
+  manager: EntityManager,
 ): Promise<InventoryAreaItem> {
   let countedItemSize: InventoryItemSize;
   if (dto.countedItemSizeId) {
@@ -35,6 +35,5 @@ export async function InventoryAreaItemCreateInTransaction(
     countedItemSize,
   });
 
-  await manager.save(result);
   return result;
 }

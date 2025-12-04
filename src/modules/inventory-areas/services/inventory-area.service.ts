@@ -1,6 +1,6 @@
 import { forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -23,7 +23,6 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryAreaValidator,
-    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -37,26 +36,21 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
 
   protected async createEntity(
     dto: CreateInventoryAreaDto,
+    manager: EntityManager,
   ): Promise<InventoryArea> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = manager.create(InventoryArea, {
-        areaName: dto.areaName,
-      });
-      await manager.save(result);
-      return result;
+    const result = manager.create(InventoryArea, {
+      areaName: dto.areaName,
     });
+    return result;
   }
   protected async updateEntity(
-    entity: InventoryArea,
     dto: CreateInventoryAreaDto,
-  ): Promise<InventoryArea> {
-    return this.dataSource.transaction(async (manager) => {
-      if (dto.areaName) {
-        entity.areaName = dto.areaName;
-      }
-      await manager.save(entity);
-      return entity;
-    });
+    manager: EntityManager,
+    entity: InventoryArea,
+  ): Promise<void> {
+    if (dto.areaName !== undefined) {
+      entity.areaName = dto.areaName;
+    }
   }
 
   async findOneByName(

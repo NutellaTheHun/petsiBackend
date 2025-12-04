@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
+import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
+import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import {
   MenuItemSize,
   MenuItemSizeEntity,
@@ -31,6 +33,25 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateMenuItemSizeDto,
+    manager: EntityManager,
+  ): Promise<MenuItemSize> {
+    const result = manager.create(MenuItemSize, {
+      name: dto.sizeName,
+    });
+    return result;
+  }
+  protected async updateEntity(
+    dto: UpdateMenuItemSizeDto,
+    manager: EntityManager,
+    entity: MenuItemSize,
+  ): Promise<void> {
+    if (dto.sizeName !== undefined) {
+      entity.name = dto.sizeName;
+    }
   }
 
   async findOneByName(

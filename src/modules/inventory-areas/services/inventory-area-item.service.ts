@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
@@ -33,8 +33,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
 
     @Inject(forwardRef(() => InventoryAreaItemValidator))
     validator: InventoryAreaItemValidator,
-
-    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -48,24 +46,17 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
 
   protected async createEntity(
     dto: CreateInventoryAreaItemDto,
+    manager: EntityManager,
   ): Promise<InventoryAreaItem> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = await InventoryAreaItemCreateInTransaction(manager, dto);
-      return result;
-    });
+    const result = await InventoryAreaItemCreateInTransaction(dto, manager);
+    return result;
   }
   protected async updateEntity(
-    entity: InventoryAreaItem,
     dto: UpdateInventoryAreaItemDto,
-  ): Promise<InventoryAreaItem> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = await InventoryAreaItemUpdateInTransaction(
-        manager,
-        entity,
-        dto,
-      );
-      return result;
-    });
+    manager: EntityManager,
+    entity: InventoryAreaItem,
+  ): Promise<void> {
+    await InventoryAreaItemUpdateInTransaction(dto, manager, entity);
   }
 
   async findByItemName(

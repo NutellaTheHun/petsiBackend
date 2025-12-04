@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderCategoryBuilder } from '../builders/order-category.builder';
+import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
+import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import {
   OrderCategory,
   OrderCategoryEntity,
@@ -30,6 +32,26 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateOrderCategoryDto,
+    manager: EntityManager,
+  ): Promise<OrderCategory> {
+    const result = manager.create(OrderCategory, {
+      categoryName: dto.categoryName,
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateOrderCategoryDto,
+    manager: EntityManager,
+    entity: OrderCategory,
+  ): Promise<void> {
+    if (dto.categoryName !== undefined) {
+      entity.categoryName = dto.categoryName;
+    }
   }
 
   async findOneByName(

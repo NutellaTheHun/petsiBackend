@@ -1,11 +1,17 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderBuilder } from '../builders/order.builder';
+import { CreateOrderDto } from '../dto/order/create-order.dto';
+import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderCategory } from '../entities/order-category.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { OrderMenuItemCreateInTransaction } from '../utils/transactions/order-menu-item.create.transaction';
+import { OrderMenuItemUpdateInTransaction } from '../utils/transactions/order-menu-item.update.transaction';
 import { OrderValidator } from '../validators/order.validator';
 
 @Injectable()
@@ -29,6 +35,135 @@ export class OrderService extends ServiceBase<OrderEntity> {
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateOrderDto,
+    manager: EntityManager,
+  ): Promise<Order> {
+    let orderedItems: OrderMenuItem[] = [];
+    if (dto.orderedMenuItemDtos) {
+      for (const nestedDto of dto.orderedMenuItemDtos) {
+        if (nestedDto.createDto) {
+          const newItem = await OrderMenuItemCreateInTransaction(
+            nestedDto.createDto,
+            manager,
+          );
+          orderedItems.push(newItem);
+        } else {
+          throw new Error(
+            'Create Order: nested OrderMenuItem has null create dto',
+          );
+        }
+      }
+    }
+
+    const result = manager.create(Order, {
+      orderCategory: { id: dto.orderCategoryId },
+      recipient: dto.recipient,
+      fulfillmentDate: dto.fulfillmentDate,
+      fulfillmentType: dto.fulfillmentType,
+      fulfillmentContactName: dto.fulfillmentContactName,
+      deliveryAddress: dto.deliveryAddress,
+      phoneNumber: dto.phoneNumber,
+      email: dto.email,
+      note: dto.note,
+      isFrozen: dto.isFrozen,
+      isWeekly: dto.isWeekly,
+      weeklyFulfillment: dto.weeklyFulfillment,
+      orderedItems,
+    });
+    return result;
+  }
+
+  protected async updateEntity(
+    dto: UpdateOrderDto,
+    manager: EntityManager,
+    entity: Order,
+  ): Promise<void> {
+    if (dto.deliveryAddress !== undefined) {
+      entity.deliveryAddress = dto.deliveryAddress;
+    }
+
+    if (dto.email !== undefined) {
+      entity.email = dto.email;
+    }
+
+    if (dto.fulfillmentContactName !== undefined) {
+      entity.fulfillmentContactName = dto.fulfillmentContactName;
+    }
+
+    if (dto.fulfillmentDate !== undefined) {
+      entity.fulfillmentDate = dto.fulfillmentDate;
+    }
+
+    if (dto.fulfillmentType !== undefined) {
+      entity.fulfillmentType = dto.fulfillmentType;
+    }
+
+    if (dto.isFrozen !== undefined) {
+      entity.isFrozen = dto.isFrozen;
+    }
+
+    if (dto.isWeekly !== undefined) {
+      entity.isWeekly = dto.isWeekly;
+    }
+
+    if (dto.note !== undefined) {
+      entity.note = dto.note;
+    }
+
+    if (dto.orderCategoryId !== undefined) {
+      entity.orderCategory = manager.create(OrderCategory, {
+        id: dto.orderCategoryId,
+      });
+    }
+
+    if (dto.phoneNumber !== undefined) {
+      entity.phoneNumber = dto.phoneNumber;
+    }
+
+    if (dto.recipient !== undefined) {
+      entity.recipient = dto.recipient;
+    }
+
+    if (dto.weeklyFulfillment !== undefined) {
+      entity.weeklyFulfillment = dto.weeklyFulfillment;
+    }
+
+    if (dto.orderedMenuItemDtos) {
+      const existingItems = await manager.find(OrderMenuItem, {
+        where: { order: { id: entity.id } },
+      });
+      const existingMap = new Map(existingItems.map((i) => [i.id, i]));
+
+      for (const nestedDto of dto.orderedMenuItemDtos) {
+        if (nestedDto.createDto) {
+          const newItem = await OrderMenuItemCreateInTransaction(
+            nestedDto.createDto,
+            manager,
+          );
+          existingMap.set(newItem.id, newItem);
+        } else if (nestedDto.updateDto && nestedDto.id) {
+          const toUpdate = existingMap.get(nestedDto.id);
+          if (!toUpdate) {
+            throw new Error(
+              `Update Order: nested OrderMenuItem with id ${nestedDto.id} was not found in existing items`,
+            );
+          }
+          await OrderMenuItemUpdateInTransaction(
+            nestedDto.updateDto,
+            manager,
+            toUpdate,
+          );
+        } else {
+          throw new Error(
+            'Update Order: nested OrderMenuItem dto has neither createDto or updateDto with id',
+          );
+        }
+      }
+      entity.orderedItems = Array.from(existingMap.values());
+    }
   }
 
   protected applySearch(

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -24,7 +24,6 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemVendorValidator,
-    private readonly dataSource: DataSource,
   ) {
     super(
       repo,
@@ -38,28 +37,22 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
 
   protected async createEntity(
     dto: CreateInventoryItemVendorDto,
+    manager: EntityManager,
   ): Promise<InventoryItemVendor> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = manager.create(InventoryItemVendor, {
-        vendorName: dto.vendorName,
-      });
-      await manager.save(result);
-      return result;
+    const result = manager.create(InventoryItemVendor, {
+      vendorName: dto.vendorName,
     });
+    return result;
   }
 
   protected async updateEntity(
-    entity: InventoryItemVendor,
     dto: UpdateInventoryItemVendorDto,
-  ): Promise<InventoryItemVendor> {
-    return this.dataSource.transaction(async (manager) => {
-      if (dto.vendorName) {
-        entity.vendorName = dto.vendorName;
-      }
-
-      await manager.save(entity);
-      return entity;
-    });
+    manager: EntityManager,
+    entity: InventoryItemVendor,
+  ): Promise<void> {
+    if (dto.vendorName !== undefined) {
+      entity.vendorName = dto.vendorName;
+    }
   }
 
   async findOneByName(

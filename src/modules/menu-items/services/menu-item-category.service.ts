@@ -1,10 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
+import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
+import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import {
   MenuItemCategory,
   MenuItemCategoryEntity,
@@ -32,6 +34,25 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateMenuItemCategoryDto,
+    manager: EntityManager,
+  ): Promise<MenuItemCategory> {
+    const result = manager.create(MenuItemCategory, {
+      categoryName: dto.categoryName,
+    });
+    return result;
+  }
+  protected async updateEntity(
+    dto: UpdateMenuItemCategoryDto,
+    manager: EntityManager,
+    entity: MenuItemCategory,
+  ): Promise<void> {
+    if (dto.categoryName !== undefined) {
+      entity.categoryName = dto.categoryName;
+    }
   }
 
   async findOneByName(

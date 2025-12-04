@@ -1,5 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import {
+  DataSource,
+  EntityManager,
   FindOptionsWhere,
   In,
   QueryBuilder,
@@ -19,13 +21,14 @@ export abstract class ServiceBase<
   TEntity extends EntityBase<any, any, any, any>,
 > {
   private databaseExceptionHandler: DataBaseExceptionHandler;
-
+  private readonly dataSource: DataSource;
   constructor(
     private readonly entityRepo: Repository<TEntity['__Entity']>,
     private readonly builder: BuilderBase<TEntity['__Entity']>,
     public readonly servicePrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,
+
     private readonly validator?: ValidatorBase<TEntity>,
   ) {
     this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
@@ -49,19 +52,23 @@ export abstract class ServiceBase<
 
     // create entity
     //const entity = await this.builder.buildCreateDto(createDto);
-    const entity = await this.createEntity(createDto);
-
-    // save in DB
-    try {
-      return await this.entityRepo.save(entity);
-    } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'CREATE',
-      );
-    }
+    let newEntityId;
+    await this.dataSource.transaction(async (manager) => {
+      const entity = await this.createEntity(createDto, manager);
+      try {
+        // save in DB
+        const saved = await manager.save(entity);
+        newEntityId = saved.id;
+      } catch (err) {
+        throw this.databaseExceptionHandler.handle(
+          err,
+          this.servicePrefix,
+          requestId,
+          'CREATE',
+        );
+      }
+    });
+    return await this.entityRepo.findOne({ where: { id: newEntityId } });
   }
 
   /**
@@ -96,19 +103,34 @@ export abstract class ServiceBase<
 
     //update DTO
     //await this.builder.buildUpdateDto(toUpdate, updateDto);
-    const result = await this.updateEntity(toUpdate, updateDto);
-
-    //Save in DB
-    try {
-      return await this.entityRepo.save(result);
-    } catch (err) {
-      throw this.databaseExceptionHandler.handle(
-        err,
-        this.servicePrefix,
-        requestId,
-        'UPDATE',
-      );
-    }
+    /**
+     * Currently mutates toUpdate, and returns the updated entity (the same entity), i dont like this
+     * Change updateEntity to return void to be more clear?
+     * Must think through how the result object is returned
+     *          - always requery the entity from the DB,
+     *          - or within the method rebuild the object throughout the process.
+     *                      - returned objects from updates would be piecemeal or have to always be fully constructed (all relations)? doesnt sound great
+     *                                  - also goes against having any query params on what to send back, which would be an ideal control of what to return
+     *
+     * CHOICE: always requery db for final result seems cleanest, as its easily uniform and would work well with relation request params
+     *          - if always requery DB, where should it be called?
+     *                  - if inside updateEntity
+     */
+    await this.dataSource.transaction(async (manager) => {
+      await this.updateEntity(toUpdate, updateDto, manager);
+      try {
+        //Save in DB
+        await manager.save(toUpdate);
+      } catch (err) {
+        throw this.databaseExceptionHandler.handle(
+          err,
+          this.servicePrefix,
+          requestId,
+          'UPDATE',
+        );
+      }
+    });
+    return await this.entityRepo.findOne({ where: { id: toUpdate.id } });
   }
 
   async findAll(options?: {
@@ -372,21 +394,14 @@ export abstract class ServiceBase<
     _query.orderBy('entity.id', 'ASC');
   }
 
-  /*protected abstract createEntity(
-    dto: TEntity['__CDto'],
-  ): Promise<TEntity['__Entity']>;
-
-  protected abstract updateEntity(
-    entity: TEntity['__Entity'],
-    dto: TEntity['__UDto'],
-  ): Promise<TEntity['__Entity']>;*/
-
   protected abstract createEntity(
     dto: TEntity['__CDto'],
+    manager: EntityManager,
   ): Promise<TEntity['__Entity']>;
 
   protected abstract updateEntity(
-    entity: TEntity['__Entity'],
     dto: TEntity['__UDto'],
-  ): Promise<TEntity['__Entity']>;
+    manager: EntityManager,
+    entity: TEntity['__Entity'],
+  ): Promise<void>;
 }

@@ -1,14 +1,18 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { OrderContainerItemBuilder } from '../builders/order-container-item.builder';
+import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
+import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import {
   OrderContainerItem,
   OrderContainerItemEntity,
 } from '../entities/order-container-item.entity';
+import { OrderContainerItemCreateInTransaction } from '../utils/transactions/order-container-item.create.transaction';
+import { OrderContainerItemUpdateInTransaction } from '../utils/transactions/order-container-item.update.transaction';
 import { OrderContainerItemValidator } from '../validators/order-container-item.validator';
 
 @Injectable()
@@ -32,6 +36,21 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
       logger,
       validator,
     );
+  }
+
+  protected async createEntity(
+    dto: CreateOrderContainerItemDto,
+    manager: EntityManager,
+  ): Promise<OrderContainerItem> {
+    return await OrderContainerItemCreateInTransaction(dto, manager);
+  }
+
+  protected async updateEntity(
+    dto: UpdateOrderContainerItemDto,
+    manager: EntityManager,
+    entity: OrderContainerItem,
+  ): Promise<void> {
+    await OrderContainerItemUpdateInTransaction(dto, manager, entity);
   }
 
   protected applySortBy(

@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -29,7 +29,6 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
 
     @Inject(forwardRef(() => InventoryItemSizeValidator))
     validator: InventoryItemSizeValidator,
-    private readonly dataSource: DataSource,
   ) {
     super(
       reop,
@@ -43,25 +42,18 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
 
   protected async createEntity(
     dto: CreateInventoryItemSizeDto,
+    manager: EntityManager,
   ): Promise<InventoryItemSize> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = await InventoryItemSizeCreateInTransaction(manager, dto);
-      return result;
-    });
+    const result = await InventoryItemSizeCreateInTransaction(dto, manager);
+    return result;
   }
 
   protected async updateEntity(
-    entity: InventoryItemSize,
     dto: UpdateInventoryItemSizeDto,
-  ): Promise<InventoryItemSize> {
-    return this.dataSource.transaction(async (manager) => {
-      const result = await InventoryItemSizeUpdateInTransaction(
-        manager,
-        entity,
-        dto,
-      );
-      return result;
-    });
+    manager: EntityManager,
+    entity: InventoryItemSize,
+  ): Promise<void> {
+    await InventoryItemSizeUpdateInTransaction(dto, manager, entity);
   }
 
   async findSizesByItemName(
