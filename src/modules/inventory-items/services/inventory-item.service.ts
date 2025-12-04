@@ -65,8 +65,13 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     }
     const result = manager.create(InventoryItem, {
       itemName: dto.itemName,
-      category: { id: dto.inventoryItemCategoryId },
-      vendor: { id: dto.vendorId },
+
+      ...(dto.inventoryItemCategoryId && {
+        category: { id: dto.inventoryItemCategoryId },
+      }),
+
+      ...(dto.vendorId && { vendor: { id: dto.vendorId } }),
+
       itemSizes: itemSizes,
     });
 

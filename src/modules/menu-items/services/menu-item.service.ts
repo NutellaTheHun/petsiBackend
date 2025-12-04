@@ -45,7 +45,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     dto: CreateMenuItemDto,
     manager: EntityManager,
   ): Promise<MenuItem> {
-    let fixedContentItems: MenuItemContainerItem[] = [];
+    let fixedContents: MenuItemContainerItem[] = [];
     if (dto.fixedContentDtos) {
       for (const nestedDto of dto.fixedContentDtos) {
         if (nestedDto.createDto) {
@@ -53,7 +53,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             nestedDto.createDto,
             manager,
           );
-          fixedContentItems.push(newItem);
+          fixedContents.push(newItem);
         } else {
           throw new Error('nested MenuItemContainerItem create dto is null');
         }
@@ -76,13 +76,13 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     }
     const result = manager.create(MenuItem, {
       type: dto.type,
-      category: { id: dto.categoryId },
+      ...(dto.categoryId && { category: { id: dto.categoryId } }),
       itemName: dto.itemName,
       validSizes: dto.validSizeIds.map((id) =>
         manager.create(MenuItemSize, { id }),
       ),
-      fixedContents: fixedContentItems,
-      variableRules: variableRules,
+      fixedContents,
+      variableRules,
       variableMaxAmount: dto.variableMaxAmount,
     });
 

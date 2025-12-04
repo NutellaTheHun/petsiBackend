@@ -10,7 +10,7 @@ export async function InventoryItemSizeCreateInTransaction(
     measureAmount: dto.measureAmount,
     measureUnit: { id: dto.measureUnitId },
     packageType: { id: dto.inventoryPackageId },
-    inventoryItem: { id: dto.inventoryItemId },
+    ...(dto.inventoryItemId && { inventoryItem: { id: dto.inventoryItemId } }),
     cost: dto.cost.toString(),
   });
   return result;

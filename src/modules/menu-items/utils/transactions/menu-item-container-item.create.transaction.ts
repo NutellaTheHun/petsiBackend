@@ -7,7 +7,7 @@ export async function MenuItemContainerItemCreateInTransaction(
   manager: EntityManager,
 ): Promise<MenuItemContainerItem> {
   const result = manager.create(MenuItemContainerItem, {
-    parent: { id: dto.parentMenuItemId },
+    ...(dto.parentMenuItemId && { parent: { id: dto.parentMenuItemId } }),
     parentItemSize: { id: dto.parentItemSizeId },
     containedItem: { id: dto.containedMenuItemId },
     containedItemSize: { id: dto.containedItemSizeId },

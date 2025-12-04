@@ -43,7 +43,7 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
   ): Promise<UnitOfMeasureCategory> {
     const result = manager.create(UnitOfMeasureCategory, {
       categoryName: dto.categoryName,
-      baseConversionUnit: { id: dto.baseUnitId },
+      baseConversionUnit: dto.baseUnitId ? { id: dto.baseUnitId } : null,
     });
     return result;
   }

@@ -26,7 +26,7 @@ export async function OrderMenuItemCreateInTransaction(
   }
 
   const result = manager.create(OrderMenuItem, {
-    order: { id: dto.orderId },
+    ...(dto.orderId && { order: { id: dto.orderId } }),
     menuItem: { id: dto.menuItemId },
     quantity: dto.quantity,
     size: { id: dto.menuItemSizeId },

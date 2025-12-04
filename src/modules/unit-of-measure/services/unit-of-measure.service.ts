@@ -45,7 +45,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     const result = manager.create(UnitOfMeasure, {
       name: dto.unitName,
       abbreviation: dto.abbreviation,
-      category: { id: dto.categoryId },
+      category: dto.categoryId ? { id: dto.categoryId } : null,
       conversionFactorToBase: dto.conversionFactorToBase,
     });
     return result;

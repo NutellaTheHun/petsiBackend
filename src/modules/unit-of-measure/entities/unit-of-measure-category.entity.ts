@@ -72,5 +72,5 @@ export class UnitOfMeasureCategory {
   })
   @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  baseConversionUnit?: UnitOfMeasure | null;
+  baseConversionUnit: UnitOfMeasure | null;
 }

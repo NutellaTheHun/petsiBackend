@@ -51,7 +51,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
     manager: EntityManager,
     entity: Label,
   ): Promise<void> {
-    if (dto.imageUrl) {
+    if (dto.imageUrl !== undefined) {
       entity.imageUrl = dto.imageUrl;
     }
 
