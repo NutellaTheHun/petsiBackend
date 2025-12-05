@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -40,7 +40,7 @@ export class InventoryItem {
   id: number;
 
   @ApiProperty({ example: '', description: '' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   itemName: string;
 
   /**
@@ -48,7 +48,7 @@ export class InventoryItem {
    *
    * - Example: "Produce", "Dry Goods", "Dairy", "Cleaning Supplies"
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: inventoryItemCategoryExample(new Set<string>(), true),
     description: 'The assigned category',
     type: () => InventoryItemCategory,
@@ -63,13 +63,13 @@ export class InventoryItem {
       onDelete: 'SET NULL',
     },
   )
-  category?: InventoryItemCategory | null;
+  category: InventoryItemCategory | null = null;
 
   /**
    * The supplier of the item.
    * - Example : "Cysco", "Driscols", "Walden Farms"
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: inventoryItemVendorExample(new Set<string>(), true),
     description: 'The assigned Vendor',
     type: () => InventoryItemVendor,
@@ -80,7 +80,7 @@ export class InventoryItem {
     cascade: true,
     onDelete: 'SET NULL',
   })
-  vendor?: InventoryItemVendor | null;
+  vendor: InventoryItemVendor | null = null;
 
   /**
    * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
@@ -96,5 +96,5 @@ export class InventoryItem {
   @OneToMany(() => InventoryItemSize, (size) => size.inventoryItem, {
     cascade: true,
   })
-  itemSizes: InventoryItemSize[];
+  itemSizes: InventoryItemSize[] = [];
 }

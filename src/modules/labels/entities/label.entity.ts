@@ -41,7 +41,7 @@ export class Label {
     description: 'The MenuItem this label is for',
     type: MenuItem,
   })
-  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   menuItem: MenuItem;
 
   /**
@@ -51,7 +51,7 @@ export class Label {
     description: 'URL path to the stored image file',
     example: 'http://toMyImages.gov',
   })
-  @Column({ type: 'text', nullable: false })
+  @Column({ type: 'text' })
   imageUrl: string;
 
   /**
@@ -62,6 +62,6 @@ export class Label {
     description: 'The label type describing size characteristics',
     type: LabelType,
   })
-  @ManyToOne(() => LabelType, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => LabelType, { onDelete: 'SET NULL' })
   labelType: LabelType;
 }

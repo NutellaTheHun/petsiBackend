@@ -25,7 +25,7 @@ export class MenuItemCategory {
   id: number;
 
   @ApiProperty({ example: 'Pastry', description: 'Name of the category' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   categoryName: string;
 
   /**
@@ -38,5 +38,5 @@ export class MenuItemCategory {
     isArray: true,
   })
   @OneToMany(() => MenuItem, (item) => item.category)
-  categoryItems: MenuItem[];
+  categoryItems: MenuItem[] = [];
 }

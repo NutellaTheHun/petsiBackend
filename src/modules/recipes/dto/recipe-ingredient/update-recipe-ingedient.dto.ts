@@ -8,6 +8,7 @@ export class UpdateRecipeIngredientDto {
   })
   @IsNumber()
   @IsOptional()
+  @IsPositive()
   readonly quantity?: number;
 
   @ApiPropertyOptional({
@@ -24,24 +25,20 @@ export class UpdateRecipeIngredientDto {
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',
     example: 3,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly ingredientInventoryItemId?: number | null;
+  readonly ingredientInventoryItemId?: number;
 
   @ApiPropertyOptional({
     description:
       'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.',
     example: 4,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly ingredientRecipeId?: number | null;
+  readonly ingredientRecipeId?: number;
 }

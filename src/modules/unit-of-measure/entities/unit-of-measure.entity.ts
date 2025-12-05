@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -39,14 +39,14 @@ export class UnitOfMeasure {
    * "Cup", "Teaspoon", "Fluid ouce"
    */
   @ApiProperty({ example: '', description: '' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   name: string;
 
   /**
    * "Cup": "c", "Teaspoon": "tsp", "Fluid ouce": "fl oz"
    */
   @ApiProperty({ example: '', description: '' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   abbreviation: string;
 
   /**
@@ -54,7 +54,7 @@ export class UnitOfMeasure {
    *
    * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: unitOfMeasureCategoryExample(new Set<string>(), true),
     description: '',
     type: () => UnitOfMeasureCategory,
@@ -64,7 +64,7 @@ export class UnitOfMeasure {
     (category) => category.unitsOfMeasure,
     { nullable: true, onDelete: 'SET NULL', cascade: true },
   )
-  category?: UnitOfMeasureCategory | null;
+  category: UnitOfMeasureCategory | null = null;
 
   /**
    * The conversion value to the specified category property's baseUnit.
@@ -72,13 +72,13 @@ export class UnitOfMeasure {
    * - Example: UnitCategory: Volume, baseUnit is milliliter
    * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
    */
-  @ApiPropertyOptional({ example: '', description: '' })
+  @ApiProperty({ example: '', description: '' })
   @Column({ type: 'decimal', precision: 18, scale: 10 })
-  conversionFactorToBase?: string;
+  conversionFactorToBase: string | null;
 
-  getConversionFactor(): number | null {
+  /*getConversionFactor(): number | null {
     return this.conversionFactorToBase
       ? parseFloat(this.conversionFactorToBase)
       : null;
-  }
+  }*/
 }

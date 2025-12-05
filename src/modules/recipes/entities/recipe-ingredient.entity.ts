@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { EntityBase } from '../../../base/entity-base';
 import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
@@ -52,14 +52,14 @@ export class RecipeIngredient {
    *
    * If a RecipeIngredient is referencing the inventoryItem property, the subRecipeIngredient property must be null/undefined.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: inventoryItemExample(new Set<string>(), true),
     description:
       'The InventoryItem this ingredient uses, if this property is referenced, ingredientRecipe property must be null.',
     type: InventoryItem,
   })
   @ManyToOne(() => InventoryItem, { nullable: true, onDelete: 'CASCADE' })
-  ingredientInventoryItem?: InventoryItem | null;
+  ingredientInventoryItem: InventoryItem | null = null;
 
   /**
    * A {@link Recipe} that is used as an ingredient in the parent recipe property.
@@ -70,14 +70,14 @@ export class RecipeIngredient {
    *
    * If a RecipeIngredient is referencing the subRecipeIngredient property, the inventoryItem property must be null/undefined.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: null,
     description:
       'The Recipe this ingredient uses, if this property is referenced, ingredientInventoryItem must be null.',
     type: () => Recipe,
   })
   @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
-  ingredientRecipe?: Recipe | null;
+  ingredientRecipe: Recipe | null = null;
 
   /**
    * the amount of the unit property for the referenced inventoryItem/subRecipeIngredient property.
@@ -89,7 +89,7 @@ export class RecipeIngredient {
     description:
       'the numberical value of the quantityMeasure property of the ingredient',
   })
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   quantity: number;
 
   /**
@@ -102,6 +102,6 @@ export class RecipeIngredient {
     description: 'The unit of measure for the ingredient',
     type: UnitOfMeasure,
   })
-  @ManyToOne(() => UnitOfMeasure, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
   quantityMeasure: UnitOfMeasure;
 }

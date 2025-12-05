@@ -30,6 +30,6 @@ export class MenuItemSize {
     example: 'medium',
     description: 'The naming identifier of the size.',
   })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   name: string;
 }

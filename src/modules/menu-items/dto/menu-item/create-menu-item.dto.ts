@@ -15,7 +15,6 @@ export class CreateMenuItemDto {
   @ApiPropertyOptional({
     description: 'Id of MenuItemCategory entity.',
     example: 1,
-    nullable: true,
     type: 'number',
   })
   @IsOptional()

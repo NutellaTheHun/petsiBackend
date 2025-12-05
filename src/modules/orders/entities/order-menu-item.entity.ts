@@ -48,7 +48,7 @@ export class OrderMenuItem {
   })
   @ManyToOne(() => Order, (order) => order.orderedItems, {
     orphanedRowAction: 'delete',
-    nullable: false,
+
     onDelete: 'CASCADE',
   })
   order: Order;
@@ -63,7 +63,6 @@ export class OrderMenuItem {
     type: MenuItem,
   })
   @ManyToOne(() => MenuItem, {
-    nullable: false,
     onDelete: 'CASCADE',
     eager: true,
   })
@@ -76,7 +75,7 @@ export class OrderMenuItem {
     example: 3,
     description: 'The amount of the MenuItem being ordered',
   })
-  @Column({ nullable: false })
+  @Column()
   quantity: number;
 
   /**
@@ -88,7 +87,7 @@ export class OrderMenuItem {
     description: 'The size of the ordered MenuItem',
     type: MenuItemSize,
   })
-  @ManyToOne(() => MenuItemSize, { nullable: false, eager: true })
+  @ManyToOne(() => MenuItemSize, { eager: true })
   size: MenuItemSize;
 
   @ApiProperty({
@@ -103,5 +102,5 @@ export class OrderMenuItem {
     (orderItem) => orderItem.parentOrderItem,
     { cascade: true, eager: true },
   )
-  orderedContainerItems: OrderContainerItem[];
+  orderedContainerItems: OrderContainerItem[] = [];
 }

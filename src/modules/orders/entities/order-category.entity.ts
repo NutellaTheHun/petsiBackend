@@ -25,7 +25,7 @@ export class OrderCategory {
   id: number;
 
   @ApiProperty({ example: 'wholesale', description: 'Name of the category.' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   categoryName: string;
 
   /**
@@ -38,5 +38,5 @@ export class OrderCategory {
     isArray: true,
   })
   @OneToMany(() => Order, (order) => order.orderCategory)
-  orders: Order[];
+  orders: Order[] = [];
 }

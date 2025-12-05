@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   Entity,
@@ -43,7 +43,7 @@ export class UnitOfMeasureCategory {
    * "Volume", "Weight", "Unit"
    */
   @ApiProperty({ example: 'Volume', description: 'Name of the category' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   categoryName: string;
 
   /**
@@ -56,14 +56,14 @@ export class UnitOfMeasureCategory {
     isArray: true,
   })
   @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
-  unitsOfMeasure: UnitOfMeasure[];
+  unitsOfMeasure: UnitOfMeasure[] = [];
 
   /**
    * The selected {@link UnitOfMeasure} that all units in the category convert to for conversions.
    *
    * the baseUnit reference must be within the parent's category. (Cant see the base category of weight to be a unit of measure from volume)
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: unitOfMeasureExample(new Set<string>(), true),
     description:
       'The designated unit all other units under this category use for conversions.',
@@ -72,5 +72,5 @@ export class UnitOfMeasureCategory {
   })
   @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  baseConversionUnit: UnitOfMeasure | null;
+  baseConversionUnit: UnitOfMeasure | null = null;
 }

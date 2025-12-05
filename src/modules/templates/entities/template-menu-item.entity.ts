@@ -35,7 +35,7 @@ export class TemplateMenuItem {
     example: 'CLAPPLE',
     description: 'Name to be printed on document representing the MenuItem',
   })
-  @Column({ nullable: false })
+  @Column()
   displayName: string;
 
   /**
@@ -47,7 +47,7 @@ export class TemplateMenuItem {
       'The item being represented in the template item (as a row on the template)',
     type: MenuItem,
   })
-  @ManyToOne(() => MenuItem, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   menuItem: MenuItem;
 
   /**
@@ -58,7 +58,7 @@ export class TemplateMenuItem {
     description:
       'The index specifying the row order of this template item on the template (0 being the first row at the top ignoring the header row)',
   })
-  @Column({ nullable: false })
+  @Column()
   tablePosIndex: number;
 
   /**

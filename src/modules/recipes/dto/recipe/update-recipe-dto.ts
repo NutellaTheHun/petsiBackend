@@ -24,13 +24,11 @@ export class UpdateRecipeDto {
     description: 'Id of the MenuItem that the recipe produces.',
     example: 'Blueberry Pie',
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly producedMenuItemId?: number | null;
+  readonly producedMenuItemId?: number;
 
   @ApiPropertyOptional({
     description: 'If the recipe is used as an ingredient.(Not sold directly)',
@@ -45,89 +43,75 @@ export class UpdateRecipeDto {
       'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
     example: 1,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly batchResultQuantity?: number | null;
+  readonly batchResultQuantity?: number;
 
   @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
     example: 2,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly batchResultMeasurementId?: number | null;
+  readonly batchResultMeasurementId?: number;
 
   @ApiPropertyOptional({
     description:
       'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
     example: 3,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly servingSizeQuantity?: number | null;
+  readonly servingSizeQuantity?: number;
 
   @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasure used to represent the unit size of what is sold.',
     example: 4,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly servingSizeMeasurementId?: number | null;
+  readonly servingSizeMeasurementId?: number;
 
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
     example: 5.99,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsOptional()
   @Min(0)
-  readonly salesPrice?: number | null;
+  readonly salesPrice?: number;
 
   @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',
     example: 6,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly categoryId?: number | null;
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     description:
       'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
     example: 7,
     type: 'number',
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly subCategoryId?: number | null;
+  readonly subCategoryId?: number;
 
   @ApiPropertyOptional({
     description:

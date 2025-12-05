@@ -19,11 +19,10 @@ export class UpdateUserDto {
     example: 'jjsmithy@email.com',
     type: 'string',
     format: 'email',
-    nullable: true,
   })
   @IsString()
   @IsOptional()
-  readonly email?: string | null;
+  readonly email?: string;
 
   @ApiPropertyOptional({ description: '', example: 'strongPassword1234' })
   @IsString()

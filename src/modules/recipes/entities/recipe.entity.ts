@@ -41,13 +41,13 @@ export class Recipe {
   id: number;
 
   @ApiProperty({ example: 'Apple Mix', description: 'Name of the recipe' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   recipeName: string;
 
   /**
    * The {@link MenuItem} that this recipe produces.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: menuItemExample(new Set<string>(), true),
     description: 'The referenced MenuItem if this recipe produces one.',
     type: MenuItem,
@@ -55,7 +55,7 @@ export class Recipe {
   })
   @OneToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  producedMenuItem?: MenuItem | null;
+  producedMenuItem: MenuItem | null = null;
 
   /*
     * A recipe with isIngredient set to true doesn't directly make a MenuItem, but is an ingredient to another recipe.
@@ -68,7 +68,7 @@ export class Recipe {
       'A flag for if a recipe is used as an ingredient in other recipes',
   })
   @Column({ default: false })
-  isIngredient: boolean;
+  isIngredient: boolean = false;
 
   /**
    * A list of {@link RecipeIngredient} to make a Recipe. Can reference a {@link InventoryItem} or another recipe as the ingredient.
@@ -87,7 +87,7 @@ export class Recipe {
   @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, {
     cascade: true,
   })
-  ingredients: RecipeIngredient[];
+  ingredients: RecipeIngredient[] = [];
 
   /**
    * The total unit amount of the batchResultUnitOfMeaure property produced by the recipe.
@@ -95,7 +95,7 @@ export class Recipe {
    * - 5(batchResultQuantity) pounds of berry mix
    * - 1(batchResultQuantity) unit of Blueberry Pie.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 3,
     description:
       'The total unit amout of the batchResultUnitOfMeaure property produced by the recipe.',
@@ -105,7 +105,7 @@ export class Recipe {
   })
   @Column({ nullable: true, type: 'float' })
   @Check(`"batchResultQuantity" >= 1`)
-  batchResultQuantity?: number | null;
+  batchResultQuantity: number | null = null;
 
   /**
    * The {@link UnitOfMeasure} that descibes the total yield the recipe produces.
@@ -114,7 +114,7 @@ export class Recipe {
    * - 5 pounds(batchResultUnitOfMeasure) of berry mix
    * - 1 unit(batchResultUnitOfMeasure) of Blueberry Pie.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: unitOfMeasureExample(new Set<string>(), true),
     description:
       'The unit of measure that descibes the total yield the recipe produces.',
@@ -123,7 +123,7 @@ export class Recipe {
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  batchResultMeasurement?: UnitOfMeasure | null;
+  batchResultMeasurement: UnitOfMeasure | null = null;
 
   /**
    * A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.
@@ -134,7 +134,7 @@ export class Recipe {
    * - A recipe for Banana Bread produces a loaf, and is then sold by the slice.
    * - 1 loaf could have a serving size of say 8(servingSizeQuantity) units.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 4,
     description:
       'A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.',
@@ -144,7 +144,7 @@ export class Recipe {
   })
   @Column({ nullable: true, type: 'float' })
   @Check(`"servingSizeQuantity" >= 1`)
-  servingSizeQuantity?: number | null;
+  servingSizeQuantity: number | null = null;
 
   /**
    * The {@link UnitOfMeasure} that describes the total sellable portions of the recipes yield.
@@ -161,12 +161,12 @@ export class Recipe {
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  servingSizeMeasurement?: UnitOfMeasure | null;
+  servingSizeMeasurement: UnitOfMeasure | null = null;
 
   /**
    * The set price per servingSizeQuantity.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: '34.99',
     description: 'The set price per servingSizeQuantity.',
     type: 'number',
@@ -175,12 +175,12 @@ export class Recipe {
   })
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   @Check(`"salesPrice" >= 0`)
-  salesPrice?: string | null;
+  salesPrice: string | null = null;
 
   /**
    * The {@link RecipeCategory}, such as "Pie" or"Pastry"
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: recipeCategoryExample(new Set<string>(), true),
     description: 'The category of the recipe',
     type: () => RecipeCategory,
@@ -190,12 +190,12 @@ export class Recipe {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  category?: RecipeCategory | null;
+  category: RecipeCategory | null = null;
 
   /**
    * The {@link RecipeSubCategory} of {@link RecipeCategory}, such as "Sweet Pie" or "Savory Pie", of RecipeCategory Pie.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: recipeSubCategoryExample(new Set<string>(), true),
     description: 'The sub category of the recipe',
     type: () => RecipeSubCategory,
@@ -205,5 +205,5 @@ export class Recipe {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  subCategory?: RecipeSubCategory | null;
+  subCategory: RecipeSubCategory | null = null;
 }

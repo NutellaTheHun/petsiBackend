@@ -9,15 +9,13 @@ import {
 import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
 
 export class CreateOrderMenuItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.',
     example: 1,
-    required: false,
-    nullable: true,
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
   readonly orderId?: number;
 

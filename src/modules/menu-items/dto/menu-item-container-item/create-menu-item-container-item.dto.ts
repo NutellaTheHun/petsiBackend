@@ -6,8 +6,6 @@ export class CreateMenuItemContainerItemDto {
     description:
       'Id of a MenuItem entity, the parent container to the child MenuItem component. Is required if sending DTO to menu-item-container-item endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.',
     example: 1,
-    required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()

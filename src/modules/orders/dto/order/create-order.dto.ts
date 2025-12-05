@@ -32,7 +32,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'Name of who is picking up the order or reciving the delivery',
     example: 'Jane Doe',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -58,7 +57,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '123 main st',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -68,7 +66,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '1234568',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -78,7 +75,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: 'email@email.com',
-    nullable: true,
     type: 'string',
     format: 'email',
   })
@@ -89,7 +85,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'special instruction for order',
     example: 'note information',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -100,7 +95,6 @@ export class CreateOrderDto {
     description:
       'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
     example: false,
-    nullable: true,
     type: 'boolean',
   })
   @IsBoolean()
@@ -110,7 +104,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'Is true if the order occurs on a weekly basis.',
     example: true,
-    nullable: true,
     type: 'boolean',
   })
   @IsBoolean()
@@ -120,7 +113,6 @@ export class CreateOrderDto {
   @ApiPropertyOptional({
     description: 'If is weekly, is the day of the week the order is fulfilled',
     example: 'sunday',
-    nullable: true,
     type: 'string',
   })
   @IsString()

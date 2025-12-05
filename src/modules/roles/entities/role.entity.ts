@@ -25,7 +25,7 @@ export class Role {
   id: number;
 
   @ApiProperty({ example: 'Staff', description: 'Name of the role' })
-  @Column({ nullable: false, unique: true })
+  @Column({ unique: true })
   roleName: string;
 
   /**
@@ -38,5 +38,5 @@ export class Role {
     isArray: true,
   })
   @ManyToMany(() => User, (user) => user.roles)
-  users: User[];
+  users: User[] = [];
 }

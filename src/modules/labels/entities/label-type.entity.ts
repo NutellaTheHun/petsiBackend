@@ -24,7 +24,7 @@ export class LabelType {
   id: number;
 
   @ApiProperty({ description: 'Name of the label type', example: '4x2' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   labelTypeName: string;
 
   /**
@@ -35,7 +35,7 @@ export class LabelType {
     description: 'Length of the label in hundreths of an inch',
     example: 400,
   })
-  @Column({ nullable: false })
+  @Column()
   labelTypeLength: number;
 
   /**
@@ -46,6 +46,6 @@ export class LabelType {
     description: 'Width of the label in hundreths of an inch',
     example: 200,
   })
-  @Column({ nullable: false })
+  @Column()
   labelTypeWidth: number;
 }

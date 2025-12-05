@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -46,7 +46,7 @@ export class MenuItem {
   })
   type: MenuItemType;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: menuItemCategoryExample(new Set<string>(), true),
     description: 'The category assigned to the item',
     type: () => MenuItemCategory,
@@ -57,10 +57,10 @@ export class MenuItem {
     onDelete: 'SET NULL',
     eager: true,
   })
-  category?: MenuItemCategory | null;
+  category: MenuItemCategory | null = null;
 
   @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   itemName: string;
 
   @ApiProperty({
@@ -71,18 +71,21 @@ export class MenuItem {
   })
   @ManyToMany(() => MenuItemSize)
   @JoinTable()
-  validSizes: MenuItemSize[];
+  validSizes: MenuItemSize[] = [];
 
+  // API PROPERTY HERE
   @OneToMany(() => MenuItemContainerItem, (ci) => ci.parent, {
     cascade: true,
   })
-  fixedContents?: MenuItemContainerItem[];
+  fixedContents: MenuItemContainerItem[] = [];
 
+  // API PROPERTY HERE
   @OneToMany(() => MenuItemContainerRule, (rule) => rule.parentMenuItem)
-  variableRules?: MenuItemContainerRule[];
+  variableRules: MenuItemContainerRule[] = [];
 
-  @Column()
-  variableMaxAmount?: number;
+  // API PROPERTY HERE
+  @Column({ nullable: true })
+  variableMaxAmount: number | null = null;
 
   /**
    * The date the order is inserted into the database.

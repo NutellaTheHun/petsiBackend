@@ -58,7 +58,7 @@ export class InventoryAreaItem {
     description: 'The inventory item that was recorded',
     type: InventoryItem,
   })
-  @ManyToOne(() => InventoryItem, { nullable: false, onDelete: 'CASCADE' })
+  @ManyToOne(() => InventoryItem, { onDelete: 'CASCADE' })
   countedItem: InventoryItem;
 
   /**
@@ -72,7 +72,7 @@ export class InventoryAreaItem {
     description:
       'The unit amount of the recorded inventory item / size combination',
   })
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'int' })
   amount: number;
 
   /**
@@ -89,7 +89,6 @@ export class InventoryAreaItem {
     type: InventoryItemSize,
   })
   @ManyToOne(() => InventoryItemSize, {
-    nullable: false,
     cascade: true,
     onDelete: 'CASCADE',
   })

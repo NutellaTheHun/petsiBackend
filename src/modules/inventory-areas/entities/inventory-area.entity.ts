@@ -34,7 +34,7 @@ export class InventoryArea {
     example: 'dry storage',
     description: 'The name of the area',
   })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   areaName: string;
 
   /**
@@ -49,5 +49,5 @@ export class InventoryArea {
     isArray: true,
   })
   @OneToMany(() => InventoryAreaCount, (areaCount) => areaCount.inventoryArea)
-  inventoryCounts: InventoryAreaCount[];
+  inventoryCounts: InventoryAreaCount[] = [];
 }

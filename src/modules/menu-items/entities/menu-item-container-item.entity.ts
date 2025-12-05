@@ -64,7 +64,6 @@ export class MenuItemContainerItem {
   @ManyToOne(() => MenuItem, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
-    nullable: false,
   })
   parent: MenuItem;
 
@@ -80,7 +79,7 @@ export class MenuItemContainerItem {
     description: 'The size of the container to this item',
     type: MenuItemSize,
   })
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
   parentItemSize: MenuItemSize;
 
   /**
@@ -99,7 +98,7 @@ export class MenuItemContainerItem {
     description: 'The menuItem that is being referenced as the contained item',
     type: () => MenuItem,
   })
-  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   containedItem: MenuItem;
 
   /**
@@ -112,13 +111,13 @@ export class MenuItemContainerItem {
     description: 'The size of the MenuItem that is being contained',
     type: MenuItemSize,
   })
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
   containedItemSize: MenuItemSize;
 
   @ApiProperty({
-    example: {},
+    example: 1,
     description: 'The amount of the contained MenuItem.',
   })
-  @Column({ nullable: false })
+  @Column()
   quantity: number;
 }

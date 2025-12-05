@@ -30,7 +30,7 @@ export class Template {
    * Example: "Summer Pies", "Spring Pastries"
    */
   @ApiProperty({ example: 'Spring Pies', description: 'Name of the template' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   templateName: string;
 
   /**
@@ -42,7 +42,7 @@ export class Template {
       'Differentiates whether the template is for pie products or not.',
   })
   @Column({ default: false })
-  isPie: boolean;
+  isPie: boolean = false;
 
   /**
    * List of {@link TemplateMenuItem} that describe the form structure.
@@ -59,5 +59,5 @@ export class Template {
     (templateItem) => templateItem.parentTemplate,
     { cascade: true },
   )
-  templateItems: TemplateMenuItem[];
+  templateItems: TemplateMenuItem[] = [];
 }

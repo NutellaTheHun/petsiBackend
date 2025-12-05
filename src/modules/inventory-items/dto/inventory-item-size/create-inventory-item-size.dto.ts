@@ -7,7 +7,6 @@ export class CreateInventoryItemSizeDto {
       'Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.',
     example: 1,
     required: false,
-    nullable: true,
   })
   @IsNumber()
   @IsPositive()

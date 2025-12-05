@@ -59,7 +59,6 @@ export class OrderContainerItem {
   })
   @ManyToOne(() => MenuItem, {
     eager: true,
-    nullable: false,
     onDelete: 'CASCADE',
   })
   containedItem: MenuItem;
@@ -76,7 +75,7 @@ export class OrderContainerItem {
   })
   @ManyToOne(() => MenuItemSize, {
     eager: true,
-    nullable: false,
+
     onDelete: 'CASCADE',
   })
   containedItemSize: MenuItemSize;
@@ -85,6 +84,6 @@ export class OrderContainerItem {
     example: '2',
     description: 'The amount of the contained MenuItem being ordered',
   })
-  @Column({ nullable: false })
+  @Column()
   quantity: number;
 }

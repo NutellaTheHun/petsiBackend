@@ -51,7 +51,7 @@ export class InventoryItemSize {
     example: '8',
     description: 'The measure quantity of the measureUnit property',
   })
-  @Column({ nullable: false })
+  @Column()
   measureAmount: number;
 
   /**
@@ -64,7 +64,7 @@ export class InventoryItemSize {
     description: 'The unit of measure scaling the measureAmount property',
     type: UnitOfMeasure,
   })
-  @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE', nullable: false })
+  @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
   measureUnit: UnitOfMeasure;
 
   /**
@@ -77,7 +77,6 @@ export class InventoryItemSize {
   })
   @ManyToOne(() => InventoryItemPackage, {
     onDelete: 'CASCADE',
-    nullable: false,
   })
   packageType: InventoryItemPackage;
 
@@ -104,7 +103,7 @@ export class InventoryItemSize {
     example: '8.49',
     description: 'The cost for this inventory item / size combination',
   })
-  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
   @Check(`"cost" >= 0`)
   cost: string;
 }

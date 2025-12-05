@@ -15,7 +15,6 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'Id of OrderType entity.',
     example: 1,
-    nullable: true,
     type: 'number',
   })
   @IsNumber()
@@ -26,7 +25,6 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'Name of the owner of the order',
     example: 'John Smith',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -36,17 +34,15 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'Name of who is picking up the order or reciving the delivery',
     example: 'Jane Doe',
-    nullable: true,
     type: 'string',
   })
   @IsString()
   @IsOptional()
-  readonly fulfillmentContactName?: string | null;
+  readonly fulfillmentContactName?: string;
 
   @ApiPropertyOptional({
     description: 'Date the order is to be available or delivered.',
     example: '2025-06-08T20:26:45.883Z',
-    nullable: true,
     type: 'string',
   })
   @IsDate()
@@ -56,7 +52,6 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: "Method of Order's dispersal.",
     example: 'delivery',
-    nullable: true,
     type: 'string',
   })
   @IsString()
@@ -66,49 +61,44 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '123 main st',
-    nullable: true,
     type: 'string',
   })
   @IsString()
   @IsOptional()
-  readonly deliveryAddress?: string | null;
+  readonly deliveryAddress?: string;
 
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: '1234568',
-    nullable: true,
     type: 'string',
   })
   @IsString()
   @IsOptional()
-  readonly phoneNumber?: string | null;
+  readonly phoneNumber?: string;
 
   @ApiPropertyOptional({
     description: 'for delivery contact information',
     example: 'email@email.com',
-    nullable: true,
     type: 'string',
     format: 'email',
   })
   @IsString()
   @IsOptional()
-  readonly email?: string | null;
+  readonly email?: string;
 
   @ApiPropertyOptional({
     description: 'special instruction for order',
     example: 'note information',
-    nullable: true,
     type: 'string',
   })
   @IsString()
   @IsOptional()
-  readonly note?: string | null;
+  readonly note?: string;
 
   @ApiPropertyOptional({
     description:
       'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
     example: false,
-    nullable: true,
     type: 'boolean',
   })
   @IsBoolean()
@@ -118,7 +108,6 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'Is true if the order occurs on a weekly basis.',
     example: true,
-    nullable: true,
     type: 'boolean',
   })
   @IsBoolean()
@@ -128,18 +117,16 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({
     description: 'If is weekly, is the day of the week the order is fulfilled',
     example: 'sunday',
-    nullable: true,
     type: 'string',
   })
   @IsString()
   @IsOptional()
-  readonly weeklyFulfillment?: string | null;
+  readonly weeklyFulfillment?: string;
 
   @ApiPropertyOptional({
     description:
       'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
     type: () => [NestedOrderMenuItemDto],
-    nullable: true,
     example: [
       {
         mode: 'create',

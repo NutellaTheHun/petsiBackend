@@ -25,7 +25,7 @@ export class InventoryItemVendor {
   id: number;
 
   @ApiProperty({ example: 'Dollar Tree', description: 'Name of the vendor' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   vendorName: string;
 
   /**
@@ -38,5 +38,5 @@ export class InventoryItemVendor {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.vendor)
-  vendorItems: InventoryItem[];
+  vendorItems: InventoryItem[] = [];
 }

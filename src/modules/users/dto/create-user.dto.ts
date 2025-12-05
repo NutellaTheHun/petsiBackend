@@ -19,7 +19,6 @@ export class CreateUserDto {
     example: 'jjsmithy@email.com',
     type: 'string',
     format: 'email',
-    nullable: true,
   })
   @IsString()
   @IsOptional()

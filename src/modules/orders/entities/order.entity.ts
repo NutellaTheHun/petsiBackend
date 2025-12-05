@@ -39,7 +39,7 @@ export class Order {
     description: 'The assigned category of the order',
     type: () => OrderCategory,
   })
-  @ManyToOne(() => OrderCategory, { nullable: false })
+  @ManyToOne(() => OrderCategory)
   orderCategory: OrderCategory;
 
   /**
@@ -49,7 +49,7 @@ export class Order {
     example: 'Cassandra del Apocalypto',
     description: 'The name of the owner of the order',
   })
-  @Column({ nullable: false })
+  @Column()
   recipient: string;
 
   /**
@@ -59,7 +59,7 @@ export class Order {
     example: '2025-06-06T19:22:07.102Z',
     description: 'The date the order is due to be picked up or delivered.',
   })
-  @Column({ nullable: false })
+  @Column()
   fulfillmentDate: Date;
 
   /**
@@ -70,7 +70,7 @@ export class Order {
     description:
       'The method of transferring the order to the recipient/fulfillmentContactName (pickup or delivery)',
   })
-  @Column({ nullable: false })
+  @Column()
   fulfillmentType: string;
 
   /**
@@ -78,7 +78,7 @@ export class Order {
    *
    * Sometimes different from the recipient/owner of the order
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'Marcus Bolognese',
     description:
       "If the order is for delivery and the recipient property isn't who is recieving the order",
@@ -86,36 +86,36 @@ export class Order {
     type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
-  fulfillmentContactName?: string | null;
+  fulfillmentContactName: string | null = null;
 
   /**
    * Only required for orders with fulfillment type delivery
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: '1 Broken Dreams Blvd',
     description: 'If a delivery order, that address to deliver',
     nullable: true,
     type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
-  deliveryAddress?: string | null;
+  deliveryAddress: string | null = null;
 
   /**
    * Only required for orders with fulfillment type delivery
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: '555-420-6969',
     description: 'Phone number associated with order',
     nullable: true,
     type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
-  phoneNumber?: string | null;
+  phoneNumber: string | null = null;
 
   /**
    * Only required for orders with fulfillment type delivery
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'email@email.com',
     description: 'email associated with order',
     nullable: true,
@@ -123,7 +123,7 @@ export class Order {
     format: 'email',
   })
   @Column({ nullable: true, type: 'varchar' })
-  email?: string | null;
+  email: string | null = null;
 
   /**
    * Any additional information for the order.
@@ -135,7 +135,7 @@ export class Order {
     type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
-  note?: string | null;
+  note: string | null = null;
 
   /**
    * If an order is frozen, it is not an active order,
@@ -149,7 +149,7 @@ export class Order {
       "A flag to 'pause' or 'freeze' an order, not included in DB queries for services like aggregates for Reports.",
   })
   @Column({ default: false })
-  isFrozen: boolean;
+  isFrozen: boolean = false;
 
   /**
    * If an order occurs weekly (such as most wholesale orders),
@@ -164,12 +164,12 @@ export class Order {
       'A flag if a order occurs on a weekly basis. A traditional order has isWeekly=false (upon fulfillment the order is completed, while a wholesale standing order could occur every thursday)',
   })
   @Column({ default: false })
-  isWeekly: boolean;
+  isWeekly: boolean = false;
 
   /**
    * If an order is weekly, the day of the week the order is fulfilled.
    */
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'tuesday',
     description:
       'If the order isWeekly is set to true, the day of the week the order is fulfilled on.',
@@ -177,7 +177,7 @@ export class Order {
     type: 'string',
   })
   @Column({ nullable: true, type: 'varchar' })
-  weeklyFulfillment?: string | null;
+  weeklyFulfillment: string | null = null;
 
   /**
    * The list of {@link OrderMenuItem} that are being purchased.
@@ -190,7 +190,7 @@ export class Order {
     isArray: true,
   })
   @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true })
-  orderedItems: OrderMenuItem[];
+  orderedItems: OrderMenuItem[] = [];
 
   @ApiProperty({
     example: '2025-06-06T19:22:07.102Z',

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -26,10 +26,10 @@ export class User {
   id: number;
 
   @ApiProperty({ example: 'johndoe', description: 'Username of the user' })
-  @Column({ nullable: false, unique: true })
+  @Column({ unique: true })
   username: string;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: 'john@example.com',
     description: 'Email address',
     type: 'string',
@@ -37,14 +37,14 @@ export class User {
     nullable: true,
   })
   @Column({ nullable: true, type: 'varchar' })
-  email?: string | null;
+  email: string | null = null;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     example: '1234abc',
     description: 'Only used when creating or updating a user',
     type: 'string',
   })
-  @Column({ nullable: false })
+  @Column()
   password: string;
 
   @ApiProperty({
@@ -69,5 +69,5 @@ export class User {
   })
   @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
   @JoinTable()
-  roles: Role[];
+  roles: Role[] = [];
 }

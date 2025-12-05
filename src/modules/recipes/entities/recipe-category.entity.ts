@@ -29,7 +29,7 @@ export class RecipeCategory {
   id: number;
 
   @ApiProperty({ example: 'Pie', description: 'The name of the category' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   categoryName: string;
 
   /**
@@ -44,7 +44,7 @@ export class RecipeCategory {
   @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, {
     cascade: true,
   })
-  subCategories: RecipeSubCategory[];
+  subCategories: RecipeSubCategory[] = [];
 
   /**
    * List of {@link Recipe} under the category.
@@ -56,5 +56,5 @@ export class RecipeCategory {
     isArray: true,
   })
   @OneToMany(() => Recipe, (recipe) => recipe.category)
-  recipes: Recipe[];
+  recipes: Recipe[] = [];
 }

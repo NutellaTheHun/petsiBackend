@@ -29,6 +29,6 @@ export class InventoryItemPackage {
     example: 'Box',
     description: 'Name description of a package type',
   })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   packageName: string;
 }

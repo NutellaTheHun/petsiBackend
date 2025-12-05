@@ -26,7 +26,7 @@ export class InventoryItemCategory {
   id: number;
 
   @ApiProperty({ example: 'Produce', description: 'Name of the category' })
-  @Column({ unique: true, nullable: false })
+  @Column({ unique: true })
   categoryName: string;
 
   /**
@@ -41,5 +41,5 @@ export class InventoryItemCategory {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.category)
-  categoryItems: InventoryItem[];
+  categoryItems: InventoryItem[] = [];
 }

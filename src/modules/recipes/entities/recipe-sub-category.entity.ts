@@ -42,7 +42,7 @@ export class RecipeSubCategory {
     example: 'Savory Pie',
     description: 'Name of the subcategory',
   })
-  @Column({ nullable: false })
+  @Column()
   subCategoryName: string;
 
   /**
@@ -71,5 +71,5 @@ export class RecipeSubCategory {
     isArray: true,
   })
   @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
-  recipes: Recipe[];
+  recipes: Recipe[] = [];
 }

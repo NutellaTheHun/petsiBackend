@@ -21,7 +21,6 @@ export class CreateInventoryItemDto {
   @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
     example: 1,
-    nullable: true,
     type: 'number',
   })
   @IsNumber()
@@ -32,7 +31,6 @@ export class CreateInventoryItemDto {
   @ApiPropertyOptional({
     description: 'Id of InventoryItemVendor entity.',
     example: 2,
-    nullable: true,
     type: 'number',
   })
   @IsNumber()
@@ -55,7 +53,6 @@ export class CreateInventoryItemDto {
         },
       },
     ],
-    nullable: true,
   })
   @IsOptional()
   @IsArray()

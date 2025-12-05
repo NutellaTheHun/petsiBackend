@@ -1,5 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 
 export class CreateTemplateMenuItemDto {
   @ApiProperty({
@@ -30,15 +36,13 @@ export class CreateTemplateMenuItemDto {
   @IsPositive()
   readonly tablePosIndex: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the parent Template entity. Is required if sending DTO to template-menu-item endpoint. Is not required if sending DTO as a nested dto of a create template request.',
     example: 2,
-    required: false,
-    nullable: true,
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
   readonly templateId?: number;
 }

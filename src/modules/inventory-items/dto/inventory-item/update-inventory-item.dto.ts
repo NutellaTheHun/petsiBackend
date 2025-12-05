@@ -21,24 +21,22 @@ export class UpdateInventoryItemDto {
   @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
     example: 1,
-    nullable: true,
     type: 'number',
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly inventoryItemCategoryId?: number | null;
+  readonly inventoryItemCategoryId?: number;
 
   @ApiPropertyOptional({
     example: 2,
     description: 'Id of InventoryItemVendor entity.',
-    nullable: true,
     type: 'number',
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly vendorId?: number | null;
+  readonly vendorId?: number;
 
   @ApiPropertyOptional({
     description:

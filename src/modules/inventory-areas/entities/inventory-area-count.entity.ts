@@ -57,7 +57,6 @@ export class InventoryAreaCount {
   @ManyToOne(() => InventoryArea, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
-    nullable: false,
   })
   inventoryArea: InventoryArea;
 
@@ -73,5 +72,5 @@ export class InventoryAreaCount {
     cascade: true,
   })
   @IsArray()
-  countedItems: InventoryAreaItem[];
+  countedItems: InventoryAreaItem[] = [];
 }

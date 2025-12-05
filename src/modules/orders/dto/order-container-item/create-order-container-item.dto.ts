@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 import { Order } from '../../entities/order.entity';
 
@@ -6,7 +6,7 @@ import { Order } from '../../entities/order.entity';
  * Depreciated, only created as a child through {@link Order}.
  */
 export class CreateOrderContainerItemDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.',
     example: 1,

@@ -17,18 +17,16 @@ export class UpdateMenuItemDto {
     description:
       'Id of MenuItemCategory entity. Pass a null value to remove category',
     example: 1,
-    nullable: true,
     type: 'number',
   })
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly categoryId?: number | null;
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     description: 'Can be single, fixed_container, or variable_container',
     example: 'fixed_container',
-    nullable: true,
     type: 'string',
   })
   @IsNotEmpty()
@@ -38,7 +36,6 @@ export class UpdateMenuItemDto {
   @ApiPropertyOptional({
     description: 'Name of MenuItem entity.',
     example: 'box of 6 muffins',
-    nullable: true,
     type: 'string',
   })
   @IsString()

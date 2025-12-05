@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import {
   Entity,
   JoinTable,
@@ -62,7 +61,6 @@ export class MenuItemContainerRule {
   })
   @ManyToOne(() => MenuItem, {
     onDelete: 'CASCADE',
-    nullable: false,
     eager: true,
   })
   validItem: MenuItem;
@@ -78,15 +76,13 @@ export class MenuItemContainerRule {
   })
   @ManyToMany(() => MenuItemSize, { eager: true })
   @JoinTable()
-  validSizes: MenuItemSize[];
+  validSizes: MenuItemSize[] = [];
 
   @ApiProperty({
     description: 'Optional setting if specific item has a max amount.',
     example: 6,
     type: 'number',
+    nullable: true,
   })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  maxQuantity?: number;
+  maxQuantity: number | null = null;
 }
