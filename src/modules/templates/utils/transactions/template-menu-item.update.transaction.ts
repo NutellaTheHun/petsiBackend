@@ -9,19 +9,19 @@ export async function TemplateMenuItemUpdateInTransaction(
   manager: EntityManager,
   entity: TemplateMenuItem,
 ): Promise<void> {
-  if (dto.displayName) {
+  if (dto.displayName !== undefined) {
     entity.displayName = dto.displayName;
   }
 
-  if (dto.menuItemId) {
+  if (dto.menuItemId !== undefined) {
     entity.menuItem = manager.create(MenuItem, { id: dto.menuItemId });
   }
 
-  if (dto.tablePosIndex) {
+  if (dto.tablePosIndex !== undefined) {
     entity.tablePosIndex = dto.tablePosIndex;
   }
 
-  if (dto.templateId) {
+  if (dto.templateId !== undefined) {
     entity.parentTemplate = manager.create(Template, { id: dto.templateId });
   }
 }

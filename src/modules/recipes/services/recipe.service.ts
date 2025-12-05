@@ -102,17 +102,17 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     manager: EntityManager,
     entity: Recipe,
   ): Promise<void> {
-    if (dto.batchResultMeasurementId) {
+    if (dto.batchResultMeasurementId !== undefined) {
       entity.batchResultMeasurement = manager.create(UnitOfMeasure, {
         id: dto.batchResultMeasurementId,
       });
     }
 
-    if (dto.batchResultQuantity) {
+    if (dto.batchResultQuantity !== undefined) {
       entity.batchResultQuantity = dto.batchResultQuantity;
     }
 
-    if (dto.categoryId) {
+    if (dto.categoryId !== undefined) {
       entity.category = manager.create(RecipeCategory, { id: dto.categoryId });
     }
 

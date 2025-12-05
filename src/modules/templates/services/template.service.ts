@@ -70,11 +70,11 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     manager: EntityManager,
     entity: Template,
   ): Promise<void> {
-    if (dto.isPie) {
+    if (dto.isPie !== undefined) {
       entity.isPie = dto.isPie;
     }
 
-    if (dto.templateName) {
+    if (dto.templateName !== undefined) {
       entity.templateName = dto.templateName;
     }
 

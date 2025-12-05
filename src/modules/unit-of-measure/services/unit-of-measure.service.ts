@@ -56,21 +56,21 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     manager: EntityManager,
     entity: UnitOfMeasure,
   ): Promise<void> {
-    if (dto.abbreviation) {
+    if (dto.abbreviation !== undefined) {
       entity.abbreviation = dto.abbreviation;
     }
 
-    if (dto.categoryId) {
+    if (dto.categoryId !== undefined) {
       entity.category = manager.create(UnitOfMeasureCategory, {
         id: dto.categoryId,
       });
     }
 
-    if (dto.conversionFactorToBase) {
+    if (dto.conversionFactorToBase !== undefined) {
       entity.conversionFactorToBase = dto.conversionFactorToBase;
     }
 
-    if (dto.unitName) {
+    if (dto.unitName !== undefined) {
       entity.name = dto.unitName;
     }
   }

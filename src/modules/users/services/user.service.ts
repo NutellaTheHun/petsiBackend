@@ -54,19 +54,19 @@ export class UserService extends ServiceBase<UserEntity> {
     manager: EntityManager,
     entity: User,
   ): Promise<void> {
-    if (dto.email) {
+    if (dto.email !== undefined) {
       entity.email = dto.email;
     }
 
-    if (dto.password) {
+    if (dto.password !== undefined) {
       entity.password = await hashPassword(dto.password);
     }
 
-    if (dto.roleIds) {
+    if (dto.roleIds !== undefined) {
       entity.roles = dto.roleIds.map((i) => manager.create(Role, { id: i }));
     }
 
-    if (dto.username) {
+    if (dto.username !== undefined) {
       entity.username = dto.username;
     }
   }

@@ -10,7 +10,7 @@ export async function RecipeIngredientUpdateInTransaction(
   manager: EntityManager,
   entity: RecipeIngredient,
 ): Promise<void> {
-  if (dto.ingredientInventoryItemId) {
+  if (dto.ingredientInventoryItemId !== undefined) {
     entity.ingredientInventoryItem = manager.create(InventoryItem, {
       id: dto.ingredientInventoryItemId,
     });
@@ -22,11 +22,11 @@ export async function RecipeIngredientUpdateInTransaction(
     entity.ingredientInventoryItem = null;
   }
 
-  if (dto.quantity) {
+  if (dto.quantity !== undefined) {
     entity.quantity = dto.quantity;
   }
 
-  if (dto.quantityMeasurementId) {
+  if (dto.quantityMeasurementId !== undefined) {
     entity.quantityMeasure = manager.create(UnitOfMeasure, {
       id: dto.quantityMeasurementId,
     });

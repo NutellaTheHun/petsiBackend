@@ -48,7 +48,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
     manager: EntityManager,
     entity: Role,
   ): Promise<void> {
-    if (dto.roleName) {
+    if (dto.roleName !== undefined) {
       entity.roleName = dto.roleName;
     }
   }

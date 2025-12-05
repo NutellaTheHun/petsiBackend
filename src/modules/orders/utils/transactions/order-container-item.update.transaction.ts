@@ -10,25 +10,25 @@ export async function OrderContainerItemUpdateInTransaction(
   manager: EntityManager,
   entity: OrderContainerItem,
 ): Promise<void> {
-  if (dto.containedMenuItemId) {
+  if (dto.containedMenuItemId !== undefined) {
     entity.containedItem = manager.create(MenuItem, {
       id: dto.containedMenuItemId,
     });
   }
 
-  if (dto.containedMenuItemSizeId) {
+  if (dto.containedMenuItemSizeId !== undefined) {
     entity.containedItemSize = manager.create(MenuItemSize, {
       id: dto.containedMenuItemSizeId,
     });
   }
 
-  if (dto.parentContainerMenuItemId) {
+  if (dto.parentContainerMenuItemId !== undefined) {
     entity.parentOrderItem = manager.create(OrderMenuItem, {
       id: dto.parentContainerMenuItemId,
     });
   }
 
-  if (dto.quantity) {
+  if (dto.quantity !== undefined) {
     entity.quantity = dto.quantity;
   }
 }

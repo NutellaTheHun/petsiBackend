@@ -63,21 +63,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
       recipient: dto.recipient,
       fulfillmentDate: dto.fulfillmentDate,
       fulfillmentType: dto.fulfillmentType,
-      ...(dto.fulfillmentContactName !== undefined && {
-        fulfillmentContactName: dto.fulfillmentContactName,
-      }),
-      ...(dto.deliveryAddress !== undefined && {
-        deliveryAddress: dto.deliveryAddress,
-      }),
-      ...(dto.phoneNumber !== undefined && { phoneNumber: dto.phoneNumber }),
-      ...(dto.email !== undefined && { email: dto.email }),
-      ...(dto.note !== undefined && { note: dto.note }),
-      ...(dto.isFrozen !== undefined && { isFrozen: dto.isFrozen }),
-      ...(dto.isWeekly !== undefined && { isWeekly: dto.isWeekly }),
-      ...(dto.weeklyFulfillment !== undefined && {
-        weeklyFulfillment: dto.weeklyFulfillment,
-      }),
+      fulfillmentContactName: dto.fulfillmentContactName
+        ? dto.fulfillmentContactName
+        : null,
+      deliveryAddress: dto.deliveryAddress ? dto.deliveryAddress : null,
+      phoneNumber: dto.phoneNumber ? dto.phoneNumber : null,
+      email: dto.email ? dto.email : null,
+      note: dto.note ? dto.note : null,
+      weeklyFulfillment: dto.weeklyFulfillment ? dto.weeklyFulfillment : null,
       orderedItems,
+
+      isFrozen: dto.isFrozen ? dto.isFrozen : false,
+      isWeekly: dto.isWeekly ? dto.isWeekly : false,
     });
     return result;
   }

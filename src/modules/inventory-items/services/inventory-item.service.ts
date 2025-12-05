@@ -83,10 +83,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     manager: EntityManager,
     entity: InventoryItem,
   ): Promise<void> {
-    if (
-      dto.inventoryItemCategoryId !== undefined &&
-      dto.inventoryItemCategoryId
-    ) {
+    if (dto.inventoryItemCategoryId !== undefined) {
       const newCategory = manager.create(InventoryItemCategory, {
         id: dto.inventoryItemCategoryId,
       });
@@ -97,7 +94,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       entity.itemName = dto.itemName;
     }
 
-    if (dto.vendorId !== undefined && dto.vendorId) {
+    if (dto.vendorId !== undefined) {
       const newVendor = manager.create(InventoryItemVendor, {
         id: dto.vendorId,
       });

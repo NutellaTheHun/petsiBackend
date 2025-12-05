@@ -7,7 +7,7 @@ export async function RecipeSubCategoryUpdateInTransaction(
   manager: EntityManager,
   entity: RecipeSubCategory,
 ): Promise<void> {
-  if (dto.subCategoryName) {
+  if (dto.subCategoryName !== undefined) {
     entity.subCategoryName = dto.subCategoryName;
   }
 }

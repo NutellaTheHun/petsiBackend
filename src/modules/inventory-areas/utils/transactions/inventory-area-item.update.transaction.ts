@@ -14,7 +14,7 @@ export async function InventoryAreaItemUpdateInTransaction(
     entity.amount = dto.countedAmount;
   }
 
-  if (dto.countedInventoryItemId !== undefined && dto.countedInventoryItemId) {
+  if (dto.countedInventoryItemId !== undefined) {
     entity.countedItem = manager.create(InventoryItem, {
       id: dto.countedInventoryItemId,
     });
@@ -34,7 +34,7 @@ export async function InventoryAreaItemUpdateInTransaction(
     entity.countedItemSize = itemSize;
   }
 
-  if (dto.countedItemSizeId !== undefined && dto.countedItemSizeId) {
+  if (dto.countedItemSizeId !== undefined) {
     entity.countedItemSize = manager.create(InventoryItemSize, {
       id: dto.countedItemSizeId,
     });

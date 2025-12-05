@@ -53,13 +53,13 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     manager: EntityManager,
     entity: UnitOfMeasureCategory,
   ): Promise<void> {
-    if (dto.baseUnitId) {
+    if (dto.baseUnitId !== undefined) {
       entity.baseConversionUnit = manager.create(UnitOfMeasure, {
         id: dto.baseUnitId,
       });
     }
 
-    if (dto.categoryName) {
+    if (dto.categoryName !== undefined) {
       entity.categoryName = dto.categoryName;
     }
   }

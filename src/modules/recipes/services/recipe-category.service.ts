@@ -71,7 +71,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     manager: EntityManager,
     entity: RecipeCategory,
   ): Promise<void> {
-    if (dto.categoryName) {
+    if (dto.categoryName !== undefined) {
       entity.categoryName = dto.categoryName;
     }
 
