@@ -37,6 +37,16 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // amount cannot be less than or equal to 0
+    if (dto.countedAmount <= 0) {
+      const err = new ValidationErrorNode(
+        'amount',
+        createId,
+        'Amount must be greater than 0',
+      );
+      results.push(err);
+    }
+
     // Must have either itemSizeId or itemSizeDto
     if (!dto.countedItemSizeId && !dto.countedItemSizeDto) {
       const err = new ValidationErrorNode(
@@ -45,6 +55,10 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         'Missing inventory item size assignment',
       );
       results.push(err);
+    }
+
+    // !! itemSizeId must be valid to item !!
+    if (dto.countedItemSizeId) {
     }
 
     // Nested Item Size Dto
@@ -67,6 +81,16 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // amount cannot be less than or equal to 0
+    if (dto.countedAmount && dto.countedAmount <= 0) {
+      const err = new ValidationErrorNode(
+        'amount',
+        id,
+        'Amount must be greater than 0',
+      );
+      results.push(err);
+    }
+
     // cannot update item with no sizing
     if (
       dto.countedInventoryItemId &&
@@ -82,19 +106,13 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     }
 
     // Check if counted item and counted size are valid
+    // if update pertains countedInventoryItem and/or countedItemSize
+    // (must exclude countedInventoryItem/ItemSizeDto combo)
     else if (
       (dto.countedInventoryItemId ||
         (dto.countedItemSizeId && !dto.countedItemSizeDto)) &&
       id
     ) {
-      /*const toUpdate = await this.areaItemService.findOne(id, [
-        'countedItem',
-        'countedItemSize',
-      ]);
-      if (!toUpdate) {
-        throw new Error('entity to update not found');
-      }*/
-
       const toUpdate = await this.repo.findOne({
         where: { id },
         relations: ['countedItem', 'countedItemSize'],
@@ -106,12 +124,16 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       const itemId = dto.countedInventoryItemId ?? toUpdate.countedItem.id;
       const sizeId = dto.countedItemSizeId ?? toUpdate.countedItemSize.id;
 
-      //const item = await this.itemService.findOne(itemId, ['itemSizes']);
       const item = await this.inventoryItemRepo.findOne({
-        where: { id },
+        where: { id: itemId },
         relations: ['itemSizes'],
       });
-      if (item?.itemSizes) {
+      if (!item) {
+        throw new Error(
+          `InventoryAreaItem valiation: InventoryItem with id ${itemId} not found`,
+        );
+      }
+      if (item.itemSizes?.length) {
         if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
           const err = new ValidationErrorNode(
             'countedItemSize',
@@ -120,6 +142,13 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
           );
           results.push(err);
         }
+      } else {
+        const err = new ValidationErrorNode(
+          'countedItemSize',
+          id,
+          'Invalid size for inventory item',
+        );
+        results.push(err);
       }
     }
 

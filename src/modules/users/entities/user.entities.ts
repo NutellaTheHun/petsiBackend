@@ -48,6 +48,16 @@ export class User {
   password: string;
 
   @ApiProperty({
+    example: [roleExample(new Set<string>(), true)],
+    description: 'list of roles the user possess to determine feature access',
+    type: () => Role,
+    isArray: true,
+  })
+  @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
+  @JoinTable()
+  roles: Role[] = [];
+
+  @ApiProperty({
     example: '2025-06-05T23:00:17.814Z',
     description: 'date the user was created',
   })
@@ -60,14 +70,4 @@ export class User {
   })
   @UpdateDateColumn()
   updatedAt: Date;
-
-  @ApiProperty({
-    example: [roleExample(new Set<string>(), true)],
-    description: 'list of roles the user possess to determine feature access',
-    type: () => Role,
-    isArray: true,
-  })
-  @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
-  @JoinTable()
-  roles: Role[] = [];
 }

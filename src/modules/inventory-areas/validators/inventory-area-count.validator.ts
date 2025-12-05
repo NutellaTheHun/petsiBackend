@@ -33,8 +33,10 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // Validate each InvAreaItemCountDto
-    if (dto.itemCountDtos) {
+    if (dto.itemCountDtos?.length) {
+      // !! Check itemCountDto inventoryItem/itemSize duplicates !!
+
+      // Validate each InvAreaItemCountDto
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
         dto.itemCountDtos,
@@ -54,7 +56,9 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     const results: ValidationErrorNode[] = [];
 
     // inventoryAreaItemCount entity
-    if (dto.itemCountDtos && dto.itemCountDtos.length > 0) {
+    if (dto.itemCountDtos?.length) {
+      // !! Check itemCountDto inventoryItem/itemSize duplicates !!
+
       // Validate each InvAreaItemCountDto
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
