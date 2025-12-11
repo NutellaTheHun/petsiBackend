@@ -30,6 +30,44 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // measureAmount cannot be less than or equal to 0
+    this.helper.lessThanEqualZeroCheck(
+      dto.measureAmount,
+      'measureAmount',
+      results,
+      'measured amount cannot be less than or equal to 0',
+      id,
+    );
+
+    // cost cannot be less than or equal to 0
+    this.helper.lessThanEqualZeroCheck(
+      dto.cost,
+      'cost',
+      results,
+      'cost cannot be less than or equal to 0',
+      id,
+    );
+
+    // check for current package / unit of measure / cost already exists?
+    const exists = await this.repo.findOne({
+      where: {
+        measureUnit: { id: dto.measureUnitId },
+        packageType: {
+          id: dto.inventoryPackageId,
+        },
+        inventoryItem: { id: dto.inventoryItemId },
+      },
+    });
+    if (exists) {
+      const prop = dto.measureUnitId; // to specific, not a 'prop' problem but a collection, the parent entity is more the problem
+      const err = new ValidationErrorNode(
+        prop, // but must reference a prop? make it a array, make FE process multi prop errors
+        id,
+        'Inventory item size already exists',
+      );
+      results.push(err);
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -39,13 +77,30 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    // measureAmount cannot be less than or equal to 0
+    if (dto.measureAmount) {
+      this.helper.lessThanEqualZeroCheck(
+        dto.measureAmount,
+        'measureAmount',
+        results,
+        'measured amount cannot be less than or equal to 0',
+        id,
+      );
+    }
+
+    // cost cannot be less than or equal to 0
+    if (dto.cost) {
+      this.helper.lessThanEqualZeroCheck(
+        dto.cost,
+        'cost',
+        results,
+        'cost cannot be less than or equal to 0',
+        id,
+      );
+    }
+
     // Cant update a item size to a already existing combination of packageType and measure unit size.
     if ((dto.measureUnitId || dto.inventoryPackageId) && id) {
-      /*const currentSize = await this.sizeService.findOne(id, [
-        'inventoryItem',
-        'measureUnit',
-        'packageType',
-      ]);*/
       const currentSize = await this.repo.findOne({
         where: { id },
         relations: ['inventoryItem', 'measureUnit', 'packageType'],

@@ -3,15 +3,6 @@ import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateMenuItemContainerRuleDto {
   @ApiPropertyOptional({
-    description: 'Id of the item the rule pertains to.',
-    example: '1',
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly parentMenuItemId?: number;
-
-  @ApiPropertyOptional({
     description: 'Id of a MenuItem entity that is a valid component',
     example: 1,
   })

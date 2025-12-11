@@ -2,6 +2,7 @@ import { ObjectLiteral, Repository } from 'typeorm';
 import { InventoryItemSize } from '../modules/inventory-items/entities/inventory-item-size.entity';
 import { MenuItemSize } from '../modules/menu-items/entities/menu-item-size.entity';
 import { DatabaseError } from './exceptions/database-error';
+import { ValidationErrorNode } from './exceptions/validation-error';
 
 export class ValidatorHelper {
   /**
@@ -63,6 +64,29 @@ export class ValidatorHelper {
       return exists !== null;
     } catch (err) {
       throw DatabaseError.fromTypeOrmError(err);
+    }
+  }
+
+  /**
+   * Checks if value is less than or equal to 0,
+   * if true, adds ValidationErrorNode to errArr,
+   * otherwise does nothing.
+   * @param val Value being evaluated
+   * @param prop corresponding property of entity
+   * @param id id of entity holding the property
+   * @param errArr error array at root of valiation process
+   * @param errMsg message detailing the error
+   */
+  public lessThanEqualZeroCheck(
+    val: number,
+    prop: string,
+    errArr: ValidationErrorNode[],
+    errMsg: string,
+    id?: number | string,
+  ): void {
+    if (val <= 0) {
+      const err = new ValidationErrorNode(prop, id, errMsg);
+      errArr.push(err);
     }
   }
 }

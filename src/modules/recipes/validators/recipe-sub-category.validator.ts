@@ -30,6 +30,10 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    /**
+     * Currently checks for duplicates accross all categories,
+     * not just duplicates within its respective category
+     */
     if (
       await this.helper.exists(
         this.repo,
@@ -54,6 +58,10 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    /**
+     * Currently checks for duplicates accross all categories,
+     * not just duplicates within its respective category
+     */
     if (dto.subCategoryName) {
       if (
         await this.helper.exists(

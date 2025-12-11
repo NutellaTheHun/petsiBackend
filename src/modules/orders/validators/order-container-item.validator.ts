@@ -4,10 +4,12 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemContainerOptions } from '../../menu-items/entities/menu-item-container-options.entity';
 import { MenuItemContainerRule } from '../../menu-items/entities/menu-item-container-rule.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/menu-items.module';
+import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
@@ -15,6 +17,7 @@ import {
   OrderContainerItem,
   OrderContainerItemEntity,
 } from '../entities/order-container-item.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 
 @Injectable()
 export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItemEntity> {
@@ -28,6 +31,12 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
 
+    @InjectRepository(OrderMenuItem)
+    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
+
+    @InjectRepository(MenuItemContainerItem)
+    private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
+
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -40,11 +49,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // validate item / size
-    /*const containedItem = await this.itemService.findOne(
-      dto.containedMenuItemId,
-      ['validSizes'],
-    );*/
+    // validate contained item
     const containedItem = await this.menuItemRepo.findOne({
       where: { id: dto.containedMenuItemId },
       relations: ['validSizes'],
@@ -52,6 +57,18 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     if (!containedItem) {
       throw new NotFoundException();
     }
+
+    // contained item type single
+    if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+      const err = new ValidationErrorNode(
+        'type',
+        id,
+        'Only items of type single can be in a container',
+      );
+      results.push(err);
+    }
+
+    // contained item size
     if (
       !this.helper.isValidSize(
         dto.containedMenuItemSizeId,
@@ -66,22 +83,31 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       results.push(err);
     }
 
-    // validate rule item / size
-    /*const options = await this.getContainerOptions(
-      dto.parentContainerMenuItemId,
-    );*/
-    const parentItem = await this.menuItemRepo.findOne({
-      where: { id: dto.parentContainerMenuItemId },
-      relations: ['variableRules'],
+    // validate parent / container item
+    const parentOrderMenuItem = await this.orderMenuItemRepo.findOne({
+      where: { id: dto.parentOrderMenuItemId },
+      relations: [
+        'menuItem',
+        'size',
+        'menuItem.variableRules',
+        'menuItem.fixedContents',
+        'menuItem.fixedContents.containedItem',
+      ],
     });
-    if (parentItem && parentItem.variableRules) {
+    if (!parentOrderMenuItem) {
+      throw new Error(
+        `OrderContainerItem validator: menu item with id ${dto.parentContainerMenuItemId} was not found`,
+      );
+    }
+
+    const parentItem = parentOrderMenuItem.menuItem;
+
+    if (parentItem.type === MENU_ITEM_TYPES.VARIABLE_CONTAINER) {
       const rule = this.GetItemRule(
         dto.containedMenuItemId,
         parentItem.variableRules,
       );
-      // validate item
       if (rule) {
-        // validate size
         if (
           !this.helper.isValidSize(dto.containedMenuItemSizeId, rule.validSizes)
         ) {
@@ -100,6 +126,39 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         );
         results.push(err);
       }
+    } else if (parentItem.type === MENU_ITEM_TYPES.FIXED_CONTAINER) {
+      const isValid = await this.menuItemContainerItemRepo.findOne({
+        where: {
+          parent: { id: parentItem.id },
+          parentItemSize: { id: parentOrderMenuItem.size.id },
+          containedItem: { id: dto.containedMenuItemId },
+          containedItemSize: { id: dto.containedMenuItemSizeId },
+        },
+      });
+      if (!isValid) {
+        const err = new ValidationErrorNode(
+          'containedItem',
+          id,
+          'Invalid item for container.',
+        );
+        results.push(err);
+      }
+    } else {
+      const err = new ValidationErrorNode(
+        'type',
+        id,
+        'parent item must be of type variable or fixed container',
+      );
+      results.push(err);
+    }
+
+    if (dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity must be greater than 0',
+      );
+      results.push(err);
     }
 
     return this.checkValidateResult(results);
@@ -110,6 +169,88 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
+    let containedItem: MenuItem | null = null;
+
+    if (dto.containedMenuItemId) {
+      containedItem = await this.menuItemRepo.findOne({
+        where: { id: dto.containedMenuItemId },
+        relations: ['validSizes'],
+      });
+      if (!containedItem) {
+        throw new Error(
+          `OrderContainerItem validator: contained menu item with id ${dto.containedMenuItemId}`,
+        );
+      }
+
+      if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+        const err = new ValidationErrorNode(
+          'containedItem',
+          id,
+          'contained item must be of type single.',
+        );
+        results.push(err);
+      }
+    }
+
+    if (dto.containedMenuItemSizeId) {
+      if (!containedItem) {
+        containedItem = await this.menuItemRepo.findOne({
+          where: { id: dto.containedMenuItemId },
+          relations: ['validSizes'],
+        });
+        if (!containedItem) {
+          throw new Error(
+            `OrderContainerItem validator: contained menu item with id ${dto.containedMenuItemId}`,
+          );
+        }
+      }
+
+      if (
+        !this.helper.isValidSize(
+          dto.containedMenuItemSizeId,
+          containedItem.validSizes,
+        )
+      ) {
+        const err = new ValidationErrorNode(
+          'containedItemSize',
+          id,
+          'Invalid size for contained item.',
+        );
+        results.push(err);
+      }
+    }
+
+    if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
+      const toUpdate = await this.repo.findOne({
+        where: { id },
+        relations: [
+          'parentOrderItem',
+          'parentOrderItem.menuItem',
+          'parentOrderItem.size',
+          'parentOrderItem.menuItem.variableRules',
+          'parentOrderItem.menuItem.fixedContents',
+        ],
+      });
+      if (!toUpdate) {
+        throw new Error(
+          `OrderContainerItem validation: order container item being updated not found.`,
+        );
+      }
+
+      const parentContainerItem = toUpdate.parentOrderItem.menuItem;
+      if (parentContainerItem.variableRules.length) {
+      } else if (parentContainerItem.fixedContents.length) {
+      }
+    }
+
+    if (dto.quantity && dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity must be greater than 0',
+      );
+      results.push(err);
+    }
 
     // requires ParentContainer id to validate contained item or size
     if (
@@ -217,23 +358,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     return this.checkValidateResult(results);
   }
 
-  /*private async getContainerOptions(
-    parentContainerMenuItemId: number,
-  ): Promise<MenuItemContainerOptions | null> {
-    const parentContainer = await this.itemService.findOne(
-      parentContainerMenuItemId,
-      ['containerOptions'],
-    );
-    if (!parentContainer.containerOptions) {
-      return null;
-    }
-
-    return await this.optionsService.findOne(
-      parentContainer.containerOptions.id,
-      ['containerRules'],
-    );
-  }*/
-
   /**
    * Searches an array of {@link MenuItemContainerRule} for the given {@link MenuItem} and returns it
    * or null if not found.
@@ -250,10 +374,17 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     itemToValidateId: number,
     rules: MenuItemContainerRule[],
   ): MenuItemContainerRule | null {
-    const rule = rules.find((rule) => rule.validItem.id === itemToValidateId);
-    if (!rule) {
-      return null;
-    }
-    return rule;
+    return rules.find((rule) => rule.validItem.id === itemToValidateId) ?? null;
+  }
+
+  private getFixedItem(
+    itemToValidateId: number,
+    fixedContents: MenuItemContainerItem[],
+  ): MenuItemContainerItem | null {
+    return (
+      fixedContents.find(
+        (item) => item.containedItem.id === itemToValidateId,
+      ) ?? null
+    );
   }
 }

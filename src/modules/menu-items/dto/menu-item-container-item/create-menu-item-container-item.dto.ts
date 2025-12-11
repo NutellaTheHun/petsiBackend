@@ -18,8 +18,8 @@ export class CreateMenuItemContainerItemDto {
   })
   @IsNumber()
   @IsPositive()
-  @IsNotEmpty()
-  readonly parentItemSizeId: number;
+  @IsOptional()
+  readonly parentItemSizeId?: number;
 
   @ApiProperty({
     description:

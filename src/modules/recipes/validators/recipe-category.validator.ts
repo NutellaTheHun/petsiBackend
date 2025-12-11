@@ -43,7 +43,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
       results.push(err);
     }
 
-    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
+    // nested validator call
+    if (dto.subCategoryDtos && dto.subCategoryDtos.length) {
       const nestedDtoErrs =
         await this.subCategoryValidator.validateManyNestedNode(
           'subCategories',
@@ -77,7 +78,8 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
       }
     }
 
-    if (dto.subCategoryDtos && dto.subCategoryDtos.length > 0) {
+    // nested validator call
+    if (dto.subCategoryDtos && dto.subCategoryDtos.length) {
       const nestedDtoErrs =
         await this.subCategoryValidator.validateManyNestedNode(
           'subCategories',

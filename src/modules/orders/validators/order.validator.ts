@@ -69,6 +69,47 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       results.push(err);
     }
 
+    if (dto.fulfillmentType === 'delivery' && !dto.deliveryAddress) {
+      const err = new ValidationErrorNode(
+        'deliveryAddress',
+        id,
+        'Order for delivery must have a delivery address',
+      );
+      results.push(err);
+    }
+
+    if (dto.isWeekly && !dto.weeklyFulfillment) {
+      const err = new ValidationErrorNode(
+        'weeklyFulfillment',
+        id,
+        'Order must have a day of the week selected for fulfillment',
+      );
+      results.push(err);
+    }
+
+    // check for duplicate orderMenuItems, (menuItem / menuItemSize combinations)
+    const seen = new Set<string>();
+    for (const nestedDto of dto.orderedMenuItemDtos) {
+      if (!nestedDto.createDto) {
+        throw new Error(
+          'create order validation: orderMenuItem dto has no createDto',
+        );
+      }
+      const dto = nestedDto.createDto;
+      const key = `${dto.menuItemId}:${dto.menuItemSizeId}`;
+      if (seen.has(key)) {
+        const err = new ValidationErrorNode(
+          'orderedItems',
+          id,
+          'duplicate item on order',
+        );
+        results.push(err);
+      } else {
+        seen.add(key);
+      }
+    }
+
+    // nested validator call
     const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
       'orderedItems',
       dto.orderedMenuItemDtos,
@@ -119,7 +160,82 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       results.push(err);
     }
 
-    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length > 0) {
+    if (dto.fulfillmentType === 'delivery' && !dto.deliveryAddress) {
+      const err = new ValidationErrorNode(
+        'deliveryAddress',
+        id,
+        'Order for delivery must have a delivery address',
+      );
+      results.push(err);
+    }
+
+    if (dto.isWeekly && !dto.weeklyFulfillment) {
+      const err = new ValidationErrorNode(
+        'weeklyFulfillment',
+        id,
+        'Order must have a day of the week selected for fulfillment',
+      );
+      results.push(err);
+    }
+
+    // check for duplicate ordered items (menuItem / Size combinations)
+    // DOESN'T HANDLE CONTAINER ITEMS CORRECTLY, JFC
+    // could just ignore items of type fixed/variable container?
+    const itemMap = new Map<string | number, string>();
+    const seen = new Set<string>();
+    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length) {
+      const currentOrder = await this.repo.findOne({
+        where: { id },
+        relations: [
+          'orderedItems',
+          'orderedItems.menuItem',
+          'orderedItems.size',
+        ],
+      });
+      if (!currentOrder) {
+        throw new Error(
+          `update order validator: current order with id ${id} was not found`,
+        );
+      }
+      for (const orderItem of currentOrder.orderedItems) {
+        itemMap.set(
+          orderItem.id,
+          `${orderItem.menuItem.id}:${orderItem.size.id}`,
+        );
+      }
+      for (const nestedDto of dto.orderedMenuItemDtos) {
+        if (nestedDto.createDto && nestedDto.createId) {
+          itemMap.set(
+            nestedDto.createId,
+            `${nestedDto.createDto.menuItemId}:${nestedDto.createDto.menuItemSizeId}`,
+          );
+        } else if (nestedDto.updateDto && nestedDto.id) {
+          const currentItem = itemMap.get(nestedDto.id);
+
+          const newMenuItemId =
+            nestedDto.updateDto.menuItemId ?? currentItem?.split(':')[0];
+          const newMenuitemSizeId =
+            nestedDto.updateDto.menuItemSizeId ?? currentItem?.split(':')[1];
+
+          itemMap.set(nestedDto.id, `${newMenuItemId}:${newMenuitemSizeId}`);
+        }
+      }
+      for (const val of itemMap.values()) {
+        if (seen.has(val)) {
+          const err = new ValidationErrorNode(
+            'orderedItems',
+            id,
+            'duplicate item on order',
+          );
+          results.push(err);
+        } else {
+          seen.add(val);
+        }
+      }
+    }
+
+    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length) {
+      // nested validator
       const nestedDtoErrs =
         await this.orderItemValidator.validateManyNestedNode(
           'orderedItems',

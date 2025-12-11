@@ -39,6 +39,27 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
       );
       results.push(err);
     }
+
+    // if ingredient recipe, cannot equal parent
+    if (dto.ingredientRecipeId === dto.parentRecipeId) {
+      const err = new ValidationErrorNode(
+        'ingredientRecipe',
+        id,
+        'recipe cannot add itself as an ingredient',
+      );
+      results.push(err);
+    }
+
+    // quantity cant be less than equal 0
+    if (dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity cannot be 0',
+      );
+      results.push(err);
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -47,6 +68,38 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
+
+    // if ingredient recipe, cannot equal parent
+    if (dto.ingredientRecipeId) {
+      const currentRecipe = await this.repo.findOne({
+        where: { id },
+        relations: ['parentRecipe'],
+      });
+      if (!currentRecipe) {
+        throw new Error(
+          `recipe ingredient update: ingredient being updated with id ${id} was not found`,
+        );
+      }
+
+      if (currentRecipe.parentRecipe.id === dto.ingredientRecipeId) {
+        const err = new ValidationErrorNode(
+          'ingredientRecipe',
+          id,
+          'recipe cannot add itself as an ingredient',
+        );
+        results.push(err);
+      }
+    }
+
+    // quantity cant be less than equal 0
+    if (dto.quantity && dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity cannot be 0',
+      );
+      results.push(err);
+    }
 
     return this.checkValidateResult(results);
   }

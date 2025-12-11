@@ -34,6 +34,8 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     const results: ValidationErrorNode[] = [];
 
     if (dto.itemCountDtos?.length) {
+      // Check areaItem parentCount is equal to this parent, or null
+
       // !! Check itemCountDto inventoryItem/itemSize duplicates !!
 
       // Validate each InvAreaItemCountDto
@@ -57,6 +59,8 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
     // inventoryAreaItemCount entity
     if (dto.itemCountDtos?.length) {
+      // Check areaItem parentCount is equal to this parent, or null
+
       // !! Check itemCountDto inventoryItem/itemSize duplicates !!
 
       // Validate each InvAreaItemCountDto

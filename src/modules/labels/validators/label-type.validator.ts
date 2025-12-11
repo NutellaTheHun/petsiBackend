@@ -39,6 +39,22 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
       results.push(err);
     }
 
+    // length / width cannot be less than or equal to 0
+    this.helper.lessThanEqualZeroCheck(
+      dto.labelTypeLength,
+      'labelTypeLength',
+      results,
+      'Label length cannot be less than or equal to 0',
+      id,
+    );
+    this.helper.lessThanEqualZeroCheck(
+      dto.labelTypeWidth,
+      'labelTypeWidth',
+      results,
+      'Label width cannot be less than or equal to 0',
+      id,
+    );
+
     return this.checkValidateResult(results);
   }
 
@@ -60,6 +76,26 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
         );
         results.push(err);
       }
+    }
+
+    // length / width cannot be less than or equal to 0
+    if (dto.labelTypeLength) {
+      this.helper.lessThanEqualZeroCheck(
+        dto.labelTypeLength,
+        'labelTypeLength',
+        results,
+        'Label length cannot be less than or equal to 0',
+        id,
+      );
+    }
+    if (dto.labelTypeWidth) {
+      this.helper.lessThanEqualZeroCheck(
+        dto.labelTypeWidth,
+        'labelTypeWidth',
+        results,
+        'Label width cannot be less than or equal to 0',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

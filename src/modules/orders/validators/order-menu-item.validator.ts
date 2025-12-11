@@ -36,9 +36,6 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    /*const menuItem = await this.menuItemService.findOne(dto.menuItemId, [
-      'validSizes',
-    ]);*/
     const menuItem = await this.menuItemRepo.findOne({
       where: { id: dto.menuItemId },
       relations: ['validSizes'],
@@ -46,9 +43,6 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
     if (!menuItem) {
       throw new NotFoundException();
     }
-    /*if (!menuItem.validSizes) {
-      throw new Error();
-    }*/
 
     // validate item / size
     if (!this.helper.isValidSize(dto.menuItemSizeId, menuItem.validSizes)) {

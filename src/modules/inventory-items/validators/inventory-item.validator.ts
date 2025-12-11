@@ -44,7 +44,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       results.push(err);
     }
 
-    if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
+    if (dto.itemSizeDtos?.length) {
+      //!! check for duplicate measure/package/cost combinations !!
+
+      // check that itemSize inventoryItem reference equals the parent, or is null(?)
+
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
@@ -76,7 +80,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       }
     }
 
-    if (dto.itemSizeDtos && dto.itemSizeDtos.length > 0) {
+    if (dto.itemSizeDtos?.length) {
+      //!! check for duplicate measure/package/cost combinations !!
+
+      // check that itemSize inventoryItem reference equals the parent, or is null(?)
+
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
