@@ -233,17 +233,23 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
             `${nestedDto.createDto.ingredientInventoryItemId ?? 0}: ${nestedDto.createDto.ingredientRecipeId ?? 0}`,
           );
         } else if (nestedDto.updateDto && nestedDto.id) {
-          const currentItem = itemMap.get(nestedDto.id);
-          if (!currentItem) {
-            throw new Error(`item to update was not found`);
-          }
-          const newInvIngredId =
-            nestedDto.updateDto.ingredientInventoryItemId ??
-            currentItem.split(':')[0];
-          const newRecIngredId =
-            nestedDto.updateDto.ingredientRecipeId ?? currentItem.split(':')[1];
+          if (
+            nestedDto.updateDto.ingredientInventoryItemId ||
+            nestedDto.updateDto.ingredientRecipeId
+          ) {
+            const currentItem = itemMap.get(nestedDto.id);
+            if (!currentItem) {
+              throw new Error(`item to update was not found`);
+            }
+            const newInvIngredId =
+              nestedDto.updateDto.ingredientInventoryItemId ??
+              currentItem.split(':')[0];
+            const newRecIngredId =
+              nestedDto.updateDto.ingredientRecipeId ??
+              currentItem.split(':')[1];
 
-          itemMap.set(nestedDto.id, `${newInvIngredId}:${newRecIngredId}`);
+            itemMap.set(nestedDto.id, `${newInvIngredId}:${newRecIngredId}`);
+          }
         }
       }
 

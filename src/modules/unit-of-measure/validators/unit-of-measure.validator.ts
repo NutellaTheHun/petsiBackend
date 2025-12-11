@@ -49,6 +49,15 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       results.push(err);
     }
 
+    if (dto.conversionFactorToBase && Number(dto.conversionFactorToBase) <= 0) {
+      const err = new ValidationErrorNode(
+        'conversionFactorToBase',
+        id,
+        'conversion factor cannot be 0',
+      );
+      results.push(err);
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -82,6 +91,15 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
         );
         results.push(err);
       }
+    }
+
+    if (dto.conversionFactorToBase && Number(dto.conversionFactorToBase) <= 0) {
+      const err = new ValidationErrorNode(
+        'conversionFactorToBase',
+        id,
+        'conversion factor cannot be 0',
+      );
+      results.push(err);
     }
 
     return this.checkValidateResult(results);

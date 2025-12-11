@@ -29,6 +29,15 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEnt
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    if (dto.tablePosIndex < 0) {
+      const err = new ValidationErrorNode(
+        'tablePosIndex',
+        id,
+        'positional index cannot be less than 0',
+      );
+      results.push(err);
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -37,6 +46,15 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEnt
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
+
+    if (dto.tablePosIndex && dto.tablePosIndex < 0) {
+      const err = new ValidationErrorNode(
+        'tablePosIndex',
+        id,
+        'positional index cannot be less than 0',
+      );
+      results.push(err);
+    }
 
     return this.checkValidateResult(results);
   }
