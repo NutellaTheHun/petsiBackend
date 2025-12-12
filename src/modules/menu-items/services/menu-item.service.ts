@@ -9,13 +9,11 @@ import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
-import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
+import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemCreateInTransaction } from '../utils/transactions/menu-item-container-item.create.transaction';
 import { MenuItemContainerItemUpdateInTransaction } from '../utils/transactions/menu-item-container-item.update.transaction';
-import { MenuItemContainerRuleCreateInTransaction } from '../utils/transactions/menu-item-container-rule.create.transaction';
-import { MenuItemContainerRuleUpdateInTransaction } from '../utils/transactions/menu-item-container-rule.update.transaction';
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
@@ -45,35 +43,21 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     dto: CreateMenuItemDto,
     manager: EntityManager,
   ): Promise<MenuItem> {
-    let fixedContents: MenuItemContainerItem[] = [];
-    if (dto.fixedContentDtos) {
-      for (const nestedDto of dto.fixedContentDtos) {
+    let containerItems: MenuItemContainerItem[] = [];
+    if (dto.containerMenuItemDtos?.length) {
+      for (const nestedDto of dto.containerMenuItemDtos) {
         if (nestedDto.createDto) {
           const newItem = await MenuItemContainerItemCreateInTransaction(
             nestedDto.createDto,
             manager,
           );
-          fixedContents.push(newItem);
+          containerItems.push(newItem);
         } else {
           throw new Error('nested MenuItemContainerItem create dto is null');
         }
       }
     }
 
-    let variableRules: MenuItemContainerRule[] = [];
-    if (dto.variableRuleDtos) {
-      for (const nestedDto of dto.variableRuleDtos) {
-        if (nestedDto.createDto) {
-          const newRule = await MenuItemContainerRuleCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          variableRules.push(newRule);
-        } else {
-          throw new Error('nested MenuItemContainerRule create dto is null');
-        }
-      }
-    }
     const result = manager.create(MenuItem, {
       type: dto.type,
       ...(dto.categoryId && { category: { id: dto.categoryId } }),
@@ -81,8 +65,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       validSizes: dto.validSizeIds.map((id) =>
         manager.create(MenuItemSize, { id }),
       ),
-      fixedContents,
-      variableRules,
+      containerItems,
       variableMaxAmount: dto.variableMaxAmount,
     });
 
@@ -106,6 +89,11 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
 
     if (dto.type !== undefined) {
       entity.type = dto.type;
+
+      if (dto.type === MENU_ITEM_TYPES.SINGLE) {
+        entity.containerItems = [];
+        entity.variableMaxAmount = null;
+      }
     }
 
     if (dto.variableMaxAmount !== undefined) {
@@ -118,13 +106,13 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       );
     }
 
-    if (dto.fixedContentDtos) {
+    if (dto.containerMenuItemDtos?.length) {
       const existingItems = await manager.find(MenuItemContainerItem, {
         where: { parent: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.fixedContentDtos) {
+      for (const nestedDto of dto.containerMenuItemDtos) {
         if (nestedDto.createDto) {
           const newItem = await MenuItemContainerItemCreateInTransaction(
             nestedDto.createDto,
@@ -149,41 +137,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
           );
         }
       }
-      entity.fixedContents = Array.from(existingMap.values());
-    }
-
-    if (dto.variableRuleDtos) {
-      const existingRules = await manager.find(MenuItemContainerRule, {
-        where: { parentMenuItem: { id: entity.id } },
-      });
-      const existingMap = new Map(existingRules.map((i) => [i.id, i]));
-
-      for (const nestedDto of dto.variableRuleDtos) {
-        if (nestedDto.createDto) {
-          const newRule = await MenuItemContainerRuleCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          existingMap.set(newRule.id, newRule);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `MenuItemContainerRule to update with id ${nestedDto.id} was not found`,
-            );
-          }
-          await MenuItemContainerRuleUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'nested MenuItemContainerRule dto for update MenuItem has neither create or update dto (with id)',
-          );
-        }
-      }
-      entity.variableRules = Array.from(existingMap.values());
+      entity.containerItems = Array.from(existingMap.values());
     }
   }
 

@@ -25,6 +25,11 @@ export type MenuItemContainerRuleEntity = EntityBase<
 >;
 
 /**
+ *
+ *
+ * BEING DEPRECIATED
+ *
+ *
  * One rule within a {@link MenuItemContainerOptions} that allow one {@link MenuItem} and valid {@link MenuItemSize}
  * within the {@link MenuItemContainerOptions} parent {@link MenuItem}
  */

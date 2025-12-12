@@ -74,14 +74,11 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       if (!parentItem) {
         throw new Error();
       }
-      if (
-        parentItem.type !== MENU_ITEM_TYPES.FIXED_CONTAINER &&
-        parentItem.type !== MENU_ITEM_TYPES.VARIABLE_CONTAINER
-      ) {
+      if (parentItem.type !== MENU_ITEM_TYPES.CONTAINER) {
         const err = new ValidationErrorNode(
           'parent',
           id,
-          'parent item must be of type fixed container or variable container',
+          'parent item must be of type container',
         );
         results.push(err);
       }

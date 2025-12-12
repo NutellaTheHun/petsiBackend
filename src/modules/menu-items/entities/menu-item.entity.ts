@@ -18,7 +18,6 @@ import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MENU_ITEM_TYPES, MenuItemType } from '../utils/menu-item-type';
 import { MenuItemCategory } from './menu-item-category.entity';
 import { MenuItemContainerItem } from './menu-item-container-item.entity';
-import { MenuItemContainerRule } from './menu-item-container-rule.entity';
 import { MenuItemSize } from './menu-item-size.entity';
 
 export type MenuItemEntity = EntityBase<
@@ -77,13 +76,31 @@ export class MenuItem {
   @OneToMany(() => MenuItemContainerItem, (ci) => ci.parent, {
     cascade: true,
   })
-  fixedContents: MenuItemContainerItem[] = [];
+  containerItems: MenuItemContainerItem[] = [];
 
   // API PROPERTY HERE
-  @OneToMany(() => MenuItemContainerRule, (rule) => rule.parentMenuItem)
-  variableRules: MenuItemContainerRule[] = [];
-
-  // API PROPERTY HERE
+  /**
+   * If menu item is of type container, this property is in play.
+   *
+   * If variableMaxAmount is null, container is of fixed quantity by parent size.
+   *
+   * If variableMaxAmount is set, container can be of any combination of its containerItems,
+   * with their quantities totalling to the variableMaxAmount.
+   *
+   * Examples:
+   *
+   * A Pastry Platter has varaibleMaxAmount is set to null, with sizes small, medium large:
+   *
+   * A small pastry platter is always: 3 blueberry muffins, 3 triple berry scones, 3 lemon scones
+   *
+   * A medium pastry platter is always: 4 blueberry muffins, 4 triple berry scones, 4 lemon scones, 4 currant scones
+   *
+   * ....
+   *
+   * A Box of 6 Muffins has a variableMaxAmount set to 6:
+   *
+   * Can be any combination of Blueberry, Corn, and Bannana muffins, but always totaling to 6
+   */
   @Column({ nullable: true })
   variableMaxAmount: number | null = null;
 

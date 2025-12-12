@@ -10,7 +10,6 @@ import {
 } from 'class-validator';
 
 import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
-import { NestedMenuItemContainerRuleDto } from '../menu-item-container-rule/nested-menu-item-container-rule.dto';
 
 export class UpdateMenuItemDto {
   @ApiPropertyOptional({
@@ -82,27 +81,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly fixedContentDtos?: NestedMenuItemContainerItemDto[];
-
-  @ApiPropertyOptional({
-    description:
-      'options for the menuItem if it serves as a container to other items. Sets rules like valid items, sizes, and quantity of the container.',
-    type: () => [NestedMenuItemContainerRuleDto],
-    example: [
-      {
-        mode: 'create',
-        createDto: {
-          validMenuItemId: 5,
-          validSizeIds: [6, 7],
-          maxQuantity: 8,
-        },
-      },
-    ],
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  readonly variableRuleDtos?: NestedMenuItemContainerRuleDto[];
+  readonly containerMenuItemDtos?: NestedMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:
