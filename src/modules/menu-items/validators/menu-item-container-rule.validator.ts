@@ -118,10 +118,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
     }
 
     // validate item and sizes
-    if (
-      dto.validMenuItemId ||
-      (dto.validSizeIds && dto.validSizeIds.length > 0)
-    ) {
+    if (dto.validMenuItemId || (dto.validSizeIds && dto.validSizeIds.length)) {
       const currentRule = await this.repo.findOne({
         where: { id },
         relations: ['validItem', 'validSizes'],
