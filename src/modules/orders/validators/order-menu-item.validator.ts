@@ -5,6 +5,7 @@ import { ValidatorBase } from '../../../base/validator-base';
 import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
@@ -50,18 +51,33 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       results.push(err);
     }
 
-    // Nested containerItems dtos
-    if (
-      dto.orderedItemContainerDtos &&
-      dto.orderedItemContainerDtos.length > 0
-    ) {
-      const nestedDtoErrs =
-        await this.orderContainerItemValidator.validateManyNestedNode(
-          'orderedContainerItems',
-          dto.orderedItemContainerDtos,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
+    if (dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity cannot be 0',
+      );
+      results.push(err);
+    }
+
+    if (menuItem.type === MENU_ITEM_TYPES.CONTAINER) {
+      if (dto.orderedItemContainerDtos?.length) {
+        // Check no duplicate items
+        // containedItem/ containedSize combinations
+
+        // validate container quantity based on variableMax
+
+        // validate containerItem is valid to the orderMenuItem
+
+        // Nested validator call
+        const nestedDtoErrs =
+          await this.orderContainerItemValidator.validateManyNestedNode(
+            'orderedContainerItems',
+            dto.orderedItemContainerDtos,
+          );
+        if (nestedDtoErrs) {
+          results.push(nestedDtoErrs);
+        }
       }
     }
 
@@ -74,27 +90,21 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    const currentOrderItem = await this.repo.findOne({
+      where: { id },
+      relations: ['size', 'menuItem'],
+    });
+    if (!currentOrderItem) {
+      throw new NotFoundException();
+    }
+
     // validate item / size
     if (id && (dto.menuItemId || dto.menuItemSizeId)) {
-      /*const currentOrderItem = await this.orderItemService.findOne(id, [
-        'size',
-        'menuItem',
-      ]);*/
-      const currentOrderItem = await this.repo.findOne({
-        where: { id },
-        relations: ['size', 'menuItem'],
-      });
-      if (!currentOrderItem) {
-        throw new NotFoundException();
-      }
       const sizeId = dto.menuItemSizeId ?? currentOrderItem.size.id;
       const itemId = dto.menuItemId ?? currentOrderItem.menuItem.id;
 
-      /*const menuItem = await this.menuItemService.findOne(itemId, [
-        'validSizes',
-      ]);*/
       const menuItem = await this.menuItemRepo.findOne({
-        where: { id },
+        where: { id: itemId },
         relations: ['validSizes'],
       });
       if (!menuItem) {
@@ -107,18 +117,32 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       }
     }
 
-    // Nested containerItems dtos
-    if (
-      dto.orderedItemContainerDtos &&
-      dto.orderedItemContainerDtos.length > 0
-    ) {
-      const nestedDtoErrs =
-        await this.orderContainerItemValidator.validateManyNestedNode(
-          'orderedContainerItems',
-          dto.orderedItemContainerDtos,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
+    if (dto.quantity && dto.quantity <= 0) {
+      const err = new ValidationErrorNode(
+        'quantity',
+        id,
+        'quantity cannot be 0',
+      );
+    }
+
+    if (currentOrderItem.menuItem.type === MENU_ITEM_TYPES.CONTAINER) {
+      if (dto.orderedItemContainerDtos?.length) {
+        //Check no duplicate items
+        // containedItem/ containedSize combinations
+
+        // validate container quantity based on variableMax
+
+        // validate containerItem is valid to the orderMenuItem
+
+        // nested validator call
+        const nestedDtoErrs =
+          await this.orderContainerItemValidator.validateManyNestedNode(
+            'orderedContainerItems',
+            dto.orderedItemContainerDtos,
+          );
+        if (nestedDtoErrs) {
+          results.push(nestedDtoErrs);
+        }
       }
     }
 

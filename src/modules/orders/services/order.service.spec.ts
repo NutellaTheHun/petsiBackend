@@ -744,14 +744,14 @@ describe('order service', () => {
     if (!result.orderedItems) {
       throw new Error();
     }
-    if (!result.orderedItems[0].orderedContainerItems) {
+    if (!result.orderedItems[0].containerItems) {
       throw new Error();
     }
-    if (!result.orderedItems[1].orderedContainerItems) {
+    if (!result.orderedItems[1].containerItems) {
       throw new Error();
     }
-    expect(result.orderedItems[0].orderedContainerItems.length).toEqual(1);
-    expect(result.orderedItems[1].orderedContainerItems.length).toEqual(1);
+    expect(result.orderedItems[0].containerItems.length).toEqual(1);
+    expect(result.orderedItems[1].containerItems.length).toEqual(1);
 
     testOrderCompItemId = result.id;
   });
@@ -770,7 +770,7 @@ describe('order service', () => {
     }
 
     const containerItems = order.orderedItems.filter(
-      (item) => item.orderedContainerItems.length > 0,
+      (item) => item.containerItems.length > 0,
     );
 
     const itemToUpdate = await orderItemService.findOne(containerItems[0].id, [
@@ -805,10 +805,10 @@ describe('order service', () => {
       },
     });
 
-    if (!order.orderedItems[0].orderedContainerItems) {
+    if (!order.orderedItems[0].containerItems) {
       throw new Error();
     }
-    const updateComponentDtos = order.orderedItems[0].orderedContainerItems.map(
+    const updateComponentDtos = order.orderedItems[0].containerItems.map(
       (comp) =>
         plainToInstance(NestedOrderContainerItemDto, {
           mode: 'update',
@@ -826,7 +826,7 @@ describe('order service', () => {
     });
 
     const updatedItemId = order.orderedItems[0].id;
-    const originalCompSize = order.orderedItems[0].orderedContainerItems.length;
+    const originalCompSize = order.orderedItems[0].containerItems.length;
 
     const theRest = order.orderedItems.slice(1).map((item) =>
       plainToInstance(NestedOrderMenuItemDto, {
@@ -849,9 +849,7 @@ describe('order service', () => {
     }
     for (const item of result.orderedItems) {
       if (item.id === updatedItemId) {
-        expect(item.orderedContainerItems?.length).toEqual(
-          originalCompSize + 1,
-        );
+        expect(item.containerItems?.length).toEqual(originalCompSize + 1);
       }
     }
   });
@@ -868,12 +866,12 @@ describe('order service', () => {
     if (!order.orderedItems) {
       throw new Error();
     }
-    if (!order.orderedItems[0].orderedContainerItems) {
+    if (!order.orderedItems[0].containerItems) {
       throw new Error();
     }
 
     const containerItems = order.orderedItems.filter(
-      (item) => item.orderedContainerItems.length > 0,
+      (item) => item.containerItems.length > 0,
     );
 
     const itemToUpdate = await orderItemService.findOne(containerItems[1].id, [
@@ -900,7 +898,7 @@ describe('order service', () => {
 
     const updateComponentDto = plainToInstance(NestedOrderContainerItemDto, {
       mode: 'update',
-      id: order.orderedItems[0].orderedContainerItems[0].id,
+      id: order.orderedItems[0].containerItems[0].id,
       updateDto: {
         parentContainerMenuItemId: parentMenuItem.id,
         containedMenuItemId: options.containerRules[1].validItem.id,
@@ -909,7 +907,7 @@ describe('order service', () => {
       },
     });
 
-    const moddedCompId = order.orderedItems[1].orderedContainerItems[0].id;
+    const moddedCompId = order.orderedItems[1].containerItems[0].id;
     const moddedItemId = order.orderedItems[1].id;
 
     const updateItemDto = plainToInstance(NestedOrderMenuItemDto, {
@@ -944,10 +942,10 @@ describe('order service', () => {
 
     for (const item of result.orderedItems) {
       if (item.id === moddedItemId) {
-        if (!item.orderedContainerItems) {
+        if (!item.containerItems) {
           throw new Error();
         }
-        for (const comp of item.orderedContainerItems) {
+        for (const comp of item.containerItems) {
           if (comp.id === moddedCompId) {
             expect(comp.containedItem.id).toEqual(
               options.containerRules[1].validItem.id,
@@ -974,11 +972,11 @@ describe('order service', () => {
     if (!order.orderedItems) {
       throw new Error();
     }
-    if (!order.orderedItems[0].orderedContainerItems) {
+    if (!order.orderedItems[0].containerItems) {
       throw new Error();
     }
 
-    const theRestComponents = order.orderedItems[0].orderedContainerItems
+    const theRestComponents = order.orderedItems[0].containerItems
       .slice(1)
       .map((comp) =>
         plainToInstance(NestedOrderContainerItemDto, {
@@ -1023,8 +1021,8 @@ describe('order service', () => {
       throw new Error();
     }
 
-    expect(result.orderedItems[0].orderedContainerItems?.length).toEqual(
-      order.orderedItems[0].orderedContainerItems.length - 1,
+    expect(result.orderedItems[0].containerItems?.length).toEqual(
+      order.orderedItems[0].containerItems.length - 1,
     );
   });
 });

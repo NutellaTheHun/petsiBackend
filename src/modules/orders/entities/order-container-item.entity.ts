@@ -41,7 +41,7 @@ export class OrderContainerItem {
     description: 'The OrderMenuItem that is the container for this item',
     type: () => OrderMenuItem,
   })
-  @ManyToOne(() => OrderMenuItem, (parent) => parent.orderedContainerItems, {
+  @ManyToOne(() => OrderMenuItem, (parent) => parent.containerItems, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
   })

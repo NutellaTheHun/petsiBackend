@@ -153,7 +153,7 @@ export class OrderTestingUtil {
       quantity: 1,
     } as OrderContainerItem;
 
-    parentOrderItem.orderedContainerItems = [comp_a, comp_b];
+    parentOrderItem.containerItems = [comp_a, comp_b];
     results.push(parentOrderItem);
 
     return results;

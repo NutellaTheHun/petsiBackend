@@ -325,10 +325,10 @@ describe('order menu item service', () => {
     if (!result) {
       throw new Error();
     }
-    if (!result.orderedContainerItems) {
+    if (!result.containerItems) {
       throw new Error();
     }
-    expect(result.orderedContainerItems.length).toEqual(1);
+    expect(result.containerItems.length).toEqual(1);
 
     testOrderItemCompsId = result.id;
   });
@@ -341,7 +341,7 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.orderedContainerItems) {
+    if (!toUpdate.containerItems) {
       throw new Error();
     }
 
@@ -373,7 +373,7 @@ describe('order menu item service', () => {
       },
     });
 
-    const theRest = toUpdate.orderedContainerItems.map((comp) =>
+    const theRest = toUpdate.containerItems.map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -389,11 +389,11 @@ describe('order menu item service', () => {
     if (!result) {
       throw new Error();
     }
-    if (!result.orderedContainerItems) {
+    if (!result.containerItems) {
       throw new Error();
     }
-    expect(result.orderedContainerItems.length).toEqual(
-      toUpdate.orderedContainerItems.length + 1,
+    expect(result.containerItems.length).toEqual(
+      toUpdate.containerItems.length + 1,
     );
   });
 
@@ -405,7 +405,7 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.orderedContainerItems) {
+    if (!toUpdate.containerItems) {
       throw new Error();
     }
 
@@ -427,7 +427,7 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const theRest = toUpdate.orderedContainerItems.map((comp) =>
+    const theRest = toUpdate.containerItems.map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -460,11 +460,11 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    if (!result.orderedContainerItems) {
+    if (!result.containerItems) {
       throw new Error();
     }
 
-    for (const comp of result.orderedContainerItems) {
+    for (const comp of result.containerItems) {
       if (comp.id === moddedId) {
         expect(comp.containedItemSize.id).toEqual(
           options.containerRules[0].validSizes[0].id,
@@ -481,11 +481,11 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.orderedContainerItems) {
+    if (!toUpdate.containerItems) {
       throw new Error();
     }
 
-    const theRest = toUpdate.orderedContainerItems.slice(1).map((comp) =>
+    const theRest = toUpdate.containerItems.slice(1).map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -493,7 +493,7 @@ describe('order menu item service', () => {
       }),
     );
 
-    const removedId = toUpdate.orderedContainerItems[0].id;
+    const removedId = toUpdate.containerItems[0].id;
 
     const dto = {
       orderedItemContainerDtos: theRest,
@@ -503,11 +503,11 @@ describe('order menu item service', () => {
     if (!result) {
       throw new Error();
     }
-    if (!result.orderedContainerItems) {
+    if (!result.containerItems) {
       throw new Error();
     }
-    expect(result.orderedContainerItems.length).toEqual(
-      toUpdate.orderedContainerItems.length - 1,
+    expect(result.containerItems.length).toEqual(
+      toUpdate.containerItems.length - 1,
     );
 
     await expect(componentService.findOne(removedId)).rejects.toThrow(

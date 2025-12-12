@@ -1,8 +1,15 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  EntityManager,
+  MoreThanOrEqual,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 import { ServiceBase } from '../../../base/service-base';
 import { AppLogger } from '../../app-logging/app-logger';
+import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
+import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
@@ -21,6 +28,12 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
   constructor(
     @InjectRepository(MenuItem)
     private readonly repo: Repository<MenuItem>,
+
+    @InjectRepository(OrderMenuItem)
+    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
+
+    @InjectRepository(OrderContainerItem)
+    private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
     @Inject(forwardRef(() => MenuItemBuilder))
     builder: MenuItemBuilder,
@@ -93,6 +106,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       if (dto.type === MENU_ITEM_TYPES.SINGLE) {
         entity.containerItems = [];
         entity.variableMaxAmount = null;
+        await this.syncOrderMenuItems(entity.id);
       }
     }
 
@@ -100,10 +114,11 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       entity.variableMaxAmount = dto.variableMaxAmount;
     }
 
-    if (dto.validSizeIds !== undefined) {
+    if (dto.validSizeIds?.length) {
       entity.validSizes = dto.validSizeIds.map((id) =>
         manager.create(MenuItemSize, { id }),
       );
+      // handle currently ordered items with now invalid sizes?
     }
 
     if (dto.containerMenuItemDtos?.length) {
@@ -182,6 +197,28 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     if (sortBy === 'category') {
       query.leftJoinAndSelect('entity.category', 'menuItemCategory');
       query.orderBy(`menuItemCategory.categoryName`, sortOrder, 'NULLS LAST');
+    }
+  }
+
+  /**
+   * Update all current orders with menuItem that used to be of type container to single by removing the contained items within the ordered item
+   */
+  private async syncOrderMenuItems(id: number) {
+    const activeOrderItems = await this.orderMenuItemRepo.find({
+      where: {
+        menuItem: { id },
+        order: {
+          isFrozen: false,
+          fulfillmentDate: MoreThanOrEqual(new Date()),
+        },
+      },
+      relations: ['order', 'containerItems'],
+    });
+
+    for (const orderItem of activeOrderItems) {
+      await this.orderContainerItemRepo.delete({
+        parentOrderItem: { id: orderItem.id },
+      });
     }
   }
 }

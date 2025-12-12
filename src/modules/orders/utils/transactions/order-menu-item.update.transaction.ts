@@ -59,6 +59,6 @@ export async function OrderMenuItemUpdateInTransaction(
         );
       }
     }
-    entity.orderedContainerItems = Array.from(existingMap.values());
+    entity.containerItems = Array.from(existingMap.values());
   }
 }
