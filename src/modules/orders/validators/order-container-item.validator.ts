@@ -80,13 +80,45 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       results.push(err);
     }
 
-    // validate parent / container item
-    // validate containerItem is valid to the orderMenuItem
-    const parentItem = await this.menuItemRepo.findOne({
-      where: { id: dto.parentContainerMenuItemId },
-      relations: ['containerItems'],
+    // validate parent
+    // validate containerItem is valid to the parent container
+    const parentOrderItem = await this.orderMenuItemRepo.findOne({
+      where: { id: dto.parentOrderMenuItemId },
+      relations: ['menuItem', 'size'],
     });
+    if (!parentOrderItem) {
+      throw new Error();
+    }
+    if (parentOrderItem.menuItem.type !== MENU_ITEM_TYPES.CONTAINER) {
+      throw new Error();
+    }
 
+    const validItems = await this.menuItemContainerItemRepo.find({
+      where: {
+        parent: { id: parentOrderItem.menuItem.id },
+        parentItemSize: { id: parentOrderItem.size.id },
+      },
+      relations: ['containedItem', 'containedItemSize'],
+    });
+    if (validItems.length === 0) {
+      throw new Error();
+    }
+
+    const isValid = validItems.find(
+      (x) =>
+        x.containedItem.id === dto.containedMenuItemId &&
+        x.containedItemSize.id === dto.containedMenuItemSizeId,
+    );
+    if (!isValid) {
+      const err = new ValidationErrorNode(
+        'containedItem',
+        id,
+        'invalid item for container',
+      );
+      results.push(err);
+    }
+
+    // validate quantity
     if (dto.quantity <= 0) {
       const err = new ValidationErrorNode(
         'quantity',
@@ -104,10 +136,54 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
-    let containedItem: MenuItem | null = null;
 
+    // Validate new MenuItem / Size combination is valid for parent container
+    if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
+      const currentEntity = await this.repo.findOne({
+        where: { id },
+        relations: [
+          'containedItem',
+          'containedItemSize',
+          'parentOrderItem',
+          'parentOrderItem.menuItem',
+          'parentOrderItem.size',
+        ],
+      });
+      if (!currentEntity) {
+        throw new Error();
+      }
+      const validContainerItems = await this.menuItemContainerItemRepo.find({
+        where: {
+          parent: { id: currentEntity.parentOrderItem.menuItem.id },
+          parentItemSize: { id: currentEntity.parentOrderItem.size.id },
+        },
+        relations: ['containedItem', 'containedItemSize'],
+      });
+      if (validContainerItems.length === 0) {
+        throw new Error();
+      }
+
+      const itemId = dto.containedMenuItemId ?? currentEntity.containedItem.id;
+      const sizeId =
+        dto.containedMenuItemSizeId ?? currentEntity.containedItemSize.id;
+
+      const isValid = validContainerItems.find(
+        (x) =>
+          x.containedItem.id === itemId && x.containedItemSize.id === sizeId,
+      );
+      if (!isValid) {
+        const err = new ValidationErrorNode(
+          'containedItem',
+          id,
+          'invalid item for container',
+        );
+        results.push(err);
+      }
+    }
+
+    // Validate new contained item is type 'single'
     if (dto.containedMenuItemId) {
-      containedItem = await this.menuItemRepo.findOne({
+      const containedItem = await this.menuItemRepo.findOne({
         where: { id: dto.containedMenuItemId },
         relations: ['validSizes'],
       });
@@ -127,52 +203,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       }
     }
 
-    if (dto.containedMenuItemSizeId) {
-      if (!containedItem) {
-        containedItem = await this.menuItemRepo.findOne({
-          where: { id: dto.containedMenuItemId },
-          relations: ['validSizes'],
-        });
-        if (!containedItem) {
-          throw new Error(
-            `OrderContainerItem validator: contained menu item with id ${dto.containedMenuItemId}`,
-          );
-        }
-      }
-      // should validate against MenuItemContainer settings, not the menuItem validSizes
-      if (
-        !this.helper.isValidSize(
-          dto.containedMenuItemSizeId,
-          containedItem.validSizes,
-        )
-      ) {
-        const err = new ValidationErrorNode(
-          'containedItemSize',
-          id,
-          'Invalid size for contained item.',
-        );
-        results.push(err);
-      }
-    }
-
-    if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
-      const toUpdate = await this.repo.findOne({
-        where: { id },
-        relations: [
-          'parentOrderItem',
-          'parentOrderItem.menuItem',
-          'parentOrderItem.size',
-          'parentOrderItem.menuItem.variableRules',
-          'parentOrderItem.menuItem.fixedContents',
-        ],
-      });
-      if (!toUpdate) {
-        throw new Error(
-          `OrderContainerItem validation: order container item being updated not found.`,
-        );
-      }
-    }
-
+    // validate quantity
     if (dto.quantity && dto.quantity <= 0) {
       const err = new ValidationErrorNode(
         'quantity',
@@ -182,60 +213,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       results.push(err);
     }
 
-    // requires ParentContainer id to validate contained item or size
-    if (
-      (dto.containedMenuItemId || dto.containedMenuItemSizeId) &&
-      !dto.parentContainerMenuItemId
-    ) {
-      const err = new ValidationErrorNode(
-        'parentOrderItem',
-        id,
-        'Missing parent container item id.',
-      );
-      results.push(err);
-    }
-
-    if (
-      id &&
-      (dto.containedMenuItemId || dto.containedMenuItemSizeId) &&
-      dto.parentContainerMenuItemId
-    ) {
-      const containerItem = await this.repo.findOne({
-        where: { id },
-        relations: ['containedItem', 'containedItemSize'],
-      });
-      if (!containerItem) {
-        throw new NotFoundException();
-      }
-      const itemId = dto.containedMenuItemId ?? containerItem.containedItem.id;
-      const sizeId =
-        dto.containedMenuItemSizeId ?? containerItem.containedItemSize.id;
-
-      const containedSize = await this.menuItemSizeRepo.findOne({
-        where: { id: sizeId },
-      });
-      if (!containedSize) {
-        throw new NotFoundException();
-      }
-
-      const containedItem = await this.menuItemRepo.findOne({
-        where: { id: itemId },
-        relations: ['validSizes'],
-      });
-      if (!containedItem) {
-        throw new NotFoundException();
-      }
-
-      // validate item / size
-      if (!this.helper.isValidSize(sizeId, containedItem.validSizes)) {
-        const err = new ValidationErrorNode(
-          'containedItemSize',
-          id,
-          'Invalid size for item.',
-        );
-        results.push(err);
-      }
-    }
     return this.checkValidateResult(results);
   }
 }

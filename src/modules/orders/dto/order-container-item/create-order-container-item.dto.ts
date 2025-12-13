@@ -1,10 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
-import { Order } from '../../entities/order.entity';
 
-/**
- * Depreciated, only created as a child through {@link Order}.
- */
 export class CreateOrderContainerItemDto {
   @ApiPropertyOptional({
     description:
@@ -16,14 +12,14 @@ export class CreateOrderContainerItemDto {
   @IsPositive()
   readonly parentOrderMenuItemId?: number;
 
-  @ApiProperty({
+  /*@ApiProperty({
     description: "Id of the MenuItem that is this item's container",
     example: 2,
   })
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentContainerMenuItemId: number;
+  readonly parentContainerMenuItemId: number;*/
 
   @ApiProperty({
     description: 'Id of the MenuItem that is being ordered',
