@@ -187,15 +187,20 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
     }
 
     if (currentOrderItem.menuItem.type === MENU_ITEM_TYPES.CONTAINER) {
-      const itemMap = new Map<string | number, string>();
+      // To check for duplicate item/size combinations
       const seen = new Set<string>();
+      // To validate total container size against variableMaxAmount
       let sum = 0;
+      // To aggregate created items, updated items, and currently existing items not being updated
+      const itemMap = new Map<string | number, string>();
+
+      // Get the MenuItemContainerItems contained Items and their sizes to validate create DTOs
+      // Get current containerItems to validate for duplicates and total container size
       const currentEntity = await this.repo.findOne({
         where: { id },
         relations: [
           'containerItems.containedItem', // OrderContainer Item
           'containerItems.containedItemSize', // OrderContainer Item
-          'menuItem.containerItems',
           'menuItem.containerItems.containedItem', // MenuItemContainerItem
           'menuItem.containerItems.containedItemSize', // MenuItemContainerItem
         ],

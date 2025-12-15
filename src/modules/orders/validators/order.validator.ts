@@ -88,6 +88,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     }
 
     // check for duplicate orderMenuItems, (menuItem / menuItemSize combinations)
+    // DOESNT HANDLE CONTAINERS
+    // False negative with 2 boxes of cookies with different contents
     const seen = new Set<string>();
     for (const nestedDto of dto.orderedMenuItemDtos) {
       if (!nestedDto.createDto) {
@@ -179,8 +181,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     }
 
     // check for duplicate ordered items (menuItem / Size combinations)
-    // DOESN'T HANDLE CONTAINER ITEMS CORRECTLY, JFC
-    // could just ignore items of type fixed/variable container?
+    // DOESNT HANDLE CONTAINERS
+    // False negative with 2 boxes of cookies with different contents
     const itemMap = new Map<string | number, string>();
     const seen = new Set<string>();
     if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length) {

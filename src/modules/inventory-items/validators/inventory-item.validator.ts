@@ -45,9 +45,26 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     }
 
     if (dto.itemSizeDtos?.length) {
-      //!! check for duplicate measure/package/cost combinations !!
+      // check for duplicate measure/package combinations
 
-      // check that itemSize inventoryItem reference equals the parent, or is null(?)
+      const seen = new Set<string>();
+      for (const nestedDto of dto.itemSizeDtos) {
+        const createDto = nestedDto.createDto;
+        if (!createDto) {
+          throw new Error();
+        }
+        const key = `${createDto.measureUnitId}:${createDto.inventoryPackageId}`; // should include cost?
+        if (seen.has(key)) {
+          const err = new ValidationErrorNode(
+            'itemSizes',
+            id,
+            'Cannot have duplicate item sizes',
+          );
+          results.push(err);
+        } else {
+          seen.add(key);
+        }
+      }
 
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
@@ -81,9 +98,59 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     }
 
     if (dto.itemSizeDtos?.length) {
-      //!! check for duplicate measure/package/cost combinations !!
+      const itemMap = new Map<string | number, string>();
+      const seen = new Set<string>();
+      const currentItem = await this.repo.findOne({
+        where: { id },
+        relations: [
+          'itemSizes',
+          'itemSizes.measureUnit',
+          'itemSizes.packageType',
+        ],
+      });
+      if (!currentItem) {
+        throw new Error();
+      }
+      for (const item of currentItem.itemSizes) {
+        itemMap.set(item.id, `${item.measureUnit.id}:${item.packageType.id}`);
+      }
+      //check for duplicate measure/package combinations
+      for (const nestedDto of dto.itemSizeDtos) {
+        if (nestedDto.createDto && nestedDto.createId) {
+          itemMap.set(
+            nestedDto.createId,
+            `${nestedDto.createDto.measureUnitId}:${nestedDto.createDto.inventoryPackageId}`,
+          );
+        } else if (nestedDto.updateDto && nestedDto.id) {
+          if (
+            nestedDto.updateDto.measureUnitId ||
+            nestedDto.updateDto.inventoryPackageId
+          ) {
+            const currentItem = itemMap.get(nestedDto.id)?.split(':');
+            if (!currentItem || currentItem.length !== 2) {
+              throw new Error();
+            }
 
-      // check that itemSize inventoryItem reference equals the parent, or is null(?)
+            itemMap.set(
+              nestedDto.id,
+              `${nestedDto.updateDto.measureUnitId ?? currentItem[0]}:${nestedDto.updateDto.inventoryPackageId ?? currentItem[1]}`,
+            );
+          }
+        }
+      }
+
+      for (const val of itemMap.values()) {
+        if (seen.has(val)) {
+          const err = new ValidationErrorNode(
+            'itemSizes',
+            id,
+            'Cannot have duplicate item sizes',
+          );
+          results.push(err);
+        } else {
+          seen.add(val);
+        }
+      }
 
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
