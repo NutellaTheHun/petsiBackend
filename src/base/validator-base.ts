@@ -8,7 +8,7 @@ import { ValidatorHelper } from '../util/validatator-helper.util';
 import { EntityBase } from './entity-base';
 
 export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
-  protected helper: ValidatorHelper<T['__Entity']>;
+  protected helper: ValidatorHelper<T['__CDto'] | T['__UDto']>;
   private exceptionHandler: ValidationExceptionHandler;
 
   constructor(
@@ -18,7 +18,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     private readonly logger: AppLogger,
   ) {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
-    this.helper = new ValidatorHelper<T['__Entity']>();
+    this.helper = new ValidatorHelper<T['__CDto'] | T['__UDto']>();
   }
 
   /**

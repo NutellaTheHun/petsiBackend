@@ -15,7 +15,7 @@ type ArrayKeys<T> = {
   [K in keyof T]: T[K] extends Array<any> ? K : never;
 }[keyof T];
 
-export class ValidatorHelper<Entity extends ObjectLiteral> {
+export class ValidatorHelper<Dto extends ObjectLiteral> {
   /**
    * Validates that the given size is within the list of sizes
    *
@@ -65,24 +65,7 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
     return duplicates;
   }*/
 
-  /* public enforceNotEmpty<
-    Entity extends ObjectLiteral,
-    Prop extends keyof Entity,
-  >(
-    val: Entity[Prop],
-    prop: Prop,
-    errArr: ValidationErrorNode[],
-    errMsg: string,
-    id?: number | string,
-  ): void {
-    if (val == null) return;
-
-    if (!val.length) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
-    }
-  }*/
-
-  public enforceNotEmpty<Prop extends ArrayKeys<Entity>>(
+  public enforceNotEmpty<Prop extends ArrayKeys<Dto>>(
     val: any[],
     prop: Prop,
     errArr: ValidationErrorNode[],
@@ -106,8 +89,8 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  public enforcePositive<Prop extends NumericKeys<Entity>>(
-    val: Entity[Prop],
+  public enforcePositive<Prop extends NumericKeys<Dto>>(
+    val: Dto[Prop],
     prop: Prop,
     errArr: ValidationErrorNode[],
     errMsg: string,
@@ -130,25 +113,8 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  /*public enforceNonNegative<
-    Entity extends ObjectLiteral,
-    Prop extends keyof Entity,
-  >(
-    val: Entity[Prop],
-    prop: Prop,
-    errArr: ValidationErrorNode[],
-    errMsg: string,
-    id?: number | string,
-  ): void {
-    if (val == null) return;
-
-    if (val < 0) {
-      errArr.push(new ValidationErrorNode(prop, id, errMsg));
-    }
-  }*/
-  //
-  public enforceNonNegative<Prop extends NumericKeys<Entity>>(
-    val: Entity[Prop],
+  public enforceNonNegative<Prop extends NumericKeys<Dto>>(
+    val: number,
     prop: Prop,
     errArr: ValidationErrorNode[],
     errMsg: string,
@@ -160,7 +126,7 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
     }
   }
 
-  public enforceInList<Prop extends ArrayKeys<Entity>>(
+  public enforceInList<Prop extends ArrayKeys<Dto>>(
     val: string | number,
     list: (string | number)[],
     prop: Prop,
@@ -184,8 +150,11 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
    * @param errMsg description of error
    * @param id entity that is the source of the error
    */
-  public async enforceUnique<Prop extends keyof Entity>(
-    val: Entity[Prop],
+  public async enforceUnique<
+    Entity extends ObjectLiteral,
+    Prop extends keyof Entity,
+  >(
+    val: string | number,
     repo: Repository<Entity>,
     prop: Prop,
     errArr: ValidationErrorNode[],
@@ -212,7 +181,7 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
    * @param errMsg message describing error
    * @param id id to entity that is error source
    */
-  public async enforceUniqueInArr<Prop extends keyof Entity>(
+  public async enforceUniqueInArr<Prop extends keyof Dto>(
     val: string | number,
     list: (string | number)[],
     prop: Prop,
@@ -224,6 +193,73 @@ export class ValidatorHelper<Entity extends ObjectLiteral> {
 
     if (list.includes(val)) {
       errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+    }
+  }
+
+  public async enforceExists<
+    Entity extends ObjectLiteral,
+    Prop extends keyof Entity,
+  >(
+    val: string | number,
+    repo: Repository<Entity>,
+    prop: Prop,
+    errArr: ValidationErrorNode[],
+    errMsg: string,
+    id?: number | string,
+  ): Promise<void> {
+    if (val == null) return;
+
+    const exists = await repo.findOne({
+      where: { [prop]: val } as FindOptionsWhere<Entity>,
+    });
+    if (!exists) {
+      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+    }
+  }
+
+  public enforceConditionalRequired<
+    Prop extends keyof Dto,
+    Dep extends readonly (keyof Dto)[],
+  >(
+    entity: Dto,
+    hinge: Prop,
+    hingeValue: Dto[Prop],
+    dependents: Dep,
+    errArr: ValidationErrorNode[],
+    errMsg: string,
+    id?: number | string,
+  ): void {
+    const currentVal = entity[hinge];
+
+    if (hingeValue === undefined) return;
+
+    if (currentVal === hingeValue) {
+      for (const dep of dependents) {
+        const val = entity[dep];
+        if (val == null || (Array.isArray(val) && val.length === 0)) {
+          // Should probably pass the dependent Props, or both, not just hinge
+          errArr.push(new ValidationErrorNode(String(dep), id, errMsg));
+        }
+      }
+    }
+  }
+
+  public enforceMutualRequired<Dep extends readonly (keyof Dto)[]>(
+    entity: Dto,
+    mutuals: Dep,
+    errArr: ValidationErrorNode[],
+    errMsg: string,
+    id?: number | string,
+  ): void {
+    if (mutuals.length < 2) return;
+
+    const hasAny = mutuals.some((prop) => entity[prop] != undefined);
+    const hasMissing = mutuals.some((prop) => entity[prop] == undefined);
+
+    if (hasAny && hasMissing) {
+      for (const prop of mutuals) {
+        errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      }
     }
   }
 }
