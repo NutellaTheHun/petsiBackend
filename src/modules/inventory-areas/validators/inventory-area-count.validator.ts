@@ -33,28 +33,16 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.itemCountDtos?.length) {
-      // !! Check itemCountDto inventoryItem/itemSize duplicates
-      const seen = new Set<string>();
-      for (const nestedDto of dto.itemCountDtos) {
-        const createDto = nestedDto.createDto;
-        if (!createDto || !nestedDto.createId) {
-          throw new Error();
-        }
-        const key = `${createDto.countedInventoryItemId}:${createDto.countedItemSizeId ?? 0}`;
-        if (seen.has(key)) {
-          const err = new ValidationErrorNode(
-            'countedItems',
-            id,
-            'cannot have duplicate inventory items',
-          );
-          results.push(err);
-        } else {
-          seen.add(key);
-        }
-      }
+    this.helper.enforceNotEmpty(
+      dto.itemCountDtos,
+      'itemCountDtos',
+      results,
+      'Inventory count has no counted items',
+      id,
+    );
 
-      // Nested Validator Call
+    // Nested Validator Call
+    if (dto.itemCountDtos?.length) {
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
         dto.itemCountDtos,
@@ -73,65 +61,14 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // inventoryAreaItemCount entity
     if (dto.itemCountDtos?.length) {
-      //Check itemCountDto inventoryItem/itemSize duplicates
-      const itemMap = new Map<string | number, string>();
-      const seen = new Set<string>();
-      const currentCount = await this.repo.findOne({
-        where: { id },
-        relations: [
-          'countedItems',
-          'countedItems.countedItem',
-          'countedItems.countedItemSize',
-        ],
-      });
-      if (!currentCount || !currentCount.countedItems.length) {
-        throw new Error();
-      }
-      for (const item of currentCount.countedItems) {
-        itemMap.set(
-          item.id,
-          `${item.countedItem.id},${item.countedItemSize.id}`,
-        );
-      }
-
-      for (const nestedDto of dto.itemCountDtos) {
-        if (nestedDto.createDto && nestedDto.createId) {
-          if (nestedDto.createDto.countedItemSizeId) {
-            itemMap.set(
-              nestedDto.createId,
-              `${nestedDto.createDto.countedInventoryItemId},${nestedDto.createDto.countedItemSizeId}`,
-            );
-          }
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          if (
-            nestedDto.updateDto.countedInventoryItemId ||
-            nestedDto.updateDto.countedItemSizeId
-          ) {
-            const currentItem = itemMap.get(nestedDto.id)?.split(':');
-            if (!currentItem || currentItem.length !== 2) {
-              throw new Error();
-            }
-            itemMap.set(
-              nestedDto.id,
-              `${nestedDto.updateDto.countedInventoryItemId ?? currentCount[0]},${nestedDto.updateDto.countedItemSizeId ?? currentCount[1]}`,
-            );
-          }
-        }
-      }
-      for (const val of itemMap.values()) {
-        if (seen.has(val)) {
-          const err = new ValidationErrorNode(
-            'countedItems',
-            id,
-            'cannot have duplicate inventory items',
-          );
-          results.push(err);
-        } else {
-          seen.add(val);
-        }
-      }
+      this.helper.enforceNotEmpty(
+        dto.itemCountDtos,
+        'itemCountDtos',
+        results,
+        'Inventory count cannot have 0 counted items',
+        id,
+      );
 
       // Nested Validator Call
       const valErrs = await this.areaItemValidator.validateManyNestedNode(

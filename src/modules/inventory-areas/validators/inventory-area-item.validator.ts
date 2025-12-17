@@ -33,35 +33,44 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
 
   protected async doValidateCreateNode(
     dto: CreateInventoryAreaItemDto,
-    createId?: string,
+    id?: string,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // amount cannot be less than or equal to 0
-    if (dto.countedAmount <= 0) {
-      const err = new ValidationErrorNode(
-        'amount',
-        createId,
-        'Amount must be greater than 0',
-      );
-      results.push(err);
-    }
+    // Counted Amount
+    this.helper.enforcePositive(
+      dto.countedAmount,
+      'countedAmount',
+      results,
+      'Amount must be greater than 0',
+      id,
+    );
 
-    // Must have either itemSizeId or itemSizeDto
-    if (!dto.countedItemSizeId && !dto.countedItemSizeDto) {
-      const err = new ValidationErrorNode(
-        'countedItemSize',
-        createId,
-        'Missing inventory item size assignment',
-      );
-      results.push(err);
-    }
+    // InventoryItemSize ID and InventoryItemSizeDto
+    this.helper.enforceOnlyOne(
+      dto,
+      'countedItemSizeDto',
+      'countedItemSizeId',
+      results,
+      'Must provide an item size or a new item size',
+      'Cannot provide both an existing and new item size',
+      id,
+    );
 
-    // !! itemSizeId must be valid to item !!
+    // CountedItemSize Reference
     if (dto.countedItemSizeId) {
+      await this.helper.enforceValidSize<InventoryItem>(
+        dto.countedItemSizeId,
+        dto.countedInventoryItemId,
+        this.inventoryItemRepo,
+        'itemSizes',
+        results,
+        'Invalid size for inventory item',
+        id,
+      );
     }
 
-    // Nested Item Size Dto
+    // Nested validator call
     if (dto.countedItemSizeDto) {
       const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
@@ -81,75 +90,55 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // amount cannot be less than or equal to 0
-    if (dto.countedAmount && dto.countedAmount <= 0) {
-      const err = new ValidationErrorNode(
-        'amount',
-        id,
+    // Counted Amount
+    if (dto.countedAmount) {
+      this.helper.enforcePositive(
+        dto.countedAmount,
+        'countedAmount',
+        results,
         'Amount must be greater than 0',
-      );
-      results.push(err);
-    }
-
-    // cannot update item with no sizing
-    if (
-      dto.countedInventoryItemId &&
-      !dto.countedItemSizeId &&
-      !dto.countedItemSizeDto
-    ) {
-      const err = new ValidationErrorNode(
-        'countedItemSize',
         id,
-        'missing inventory item size assignment',
       );
-      results.push(err);
     }
 
-    // Check if counted item and counted size are valid
-    // if update pertains countedInventoryItem and/or countedItemSize
-    // (must exclude countedInventoryItem/ItemSizeDto combo)
-    else if (
-      (dto.countedInventoryItemId ||
-        (dto.countedItemSizeId && !dto.countedItemSizeDto)) &&
-      id
-    ) {
-      const toUpdate = await this.repo.findOne({
-        where: { id },
-        relations: ['countedItem', 'countedItemSize'],
-      });
-      if (!toUpdate) {
-        throw new Error('entity to update not found');
-      }
+    // If new counted InventoryItem, must have new size assignment.
+    if (dto.countedInventoryItemId) {
+      this.helper.enforceOnlyOne(
+        dto,
+        'countedItemSizeDto',
+        'countedItemSizeId',
+        results,
+        'Must provide an item size or a new item size',
+        'Cannot provide both an existing and new item size',
+        id,
+      );
+    }
 
-      const itemId = dto.countedInventoryItemId ?? toUpdate.countedItem.id;
-      const sizeId = dto.countedItemSizeId ?? toUpdate.countedItemSize.id;
-
-      const item = await this.inventoryItemRepo.findOne({
-        where: { id: itemId },
-        relations: ['itemSizes'],
-      });
-      if (!item) {
-        throw new Error(
-          `InventoryAreaItem valiation: InventoryItem with id ${itemId} not found`,
-        );
-      }
-      if (item.itemSizes?.length) {
-        if (!this.helper.isValidSize(sizeId, item.itemSizes)) {
-          const err = new ValidationErrorNode(
-            'countedItemSize',
-            id,
-            'Invalid size for inventory item',
-          );
-          results.push(err);
-        }
+    // Validate InventoryItemSize
+    if (dto.countedItemSizeId) {
+      let countedItemId: number | null = null;
+      if (dto.countedInventoryItemId) {
+        countedItemId = dto.countedInventoryItemId;
       } else {
-        const err = new ValidationErrorNode(
-          'countedItemSize',
-          id,
-          'Invalid size for inventory item',
-        );
-        results.push(err);
+        const currentItem = await this.repo.findOne({
+          where: { id },
+          relations: ['countedItem'],
+        });
+        if (!currentItem) {
+          throw new Error();
+        }
+        countedItemId = currentItem.countedItem.id;
       }
+
+      await this.helper.enforceValidSize<InventoryItem>(
+        dto.countedItemSizeId,
+        countedItemId,
+        this.inventoryItemRepo,
+        'itemSizes',
+        results,
+        'Invalid size for inventory item',
+        id,
+      );
     }
 
     // Nested ItemSize validation

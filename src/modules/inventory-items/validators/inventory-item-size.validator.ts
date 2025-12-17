@@ -30,21 +30,21 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // measureAmount cannot be less than or equal to 0
-    this.helper.lessThanEqualZeroCheck(
+    // measureAmount
+    this.helper.enforcePositive(
       dto.measureAmount,
       'measureAmount',
       results,
-      'measured amount cannot be less than or equal to 0',
+      'cannot be less than or equal to 0',
       id,
     );
 
-    // cost cannot be less than or equal to 0
-    this.helper.lessThanEqualZeroCheck(
+    // cost
+    this.helper.enforcePositive(
       dto.cost,
       'cost',
       results,
-      'cost cannot be less than or equal to 0',
+      'cannot be less than or equal to 0',
       id,
     );
 
@@ -59,9 +59,9 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       },
     });
     if (exists) {
-      const prop = dto.measureUnitId; // to specific, not a 'prop' problem but a collection, the parent entity is more the problem
+      // to specific, not a 'prop' problem but a collection, the parent entity is more the problem
       const err = new ValidationErrorNode(
-        prop, // but must reference a prop? make it a array, make FE process multi prop errors
+        'measureUnit', // but must reference a prop? make it a array, make FE process multi prop errors
         id,
         'Inventory item size already exists',
       );
@@ -79,28 +79,28 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
 
     // measureAmount cannot be less than or equal to 0
     if (dto.measureAmount) {
-      this.helper.lessThanEqualZeroCheck(
+      this.helper.enforcePositive(
         dto.measureAmount,
         'measureAmount',
         results,
-        'measured amount cannot be less than or equal to 0',
+        'cannot be less than or equal to 0',
         id,
       );
     }
 
     // cost cannot be less than or equal to 0
     if (dto.cost) {
-      this.helper.lessThanEqualZeroCheck(
+      this.helper.enforcePositive(
         dto.cost,
         'cost',
         results,
-        'cost cannot be less than or equal to 0',
+        'cannot be less than or equal to 0',
         id,
       );
     }
 
     // Cant update a item size to a already existing combination of packageType and measure unit size.
-    if ((dto.measureUnitId || dto.inventoryPackageId) && id) {
+    if (dto.measureUnitId || dto.inventoryPackageId) {
       const currentSize = await this.repo.findOne({
         where: { id },
         relations: ['inventoryItem', 'measureUnit', 'packageType'],

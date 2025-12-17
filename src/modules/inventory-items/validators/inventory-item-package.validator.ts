@@ -31,14 +31,14 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     const results: ValidationErrorNode[] = [];
 
     // Already exists check
-    if (await this.helper.exists(this.repo, 'packageName', dto.packageName)) {
-      const err = new ValidationErrorNode(
-        'packageName',
-        id,
-        'Inventory package name already exists',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.packageName,
+      this.repo,
+      'packageName',
+      results,
+      'Package name already exists',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -50,15 +50,14 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     const results: ValidationErrorNode[] = [];
 
     if (dto.packageName) {
-      // Already exists check
-      if (await this.helper.exists(this.repo, 'packageName', dto.packageName)) {
-        const err = new ValidationErrorNode(
-          'packageName',
-          id,
-          'Inventory package name already exists',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.packageName,
+        this.repo,
+        'packageName',
+        results,
+        'Package name already exists',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

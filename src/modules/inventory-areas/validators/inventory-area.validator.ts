@@ -30,16 +30,14 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-      const err = new ValidationErrorNode(
-        'areaName',
-        id,
-        'Inventory area name already exists.',
-      );
-      results.push(err);
-    }
-
-    this.helper.enforceNonNegative;
+    await this.helper.enforceUnique(
+      dto.areaName,
+      this.repo,
+      'areaName',
+      results,
+      'Inventory area name already exists.',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -51,14 +49,14 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
     const results: ValidationErrorNode[] = [];
 
     if (dto.areaName) {
-      if (await this.helper.exists(this.repo, 'areaName', dto.areaName)) {
-        const err = new ValidationErrorNode(
-          'areaName',
-          id,
-          'Inventory area name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.areaName,
+        this.repo,
+        'areaName',
+        results,
+        'Inventory area name already exists.',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

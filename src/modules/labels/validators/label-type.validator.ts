@@ -27,31 +27,31 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // name exists
-    if (
-      await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)
-    ) {
-      const err = new ValidationErrorNode(
-        'labelTypeName',
-        id,
-        'Label type name already exists.',
-      );
-      results.push(err);
-    }
+    // name
+    await this.helper.enforceUnique(
+      dto.labelTypeName,
+      this.repo,
+      'labelTypeName',
+      results,
+      'Item with this name already exists',
+      id,
+    );
 
-    // length / width cannot be less than or equal to 0
-    this.helper.lessThanEqualZeroCheck(
+    // length
+    this.helper.enforcePositive(
       dto.labelTypeLength,
       'labelTypeLength',
       results,
-      'Label length cannot be less than or equal to 0',
+      'Must be greater than 0',
       id,
     );
-    this.helper.lessThanEqualZeroCheck(
+
+    // width
+    this.helper.enforcePositive(
       dto.labelTypeWidth,
       'labelTypeWidth',
       results,
-      'Label width cannot be less than or equal to 0',
+      'Must be greater than 0',
       id,
     );
 
@@ -64,36 +64,32 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // name exists
     if (dto.labelTypeName) {
-      if (
-        await this.helper.exists(this.repo, 'labelTypeName', dto.labelTypeName)
-      ) {
-        const err = new ValidationErrorNode(
-          'labelTypeName',
-          id,
-          'Label type name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.labelTypeName,
+        this.repo,
+        'labelTypeName',
+        results,
+        'Item with this name already exists',
+        id,
+      );
     }
 
-    // length / width cannot be less than or equal to 0
     if (dto.labelTypeLength) {
-      this.helper.lessThanEqualZeroCheck(
+      this.helper.enforcePositive(
         dto.labelTypeLength,
         'labelTypeLength',
         results,
-        'Label length cannot be less than or equal to 0',
+        'Must be greater than 0',
         id,
       );
     }
     if (dto.labelTypeWidth) {
-      this.helper.lessThanEqualZeroCheck(
+      this.helper.enforcePositive(
         dto.labelTypeWidth,
         'labelTypeWidth',
         results,
-        'Label width cannot be less than or equal to 0',
+        'Must be greater than 0',
         id,
       );
     }

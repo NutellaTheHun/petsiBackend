@@ -31,14 +31,14 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
     const results: ValidationErrorNode[] = [];
 
     // Vendor name exists
-    if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
-      const err = new ValidationErrorNode(
-        'vendorName',
-        id,
-        'Inventory vendor already exists',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.vendorName,
+      this.repo,
+      'vendorName',
+      results,
+      'Vendor name already exists',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -51,14 +51,14 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
 
     // Vendor name exists
     if (dto.vendorName) {
-      if (await this.helper.exists(this.repo, 'vendorName', dto.vendorName)) {
-        const err = new ValidationErrorNode(
-          'vendorName',
-          id,
-          'Inventory vendor already exists',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.vendorName,
+        this.repo,
+        'vendorName',
+        results,
+        'Vendor name already exists',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

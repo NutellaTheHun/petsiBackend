@@ -30,14 +30,14 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Menu category name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.categoryName,
+      this.repo,
+      'categoryName',
+      results,
+      'Item with this name already exists',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -49,16 +49,14 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
     const results: ValidationErrorNode[] = [];
 
     if (dto.categoryName) {
-      if (
-        await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
-      ) {
-        const err = new ValidationErrorNode(
-          'categoryName',
-          id,
-          'Menu category name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.categoryName,
+        this.repo,
+        'categoryName',
+        results,
+        'Item with this name already exists',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

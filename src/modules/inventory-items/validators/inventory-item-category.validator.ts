@@ -31,16 +31,14 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     const results: ValidationErrorNode[] = [];
 
     // Already exists check
-    if (
-      await this.helper.exists(this.repo, 'categoryName', dto.itemCategoryName)
-    ) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Inventory category name already exists',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.itemCategoryName,
+      this.repo,
+      'categoryName',
+      results,
+      'Inventory category name already exists',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -53,20 +51,14 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
 
     // Already exists check
     if (dto.itemCategoryName) {
-      if (
-        await this.helper.exists(
-          this.repo,
-          'categoryName',
-          dto.itemCategoryName,
-        )
-      ) {
-        const err = new ValidationErrorNode(
-          'categoryName',
-          id,
-          'Inventory category name already exists',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.itemCategoryName,
+        this.repo,
+        'categoryName',
+        results,
+        'Inventory category name already exists',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);
