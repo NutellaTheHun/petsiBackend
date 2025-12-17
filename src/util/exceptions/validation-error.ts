@@ -9,9 +9,9 @@ export class ValidationError {
   readonly errorType: string;
 }
 
-export class ValidationErrorNode<T = any> {
+export class ValidationErrorNode {
   constructor(
-    field: keyof T,
+    field: string,
     id?: string | number,
     message?: string,
     children: ValidationErrorNode[] = [],
@@ -22,7 +22,7 @@ export class ValidationErrorNode<T = any> {
     this.children = children;
   }
 
-  field: keyof T;
+  field: string;
 
   id?: string | number;
 
@@ -39,11 +39,7 @@ export class ValidationErrorNode<T = any> {
     this.children.push(...errs);
   }
 
-  public addFieldError<K extends keyof T>(
-    field: K,
-    message: string,
-    id?: string | number,
-  ) {
+  public addFieldError(field: string, message: string, id?: string | number) {
     this.addChild(new ValidationErrorNode(field, id, message));
   }
 

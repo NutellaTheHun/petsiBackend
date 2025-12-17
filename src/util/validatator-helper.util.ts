@@ -13,26 +13,27 @@ type ArrayKeys<T> = {
   [K in keyof T]: T[K] extends Array<any> ? K : never;
 }[keyof T];
 
-export class ValidatorHelper<Dto extends ObjectLiteral> {
+export class ValidatorHelper<
+  TEntity extends ObjectLiteral,
+  TDto extends ObjectLiteral,
+> {
   /**
    * Array must not be empty
    * @param val any array
-   * @param prop array property of dto
+   * @param prop array property of entity
    * @param errArr array error is pushed to
    * @param errMsg description of error
    * @param id of target entity
    * @returns nothing
    */
-  public enforceNotEmpty<Prop extends keyof Dto>(
-    val: any[] | undefined,
+  public enforceNotEmpty<Prop extends ArrayKeys<TEntity>>(
+    val: TEntity[Prop] | null | undefined,
     prop: Prop,
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,
   ): void {
-    if (!val) return;
-
-    if (val.length === 0) {
+    if (!val || val.length === 0) {
       errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
     }
   }
@@ -47,7 +48,7 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  public enforcePositive<Prop extends NumericKeys<Dto>>(
+  public enforcePositive<Prop extends NumericKeys<TEntity>>(
     val: number,
     prop: Prop,
     errArr: ValidationErrorNode[],
@@ -71,7 +72,7 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  public enforceNonNegative<Prop extends NumericKeys<Dto>>(
+  public enforceNonNegative<Prop extends NumericKeys<TEntity>>(
     val: number,
     prop: Prop,
     errArr: ValidationErrorNode[],
@@ -100,7 +101,7 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
   public enforceInList<Entity extends ObjectLiteral, Prop extends keyof Entity>(
     val: string | number,
     list: (string | number)[],
-    prop: Prop,
+    prop: Entity[Prop],
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,
@@ -207,7 +208,7 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @param errMsg message describing error
    * @param id id to entity that is error source
    */
-  public async enforceUniqueInArr<Prop extends keyof Dto>(
+  public async enforceUniqueInArr<Prop extends keyof TEntity>(
     val: string | number,
     list: (string | number)[],
     prop: Prop,
@@ -265,12 +266,12 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @returns
    */
   public enforceConditionalRequired<
-    Prop extends keyof Dto,
-    Dep extends readonly (keyof Dto)[],
+    Prop extends keyof TDto,
+    Dep extends readonly (keyof TDto)[],
   >(
-    dto: Dto,
+    dto: TDto,
     hinge: Prop,
-    hingeValue: Dto[Prop],
+    hingeValue: TDto[Prop],
     dependents: Dep,
     errArr: ValidationErrorNode[],
     errMsg: string,
@@ -300,8 +301,8 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @param id entity that is the source of the error
    * @returns
    */
-  public enforceMutualRequired<Dep extends readonly (keyof Dto)[]>(
-    dto: Dto,
+  public enforceMutualRequired<Dep extends readonly (keyof TDto)[]>(
+    dto: TDto,
     mutuals: Dep,
     errArr: ValidationErrorNode[],
     errMsg: string,
@@ -330,8 +331,8 @@ export class ValidatorHelper<Dto extends ObjectLiteral> {
    * @param errMsgPopulated description of error when both props are populated
    * @param id of source entity
    */
-  public enforceOnlyOne<Prop extends keyof Dto>(
-    dto: Dto,
+  public enforceOnlyOne<Prop extends keyof TDto>(
+    dto: TDto,
     firstProp: Prop,
     secondProp: Prop,
     errArr: ValidationErrorNode[],

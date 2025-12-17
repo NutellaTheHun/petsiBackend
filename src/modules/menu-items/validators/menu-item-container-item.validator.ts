@@ -41,8 +41,18 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (!containedItem) {
       throw new Error();
     }
+
+    // valid contained item size to menu item
+    await this.helper.enforceInList(
+      dto.containedItemSizeId,
+      containedItem.validSizes.map((x) => x.id),
+      results,
+      'Invalid size',
+      id,
+    );
+
     // contained item size must be valid to the contained item
-    if (
+    /*if (
       !this.helper.isValidSize(
         dto.containedItemSizeId,
         containedItem.validSizes,
@@ -54,7 +64,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         'Invalid size',
       );
       results.push(err);
-    }
+    }*/
 
     // Contained items must be of type single (no containers in containers)
     if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
@@ -95,6 +105,15 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
           );
           results.push(err);
         }
+        // valid contained item size to menu item
+        await this.helper.enforceInList(
+          dto.parentItemSizeId,
+          parentItem.validSizes.map((x) => x.id),
+          'parentItemSize',
+          results,
+          'Invalid size',
+          id,
+        );
       }
     }
 
