@@ -8,7 +8,7 @@ import { ValidatorHelper } from '../util/validatator-helper.util';
 import { EntityBase } from './entity-base';
 
 export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
-  protected helper = new ValidatorHelper();
+  protected helper: ValidatorHelper<T['__Entity']>;
   private exceptionHandler: ValidationExceptionHandler;
 
   constructor(
@@ -18,6 +18,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
     private readonly logger: AppLogger,
   ) {
     this.exceptionHandler = new ValidationExceptionHandler(logger);
+    this.helper = new ValidatorHelper<T['__Entity']>();
   }
 
   /**
@@ -37,7 +38,7 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
    */
   protected abstract doValidateUpdateNode(
     dto: T['__UDto'],
-    id?: number,
+    id: number,
   ): Promise<ValidationErrorNode[] | null>;
 
   /**

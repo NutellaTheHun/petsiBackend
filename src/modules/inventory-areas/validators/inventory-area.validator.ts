@@ -39,6 +39,8 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
       results.push(err);
     }
 
+    this.helper.enforceNonNegative;
+
     return this.checkValidateResult(results);
   }
 
