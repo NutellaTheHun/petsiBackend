@@ -37,5 +37,5 @@ export class UpdateTemplateMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly templateId?: number;
+  readonly parentTemplateId?: number;
 }

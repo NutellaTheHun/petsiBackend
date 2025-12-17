@@ -9,8 +9,8 @@ export async function OrderMenuItemCreateInTransaction(
   manager: EntityManager,
 ): Promise<OrderMenuItem> {
   let orderedContainerItems: OrderContainerItem[] = [];
-  if (dto.orderedItemContainerDtos) {
-    for (const nestedDto of dto.orderedItemContainerDtos) {
+  if (dto.containerOrderMenuItemDtos) {
+    for (const nestedDto of dto.containerOrderMenuItemDtos) {
       if (nestedDto.createDto) {
         const newItem = await OrderContainerItemCreateInTransaction(
           nestedDto.createDto,
@@ -26,10 +26,10 @@ export async function OrderMenuItemCreateInTransaction(
   }
 
   const result = manager.create(OrderMenuItem, {
-    ...(dto.orderId && { order: { id: dto.orderId } }),
+    ...(dto.parentOrderId && { order: { id: dto.parentOrderId } }),
     menuItem: { id: dto.menuItemId },
     quantity: dto.quantity,
-    size: { id: dto.menuItemSizeId },
+    size: { id: dto.sizeId },
     orderedContainerItems,
   });
 

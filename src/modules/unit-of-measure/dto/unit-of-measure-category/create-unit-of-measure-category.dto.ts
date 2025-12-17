@@ -14,7 +14,7 @@ export class CreateUnitOfMeasureCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly categoryName: string;
+  readonly name: string;
 
   @ApiPropertyOptional({
     description:
@@ -25,5 +25,5 @@ export class CreateUnitOfMeasureCategoryDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly baseUnitId?: number;
+  readonly baseConversionUnitId?: number;
 }

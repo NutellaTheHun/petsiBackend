@@ -59,7 +59,7 @@ describe('UnitOfMeasureService', () => {
 
   it('should create a unit of measure (no category)', async () => {
     const dto = {
-      unitName: 'testUnit',
+      name: 'testUnit',
       abbreviation: 'testAbrev',
       conversionFactorToBase: '1',
     } as CreateUnitOfMeasureDto;
@@ -94,7 +94,7 @@ describe('UnitOfMeasureService', () => {
 
   it('should update unit of measure name', async () => {
     const dto = {
-      unitName: 'UPDATE testUnit',
+      name: 'UPDATE testUnit',
     } as UpdateUnitOfMeasureDto;
 
     const result = await unitService.update(testId, dto);
@@ -142,7 +142,7 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual('UPDATE testUnit');
     expect(result?.abbreviation).toEqual('UPDATE Abbrev');
     expect(result?.conversionFactorToBase).toEqual('2.0000000000');
-    expect(result?.category?.categoryName).toEqual(WEIGHT);
+    expect(result?.category?.name).toEqual(WEIGHT);
   });
 
   it('category should contain reference to unit of measure', async () => {
@@ -154,7 +154,7 @@ describe('UnitOfMeasureService', () => {
     }
 
     expect(
-      weightCategory.unitsOfMeasure.findIndex((unit) => unit.id === testId),
+      weightCategory.units.findIndex((unit) => unit.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -172,7 +172,7 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual('UPDATE testUnit');
     expect(result?.abbreviation).toEqual('UPDATE Abbrev');
     expect(result?.conversionFactorToBase).toEqual('2.0000000000');
-    expect(result?.category?.categoryName).toEqual(VOLUME);
+    expect(result?.category?.name).toEqual(VOLUME);
   });
 
   it('old category should not have reference to unit of measure', async () => {
@@ -184,7 +184,7 @@ describe('UnitOfMeasureService', () => {
     }
 
     expect(
-      weightCategory.unitsOfMeasure.findIndex((unit) => unit.id === testId),
+      weightCategory.units.findIndex((unit) => unit.id === testId),
     ).toEqual(-1);
   });
 
@@ -197,7 +197,7 @@ describe('UnitOfMeasureService', () => {
     }
 
     expect(
-      volumeCategory.unitsOfMeasure.findIndex((unit) => unit.id === testId),
+      volumeCategory.units.findIndex((unit) => unit.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -228,7 +228,7 @@ describe('UnitOfMeasureService', () => {
     expect(result?.name).toEqual('UPDATE testUnit');
     expect(result?.abbreviation).toEqual('UPDATE Abbrev');
     expect(result?.conversionFactorToBase).toEqual('2.0000000000');
-    expect(result?.category?.categoryName).toEqual(VOLUME);
+    expect(result?.category?.name).toEqual(VOLUME);
   });
 
   it('should remove unit of measure', async () => {
@@ -249,7 +249,7 @@ describe('UnitOfMeasureService', () => {
     }
 
     expect(
-      volumeCategory.unitsOfMeasure.findIndex((unit) => unit.id === testId),
+      volumeCategory.units.findIndex((unit) => unit.id === testId),
     ).toEqual(-1);
   });
 
@@ -446,7 +446,7 @@ describe('UnitOfMeasureService', () => {
       throw new Error('weight category not found');
     }
 
-    const testUnitId = volumeCategory.unitsOfMeasure[0].id;
+    const testUnitId = volumeCategory.units[0].id;
 
     const removal = await categoryService.remove(volumeCategory.id);
     if (!removal) {

@@ -65,8 +65,8 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   }
 
   protected updateEntity(dto: UpdateMenuItemContainerItemDto): void {
-    if (dto.containedItemId !== undefined) {
-      this.containedItemById(dto.containedItemId);
+    if (dto.containedMenuItemId !== undefined) {
+      this.containedItemById(dto.containedMenuItemId);
     }
     if (dto.containedItemSizeId !== undefined) {
       this.containedItemSizeById(dto.containedItemSizeId);

@@ -20,7 +20,7 @@ export class UpdateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedAmount?: number;
+  readonly amount?: number;
 
   @ApiPropertyOptional({
     description:

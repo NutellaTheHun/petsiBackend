@@ -36,7 +36,7 @@ describe('user validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      username: 'testUser',
+      name: 'testUser',
       password: 'testPass',
       email: 'email',
     } as CreateUserDto;
@@ -47,7 +47,7 @@ describe('user validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      username: USER_A,
+      name: USER_A,
       password: 'pass',
       email: 'email',
     } as CreateUserDto;
@@ -66,7 +66,7 @@ describe('user validator', () => {
     }
 
     const dto = {
-      username: 'testUser',
+      name: 'testUser',
       password: 'testPass',
       email: 'email',
     } as UpdateUserDto;
@@ -82,7 +82,7 @@ describe('user validator', () => {
     }
 
     const dto = {
-      username: USER_C,
+      name: USER_C,
       password: 'testPass',
       email: 'email',
     } as UpdateUserDto;

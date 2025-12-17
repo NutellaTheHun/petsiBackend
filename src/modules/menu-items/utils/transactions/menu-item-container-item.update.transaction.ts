@@ -9,9 +9,9 @@ export async function MenuItemContainerItemUpdateInTransaction(
   manager: EntityManager,
   entity: MenuItemContainerItem,
 ): Promise<void> {
-  if (dto.containedItemId !== undefined) {
-    entity.containedItem = manager.create(MenuItem, {
-      id: dto.containedItemId,
+  if (dto.containedMenuItemId !== undefined) {
+    entity.containedMenuItem = manager.create(MenuItem, {
+      id: dto.containedMenuItemId,
     });
   }
 

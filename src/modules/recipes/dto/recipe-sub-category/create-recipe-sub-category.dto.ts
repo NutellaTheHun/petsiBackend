@@ -8,7 +8,7 @@ export class CreateRecipeSubCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly subCategoryName: string;
+  readonly name: string;
 
   @ApiProperty({
     description: 'Id of the RecipeCategory parent entity.',

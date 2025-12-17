@@ -10,14 +10,14 @@ export async function OrderContainerItemUpdateInTransaction(
   entity: OrderContainerItem,
 ): Promise<void> {
   if (dto.containedMenuItemId !== undefined) {
-    entity.containedItem = manager.create(MenuItem, {
+    entity.containedMenuItem = manager.create(MenuItem, {
       id: dto.containedMenuItemId,
     });
   }
 
-  if (dto.containedMenuItemSizeId !== undefined) {
+  if (dto.containedItemSizeId !== undefined) {
     entity.containedItemSize = manager.create(MenuItemSize, {
-      id: dto.containedMenuItemSizeId,
+      id: dto.containedItemSizeId,
     });
   }
 

@@ -59,41 +59,41 @@ describe('Inventory Item Size Controller', () => {
     units.map((unit) => (unit.id = unitId++));
 
     packages = [
-      { packageName: BAG_PKG } as InventoryItemPackage,
-      { packageName: PACKAGE_PKG } as InventoryItemPackage,
-      { packageName: BOX_PKG } as InventoryItemPackage,
-      { packageName: OTHER_PKG } as InventoryItemPackage,
-      { packageName: CONTAINER_PKG } as InventoryItemPackage,
-      { packageName: CAN_PKG } as InventoryItemPackage,
+      { name: BAG_PKG } as InventoryItemPackage,
+      { name: PACKAGE_PKG } as InventoryItemPackage,
+      { name: BOX_PKG } as InventoryItemPackage,
+      { name: OTHER_PKG } as InventoryItemPackage,
+      { name: CONTAINER_PKG } as InventoryItemPackage,
+      { name: CAN_PKG } as InventoryItemPackage,
     ];
     packages.map((pkg) => (pkg.id = pkgId++));
 
     items = [
-      { itemName: 'FOOD_A' } as InventoryItem,
-      { itemName: 'DRY_A' } as InventoryItem,
-      { itemName: 'OTHER_A' } as InventoryItem,
-      { itemName: 'FOOD_B' } as InventoryItem,
-      { itemName: 'DRY_B' } as InventoryItem,
+      { name: 'FOOD_A' } as InventoryItem,
+      { name: 'DRY_A' } as InventoryItem,
+      { name: 'OTHER_A' } as InventoryItem,
+      { name: 'FOOD_B' } as InventoryItem,
+      { name: 'DRY_B' } as InventoryItem,
     ];
     items.map((pkg) => (pkg.id = itemId++));
 
     sizes = [
       {
         id: 1,
-        measureUnit: units[0],
-        packageType: packages[0],
+        measureType: units[0],
+        package: packages[0],
         inventoryItem: items[0],
       } as InventoryItemSize,
       {
         id: 2,
-        measureUnit: units[1],
-        packageType: packages[1],
+        measureType: units[1],
+        package: packages[1],
         inventoryItem: items[1],
       } as InventoryItemSize,
       {
         id: 3,
-        measureUnit: units[2],
-        packageType: packages[2],
+        measureType: units[2],
+        package: packages[2],
         inventoryItem: items[2],
       } as InventoryItemSize,
     ];
@@ -104,19 +104,19 @@ describe('Inventory Item Size Controller', () => {
         const exists = sizes.find(
           (unit) =>
             unit.inventoryItem.id === createDto.inventoryItemId &&
-            unit.measureUnit.id === createDto.measureUnitId &&
-            unit.packageType.id === createDto.inventoryPackageId,
+            unit.measureType.id === createDto.measureTypeId &&
+            unit.package.id === createDto.packageId,
         );
         if (exists) {
           throw new BadRequestException();
         }
 
         const item = items.find((i) => i.id === createDto.inventoryItemId);
-        const pkg = packages.find((p) => p.id === createDto.inventoryPackageId);
-        const measure = units.find((m) => m.id === createDto.measureUnitId);
+        const pkg = packages.find((p) => p.id === createDto.packageId);
+        const measure = units.find((m) => m.id === createDto.measureTypeId);
         const unit = {
-          measureUnit: measure,
-          packageType: pkg,
+          measureType: measure,
+          package: pkg,
           inventoryItem: item,
         } as InventoryItemSize;
 
@@ -128,7 +128,7 @@ describe('Inventory Item Size Controller', () => {
     jest
       .spyOn(service, 'findSizesByItemName')
       .mockImplementation(async (name: string, relations?: string[]) => {
-        return sizes.filter((unit) => unit.inventoryItem.itemName == name);
+        return sizes.filter((unit) => unit.inventoryItem.name == name);
       });
 
     jest
@@ -138,21 +138,19 @@ describe('Inventory Item Size Controller', () => {
           const index = sizes.findIndex((unit) => unit.id === id);
           if (index === -1) throw new BadRequestException();
 
-          if (updateDto.inventoryPackageId) {
-            const pkg = packages.find(
-              (p) => p.id === updateDto.inventoryPackageId,
-            );
+          if (updateDto.packageId) {
+            const pkg = packages.find((p) => p.id === updateDto.packageId);
             if (!pkg) {
               throw new Error('package is null');
             }
-            sizes[index].packageType = pkg;
+            sizes[index].package = pkg;
           }
-          if (updateDto.measureUnitId) {
-            const unit = units.find((m) => m.id === updateDto.measureUnitId);
+          if (updateDto.measureTypeId) {
+            const unit = units.find((m) => m.id === updateDto.measureTypeId);
             if (!unit) {
               throw new Error('unit is null');
             }
-            sizes[index].measureUnit = unit;
+            sizes[index].measureType = unit;
           }
 
           return sizes[index];
@@ -185,8 +183,8 @@ describe('Inventory Item Size Controller', () => {
 
   it('should fail to create a size', async () => {
     const dto = {
-      measureUnitId: 1,
-      inventoryPackageId: 1,
+      measureTypeId: 1,
+      packageId: 1,
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
@@ -195,8 +193,8 @@ describe('Inventory Item Size Controller', () => {
 
   it('should fail to create a size (already exists)', async () => {
     const dto = {
-      measureUnitId: 1,
-      inventoryPackageId: 1,
+      measureTypeId: 1,
+      packageId: 1,
       inventoryItemId: 1,
     } as CreateInventoryItemSizeDto;
 
@@ -229,12 +227,12 @@ describe('Inventory Item Size Controller', () => {
     }
 
     const dto = {
-      inventoryPackageId: packages[1].id,
+      packageId: packages[1].id,
     } as UpdateInventoryItemSizeDto;
     const result = await controller.update(toUpdate.id, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.packageType.id).toEqual(packages[1].id);
+    expect(result?.package.id).toEqual(packages[1].id);
   });
 
   it('should fail to update a size (doesnt exist)', async () => {

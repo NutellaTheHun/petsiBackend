@@ -25,14 +25,14 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
   }
 
   protected createEntity(dto: CreateMenuItemCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateMenuItemCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 

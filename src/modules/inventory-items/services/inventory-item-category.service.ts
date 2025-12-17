@@ -41,7 +41,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     manager: EntityManager,
   ): Promise<InventoryItemCategory> {
     const result = manager.create(InventoryItemCategory, {
-      categoryName: dto.itemCategoryName,
+      categoryName: dto.name,
     });
     return result;
   }
@@ -50,8 +50,8 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     manager: EntityManager,
     entity: InventoryItemCategory,
   ): Promise<void> {
-    if (dto.itemCategoryName !== undefined) {
-      entity.categoryName = dto.itemCategoryName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -60,7 +60,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     relations?: Array<keyof InventoryItemCategory>,
   ): Promise<InventoryItemCategory | null> {
     return await this.repo.findOne({
-      where: { categoryName: name },
+      where: { name: name },
       relations,
     });
   }

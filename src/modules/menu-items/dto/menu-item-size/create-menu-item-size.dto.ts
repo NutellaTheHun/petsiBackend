@@ -8,5 +8,5 @@ export class CreateMenuItemSizeDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly sizeName: string;
+  readonly name: string;
 }

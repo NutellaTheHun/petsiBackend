@@ -8,5 +8,5 @@ export class CreateMenuItemCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly categoryName: string;
+  readonly name: string;
 }

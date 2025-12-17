@@ -8,7 +8,7 @@ export class UpdateLabelTypeDto {
   })
   @IsString()
   @IsOptional()
-  readonly labelTypeName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: 'The length of the label type in hundreths of an inch',
@@ -16,7 +16,7 @@ export class UpdateLabelTypeDto {
   })
   @IsNumber()
   @IsOptional()
-  readonly labelTypeLength?: number;
+  readonly length?: number;
 
   @ApiPropertyOptional({
     description: 'The length of the label type in hundreths of an inch',
@@ -24,5 +24,5 @@ export class UpdateLabelTypeDto {
   })
   @IsNumber()
   @IsOptional()
-  readonly labelTypeWidth?: number;
+  readonly width?: number;
 }

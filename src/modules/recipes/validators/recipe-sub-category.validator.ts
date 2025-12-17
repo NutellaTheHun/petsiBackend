@@ -34,13 +34,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
      * Currently checks for duplicates accross all categories,
      * not just duplicates within its respective category
      */
-    if (
-      await this.helper.exists(
-        this.repo,
-        'subCategoryName',
-        dto.subCategoryName,
-      )
-    ) {
+    if (await this.helper.exists(this.repo, 'subCategoryName', dto.name)) {
       const err = new ValidationErrorNode(
         'subCategoryName',
         id,
@@ -62,14 +56,8 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
      * Currently checks for duplicates accross all categories,
      * not just duplicates within its respective category
      */
-    if (dto.subCategoryName) {
-      if (
-        await this.helper.exists(
-          this.repo,
-          'subCategoryName',
-          dto.subCategoryName,
-        )
-      ) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'subCategoryName', dto.name)) {
         const err = new ValidationErrorNode(
           'subCategoryName',
           id,

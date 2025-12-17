@@ -40,7 +40,7 @@ export class UpdateMenuItemDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  readonly itemName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description:
@@ -52,7 +52,7 @@ export class UpdateMenuItemDto {
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsOptional()
-  readonly validSizeIds?: number[];
+  readonly sizeIds?: number[];
 
   @ApiPropertyOptional({
     description:

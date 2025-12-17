@@ -35,7 +35,7 @@ export class InventoryArea {
     description: 'The name of the area',
   })
   @Column({ unique: true })
-  areaName: string;
+  name: string;
 
   /**
    * The record of all inventory counts performed for the inventory area.

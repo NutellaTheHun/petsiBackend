@@ -42,7 +42,7 @@ describe('inventory item category validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      itemCategoryName: 'CREATE TEST',
+      name: 'CREATE TEST',
     } as CreateInventoryItemCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -51,7 +51,7 @@ describe('inventory item category validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      itemCategoryName: FOOD_CAT,
+      name: FOOD_CAT,
     } as CreateInventoryItemCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -68,7 +68,7 @@ describe('inventory item category validator', () => {
     }
 
     const dto = {
-      itemCategoryName: 'UPDATE TEST',
+      name: 'UPDATE TEST',
     } as UpdateInventoryItemCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -82,7 +82,7 @@ describe('inventory item category validator', () => {
     }
 
     const dto = {
-      itemCategoryName: DAIRY_CAT,
+      name: DAIRY_CAT,
     } as UpdateInventoryItemCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

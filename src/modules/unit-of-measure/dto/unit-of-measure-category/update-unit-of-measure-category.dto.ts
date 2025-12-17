@@ -8,7 +8,7 @@ export class UpdateUnitOfMeasureCategoryDto {
   })
   @IsString()
   @IsOptional()
-  readonly categoryName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description:
@@ -19,5 +19,5 @@ export class UpdateUnitOfMeasureCategoryDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly baseUnitId?: number;
+  readonly baseConversionUnitId?: number;
 }

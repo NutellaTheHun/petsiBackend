@@ -26,7 +26,7 @@ export class MenuItemCategory {
 
   @ApiProperty({ example: 'Pastry', description: 'Name of the category' })
   @Column({ unique: true })
-  categoryName: string;
+  name: string;
 
   /**
    * A list of {@link MenuItem} with who's {@link MenuItemCategory} property are set to this instance.
@@ -38,5 +38,5 @@ export class MenuItemCategory {
     isArray: true,
   })
   @OneToMany(() => MenuItem, (item) => item.category)
-  categoryItems: MenuItem[] = [];
+  menuItems: MenuItem[] = [];
 }

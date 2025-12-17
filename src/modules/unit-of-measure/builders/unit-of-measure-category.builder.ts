@@ -25,20 +25,20 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
   }
 
   protected createEntity(dto: CreateUnitOfMeasureCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.baseUnitId !== undefined) {
-      this.baseConversionUnitById(dto.baseUnitId);
+    if (dto.baseConversionUnitId !== undefined) {
+      this.baseConversionUnitById(dto.baseConversionUnitId);
     }
   }
 
   protected updateEntity(dto: UpdateUnitOfMeasureCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.baseUnitId !== undefined) {
-      this.baseConversionUnitById(dto.baseUnitId);
+    if (dto.baseConversionUnitId !== undefined) {
+      this.baseConversionUnitById(dto.baseConversionUnitId);
     }
   }
 

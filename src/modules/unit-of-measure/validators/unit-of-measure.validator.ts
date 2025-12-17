@@ -30,7 +30,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     const results: ValidationErrorNode[] = [];
 
     // name exists
-    if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
+    if (await this.helper.exists(this.repo, 'name', dto.name)) {
       const err = new ValidationErrorNode(
         'name',
         id,
@@ -68,8 +68,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     const results: ValidationErrorNode[] = [];
 
     // name exists
-    if (dto.unitName) {
-      if (await this.helper.exists(this.repo, 'name', dto.unitName)) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'name', dto.name)) {
         const err = new ValidationErrorNode(
           'name',
           id,

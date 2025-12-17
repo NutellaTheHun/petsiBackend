@@ -34,14 +34,14 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
   }
 
   protected createEntity(dto: CreateInventoryItemDto): void {
-    if (dto.inventoryItemCategoryId !== undefined) {
-      this.categoryById(dto.inventoryItemCategoryId);
+    if (dto.categoryId !== undefined) {
+      this.categoryById(dto.categoryId);
     }
-    if (dto.itemName !== undefined) {
-      this.name(dto.itemName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.itemSizeDtos !== undefined) {
-      this.sizesByBuilder(dto.itemSizeDtos);
+    if (dto.sizeDtos !== undefined) {
+      this.sizesByBuilder(dto.sizeDtos);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);
@@ -49,14 +49,14 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
   }
 
   protected updateEntity(dto: UpdateInventoryItemDto): void {
-    if (dto.inventoryItemCategoryId !== undefined) {
-      this.categoryById(dto.inventoryItemCategoryId);
+    if (dto.categoryId !== undefined) {
+      this.categoryById(dto.categoryId);
     }
-    if (dto.itemName !== undefined) {
-      this.name(dto.itemName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.itemSizeDtos !== undefined) {
-      this.sizesByBuilder(dto.itemSizeDtos);
+    if (dto.sizeDtos !== undefined) {
+      this.sizesByBuilder(dto.sizeDtos);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);

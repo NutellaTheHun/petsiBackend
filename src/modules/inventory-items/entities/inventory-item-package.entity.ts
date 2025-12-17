@@ -30,5 +30,5 @@ export class InventoryItemPackage {
     description: 'Name description of a package type',
   })
   @Column({ unique: true })
-  packageName: string;
+  name: string;
 }

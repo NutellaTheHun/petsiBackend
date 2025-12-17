@@ -9,139 +9,175 @@ import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-
 import { UnitOfMeasureCategoryController } from './unit-of-measure-category.controller';
 
 describe('UnitOfMeasureCategoryController', () => {
-    let controller: UnitOfMeasureCategoryController;
-    let categoryService: UnitOfMeasureCategoryService;
-    let categories: UnitOfMeasureCategory[];
+  let controller: UnitOfMeasureCategoryController;
+  let categoryService: UnitOfMeasureCategoryService;
+  let categories: UnitOfMeasureCategory[];
 
-    beforeAll(async () => {
-        const module: TestingModule = await getUnitOfMeasureTestingModule();
-        controller = module.get<UnitOfMeasureCategoryController>(UnitOfMeasureCategoryController);
-        categoryService = module.get<UnitOfMeasureCategoryService>(UnitOfMeasureCategoryService);
+  beforeAll(async () => {
+    const module: TestingModule = await getUnitOfMeasureTestingModule();
+    controller = module.get<UnitOfMeasureCategoryController>(
+      UnitOfMeasureCategoryController,
+    );
+    categoryService = module.get<UnitOfMeasureCategoryService>(
+      UnitOfMeasureCategoryService,
+    );
 
-        categories = [
-            { categoryName: UNIT } as UnitOfMeasureCategory,
-            { categoryName: VOLUME } as UnitOfMeasureCategory,
-            { categoryName: WEIGHT } as UnitOfMeasureCategory,
-        ];
-        let id = 1;
-        categories.map(category => category.id = id++);
+    categories = [
+      { name: UNIT } as UnitOfMeasureCategory,
+      { name: VOLUME } as UnitOfMeasureCategory,
+      { name: WEIGHT } as UnitOfMeasureCategory,
+    ];
+    let id = 1;
+    categories.map((category) => (category.id = id++));
 
-        jest.spyOn(categoryService, "create").mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
-            const exists = categories.find(unit => unit.categoryName === createDto.categoryName);
-            if (exists) { throw new BadRequestException(); }
+    jest
+      .spyOn(categoryService, 'create')
+      .mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
+        const exists = categories.find((unit) => unit.name === createDto.name);
+        if (exists) {
+          throw new BadRequestException();
+        }
 
-            const unit = {
-                id: id++,
-                categoryName: createDto.categoryName,
-            } as UnitOfMeasureCategory;
+        const unit = {
+          id: id++,
+          name: createDto.name,
+        } as UnitOfMeasureCategory;
 
-            categories.push(unit);
-            return unit;
-        });
+        categories.push(unit);
+        return unit;
+      });
 
-        jest.spyOn(categoryService, "findOneByName").mockImplementation(async (name: string) => {
-            return categories.find(unit => unit.categoryName === name) || null;
-        });
+    jest
+      .spyOn(categoryService, 'findOneByName')
+      .mockImplementation(async (name: string) => {
+        return categories.find((unit) => unit.name === name) || null;
+      });
 
-        jest.spyOn(categoryService, "update").mockImplementation(async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
-            const index = categories.findIndex(unit => unit.id === id);
-            if (index === -1) { throw new NotFoundException(); }
+    jest
+      .spyOn(categoryService, 'update')
+      .mockImplementation(
+        async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
+          const index = categories.findIndex((unit) => unit.id === id);
+          if (index === -1) {
+            throw new NotFoundException();
+          }
 
-            if (updateDto.categoryName) {
-                categories[index].categoryName = updateDto.categoryName;
-            }
+          if (updateDto.name) {
+            categories[index].name = updateDto.name;
+          }
 
-            return categories[index];
-        });
+          return categories[index];
+        },
+      );
 
-        jest.spyOn(categoryService, "findAll").mockResolvedValue({ items: categories });
+    jest
+      .spyOn(categoryService, 'findAll')
+      .mockResolvedValue({ items: categories });
 
-        jest.spyOn(categoryService, "findOne").mockImplementation(async (id?: number) => {
-            if (!id) { throw new BadRequestException(); }
-            const result = categories.find(unit => unit.id === id);
-            if (!result) {
-                throw new NotFoundException();
-            }
-            return result;
-        });
+    jest
+      .spyOn(categoryService, 'findOne')
+      .mockImplementation(async (id?: number) => {
+        if (!id) {
+          throw new BadRequestException();
+        }
+        const result = categories.find((unit) => unit.id === id);
+        if (!result) {
+          throw new NotFoundException();
+        }
+        return result;
+      });
 
-        jest.spyOn(categoryService, "remove").mockImplementation(async (id: number) => {
-            const index = categories.findIndex(unit => unit.id === id);
-            if (index === -1) { throw new NotFoundException(); }
+    jest
+      .spyOn(categoryService, 'remove')
+      .mockImplementation(async (id: number) => {
+        const index = categories.findIndex((unit) => unit.id === id);
+        if (index === -1) {
+          throw new NotFoundException();
+        }
 
-            categories.splice(index, 1);
+        categories.splice(index, 1);
 
-            return true;
-        });
+        return true;
+      });
+  });
 
-    });
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 
+  it('should create a category', async () => {
+    const dto = {
+      name: 'testCategory',
+    } as CreateUnitOfMeasureCategoryDto;
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
-    });
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+  });
 
-    it('should create a category', async () => {
-        const dto = {
-            categoryName: "testCategory",
-        } as CreateUnitOfMeasureCategoryDto;
+  it('should fail to create a category (already exists)', async () => {
+    const dto = {
+      name: 'testCategory',
+    } as CreateUnitOfMeasureCategoryDto;
 
-        const result = await controller.create(dto);
-        expect(result).not.toBeNull();
-    });
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
+  });
 
-    it('should fail to create a category (already exists)', async () => {
-        const dto = {
-            categoryName: "testCategory",
-        } as CreateUnitOfMeasureCategoryDto;
+  it('should return all categories', async () => {
+    const results = await controller.findAll();
+    expect(results.items.length).toEqual(categories.length);
+  });
 
-        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-    });
+  it('should return a category by id', async () => {
+    const result = await controller.findOne(1);
+    expect(result).not.toBeNull();
+  });
 
-    it('should return all categories', async () => {
-        const results = await controller.findAll();
-        expect(results.items.length).toEqual(categories.length);
-    });
+  it('should fail to return a category (bad id, returns null)', async () => {
+    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
+  });
 
-    it('should return a category by id', async () => {
-        const result = await controller.findOne(1);
-        expect(result).not.toBeNull();
-    });
+  it('should update a category', async () => {
+    const toUpdate = await categoryService.findOneByName('testCategory');
+    if (!toUpdate) {
+      throw new Error('unit to update not found');
+    }
 
-    it('should fail to return a category (bad id, returns null)', async () => {
-        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-    });
+    //toUpdate.categoryName = "UPDATED_testCategory";
+    const dto = {
+      name: 'UPDATED_testCategory',
+    } as UpdateUnitOfMeasureCategoryDto;
 
-    it('should update a category', async () => {
-        const toUpdate = await categoryService.findOneByName("testCategory");
-        if (!toUpdate) { throw new Error("unit to update not found"); }
+    const result = await controller.update(toUpdate.id, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual('UPDATED_testCategory');
+  });
 
-        //toUpdate.categoryName = "UPDATED_testCategory";
-        const dto = {
-            categoryName: "UPDATED_testCategory"
-        } as UpdateUnitOfMeasureCategoryDto;
+  it('should fail to update a category (doesnt exist)', async () => {
+    const toUpdate = await categoryService.findOneByName(
+      'UPDATED_testCategory',
+    );
+    if (!toUpdate) {
+      throw new Error('unit to update not found');
+    }
 
-        const result = await controller.update(toUpdate.id, dto);
-        expect(result).not.toBeNull();
-        expect(result?.categoryName).toEqual("UPDATED_testCategory")
-    });
+    await expect(controller.update(0, toUpdate)).rejects.toThrow(
+      NotFoundException,
+    );
+  });
 
-    it('should fail to update a category (doesnt exist)', async () => {
-        const toUpdate = await categoryService.findOneByName("UPDATED_testCategory");
-        if (!toUpdate) { throw new Error("unit to update not found"); }
+  it('should remove a category', async () => {
+    const toRemove = await categoryService.findOneByName(
+      'UPDATED_testCategory',
+    );
+    if (!toRemove) {
+      throw new Error('unit to remove not found');
+    }
 
-        await expect(controller.update(0, toUpdate)).rejects.toThrow(NotFoundException);
-    });
+    const result = await controller.remove(toRemove.id);
+    expect(result).toBeUndefined();
+  });
 
-    it('should remove a category', async () => {
-        const toRemove = await categoryService.findOneByName("UPDATED_testCategory");
-        if (!toRemove) { throw new Error("unit to remove not found"); }
-
-        const result = await controller.remove(toRemove.id);
-        expect(result).toBeUndefined();
-    });
-
-    it('should fail to remove a category (id not found, returns false)', async () => {
-        await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
-    });
+  it('should fail to remove a category (id not found, returns false)', async () => {
+    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
+  });
 });

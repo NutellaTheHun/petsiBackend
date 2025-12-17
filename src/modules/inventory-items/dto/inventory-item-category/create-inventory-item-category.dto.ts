@@ -8,5 +8,5 @@ export class CreateInventoryItemCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly itemCategoryName: string;
+  readonly name: string;
 }

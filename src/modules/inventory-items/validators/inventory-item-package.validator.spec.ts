@@ -44,7 +44,7 @@ describe('inventory item package validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      packageName: 'CREATE TEST',
+      name: 'CREATE TEST',
     } as CreateInventoryItemPackageDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -53,7 +53,7 @@ describe('inventory item package validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      packageName: BAG_PKG,
+      name: BAG_PKG,
     } as CreateInventoryItemPackageDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -84,7 +84,7 @@ describe('inventory item package validator', () => {
     }
 
     const dto = {
-      packageName: PACKAGE_PKG,
+      name: PACKAGE_PKG,
     } as UpdateInventoryItemPackageDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

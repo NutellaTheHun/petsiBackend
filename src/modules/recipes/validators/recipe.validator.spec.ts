@@ -102,12 +102,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'CREATE',
+      name: 'CREATE',
       categoryId: category.id,
-      subCategoryId: category.subCategories[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      subCategoryId: category.subCategorys[0].id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as CreateRecipeDto;
@@ -157,10 +157,10 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: REC_C,
-      batchResultMeasurementId: batchMeasurement.id,
+      name: REC_C,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as CreateRecipeDto;
@@ -220,11 +220,11 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'CREATE',
-      subCategoryId: category.subCategories[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      name: 'CREATE',
+      subCategoryId: category.subCategorys[0].id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as CreateRecipeDto;
@@ -282,12 +282,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'CREATE',
+      name: 'CREATE',
       categoryId: category.id,
-      subCategoryId: category.subCategories[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      subCategoryId: category.subCategorys[0].id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as CreateRecipeDto;
@@ -311,7 +311,7 @@ describe('recipe validator', () => {
 
     const badSubCats = subCats.filter(
       (subCat) =>
-        !category.subCategories.some((validCat) => validCat.id === subCat.id),
+        !category.subCategorys.some((validCat) => validCat.id === subCat.id),
     );
 
     const batchMeasurement = await measureService.findOneByName(POUND);
@@ -354,12 +354,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'CREATE',
+      name: 'CREATE',
       categoryId: category.id,
       subCategoryId: badSubCats[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as CreateRecipeDto;
@@ -425,12 +425,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'UPDATE',
+      name: 'UPDATE',
       categoryId: category.id,
-      subCategoryId: category.subCategories[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      subCategoryId: category.subCategorys[0].id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as UpdateRecipeDto;
@@ -493,12 +493,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: REC_C,
+      name: REC_C,
       categoryId: category.id,
-      subCategoryId: category.subCategories[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      subCategoryId: category.subCategorys[0].id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as UpdateRecipeDto;
@@ -527,7 +527,7 @@ describe('recipe validator', () => {
 
     const badSubCats = subCats.filter(
       (subCat) =>
-        !category.subCategories.some((validCat) => validCat.id === subCat.id),
+        !category.subCategorys.some((validCat) => validCat.id === subCat.id),
     );
 
     const batchMeasurement = await measureService.findOneByName(POUND);
@@ -571,12 +571,12 @@ describe('recipe validator', () => {
     ];
 
     const dto = {
-      recipeName: 'UPDATE',
+      name: 'UPDATE',
       categoryId: category.id,
       subCategoryId: badSubCats[0].id,
-      batchResultMeasurementId: batchMeasurement.id,
+      batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
-      servingSizeMeasurementId: servingMeasurement.id,
+      servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
       ingredientDtos: ingredDtos,
     } as UpdateRecipeDto;

@@ -15,7 +15,7 @@ export class UpdateTemplateDto {
   })
   @IsString()
   @IsOptional()
-  readonly templateName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description:
@@ -53,5 +53,5 @@ export class UpdateTemplateDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly templateItemDtos?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItemDtos?: NestedTemplateMenuItemDto[];
 }

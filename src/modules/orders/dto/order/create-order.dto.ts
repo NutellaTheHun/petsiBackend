@@ -19,7 +19,7 @@ export class CreateOrderDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly orderCategoryId: number;
+  readonly categoryId: number;
 
   @ApiProperty({
     description: 'Name of the owner of the order',
@@ -142,5 +142,5 @@ export class CreateOrderDto {
     ],
   })
   @IsArray()
-  readonly orderedMenuItemDtos: NestedOrderMenuItemDto[];
+  readonly orderedItemDtos: NestedOrderMenuItemDto[];
 }

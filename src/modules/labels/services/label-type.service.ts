@@ -37,9 +37,9 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     manager: EntityManager,
   ): Promise<LabelType> {
     const result = manager.create(LabelType, {
-      labelTypeLength: dto.labelTypeLength,
-      labelTypeWidth: dto.labelTypeWidth,
-      labelTypeName: dto.labelTypeName,
+      labelTypeLength: dto.length,
+      labelTypeWidth: dto.width,
+      labelTypeName: dto.name,
     });
     return result;
   }
@@ -48,14 +48,14 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     manager: EntityManager,
     entity: LabelType,
   ): Promise<void> {
-    if (dto.labelTypeLength !== undefined) {
-      entity.labelTypeLength = dto.labelTypeLength;
+    if (dto.length !== undefined) {
+      entity.length = dto.length;
     }
-    if (dto.labelTypeWidth !== undefined) {
-      entity.labelTypeWidth = dto.labelTypeWidth;
+    if (dto.width !== undefined) {
+      entity.width = dto.width;
     }
-    if (dto.labelTypeName !== undefined) {
-      entity.labelTypeName = dto.labelTypeName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -64,7 +64,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     relations?: Array<keyof LabelType>,
   ): Promise<LabelType | null> {
     return await this.repo.findOne({
-      where: { labelTypeName: name },
+      where: { name: name },
       relations,
     });
   }

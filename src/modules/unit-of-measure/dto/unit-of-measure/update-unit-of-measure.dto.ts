@@ -8,7 +8,7 @@ export class UpdateUnitOfMeasureDto {
   })
   @IsString()
   @IsOptional()
-  readonly unitName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: "abbrieviation of the UnitofMeasure entity's name.",

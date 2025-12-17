@@ -48,7 +48,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: 'TEST ITEM',
+      name: 'TEST ITEM',
       abbreviation: 'ABREV',
       categoryId: category.id,
       conversionFactorToBase: '1234',
@@ -65,7 +65,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: GALLON,
+      name: GALLON,
       abbreviation: 'ABREV',
       categoryId: category.id,
       conversionFactorToBase: '1234',
@@ -85,7 +85,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: 'TEST CREATE',
+      name: 'TEST CREATE',
       abbreviation: OUNCE_ABBREV,
       categoryId: category.id,
       conversionFactorToBase: '1234',
@@ -110,7 +110,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: 'TEST UPDATE',
+      name: 'TEST UPDATE',
       abbreviation: 'abbrev',
       categoryId: category.id,
       conversionFactorToBase: '1234',
@@ -132,7 +132,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: FL_OUNCE,
+      name: FL_OUNCE,
       abbreviation: 'abbrev',
       categoryId: category.id,
       conversionFactorToBase: '1234',
@@ -157,7 +157,7 @@ describe('unit of measure validator', () => {
     }
 
     const dto = {
-      unitName: 'TEST CREATE',
+      name: 'TEST CREATE',
       abbreviation: OUNCE_ABBREV,
       categoryId: category.id,
       conversionFactorToBase: '1234',

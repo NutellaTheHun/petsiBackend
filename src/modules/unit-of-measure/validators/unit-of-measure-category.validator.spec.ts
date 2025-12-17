@@ -42,7 +42,7 @@ describe('unit of measure category validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      categoryName: 'TEST NAME',
+      name: 'TEST NAME',
     } as CreateUnitOfMeasureCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -51,7 +51,7 @@ describe('unit of measure category validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      categoryName: VOLUME,
+      name: VOLUME,
     } as CreateUnitOfMeasureCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -68,7 +68,7 @@ describe('unit of measure category validator', () => {
     }
 
     const dto = {
-      categoryName: 'TEST NAME',
+      name: 'TEST NAME',
     } as UpdateUnitOfMeasureCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -82,7 +82,7 @@ describe('unit of measure category validator', () => {
     }
 
     const dto = {
-      categoryName: VOLUME,
+      name: VOLUME,
     } as UpdateUnitOfMeasureCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

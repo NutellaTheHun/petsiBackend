@@ -53,7 +53,7 @@ describe('Template menu item service', () => {
 
   it('should fail to create a template item (bad request) then create properly for future tests', async () => {
     const templateDto = {
-      templateName: 'testTemplate',
+      name: 'testTemplate',
     } as CreateTemplateDto;
 
     const template = await templateService.create(templateDto);
@@ -84,7 +84,7 @@ describe('Template menu item service', () => {
     });
 
     const updateTemplateDto = {
-      templateItemDtos: [createItemDto],
+      templateMenuItemDtos: [createItemDto],
     } as UpdateTemplateDto;
 
     const updateResult = await templateService.update(
@@ -96,11 +96,11 @@ describe('Template menu item service', () => {
       throw new Error();
     }
 
-    if (!updateResult.templateItems) {
+    if (!updateResult.templateMenuItems) {
       throw new Error();
     }
 
-    const result = updateResult.templateItems[0];
+    const result = updateResult.templateMenuItems[0];
 
     expect(result).not.toBeNull();
     expect(result?.displayName).toEqual('test display name');

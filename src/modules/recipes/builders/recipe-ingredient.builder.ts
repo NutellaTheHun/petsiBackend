@@ -48,8 +48,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     if (dto.ingredientRecipeId !== undefined) {
       this.ingredientRecipeById(dto.ingredientRecipeId);
     }
-    if (dto.quantityMeasurementId !== undefined) {
-      this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
+    if (dto.quantityMeasureTypeId !== undefined) {
+      this.quantityUnitOfMeasureById(dto.quantityMeasureTypeId);
     }
 
     // If the parentRecipeId is provided, use it to set the parentRecipe. (Through recipe-ingredient endpoint)
@@ -73,8 +73,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       this.entity.ingredientInventoryItem = null;
       this.ingredientRecipeById(dto.ingredientRecipeId);
     }
-    if (dto.quantityMeasurementId !== undefined) {
-      this.quantityUnitOfMeasureById(dto.quantityMeasurementId);
+    if (dto.quantityMeasureTypeId !== undefined) {
+      this.quantityUnitOfMeasureById(dto.quantityMeasureTypeId);
     }
   }
 

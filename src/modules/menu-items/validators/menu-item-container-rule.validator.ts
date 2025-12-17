@@ -88,7 +88,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
 
     // valid sizes
     for (const dirtySizeId of dto.validSizeIds) {
-      if (!this.helper.isValidSize(dirtySizeId, validItem.validSizes)) {
+      if (!this.helper.isValidSize(dirtySizeId, validItem.sizes)) {
         const err = new ValidationErrorNode(
           'validSizes',
           dirtySizeId,
@@ -149,7 +149,7 @@ export class MenuItemContainerRuleValidator extends ValidatorBase<MenuItemContai
       }
 
       for (const scarySize of sizeIds) {
-        if (!this.helper.isValidSize(scarySize, item.validSizes)) {
+        if (!this.helper.isValidSize(scarySize, item.sizes)) {
           const err = new ValidationErrorNode(
             'validSizes',
             id, // cant get both the id of the rule and the id of the valid size that is erroneous?

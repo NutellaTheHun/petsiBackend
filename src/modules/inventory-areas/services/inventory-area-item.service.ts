@@ -69,7 +69,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     }
 
     return await this.repo.find({
-      where: { countedItem: { id: item.id } },
+      where: { countedInventoryItem: { id: item.id } },
       relations,
     });
   }

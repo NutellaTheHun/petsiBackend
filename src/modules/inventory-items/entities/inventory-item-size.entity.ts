@@ -65,7 +65,7 @@ export class InventoryItemSize {
     type: UnitOfMeasure,
   })
   @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-  measureUnit: UnitOfMeasure;
+  measureType: UnitOfMeasure;
 
   /**
    * Choice of {@link InventoryItemPackage} an inventory item is counted in. "Box", "Can", "Bag"
@@ -78,7 +78,7 @@ export class InventoryItemSize {
   @ManyToOne(() => InventoryItemPackage, {
     onDelete: 'CASCADE',
   })
-  packageType: InventoryItemPackage;
+  package: InventoryItemPackage;
 
   /**
    * The parent {@link InventoryItem} that this specific unit of measurement/package type combination refers to.
@@ -90,7 +90,7 @@ export class InventoryItemSize {
     description: 'The inventoryitem associated with this InventoryItemSize',
     type: () => InventoryItem,
   })
-  @ManyToOne(() => InventoryItem, (item) => item.itemSizes, {
+  @ManyToOne(() => InventoryItem, (item) => item.sizes, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
   })

@@ -61,7 +61,7 @@ describe('recipe sub category service', () => {
     });*/
     const createSubCatDto = {
       parentCategoryId: catC.id,
-      subCategoryName: 'test sub Cat',
+      name: 'test sub Cat',
     } as CreateRecipeSubCategoryDto;
 
     const createResult = await subCategoryService.create(createSubCatDto);
@@ -70,7 +70,7 @@ describe('recipe sub category service', () => {
     }
 
     expect(createResult).not.toBeNull();
-    expect(createResult?.subCategoryName).toEqual('test sub Cat');
+    expect(createResult?.name).toEqual('test sub Cat');
     expect(createResult?.parentCategory.id).toEqual(catC.id);
 
     testId = createResult?.id as number;
@@ -88,12 +88,12 @@ describe('recipe sub category service', () => {
     }
 
     const dto = {
-      subCategoryName: 'Update Sub Cat Name',
+      name: 'Update Sub Cat Name',
     } as UpdateRecipeSubCategoryDto;
 
     const result = await subCategoryService.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual('Update Sub Cat Name');
+    expect(result?.name).toEqual('Update Sub Cat Name');
   });
 
   it('should remove a sub-category', async () => {
@@ -134,6 +134,6 @@ describe('recipe sub category service', () => {
   it('should get one sub-category by name', async () => {
     const result = await subCategoryService.findOneByName(REC_SUBCAT_1);
     expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual(REC_SUBCAT_1);
+    expect(result?.name).toEqual(REC_SUBCAT_1);
   });
 });

@@ -49,7 +49,7 @@ describe('menu item container rule validator', () => {
 
     const dto = {
       validMenuItemId: item.id,
-      validSizeIds: [item.validSizes[0].id, item.validSizes[0].id],
+      validSizeIds: [item.sizes[0].id, item.sizes[0].id],
     } as CreateMenuItemContainerRuleDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -87,7 +87,7 @@ describe('menu item container rule validator', () => {
 
     const dto = {
       validMenuItemId: item.id,
-      validSizeIds: [badItem.validSizes[0].id, badItem.validSizes[1].id],
+      validSizeIds: [badItem.sizes[0].id, badItem.sizes[1].id],
     } as CreateMenuItemContainerRuleDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -112,7 +112,7 @@ describe('menu item container rule validator', () => {
 
     const dto = {
       validMenuItemId: item.id,
-      validSizeIds: item.validSizes.map((size) => size.id),
+      validSizeIds: item.sizes.map((size) => size.id),
     } as UpdateMenuItemContainerRuleDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -164,7 +164,7 @@ describe('menu item container rule validator', () => {
 
     const dto = {
       validMenuItemId: item.id,
-      validSizeIds: badItem.validSizes.map((size) => size.id),
+      validSizeIds: badItem.sizes.map((size) => size.id),
     } as UpdateMenuItemContainerRuleDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

@@ -50,5 +50,5 @@ export class CreateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly quantityMeasurementId: number;
+  readonly quantityMeasureTypeId: number;
 }

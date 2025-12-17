@@ -27,7 +27,7 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     const results: ValidationErrorNode[] = [];
 
     // username exists
-    if (await this.helper.exists(this.repo, 'username', dto.username)) {
+    if (await this.helper.exists(this.repo, 'username', dto.name)) {
       const err = new ValidationErrorNode(
         'username',
         id,
@@ -45,7 +45,7 @@ export class UserValidator extends ValidatorBase<UserEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.username) {
+    if (dto.name) {
       const err = new ValidationErrorNode(
         'username',
         id,

@@ -30,5 +30,5 @@ export class UpdateInventoryAreaCountDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly itemCountDtos?: NestedInventoryAreaItemDto[];
+  readonly countedInventoryItemDtos?: NestedInventoryAreaItemDto[];
 }

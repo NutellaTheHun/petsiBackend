@@ -40,8 +40,8 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     manager: EntityManager,
   ): Promise<Template> {
     let templateItems: TemplateMenuItem[] = [];
-    if (dto.templateItemDtos) {
-      for (const nestedDto of dto.templateItemDtos) {
+    if (dto.templateMenuItemDtos) {
+      for (const nestedDto of dto.templateMenuItemDtos) {
         if (nestedDto.createDto) {
           const newTemplateItem = await TemplateMenuItemCreateInTransaction(
             nestedDto.createDto,
@@ -57,7 +57,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     }
 
     const result = manager.create(Template, {
-      templateName: dto.templateName,
+      templateName: dto.name,
       isPie: dto.isPie,
       templateItems,
     });
@@ -74,17 +74,17 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
       entity.isPie = dto.isPie;
     }
 
-    if (dto.templateName !== undefined) {
-      entity.templateName = dto.templateName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
 
-    if (dto.templateItemDtos) {
+    if (dto.templateMenuItemDtos) {
       const existingItems = await manager.find(TemplateMenuItem, {
         where: { parentTemplate: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.templateItemDtos) {
+      for (const nestedDto of dto.templateMenuItemDtos) {
         if (nestedDto.createDto) {
           const newTemplateItem = await TemplateMenuItemCreateInTransaction(
             nestedDto.createDto,
@@ -109,7 +109,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
           );
         }
       }
-      entity.templateItems = Array.from(existingMap.values());
+      entity.templateMenuItems = Array.from(existingMap.values());
     }
   }
 
@@ -118,7 +118,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     relations?: Array<keyof Template>,
   ): Promise<Template | null> {
     return await this.repo.findOne({
-      where: { templateName: name },
+      where: { name: name },
       relations: relations,
     });
   }

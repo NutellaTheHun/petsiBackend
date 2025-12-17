@@ -8,8 +8,8 @@ export async function InventoryItemSizeCreateInTransaction(
 ): Promise<InventoryItemSize> {
   const result = manager.create(InventoryItemSize, {
     measureAmount: dto.measureAmount,
-    measureUnit: { id: dto.measureUnitId },
-    packageType: { id: dto.inventoryPackageId },
+    measureUnit: { id: dto.measureTypeId },
+    packageType: { id: dto.packageId },
     ...(dto.inventoryItemId && { inventoryItem: { id: dto.inventoryItemId } }),
     cost: dto.cost.toString(),
   });

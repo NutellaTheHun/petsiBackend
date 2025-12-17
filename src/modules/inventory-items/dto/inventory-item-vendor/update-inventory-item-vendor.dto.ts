@@ -8,5 +8,5 @@ export class UpdateInventoryItemVendorDto {
   })
   @IsString()
   @IsOptional()
-  readonly vendorName?: string;
+  readonly name?: string;
 }

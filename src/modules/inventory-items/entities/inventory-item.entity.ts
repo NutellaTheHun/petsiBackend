@@ -41,7 +41,7 @@ export class InventoryItem {
 
   @ApiProperty({ example: '', description: '' })
   @Column({ unique: true })
-  itemName: string;
+  name: string;
 
   /**
    * {@link InventoryItemCategory} for item.
@@ -56,7 +56,7 @@ export class InventoryItem {
   })
   @ManyToOne(
     () => InventoryItemCategory,
-    (category) => category.categoryItems,
+    (category) => category.inventoryItems,
     {
       nullable: true,
       cascade: true,
@@ -75,7 +75,7 @@ export class InventoryItem {
     type: () => InventoryItemVendor,
     nullable: true,
   })
-  @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.vendorItems, {
+  @ManyToOne(() => InventoryItemVendor, (vendor) => vendor.inventoryItems, {
     nullable: true,
     cascade: true,
     onDelete: 'SET NULL',
@@ -96,5 +96,5 @@ export class InventoryItem {
   @OneToMany(() => InventoryItemSize, (size) => size.inventoryItem, {
     cascade: true,
   })
-  itemSizes: InventoryItemSize[] = [];
+  sizes: InventoryItemSize[] = [];
 }

@@ -48,8 +48,8 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     manager: EntityManager,
   ): Promise<InventoryItem> {
     let itemSizes: InventoryItemSize[] = [];
-    if (dto.itemSizeDtos) {
-      for (const nestedDto of dto.itemSizeDtos) {
+    if (dto.sizeDtos) {
+      for (const nestedDto of dto.sizeDtos) {
         if (nestedDto.createDto) {
           const newSize = await InventoryItemSizeCreateInTransaction(
             nestedDto.createDto,
@@ -64,10 +64,10 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       }
     }
     const result = manager.create(InventoryItem, {
-      itemName: dto.itemName,
+      itemName: dto.name,
 
-      ...(dto.inventoryItemCategoryId && {
-        category: { id: dto.inventoryItemCategoryId },
+      ...(dto.categoryId && {
+        category: { id: dto.categoryId },
       }),
 
       ...(dto.vendorId && { vendor: { id: dto.vendorId } }),
@@ -83,15 +83,15 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     manager: EntityManager,
     entity: InventoryItem,
   ): Promise<void> {
-    if (dto.inventoryItemCategoryId !== undefined) {
+    if (dto.categoryId !== undefined) {
       const newCategory = manager.create(InventoryItemCategory, {
-        id: dto.inventoryItemCategoryId,
+        id: dto.categoryId,
       });
       entity.category = newCategory;
     }
 
-    if (dto.itemName !== undefined) {
-      entity.itemName = dto.itemName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
 
     if (dto.vendorId !== undefined) {
@@ -101,13 +101,13 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       entity.vendor = newVendor;
     }
 
-    if (dto.itemSizeDtos) {
+    if (dto.sizeDtos) {
       const existingSizes = await manager.find(InventoryItemSize, {
         where: { inventoryItem: { id: entity.id } },
       });
       const existingMap = new Map(existingSizes.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.itemSizeDtos) {
+      for (const nestedDto of dto.sizeDtos) {
         if (nestedDto.createDto) {
           const newSize = await InventoryItemSizeCreateInTransaction(
             nestedDto.createDto,
@@ -130,7 +130,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
           );
         }
       }
-      entity.itemSizes = Array.from(existingMap.values());
+      entity.sizes = Array.from(existingMap.values());
     }
   }
 
@@ -139,7 +139,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     relations?: Array<keyof InventoryItem>,
   ): Promise<InventoryItem | null> {
     return await this.repo.findOne({
-      where: { itemName: name },
+      where: { name: name },
       relations: relations,
     });
   }

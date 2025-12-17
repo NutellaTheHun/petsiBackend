@@ -36,7 +36,7 @@ describe('inventory area validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      areaName: 'testValidateArea',
+      name: 'testValidateArea',
     } as CreateInventoryAreaDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -45,7 +45,7 @@ describe('inventory area validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      areaName: AREA_A,
+      name: AREA_A,
     } as CreateInventoryAreaDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -62,7 +62,7 @@ describe('inventory area validator', () => {
     }
 
     const dto = {
-      areaName: 'testValidateArea',
+      name: 'testValidateArea',
     } as UpdateInventoryAreaDto;
 
     await validator.validateUpdateNode('root', dto, area.id);
@@ -75,7 +75,7 @@ describe('inventory area validator', () => {
     }
 
     const dto = {
-      areaName: AREA_A,
+      name: AREA_A,
     } as UpdateInventoryAreaDto;
 
     const result = await validator.validateUpdateNode('root', dto, area.id);

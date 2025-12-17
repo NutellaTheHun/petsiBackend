@@ -8,5 +8,5 @@ export class CreateInventoryItemPackageDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly packageName: string;
+  readonly name: string;
 }

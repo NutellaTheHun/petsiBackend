@@ -59,7 +59,7 @@ export class InventoryAreaItem {
     type: InventoryItem,
   })
   @ManyToOne(() => InventoryItem, { onDelete: 'CASCADE' })
-  countedItem: InventoryItem;
+  countedInventoryItem: InventoryItem;
 
   /**
    * Represents the amount of units per size.measuredQuantity by size.measureUnit, for instances of multi pack items.

@@ -74,9 +74,9 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category?.id,
-      itemName: 'TEST ITEM',
+      name: 'TEST ITEM',
       veganOptionMenuId: vegan.id,
-      validSizeIds: [size.id],
+      sizeIds: [size.id],
       isParbake: true,
     } as CreateMenuItemDto;
 
@@ -115,7 +115,7 @@ describe('menu item validator', () => {
         createDto: {
           parentContainerSizeId: size.id,
           containedMenuItemId: containedItemA.id,
-          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          containedMenuItemSizeId: containedItemA.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -124,7 +124,7 @@ describe('menu item validator', () => {
         createDto: {
           parentContainerSizeId: size.id,
           containedMenuItemId: containedItemB.id,
-          containedMenuItemSizeId: containedItemB.validSizes[0].id,
+          containedMenuItemSizeId: containedItemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -132,8 +132,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: 'TEST ITEM',
-      validSizeIds: [size.id],
+      name: 'TEST ITEM',
+      sizeIds: [size.id],
       definedContainerItemDtos: containerDtos,
     } as CreateMenuItemDto;
 
@@ -162,8 +162,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: 'testNAME',
-      validSizeIds: [size.id],
+      name: 'testNAME',
+      sizeIds: [size.id],
       containerOptionDto: optionDto,
     } as CreateMenuItemDto;
 
@@ -189,9 +189,9 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: item_a,
+      name: item_a,
       veganTakeNBakeOptionMenuId: vTnBake.id,
-      validSizeIds: [size.id],
+      sizeIds: [size.id],
       isParbake: true,
     } as CreateMenuItemDto;
 
@@ -228,8 +228,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: 'UPDATE ITEM',
-      validSizeIds: [size.id],
+      name: 'UPDATE ITEM',
+      sizeIds: [size.id],
       isPOTM: true,
     } as UpdateMenuItemDto;
 
@@ -245,7 +245,7 @@ describe('menu item validator', () => {
       throw new Error();
     }
 
-    const toUpdate = containerRequest.items[0].parent;
+    const toUpdate = containerRequest.items[0].parentMenuItem;
 
     const category = await categoryService.findOneByName(CAT_BLUE);
     if (!category) {
@@ -277,7 +277,7 @@ describe('menu item validator', () => {
         createDto: {
           parentContainerSizeId: size.id,
           containedMenuItemId: containedItemA.id,
-          containedMenuItemSizeId: containedItemA.validSizes[0].id,
+          containedMenuItemSizeId: containedItemA.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -287,7 +287,7 @@ describe('menu item validator', () => {
         updateDto: {
           parentContainerMenuItemId: toUpdate.id,
           containedMenuItemId: containedItemB.id,
-          containedMenuItemSizeId: containedItemB.validSizes[0].id,
+          containedMenuItemSizeId: containedItemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -295,8 +295,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: 'UPDATE NAME',
-      validSizeIds: [size.id],
+      name: 'UPDATE NAME',
+      sizeIds: [size.id],
       isParbake: true,
       definedContainerItemDtos: containerDtos,
     } as UpdateMenuItemDto;
@@ -331,8 +331,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: 'UPDATE ITEM',
-      validSizeIds: [size.id],
+      name: 'UPDATE ITEM',
+      sizeIds: [size.id],
       isParbake: true,
       containerOptionDto: optionDto,
     } as UpdateMenuItemDto;
@@ -359,8 +359,8 @@ describe('menu item validator', () => {
 
     const dto = {
       categoryId: category.id,
-      itemName: item_b,
-      validSizeIds: [size.id],
+      name: item_b,
+      sizeIds: [size.id],
       isParbake: true,
     } as UpdateMenuItemDto;
 

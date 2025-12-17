@@ -17,7 +17,7 @@ export class CreateOrderMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly orderId?: number;
+  readonly parentOrderId?: number;
 
   @ApiProperty({
     description: 'Id of MenuItem entity being ordered.',
@@ -36,7 +36,7 @@ export class CreateOrderMenuItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly menuItemSizeId: number;
+  readonly sizeId: number;
 
   @ApiProperty({ description: 'Amount being ordered.' })
   @IsNumber()
@@ -71,5 +71,5 @@ export class CreateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly orderedItemContainerDtos?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuItemDtos?: NestedOrderContainerItemDto[];
 }

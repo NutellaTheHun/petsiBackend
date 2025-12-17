@@ -64,7 +64,7 @@ describe('recipe ingredient validator', () => {
     const dto = {
       ingredientRecipeId: recipe.id,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as CreateRecipeIngredientDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -85,7 +85,7 @@ describe('recipe ingredient validator', () => {
     const dto = {
       ingredientInventoryItemId: inventoryItem.id,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as CreateRecipeIngredientDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -100,7 +100,7 @@ describe('recipe ingredient validator', () => {
 
     const dto = {
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as CreateRecipeIngredientDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -136,7 +136,7 @@ describe('recipe ingredient validator', () => {
       id: ingredsWRecipes[0].id,
       ingredientRecipeId: newRecipe.id,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await validator.validateUpdateNode(
@@ -175,7 +175,7 @@ describe('recipe ingredient validator', () => {
       ingredientRecipeId: null,
       ingredientInventoryItemId: newInventoryItem.id,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await validator.validateUpdateNode(
@@ -215,7 +215,7 @@ describe('recipe ingredient validator', () => {
       ingredientRecipeId: newRecipe.id,
       ingredientInventoryItemId: null,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await validator.validateUpdateNode(
@@ -254,7 +254,7 @@ describe('recipe ingredient validator', () => {
       id: ingredsWItems[0].id,
       ingredientInventoryItemId: newInventoryItem.id,
       quantity: 1,
-      quantityMeasurementId: measurement.id,
+      quantityMeasureTypeId: measurement.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await validator.validateUpdateNode(

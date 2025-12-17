@@ -38,7 +38,7 @@ export class CreateMenuItemDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly itemName: string;
+  readonly name: string;
 
   @ApiProperty({
     description:
@@ -51,7 +51,7 @@ export class CreateMenuItemDto {
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsNotEmpty()
-  readonly validSizeIds: number[];
+  readonly sizeIds: number[];
 
   @ApiPropertyOptional({
     description: 'Array of CreateMenutItemContainerItemDtos',

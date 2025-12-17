@@ -58,7 +58,7 @@ describe('User Service', () => {
     }
 
     const dto = {
-      username: testUsername,
+      name: testUsername,
       email: testUserEmail,
       password: testUserPass,
       roleIds: [role.id],
@@ -70,17 +70,17 @@ describe('User Service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result.username).toEqual(testUsername);
+    expect(result.name).toEqual(testUsername);
     expect(result.email).toEqual(testUserEmail);
     expect(result.password).toEqual('');
-    expect(result.roles[0].roleName).toEqual(ROLE_STAFF);
+    expect(result.roles[0].name).toEqual(ROLE_STAFF);
 
     testId = result.id;
   });
 
   it('should update a user', async () => {
     const dto = {
-      username: updatedUsername,
+      name: updatedUsername,
       email: updatedEmail,
     } as UpdateUserDto;
 
@@ -89,7 +89,7 @@ describe('User Service', () => {
 
     expect(result).not.toBeNull();
     expect(result?.email).toEqual(updatedEmail);
-    expect(result?.username).toEqual(updatedUsername);
+    expect(result?.name).toEqual(updatedUsername);
   });
 
   it('should remove a user', async () => {
@@ -165,7 +165,7 @@ describe('User Service', () => {
 
     const verifyRole = await rolesService.findOneByName(ROLE_ADMIN, ['users']);
     expect(verifyRole).not.toBeNull();
-    expect(verifyRole?.users[0].username).toEqual(USER_A);
+    expect(verifyRole?.users[0].name).toEqual(USER_A);
   });
 
   it('should update user reference from role Admin to role Staff, and update role user references', async () => {
@@ -176,7 +176,7 @@ describe('User Service', () => {
     if (!toUpdate.roles) {
       throw new Error('user roles is null');
     }
-    expect(toUpdate.roles[0].roleName).toEqual(ROLE_ADMIN);
+    expect(toUpdate.roles[0].name).toEqual(ROLE_ADMIN);
 
     const managerRole = await rolesService.findOneByName(ROLE_MANAGER);
     if (!managerRole) {
@@ -193,7 +193,7 @@ describe('User Service', () => {
       'users',
     ]);
     expect(verifyRole).not.toBeNull();
-    expect(verifyRole?.users[0].username).toEqual(USER_A);
+    expect(verifyRole?.users[0].name).toEqual(USER_A);
   });
 
   it('should remove user reference from role', async () => {
@@ -204,7 +204,7 @@ describe('User Service', () => {
     if (!toUpdate.roles) {
       throw new Error('user roles is null');
     }
-    expect(toUpdate.roles[0].roleName).toEqual(ROLE_MANAGER);
+    expect(toUpdate.roles[0].name).toEqual(ROLE_MANAGER);
 
     const dto = {
       roleIds: [],

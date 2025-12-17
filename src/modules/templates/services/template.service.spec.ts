@@ -60,13 +60,13 @@ describe('Template Service', () => {
 
   it('should create a template', async () => {
     const dto = {
-      templateName: 'testTemplate',
+      name: 'testTemplate',
     } as CreateTemplateDto;
 
     const result = await templateService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.templateName).toEqual('testTemplate');
+    expect(result?.name).toEqual('testTemplate');
     testId = result?.id as number;
   });
 
@@ -74,26 +74,26 @@ describe('Template Service', () => {
     const result = await templateService.findOne(testId);
 
     expect(result).not.toBeNull();
-    expect(result?.templateName).toEqual('testTemplate');
+    expect(result?.name).toEqual('testTemplate');
   });
 
   it('should find a template by name', async () => {
     const result = await templateService.findOneByName('testTemplate');
 
     expect(result).not.toBeNull();
-    expect(result?.templateName).toEqual('testTemplate');
+    expect(result?.name).toEqual('testTemplate');
     expect(result?.id).toEqual(testId);
   });
 
   it('should update a template name', async () => {
     const dto = {
-      templateName: 'update testTemplate',
+      name: 'update testTemplate',
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.templateName).toEqual('update testTemplate');
+    expect(result?.name).toEqual('update testTemplate');
   });
 
   it('should update a template isPie', async () => {
@@ -137,20 +137,20 @@ describe('Template Service', () => {
     ];
 
     const dto = {
-      templateItemDtos: itemDtos,
+      templateMenuItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
     if (!result) {
       throw new Error();
     }
-    if (!result.templateItems) {
+    if (!result.templateMenuItems) {
       throw new Error();
     }
     expect(result).not.toBeNull();
-    expect(result?.templateItems?.length).toEqual(2);
+    expect(result?.templateMenuItems?.length).toEqual(2);
 
-    addedItemIds = result?.templateItems?.map((i) => i.id);
+    addedItemIds = result?.templateMenuItems?.map((i) => i.id);
   });
 
   it('should query added template items', async () => {
@@ -173,11 +173,11 @@ describe('Template Service', () => {
     if (!template) {
       throw new NotFoundException();
     }
-    if (!template.templateItems) {
+    if (!template.templateMenuItems) {
       throw new Error();
     }
 
-    modifiedItemId = template.templateItems[0].id;
+    modifiedItemId = template.templateMenuItems[0].id;
 
     const newItem = await menuItemService.findOneByName(item_c);
     if (!newItem) {
@@ -195,7 +195,7 @@ describe('Template Service', () => {
       },
     });
 
-    const theRest = template.templateItems.slice(1).map((item) =>
+    const theRest = template.templateMenuItems.slice(1).map((item) =>
       plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: item.id,
@@ -204,19 +204,19 @@ describe('Template Service', () => {
     );
 
     const dto = {
-      templateItemDtos: [uItemDto, ...theRest],
+      templateMenuItemDtos: [uItemDto, ...theRest],
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
     if (!result) {
       throw new Error();
     }
-    if (!result.templateItems) {
+    if (!result.templateMenuItems) {
       throw new Error();
     }
 
     expect(result).not.toBeNull();
-    for (const item of result.templateItems) {
+    for (const item of result.templateMenuItems) {
       if (item.id === modifiedItemId) {
         expect(item.displayName).toEqual('update display name');
         expect(item.tablePosIndex).toEqual(10);
@@ -244,13 +244,13 @@ describe('Template Service', () => {
     if (!template) {
       throw new NotFoundException();
     }
-    if (!template.templateItems) {
+    if (!template.templateMenuItems) {
       throw new Error();
     }
 
-    deletedItemId = template.templateItems[0].id;
+    deletedItemId = template.templateMenuItems[0].id;
 
-    const uItemDtos = template.templateItems.slice(1).map((item) =>
+    const uItemDtos = template.templateMenuItems.slice(1).map((item) =>
       plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
         id: item.id,
@@ -259,13 +259,13 @@ describe('Template Service', () => {
     );
 
     const dto = {
-      templateItemDtos: uItemDtos,
+      templateMenuItemDtos: uItemDtos,
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.templateItems?.length).toEqual(1);
+    expect(result?.templateMenuItems?.length).toEqual(1);
   });
 
   it('should not query removed template item', async () => {
@@ -309,11 +309,11 @@ describe('Template Service', () => {
     if (!template) {
       throw new NotFoundException();
     }
-    if (!template.templateItems) {
+    if (!template.templateMenuItems) {
       throw new Error();
     }
 
-    removedItemIds = template.templateItems.map((item) => item.id);
+    removedItemIds = template.templateMenuItems.map((item) => item.id);
 
     const removal = await templateService.remove(testId);
     expect(removal).toBeTruthy();

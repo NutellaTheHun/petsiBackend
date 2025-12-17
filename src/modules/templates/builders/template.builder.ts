@@ -25,11 +25,11 @@ export class TemplateBuilder extends BuilderBase<Template> {
     if (dto.isPie !== undefined) {
       this.isPie(dto.isPie);
     }
-    if (dto.templateName !== undefined) {
-      this.name(dto.templateName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.templateItemDtos !== undefined) {
-      this.itemsByBuilder(dto.templateItemDtos);
+    if (dto.templateMenuItemDtos !== undefined) {
+      this.itemsByBuilder(dto.templateMenuItemDtos);
     }
   }
 
@@ -37,11 +37,11 @@ export class TemplateBuilder extends BuilderBase<Template> {
     if (dto.isPie !== undefined) {
       this.isPie(dto.isPie);
     }
-    if (dto.templateName !== undefined) {
-      this.name(dto.templateName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.templateItemDtos !== undefined) {
-      this.itemsByBuilder(dto.templateItemDtos);
+    if (dto.templateMenuItemDtos !== undefined) {
+      this.itemsByBuilder(dto.templateMenuItemDtos);
     }
   }
 

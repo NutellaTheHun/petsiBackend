@@ -34,7 +34,7 @@ describe('menu item size service', () => {
 
   it('should create a size', async () => {
     const dto = {
-      sizeName: 'test Size',
+      name: 'test Size',
     } as CreateMenuItemSizeDto;
 
     const result = await sizeService.create(dto);
@@ -60,7 +60,7 @@ describe('menu item size service', () => {
 
   it('should update a size', async () => {
     const dto = {
-      sizeName: 'updated test size',
+      name: 'updated test size',
     } as UpdateMenuItemSizeDto;
 
     const result = await sizeService.update(testId, dto);

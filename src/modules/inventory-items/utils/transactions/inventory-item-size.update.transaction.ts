@@ -13,9 +13,9 @@ export async function InventoryItemSizeUpdateInTransaction(
     entity.cost = dto.cost.toString();
   }
 
-  if (dto.inventoryPackageId !== undefined) {
-    entity.packageType = manager.create(InventoryItemPackage, {
-      id: dto.inventoryPackageId,
+  if (dto.packageId !== undefined) {
+    entity.package = manager.create(InventoryItemPackage, {
+      id: dto.packageId,
     });
   }
 
@@ -23,9 +23,9 @@ export async function InventoryItemSizeUpdateInTransaction(
     entity.measureAmount = dto.measureAmount;
   }
 
-  if (dto.measureUnitId !== undefined) {
-    entity.measureUnit = manager.create(UnitOfMeasure, {
-      id: dto.measureUnitId,
+  if (dto.measureTypeId !== undefined) {
+    entity.measureType = manager.create(UnitOfMeasure, {
+      id: dto.measureTypeId,
     });
   }
 }

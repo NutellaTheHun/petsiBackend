@@ -39,7 +39,7 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     manager: EntityManager,
   ): Promise<OrderCategory> {
     const result = manager.create(OrderCategory, {
-      categoryName: dto.categoryName,
+      categoryName: dto.name,
     });
     return result;
   }
@@ -49,8 +49,8 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     manager: EntityManager,
     entity: OrderCategory,
   ): Promise<void> {
-    if (dto.categoryName !== undefined) {
-      entity.categoryName = dto.categoryName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -58,7 +58,7 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     name: string,
     relations?: Array<keyof OrderCategory>,
   ): Promise<OrderCategory | null> {
-    return this.repo.findOne({ where: { categoryName: name }, relations });
+    return this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

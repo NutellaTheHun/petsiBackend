@@ -8,5 +8,5 @@ export class UpdateInventoryItemCategoryDto {
   })
   @IsString()
   @IsOptional()
-  readonly itemCategoryName?: string;
+  readonly name?: string;
 }

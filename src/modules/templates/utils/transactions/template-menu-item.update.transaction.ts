@@ -21,7 +21,9 @@ export async function TemplateMenuItemUpdateInTransaction(
     entity.tablePosIndex = dto.tablePosIndex;
   }
 
-  if (dto.templateId !== undefined) {
-    entity.parentTemplate = manager.create(Template, { id: dto.templateId });
+  if (dto.parentTemplateId !== undefined) {
+    entity.parentTemplate = manager.create(Template, {
+      id: dto.parentTemplateId,
+    });
   }
 }

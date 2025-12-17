@@ -78,7 +78,7 @@ describe('Inventory area item service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.itemSizes) {
+    if (!item.sizes) {
       throw new Error('item sizes is null');
     }
 
@@ -98,14 +98,14 @@ describe('Inventory area item service', () => {
       createDto: {
         countedInventoryItemId: item.id,
         countedAmount: 1,
-        countedItemSizeId: item.itemSizes[0].id,
+        countedItemSizeId: item.sizes[0].id,
       },
     });
 
-    if (!counts[0].countedItems) {
+    if (!counts[0].countedInventoryItems) {
       throw new Error();
     }
-    const theRest = counts[0].countedItems.map((item) =>
+    const theRest = counts[0].countedInventoryItems.map((item) =>
       plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
         id: item.id,
@@ -114,7 +114,7 @@ describe('Inventory area item service', () => {
     );
 
     const updateCountDto = {
-      itemCountDtos: [createAreaItemDto, ...theRest],
+      countedInventoryItemDtos: [createAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const updateResult = await countService.update(
@@ -124,17 +124,17 @@ describe('Inventory area item service', () => {
     if (!updateResult) {
       throw new Error();
     }
-    if (!updateResult.countedItems) {
+    if (!updateResult.countedInventoryItems) {
       throw new Error();
     }
 
-    const result = updateResult.countedItems[0];
+    const result = updateResult.countedInventoryItems[0];
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
     expect(result?.parentInventoryCount.id).toEqual(counts[0].id);
-    expect(result?.countedItem.id).toEqual(item.id);
-    expect(result?.countedItemSize.id).toEqual(item.itemSizes[0].id);
+    expect(result?.countedInventoryItem.id).toEqual(item.id);
+    expect(result?.countedItemSize.id).toEqual(item.sizes[0].id);
     expect(result?.amount).toEqual(1);
 
     testId = result?.id as number;
@@ -148,7 +148,7 @@ describe('Inventory area item service', () => {
     }
 
     expect(
-      count.countedItems?.findIndex((item) => item.id === testId),
+      count.countedInventoryItems?.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -157,24 +157,24 @@ describe('Inventory area item service', () => {
     if (!newItem) {
       throw new NotFoundException();
     }
-    if (!newItem.itemSizes) {
+    if (!newItem.sizes) {
       throw new Error('item sizes is empty');
     }
 
     const dto = {
       countedInventoryItemId: newItem.id,
-      countedItemSizeId: newItem.itemSizes[0].id,
+      countedItemSizeId: newItem.sizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
     const result = await areaItemService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.countedItem.id).toEqual(newItem.id);
-    expect(result?.countedItemSize.id).toEqual(newItem.itemSizes[0].id);
+    expect(result?.countedInventoryItem.id).toEqual(newItem.id);
+    expect(result?.countedItemSize.id).toEqual(newItem.sizes[0].id);
   });
 
   it('should update an item (unit amount)', async () => {
     const dto = {
-      countedAmount: 2,
+      amount: 2,
     } as UpdateInventoryAreaItemDto;
 
     const result = await areaItemService.update(testId, dto);
@@ -282,7 +282,7 @@ describe('Inventory area item service', () => {
 
     const areaItem = areaItems[0];
 
-    const removal = await itemService.remove(areaItem.countedItem.id);
+    const removal = await itemService.remove(areaItem.countedInventoryItem.id);
     if (!removal) {
       throw new Error('inventory item removal failed');
     }

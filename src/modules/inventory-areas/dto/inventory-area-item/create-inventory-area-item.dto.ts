@@ -33,7 +33,7 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedAmount: number;
+  readonly amount: number;
 
   @ApiProperty({
     description:

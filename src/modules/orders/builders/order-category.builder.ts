@@ -13,14 +13,14 @@ export class OrderCategoryBuilder extends BuilderBase<OrderCategory> {
   }
 
   protected createEntity(dto: CreateOrderCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateOrderCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 

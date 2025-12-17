@@ -20,14 +20,14 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
   }
 
   protected createEntity(dto: CreateInventoryAreaDto): void {
-    if (dto.areaName !== undefined) {
-      this.areaName(dto.areaName);
+    if (dto.name !== undefined) {
+      this.areaName(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateInventoryAreaDto): void {
-    if (dto.areaName !== undefined) {
-      this.areaName(dto.areaName);
+    if (dto.name !== undefined) {
+      this.areaName(dto.name);
     }
   }
 

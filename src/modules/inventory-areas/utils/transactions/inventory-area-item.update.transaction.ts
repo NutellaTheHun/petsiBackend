@@ -10,12 +10,12 @@ export async function InventoryAreaItemUpdateInTransaction(
   manager: EntityManager,
   entity: InventoryAreaItem,
 ): Promise<void> {
-  if (dto.countedAmount !== undefined) {
-    entity.amount = dto.countedAmount;
+  if (dto.amount !== undefined) {
+    entity.amount = dto.amount;
   }
 
   if (dto.countedInventoryItemId !== undefined) {
-    entity.countedItem = manager.create(InventoryItem, {
+    entity.countedInventoryItem = manager.create(InventoryItem, {
       id: dto.countedInventoryItemId,
     });
   }

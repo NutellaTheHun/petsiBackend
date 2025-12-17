@@ -73,12 +73,12 @@ describe('menu item container rule service', () => {
     }
 
     let newItem;
-    if (toUpdate.validItem.itemName === item_a) {
+    if (toUpdate.validItem.name === item_a) {
       const itemB = await itemService.findOneByName(item_b, ['validSizes']);
       if (!itemB) {
         throw new Error('item b is null');
       }
-      if (!itemB.validSizes) {
+      if (!itemB.sizes) {
         throw new Error('item b valid sizes is null');
       }
       newItem = itemB;
@@ -87,7 +87,7 @@ describe('menu item container rule service', () => {
       if (!itemA) {
         throw new Error('item b is null');
       }
-      if (!itemA.validSizes) {
+      if (!itemA.sizes) {
         throw new Error('item b valid sizes is null');
       }
       newItem = itemA;
@@ -119,17 +119,17 @@ describe('menu item container rule service', () => {
     if (!newItem) {
       throw new Error('item b is null');
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error('item b valid sizes is null');
     }
 
     const dto = {
-      validSizeIds: newItem.validSizes.map((size) => size.id),
+      validSizeIds: newItem.sizes.map((size) => size.id),
     } as UpdateMenuItemContainerRuleDto;
 
     const result = await compOptionService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.validSizes.length).toEqual(newItem.validSizes?.length);
+    expect(result?.validSizes.length).toEqual(newItem.sizes?.length);
   });
 
   it('should update validSizes (remove)', async () => {
@@ -147,12 +147,12 @@ describe('menu item container rule service', () => {
     if (!newItem) {
       throw new Error('item b is null');
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error('item b valid sizes is null');
     }
 
     const dto = {
-      validSizeIds: [newItem.validSizes[0].id],
+      validSizeIds: [newItem.sizes[0].id],
     } as UpdateMenuItemContainerRuleDto;
 
     const result = await compOptionService.update(testId, dto);

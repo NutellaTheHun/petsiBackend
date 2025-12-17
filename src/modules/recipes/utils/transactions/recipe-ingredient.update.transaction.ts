@@ -26,9 +26,9 @@ export async function RecipeIngredientUpdateInTransaction(
     entity.quantity = dto.quantity;
   }
 
-  if (dto.quantityMeasurementId !== undefined) {
-    entity.quantityMeasure = manager.create(UnitOfMeasure, {
-      id: dto.quantityMeasurementId,
+  if (dto.quantityMeasureTypeId !== undefined) {
+    entity.quantityMeasureType = manager.create(UnitOfMeasure, {
+      id: dto.quantityMeasureTypeId,
     });
   }
 }

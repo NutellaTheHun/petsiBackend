@@ -42,7 +42,7 @@ export class OrderTestingUtil {
 
     for (const name of names) {
       results.push({
-        categoryName: name,
+        name: name,
       } as OrderCategory);
     }
 
@@ -96,15 +96,14 @@ export class OrderTestingUtil {
     for (const order of orders) {
       for (let i = 0; i < 4; i++) {
         const menuItem = menuItems[menuItemIdx++ % menuItems.length];
-        if (!menuItem.validSizes) {
+        if (!menuItem.sizes) {
           throw new Error();
         }
 
-        const size =
-          menuItem.validSizes[sizeIdx++ % menuItem.validSizes?.length];
+        const size = menuItem.sizes[sizeIdx++ % menuItem.sizes?.length];
 
         results.push({
-          order: order,
+          parentOrder: order,
           menuItem,
           quantity: quantity++,
           size,
@@ -120,10 +119,10 @@ export class OrderTestingUtil {
     const containerItems = items.filter((item) => item.containerOptions);
 
     const parentOrderItem = {
-      order: orders[0],
+      parentOrder: orders[0],
       menuItem: containerItems[0],
       quantity: 1,
-      size: menuItems[0].validSizes[0],
+      size: menuItems[0].sizes[0],
     } as OrderMenuItem;
 
     if (!containerItems[0].containerOptions) {
@@ -137,23 +136,23 @@ export class OrderTestingUtil {
     }
 
     const comp_a = {
-      parentOrderItem: parentOrderItem,
-      containedItem: options.containerRules[0].validItem,
+      parentOrderMenuItem: parentOrderItem,
+      containedMenuItem: options.containerRules[0].validItem,
       containedItemSize: options.containerRules[0].validSizes[0],
       quantity: 1,
     } as OrderContainerItem;
 
-    if (!menuItems[2].validSizes) {
+    if (!menuItems[2].sizes) {
       throw new Error();
     }
     const comp_b = {
-      parentOrderItem: parentOrderItem,
-      containedItem: options.containerRules[1].validItem,
+      parentOrderMenuItem: parentOrderItem,
+      containedMenuItem: options.containerRules[1].validItem,
       containedItemSize: options.containerRules[1].validSizes[0],
       quantity: 1,
     } as OrderContainerItem;
 
-    parentOrderItem.containerItems = [comp_a, comp_b];
+    parentOrderItem.containerOrderMenuItems = [comp_a, comp_b];
     results.push(parentOrderItem);
 
     return results;
@@ -213,7 +212,7 @@ export class OrderTestingUtil {
 
     for (const name of recipients) {
       results.push({
-        orderCategory: orderTypes[otIndex++ % orderTypes.length],
+        category: orderTypes[otIndex++ % orderTypes.length],
         recipient: name,
         fulfillmentDate,
         fulfillmentType: fulfilltype[fIdx++ % fulfilltype.length],
@@ -263,10 +262,10 @@ export class OrderTestingUtil {
     const results: NestedOrderMenuItemDto[] = [];
     for (let i = 0; i < amount; i++) {
       const item = items[i % items.length];
-      if (!item.validSizes) {
+      if (!item.sizes) {
         throw new Error();
       }
-      if (item.validSizes.length === 0) {
+      if (item.sizes.length === 0) {
         throw new Error();
       }
 
@@ -276,7 +275,7 @@ export class OrderTestingUtil {
           createDto: {
             menuItemId: item.id,
             quantity: 1,
-            menuItemSizeId: item.validSizes[0].id,
+            menuItemSizeId: item.sizes[0].id,
           },
         }),
       );

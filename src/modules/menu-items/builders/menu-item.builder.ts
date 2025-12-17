@@ -41,8 +41,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
   }
 
   protected createEntity(dto: CreateMenuItemDto): void {
-    if (dto.itemName !== undefined) {
-      this.name(dto.itemName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.isPOTM !== undefined) {
       this.isPOTM(dto.isPOTM);
@@ -52,8 +52,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
     }
 
     // Entities
-    if (dto.validSizeIds !== undefined) {
-      this.validSizesById(dto.validSizeIds);
+    if (dto.sizeIds !== undefined) {
+      this.validSizesById(dto.sizeIds);
     }
     if (dto.veganOptionMenuId !== undefined) {
       this.veganOptionById(dto.veganOptionMenuId);
@@ -78,8 +78,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
   }
 
   protected updateEntity(dto: UpdateMenuItemDto): void {
-    if (dto.itemName !== undefined) {
-      this.name(dto.itemName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.isPOTM !== undefined) {
       this.isPOTM(dto.isPOTM);
@@ -89,8 +89,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
     }
 
     // Entities
-    if (dto.validSizeIds !== undefined) {
-      this.validSizesById(dto.validSizeIds);
+    if (dto.sizeIds !== undefined) {
+      this.validSizesById(dto.sizeIds);
     }
     if (dto.veganOptionMenuId !== undefined) {
       this.veganOptionById(dto.veganOptionMenuId);

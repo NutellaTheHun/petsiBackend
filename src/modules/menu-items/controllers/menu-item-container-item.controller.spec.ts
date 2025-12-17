@@ -36,47 +36,47 @@ describe('menu item container item controller', () => {
       (name) =>
         ({
           id: itemId++,
-          itemName: name,
+          name: name,
         }) as MenuItem,
     );
 
     components = [
       {
         id: 1,
-        parent: items[0],
-        containedItem: items[6],
+        parentMenuItem: items[0],
+        containedMenuItem: items[6],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 2,
-        parent: items[0],
-        containedItem: items[5],
+        parentMenuItem: items[0],
+        containedMenuItem: items[5],
         quantity: 1,
       } as MenuItemContainerItem,
 
       {
         id: 3,
-        parent: items[1],
-        containedItem: items[4],
+        parentMenuItem: items[1],
+        containedMenuItem: items[4],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 4,
-        parent: items[1],
-        containedItem: items[3],
+        parentMenuItem: items[1],
+        containedMenuItem: items[3],
         quantity: 1,
       } as MenuItemContainerItem,
 
       {
         id: 5,
-        parent: items[2],
-        containedItem: items[6],
+        parentMenuItem: items[2],
+        containedMenuItem: items[6],
         quantity: 1,
       } as MenuItemContainerItem,
       {
         id: 6,
-        parent: items[2],
-        containedItem: items[4],
+        parentMenuItem: items[2],
+        containedMenuItem: items[4],
         quantity: 1,
       } as MenuItemContainerItem,
     ];
@@ -91,8 +91,8 @@ describe('menu item container item controller', () => {
 
         const comp = {
           id: componentId++,
-          parent: container,
-          containedItem: item,
+          parentMenuItem: container,
+          containedMenuItem: item,
         } as MenuItemContainerItem;
 
         components.push(comp);
@@ -139,12 +139,14 @@ describe('menu item container item controller', () => {
             throw new NotFoundException();
           }
 
-          if (dto.containedItemId) {
-            const item = items.find((item) => item.id === dto.containedItemId);
+          if (dto.containedMenuItemId) {
+            const item = items.find(
+              (item) => item.id === dto.containedMenuItemId,
+            );
             if (!item) {
               throw new Error();
             }
-            components[existIdx].containedItem = item;
+            components[existIdx].containedMenuItem = item;
           }
           if (dto.quantity) {
             components[existIdx].quantity = dto.quantity;

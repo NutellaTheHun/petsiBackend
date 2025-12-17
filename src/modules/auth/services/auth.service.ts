@@ -39,15 +39,15 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
-      username: user.username,
-      roles: user.roles.map((role) => role.roleName),
+      username: user.name,
+      roles: user.roles.map((role) => role.name),
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload, {
         expiresIn: '1hr',
       }),
-      roles: user.roles.map((role) => role.roleName),
+      roles: user.roles.map((role) => role.name),
     };
   }
 

@@ -38,7 +38,7 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly containedMenuItemSizeId: number;
+  readonly containedItemSizeId: number;
 
   @ApiProperty({
     description:

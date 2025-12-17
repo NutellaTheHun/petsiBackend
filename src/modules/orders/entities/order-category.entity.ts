@@ -26,7 +26,7 @@ export class OrderCategory {
 
   @ApiProperty({ example: 'wholesale', description: 'Name of the category.' })
   @Column({ unique: true })
-  categoryName: string;
+  name: string;
 
   /**
    * List of {@link Order} falling under the type.
@@ -37,6 +37,6 @@ export class OrderCategory {
     type: () => Order,
     isArray: true,
   })
-  @OneToMany(() => Order, (order) => order.orderCategory)
-  orders: Order[] = [];
+  @OneToMany(() => Order, (order) => order.category)
+  orderItems: Order[] = [];
 }

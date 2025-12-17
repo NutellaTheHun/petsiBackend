@@ -20,7 +20,7 @@ export class CreateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly measureUnitId: number;
+  readonly measureTypeId: number;
 
   @ApiProperty({
     description: 'the unit quantity of the UnitofMeasure entity.',
@@ -38,7 +38,7 @@ export class CreateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly inventoryPackageId: number;
+  readonly packageId: number;
 
   @ApiProperty({
     description: 'Price paid for the InventoryItem entity.',

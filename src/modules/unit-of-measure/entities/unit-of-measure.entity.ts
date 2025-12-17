@@ -59,11 +59,11 @@ export class UnitOfMeasure {
     description: '',
     type: () => UnitOfMeasureCategory,
   })
-  @ManyToOne(
-    () => UnitOfMeasureCategory,
-    (category) => category.unitsOfMeasure,
-    { nullable: true, onDelete: 'SET NULL', cascade: true },
-  )
+  @ManyToOne(() => UnitOfMeasureCategory, (category) => category.units, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    cascade: true,
+  })
   category: UnitOfMeasureCategory | null = null;
 
   /**

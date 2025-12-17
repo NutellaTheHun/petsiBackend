@@ -10,5 +10,5 @@ export class UpdateMenuItemSizeDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  readonly sizeName?: string;
+  readonly name?: string;
 }

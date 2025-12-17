@@ -31,7 +31,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
     const results: ValidationErrorNode[] = [];
 
     await this.helper.enforceUnique(
-      dto.categoryName,
+      dto.name,
       this.repo,
       'categoryName',
       results,
@@ -48,9 +48,9 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.categoryName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.categoryName,
+        dto.name,
         this.repo,
         'categoryName',
         results,

@@ -30,7 +30,7 @@ export class RecipeCategory {
 
   @ApiProperty({ example: 'Pie', description: 'The name of the category' })
   @Column({ unique: true })
-  categoryName: string;
+  name: string;
 
   /**
    * {@link RecipeSubCategory} of "Pie" could be "Sweet Pie", "Savory Pie"
@@ -44,7 +44,7 @@ export class RecipeCategory {
   @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, {
     cascade: true,
   })
-  subCategories: RecipeSubCategory[] = [];
+  subCategorys: RecipeSubCategory[] = [];
 
   /**
    * List of {@link Recipe} under the category.

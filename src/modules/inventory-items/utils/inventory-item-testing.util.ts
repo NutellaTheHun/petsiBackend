@@ -295,7 +295,7 @@ export class InventoryItemTestingUtil {
 
     for (const category of categories) {
       await this.categoryService.create({
-        itemCategoryName: category.categoryName,
+        name: category.name,
       } as CreateInventoryItemCategoryDto);
     }
   }
@@ -315,8 +315,8 @@ export class InventoryItemTestingUtil {
 
     for (const item of items) {
       await this.itemService.create({
-        itemName: item.itemName,
-        inventoryItemCategoryId: item.category?.id,
+        name: item.name,
+        categoryId: item.category?.id,
         vendorId: item.vendor?.id,
       } as CreateInventoryItemDto);
     }
@@ -345,14 +345,14 @@ export class InventoryItemTestingUtil {
       const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
 
       await this.itemService.update(item.id, {
-        itemSizeDtos: [
+        sizeDtos: [
           plainToInstance(NestedInventoryItemSizeDto, {
             mode: 'create',
             createDto: {
               inventoryItemId: item.id,
-              measureUnitId: dto1.measureUnit.id,
+              measureUnitId: dto1.measureType.id,
               measureAmount: 1,
-              inventoryPackageId: dto1.packageType.id,
+              inventoryPackageId: dto1.package.id,
               cost: 1,
             },
           }),
@@ -360,9 +360,9 @@ export class InventoryItemTestingUtil {
             mode: 'create',
             createDto: {
               inventoryItemId: item.id,
-              measureUnitId: dto2.measureUnit.id,
+              measureUnitId: dto2.measureType.id,
               measureAmount: 1,
-              inventoryPackageId: dto2.packageType.id,
+              inventoryPackageId: dto2.package.id,
               cost: 1,
             },
           }),

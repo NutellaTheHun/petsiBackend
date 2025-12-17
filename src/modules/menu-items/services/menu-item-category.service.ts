@@ -41,7 +41,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     manager: EntityManager,
   ): Promise<MenuItemCategory> {
     const result = manager.create(MenuItemCategory, {
-      categoryName: dto.categoryName,
+      categoryName: dto.name,
     });
     return result;
   }
@@ -50,8 +50,8 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     manager: EntityManager,
     entity: MenuItemCategory,
   ): Promise<void> {
-    if (dto.categoryName !== undefined) {
-      entity.categoryName = dto.categoryName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -60,7 +60,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     relations?: Array<keyof MenuItemCategory>,
   ): Promise<MenuItemCategory | null> {
     return await this.repo.findOne({
-      where: { categoryName: name },
+      where: { name: name },
       relations: relations,
     });
   }

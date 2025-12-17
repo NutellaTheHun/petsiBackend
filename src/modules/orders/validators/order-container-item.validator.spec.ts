@@ -75,7 +75,7 @@ describe('order container item validator', () => {
     const dto = {
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: options?.containerRules[0].validItem.id,
-      containedMenuItemSizeId: options?.containerRules[0].validSizes[0].id,
+      containedItemSizeId: options?.containerRules[0].validSizes[0].id,
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
@@ -116,7 +116,7 @@ describe('order container item validator', () => {
     const dto = {
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: badItems[0].id,
-      containedMenuItemSizeId: badItems[0].validSizes[0].id,
+      containedItemSizeId: badItems[0].sizes[0].id,
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
@@ -162,7 +162,7 @@ describe('order container item validator', () => {
       (size) => size.id,
     );
 
-    const badSizes = containedItem.validSizes.filter(
+    const badSizes = containedItem.sizes.filter(
       (validSize) =>
         !validItemSizeIds.find(
           (optionsSizeId) => optionsSizeId === validSize.id,
@@ -172,7 +172,7 @@ describe('order container item validator', () => {
     const dto = {
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: containedItem.id,
-      containedMenuItemSizeId: badSizes[0].id,
+      containedItemSizeId: badSizes[0].id,
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
@@ -222,7 +222,7 @@ describe('order container item validator', () => {
     const dto = {
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: containedItem.id,
-      containedMenuItemSizeId: badItem.validSizes[0].id,
+      containedItemSizeId: badItem.sizes[0].id,
       quantity: 1,
     } as CreateOrderContainerItemDto;
 
@@ -269,7 +269,7 @@ describe('order container item validator', () => {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: options.containerRules[0].validItem.id,
-      containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
+      containedItemSizeId: options.containerRules[0].validSizes[0].id,
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
@@ -330,7 +330,7 @@ describe('order container item validator', () => {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: badItems[0].id,
-      containedMenuItemSizeId: badItems[0].validSizes[0].id,
+      containedItemSizeId: badItems[0].sizes[0].id,
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
@@ -382,7 +382,7 @@ describe('order container item validator', () => {
       (item) => item.id,
     );
 
-    const badSizes = containedItem.validSizes.filter(
+    const badSizes = containedItem.sizes.filter(
       (validSize) =>
         !validItemSizeIds.find(
           (optionsSizeId) => optionsSizeId === validSize.id,
@@ -393,7 +393,7 @@ describe('order container item validator', () => {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: containedItem.id,
-      containedMenuItemSizeId: badSizes[0].id,
+      containedItemSizeId: badSizes[0].id,
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
@@ -450,7 +450,7 @@ describe('order container item validator', () => {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: containedItem.id,
-      containedMenuItemSizeId: badItem.validSizes[0].id,
+      containedItemSizeId: badItem.sizes[0].id,
       quantity: 1,
     } as UpdateOrderContainerItemDto;
 
@@ -499,9 +499,7 @@ describe('order container item validator', () => {
 
     const badItems = itemsRequest.items.filter(
       (item) =>
-        !item.validSizes.find(
-          (size) => size.id === toUpdate.containedItemSize.id,
-        ),
+        !item.sizes.find((size) => size.id === toUpdate.containedItemSize.id),
     );
 
     const dto = {
@@ -564,7 +562,7 @@ describe('order container item validator', () => {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
       containedMenuItemId: badItems[0].id,
-      containedMenuItemSizeId: badItems[0].validSizes[0].id,
+      containedItemSizeId: badItems[0].sizes[0].id,
     } as UpdateOrderContainerItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -604,14 +602,14 @@ describe('order container item validator', () => {
     }
 
     const rule = options.containerRules.find(
-      (rule) => rule.validItem.id === toUpdate.containedItem.id,
+      (rule) => rule.validItem.id === toUpdate.containedMenuItem.id,
     );
     if (!rule) {
       throw new Error();
     }
 
     const currentItem = await menuItemService.findOne(
-      toUpdate.containedItem.id,
+      toUpdate.containedMenuItem.id,
       ['validSizes'],
     );
     if (!currentItem) {
@@ -619,7 +617,7 @@ describe('order container item validator', () => {
     }
 
     // sizes that are in validSizes but not in rule.validSizes
-    const badSizes = currentItem.validSizes.filter(
+    const badSizes = currentItem.sizes.filter(
       (validSize) =>
         !rule.validSizes.some((ruleSize) => ruleSize.id === validSize.id),
     );
@@ -627,7 +625,7 @@ describe('order container item validator', () => {
     const dto = {
       id: toUpdate.id,
       parentContainerMenuItemId: itemsWithOptions[0].id,
-      containedMenuItemSizeId: badSizes[0].id,
+      containedItemSizeId: badSizes[0].id,
     } as UpdateOrderContainerItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

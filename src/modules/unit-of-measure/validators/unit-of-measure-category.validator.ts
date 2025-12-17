@@ -29,7 +29,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
+    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
       const err = new ValidationErrorNode(
         'categoryName',
         id,
@@ -47,10 +47,8 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.categoryName) {
-      if (
-        await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
-      ) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
         const err = new ValidationErrorNode(
           'categoryName',
           id,

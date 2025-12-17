@@ -32,7 +32,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
 
     // Already exists check
     await this.helper.enforceUnique(
-      dto.itemCategoryName,
+      dto.name,
       this.repo,
       'categoryName',
       results,
@@ -50,9 +50,9 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     const results: ValidationErrorNode[] = [];
 
     // Already exists check
-    if (dto.itemCategoryName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.itemCategoryName,
+        dto.name,
         this.repo,
         'categoryName',
         results,

@@ -15,7 +15,7 @@ export class CreateTemplateDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly templateName: string;
+  readonly name: string;
 
   @ApiPropertyOptional({
     description:
@@ -51,5 +51,5 @@ export class CreateTemplateDto {
   })
   @IsOptional()
   @IsArray()
-  readonly templateItemDtos?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItemDtos?: NestedTemplateMenuItemDto[];
 }

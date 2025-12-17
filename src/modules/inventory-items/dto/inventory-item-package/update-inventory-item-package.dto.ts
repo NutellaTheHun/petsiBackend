@@ -8,5 +8,5 @@ export class UpdateInventoryItemPackageDto {
   })
   @IsString()
   @IsOptional()
-  readonly packageName?: string;
+  readonly name?: string;
 }

@@ -30,8 +30,8 @@ export class UserBuilder extends BuilderBase<User> {
     if (dto.roleIds !== undefined) {
       this.roles(dto.roleIds);
     }
-    if (dto.username !== undefined) {
-      this.username(dto.username);
+    if (dto.name !== undefined) {
+      this.username(dto.name);
     }
   }
 
@@ -45,8 +45,8 @@ export class UserBuilder extends BuilderBase<User> {
     if (dto.roleIds !== undefined) {
       this.roles(dto.roleIds);
     }
-    if (dto.username !== undefined) {
-      this.username(dto.username);
+    if (dto.name !== undefined) {
+      this.username(dto.name);
     }
   }
 

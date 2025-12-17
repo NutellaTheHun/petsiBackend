@@ -78,7 +78,7 @@ describe('inventory area count controller', () => {
     jest
       .spyOn(countService, 'findByAreaName')
       .mockImplementation(async (name: string) => {
-        const area = areas.find((area) => area.areaName === name);
+        const area = areas.find((area) => area.name === name);
         return area?.inventoryCounts || [];
       });
 

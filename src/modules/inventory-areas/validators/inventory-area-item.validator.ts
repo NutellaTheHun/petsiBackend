@@ -39,7 +39,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
 
     // Counted Amount
     this.helper.enforcePositive(
-      dto.countedAmount,
+      dto.amount,
       'countedAmount',
       results,
       'Amount must be greater than 0',
@@ -91,9 +91,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     const results: ValidationErrorNode[] = [];
 
     // Counted Amount
-    if (dto.countedAmount) {
+    if (dto.amount) {
       this.helper.enforcePositive(
-        dto.countedAmount,
+        dto.amount,
         'countedAmount',
         results,
         'Amount must be greater than 0',
@@ -127,7 +127,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         if (!currentItem) {
           throw new Error();
         }
-        countedItemId = currentItem.countedItem.id;
+        countedItemId = currentItem.countedInventoryItem.id;
       }
 
       await this.helper.enforceValidSize<InventoryItem>(

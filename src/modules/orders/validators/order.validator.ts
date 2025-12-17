@@ -30,7 +30,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.orderedMenuItemDtos.length === 0) {
+    if (dto.orderedItemDtos.length === 0) {
       const err = new ValidationErrorNode(
         'orderedItems',
         id,
@@ -91,14 +91,14 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // DOESNT HANDLE CONTAINERS
     // False negative with 2 boxes of cookies with different contents
     const seen = new Set<string>();
-    for (const nestedDto of dto.orderedMenuItemDtos) {
+    for (const nestedDto of dto.orderedItemDtos) {
       if (!nestedDto.createDto) {
         throw new Error(
           'create order validation: orderMenuItem dto has no createDto',
         );
       }
       const dto = nestedDto.createDto;
-      const key = `${dto.menuItemId}:${dto.menuItemSizeId}`;
+      const key = `${dto.menuItemId}:${dto.sizeId}`;
       if (seen.has(key)) {
         const err = new ValidationErrorNode(
           'orderedItems',
@@ -114,7 +114,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // nested validator call
     const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
       'orderedItems',
-      dto.orderedMenuItemDtos,
+      dto.orderedItemDtos,
     );
     if (nestedDtoErrs) {
       results.push(nestedDtoErrs);
@@ -185,7 +185,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // False negative with 2 boxes of cookies with different contents
     const itemMap = new Map<string | number, string>();
     const seen = new Set<string>();
-    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length) {
+    if (dto.orderedItemDtos && dto.orderedItemDtos.length) {
       const currentOrder = await this.repo.findOne({
         where: { id },
         relations: [
@@ -205,11 +205,11 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
           `${orderItem.menuItem.id}:${orderItem.size.id}`,
         );
       }
-      for (const nestedDto of dto.orderedMenuItemDtos) {
+      for (const nestedDto of dto.orderedItemDtos) {
         if (nestedDto.createDto && nestedDto.createId) {
           itemMap.set(
             nestedDto.createId,
-            `${nestedDto.createDto.menuItemId}:${nestedDto.createDto.menuItemSizeId}`,
+            `${nestedDto.createDto.menuItemId}:${nestedDto.createDto.sizeId}`,
           );
         } else if (nestedDto.updateDto && nestedDto.id) {
           const currentItem = itemMap.get(nestedDto.id);
@@ -217,7 +217,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
           const newMenuItemId =
             nestedDto.updateDto.menuItemId ?? currentItem?.split(':')[0];
           const newMenuitemSizeId =
-            nestedDto.updateDto.menuItemSizeId ?? currentItem?.split(':')[1];
+            nestedDto.updateDto.sizeId ?? currentItem?.split(':')[1];
 
           itemMap.set(nestedDto.id, `${newMenuItemId}:${newMenuitemSizeId}`);
         }
@@ -236,12 +236,12 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       }
     }
 
-    if (dto.orderedMenuItemDtos && dto.orderedMenuItemDtos.length) {
+    if (dto.orderedItemDtos && dto.orderedItemDtos.length) {
       // nested validator
       const nestedDtoErrs =
         await this.orderItemValidator.validateManyNestedNode(
           'orderedItems',
-          dto.orderedMenuItemDtos,
+          dto.orderedItemDtos,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

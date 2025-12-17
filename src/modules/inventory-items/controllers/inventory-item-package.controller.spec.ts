@@ -31,12 +31,12 @@ describe('Inventory Item Packages Controller', () => {
     );
 
     packages = [
-      { packageName: BAG_PKG } as InventoryItemPackage,
-      { packageName: PACKAGE_PKG } as InventoryItemPackage,
-      { packageName: BOX_PKG } as InventoryItemPackage,
-      { packageName: OTHER_PKG } as InventoryItemPackage,
-      { packageName: CONTAINER_PKG } as InventoryItemPackage,
-      { packageName: CAN_PKG } as InventoryItemPackage,
+      { name: BAG_PKG } as InventoryItemPackage,
+      { name: PACKAGE_PKG } as InventoryItemPackage,
+      { name: BOX_PKG } as InventoryItemPackage,
+      { name: OTHER_PKG } as InventoryItemPackage,
+      { name: CONTAINER_PKG } as InventoryItemPackage,
+      { name: CAN_PKG } as InventoryItemPackage,
     ];
     let id = 1;
     packages.map((pkg) => (pkg.id = id++));
@@ -44,16 +44,14 @@ describe('Inventory Item Packages Controller', () => {
     jest
       .spyOn(service, 'create')
       .mockImplementation(async (createDto: CreateInventoryItemPackageDto) => {
-        const exists = packages.find(
-          (unit) => unit.packageName === createDto.packageName,
-        );
+        const exists = packages.find((unit) => unit.name === createDto.name);
         if (exists) {
           throw new BadRequestException();
         }
 
         const unit = {
           id: id++,
-          packageName: createDto.packageName,
+          name: createDto.name,
         } as InventoryItemPackage;
 
         packages.push(unit);
@@ -63,7 +61,7 @@ describe('Inventory Item Packages Controller', () => {
     jest
       .spyOn(service, 'findOneByName')
       .mockImplementation(async (name: string) => {
-        return packages.find((unit) => unit.packageName === name) || null;
+        return packages.find((unit) => unit.name === name) || null;
       });
 
     jest
@@ -73,8 +71,8 @@ describe('Inventory Item Packages Controller', () => {
           const index = packages.findIndex((unit) => unit.id === id);
           if (index === -1) throw new NotFoundException();
 
-          if (updateDto.packageName) {
-            packages[index].packageName = updateDto.packageName;
+          if (updateDto.name) {
+            packages[index].name = updateDto.name;
           }
 
           return packages[index];
@@ -110,7 +108,7 @@ describe('Inventory Item Packages Controller', () => {
 
   it('should create a package', async () => {
     const dto = {
-      packageName: 'testpackage',
+      name: 'testpackage',
     } as CreateInventoryItemPackageDto;
 
     const result = await controller.create(dto);
@@ -119,7 +117,7 @@ describe('Inventory Item Packages Controller', () => {
 
   it('should fail to create a package (already exists)', async () => {
     const dto = {
-      packageName: 'testpackage',
+      name: 'testpackage',
     } as CreateInventoryItemPackageDto;
 
     await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
@@ -145,14 +143,14 @@ describe('Inventory Item Packages Controller', () => {
       throw new Error('unit to update not found');
     }
 
-    toUpdate.packageName = 'UPDATED_testpackage';
+    toUpdate.name = 'UPDATED_testpackage';
     const dto = {
-      packageName: 'UPDATED_testpackage',
+      name: 'UPDATED_testpackage',
     } as UpdateInventoryItemPackageDto;
 
     const result = await controller.update(toUpdate.id, dto);
     expect(result).not.toBeNull();
-    expect(result?.packageName).toEqual('UPDATED_testpackage');
+    expect(result?.name).toEqual('UPDATED_testpackage');
   });
 
   it('should fail to update a package (doesnt exist)', async () => {

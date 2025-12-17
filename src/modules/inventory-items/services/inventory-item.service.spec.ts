@@ -93,13 +93,13 @@ describe('Inventory Item Service', () => {
   // create
   it('should create an inventory-item (Default Category and Vendor)', async () => {
     const dto = {
-      itemName: 'test item default vend/cat',
+      name: 'test item default vend/cat',
     } as CreateInventoryItemDto;
     const result = await itemService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.itemName).toEqual('test item default vend/cat');
+    expect(result?.name).toEqual('test item default vend/cat');
 
     testId = result?.id as number;
   });
@@ -116,17 +116,17 @@ describe('Inventory Item Service', () => {
     }
 
     const dto = {
-      itemName: 'test Item with vend/cat',
+      name: 'test Item with vend/cat',
       vendorId: vend.id,
-      inventoryItemCategoryId: cat.id,
+      categoryId: cat.id,
     } as CreateInventoryItemDto;
     const result = await itemService.create(dto);
 
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
-    expect(result?.itemName).toEqual('test Item with vend/cat');
-    expect(result?.category?.categoryName).toEqual(FOOD_CAT);
-    expect(result?.vendor?.vendorName).toEqual(VENDOR_A);
+    expect(result?.name).toEqual('test Item with vend/cat');
+    expect(result?.category?.name).toEqual(FOOD_CAT);
+    expect(result?.vendor?.name).toEqual(VENDOR_A);
   });
 
   // should create inventory-item with item sizes
@@ -158,27 +158,27 @@ describe('Inventory Item Service', () => {
     }
 
     const itemDto = {
-      itemName: 'testItemWithSizeDtos',
-      itemSizeDtos: sizeDtos,
+      name: 'testItemWithSizeDtos',
+      sizeDtos: sizeDtos,
       vendorId: vend.id,
-      inventoryItemCategoryId: cat.id,
+      categoryId: cat.id,
     } as CreateInventoryItemDto;
 
     const result = await itemService.create(itemDto);
-    if (!result?.itemSizes) {
+    if (!result?.sizes) {
       throw new Error('result sizes is null');
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('testItemWithSizeDtos');
-    expect(result.itemSizes.length).toEqual(2);
-    for (const size of result.itemSizes) {
+    expect(result?.name).toEqual('testItemWithSizeDtos');
+    expect(result.sizes.length).toEqual(2);
+    for (const size of result.sizes) {
       expect(
-        measureIds.findIndex((id) => id === size.measureUnit.id),
+        measureIds.findIndex((id) => id === size.measureType.id),
       ).not.toEqual(-1);
-      expect(
-        packageIds.findIndex((id) => id === size.packageType.id),
-      ).not.toEqual(-1);
+      expect(packageIds.findIndex((id) => id === size.package.id)).not.toEqual(
+        -1,
+      );
       expect(['9.99', '12']).toContain(size.cost);
     }
 
@@ -191,25 +191,25 @@ describe('Inventory Item Service', () => {
       'test item default vend/cat',
     );
     expect(result?.id).not.toBeNull();
-    expect(result?.itemName).toEqual('test item default vend/cat');
+    expect(result?.name).toEqual('test item default vend/cat');
   });
 
   //findOne by ID
   it('should find an item by ID', async () => {
     const result = await itemService.findOne(testId);
     expect(result?.id).not.toBeNull();
-    expect(result?.itemName).toEqual('test item default vend/cat');
+    expect(result?.name).toEqual('test item default vend/cat');
   });
 
   // update
   it('should update item name', async () => {
     const dto = {
-      itemName: 'Updated item name',
+      name: 'Updated item name',
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('Updated item name');
+    expect(result?.name).toEqual('Updated item name');
   });
 
   it('should update item category', async () => {
@@ -219,7 +219,7 @@ describe('Inventory Item Service', () => {
     }
 
     const dto = {
-      inventoryItemCategoryId: category.id,
+      categoryId: category.id,
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
@@ -238,7 +238,7 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      oldCat.categoryItems.findIndex((item) => item.id === testId),
+      oldCat.inventoryItems.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -249,7 +249,7 @@ describe('Inventory Item Service', () => {
     }
 
     const dto = {
-      inventoryItemCategoryId: category.id,
+      categoryId: category.id,
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
@@ -268,7 +268,7 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      oldCat.categoryItems.findIndex((item) => item.id === testId),
+      oldCat.inventoryItems.findIndex((item) => item.id === testId),
     ).toEqual(-1);
   });
 
@@ -281,13 +281,13 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      newCat.categoryItems.findIndex((item) => item.id === testId),
+      newCat.inventoryItems.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
   it('should update item category to no category', async () => {
     const dto = {
-      inventoryItemCategoryId: null,
+      categoryId: null,
     } as UpdateInventoryItemDto;
     const result = await itemService.update(testId, dto);
 
@@ -304,7 +304,7 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      newCat.categoryItems.findIndex((item) => item.id === testId),
+      newCat.inventoryItems.findIndex((item) => item.id === testId),
     ).toEqual(-1);
   });
 
@@ -332,7 +332,7 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      oldVend.vendorItems.findIndex((item) => item.id === testId),
+      oldVend.inventoryItems.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -359,9 +359,9 @@ describe('Inventory Item Service', () => {
       throw new NotFoundException();
     }
 
-    expect(oldVend.vendorItems.findIndex((item) => item.id === testId)).toEqual(
-      -1,
-    );
+    expect(
+      oldVend.inventoryItems.findIndex((item) => item.id === testId),
+    ).toEqual(-1);
   });
 
   it('new vendor should gain reference to item', async () => {
@@ -371,7 +371,7 @@ describe('Inventory Item Service', () => {
     }
 
     expect(
-      newVend.vendorItems.findIndex((item) => item.id === testId),
+      newVend.inventoryItems.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -391,9 +391,9 @@ describe('Inventory Item Service', () => {
       throw new NotFoundException();
     }
 
-    expect(newVend.vendorItems.findIndex((item) => item.id === testId)).toEqual(
-      -1,
-    );
+    expect(
+      newVend.inventoryItems.findIndex((item) => item.id === testId),
+    ).toEqual(-1);
   });
 
   it('should modify a item size, and item should gain reference to modified size', async () => {
@@ -401,22 +401,22 @@ describe('Inventory Item Service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.itemSizes) {
+    if (!item.sizes) {
       throw new Error('item sizes are null');
     }
 
     const sizes = await sizeService.findEntitiesById(
-      item.itemSizes.map((size) => size.id),
+      item.sizes.map((size) => size.id),
       ['inventoryItem', 'measureUnit', 'packageType'],
     );
     if (!sizes) {
       throw new Error('queried sizes are null');
     }
 
-    updateItemSizeId = item.itemSizes[0].id;
+    updateItemSizeId = item.sizes[0].id;
 
     const itemSizes = await sizeService.findEntitiesById(
-      item.itemSizes.map((size) => size.id),
+      item.sizes.map((size) => size.id),
       ['measureUnit', 'packageType'],
     );
 
@@ -436,7 +436,7 @@ describe('Inventory Item Service', () => {
     const updateSizeDtos = [
       plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
-        id: item.itemSizes[0].id,
+        id: item.sizes[0].id,
         updateDto: {
           measureUnitId: newUnits[0].id,
           inventoryPackageTypeId: newPkgs[0].id,
@@ -445,7 +445,7 @@ describe('Inventory Item Service', () => {
       }),
       plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
-        id: item.itemSizes[1].id,
+        id: item.sizes[1].id,
         updateDto: {
           measureUnitId: newUnits[1].id,
           inventoryPackageTypeId: newPkgs[1].id,
@@ -454,19 +454,19 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      itemSizeDtos: updateSizeDtos,
+      sizeDtos: updateSizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);
     if (!result) {
       throw new Error('item update is null');
     }
-    if (!result?.itemSizes) {
+    if (!result?.sizes) {
       throw new Error('result sizes is null');
     }
 
     expect(result).not.toBeNull();
-    expect(result.itemSizes.length).toEqual(2);
+    expect(result.sizes.length).toEqual(2);
 
     // should reflect updated item size when queried
     const updatedSize = await sizeService.findOne(updateItemSizeId, [
@@ -475,7 +475,7 @@ describe('Inventory Item Service', () => {
     if (!updatedSize) {
       throw new NotFoundException();
     }
-    expect(updatedSize.measureUnit.id).toEqual(newUnits[0].id);
+    expect(updatedSize.measureType.id).toEqual(newUnits[0].id);
 
     expect(updatedSize.cost).toEqual('12.50');
   });
@@ -485,12 +485,12 @@ describe('Inventory Item Service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.itemSizes) {
+    if (!item.sizes) {
       throw new Error('item sizes are null');
     }
 
     const sizes = await sizeService.findEntitiesById(
-      item.itemSizes.map((size) => size.id),
+      item.sizes.map((size) => size.id),
       ['inventoryItem', 'measureUnit', 'packageType'],
     );
     if (!sizes) {
@@ -509,20 +509,20 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      itemSizeDtos: updateSizeDtos,
+      sizeDtos: updateSizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);
     if (!result) {
       throw new Error('item update is null');
     }
-    if (!result?.itemSizes) {
+    if (!result?.sizes) {
       throw new Error('result sizes is null');
     }
 
     expect(result).not.toBeNull();
-    expect(result.itemSizes.length).toEqual(1);
-    expect(result.itemSizes[0].id).toEqual(savedSizeId);
+    expect(result.sizes.length).toEqual(1);
+    expect(result.sizes[0].id).toEqual(savedSizeId);
   });
 
   it('deleted itemSize from item update should not exist', async () => {
@@ -536,19 +536,19 @@ describe('Inventory Item Service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.itemSizes) {
+    if (!item.sizes) {
       throw new Error('item sizes are null');
     }
 
     const sizes = await sizeService.findEntitiesById(
-      item.itemSizes.map((size) => size.id),
+      item.sizes.map((size) => size.id),
       ['inventoryItem', 'measureUnit', 'packageType'],
     );
     if (!sizes) {
       throw new Error('queried sizes are null');
     }
 
-    updateItemPkgId = item.itemSizes[0].id;
+    updateItemPkgId = item.sizes[0].id;
 
     const itemUnitSizeIds = sizes.map((size) => size.measureUnit.id);
     const itemPkgIds = sizes.map((size) => size.packageType.id);
@@ -593,19 +593,19 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);
     if (!result) {
       throw new Error('item update is null');
     }
-    if (!result?.itemSizes) {
+    if (!result?.sizes) {
       throw new Error('result sizes is null');
     }
 
     expect(result).not.toBeNull();
-    expect(result.itemSizes.length).toEqual(2);
+    expect(result.sizes.length).toEqual(2);
   });
 
   //find ALL
@@ -682,15 +682,15 @@ describe('Inventory Item Service', () => {
     if (!itemToRemove) {
       throw new NotFoundException();
     }
-    if (!itemToRemove.itemSizes) {
+    if (!itemToRemove.sizes) {
       throw new Error('sizes is null');
     }
-    expect(itemToRemove.itemSizes?.length).toBeGreaterThan(0);
+    expect(itemToRemove.sizes?.length).toBeGreaterThan(0);
 
     removalId = itemToRemove.id;
     removalVendorId = itemToRemove.vendor?.id as number;
     removalCategoryId = itemToRemove.category?.id as number;
-    removalSizeId = itemToRemove.itemSizes[0].id as number;
+    removalSizeId = itemToRemove.sizes[0].id as number;
 
     const removal = await itemService.remove(removalId);
     expect(removal).toBeTruthy();
@@ -704,7 +704,7 @@ describe('Inventory Item Service', () => {
       throw new NotFoundException();
     }
     expect(
-      vendor.vendorItems.findIndex((item) => item.id === removalId),
+      vendor.inventoryItems.findIndex((item) => item.id === removalId),
     ).toEqual(-1);
   });
 
@@ -716,7 +716,7 @@ describe('Inventory Item Service', () => {
       throw new NotFoundException();
     }
     expect(
-      category.categoryItems.findIndex((item) => item.id === removalId),
+      category.inventoryItems.findIndex((item) => item.id === removalId),
     ).toEqual(-1);
   });
 

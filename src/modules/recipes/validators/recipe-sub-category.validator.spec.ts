@@ -38,7 +38,7 @@ describe('recipe sub category validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      subCategoryName: 'CREATE',
+      name: 'CREATE',
     } as CreateRecipeSubCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -47,7 +47,7 @@ describe('recipe sub category validator', () => {
 
   it('should fail create: name already exists', async () => {
     const dto = {
-      subCategoryName: REC_SUBCAT_3,
+      name: REC_SUBCAT_3,
     } as CreateRecipeSubCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -64,7 +64,7 @@ describe('recipe sub category validator', () => {
     }
 
     const dto = {
-      subCategoryName: 'UPDATE',
+      name: 'UPDATE',
     } as UpdateRecipeSubCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -78,7 +78,7 @@ describe('recipe sub category validator', () => {
     }
 
     const dto = {
-      subCategoryName: REC_SUBCAT_2,
+      name: REC_SUBCAT_2,
     } as UpdateRecipeSubCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

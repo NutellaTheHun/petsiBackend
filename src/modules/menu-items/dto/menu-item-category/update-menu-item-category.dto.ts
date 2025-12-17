@@ -9,5 +9,5 @@ export class UpdateMenuItemCategoryDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  readonly categoryName?: string;
+  readonly name?: string;
 }

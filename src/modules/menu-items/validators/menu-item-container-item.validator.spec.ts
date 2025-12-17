@@ -61,9 +61,9 @@ describe('menu item container item validator', () => {
 
     const dto = {
       parentMenuItemId: parentContainer.id,
-      parentItemSizeId: parentContainer.validSizes[0].id,
+      parentItemSizeId: parentContainer.sizes[0].id,
       containedMenuItemId: containedItem.id,
-      containedItemSizeId: containedItem.validSizes[0].id,
+      containedItemSizeId: containedItem.sizes[0].id,
       quantity: 1,
     } as CreateMenuItemContainerItemDto;
 
@@ -93,7 +93,7 @@ describe('menu item container item validator', () => {
 
     const dto = {
       parentMenuItemId: parentContainer.id,
-      parentItemSizeId: parentContainer.validSizes[0].id,
+      parentItemSizeId: parentContainer.sizes[0].id,
       containedMenuItemId: containedItem.id,
       containedItemSizeId: badSize.id,
       quantity: 1,
@@ -129,8 +129,8 @@ describe('menu item container item validator', () => {
     }
 
     const dto = {
-      containedItemId: containedItem.id,
-      containedItemSizeId: containedItem.validSizes[0].id,
+      containedMenuItemId: containedItem.id,
+      containedItemSizeId: containedItem.sizes[0].id,
       quantity: 2,
     } as UpdateMenuItemContainerItemDto;
 
@@ -159,7 +159,7 @@ describe('menu item container item validator', () => {
     }
 
     const dto = {
-      containedItemId: containedItem.id,
+      containedMenuItemId: containedItem.id,
       containedItemSizeId: badSize.id,
       quantity: 3,
     } as UpdateMenuItemContainerItemDto;

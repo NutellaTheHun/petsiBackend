@@ -68,9 +68,9 @@ describe('inventory item package validator', () => {
     }
 
     const dto = {
-      measureUnitId: unit.id,
+      measureTypeId: unit.id,
       measureAmount: 1,
-      inventoryPackageId: pkg.id,
+      packageId: pkg.id,
       cost: 5,
     } as UpdateInventoryItemSizeDto;
 
@@ -94,9 +94,9 @@ describe('inventory item package validator', () => {
     ]);
 
     const dto = {
-      measureUnitId: badItem.measureUnit.id,
+      measureTypeId: badItem.measureType.id,
       measureAmount: 1,
-      inventoryPackageId: badItem.packageType.id,
+      packageId: badItem.package.id,
       cost: 5,
     } as UpdateInventoryItemSizeDto;
     const result = await validator.validateUpdateNode('root', dto, badItem.id);

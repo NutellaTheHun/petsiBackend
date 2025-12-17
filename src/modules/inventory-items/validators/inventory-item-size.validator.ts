@@ -51,9 +51,9 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     // check for current package / unit of measure / cost already exists?
     const exists = await this.repo.findOne({
       where: {
-        measureUnit: { id: dto.measureUnitId },
-        packageType: {
-          id: dto.inventoryPackageId,
+        measureType: { id: dto.measureTypeId },
+        package: {
+          id: dto.packageId,
         },
         inventoryItem: { id: dto.inventoryItemId },
       },
@@ -100,7 +100,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     }
 
     // Cant update a item size to a already existing combination of packageType and measure unit size.
-    if (dto.measureUnitId || dto.inventoryPackageId) {
+    if (dto.measureTypeId || dto.packageId) {
       const currentSize = await this.repo.findOne({
         where: { id },
         relations: ['inventoryItem', 'measureUnit', 'packageType'],
@@ -110,15 +110,15 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       }
       const exists = await this.repo.findOne({
         where: {
-          measureUnit: { id: dto.measureUnitId ?? currentSize.measureUnit.id },
-          packageType: {
-            id: dto.inventoryPackageId ?? currentSize.packageType.id,
+          measureType: { id: dto.measureTypeId ?? currentSize.measureType.id },
+          package: {
+            id: dto.packageId ?? currentSize.package.id,
           },
           inventoryItem: { id: currentSize.inventoryItem.id },
         },
       });
       if (exists) {
-        const prop = dto.measureUnitId ? 'measureUnit' : 'packageType';
+        const prop = dto.measureTypeId ? 'measureUnit' : 'packageType';
         const err = new ValidationErrorNode(
           prop,
           id,

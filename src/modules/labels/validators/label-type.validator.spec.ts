@@ -36,9 +36,9 @@ describe('label type validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      labelTypeName: 'LABEL TYPE TEST',
-      labelTypeLength: 100,
-      labelTypeWidth: 100,
+      name: 'LABEL TYPE TEST',
+      length: 100,
+      width: 100,
     } as CreateLabelTypeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -47,9 +47,9 @@ describe('label type validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      labelTypeName: type_a,
-      labelTypeLength: 100,
-      labelTypeWidth: 100,
+      name: type_a,
+      length: 100,
+      width: 100,
     } as CreateLabelTypeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -66,9 +66,9 @@ describe('label type validator', () => {
     }
 
     const dto = {
-      labelTypeName: 'LABEL TYPE TEST',
-      labelTypeLength: 100,
-      labelTypeWidth: 100,
+      name: 'LABEL TYPE TEST',
+      length: 100,
+      width: 100,
     } as UpdateLabelTypeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -82,9 +82,9 @@ describe('label type validator', () => {
     }
 
     const dto = {
-      labelTypeName: type_a,
-      labelTypeLength: 100,
-      labelTypeWidth: 100,
+      name: type_a,
+      length: 100,
+      width: 100,
     } as UpdateLabelTypeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

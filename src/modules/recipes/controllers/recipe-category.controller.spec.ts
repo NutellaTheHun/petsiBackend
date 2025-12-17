@@ -8,136 +8,148 @@ import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryController } from './recipe-category.controller';
 
 describe('recipe category controller', () => {
-    let controller: RecipeCategoryController;
-    let service: RecipeCategoryService;
-    let categories: RecipeCategory[];
-    let id: number;
-    let testId: number;
+  let controller: RecipeCategoryController;
+  let service: RecipeCategoryService;
+  let categories: RecipeCategory[];
+  let id: number;
+  let testId: number;
 
-    beforeAll(async () => {
-        const module: TestingModule = await getRecipeTestingModule();
+  beforeAll(async () => {
+    const module: TestingModule = await getRecipeTestingModule();
 
-        controller = module.get<RecipeCategoryController>(RecipeCategoryController);
-        service = module.get<RecipeCategoryService>(RecipeCategoryService);
+    controller = module.get<RecipeCategoryController>(RecipeCategoryController);
+    service = module.get<RecipeCategoryService>(RecipeCategoryService);
 
-        categories = [
-            { categoryName: "CAT_A" } as RecipeCategory,
-            { categoryName: "CAT_B" } as RecipeCategory,
-            { categoryName: "CAT_C" } as RecipeCategory,
-        ];
-        id = 1;
-        categories.map(category => category.id = id++);
+    categories = [
+      { name: 'CAT_A' } as RecipeCategory,
+      { name: 'CAT_B' } as RecipeCategory,
+      { name: 'CAT_C' } as RecipeCategory,
+    ];
+    id = 1;
+    categories.map((category) => (category.id = id++));
 
-        jest.spyOn(service, "create").mockImplementation(async (dto: CreateRecipeCategoryDto) => {
-            const exists = categories.find(cat => cat.categoryName === dto.categoryName);
-            if (exists) { throw new BadRequestException(); }
+    jest
+      .spyOn(service, 'create')
+      .mockImplementation(async (dto: CreateRecipeCategoryDto) => {
+        const exists = categories.find((cat) => cat.name === dto.name);
+        if (exists) {
+          throw new BadRequestException();
+        }
 
-            const category = {
-                id: id++,
-                categoryName: dto.categoryName,
-            } as RecipeCategory;
+        const category = {
+          id: id++,
+          name: dto.name,
+        } as RecipeCategory;
 
-            categories.push(category);
-            return category;
-        });
+        categories.push(category);
+        return category;
+      });
 
-        jest.spyOn(service, "update").mockImplementation(async (id: number, dto: UpdateRecipeCategoryDto) => {
-            const existIdx = categories.findIndex(cat => cat.id === id);
-            if (existIdx === -1) { throw new NotFoundException(); }
+    jest
+      .spyOn(service, 'update')
+      .mockImplementation(async (id: number, dto: UpdateRecipeCategoryDto) => {
+        const existIdx = categories.findIndex((cat) => cat.id === id);
+        if (existIdx === -1) {
+          throw new NotFoundException();
+        }
 
-            if (dto.categoryName) {
-                categories[existIdx].categoryName = dto.categoryName;
-            }
+        if (dto.name) {
+          categories[existIdx].name = dto.name;
+        }
 
-            return categories[existIdx];
-        });
+        return categories[existIdx];
+      });
 
-        jest.spyOn(service, "findOneByName").mockImplementation(async (name: string) => {
-            return categories.find(cat => cat.categoryName === name) || null;
-        });
+    jest
+      .spyOn(service, 'findOneByName')
+      .mockImplementation(async (name: string) => {
+        return categories.find((cat) => cat.name === name) || null;
+      });
 
-        jest.spyOn(service, "findAll").mockResolvedValue({ items: categories });
+    jest.spyOn(service, 'findAll').mockResolvedValue({ items: categories });
 
-        jest.spyOn(service, "findOne").mockImplementation(async (id?: number) => {
-            const result = categories.find(cat => cat.id === id);
-            if (!result) {
-                throw new NotFoundException();
-            }
-            return result;
-        });
-
-        jest.spyOn(service, "remove").mockImplementation(async (id: number) => {
-            const index = categories.findIndex(cat => cat.id === id);
-            if (index === -1) { return false; }
-
-            categories.splice(index, 1);
-            return true;
-        });
+    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
+      const result = categories.find((cat) => cat.id === id);
+      if (!result) {
+        throw new NotFoundException();
+      }
+      return result;
     });
 
-    it('should be defined', () => {
-        expect(controller).toBeDefined();
+    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
+      const index = categories.findIndex((cat) => cat.id === id);
+      if (index === -1) {
+        return false;
+      }
+
+      categories.splice(index, 1);
+      return true;
     });
+  });
 
-    it('should create a recipe category', async () => {
-        const dto = {
-            categoryName: "test category"
-        } as CreateRecipeCategoryDto;
-        const result = await controller.create(dto);
-        expect(result).not.toBeNull();
-        expect(result?.id).not.toBeNull()
-        expect(result?.categoryName).toEqual("test category");
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+  });
 
-        testId = result?.id as number;
-    });
+  it('should create a recipe category', async () => {
+    const dto = {
+      name: 'test category',
+    } as CreateRecipeCategoryDto;
+    const result = await controller.create(dto);
+    expect(result).not.toBeNull();
+    expect(result?.id).not.toBeNull();
+    expect(result?.name).toEqual('test category');
 
-    it('should fail create a recipe category', async () => {
-        const dto = {
-            categoryName: "test category"
-        } as CreateRecipeCategoryDto;
+    testId = result?.id as number;
+  });
 
-        await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-    });
+  it('should fail create a recipe category', async () => {
+    const dto = {
+      name: 'test category',
+    } as CreateRecipeCategoryDto;
 
-    it('should find one recipe category', async () => {
-        const result = await controller.findOne(1);
-        expect(result).not.toBeNull();
-    });
+    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
+  });
 
-    it('should fail find one a recipe category', async () => {
-        await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
-    });
+  it('should find one recipe category', async () => {
+    const result = await controller.findOne(1);
+    expect(result).not.toBeNull();
+  });
 
-    it('should find all a recipe category', async () => {
-        const results = await controller.findAll();
-        expect(results).not.toBeNull();
-        expect(results.items.length).toBeGreaterThan(0);
-    });
+  it('should fail find one a recipe category', async () => {
+    await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
+  });
 
-    it('should update a recipe category', async () => {
-        const dto = {
-            categoryName: "updated test name"
-        } as UpdateRecipeCategoryDto;
+  it('should find all a recipe category', async () => {
+    const results = await controller.findAll();
+    expect(results).not.toBeNull();
+    expect(results.items.length).toBeGreaterThan(0);
+  });
 
-        const result = await controller.update(testId, dto);
-        expect(result).not.toBeNull();
-        expect(result?.categoryName).toEqual("updated test name");
-    });
+  it('should update a recipe category', async () => {
+    const dto = {
+      name: 'updated test name',
+    } as UpdateRecipeCategoryDto;
 
-    it('should fail update a recipe category', async () => {
-        const dto = {
-            categoryName: "updated test name"
-        } as UpdateRecipeCategoryDto;
+    const result = await controller.update(testId, dto);
+    expect(result).not.toBeNull();
+    expect(result?.name).toEqual('updated test name');
+  });
 
-        await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-    });
+  it('should fail update a recipe category', async () => {
+    const dto = {
+      name: 'updated test name',
+    } as UpdateRecipeCategoryDto;
 
-    it('should remove a recipe category', async () => {
-        const removal = await controller.remove(testId);
-        expect(removal).toBeUndefined();
-    });
+    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
+  });
 
-    it('should fail remove a recipe category', async () => {
-        await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-    });
+  it('should remove a recipe category', async () => {
+    const removal = await controller.remove(testId);
+    expect(removal).toBeUndefined();
+  });
+
+  it('should fail remove a recipe category', async () => {
+    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
+  });
 });

@@ -8,5 +8,5 @@ export class UpdateRoleDto {
   })
   @IsString()
   @IsOptional()
-  readonly roleName?: string;
+  readonly name?: string;
 }

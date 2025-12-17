@@ -20,7 +20,7 @@ export class UpdateOrderMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly menuItemSizeId?: number;
+  readonly sizeId?: number;
 
   @ApiPropertyOptional({ description: 'Amount being ordered.', example: 3 })
   @IsNumber()
@@ -54,5 +54,5 @@ export class UpdateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly orderedItemContainerDtos?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuItemDtos?: NestedOrderContainerItemDto[];
 }

@@ -42,8 +42,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.batchResultQuantity !== undefined) {
       this.batchResultQuantity(dto.batchResultQuantity);
     }
-    if (dto.batchResultMeasurementId !== undefined) {
-      this.batchResultMeasurementById(dto.batchResultMeasurementId);
+    if (dto.batchResultUnitTypeId !== undefined) {
+      this.batchResultMeasurementById(dto.batchResultUnitTypeId);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);
@@ -54,8 +54,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.producedMenuItemId !== undefined) {
       this.producedMenuItemById(dto.producedMenuItemId);
     }
-    if (dto.recipeName !== undefined) {
-      this.name(dto.recipeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.salesPrice !== undefined) {
       this.salesPrice(dto.salesPrice);
@@ -63,8 +63,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.servingSizeQuantity !== undefined) {
       this.servingSizeQuantity(dto.servingSizeQuantity);
     }
-    if (dto.servingSizeMeasurementId !== undefined) {
-      this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
+    if (dto.servingSizeUnitTypeId !== undefined) {
+      this.servingSizeMeasurementById(dto.servingSizeUnitTypeId);
     }
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);
@@ -78,8 +78,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.batchResultQuantity !== undefined) {
       this.batchResultQuantity(dto.batchResultQuantity);
     }
-    if (dto.batchResultMeasurementId !== undefined) {
-      this.batchResultMeasurementById(dto.batchResultMeasurementId);
+    if (dto.batchResultUnitTypeId !== undefined) {
+      this.batchResultMeasurementById(dto.batchResultUnitTypeId);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);
@@ -94,8 +94,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.producedMenuItemId !== undefined) {
       this.producedMenuItemById(dto.producedMenuItemId);
     }
-    if (dto.recipeName !== undefined) {
-      this.name(dto.recipeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.salesPrice !== undefined) {
       this.salesPrice(dto.salesPrice);
@@ -103,8 +103,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.servingSizeQuantity !== undefined) {
       this.servingSizeQuantity(dto.servingSizeQuantity);
     }
-    if (dto.servingSizeMeasurementId !== undefined) {
-      this.servingSizeMeasurementById(dto.servingSizeMeasurementId);
+    if (dto.servingSizeUnitTypeId !== undefined) {
+      this.servingSizeMeasurementById(dto.servingSizeUnitTypeId);
     }
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);

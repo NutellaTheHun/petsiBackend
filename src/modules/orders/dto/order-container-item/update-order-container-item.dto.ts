@@ -19,7 +19,7 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly containedMenuItemSizeId?: number;
+  readonly containedItemSizeId?: number;
 
   @ApiPropertyOptional({
     description:

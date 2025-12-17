@@ -51,7 +51,7 @@ export class OrderMenuItem {
 
     onDelete: 'CASCADE',
   })
-  order: Order;
+  parentOrder: Order;
 
   /**
    * The {@link MenuItem} being bought.
@@ -99,8 +99,8 @@ export class OrderMenuItem {
   })
   @OneToMany(
     () => OrderContainerItem,
-    (orderItem) => orderItem.parentOrderItem,
+    (orderItem) => orderItem.parentOrderMenuItem,
     { cascade: true, eager: true },
   )
-  containerItems: OrderContainerItem[] = [];
+  containerOrderMenuItems: OrderContainerItem[] = [];
 }

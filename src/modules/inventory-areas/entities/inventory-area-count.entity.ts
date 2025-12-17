@@ -62,7 +62,7 @@ export class InventoryAreaCount {
     cascade: true,
   })
   @IsArray()
-  countedItems: InventoryAreaItem[] = [];
+  countedInventoryItems: InventoryAreaItem[] = [];
 
   /**
    * The date the {@link InventoryAreaCount} occurs (automatically handled by the database)

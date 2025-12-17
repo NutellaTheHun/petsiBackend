@@ -8,5 +8,5 @@ export class CreateOrderCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly categoryName: string;
+  readonly name: string;
 }

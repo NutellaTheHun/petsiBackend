@@ -20,8 +20,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
   }
 
   protected createEntity(dto: CreateUnitOfMeasureDto): void {
-    if (dto.unitName !== undefined) {
-      this.name(dto.unitName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.abbreviation !== undefined) {
       this.abbreviation(dto.abbreviation);
@@ -35,8 +35,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
   }
 
   protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
-    if (dto.unitName !== undefined) {
-      this.name(dto.unitName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.abbreviation !== undefined) {
       this.abbreviation(dto.abbreviation);

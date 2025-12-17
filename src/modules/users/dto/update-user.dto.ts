@@ -12,7 +12,7 @@ export class UpdateUserDto {
   @ApiPropertyOptional({ description: '', example: 'jsmith123' })
   @IsString()
   @IsOptional()
-  readonly username?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: '',

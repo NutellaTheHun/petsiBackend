@@ -42,7 +42,7 @@ describe('inventory item vendor validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      vendorName: 'TEST CREATE',
+      name: 'TEST CREATE',
     } as CreateInventoryItemVendorDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -51,7 +51,7 @@ describe('inventory item vendor validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      vendorName: VENDOR_B,
+      name: VENDOR_B,
     } as CreateInventoryItemVendorDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -68,7 +68,7 @@ describe('inventory item vendor validator', () => {
     }
 
     const dto = {
-      vendorName: 'TEST UPDATE',
+      name: 'TEST UPDATE',
     } as UpdateInventoryItemVendorDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -82,7 +82,7 @@ describe('inventory item vendor validator', () => {
     }
 
     const dto = {
-      vendorName: VENDOR_A,
+      name: VENDOR_A,
     } as UpdateInventoryItemVendorDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

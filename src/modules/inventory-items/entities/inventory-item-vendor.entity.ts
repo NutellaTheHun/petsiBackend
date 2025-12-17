@@ -26,7 +26,7 @@ export class InventoryItemVendor {
 
   @ApiProperty({ example: 'Dollar Tree', description: 'Name of the vendor' })
   @Column({ unique: true })
-  vendorName: string;
+  name: string;
 
   /**
    * List of all {@link InventoryItem} provided by vendor.
@@ -38,5 +38,5 @@ export class InventoryItemVendor {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.vendor)
-  vendorItems: InventoryItem[] = [];
+  inventoryItems: InventoryItem[] = [];
 }

@@ -42,7 +42,7 @@ export class Recipe {
 
   @ApiProperty({ example: 'Apple Mix', description: 'Name of the recipe' })
   @Column({ unique: true })
-  recipeName: string;
+  name: string;
 
   /**
    * The {@link MenuItem} that this recipe produces.
@@ -123,7 +123,7 @@ export class Recipe {
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  batchResultMeasurement: UnitOfMeasure | null = null;
+  batchResultUnitType: UnitOfMeasure | null = null;
 
   /**
    * A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.
@@ -161,7 +161,7 @@ export class Recipe {
   })
   @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
-  servingSizeMeasurement: UnitOfMeasure | null = null;
+  servingSizeUnitType: UnitOfMeasure | null = null;
 
   /**
    * The set price per servingSizeQuantity.

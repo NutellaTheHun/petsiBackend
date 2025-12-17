@@ -83,13 +83,13 @@ describe('menu item service', () => {
 
   it('should create a menuItem', async () => {
     const dto = {
-      itemName: 'testItem',
+      name: 'testItem',
     } as CreateMenuItemDto;
 
     const result = await itemService.create(dto);
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('testItem');
+    expect(result?.name).toEqual('testItem');
 
     testId = result?.id as number;
   });
@@ -99,7 +99,7 @@ describe('menu item service', () => {
 
     expect(result).not.toBeNull();
     expect(result?.id).toEqual(testId);
-    expect(result?.itemName).toEqual('testItem');
+    expect(result?.name).toEqual('testItem');
   });
 
   it('should find a menuItem by name', async () => {
@@ -107,18 +107,18 @@ describe('menu item service', () => {
 
     expect(result).not.toBeNull();
     expect(result?.id).toEqual(testId);
-    expect(result?.itemName).toEqual('testItem');
+    expect(result?.name).toEqual('testItem');
   });
 
   it('should update name', async () => {
     const dto = {
-      itemName: 'updateTestName',
+      name: 'updateTestName',
     } as UpdateMenuItemDto;
 
     const result = await itemService.update(testId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
   });
 
   it('should update isPOTM', async () => {
@@ -132,7 +132,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
   });
 
@@ -147,7 +147,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
   });
@@ -168,11 +168,11 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category?.id).toEqual(category.id);
-    expect(result.category?.categoryName).toEqual(CAT_RED);
+    expect(result.category?.name).toEqual(CAT_RED);
   });
 
   it('should add reference to category', async () => {
@@ -184,7 +184,7 @@ describe('menu item service', () => {
     }
 
     expect(
-      category.categoryItems?.findIndex((item) => item.id === testId),
+      category.menuItems?.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -204,11 +204,11 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category?.id).toEqual(category.id);
-    expect(result.category?.categoryName).toEqual(CAT_BLUE);
+    expect(result.category?.name).toEqual(CAT_BLUE);
   });
 
   it('should lose reference to old category', async () => {
@@ -219,9 +219,9 @@ describe('menu item service', () => {
       throw new NotFoundException();
     }
 
-    expect(
-      category.categoryItems?.findIndex((item) => item.id === testId),
-    ).toEqual(-1);
+    expect(category.menuItems?.findIndex((item) => item.id === testId)).toEqual(
+      -1,
+    );
   });
 
   it('should gain reference to new category', async () => {
@@ -233,7 +233,7 @@ describe('menu item service', () => {
     }
 
     expect(
-      category.categoryItems?.findIndex((item) => item.id === testId),
+      category.menuItems?.findIndex((item) => item.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -248,7 +248,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
@@ -262,9 +262,9 @@ describe('menu item service', () => {
       throw new NotFoundException();
     }
 
-    expect(
-      category.categoryItems?.findIndex((item) => item.id === testId),
-    ).toEqual(-1);
+    expect(category.menuItems?.findIndex((item) => item.id === testId)).toEqual(
+      -1,
+    );
   });
 
   it('should update veganOption', async () => {
@@ -283,12 +283,12 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
     expect(result.veganOption?.id).toEqual(veganItem.id);
-    expect(result.veganOption?.itemName).toEqual(veganItem.itemName);
+    expect(result.veganOption?.itemName).toEqual(veganItem.name);
 
     veganId = result.veganOption?.id as number;
   });
@@ -309,12 +309,12 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
     expect(result.takeNBakeOption?.id).toEqual(takeNBakeItem.id);
-    expect(result.takeNBakeOption?.itemName).toEqual(takeNBakeItem.itemName);
+    expect(result.takeNBakeOption?.itemName).toEqual(takeNBakeItem.name);
 
     takeNBakeId = result.takeNBakeOption?.id as number;
   });
@@ -335,13 +335,13 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
     expect(result.veganTakeNBakeOption?.id).toEqual(veganTakeNBakeItem.id);
     expect(result.veganTakeNBakeOption?.itemName).toEqual(
-      veganTakeNBakeItem.itemName,
+      veganTakeNBakeItem.name,
     );
 
     veganTakeNBakeId = result.veganTakeNBakeOption?.id as number;
@@ -355,7 +355,7 @@ describe('menu item service', () => {
     }
 
     const dto = {
-      validSizeIds: sizes.map((size) => size.id),
+      sizeIds: sizes.map((size) => size.id),
     } as UpdateMenuItemDto;
 
     const result = await itemService.update(testId, dto);
@@ -364,11 +364,11 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
-    expect(result.validSizes?.length).toEqual(4);
+    expect(result.sizes?.length).toEqual(4);
   });
 
   it('should update validSizes (remove)', async () => {
@@ -382,7 +382,7 @@ describe('menu item service', () => {
     deletedValidSizeId = sizes[3].id;
 
     const dto = {
-      validSizeIds: reducedSizes,
+      sizeIds: reducedSizes,
     } as UpdateMenuItemDto;
 
     const result = await itemService.update(testId, dto);
@@ -391,13 +391,13 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
-    expect(result.validSizes?.length).toEqual(3);
+    expect(result.sizes?.length).toEqual(3);
     expect(
-      result.validSizes?.findIndex((size) => size.id === deletedValidSizeId),
+      result.sizes?.findIndex((size) => size.id === deletedValidSizeId),
     ).toEqual(-1);
   });
 
@@ -408,7 +408,7 @@ describe('menu item service', () => {
     if (!containerItem) {
       throw new NotFoundException();
     }
-    if (!containerItem.validSizes) {
+    if (!containerItem.sizes) {
       throw new Error();
     }
 
@@ -416,7 +416,7 @@ describe('menu item service', () => {
     if (!compItemA) {
       throw new Error();
     }
-    if (!compItemA.validSizes) {
+    if (!compItemA.sizes) {
       throw new Error();
     }
 
@@ -424,7 +424,7 @@ describe('menu item service', () => {
     if (!compItemB) {
       throw new Error();
     }
-    if (!compItemB.validSizes) {
+    if (!compItemB.sizes) {
       throw new Error();
     }
 
@@ -432,18 +432,18 @@ describe('menu item service', () => {
       plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
-          parentContainerSizeId: containerItem.validSizes[0].id,
+          parentContainerSizeId: containerItem.sizes[0].id,
           containedMenuItemId: compItemA.id,
-          containedMenuItemSizeId: compItemA.validSizes[0].id,
+          containedMenuItemSizeId: compItemA.sizes[0].id,
           quantity: 1,
         },
       }),
       plainToInstance(NestedMenuItemContainerItemDto, {
         mode: 'create',
         createDto: {
-          parentContainerSizeId: containerItem.validSizes[0].id,
+          parentContainerSizeId: containerItem.sizes[0].id,
           containedMenuItemId: compItemB.id,
-          containedMenuItemSizeId: compItemB.validSizes[0].id,
+          containedMenuItemSizeId: compItemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -568,13 +568,13 @@ describe('menu item service', () => {
     }
 
     expect(item).not.toBeNull();
-    expect(item?.itemName).toEqual('updateTestName');
+    expect(item?.name).toEqual('updateTestName');
     expect(item.isPOTM).toBeTruthy();
     expect(item.isParbake).toBeTruthy();
     expect(item.category).toBeNull();
-    expect(item.validSizes?.length).toEqual(3);
+    expect(item.sizes?.length).toEqual(3);
     expect(
-      item.validSizes?.findIndex((size) => size.id === deletedValidSizeId),
+      item.sizes?.findIndex((size) => size.id === deletedValidSizeId),
     ).toEqual(-1);
     expect(item.veganTakeNBakeOption?.id).toEqual(veganTakeNBakeId);
     expect(item.takeNBakeOption?.id).toEqual(takeNBakeId);
@@ -674,7 +674,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
@@ -693,7 +693,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
@@ -712,7 +712,7 @@ describe('menu item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.itemName).toEqual('updateTestName');
+    expect(result?.name).toEqual('updateTestName');
     expect(result.isPOTM).toBeTruthy();
     expect(result.isParbake).toBeTruthy();
     expect(result.category).toBeNull();
@@ -748,9 +748,9 @@ describe('menu item service', () => {
       throw new NotFoundException();
     }
 
-    expect(
-      category.categoryItems?.findIndex((item) => item.id === testId),
-    ).toEqual(-1);
+    expect(category.menuItems?.findIndex((item) => item.id === testId)).toEqual(
+      -1,
+    );
   });
 
   it('should create a menuItem with menuItem Components', async () => {
@@ -764,14 +764,14 @@ describe('menu item service', () => {
     if (!itemC) {
       throw new Error();
     }
-    if (!itemC.validSizes) {
+    if (!itemC.sizes) {
       throw new Error();
     }
     const itemD = await itemService.findOneByName(item_d, ['validSizes']);
     if (!itemD) {
       throw new Error();
     }
-    if (!itemD.validSizes) {
+    if (!itemD.sizes) {
       throw new Error();
     }
     const compDtos = [
@@ -780,7 +780,7 @@ describe('menu item service', () => {
         createDto: {
           parentContainerSizeId: sizes[0].id,
           containedMenuItemId: itemC.id,
-          containedMenuItemSizeId: itemC.validSizes[0].id,
+          containedMenuItemSizeId: itemC.sizes[0].id,
           quantity: 3,
         },
       }),
@@ -789,15 +789,15 @@ describe('menu item service', () => {
         createDto: {
           parentContainerSizeId: sizes[0].id,
           containedMenuItemId: itemD.id,
-          containedMenuItemSizeId: itemD.validSizes[0].id,
+          containedMenuItemSizeId: itemD.sizes[0].id,
           quantity: 3,
         },
       }),
     ];
 
     const dto = {
-      itemName: 'menuItemWithComponents',
-      validSizeIds: sizes.map((size) => size.id),
+      name: 'menuItemWithComponents',
+      sizeIds: sizes.map((size) => size.id),
       definedContainerItemDtos: compDtos,
     } as CreateMenuItemDto;
 
@@ -812,12 +812,12 @@ describe('menu item service', () => {
     for (const component of result.definedContainerItems) {
       if (component.containedItem.id === itemC.id) {
         expect(component.quantity).toEqual(3);
-        expect(component.containedItemSize.id).toEqual(itemC.validSizes[0].id);
+        expect(component.containedItemSize.id).toEqual(itemC.sizes[0].id);
         expect(component.parentContainer.id).toEqual(result.id);
       }
       if (component.containedItem.id === itemD.id) {
         expect(component.quantity).toEqual(3);
-        expect(component.containedItemSize.id).toEqual(itemD.validSizes[0].id);
+        expect(component.containedItemSize.id).toEqual(itemD.sizes[0].id);
         expect(component.parentContainer.id).toEqual(result.id);
       }
     }
@@ -848,7 +848,7 @@ describe('menu item service', () => {
     if (!itemG) {
       throw new Error();
     }
-    if (!itemG.validSizes) {
+    if (!itemG.sizes) {
       throw new Error();
     }
 
@@ -857,7 +857,7 @@ describe('menu item service', () => {
       createDto: {
         parentContainerSizeId: sizes[0].id,
         containedMenuItemId: itemG.id,
-        containedMenuItemSizeId: itemG.validSizes[0].id,
+        containedMenuItemSizeId: itemG.sizes[0].id,
         quantity: 3,
       },
     });
@@ -904,7 +904,7 @@ describe('menu item service', () => {
     if (!itemF) {
       throw new Error();
     }
-    if (!itemF.validSizes) {
+    if (!itemF.sizes) {
       throw new Error();
     }
 
@@ -914,7 +914,7 @@ describe('menu item service', () => {
       updateDto: {
         quantity: 5,
         containedMenuItemId: itemF.id,
-        containedMenuItemSizeId: itemF.validSizes[0].id,
+        containedMenuItemSizeId: itemF.sizes[0].id,
       },
     });
 
@@ -945,7 +945,7 @@ describe('menu item service', () => {
     for (const comp of result.definedContainerItems) {
       if (comp.id === compToModifyId) {
         expect(comp.containedItem.id).toEqual(itemF.id);
-        expect(comp.containedItemSize.id).toEqual(itemF.validSizes[0].id);
+        expect(comp.containedItemSize.id).toEqual(itemF.sizes[0].id);
         expect(comp.quantity).toEqual(5);
       }
     }
@@ -1000,25 +1000,25 @@ describe('menu item service', () => {
     if (!itemA) {
       throw new Error();
     }
-    if (!itemA.validSizes) {
+    if (!itemA.sizes) {
       throw new Error();
     }
     const itemB = await itemService.findOneByName(item_b, ['validSizes']);
     if (!itemB) {
       throw new Error();
     }
-    if (!itemB.validSizes) {
+    if (!itemB.sizes) {
       throw new Error();
     }
     const compOptionDtos = [
       plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemA.id,
-        validSizeIds: itemA.validSizes.map((size) => size.id),
+        validSizeIds: itemA.sizes.map((size) => size.id),
         quantity: 3,
       }),
       plainToInstance(CreateMenuItemContainerRuleDto, {
         validMenuItemId: itemB.id,
-        validSizeIds: itemB.validSizes.map((size) => size.id),
+        validSizeIds: itemB.sizes.map((size) => size.id),
         quantity: 3,
       }),
     ];
@@ -1041,8 +1041,8 @@ describe('menu item service', () => {
     }
 
     const dto = {
-      itemName: 'menuItemWithCompOptions',
-      validSizeIds: [sizeTwo?.id, sizeThree?.id],
+      name: 'menuItemWithCompOptions',
+      sizeIds: [sizeTwo?.id, sizeThree?.id],
       containerOptionDto: optionDto,
     } as CreateMenuItemDto;
 
@@ -1081,7 +1081,7 @@ describe('menu item service', () => {
     if (!itemF) {
       throw new Error();
     }
-    if (!itemF.validSizes) {
+    if (!itemF.sizes) {
       throw new Error();
     }
 
@@ -1089,7 +1089,7 @@ describe('menu item service', () => {
       mode: 'create',
       createDto: {
         validMenuItemId: itemF.id,
-        validSizeIds: itemF.validSizes.map((size) => size.id),
+        validSizeIds: itemF.sizes.map((size) => size.id),
       },
     });
 
@@ -1157,7 +1157,7 @@ describe('menu item service', () => {
     if (!itemC) {
       throw new Error();
     }
-    if (!itemC.validSizes) {
+    if (!itemC.sizes) {
       throw new Error();
     }
 
@@ -1168,7 +1168,7 @@ describe('menu item service', () => {
       id: theRest[0].id,
       updateDto: {
         validMenuItemId: itemC.id,
-        validSizeIds: itemC.validSizes.map((size) => size.id),
+        validSizeIds: itemC.sizes.map((size) => size.id),
       },
     });
 
@@ -1205,7 +1205,7 @@ describe('menu item service', () => {
     for (const comp of result.containerOptions.containerRules) {
       if (comp.id === modifiedCompId) {
         expect(comp.validItem.id).toEqual(itemC.id);
-        expect(comp.validSizes.length).toEqual(itemC.validSizes.length);
+        expect(comp.validSizes.length).toEqual(itemC.sizes.length);
       }
     }
   });

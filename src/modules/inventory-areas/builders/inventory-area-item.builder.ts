@@ -53,8 +53,8 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     if (dto.countedInventoryItemId !== undefined) {
       this.countedItemById(dto.countedInventoryItemId);
     }
-    if (dto.countedAmount !== undefined) {
-      this.amount(dto.countedAmount);
+    if (dto.amount !== undefined) {
+      this.amount(dto.amount);
     }
 
     // Either a ItemSize DTO or id
@@ -73,8 +73,8 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
     if (dto.countedInventoryItemId !== undefined) {
       this.countedItemById(dto.countedInventoryItemId);
     }
-    if (dto.countedAmount !== undefined) {
-      this.amount(dto.countedAmount);
+    if (dto.amount !== undefined) {
+      this.amount(dto.amount);
     }
 
     if (dto.countedItemSizeId !== undefined) {

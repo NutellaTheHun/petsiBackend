@@ -41,8 +41,8 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
     // If the templateId is not provided, but a parent is provided, use the parent to set the parentTemplate. (Through create template endpoint)
     if (parent) {
       this.setPropByVal('parentTemplate', parent);
-    } else if (dto.templateId !== undefined) {
-      this.parentTemplateById(dto.templateId);
+    } else if (dto.parentTemplateId !== undefined) {
+      this.parentTemplateById(dto.parentTemplateId);
     }
 
     if (dto.displayName !== undefined) {

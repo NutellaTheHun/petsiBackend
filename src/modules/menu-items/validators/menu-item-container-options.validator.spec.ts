@@ -65,14 +65,14 @@ describe('menu item container options validator', () => {
         mode: 'create',
         createDto: {
           validMenuItemId: itemA.id,
-          validSizeIds: [itemA.validSizes[0].id],
+          validSizeIds: [itemA.sizes[0].id],
         },
       }),
       plainToInstance(NestedMenuItemContainerRuleDto, {
         mode: 'create',
         createDto: {
           validMenuItemId: itemB.id,
-          validSizeIds: [itemB.validSizes[0].id],
+          validSizeIds: [itemB.sizes[0].id],
         },
       }),
     ];
@@ -133,7 +133,7 @@ describe('menu item container options validator', () => {
         mode: 'create',
         createDto: {
           validMenuItemId: itemA.id,
-          validSizeIds: [itemA.validSizes[0].id],
+          validSizeIds: [itemA.sizes[0].id],
         },
       }),
       plainToInstance(NestedMenuItemContainerRuleDto, {
@@ -141,7 +141,7 @@ describe('menu item container options validator', () => {
         id: toUpdate.containerRules[0].id,
         updateDto: {
           validMenuItemId: itemB.id,
-          validSizeIds: [itemB.validSizes[0].id],
+          validSizeIds: [itemB.sizes[0].id],
         },
       }),
     ];

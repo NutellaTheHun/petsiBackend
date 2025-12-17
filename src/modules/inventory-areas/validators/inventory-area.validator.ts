@@ -31,7 +31,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
     const results: ValidationErrorNode[] = [];
 
     await this.helper.enforceUnique(
-      dto.areaName,
+      dto.name,
       this.repo,
       'areaName',
       results,
@@ -48,9 +48,9 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.areaName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.areaName,
+        dto.name,
         this.repo,
         'areaName',
         results,

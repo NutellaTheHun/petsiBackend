@@ -40,23 +40,23 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     if (dto.menuItemId !== undefined) {
       this.menuItemById(dto.menuItemId);
     }
-    if (dto.menuItemSizeId !== undefined) {
-      this.menuItemSizeById(dto.menuItemSizeId);
+    if (dto.sizeId !== undefined) {
+      this.menuItemSizeById(dto.sizeId);
     }
 
     // If the orderId is provided, use it to set the order. (Through order-menu-item endpoint)
     // If the orderId is not provided, but a parent is provided, use the parent to set the order. (Through create order endpoint)
     if (parent) {
       this.setPropByVal('order', parent);
-    } else if (dto.orderId !== undefined) {
-      this.orderById(dto.orderId);
+    } else if (dto.parentOrderId !== undefined) {
+      this.orderById(dto.parentOrderId);
     }
 
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
     }
-    if (dto.orderedItemContainerDtos !== undefined) {
-      this.containerItemsByBuilder(dto.orderedItemContainerDtos);
+    if (dto.containerOrderMenuItemDtos !== undefined) {
+      this.containerItemsByBuilder(dto.containerOrderMenuItemDtos);
     }
   }
 
@@ -64,14 +64,14 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     if (dto.menuItemId !== undefined) {
       this.menuItemById(dto.menuItemId);
     }
-    if (dto.menuItemSizeId !== undefined) {
-      this.menuItemSizeById(dto.menuItemSizeId);
+    if (dto.sizeId !== undefined) {
+      this.menuItemSizeById(dto.sizeId);
     }
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
     }
-    if (dto.orderedItemContainerDtos !== undefined) {
-      this.containerItemsByBuilder(dto.orderedItemContainerDtos);
+    if (dto.containerOrderMenuItemDtos !== undefined) {
+      this.containerItemsByBuilder(dto.containerOrderMenuItemDtos);
     }
   }
 

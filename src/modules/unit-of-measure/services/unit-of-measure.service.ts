@@ -43,7 +43,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     manager: EntityManager,
   ): Promise<UnitOfMeasure> {
     const result = manager.create(UnitOfMeasure, {
-      name: dto.unitName,
+      name: dto.name,
       abbreviation: dto.abbreviation,
       category: dto.categoryId ? { id: dto.categoryId } : null,
       conversionFactorToBase: dto.conversionFactorToBase,
@@ -70,8 +70,8 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
       entity.conversionFactorToBase = dto.conversionFactorToBase;
     }
 
-    if (dto.unitName !== undefined) {
-      entity.name = dto.unitName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 

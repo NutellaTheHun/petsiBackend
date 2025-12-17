@@ -11,7 +11,7 @@ export async function OrderContainerItemCreateInTransaction(
       parentOrderItem: { id: dto.parentOrderMenuItemId },
     }),
     containedItem: { id: dto.containedMenuItemId },
-    containedItemSize: { id: dto.containedMenuItemSizeId },
+    containedItemSize: { id: dto.containedItemSizeId },
     quantity: dto.quantity,
   });
   return result;

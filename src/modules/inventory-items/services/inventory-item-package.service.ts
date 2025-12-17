@@ -40,7 +40,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     manager: EntityManager,
   ): Promise<InventoryItemPackage> {
     const result = manager.create(InventoryItemPackage, {
-      packageName: dto.packageName,
+      packageName: dto.name,
     });
     return result;
   }
@@ -49,8 +49,8 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     manager: EntityManager,
     entity: InventoryItemPackage,
   ): Promise<void> {
-    if (dto.packageName !== undefined) {
-      entity.packageName = dto.packageName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -58,7 +58,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     name: string,
     relations?: Array<keyof InventoryItemPackage>,
   ): Promise<InventoryItemPackage | null> {
-    return await this.repo.findOne({ where: { packageName: name }, relations });
+    return await this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

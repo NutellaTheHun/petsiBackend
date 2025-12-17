@@ -34,23 +34,23 @@ export class OrderContainerItem {
   /**
    * The parent {@link OrderMenuItem} that represents the ordering of a {@link MenuItem}, where the ordered item is a container of other items.
    *
-   * Example: Box of 6 Scones is the {@link parentOrderItem} of the {@link containedItem} { Lemon Glaze, size: regular, quantity: 6 }
+   * Example: Box of 6 Scones is the {@link parentOrderMenuItem} of the {@link containedMenuItem} { Lemon Glaze, size: regular, quantity: 6 }
    */
   @ApiProperty({
     example: orderMenuItemExample(new Set<string>(), true),
     description: 'The OrderMenuItem that is the container for this item',
     type: () => OrderMenuItem,
   })
-  @ManyToOne(() => OrderMenuItem, (parent) => parent.containerItems, {
+  @ManyToOne(() => OrderMenuItem, (parent) => parent.containerOrderMenuItems, {
     onDelete: 'CASCADE',
     orphanedRowAction: 'delete',
   })
-  parentOrderItem: OrderMenuItem;
+  parentOrderMenuItem: OrderMenuItem;
 
   /**
-   * The {@link MenuItem} within the {@link parentOrderItem} that is being ordered.
+   * The {@link MenuItem} within the {@link parentOrderMenuItem} that is being ordered.
    *
-   * Example: Within the parent {@link menuItem} Breakfast Pastry Platter, size: small, one of the {@link containedItem} would be a Blueberry muffin, size regular, quantity 2.
+   * Example: Within the parent {@link menuItem} Breakfast Pastry Platter, size: small, one of the {@link containedMenuItem} would be a Blueberry muffin, size regular, quantity 2.
    */
   @ApiProperty({
     example: menuItemExample(new Set<string>(), true),
@@ -61,10 +61,10 @@ export class OrderContainerItem {
     eager: true,
     onDelete: 'CASCADE',
   })
-  containedItem: MenuItem;
+  containedMenuItem: MenuItem;
 
   /**
-   * The {@link MenuItemSize} of the {@link containedItem} within the {@link parentOrderItem}.
+   * The {@link MenuItemSize} of the {@link containedMenuItem} within the {@link parentOrderMenuItem}.
    *
    * Example: containedItem: Blueberry muffin, containedSize: regular ...
    */

@@ -31,7 +31,7 @@ export class Template {
    */
   @ApiProperty({ example: 'Spring Pies', description: 'Name of the template' })
   @Column({ unique: true })
-  templateName: string;
+  name: string;
 
   /**
    * Differentiates whether the template is for pie products or not.
@@ -59,5 +59,5 @@ export class Template {
     (templateItem) => templateItem.parentTemplate,
     { cascade: true },
   )
-  templateItems: TemplateMenuItem[] = [];
+  templateMenuItems: TemplateMenuItem[] = [];
 }

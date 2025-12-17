@@ -18,7 +18,7 @@ export class UpdateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly quantityMeasurementId?: number;
+  readonly quantityMeasureTypeId?: number;
 
   @ApiPropertyOptional({
     description:

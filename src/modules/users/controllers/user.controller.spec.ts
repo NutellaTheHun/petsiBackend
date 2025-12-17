@@ -22,22 +22,22 @@ describe('User Controller', () => {
 
     let users = [
       {
-        username: USER_A,
+        name: USER_A,
         password: await hashPassword('passA'),
         email: 'email_A@email.com',
       } as User,
       {
-        username: USER_B,
+        name: USER_B,
         password: await hashPassword('passB'),
         email: 'email_B@email.com',
       } as User,
       {
-        username: USER_C,
+        name: USER_C,
         password: await hashPassword('passC'),
         email: 'email_C@email.com',
       } as User,
       {
-        username: USER_D,
+        name: USER_D,
         password: await hashPassword('passD'),
         email: 'email_D@email.com',
       } as User,
@@ -47,16 +47,14 @@ describe('User Controller', () => {
     jest
       .spyOn(usersService, 'create')
       .mockImplementation(async (createDto: CreateUserDto) => {
-        const exists = users.find(
-          (user) => user.username === createDto.username,
-        );
+        const exists = users.find((user) => user.name === createDto.name);
         if (exists) {
           throw new BadRequestException();
         }
 
         const user = {
           id: userId++,
-          username: createDto.username,
+          name: createDto.name,
           email: createDto.email,
           password: createDto.password,
         } as User;
@@ -80,8 +78,8 @@ describe('User Controller', () => {
         if (updateDto.password) {
           users[index].password = updateDto.password;
         }
-        if (updateDto.username) {
-          users[index].username = updateDto.username;
+        if (updateDto.name) {
+          users[index].name = updateDto.name;
         }
 
         return users[index];
@@ -128,7 +126,7 @@ describe('User Controller', () => {
 
   it('should create a user', async () => {
     const dto = {
-      username: 'newUser',
+      name: 'newUser',
       password: 'newPass',
       email: 'newEmail@email.com',
     } as CreateUserDto;
@@ -138,7 +136,7 @@ describe('User Controller', () => {
 
   it('should fail to create a user (non-unique username)', async () => {
     const dto = {
-      username: 'newUser',
+      name: 'newUser',
       password: 'newPass',
       email: 'newEmail@email.com',
     } as CreateUserDto;
@@ -153,12 +151,12 @@ describe('User Controller', () => {
     }
 
     const dto = {
-      username: 'updatedUser',
+      name: 'updatedUser',
     } as UpdateUserDto;
     const result = await controller.update(userToUpdate.id, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.username).toEqual('updatedUser');
+    expect(result?.name).toEqual('updatedUser');
   });
 
   it('should remove a user by id', async () => {

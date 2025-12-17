@@ -50,11 +50,11 @@ export class OrderBuilder extends BuilderBase<Order> {
     if (dto.note !== undefined) {
       this.note(dto.note);
     }
-    if (dto.orderedMenuItemDtos !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedMenuItemDtos);
+    if (dto.orderedItemDtos !== undefined) {
+      this.orderedItemsByBuilder(dto.orderedItemDtos);
     }
-    if (dto.orderCategoryId !== undefined) {
-      this.categoryById(dto.orderCategoryId);
+    if (dto.categoryId !== undefined) {
+      this.categoryById(dto.categoryId);
     }
     if (dto.phoneNumber !== undefined) {
       this.phoneNumber(dto.phoneNumber);
@@ -92,11 +92,11 @@ export class OrderBuilder extends BuilderBase<Order> {
     if (dto.note !== undefined) {
       this.note(dto.note);
     }
-    if (dto.orderedMenuItemDtos !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedMenuItemDtos);
+    if (dto.orderedItemDtos !== undefined) {
+      this.orderedItemsByBuilder(dto.orderedItemDtos);
     }
-    if (dto.orderCategoryId !== undefined) {
-      this.categoryById(dto.orderCategoryId);
+    if (dto.categoryId !== undefined) {
+      this.categoryById(dto.categoryId);
     }
     if (dto.phoneNumber !== undefined) {
       this.phoneNumber(dto.phoneNumber);

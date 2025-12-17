@@ -18,9 +18,9 @@ export async function OrderMenuItemUpdateInTransaction(
     });
   }
 
-  if (dto.menuItemSizeId !== undefined) {
+  if (dto.sizeId !== undefined) {
     entity.size = manager.create(MenuItemSize, {
-      id: dto.menuItemSizeId,
+      id: dto.sizeId,
     });
   }
 
@@ -28,13 +28,13 @@ export async function OrderMenuItemUpdateInTransaction(
     entity.quantity = dto.quantity;
   }
 
-  if (dto.orderedItemContainerDtos) {
+  if (dto.containerOrderMenuItemDtos) {
     const existingItems = manager.find(OrderContainerItem, {
-      where: { parentOrderItem: { id: entity.id } },
+      where: { parentOrderMenuItem: { id: entity.id } },
     });
     const existingMap = new Map((await existingItems).map((i) => [i.id, i]));
 
-    for (const nestedDto of dto.orderedItemContainerDtos) {
+    for (const nestedDto of dto.containerOrderMenuItemDtos) {
       if (nestedDto.createDto) {
         const newItem = await OrderContainerItemCreateInTransaction(
           nestedDto.createDto,
@@ -59,6 +59,6 @@ export async function OrderMenuItemUpdateInTransaction(
         );
       }
     }
-    entity.containerItems = Array.from(existingMap.values());
+    entity.containerOrderMenuItems = Array.from(existingMap.values());
   }
 }

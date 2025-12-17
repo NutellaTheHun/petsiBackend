@@ -103,5 +103,5 @@ export class RecipeIngredient {
     type: UnitOfMeasure,
   })
   @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-  quantityMeasure: UnitOfMeasure;
+  quantityMeasureType: UnitOfMeasure;
 }

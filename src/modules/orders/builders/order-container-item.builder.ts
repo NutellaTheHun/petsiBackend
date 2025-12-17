@@ -39,8 +39,8 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
     dto: CreateOrderContainerItemDto,
     parent?: OrderMenuItem,
   ): void {
-    if (dto.containedMenuItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedMenuItemSizeId);
+    if (dto.containedItemSizeId !== undefined) {
+      this.containedItemSizeById(dto.containedItemSizeId);
     }
     if (dto.containedMenuItemId !== undefined) {
       this.containedMenuItemById(dto.containedMenuItemId);
@@ -60,8 +60,8 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
   }
 
   protected updateEntity(dto: UpdateOrderContainerItemDto): void {
-    if (dto.containedMenuItemSizeId !== undefined) {
-      this.containedItemSizeById(dto.containedMenuItemSizeId);
+    if (dto.containedItemSizeId !== undefined) {
+      this.containedItemSizeById(dto.containedItemSizeId);
     }
     if (dto.containedMenuItemId !== undefined) {
       this.containedMenuItemById(dto.containedMenuItemId);

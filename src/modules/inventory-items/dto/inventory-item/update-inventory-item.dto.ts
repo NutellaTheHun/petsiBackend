@@ -16,7 +16,7 @@ export class UpdateInventoryItemDto {
   })
   @IsString()
   @IsOptional()
-  readonly itemName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
@@ -26,7 +26,7 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly inventoryItemCategoryId?: number;
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     example: 2,
@@ -69,7 +69,7 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly itemSizeDtos?: NestedInventoryItemSizeDto[];
+  readonly sizeDtos?: NestedInventoryItemSizeDto[];
 
   /*
   @ApiPropertyOptional({

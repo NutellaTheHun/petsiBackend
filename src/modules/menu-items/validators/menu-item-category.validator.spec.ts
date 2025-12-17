@@ -38,7 +38,7 @@ describe('menu item category validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      categoryName: 'TEST NAME',
+      name: 'TEST NAME',
     } as CreateMenuItemCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -47,7 +47,7 @@ describe('menu item category validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      categoryName: CAT_RED,
+      name: CAT_RED,
     } as CreateMenuItemCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -64,7 +64,7 @@ describe('menu item category validator', () => {
     }
 
     const dto = {
-      categoryName: 'UPDATE TEST',
+      name: 'UPDATE TEST',
     } as UpdateMenuItemCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -78,7 +78,7 @@ describe('menu item category validator', () => {
     }
 
     const dto = {
-      categoryName: CAT_RED,
+      name: CAT_RED,
     } as UpdateMenuItemCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

@@ -63,7 +63,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     }
 
     const result = manager.create(Recipe, {
-      recipeName: dto.recipeName,
+      recipeName: dto.name,
 
       isIngredient: dto.isIngredient,
 
@@ -75,16 +75,16 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         ? dto.batchResultQuantity
         : null,
 
-      batchResultMeasurement: dto.batchResultMeasurementId
-        ? { id: dto.batchResultMeasurementId }
+      batchResultMeasurement: dto.batchResultUnitTypeId
+        ? { id: dto.batchResultUnitTypeId }
         : null,
 
       servingSizeQuantity: dto.servingSizeQuantity
         ? dto.servingSizeQuantity
         : null,
 
-      servingSizeMeasurement: dto.servingSizeMeasurementId
-        ? { id: dto.servingSizeMeasurementId }
+      servingSizeMeasurement: dto.servingSizeUnitTypeId
+        ? { id: dto.servingSizeUnitTypeId }
         : null,
 
       salesPrice: dto.salesPrice ? dto.salesPrice.toString() : null,
@@ -104,9 +104,9 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     manager: EntityManager,
     entity: Recipe,
   ): Promise<void> {
-    if (dto.batchResultMeasurementId !== undefined) {
-      entity.batchResultMeasurement = manager.create(UnitOfMeasure, {
-        id: dto.batchResultMeasurementId,
+    if (dto.batchResultUnitTypeId !== undefined) {
+      entity.batchResultUnitType = manager.create(UnitOfMeasure, {
+        id: dto.batchResultUnitTypeId,
       });
     }
 
@@ -132,17 +132,17 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       });
     }
 
-    if (dto.recipeName !== undefined) {
-      entity.recipeName = dto.recipeName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
 
     if (dto.salesPrice !== undefined) {
       entity.salesPrice = dto.salesPrice.toString();
     }
 
-    if (dto.servingSizeMeasurementId !== undefined) {
-      entity.servingSizeMeasurement = manager.create(UnitOfMeasure, {
-        id: dto.servingSizeMeasurementId,
+    if (dto.servingSizeUnitTypeId !== undefined) {
+      entity.servingSizeUnitType = manager.create(UnitOfMeasure, {
+        id: dto.servingSizeUnitTypeId,
       });
     }
 
@@ -196,7 +196,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     name: string,
     relations?: Array<keyof Recipe>,
   ): Promise<Recipe | null> {
-    return this.repo.findOne({ where: { recipeName: name }, relations });
+    return this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySearch(

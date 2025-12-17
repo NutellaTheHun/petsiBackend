@@ -13,14 +13,14 @@ export class MenuItemSizeBuilder extends BuilderBase<MenuItemSize> {
   }
 
   protected createEntity(dto: CreateMenuItemSizeDto): void {
-    if (dto.sizeName !== undefined) {
-      this.name(dto.sizeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateMenuItemSizeDto): void {
-    if (dto.sizeName !== undefined) {
-      this.name(dto.sizeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 

@@ -10,7 +10,9 @@ export async function TemplateMenuItemCreateInTransaction(
     displayName: dto.displayName,
     menuItem: { id: dto.menuItemId },
     tablePosIndex: dto.tablePosIndex,
-    ...(dto.templateId && { parentTemplate: { id: dto.templateId } }),
+    ...(dto.parentTemplateId && {
+      parentTemplate: { id: dto.parentTemplateId },
+    }),
   });
 
   return result;

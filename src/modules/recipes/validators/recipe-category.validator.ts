@@ -34,7 +34,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     const results: ValidationErrorNode[] = [];
 
     // Exists
-    if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
+    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
       const err = new ValidationErrorNode(
         'categoryName',
         id,
@@ -64,11 +64,9 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.categoryName) {
+    if (dto.name) {
       // Exists
-      if (
-        await this.helper.exists(this.repo, 'categoryName', dto.categoryName)
-      ) {
+      if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
         const err = new ValidationErrorNode(
           'categoryName',
           id,

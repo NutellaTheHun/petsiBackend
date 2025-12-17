@@ -36,7 +36,7 @@ describe('menu item size validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      sizeName: 'TEST CREATE',
+      name: 'TEST CREATE',
     } as CreateMenuItemSizeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -45,7 +45,7 @@ describe('menu item size validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      sizeName: SIZE_TWO,
+      name: SIZE_TWO,
     } as CreateMenuItemSizeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -62,7 +62,7 @@ describe('menu item size validator', () => {
     }
 
     const dto = {
-      sizeName: 'TEST UPDATE',
+      name: 'TEST UPDATE',
     } as UpdateMenuItemSizeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -76,7 +76,7 @@ describe('menu item size validator', () => {
     }
 
     const dto = {
-      sizeName: SIZE_ONE,
+      name: SIZE_ONE,
     } as UpdateMenuItemSizeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

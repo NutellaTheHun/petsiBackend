@@ -16,7 +16,7 @@ export class CreateInventoryItemDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly itemName: string;
+  readonly name: string;
 
   @ApiPropertyOptional({
     description: 'Id of InventoryItemCategory entity.',
@@ -26,7 +26,7 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly inventoryItemCategoryId?: number;
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     description: 'Id of InventoryItemVendor entity.',
@@ -56,5 +56,5 @@ export class CreateInventoryItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly itemSizeDtos?: NestedInventoryItemSizeDto[];
+  readonly sizeDtos?: NestedInventoryItemSizeDto[];
 }

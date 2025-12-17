@@ -60,7 +60,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
       }
     }
     const result = manager.create(RecipeCategory, {
-      categoryName: dto.categoryName,
+      categoryName: dto.name,
       subCategories,
     });
     return result;
@@ -71,8 +71,8 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     manager: EntityManager,
     entity: RecipeCategory,
   ): Promise<void> {
-    if (dto.categoryName !== undefined) {
-      entity.categoryName = dto.categoryName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
 
     if (dto.subCategoryDtos) {
@@ -107,7 +107,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
         }
       }
 
-      entity.subCategories = Array.from(existingMap.values());
+      entity.subCategorys = Array.from(existingMap.values());
     }
   }
 
@@ -116,7 +116,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     relations?: Array<keyof RecipeCategory>,
   ): Promise<RecipeCategory | null> {
     return await this.repo.findOne({
-      where: { categoryName: name },
+      where: { name: name },
       relations,
     });
   }

@@ -102,10 +102,10 @@ export class InventoryAreaTestUtil {
 
     for (let i = 0; i < counts.length; i++) {
       const itemA = items[itemPtr++ % items.length];
-      if (!itemA.itemSizes) {
+      if (!itemA.sizes) {
         throw new Error('itemA sizes null');
       }
-      const sizeA = itemA.itemSizes[0];
+      const sizeA = itemA.sizes[0];
       results.push(
         await this.itemCountBuilder
           .reset()
@@ -117,10 +117,10 @@ export class InventoryAreaTestUtil {
       );
 
       const itemB = items[itemPtr++ % items.length];
-      if (!itemB.itemSizes) {
+      if (!itemB.sizes) {
         throw new Error('itemA sizes null');
       }
-      const sizeB = itemB.itemSizes[0];
+      const sizeB = itemB.sizes[0];
       results.push(
         await this.itemCountBuilder
           .reset()

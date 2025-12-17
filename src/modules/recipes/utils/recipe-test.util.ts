@@ -353,9 +353,7 @@ export class RecipeTestUtil {
     );
 
     for (const category of categories) {
-      const exists = await this.categoryService.findOneByName(
-        category.categoryName,
-      );
+      const exists = await this.categoryService.findOneByName(category.name);
       if (!exists) {
         toInsert.push(category);
       }
@@ -386,9 +384,7 @@ export class RecipeTestUtil {
     );
 
     for (const subCat of subCategories) {
-      const exists = await this.subCategoryService.findOneByName(
-        subCat.subCategoryName,
-      );
+      const exists = await this.subCategoryService.findOneByName(subCat.name);
       if (!exists) {
         toInsert.push(subCat);
       }
@@ -416,7 +412,7 @@ export class RecipeTestUtil {
     testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
 
     for (const recipe of recipes) {
-      const exists = await this.recipeService.findOneByName(recipe.recipeName);
+      const exists = await this.recipeService.findOneByName(recipe.name);
       if (!exists) {
         toInsert.push(recipe);
       }

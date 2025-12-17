@@ -27,7 +27,7 @@ export class InventoryItemCategory {
 
   @ApiProperty({ example: 'Produce', description: 'Name of the category' })
   @Column({ unique: true })
-  categoryName: string;
+  name: string;
 
   /**
    * Hold reference to all {@link InventoryItem} under it's category.
@@ -41,5 +41,5 @@ export class InventoryItemCategory {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.category)
-  categoryItems: InventoryItem[] = [];
+  inventoryItems: InventoryItem[] = [];
 }

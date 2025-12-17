@@ -69,7 +69,7 @@ export class TemplateMenuItem {
     description: 'The template this template item is for',
     type: () => Template,
   })
-  @ManyToOne(() => Template, (template) => template.templateItems, {
+  @ManyToOne(() => Template, (template) => template.templateMenuItems, {
     orphanedRowAction: 'delete',
     onDelete: 'CASCADE',
   })

@@ -29,7 +29,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
     const results: ValidationErrorNode[] = [];
 
     // exists
-    if (await this.helper.exists(this.repo, 'templateName', dto.templateName)) {
+    if (await this.helper.exists(this.repo, 'templateName', dto.name)) {
       const err = new ValidationErrorNode(
         'templateName',
         id,
@@ -38,10 +38,10 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       results.push(err);
     }
 
-    if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
+    if (dto.templateMenuItemDtos && dto.templateMenuItemDtos.length > 0) {
       // check duplicate templateMenuItems
       const seen = new Set<number>();
-      for (const nestedDto of dto.templateItemDtos) {
+      for (const nestedDto of dto.templateMenuItemDtos) {
         if (!nestedDto.createDto) {
           throw new Error(
             `create template validation: nested template item missing create dto`,
@@ -63,7 +63,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
           'templateItems',
-          dto.templateItemDtos,
+          dto.templateMenuItemDtos,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);
@@ -80,10 +80,8 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
     const results: ValidationErrorNode[] = [];
 
     // exists
-    if (dto.templateName) {
-      if (
-        await this.helper.exists(this.repo, 'templateName', dto.templateName)
-      ) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'templateName', dto.name)) {
         const err = new ValidationErrorNode(
           'templateName',
           id,
@@ -93,7 +91,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       }
     }
 
-    if (dto.templateItemDtos && dto.templateItemDtos.length > 0) {
+    if (dto.templateMenuItemDtos && dto.templateMenuItemDtos.length > 0) {
       // check duplicate templateMenuItems
       const itemMap = new Map<string | number, number>();
       const seen = new Set<number>();
@@ -107,10 +105,10 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
           `update template validation: template being updated with id ${id} not found`,
         );
       }
-      for (const entry of currentTemplate.templateItems) {
+      for (const entry of currentTemplate.templateMenuItems) {
         itemMap.set(entry.id, entry.menuItem.id);
       }
-      for (const nestedDto of dto.templateItemDtos) {
+      for (const nestedDto of dto.templateMenuItemDtos) {
         if (nestedDto.createDto && nestedDto.createId) {
           itemMap.set(nestedDto.createId, nestedDto.createDto.menuItemId);
         } else if (nestedDto.updateDto && nestedDto.id) {
@@ -136,7 +134,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
           'templateItems',
-          dto.templateItemDtos,
+          dto.templateMenuItemDtos,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

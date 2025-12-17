@@ -13,26 +13,26 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
   }
 
   protected createEntity(dto: CreateLabelTypeDto): void {
-    if (dto.labelTypeName !== undefined) {
-      this.name(dto.labelTypeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.labelTypeLength !== undefined) {
-      this.labelLength(dto.labelTypeLength);
+    if (dto.length !== undefined) {
+      this.labelLength(dto.length);
     }
-    if (dto.labelTypeWidth !== undefined) {
-      this.labelWidth(dto.labelTypeWidth);
+    if (dto.width !== undefined) {
+      this.labelWidth(dto.width);
     }
   }
 
   protected updateEntity(dto: UpdateLabelTypeDto): void {
-    if (dto.labelTypeName !== undefined) {
-      this.name(dto.labelTypeName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
-    if (dto.labelTypeLength !== undefined) {
-      this.labelLength(dto.labelTypeLength);
+    if (dto.length !== undefined) {
+      this.labelLength(dto.length);
     }
-    if (dto.labelTypeWidth !== undefined) {
-      this.labelWidth(dto.labelTypeWidth);
+    if (dto.width !== undefined) {
+      this.labelWidth(dto.width);
     }
   }
 

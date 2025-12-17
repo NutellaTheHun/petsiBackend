@@ -52,7 +52,7 @@ describe('recipe category validator', () => {
       }),
     ];
     const dto = {
-      categoryName: REC_CAT_A,
+      name: REC_CAT_A,
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
@@ -76,7 +76,7 @@ describe('recipe category validator', () => {
       }),
     ];
     const dto = {
-      categoryName: REC_CAT_A,
+      name: REC_CAT_A,
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
@@ -103,7 +103,7 @@ describe('recipe category validator', () => {
       }),
     ];
     const dto = {
-      categoryName: 'testCatValidFail',
+      name: 'testCatValidFail',
       subCategoryDtos: subCatDtos,
     } as CreateRecipeCategoryDto;
 
@@ -129,7 +129,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategories[0].id,
+        id: toUpdate.subCategorys[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -137,7 +137,7 @@ describe('recipe category validator', () => {
     ];
 
     const dto = {
-      categoryName: 'UPDATE',
+      name: 'UPDATE',
       subCategoryDtos: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
@@ -160,7 +160,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategories[0].id,
+        id: toUpdate.subCategorys[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -168,7 +168,7 @@ describe('recipe category validator', () => {
     ];
 
     const dto = {
-      categoryName: REC_CAT_B,
+      name: REC_CAT_B,
       subCategoryDtos: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
@@ -194,7 +194,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategories[0].id,
+        id: toUpdate.subCategorys[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -202,7 +202,7 @@ describe('recipe category validator', () => {
     ];
 
     const dto = {
-      categoryName: REC_CAT_B,
+      name: REC_CAT_B,
       subCategoryDtos: subCatDtos,
     } as UpdateRecipeCategoryDto;
 

@@ -45,7 +45,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     // valid contained item size to menu item
     await this.helper.enforceInList(
       dto.containedItemSizeId,
-      containedItem.validSizes.map((x) => x.id),
+      containedItem.sizes.map((x) => x.id),
       results,
       'Invalid size',
       id,
@@ -95,9 +95,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
 
       // validate parent item / size
       if (dto.parentItemSizeId) {
-        if (
-          !this.helper.isValidSize(dto.parentItemSizeId, parentItem.validSizes)
-        ) {
+        if (!this.helper.isValidSize(dto.parentItemSizeId, parentItem.sizes)) {
           const err = new ValidationErrorNode(
             'parentItemSize',
             id,
@@ -108,7 +106,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         // valid contained item size to menu item
         await this.helper.enforceInList(
           dto.parentItemSizeId,
-          parentItem.validSizes.map((x) => x.id),
+          parentItem.sizes.map((x) => x.id),
           'parentItemSize',
           results,
           'Invalid size',
@@ -133,7 +131,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     const results: ValidationErrorNode[] = [];
 
     // validate size
-    if ((dto.containedItemId || dto.containedItemSizeId) && id) {
+    if ((dto.containedMenuItemId || dto.containedItemSizeId) && id) {
       const currentEntity = await this.repo.findOne({
         where: { id },
         relations: ['containedItem', 'containedItemSize'],
@@ -144,7 +142,8 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         );
       }
 
-      const itemId = dto.containedItemId ?? currentEntity.containedItem.id;
+      const itemId =
+        dto.containedMenuItemId ?? currentEntity.containedMenuItem.id;
       const sizeId =
         dto.containedItemSizeId ?? currentEntity.containedItemSize.id;
 
@@ -165,7 +164,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         results.push(err);
       }
 
-      if (!this.helper.isValidSize(sizeId, containedItem.validSizes)) {
+      if (!this.helper.isValidSize(sizeId, containedItem.sizes)) {
         const err = new ValidationErrorNode(
           'containedItemSize',
           id,

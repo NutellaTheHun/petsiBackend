@@ -32,7 +32,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
 
     // Already exists check
     await this.helper.enforceUnique(
-      dto.packageName,
+      dto.name,
       this.repo,
       'packageName',
       results,
@@ -49,9 +49,9 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.packageName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.packageName,
+        dto.name,
         this.repo,
         'packageName',
         results,

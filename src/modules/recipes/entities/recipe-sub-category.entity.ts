@@ -43,7 +43,7 @@ export class RecipeSubCategory {
     description: 'Name of the subcategory',
   })
   @Column()
-  subCategoryName: string;
+  name: string;
 
   /**
    * The owning category

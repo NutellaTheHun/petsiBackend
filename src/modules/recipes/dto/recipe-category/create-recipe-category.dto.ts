@@ -9,7 +9,7 @@ export class CreateRecipeCategoryDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly categoryName: string;
+  readonly name: string;
 
   @ApiPropertyOptional({
     description:

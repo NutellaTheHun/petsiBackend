@@ -48,11 +48,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
       this.InventoryItemById(dto.inventoryItemId);
     }
 
-    if (dto.inventoryPackageId !== undefined) {
-      this.packageById(dto.inventoryPackageId);
+    if (dto.packageId !== undefined) {
+      this.packageById(dto.packageId);
     }
-    if (dto.measureUnitId !== undefined) {
-      this.unitOfMeasureById(dto.measureUnitId);
+    if (dto.measureTypeId !== undefined) {
+      this.unitOfMeasureById(dto.measureTypeId);
     }
     if (dto.cost !== undefined) {
       this.costByValue(dto.cost);
@@ -65,11 +65,11 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
   }
 
   protected updateEntity(dto: UpdateInventoryItemSizeDto): void {
-    if (dto.inventoryPackageId !== undefined) {
-      this.packageById(dto.inventoryPackageId);
+    if (dto.packageId !== undefined) {
+      this.packageById(dto.packageId);
     }
-    if (dto.measureUnitId !== undefined) {
-      this.unitOfMeasureById(dto.measureUnitId);
+    if (dto.measureTypeId !== undefined) {
+      this.unitOfMeasureById(dto.measureTypeId);
     }
     if (dto.cost !== undefined) {
       this.costByValue(dto.cost);

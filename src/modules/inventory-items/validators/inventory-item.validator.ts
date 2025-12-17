@@ -36,7 +36,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
 
     // name
     await this.helper.enforceUnique(
-      dto.itemName,
+      dto.name,
       this.repo,
       'itemName',
       results,
@@ -44,11 +44,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       id,
     );
 
-    if (dto.itemSizeDtos?.length) {
+    if (dto.sizeDtos?.length) {
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
-        dto.itemSizeDtos,
+        dto.sizeDtos,
       );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);
@@ -64,9 +64,9 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.itemName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.itemName,
+        dto.name,
         this.repo,
         'itemName',
         results,
@@ -75,11 +75,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       );
     }
 
-    if (dto.itemSizeDtos?.length) {
+    if (dto.sizeDtos?.length) {
       // nested inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
-        dto.itemSizeDtos,
+        dto.sizeDtos,
       );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

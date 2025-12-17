@@ -18,7 +18,7 @@ export class UpdateRecipeDto {
   })
   @IsString()
   @IsOptional()
-  readonly recipeName?: string;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: 'Id of the MenuItem that the recipe produces.',
@@ -58,7 +58,7 @@ export class UpdateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly batchResultMeasurementId?: number;
+  readonly batchResultUnitTypeId?: number;
 
   @ApiPropertyOptional({
     description:
@@ -80,7 +80,7 @@ export class UpdateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly servingSizeMeasurementId?: number;
+  readonly servingSizeUnitTypeId?: number;
 
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',

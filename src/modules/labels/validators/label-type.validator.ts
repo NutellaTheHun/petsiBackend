@@ -29,7 +29,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
 
     // name
     await this.helper.enforceUnique(
-      dto.labelTypeName,
+      dto.name,
       this.repo,
       'labelTypeName',
       results,
@@ -39,7 +39,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
 
     // length
     this.helper.enforcePositive(
-      dto.labelTypeLength,
+      dto.length,
       'labelTypeLength',
       results,
       'Must be greater than 0',
@@ -48,7 +48,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
 
     // width
     this.helper.enforcePositive(
-      dto.labelTypeWidth,
+      dto.width,
       'labelTypeWidth',
       results,
       'Must be greater than 0',
@@ -64,9 +64,9 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.labelTypeName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.labelTypeName,
+        dto.name,
         this.repo,
         'labelTypeName',
         results,
@@ -75,18 +75,18 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
       );
     }
 
-    if (dto.labelTypeLength) {
+    if (dto.length) {
       this.helper.enforcePositive(
-        dto.labelTypeLength,
+        dto.length,
         'labelTypeLength',
         results,
         'Must be greater than 0',
         id,
       );
     }
-    if (dto.labelTypeWidth) {
+    if (dto.width) {
       this.helper.enforcePositive(
-        dto.labelTypeWidth,
+        dto.width,
         'labelTypeWidth',
         results,
         'Must be greater than 0',

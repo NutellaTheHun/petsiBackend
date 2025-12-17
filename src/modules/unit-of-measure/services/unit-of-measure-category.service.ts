@@ -42,8 +42,10 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     manager: EntityManager,
   ): Promise<UnitOfMeasureCategory> {
     const result = manager.create(UnitOfMeasureCategory, {
-      categoryName: dto.categoryName,
-      baseConversionUnit: dto.baseUnitId ? { id: dto.baseUnitId } : null,
+      categoryName: dto.name,
+      baseConversionUnit: dto.baseConversionUnitId
+        ? { id: dto.baseConversionUnitId }
+        : null,
     });
     return result;
   }
@@ -53,14 +55,14 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     manager: EntityManager,
     entity: UnitOfMeasureCategory,
   ): Promise<void> {
-    if (dto.baseUnitId !== undefined) {
+    if (dto.baseConversionUnitId !== undefined) {
       entity.baseConversionUnit = manager.create(UnitOfMeasure, {
-        id: dto.baseUnitId,
+        id: dto.baseConversionUnitId,
       });
     }
 
-    if (dto.categoryName !== undefined) {
-      entity.categoryName = dto.categoryName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -69,7 +71,7 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     relations?: Array<keyof UnitOfMeasureCategory>,
   ): Promise<UnitOfMeasureCategory | null> {
     return this.repo.findOne({
-      where: { categoryName: categoryName },
+      where: { name: categoryName },
       relations,
     });
   }

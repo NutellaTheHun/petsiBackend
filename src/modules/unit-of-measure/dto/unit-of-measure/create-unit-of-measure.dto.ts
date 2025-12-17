@@ -14,7 +14,7 @@ export class CreateUnitOfMeasureDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly unitName: string;
+  readonly name: string;
 
   @ApiProperty({
     description: "abbrieviation of the UnitofMeasure entity's name.",

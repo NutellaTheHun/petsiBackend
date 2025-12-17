@@ -67,10 +67,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     // contained item size
     if (
-      !this.helper.isValidSize(
-        dto.containedMenuItemSizeId,
-        containedItem.validSizes,
-      )
+      !this.helper.isValidSize(dto.containedItemSizeId, containedItem.sizes)
     ) {
       const err = new ValidationErrorNode(
         'containedItemSize',
@@ -95,7 +92,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     const validItems = await this.menuItemContainerItemRepo.find({
       where: {
-        parent: { id: parentOrderItem.menuItem.id },
+        parentMenuItem: { id: parentOrderItem.menuItem.id },
         parentItemSize: { id: parentOrderItem.size.id },
       },
       relations: ['containedItem', 'containedItemSize'],
@@ -106,8 +103,8 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     const isValid = validItems.find(
       (x) =>
-        x.containedItem.id === dto.containedMenuItemId &&
-        x.containedItemSize.id === dto.containedMenuItemSizeId,
+        x.containedMenuItem.id === dto.containedMenuItemId &&
+        x.containedItemSize.id === dto.containedItemSizeId,
     );
     if (!isValid) {
       const err = new ValidationErrorNode(
@@ -138,7 +135,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     const results: ValidationErrorNode[] = [];
 
     // Validate new MenuItem / Size combination is valid for parent container
-    if (dto.containedMenuItemId || dto.containedMenuItemSizeId) {
+    if (dto.containedMenuItemId || dto.containedItemSizeId) {
       const currentEntity = await this.repo.findOne({
         where: { id },
         relations: [
@@ -154,8 +151,8 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       }
       const validContainerItems = await this.menuItemContainerItemRepo.find({
         where: {
-          parent: { id: currentEntity.parentOrderItem.menuItem.id },
-          parentItemSize: { id: currentEntity.parentOrderItem.size.id },
+          parentMenuItem: { id: currentEntity.parentOrderMenuItem.menuItem.id },
+          parentItemSize: { id: currentEntity.parentOrderMenuItem.size.id },
         },
         relations: ['containedItem', 'containedItemSize'],
       });
@@ -163,13 +160,15 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
         throw new Error();
       }
 
-      const itemId = dto.containedMenuItemId ?? currentEntity.containedItem.id;
+      const itemId =
+        dto.containedMenuItemId ?? currentEntity.containedMenuItem.id;
       const sizeId =
-        dto.containedMenuItemSizeId ?? currentEntity.containedItemSize.id;
+        dto.containedItemSizeId ?? currentEntity.containedItemSize.id;
 
       const isValid = validContainerItems.find(
         (x) =>
-          x.containedItem.id === itemId && x.containedItemSize.id === sizeId,
+          x.containedMenuItem.id === itemId &&
+          x.containedItemSize.id === sizeId,
       );
       if (!isValid) {
         const err = new ValidationErrorNode(

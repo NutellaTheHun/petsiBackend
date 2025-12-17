@@ -61,7 +61,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
     relations?: Array<keyof InventoryItemSize>,
   ): Promise<InventoryItemSize[] | null> {
     return await this.reop.find({
-      where: { inventoryItem: { itemName: name } },
+      where: { inventoryItem: { name: name } },
       relations,
     });
   }

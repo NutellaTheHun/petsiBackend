@@ -39,7 +39,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     manager: EntityManager,
   ): Promise<InventoryArea> {
     const result = manager.create(InventoryArea, {
-      areaName: dto.areaName,
+      areaName: dto.name,
     });
     return result;
   }
@@ -48,8 +48,8 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     manager: EntityManager,
     entity: InventoryArea,
   ): Promise<void> {
-    if (dto.areaName !== undefined) {
-      entity.areaName = dto.areaName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -57,7 +57,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     name: string,
     relations?: Array<keyof InventoryArea>,
   ): Promise<InventoryArea | null> {
-    return await this.repo.findOne({ where: { areaName: name }, relations });
+    return await this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

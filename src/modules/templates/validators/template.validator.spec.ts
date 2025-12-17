@@ -70,9 +70,9 @@ describe('template validator', () => {
       }),
     ];
     const dto = {
-      templateName: 'CREATE',
+      name: 'CREATE',
       isPie: true,
-      templateItemDtos: itemDtos,
+      templateMenuItemDtos: itemDtos,
     } as CreateTemplateDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -108,9 +108,9 @@ describe('template validator', () => {
       }),
     ];
     const dto = {
-      templateName: template_a,
+      name: template_a,
       isPie: true,
-      templateItemDtos: itemDtos,
+      templateMenuItemDtos: itemDtos,
     } as CreateTemplateDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -153,7 +153,7 @@ describe('template validator', () => {
       }),
       plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
-        id: toUpdate.templateItems[0].id,
+        id: toUpdate.templateMenuItems[0].id,
         updateDto: {
           displayName: 'B',
           menuItemId: itemB.id,
@@ -163,9 +163,9 @@ describe('template validator', () => {
     ];
 
     const dto = {
-      templateName: 'UPDATE',
+      name: 'UPDATE',
       isPie: true,
-      templateItemDtos: itemDtos,
+      templateMenuItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -200,7 +200,7 @@ describe('template validator', () => {
       }),
       plainToInstance(NestedTemplateMenuItemDto, {
         mode: 'update',
-        id: toUpdate.templateItems[0].id,
+        id: toUpdate.templateMenuItems[0].id,
         updateDto: {
           displayName: 'B',
           menuItemId: itemB.id,
@@ -210,9 +210,9 @@ describe('template validator', () => {
     ];
 
     const dto = {
-      templateName: template_b,
+      name: template_b,
       isPie: true,
-      templateItemDtos: itemDtos,
+      templateMenuItemDtos: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

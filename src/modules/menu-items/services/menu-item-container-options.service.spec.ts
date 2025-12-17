@@ -88,7 +88,7 @@ describe('menu item container options service', () => {
         mode: 'create',
         createDto: {
           validMenuItemId: newItems[0].id,
-          validSizeIds: newItems[0].validSizes.map((size) => size.id),
+          validSizeIds: newItems[0].sizes.map((size) => size.id),
           quantity: 2,
         },
       },
@@ -161,7 +161,7 @@ describe('menu item container options service', () => {
     if (!newItem) {
       throw new Error();
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error();
     }
 
@@ -173,7 +173,7 @@ describe('menu item container options service', () => {
       id: updateDtos[0].id,
       updateDto: {
         validMenuItemId: newItem.id,
-        validSizeIds: [newItem.validSizes[0].id],
+        validSizeIds: [newItem.sizes[0].id],
       },
     });
 
@@ -186,7 +186,7 @@ describe('menu item container options service', () => {
     for (const compOption of result.containerRules) {
       if (compOption.id === compToModId) {
         expect(compOption.validItem.id).toEqual(newItem.id);
-        expect(compOption.validSizes[0].id).toEqual(newItem.validSizes[0].id);
+        expect(compOption.validSizes[0].id).toEqual(newItem.sizes[0].id);
       }
     }
   });

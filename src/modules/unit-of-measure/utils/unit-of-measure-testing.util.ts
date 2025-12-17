@@ -224,8 +224,8 @@ export class UnitOfMeasureTestingUtil {
     category.baseConversionUnit = baseUnit;
 
     await await this.categoryService.update(category.id, {
-      categoryName: category.categoryName,
-      baseUnitId: category.baseConversionUnit.id,
+      name: category.name,
+      baseConversionUnitId: category.baseConversionUnit.id,
     } as UpdateUnitOfMeasureCategoryDto);
   }
 }

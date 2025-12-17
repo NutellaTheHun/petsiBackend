@@ -8,5 +8,5 @@ export class UpdateRecipeSubCategoryDto {
   })
   @IsString()
   @IsOptional()
-  readonly subCategoryName?: string;
+  readonly name?: string;
 }

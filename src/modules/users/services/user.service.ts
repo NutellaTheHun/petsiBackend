@@ -41,7 +41,7 @@ export class UserService extends ServiceBase<UserEntity> {
     const roles = dto.roleIds ? dto.roleIds.map((i) => ({ id: i })) : [];
 
     const result = manager.create(User, {
-      username: dto.username,
+      username: dto.name,
       email: dto.email,
       roles,
       password,
@@ -66,8 +66,8 @@ export class UserService extends ServiceBase<UserEntity> {
       entity.roles = dto.roleIds.map((i) => manager.create(Role, { id: i }));
     }
 
-    if (dto.username !== undefined) {
-      entity.username = dto.username;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -84,7 +84,7 @@ export class UserService extends ServiceBase<UserEntity> {
     relations?: Array<keyof User>,
   ): Promise<User | null> {
     return await this.userRepo.findOne({
-      where: { username: username },
+      where: { name: username },
       relations: relations,
     });
   }

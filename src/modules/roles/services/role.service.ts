@@ -38,7 +38,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
     manager: EntityManager,
   ): Promise<Role> {
     const result = manager.create(Role, {
-      roleName: dto.roleName,
+      roleName: dto.name,
     });
     return result;
   }
@@ -48,8 +48,8 @@ export class RoleService extends ServiceBase<RoleEntity> {
     manager: EntityManager,
     entity: Role,
   ): Promise<void> {
-    if (dto.roleName !== undefined) {
-      entity.roleName = dto.roleName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -58,7 +58,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
     relations?: Array<keyof Role>,
   ): Promise<Role | null> {
     return await this.repo.findOne({
-      where: { roleName: roleName },
+      where: { name: roleName },
       relations: relations,
     });
   }

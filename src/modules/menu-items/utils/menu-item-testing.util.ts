@@ -205,7 +205,7 @@ export class MenuItemTestingUtil {
     if (!itemF) {
       throw new NotFoundException();
     }
-    if (!itemF.validSizes) {
+    if (!itemF.sizes) {
       throw new Error();
     }
 
@@ -213,7 +213,7 @@ export class MenuItemTestingUtil {
     if (!itemA) {
       throw new NotFoundException();
     }
-    if (!itemA.validSizes) {
+    if (!itemA.sizes) {
       throw new Error();
     }
 
@@ -221,7 +221,7 @@ export class MenuItemTestingUtil {
     if (!itemB) {
       throw new NotFoundException();
     }
-    if (!itemB.validSizes) {
+    if (!itemB.sizes) {
       throw new Error();
     }
 
@@ -229,7 +229,7 @@ export class MenuItemTestingUtil {
     if (!itemG) {
       throw new NotFoundException();
     }
-    if (!itemG.validSizes) {
+    if (!itemG.sizes) {
       throw new Error();
     }
 
@@ -237,7 +237,7 @@ export class MenuItemTestingUtil {
     if (!itemC) {
       throw new NotFoundException();
     }
-    if (!itemC.validSizes) {
+    if (!itemC.sizes) {
       throw new Error();
     }
 
@@ -245,38 +245,38 @@ export class MenuItemTestingUtil {
     if (!itemD) {
       throw new NotFoundException();
     }
-    if (!itemD.validSizes) {
+    if (!itemD.sizes) {
       throw new Error();
     }
 
     const results = [
       {
-        parent: itemF,
-        parentItemSize: itemF.validSizes[0],
-        containedItem: itemA,
-        containedItemSize: itemA.validSizes[0],
+        parentMenuItem: itemF,
+        parentItemSize: itemF.sizes[0],
+        containedMenuItem: itemA,
+        containedItemSize: itemA.sizes[0],
         quantity: 1,
       },
       {
-        parent: itemF,
-        parentItemSize: itemF.validSizes[0],
-        containedItem: itemB,
-        containedItemSize: itemB.validSizes[0],
+        parentMenuItem: itemF,
+        parentItemSize: itemF.sizes[0],
+        containedMenuItem: itemB,
+        containedItemSize: itemB.sizes[0],
         quantity: 1,
       },
 
       {
-        parent: itemG,
-        parentItemSize: itemG.validSizes[0],
-        containedItem: itemC,
-        containedItemSize: itemC.validSizes[0],
+        parentMenuItem: itemG,
+        parentItemSize: itemG.sizes[0],
+        containedMenuItem: itemC,
+        containedItemSize: itemC.sizes[0],
         quantity: 1,
       },
       {
-        parent: itemG,
-        parentItemSize: itemG.validSizes[0],
-        containedItem: itemD,
-        containedItemSize: itemD.validSizes[0],
+        parentMenuItem: itemG,
+        parentItemSize: itemG.sizes[0],
+        containedMenuItem: itemD,
+        containedItemSize: itemD.sizes[0],
         quantity: 1,
       },
     ] as MenuItemContainerItem[];
@@ -332,27 +332,27 @@ export class MenuItemTestingUtil {
     if (!itemA) {
       throw new Error('item a is null');
     }
-    if (!itemA.validSizes) {
+    if (!itemA.sizes) {
       throw new Error('item a valid sizes is null');
     }
     const itemB = await this.itemService.findOneByName(item_b, ['validSizes']);
     if (!itemB) {
       throw new Error('item b is null');
     }
-    if (!itemB.validSizes) {
+    if (!itemB.sizes) {
       throw new Error('item b valid sizes is null');
     }
     const containerRuleDtos_A = [
       plainToInstance(CreateMenuItemContainerRuleDto, {
         //parentContainerOptionsId: itemA.id,
         validMenuItemId: itemA.id,
-        validSizeIds: itemA.validSizes.slice(1).map((size) => size.id),
+        validSizeIds: itemA.sizes.slice(1).map((size) => size.id),
         //quantity: 2,
       }),
       plainToInstance(CreateMenuItemContainerRuleDto, {
         //parentContainerOptionsId: itemB.id,
         validMenuItemId: itemB.id,
-        validSizeIds: itemB.validSizes.slice(1).map((size) => size.id),
+        validSizeIds: itemB.sizes.slice(1).map((size) => size.id),
         //quantity: 2,
       }),
     ];
@@ -367,27 +367,27 @@ export class MenuItemTestingUtil {
     if (!itemC) {
       throw new Error('item c is null');
     }
-    if (!itemC.validSizes) {
+    if (!itemC.sizes) {
       throw new Error('item c valid sizes is null');
     }
     const itemD = await this.itemService.findOneByName(item_d, ['validSizes']);
     if (!itemD) {
       throw new Error('item d is null');
     }
-    if (!itemD.validSizes) {
+    if (!itemD.sizes) {
       throw new Error('item d valid sizes is null');
     }
     const containerRuleDtos_B = [
       plainToInstance(CreateMenuItemContainerRuleDto, {
         //parentContainerOptionsId: itemC.id,
         validMenuItemId: itemC.id,
-        validSizeIds: itemC.validSizes.slice(1).map((size) => size.id),
+        validSizeIds: itemC.sizes.slice(1).map((size) => size.id),
         //quantity: 3,
       }),
       plainToInstance(CreateMenuItemContainerRuleDto, {
         //parentContainerOptionsId: itemD.id,
         validMenuItemId: itemD.id,
-        validSizeIds: itemD.validSizes.slice(1).map((size) => size.id),
+        validSizeIds: itemD.sizes.slice(1).map((size) => size.id),
         //quantity: 3,
       }),
     ];
@@ -406,13 +406,13 @@ export class MenuItemTestingUtil {
       plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: sizeOne.id,
         containedMenuItemId: itemA.id,
-        containedMenuItemSizeId: itemA.validSizes[0].id,
+        containedMenuItemSizeId: itemA.sizes[0].id,
         quantity: 2,
       }),
       plainToInstance(CreateMenuItemContainerItemDto, {
         parentContainerSizeId: sizeOne.id,
         containedMenuItemId: itemD.id,
-        containedMenuItemSizeId: itemD.validSizes[0].id,
+        containedMenuItemSizeId: itemD.sizes[0].id,
         quantity: 3,
       }),
     ];

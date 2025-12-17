@@ -9,7 +9,7 @@ export class UpdateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly measureUnitId?: number;
+  readonly measureTypeId?: number;
 
   @ApiPropertyOptional({
     description: 'the unit quantity of the UnitofMeasure entity.',
@@ -27,7 +27,7 @@ export class UpdateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly inventoryPackageId?: number;
+  readonly packageId?: number;
 
   @ApiPropertyOptional({
     description: 'Prsice paid for the InventoryItem entity.',

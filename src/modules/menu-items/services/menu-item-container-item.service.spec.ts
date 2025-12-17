@@ -49,7 +49,7 @@ describe('menu item container item service', () => {
     if (!parent) {
       throw new NotFoundException();
     }
-    if (!parent.validSizes) {
+    if (!parent.sizes) {
       throw new Error();
     }
 
@@ -57,7 +57,7 @@ describe('menu item container item service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.validSizes) {
+    if (!item.sizes) {
       throw new Error();
     }
     /*const dto = {
@@ -76,9 +76,9 @@ describe('menu item container item service', () => {
       {
         mode: 'create',
         createDto: {
-          parentContainerSizeId: parent.validSizes[0].id,
+          parentContainerSizeId: parent.sizes[0].id,
           containedMenuItemId: item.id,
-          containedMenuItemSizeId: item.validSizes[0].id,
+          containedMenuItemSizeId: item.sizes[0].id,
           quantity: 1,
         },
       },
@@ -131,21 +131,21 @@ describe('menu item container item service', () => {
     if (!newItem) {
       throw new NotFoundException();
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error();
     }
 
     const dto = {
       mode: 'update',
-      containedItemId: newItem.id,
-      containedItemSizeId: newItem.validSizes[0].id,
+      containedMenuItemId: newItem.id,
+      containedItemSizeId: newItem.sizes[0].id,
     } as UpdateMenuItemContainerItemDto;
 
     const result = await componentService.update(testId, dto);
     if (!result) {
       throw new Error();
     }
-    if (!result.containedItem) {
+    if (!result.containedMenuItem) {
       throw new Error();
     }
     if (!result.containedItemSize) {
@@ -153,8 +153,8 @@ describe('menu item container item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.containedItem.id).toEqual(newItem.id);
-    expect(result?.containedItemSize.id).toEqual(newItem.validSizes[0].id);
+    expect(result?.containedMenuItem.id).toEqual(newItem.id);
+    expect(result?.containedItemSize.id).toEqual(newItem.sizes[0].id);
   });
 
   it('should update contained item size', async () => {
@@ -162,13 +162,13 @@ describe('menu item container item service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.validSizes) {
+    if (!item.sizes) {
       throw new Error();
     }
 
     const dto = {
       mode: 'update',
-      containedItemSizeId: item.validSizes[1].id,
+      containedItemSizeId: item.sizes[1].id,
     } as UpdateMenuItemContainerItemDto;
 
     const result = await componentService.update(testId, dto);
@@ -180,7 +180,7 @@ describe('menu item container item service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.containedItemSize.id).toEqual(item.validSizes[1].id);
+    expect(result?.containedItemSize.id).toEqual(item.sizes[1].id);
   });
 
   it('should update quantity', async () => {

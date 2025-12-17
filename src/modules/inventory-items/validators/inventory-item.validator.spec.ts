@@ -114,10 +114,10 @@ describe('inventory item validator', () => {
     }
 
     const dto = {
-      itemName: 'test item',
-      inventoryItemCategoryId: category.id,
+      name: 'test item',
+      categoryId: category.id,
       vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as CreateInventoryItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -173,10 +173,10 @@ describe('inventory item validator', () => {
     }
 
     const dto = {
-      itemName: FOOD_A,
-      inventoryItemCategoryId: category.id,
+      name: FOOD_A,
+      categoryId: category.id,
       vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as CreateInventoryItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -226,7 +226,7 @@ describe('inventory item validator', () => {
       }),
       plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
-        id: toUpdate.itemSizes[0].id,
+        id: toUpdate.sizes[0].id,
         updateDto: {
           measureUnitId: unitKilo.id,
           measureAmount: 1,
@@ -246,10 +246,10 @@ describe('inventory item validator', () => {
     }
 
     const dto = {
-      itemName: 'UPDATE ITEM NAME',
-      inventoryItemCategoryId: category.id,
+      name: 'UPDATE ITEM NAME',
+      categoryId: category.id,
       vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -291,7 +291,7 @@ describe('inventory item validator', () => {
       }),
       plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
-        id: toUpdate.itemSizes[0].id,
+        id: toUpdate.sizes[0].id,
         updateDto: {
           measureUnitId: unitKilo.id,
           measureAmount: 1,
@@ -311,10 +311,10 @@ describe('inventory item validator', () => {
     }
 
     const dto = {
-      itemName: FOOD_A,
-      inventoryItemCategoryId: category.id,
+      name: FOOD_A,
+      categoryId: category.id,
       vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -350,7 +350,7 @@ describe('inventory item validator', () => {
     const sizeDtos = [
       plainToInstance(NestedInventoryItemSizeDto, {
         mode: 'update',
-        id: toUpdate.itemSizes[0].id,
+        id: toUpdate.sizes[0].id,
         updateDto: {
           measureUnitId: unitKilo.id,
           measureAmount: 1,
@@ -370,10 +370,10 @@ describe('inventory item validator', () => {
     }
 
     const dto = {
-      itemName: 'UPDATE ITEM NAME',
-      inventoryItemCategoryId: category.id,
+      name: 'UPDATE ITEM NAME',
+      categoryId: category.id,
       vendorId: vendor.id,
-      itemSizeDtos: sizeDtos,
+      sizeDtos: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

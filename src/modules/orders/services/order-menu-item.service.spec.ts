@@ -70,10 +70,10 @@ describe('order menu item service', () => {
     if (!item) {
       throw new NotFoundException();
     }
-    if (!item.validSizes) {
+    if (!item.sizes) {
       throw new Error();
     }
-    if (item.validSizes.length === 0) {
+    if (item.sizes.length === 0) {
       throw new Error();
     }
 
@@ -92,13 +92,13 @@ describe('order menu item service', () => {
       mode: 'create',
       createDto: {
         menuItemId: item.id,
-        menuItemSizeId: item.validSizes[0].id,
+        menuItemSizeId: item.sizes[0].id,
         quantity: 1,
       },
     });
 
     const updateOrderDto = {
-      orderedMenuItemDtos: [createItemDto],
+      orderedItemDtos: [createItemDto],
     } as UpdateOrderDto;
 
     const updateResult = await orderService.update(testOrderId, updateOrderDto);
@@ -112,10 +112,10 @@ describe('order menu item service', () => {
     const result = updateResult.orderedItems[0];
 
     expect(result).not.toBeNull();
-    expect(result?.order.id).toEqual(testOrderId);
+    expect(result?.parentOrder.id).toEqual(testOrderId);
     expect(result?.quantity).toEqual(1);
     expect(result?.menuItem.id).toEqual(item.id);
-    expect(result?.size.id).toEqual(item.validSizes[0].id);
+    expect(result?.size.id).toEqual(item.sizes[0].id);
 
     testId = result?.id as number;
   });
@@ -146,16 +146,16 @@ describe('order menu item service', () => {
     if (!newItem) {
       throw new NotFoundException();
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error();
     }
-    if (newItem.validSizes.length < 2) {
+    if (newItem.sizes.length < 2) {
       throw new Error();
     }
 
     const dto = {
       menuItemId: newItem.id,
-      menuItemSizeId: newItem.validSizes[0].id,
+      sizeId: newItem.sizes[0].id,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testId, dto);
@@ -164,7 +164,7 @@ describe('order menu item service', () => {
     }
     expect(result).not.toBeNull();
     expect(result?.menuItem.id).toEqual(newItem.id);
-    expect(result?.size.id).toEqual(newItem.validSizes[0].id);
+    expect(result?.size.id).toEqual(newItem.sizes[0].id);
   });
 
   it('should update quantity', async () => {
@@ -182,20 +182,20 @@ describe('order menu item service', () => {
     if (!newItem) {
       throw new NotFoundException();
     }
-    if (!newItem.validSizes) {
+    if (!newItem.sizes) {
       throw new Error();
     }
-    if (newItem.validSizes.length < 2) {
+    if (newItem.sizes.length < 2) {
       throw new Error();
     }
 
     const dto = {
-      menuItemSizeId: newItem.validSizes[1].id,
+      sizeId: newItem.sizes[1].id,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result?.size.id).toEqual(newItem.validSizes[1].id);
+    expect(result?.size.id).toEqual(newItem.sizes[1].id);
   });
 
   it('should find all orderMenuItems', async () => {
@@ -292,7 +292,7 @@ describe('order menu item service', () => {
     if (!itemF) {
       throw new Error();
     }
-    if (!itemF.validSizes) {
+    if (!itemF.sizes) {
       throw new Error();
     }
 
@@ -300,14 +300,14 @@ describe('order menu item service', () => {
       mode: 'create',
       createDto: {
         menuItemId: containerItems[0].id,
-        menuItemSizeId: containerItems[0].validSizes[0].id,
+        menuItemSizeId: containerItems[0].sizes[0].id,
         quantity: 1,
         orderedItemContainerDtos: compDtos,
       },
     });
 
     const updateOrderDto = {
-      orderedMenuItemDtos: [itemDto],
+      orderedItemDtos: [itemDto],
     } as UpdateOrderDto;
 
     const updateResult = await orderService.update(
@@ -325,10 +325,10 @@ describe('order menu item service', () => {
     if (!result) {
       throw new Error();
     }
-    if (!result.containerItems) {
+    if (!result.containerOrderMenuItems) {
       throw new Error();
     }
-    expect(result.containerItems.length).toEqual(1);
+    expect(result.containerOrderMenuItems.length).toEqual(1);
 
     testOrderItemCompsId = result.id;
   });
@@ -341,7 +341,7 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.containerItems) {
+    if (!toUpdate.containerOrderMenuItems) {
       throw new Error();
     }
 
@@ -373,7 +373,7 @@ describe('order menu item service', () => {
       },
     });
 
-    const theRest = toUpdate.containerItems.map((comp) =>
+    const theRest = toUpdate.containerOrderMenuItems.map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -382,18 +382,18 @@ describe('order menu item service', () => {
     );
 
     const dto = {
-      orderedItemContainerDtos: [cDto, ...theRest],
+      containerOrderMenuItemDtos: [cDto, ...theRest],
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
     if (!result) {
       throw new Error();
     }
-    if (!result.containerItems) {
+    if (!result.containerOrderMenuItems) {
       throw new Error();
     }
-    expect(result.containerItems.length).toEqual(
-      toUpdate.containerItems.length + 1,
+    expect(result.containerOrderMenuItems.length).toEqual(
+      toUpdate.containerOrderMenuItems.length + 1,
     );
   });
 
@@ -405,7 +405,7 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.containerItems) {
+    if (!toUpdate.containerOrderMenuItems) {
       throw new Error();
     }
 
@@ -427,7 +427,7 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    const theRest = toUpdate.containerItems.map((comp) =>
+    const theRest = toUpdate.containerOrderMenuItems.map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -452,7 +452,7 @@ describe('order menu item service', () => {
     const moddedId = theRest[0].id;
 
     const dto = {
-      orderedItemContainerDtos: theRest,
+      containerOrderMenuItemDtos: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
@@ -460,11 +460,11 @@ describe('order menu item service', () => {
       throw new Error();
     }
 
-    if (!result.containerItems) {
+    if (!result.containerOrderMenuItems) {
       throw new Error();
     }
 
-    for (const comp of result.containerItems) {
+    for (const comp of result.containerOrderMenuItems) {
       if (comp.id === moddedId) {
         expect(comp.containedItemSize.id).toEqual(
           options.containerRules[0].validSizes[0].id,
@@ -481,11 +481,11 @@ describe('order menu item service', () => {
     if (!toUpdate) {
       throw new Error();
     }
-    if (!toUpdate.containerItems) {
+    if (!toUpdate.containerOrderMenuItems) {
       throw new Error();
     }
 
-    const theRest = toUpdate.containerItems.slice(1).map((comp) =>
+    const theRest = toUpdate.containerOrderMenuItems.slice(1).map((comp) =>
       plainToInstance(NestedOrderContainerItemDto, {
         mode: 'update',
         id: comp.id,
@@ -493,21 +493,21 @@ describe('order menu item service', () => {
       }),
     );
 
-    const removedId = toUpdate.containerItems[0].id;
+    const removedId = toUpdate.containerOrderMenuItems[0].id;
 
     const dto = {
-      orderedItemContainerDtos: theRest,
+      containerOrderMenuItemDtos: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
     if (!result) {
       throw new Error();
     }
-    if (!result.containerItems) {
+    if (!result.containerOrderMenuItems) {
       throw new Error();
     }
-    expect(result.containerItems.length).toEqual(
-      toUpdate.containerItems.length - 1,
+    expect(result.containerOrderMenuItems.length).toEqual(
+      toUpdate.containerOrderMenuItems.length - 1,
     );
 
     await expect(componentService.findOne(removedId)).rejects.toThrow(

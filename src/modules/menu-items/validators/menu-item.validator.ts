@@ -32,7 +32,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     const results: ValidationErrorNode[] = [];
 
     // itemName exists
-    if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
+    if (await this.helper.exists(this.repo, 'itemName', dto.name)) {
       const err = new ValidationErrorNode(
         'itemName',
         id,
@@ -72,8 +72,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     const results: ValidationErrorNode[] = [];
 
     // exists
-    if (dto.itemName) {
-      if (await this.helper.exists(this.repo, 'itemName', dto.itemName)) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'itemName', dto.name)) {
         const err = new ValidationErrorNode(
           'itemName',
           id,

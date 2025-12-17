@@ -29,7 +29,7 @@ export class TemplateTestingUtil {
 
     for (const name of templateNames) {
       results.push({
-        templateName: name,
+        name: name,
       } as Template);
     }
     return results;

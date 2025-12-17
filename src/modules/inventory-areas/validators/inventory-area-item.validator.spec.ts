@@ -85,8 +85,8 @@ describe('inventory area item validator', () => {
     const dto = {
       parentInventoryCountId: testCountId,
       countedInventoryItemId: item?.id,
-      countedAmount: 1,
-      countedItemSizeId: item?.itemSizes[0].id,
+      amount: 1,
+      countedItemSizeId: item?.sizes[0].id,
     } as CreateInventoryAreaItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -121,7 +121,7 @@ describe('inventory area item validator', () => {
     const dto = {
       parentInventoryCountId: testCountId,
       countedInventoryItemId: item.id,
-      countedAmount: 1,
+      amount: 1,
       countedItemSizeDto: sizeDto,
     } as CreateInventoryAreaItemDto;
 
@@ -138,7 +138,7 @@ describe('inventory area item validator', () => {
     const dto = {
       parentInventoryCountId: testCountId,
       countedInventoryItemId: item.id,
-      countedAmount: 1,
+      amount: 1,
     } as CreateInventoryAreaItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -199,8 +199,8 @@ describe('inventory area item validator', () => {
 
     const dto = {
       countedInventoryItemId: item.id,
-      countedAmount: 2,
-      countedItemSizeId: item.itemSizes[0].id,
+      amount: 2,
+      countedItemSizeId: item.sizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
     const result = await validator.validateUpdateNode(
@@ -249,7 +249,7 @@ describe('inventory area item validator', () => {
 
     const dto = {
       countedInventoryItemId: item.id,
-      countedAmount: 2,
+      amount: 2,
       countedItemSizeDto: sizeDto,
     } as UpdateInventoryAreaItemDto;
 
@@ -293,7 +293,7 @@ describe('inventory area item validator', () => {
 
     const dto = {
       countedInventoryItemId: item.id,
-      countedAmount: 2,
+      amount: 2,
       countedItemSizeDto: sizeDto,
     } as UpdateInventoryAreaItemDto;
 
@@ -344,7 +344,7 @@ describe('inventory area item validator', () => {
 
     const dto = {
       countedInventoryItemId: item.id,
-      countedItemSizeId: badItem.itemSizes[0].id,
+      countedItemSizeId: badItem.sizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
     const result = await validator.validateUpdateNode(
@@ -370,7 +370,7 @@ describe('inventory area item validator', () => {
     }
 
     const dto = {
-      countedItemSizeId: badItem.itemSizes[0].id,
+      countedItemSizeId: badItem.sizes[0].id,
     } as UpdateInventoryAreaItemDto;
 
     const result = await validator.validateUpdateNode(
@@ -416,7 +416,7 @@ describe('inventory area item validator', () => {
 
     const dto = {
       countedInventoryItemId: item.id,
-      countedAmount: 2,
+      amount: 2,
       countedItemSizeDto: sizeDto,
     } as UpdateInventoryAreaItemDto;
 

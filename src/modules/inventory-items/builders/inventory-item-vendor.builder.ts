@@ -25,14 +25,14 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
   }
 
   protected createEntity(dto: CreateInventoryItemVendorDto): void {
-    if (dto.vendorName !== undefined) {
-      this.name(dto.vendorName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateInventoryItemVendorDto): void {
-    if (dto.vendorName !== undefined) {
-      this.name(dto.vendorName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 

@@ -60,7 +60,7 @@ export class MenuItem {
 
   @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
   @Column({ unique: true })
-  itemName: string;
+  name: string;
 
   @ApiProperty({
     example: [menuItemSizeExample(new Set<string>(), false)],
@@ -70,13 +70,13 @@ export class MenuItem {
   })
   @ManyToMany(() => MenuItemSize)
   @JoinTable()
-  validSizes: MenuItemSize[] = [];
+  sizes: MenuItemSize[] = [];
 
   // API PROPERTY HERE
-  @OneToMany(() => MenuItemContainerItem, (ci) => ci.parent, {
+  @OneToMany(() => MenuItemContainerItem, (ci) => ci.parentMenuItem, {
     cascade: true,
   })
-  containerItems: MenuItemContainerItem[] = [];
+  containerMenuItems: MenuItemContainerItem[] = [];
 
   // API PROPERTY HERE
   /**

@@ -29,7 +29,7 @@ export async function InventoryAreaItemCreateInTransaction(
       parentInventoryCount: { id: dto.parentInventoryCountId },
     }),
     countedItem: { id: dto.countedInventoryItemId },
-    amount: dto.countedAmount,
+    amount: dto.amount,
     countedItemSize,
   });
 

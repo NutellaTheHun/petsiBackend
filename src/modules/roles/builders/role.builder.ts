@@ -11,14 +11,14 @@ export class RoleBuilder extends BuilderBase<Role> {
   }
 
   protected createEntity(dto: CreateRoleDto): void {
-    if (dto.roleName !== undefined) {
-      this.roleName(dto.roleName);
+    if (dto.name !== undefined) {
+      this.roleName(dto.name);
     }
   }
 
   protected updateEntity(dto: UpdateRoleDto): void {
-    if (dto.roleName !== undefined) {
-      this.roleName(dto.roleName);
+    if (dto.name !== undefined) {
+      this.roleName(dto.name);
     }
   }
 

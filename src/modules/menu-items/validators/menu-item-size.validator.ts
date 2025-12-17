@@ -31,7 +31,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
     const results: ValidationErrorNode[] = [];
 
     // exists
-    if (await this.helper.exists(this.repo, 'name', dto.sizeName)) {
+    if (await this.helper.exists(this.repo, 'name', dto.name)) {
       const err = new ValidationErrorNode(
         'name',
         id,
@@ -49,8 +49,8 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.sizeName) {
-      if (await this.helper.exists(this.repo, 'name', dto.sizeName)) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'name', dto.name)) {
         const err = new ValidationErrorNode(
           'name',
           id,

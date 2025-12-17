@@ -36,7 +36,7 @@ describe('role validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      roleName: 'TEST NAME',
+      name: 'TEST NAME',
     } as CreateRoleDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -45,7 +45,7 @@ describe('role validator', () => {
 
   it('should fail create: name already exists', async () => {
     const dto = {
-      roleName: ROLE_MANAGER,
+      name: ROLE_MANAGER,
     } as CreateRoleDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -62,7 +62,7 @@ describe('role validator', () => {
     }
 
     const dto = {
-      roleName: 'UPDATE TEST',
+      name: 'UPDATE TEST',
     } as UpdateRoleDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -76,7 +76,7 @@ describe('role validator', () => {
     }
 
     const dto = {
-      roleName: ROLE_STAFF,
+      name: ROLE_STAFF,
     } as UpdateRoleDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

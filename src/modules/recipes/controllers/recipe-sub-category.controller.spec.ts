@@ -28,24 +28,24 @@ describe('recipe sub category controller', () => {
     service = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
 
     categories = [
-      { categoryName: 'CAT_A' } as RecipeCategory,
-      { categoryName: 'CAT_B' } as RecipeCategory,
-      { categoryName: 'CAT_C' } as RecipeCategory,
+      { name: 'CAT_A' } as RecipeCategory,
+      { name: 'CAT_B' } as RecipeCategory,
+      { name: 'CAT_C' } as RecipeCategory,
     ];
     catId = 1;
     categories.map((category) => (category.id = catId++));
 
     subCategories = [
       {
-        subCategoryName: 'SUB_CAT_A',
+        name: 'SUB_CAT_A',
         parentCategory: categories[0],
       } as RecipeSubCategory,
       {
-        subCategoryName: 'SUB_CAT_B',
+        name: 'SUB_CAT_B',
         parentCategory: categories[1],
       } as RecipeSubCategory,
       {
-        subCategoryName: 'SUB_CAT_C',
+        name: 'SUB_CAT_C',
         parentCategory: categories[2],
       } as RecipeSubCategory,
     ];
@@ -55,9 +55,7 @@ describe('recipe sub category controller', () => {
     jest
       .spyOn(service, 'create')
       .mockImplementation(async (dto: CreateRecipeSubCategoryDto) => {
-        const exists = subCategories.find(
-          (subCat) => subCat.subCategoryName === dto.subCategoryName,
-        );
+        const exists = subCategories.find((subCat) => subCat.name === dto.name);
         if (exists) {
           throw new BadRequestException();
         }
@@ -68,7 +66,7 @@ describe('recipe sub category controller', () => {
 
         const subCat = {
           id: subCatId++,
-          subCategoryName: dto.subCategoryName,
+          name: dto.name,
           parentCategory: parentCategory,
         } as RecipeSubCategory;
 
@@ -87,8 +85,8 @@ describe('recipe sub category controller', () => {
             throw new NotFoundException();
           }
 
-          if (dto.subCategoryName) {
-            subCategories[existIdx].subCategoryName = dto.subCategoryName;
+          if (dto.name) {
+            subCategories[existIdx].name = dto.name;
           }
 
           return subCategories[existIdx];
@@ -98,10 +96,7 @@ describe('recipe sub category controller', () => {
     jest
       .spyOn(service, 'findOneByName')
       .mockImplementation(async (name: string) => {
-        return (
-          subCategories.find((subCat) => subCat.subCategoryName === name) ||
-          null
-        );
+        return subCategories.find((subCat) => subCat.name === name) || null;
       });
 
     jest.spyOn(service, 'findAll').mockResolvedValue({ items: subCategories });
@@ -134,7 +129,7 @@ describe('recipe sub category controller', () => {
 
   it('should create a sub-category', async () => {
     const dto = {
-      subCategoryName: 'testSubCat',
+      name: 'testSubCat',
       parentCategoryId: categories[0].id,
     } as CreateRecipeSubCategoryDto;
 
@@ -143,7 +138,7 @@ describe('recipe sub category controller', () => {
 
   it('should fail create a sub-category', async () => {
     const dto = {
-      subCategoryName: 'testSubCat',
+      name: 'testSubCat',
       parentCategoryId: categories[0].id,
     } as CreateRecipeSubCategoryDto;
 
@@ -167,17 +162,17 @@ describe('recipe sub category controller', () => {
 
   it('should update a sub-category', async () => {
     const dto = {
-      subCategoryName: 'UPDATEtestSubCat',
+      name: 'UPDATEtestSubCat',
     } as UpdateRecipeSubCategoryDto;
 
     const result = await controller.update(1, dto);
     expect(result).not.toBeNull();
-    expect(result?.subCategoryName).toEqual('UPDATEtestSubCat');
+    expect(result?.name).toEqual('UPDATEtestSubCat');
   });
 
   it('should fail update a sub-category', async () => {
     const dto = {
-      subCategoryName: 'UPDATEtestSubCat',
+      name: 'UPDATEtestSubCat',
       parentCategoryId: categories[1].id,
     } as UpdateRecipeSubCategoryDto;
 

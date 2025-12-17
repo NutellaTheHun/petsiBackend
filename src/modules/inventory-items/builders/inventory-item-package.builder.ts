@@ -18,13 +18,13 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
   }
 
   protected createEntity(dto: CreateInventoryItemPackageDto): void {
-    if (dto.packageName !== undefined) {
-      this.name(dto.packageName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
   protected updateEntity(dto: UpdateInventoryItemPackageDto): void {
-    if (dto.packageName !== undefined) {
-      this.name(dto.packageName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
   }
 

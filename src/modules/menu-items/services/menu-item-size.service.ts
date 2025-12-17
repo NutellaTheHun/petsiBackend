@@ -40,7 +40,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     manager: EntityManager,
   ): Promise<MenuItemSize> {
     const result = manager.create(MenuItemSize, {
-      name: dto.sizeName,
+      name: dto.name,
     });
     return result;
   }
@@ -49,8 +49,8 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     manager: EntityManager,
     entity: MenuItemSize,
   ): Promise<void> {
-    if (dto.sizeName !== undefined) {
-      entity.name = dto.sizeName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 

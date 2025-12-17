@@ -31,7 +31,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
     const results: ValidationErrorNode[] = [];
 
     // name exists
-    if (await this.helper.exists(this.repo, 'categoryName', dto.categoryName)) {
+    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
       const err = new ValidationErrorNode(
         'categoryName',
         id,
@@ -50,7 +50,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
     const results: ValidationErrorNode[] = [];
 
     // name exists
-    if (dto.categoryName) {
+    if (dto.name) {
       const err = new ValidationErrorNode(
         'categoryName',
         id,

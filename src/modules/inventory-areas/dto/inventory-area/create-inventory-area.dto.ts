@@ -8,5 +8,5 @@ export class CreateInventoryAreaDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly areaName: string;
+  readonly name: string;
 }

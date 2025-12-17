@@ -44,7 +44,7 @@ export class UnitOfMeasureCategory {
    */
   @ApiProperty({ example: 'Volume', description: 'Name of the category' })
   @Column({ unique: true })
-  categoryName: string;
+  name: string;
 
   /**
    * List of {@link UnitOfMeasure} under the category.
@@ -56,7 +56,7 @@ export class UnitOfMeasureCategory {
     isArray: true,
   })
   @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
-  unitsOfMeasure: UnitOfMeasure[] = [];
+  units: UnitOfMeasure[] = [];
 
   /**
    * The selected {@link UnitOfMeasure} that all units in the category convert to for conversions.

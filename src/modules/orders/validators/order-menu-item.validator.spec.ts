@@ -74,7 +74,7 @@ describe('order category validator', () => {
         createDto: {
           parentContainerMenuItemId: item.id,
           containedMenuItemId: contItemB.id,
-          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          containedMenuItemSizeId: contItemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -83,7 +83,7 @@ describe('order category validator', () => {
         createDto: {
           parentContainerMenuItemId: item.id,
           containedMenuItemId: contItemC.id,
-          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          containedMenuItemSizeId: contItemC.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -91,9 +91,9 @@ describe('order category validator', () => {
 
     const dto = {
       menuItemId: item.id,
-      menuItemSizeId: item.validSizes[0].id,
+      sizeId: item.sizes[0].id,
       quantity: 1,
-      orderedItemContainerDtos: containerDtos,
+      containerOrderMenuItemDtos: containerDtos,
     } as CreateOrderMenuItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -109,11 +109,11 @@ describe('order category validator', () => {
     const sizes = (await sizeService.findAll()).items;
 
     const badSizes = sizes.filter(
-      (size) => !itemA.validSizes.find((validSize) => validSize.id === size.id),
+      (size) => !itemA.sizes.find((validSize) => validSize.id === size.id),
     );
     const dto = {
       menuItemId: itemA.id,
-      menuItemSizeId: badSizes[0].id,
+      sizeId: badSizes[0].id,
       quantity: 1,
     } as CreateOrderMenuItemDto;
 
@@ -134,7 +134,7 @@ describe('order category validator', () => {
     ).items;
 
     const parentOrderItem = await orderItemservice.findOne(
-      containerItems[0].parentOrderItem.id,
+      containerItems[0].parentOrderMenuItem.id,
       ['order', 'menuItem', 'size'],
     );
     if (!parentOrderItem) {
@@ -171,7 +171,7 @@ describe('order category validator', () => {
         createDto: {
           parentContainerMenuItemId: parentMenuItem.id,
           containedMenuItemId: contItemB.id,
-          containedMenuItemSizeId: contItemB.validSizes[0].id,
+          containedMenuItemSizeId: contItemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -181,7 +181,7 @@ describe('order category validator', () => {
         updateDto: {
           parentContainerMenuItemId: parentMenuItem.id,
           containedMenuItemId: contItemC.id,
-          containedMenuItemSizeId: contItemC.validSizes[0].id,
+          containedMenuItemSizeId: contItemC.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -190,9 +190,9 @@ describe('order category validator', () => {
     const dto = {
       id: parentOrderItem.id,
       menuItemId: parentMenuItem.id,
-      menuItemSizeId: parentMenuItem.validSizes[0].id,
+      sizeId: parentMenuItem.sizes[0].id,
       quantity: 1,
-      orderedItemContainerDtos: containerDtos,
+      containerOrderMenuItemDtos: containerDtos,
     } as UpdateOrderMenuItemDto;
 
     const result = await validator.validateUpdateNode(

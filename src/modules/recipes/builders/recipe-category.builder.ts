@@ -32,8 +32,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
   }
 
   protected createEntity(dto: CreateRecipeCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     if (dto.subCategoryDtos !== undefined) {
       this.subCategoriesByBuilder(dto.subCategoryDtos);
@@ -41,8 +41,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
   }
 
   protected updateEntity(dto: UpdateRecipeCategoryDto): void {
-    if (dto.categoryName !== undefined) {
-      this.name(dto.categoryName);
+    if (dto.name !== undefined) {
+      this.name(dto.name);
     }
     /*if (dto.subCategoryDtos !== undefined) {
       this.subCategoriesByBuilder(dto.subCategoryDtos);

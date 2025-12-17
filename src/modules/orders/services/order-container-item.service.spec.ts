@@ -81,7 +81,7 @@ describe('order container item service', () => {
     }
 
     const parentOrderItem = await orderItemService.findOne(
-      toUpdate.parentOrderItem.id,
+      toUpdate.parentOrderMenuItem.id,
       ['menuItem'],
     );
     if (!parentOrderItem) {
@@ -106,12 +106,12 @@ describe('order container item service', () => {
     const dto = {
       parentContainerMenuItemId: parentMenuItem.id,
       containedMenuItemId: options.containerRules[0].validItem.id,
-      containedMenuItemSizeId: options.containerRules[0].validSizes[0].id,
+      containedItemSizeId: options.containerRules[0].validSizes[0].id,
     } as UpdateOrderContainerItemDto;
 
     const result = await service.update(testId, dto);
     expect(result).not.toBeNull();
-    expect(result.containedItem.id).toEqual(
+    expect(result.containedMenuItem.id).toEqual(
       options.containerRules[0].validItem.id,
     );
     expect(result.containedItemSize.id).toEqual(

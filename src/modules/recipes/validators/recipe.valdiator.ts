@@ -34,7 +34,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     const results: ValidationErrorNode[] = [];
 
     // Exists
-    if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
+    if (await this.helper.exists(this.repo, 'recipeName', dto.name)) {
       const err = new ValidationErrorNode(
         'recipeName',
         id,
@@ -63,7 +63,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
+      if (!category.subCategorys.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
           id,
@@ -143,8 +143,8 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.recipeName) {
-      if (await this.helper.exists(this.repo, 'recipeName', dto.recipeName)) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'recipeName', dto.name)) {
         const err = new ValidationErrorNode(
           'recipeName',
           id,
@@ -164,7 +164,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
+      if (!category.subCategorys.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
           id,

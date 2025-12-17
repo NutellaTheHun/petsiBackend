@@ -74,10 +74,8 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     const result = manager.create(MenuItem, {
       type: dto.type,
       ...(dto.categoryId && { category: { id: dto.categoryId } }),
-      itemName: dto.itemName,
-      validSizes: dto.validSizeIds.map((id) =>
-        manager.create(MenuItemSize, { id }),
-      ),
+      itemName: dto.name,
+      validSizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
       containerItems,
       variableMaxAmount: dto.variableMaxAmount,
     });
@@ -96,15 +94,15 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       });
     }
 
-    if (dto.itemName !== undefined) {
-      entity.itemName = dto.itemName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
 
     if (dto.type !== undefined) {
       entity.type = dto.type;
 
       if (dto.type === MENU_ITEM_TYPES.SINGLE) {
-        entity.containerItems = [];
+        entity.containerMenuItems = [];
         entity.variableMaxAmount = null;
         await this.syncOrderMenuItems(entity.id);
       }
@@ -114,8 +112,8 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       entity.variableMaxAmount = dto.variableMaxAmount;
     }
 
-    if (dto.validSizeIds?.length) {
-      entity.validSizes = dto.validSizeIds.map((id) =>
+    if (dto.sizeIds?.length) {
+      entity.sizes = dto.sizeIds.map((id) =>
         manager.create(MenuItemSize, { id }),
       );
       // handle currently ordered items with now invalid sizes?
@@ -123,7 +121,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
 
     if (dto.containerMenuItemDtos?.length) {
       const existingItems = await manager.find(MenuItemContainerItem, {
-        where: { parent: { id: entity.id } },
+        where: { parentMenuItem: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
@@ -152,7 +150,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
           );
         }
       }
-      entity.containerItems = Array.from(existingMap.values());
+      entity.containerMenuItems = Array.from(existingMap.values());
     }
   }
 
@@ -161,7 +159,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     relations?: Array<keyof MenuItem>,
   ): Promise<MenuItem | null> {
     return await this.repo.findOne({
-      where: { itemName: name },
+      where: { name: name },
       relations: relations,
     });
   }
@@ -207,7 +205,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     const activeOrderItems = await this.orderMenuItemRepo.find({
       where: {
         menuItem: { id },
-        order: {
+        parentOrder: {
           isFrozen: false,
           fulfillmentDate: MoreThanOrEqual(new Date()),
         },
@@ -217,7 +215,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
 
     for (const orderItem of activeOrderItems) {
       await this.orderContainerItemRepo.delete({
-        parentOrderItem: { id: orderItem.id },
+        parentOrderMenuItem: { id: orderItem.id },
       });
     }
   }

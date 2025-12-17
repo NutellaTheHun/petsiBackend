@@ -67,7 +67,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemA.id,
-          menuItemSizeId: itemA.validSizes[0].id,
+          menuItemSizeId: itemA.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -75,17 +75,17 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemB.id,
-          menuItemSizeId: itemB.validSizes[0].id,
+          menuItemSizeId: itemB.sizes[0].id,
           quantity: 1,
         },
       }),
     ];
     const dto = {
-      orderCategoryId: category.id,
+      categoryId: category.id,
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedMenuItemDtos: itemDtos,
+      orderedItemDtos: itemDtos,
     } as CreateOrderDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -120,7 +120,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemA.id,
-          menuItemSizeId: itemB.validSizes[0].id,
+          menuItemSizeId: itemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -128,17 +128,17 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemB.id,
-          menuItemSizeId: itemA.validSizes[0].id,
+          menuItemSizeId: itemA.sizes[0].id,
           quantity: 1,
         },
       }),
     ];
     const dto = {
-      orderCategoryId: category.id,
+      categoryId: category.id,
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedMenuItemDtos: itemDtos,
+      orderedItemDtos: itemDtos,
     } as CreateOrderDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -178,7 +178,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemA.id,
-          menuItemSizeId: itemA.validSizes[0].id,
+          menuItemSizeId: itemA.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -186,7 +186,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemB.id,
-          menuItemSizeId: itemB.validSizes[0].id,
+          menuItemSizeId: itemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -195,18 +195,18 @@ describe('order validator', () => {
         id: itemToUpdate.id,
         updateDto: {
           menuItemId: itemC.id,
-          menuItemSizeId: itemC.validSizes[0].id,
+          menuItemSizeId: itemC.sizes[0].id,
           quantity: 1,
         },
       }),
     ];
 
     const dto = {
-      orderCategoryId: category.id,
+      categoryId: category.id,
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedMenuItemDtos: itemDtos,
+      orderedItemDtos: itemDtos,
     } as UpdateOrderDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -251,7 +251,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemA.id,
-          menuItemSizeId: itemA.validSizes[0].id,
+          menuItemSizeId: itemA.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -259,7 +259,7 @@ describe('order validator', () => {
         mode: 'create',
         createDto: {
           menuItemId: itemB.id,
-          menuItemSizeId: itemB.validSizes[0].id,
+          menuItemSizeId: itemB.sizes[0].id,
           quantity: 1,
         },
       }),
@@ -268,18 +268,18 @@ describe('order validator', () => {
         id: itemToUpdate.id,
         updateDto: {
           menuItemId: itemC.id,
-          menuItemSizeId: itemA.validSizes[0].id,
+          menuItemSizeId: itemA.sizes[0].id,
           quantity: 1,
         },
       }),
     ];
 
     const dto = {
-      orderCategoryId: category.id,
+      categoryId: category.id,
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedMenuItemDtos: itemDtos,
+      orderedItemDtos: itemDtos,
     } as UpdateOrderDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

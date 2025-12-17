@@ -36,7 +36,7 @@ describe('order category validator', () => {
 
   it('should validate create', async () => {
     const dto = {
-      categoryName: 'TEST NAME',
+      name: 'TEST NAME',
     } as CreateOrderCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -45,7 +45,7 @@ describe('order category validator', () => {
 
   it('should fail create (name already exists)', async () => {
     const dto = {
-      categoryName: TYPE_A,
+      name: TYPE_A,
     } as CreateOrderCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -62,7 +62,7 @@ describe('order category validator', () => {
     }
 
     const dto = {
-      categoryName: 'UPDATE TEST',
+      name: 'UPDATE TEST',
     } as UpdateOrderCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -76,7 +76,7 @@ describe('order category validator', () => {
     }
 
     const dto = {
-      categoryName: TYPE_B,
+      name: TYPE_B,
     } as UpdateOrderCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

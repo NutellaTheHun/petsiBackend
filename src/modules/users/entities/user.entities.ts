@@ -27,7 +27,7 @@ export class User {
 
   @ApiProperty({ example: 'johndoe', description: 'Username of the user' })
   @Column({ unique: true })
-  username: string;
+  name: string;
 
   @ApiProperty({
     example: 'john@example.com',

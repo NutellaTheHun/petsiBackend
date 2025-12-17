@@ -91,7 +91,7 @@ describe('inventory area count validator', () => {
 
     const dto = {
       inventoryAreaId: area.id,
-      itemCountDtos: itemDtos,
+      countedInventoryItemDtos: itemDtos,
     } as CreateInventoryAreaCountDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -135,7 +135,7 @@ describe('inventory area count validator', () => {
 
     const dto = {
       inventoryAreaId: area.id,
-      itemCountDtos: itemDtos,
+      countedInventoryItemDtos: itemDtos,
     } as CreateInventoryAreaCountDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -173,7 +173,7 @@ describe('inventory area count validator', () => {
       }),
       plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
-        id: toUpdate.countedItems[0].id,
+        id: toUpdate.countedInventoryItems[0].id,
         updateDto: {
           countedInventoryItemId: itemB.id,
           countedAmount: 1,
@@ -182,7 +182,7 @@ describe('inventory area count validator', () => {
     ];
 
     const dto = {
-      itemCountDtos: itemDtos,
+      countedInventoryItemDtos: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -219,7 +219,7 @@ describe('inventory area count validator', () => {
       // erroneous DTO
       plainToInstance(NestedInventoryAreaItemDto, {
         mode: 'update',
-        id: toUpdate.countedItems[0].id,
+        id: toUpdate.countedInventoryItems[0].id,
         updateDto: {
           countedInventoryItemId: itemB.id,
           countedAmount: 1,
@@ -228,7 +228,7 @@ describe('inventory area count validator', () => {
     ];
 
     const dto = {
-      itemCountDtos: itemDtos,
+      countedInventoryItemDtos: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

@@ -44,5 +44,5 @@ export class CreateTemplateMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly templateId?: number;
+  readonly parentTemplateId?: number;
 }

@@ -8,5 +8,5 @@ export class UpdateInventoryAreaDto {
   })
   @IsString()
   @IsOptional()
-  readonly areaName?: string;
+  readonly name?: string;
 }

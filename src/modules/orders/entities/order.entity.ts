@@ -40,7 +40,7 @@ export class Order {
     type: () => OrderCategory,
   })
   @ManyToOne(() => OrderCategory)
-  orderCategory: OrderCategory;
+  category: OrderCategory;
 
   /**
    * Name of the owner of the order, such as the name of a person or buisness.
@@ -189,7 +189,7 @@ export class Order {
     type: () => OrderMenuItem,
     isArray: true,
   })
-  @OneToMany(() => OrderMenuItem, (item) => item.order, { cascade: true })
+  @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, { cascade: true })
   orderedItems: OrderMenuItem[] = [];
 
   @ApiProperty({

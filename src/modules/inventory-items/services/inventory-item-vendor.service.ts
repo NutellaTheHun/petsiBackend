@@ -40,7 +40,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     manager: EntityManager,
   ): Promise<InventoryItemVendor> {
     const result = manager.create(InventoryItemVendor, {
-      vendorName: dto.vendorName,
+      vendorName: dto.name,
     });
     return result;
   }
@@ -50,8 +50,8 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     manager: EntityManager,
     entity: InventoryItemVendor,
   ): Promise<void> {
-    if (dto.vendorName !== undefined) {
-      entity.vendorName = dto.vendorName;
+    if (dto.name !== undefined) {
+      entity.name = dto.name;
     }
   }
 
@@ -59,7 +59,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     name: string,
     relations?: Array<keyof InventoryItemVendor>,
   ): Promise<InventoryItemVendor | null> {
-    return await this.repo.findOne({ where: { vendorName: name }, relations });
+    return await this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

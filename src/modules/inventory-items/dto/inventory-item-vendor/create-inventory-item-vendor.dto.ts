@@ -8,5 +8,5 @@ export class CreateInventoryItemVendorDto {
   })
   @IsString()
   @IsNotEmpty()
-  readonly vendorName: string;
+  readonly name: string;
 }

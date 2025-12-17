@@ -26,7 +26,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
+    if (await this.helper.exists(this.repo, 'roleName', dto.name)) {
       const err = new ValidationErrorNode(
         'roleName',
         id,
@@ -44,8 +44,8 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.roleName) {
-      if (await this.helper.exists(this.repo, 'roleName', dto.roleName)) {
+    if (dto.name) {
+      if (await this.helper.exists(this.repo, 'roleName', dto.name)) {
         const err = new ValidationErrorNode(
           'roleName',
           id,

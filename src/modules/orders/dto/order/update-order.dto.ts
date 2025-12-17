@@ -20,7 +20,7 @@ export class UpdateOrderDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly orderCategoryId?: number;
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     description: 'Name of the owner of the order',
@@ -154,5 +154,5 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly orderedMenuItemDtos?: NestedOrderMenuItemDto[];
+  readonly orderedItemDtos?: NestedOrderMenuItemDto[];
 }

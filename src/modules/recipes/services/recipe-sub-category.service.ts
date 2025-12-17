@@ -57,7 +57,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     name: string,
     relations?: Array<keyof RecipeSubCategory>,
   ): Promise<RecipeSubCategory | null> {
-    return this.repo.findOne({ where: { subCategoryName: name }, relations });
+    return this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

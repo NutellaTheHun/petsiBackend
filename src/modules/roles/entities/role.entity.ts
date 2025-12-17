@@ -26,7 +26,7 @@ export class Role {
 
   @ApiProperty({ example: 'Staff', description: 'Name of the role' })
   @Column({ unique: true })
-  roleName: string;
+  name: string;
 
   /**
    * List of users who hold that role.

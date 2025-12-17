@@ -50,14 +50,14 @@ describe('recipe category service', () => {
 
   it('should create a recipe category', async () => {
     const result = await categoryService.create({
-      categoryName: 'testCategory',
+      name: 'testCategory',
     } as CreateRecipeCategoryDto);
     if (!result?.id) {
       throw new Error('result id is null.');
     }
 
     expect(result).not.toBeNull();
-    expect(result?.categoryName).toEqual('testCategory');
+    expect(result?.name).toEqual('testCategory');
     expect(result?.id).not.toBeNull();
 
     testId = result?.id;
@@ -66,14 +66,14 @@ describe('recipe category service', () => {
   it('should find one recipe category by id', async () => {
     const result = await categoryService.findOne(testId);
     expect(result).not.toBeNull();
-    expect(result?.categoryName).toEqual('testCategory');
+    expect(result?.name).toEqual('testCategory');
     expect(result?.id).not.toBeNull();
   });
 
   it('should find a recipe category by name', async () => {
     const result = await categoryService.findOneByName('testCategory');
     expect(result).not.toBeNull();
-    expect(result?.categoryName).toEqual('testCategory');
+    expect(result?.name).toEqual('testCategory');
     expect(result?.id).not.toBeNull();
   });
 
@@ -84,7 +84,7 @@ describe('recipe category service', () => {
     }
 
     const updateDto = {
-      categoryName: 'updatedCategoryName',
+      name: 'updatedCategoryName',
     } as UpdateRecipeCategoryDto;
 
     const result = await categoryService.update(toUpdate.id, updateDto);
@@ -94,7 +94,7 @@ describe('recipe category service', () => {
 
   it('should have an updated name', async () => {
     const result = await categoryService.findOne(testId);
-    expect(result?.categoryName).toEqual('updatedCategoryName');
+    expect(result?.name).toEqual('updatedCategoryName');
   });
 
   it('should remove a recipe category', async () => {
@@ -134,8 +134,8 @@ describe('recipe category service', () => {
       throw new Error('category is null');
     }
 
-    expect(result.subCategories).not.toBeNull();
-    expect(result.subCategories?.length).toBeGreaterThan(0);
+    expect(result.subCategorys).not.toBeNull();
+    expect(result.subCategorys?.length).toBeGreaterThan(0);
   });
 
   it('should find recipes categories with recipes', async () => {
@@ -171,7 +171,7 @@ describe('recipe category service', () => {
     });
 
     const createCategoryDto = {
-      categoryName: 'category with subCats',
+      name: 'category with subCats',
       subCategoryDtos: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
     } as CreateRecipeCategoryDto;
 
@@ -179,15 +179,15 @@ describe('recipe category service', () => {
     if (!result) {
       throw new Error();
     }
-    if (!result.subCategories) {
+    if (!result.subCategorys) {
       throw new Error();
     }
     expect(result).not.toBeNull();
-    expect(result?.categoryName).toEqual('category with subCats');
-    expect(result?.subCategories?.length).toEqual(3);
+    expect(result?.name).toEqual('category with subCats');
+    expect(result?.subCategorys?.length).toEqual(3);
 
     testRecSubCatId = result?.id as number;
-    testSubCatIds = result.subCategories.map((subCat) => subCat.id);
+    testSubCatIds = result.subCategorys.map((subCat) => subCat.id);
   });
 
   it('should query the sub-categories', async () => {

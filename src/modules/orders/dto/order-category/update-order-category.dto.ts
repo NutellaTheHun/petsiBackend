@@ -8,5 +8,5 @@ export class UpdateOrderCategoryDto {
   })
   @IsString()
   @IsOptional()
-  readonly categoryName?: string;
+  readonly name?: string;
 }

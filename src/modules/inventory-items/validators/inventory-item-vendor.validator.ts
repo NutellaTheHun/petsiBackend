@@ -32,7 +32,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
 
     // Vendor name exists
     await this.helper.enforceUnique(
-      dto.vendorName,
+      dto.name,
       this.repo,
       'vendorName',
       results,
@@ -50,9 +50,9 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
     const results: ValidationErrorNode[] = [];
 
     // Vendor name exists
-    if (dto.vendorName) {
+    if (dto.name) {
       await this.helper.enforceUnique(
-        dto.vendorName,
+        dto.name,
         this.repo,
         'vendorName',
         results,
