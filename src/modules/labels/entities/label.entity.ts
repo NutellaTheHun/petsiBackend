@@ -30,6 +30,16 @@ export class Label {
   id: number;
 
   /**
+   * Url of image stored in 3rd party source
+   */
+  @ApiProperty({
+    description: 'URL path to the stored image file',
+    example: 'http://toMyImages.gov',
+  })
+  @Column({ type: 'text' })
+  imageUrl: string;
+
+  /**
    * MenuItem that this image/type combination is for.
    * Example:
    * - MenuItem: Classic Apple, Type: 4x2, imageUrl: image.com/wsClapple
@@ -43,16 +53,6 @@ export class Label {
   })
   @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   menuItem: MenuItem;
-
-  /**
-   * Url of image stored in 3rd party source
-   */
-  @ApiProperty({
-    description: 'URL path to the stored image file',
-    example: 'http://toMyImages.gov',
-  })
-  @Column({ type: 'text' })
-  imageUrl: string;
 
   /**
    * A {@link LabelType} for categories like: "4x2", "2x1", or "ingredient label"

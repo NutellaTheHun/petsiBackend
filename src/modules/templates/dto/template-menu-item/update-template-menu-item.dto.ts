@@ -1,5 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
+import { Template } from '../../entities/template.entity';
 
 export class UpdateTemplateMenuItemDto {
   @ApiPropertyOptional({
@@ -28,7 +31,7 @@ export class UpdateTemplateMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly menuItemId?: number;
+  readonly menuItemId?: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description: 'Id of the parent Template entity.',
@@ -37,5 +40,5 @@ export class UpdateTemplateMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentTemplateId?: number;
+  readonly parentTemplateId?: EntityId<Template>;
 }

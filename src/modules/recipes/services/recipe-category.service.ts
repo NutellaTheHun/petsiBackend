@@ -44,8 +44,8 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     manager: EntityManager,
   ): Promise<RecipeCategory> {
     let subCategories: RecipeSubCategory[] = [];
-    if (dto.subCategoryDtos) {
-      for (const nestedDto of dto.subCategoryDtos) {
+    if (dto.subCategories) {
+      for (const nestedDto of dto.subCategories) {
         if (nestedDto.createDto) {
           const newSubCat = await RecipeSubCategoryCreateInTransaction(
             nestedDto.createDto,
@@ -75,13 +75,13 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
       entity.name = dto.name;
     }
 
-    if (dto.subCategoryDtos) {
+    if (dto.subCategories) {
       const existingSubCats = await manager.find(RecipeSubCategory, {
         where: { parentCategory: { id: entity.id } },
       });
       const existingMap = new Map(existingSubCats.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.subCategoryDtos) {
+      for (const nestedDto of dto.subCategories) {
         if (nestedDto.createDto) {
           const newSubCat = await RecipeSubCategoryCreateInTransaction(
             nestedDto.createDto,
@@ -107,7 +107,7 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
         }
       }
 
-      entity.subCategorys = Array.from(existingMap.values());
+      entity.subCategories = Array.from(existingMap.values());
     }
   }
 

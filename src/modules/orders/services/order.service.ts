@@ -42,8 +42,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
     manager: EntityManager,
   ): Promise<Order> {
     let orderedItems: OrderMenuItem[] = [];
-    if (dto.orderedItemDtos) {
-      for (const nestedDto of dto.orderedItemDtos) {
+    if (dto.orderedItems) {
+      for (const nestedDto of dto.orderedItems) {
         if (nestedDto.createDto) {
           const newItem = await OrderMenuItemCreateInTransaction(
             nestedDto.createDto,
@@ -134,13 +134,13 @@ export class OrderService extends ServiceBase<OrderEntity> {
       entity.weeklyFulfillment = dto.weeklyFulfillment;
     }
 
-    if (dto.orderedItemDtos) {
+    if (dto.orderedItems) {
       const existingItems = await manager.find(OrderMenuItem, {
         where: { parentOrder: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.orderedItemDtos) {
+      for (const nestedDto of dto.orderedItems) {
         if (nestedDto.createDto) {
           const newItem = await OrderMenuItemCreateInTransaction(
             nestedDto.createDto,

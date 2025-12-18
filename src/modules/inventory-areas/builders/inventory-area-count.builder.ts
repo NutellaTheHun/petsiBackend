@@ -38,8 +38,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
     if (dto.inventoryAreaId !== undefined) {
       this.inventoryAreaById(dto.inventoryAreaId);
     }
-    if (dto.countedInventoryItemDtos !== undefined) {
-      this.countedItemsByBuilder(dto.countedInventoryItemDtos);
+    if (dto.countedInventoryItems !== undefined) {
+      this.countedItemsByBuilder(dto.countedInventoryItems);
     }
   }
 
@@ -47,8 +47,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
     if (dto.inventoryAreaId !== undefined) {
       this.inventoryAreaById(dto.inventoryAreaId);
     }
-    if (dto.countedInventoryItemDtos !== undefined) {
-      this.countedItemsByBuilder(dto.countedInventoryItemDtos);
+    if (dto.countedInventoryItems !== undefined) {
+      this.countedItemsByBuilder(dto.countedInventoryItems);
     }
   }
 

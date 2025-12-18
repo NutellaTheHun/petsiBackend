@@ -63,7 +63,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategorys.find((cat) => cat.id === dto.subCategoryId)) {
+      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
           id,
@@ -102,8 +102,8 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
 
     //check dupliate ingredients
     const seen = new Set<string>();
-    if (dto.ingredientDtos && dto.ingredientDtos.length) {
-      for (const nestedDto of dto.ingredientDtos) {
+    if (dto.ingredients && dto.ingredients.length) {
+      for (const nestedDto of dto.ingredients) {
         if (!nestedDto.createDto) {
           throw new Error(
             `create recipe validator: nested ingredient is missing create dto`,
@@ -122,12 +122,12 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         }
       }
     }
-    if (dto.ingredientDtos && dto.ingredientDtos.length) {
+    if (dto.ingredients && dto.ingredients.length) {
       // nested validator call
       const nestedDtoErrs =
         await this.ingredientValidator.validateManyNestedNode(
           'ingredients',
-          dto.ingredientDtos,
+          dto.ingredients,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);
@@ -164,7 +164,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategorys.find((cat) => cat.id === dto.subCategoryId)) {
+      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
         const err = new ValidationErrorNode(
           'subCategory',
           id,
@@ -204,7 +204,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     // check duplicate ingredients
     const itemMap = new Map<string | number, string>();
     const seen = new Set<string>();
-    if (dto.ingredientDtos && dto.ingredientDtos.length) {
+    if (dto.ingredients && dto.ingredients.length) {
       const currentRecipe = await this.repo.findOne({
         where: { id },
         relations: [
@@ -226,7 +226,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         );
       }
 
-      for (const nestedDto of dto.ingredientDtos) {
+      for (const nestedDto of dto.ingredients) {
         if (nestedDto.createDto && nestedDto.createId) {
           itemMap.set(
             nestedDto.createId,
@@ -270,7 +270,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       const nestedDtoErrs =
         await this.ingredientValidator.validateManyNestedNode(
           'ingredients',
-          dto.ingredientDtos,
+          dto.ingredients,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

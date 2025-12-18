@@ -1,5 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../../menu-items/menu-items.module';
 import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
 
 export class UpdateOrderMenuItemDto {
@@ -10,7 +13,7 @@ export class UpdateOrderMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly menuItemId?: number;
+  readonly menuItemId?: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -20,7 +23,7 @@ export class UpdateOrderMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly sizeId?: number;
+  readonly sizeId?: EntityId<MenuItemSize>;
 
   @ApiPropertyOptional({ description: 'Amount being ordered.', example: 3 })
   @IsNumber()
@@ -54,5 +57,5 @@ export class UpdateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly containerOrderMenuItemDtos?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuDtos?: NestedOrderContainerItemDto[];
 }

@@ -71,10 +71,10 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     }
 
     // Nested validator call
-    if (dto.countedItemSizeDto) {
+    if (dto.countedItemSize) {
       const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
-        dto.countedItemSizeDto,
+        dto.countedItemSize,
       );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
@@ -142,10 +142,10 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     }
 
     // Nested ItemSize validation
-    if (dto.countedItemSizeDto) {
+    if (dto.countedItemSize) {
       const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
-        dto.countedItemSizeDto,
+        dto.countedItemSize,
       );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);

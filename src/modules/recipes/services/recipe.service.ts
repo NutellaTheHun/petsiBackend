@@ -45,8 +45,8 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     manager: EntityManager,
   ): Promise<Recipe> {
     let ingredients: RecipeIngredient[] = [];
-    if (dto.ingredientDtos) {
-      for (const nestedDto of dto.ingredientDtos) {
+    if (dto.ingredients) {
+      for (const nestedDto of dto.ingredients) {
         if (nestedDto.createDto) {
           const newIngred = await RecipeIngredientCreateInTransaction(
             nestedDto.createDto,
@@ -156,13 +156,13 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       });
     }
 
-    if (dto.ingredientDtos) {
+    if (dto.ingredients) {
       const existingIngreds = await manager.find(RecipeIngredient, {
         where: { parentRecipe: { id: entity.id } },
       });
       const existingMap = new Map(existingIngreds.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.ingredientDtos) {
+      for (const nestedDto of dto.ingredients) {
         if (nestedDto.createDto) {
           const newIngred = await RecipeIngredientCreateInTransaction(
             nestedDto.createDto,

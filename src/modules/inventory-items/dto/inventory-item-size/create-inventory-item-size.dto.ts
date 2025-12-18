@@ -1,5 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
+import { InventoryItem } from '../../entities/inventory-item.entity';
 
 export class CreateInventoryItemSizeDto {
   @ApiProperty({
@@ -11,7 +15,7 @@ export class CreateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly inventoryItemId?: number;
+  readonly inventoryItemId?: EntityId<InventoryItem>;
 
   @ApiProperty({
     description: 'Id of InventoryItemPackage entity.',
@@ -20,7 +24,7 @@ export class CreateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly packageId: number;
+  readonly packageId: EntityId<InventoryItemPackage>;
 
   @ApiProperty({
     description: 'Id of UnitofMeasure entity.',
@@ -29,7 +33,7 @@ export class CreateInventoryItemSizeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly measureTypeId: number;
+  readonly measureTypeId: EntityId<UnitOfMeasure>;
 
   @ApiProperty({
     description: 'the unit quantity of the UnitofMeasure entity.',

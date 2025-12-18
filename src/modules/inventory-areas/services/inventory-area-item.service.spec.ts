@@ -114,7 +114,7 @@ describe('Inventory area item service', () => {
     );
 
     const updateCountDto = {
-      countedInventoryItemDtos: [createAreaItemDto, ...theRest],
+      countedInventoryItems: [createAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const updateResult = await countService.update(

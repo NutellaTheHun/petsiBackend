@@ -50,8 +50,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     manager: EntityManager,
   ): Promise<InventoryAreaCount> {
     let countedItems: InventoryAreaItem[] = [];
-    if (dto.countedInventoryItemDtos) {
-      for (const itemDto of dto.countedInventoryItemDtos) {
+    if (dto.countedInventoryItems) {
+      for (const itemDto of dto.countedInventoryItems) {
         if (itemDto.createDto) {
           const item = await InventoryAreaItemCreateInTransaction(
             itemDto.createDto,
@@ -85,14 +85,14 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       });
     }
 
-    if (dto.countedInventoryItemDtos) {
+    if (dto.countedInventoryItems) {
       const existingItems = await manager.find(InventoryAreaItem, {
         where: { parentInventoryCount: { id: entity.id } },
         relations: ['countedItemSize'],
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nested of dto.countedInventoryItemDtos) {
+      for (const nested of dto.countedInventoryItems) {
         if (nested.createDto) {
           const newItem = await InventoryAreaItemCreateInTransaction(
             nested.createDto,

@@ -53,7 +53,7 @@ describe('recipe category validator', () => {
     ];
     const dto = {
       name: REC_CAT_A,
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as CreateRecipeCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -77,7 +77,7 @@ describe('recipe category validator', () => {
     ];
     const dto = {
       name: REC_CAT_A,
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as CreateRecipeCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -104,7 +104,7 @@ describe('recipe category validator', () => {
     ];
     const dto = {
       name: 'testCatValidFail',
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as CreateRecipeCategoryDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -129,7 +129,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategorys[0].id,
+        id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -138,7 +138,7 @@ describe('recipe category validator', () => {
 
     const dto = {
       name: 'UPDATE',
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -160,7 +160,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategorys[0].id,
+        id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -169,7 +169,7 @@ describe('recipe category validator', () => {
 
     const dto = {
       name: REC_CAT_B,
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -194,7 +194,7 @@ describe('recipe category validator', () => {
       }),
       plainToInstance(NestedRecipeSubCategoryDto, {
         mode: 'update',
-        id: toUpdate.subCategorys[0].id,
+        id: toUpdate.subCategories[0].id,
         updateDto: {
           subCategoryName: 'SUB CAT 2',
         },
@@ -203,7 +203,7 @@ describe('recipe category validator', () => {
 
     const dto = {
       name: REC_CAT_B,
-      subCategoryDtos: subCatDtos,
+      subCategories: subCatDtos,
     } as UpdateRecipeCategoryDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

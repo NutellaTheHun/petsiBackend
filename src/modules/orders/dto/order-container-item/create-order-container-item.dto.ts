@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../../menu-items/menu-items.module';
+import { OrderMenuItem } from '../../entities/order-menu-item.entity';
 
 export class CreateOrderContainerItemDto {
   @ApiProperty({
@@ -9,7 +13,7 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly containedMenuItemId: number;
+  readonly containedMenuItemId: EntityId<MenuItem>;
 
   @ApiProperty({
     description:
@@ -19,7 +23,7 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly containedItemSizeId: number;
+  readonly containedItemSizeId: EntityId<MenuItemSize>;
 
   @ApiProperty({
     description:
@@ -39,7 +43,7 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentOrderMenuItemId?: number;
+  readonly parentOrderMenuItemId?: EntityId<OrderMenuItem>;
 
   @ApiProperty({
     description:
@@ -49,7 +53,7 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentMenuItemIdCtx: number;
+  readonly parentMenuItemIdCtx: EntityId<MenuItem>;
 
   @ApiProperty({
     description:
@@ -59,5 +63,5 @@ export class CreateOrderContainerItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentMenuItemSizeIdCtx: number;
+  readonly parentMenuItemSizeIdCtx: EntityId<MenuItemSize>;
 }

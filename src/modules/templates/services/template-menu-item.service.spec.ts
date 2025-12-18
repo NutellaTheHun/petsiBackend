@@ -84,7 +84,7 @@ describe('Template menu item service', () => {
     });
 
     const updateTemplateDto = {
-      templateMenuItemDtos: [createItemDto],
+      templateMenuItems: [createItemDto],
     } as UpdateTemplateDto;
 
     const updateResult = await templateService.update(

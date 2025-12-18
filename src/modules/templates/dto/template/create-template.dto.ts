@@ -51,5 +51,5 @@ export class CreateTemplateDto {
   })
   @IsOptional()
   @IsArray()
-  readonly templateMenuItemDtos?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItems?: NestedTemplateMenuItemDto[];
 }

@@ -9,6 +9,9 @@ import {
   ValidateNested,
 } from 'class-validator';
 
+import { EntityId } from '../../../../common/types';
+import { MenuItemCategory } from '../../entities/menu-item-category.entity';
+import { MenuItemSize } from '../../entities/menu-item-size.entity';
 import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
 
 export class UpdateMenuItemDto {
@@ -40,7 +43,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<MenuItemCategory>;
 
   @ApiPropertyOptional({
     description:
@@ -52,7 +55,7 @@ export class UpdateMenuItemDto {
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsOptional()
-  readonly sizeIds?: number[];
+  readonly sizeIds?: EntityId<MenuItemSize>[];
 
   @ApiPropertyOptional({
     description:
@@ -81,7 +84,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly containerMenuItemDtos?: NestedMenuItemContainerItemDto[];
+  readonly containerMenuItems?: NestedMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:

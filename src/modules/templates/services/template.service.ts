@@ -40,8 +40,8 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     manager: EntityManager,
   ): Promise<Template> {
     let templateItems: TemplateMenuItem[] = [];
-    if (dto.templateMenuItemDtos) {
-      for (const nestedDto of dto.templateMenuItemDtos) {
+    if (dto.templateMenuItems) {
+      for (const nestedDto of dto.templateMenuItems) {
         if (nestedDto.createDto) {
           const newTemplateItem = await TemplateMenuItemCreateInTransaction(
             nestedDto.createDto,
@@ -78,13 +78,13 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
       entity.name = dto.name;
     }
 
-    if (dto.templateMenuItemDtos) {
+    if (dto.templateMenuItems) {
       const existingItems = await manager.find(TemplateMenuItem, {
         where: { parentTemplate: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.templateMenuItemDtos) {
+      for (const nestedDto of dto.templateMenuItems) {
         if (nestedDto.createDto) {
           const newTemplateItem = await TemplateMenuItemCreateInTransaction(
             nestedDto.createDto,

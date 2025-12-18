@@ -37,15 +37,14 @@ export class RecipeCategory {
    */
   @ApiProperty({
     example: [recipeSubCategoryExample(new Set<string>(), true)],
-    description:
-      'List of subcategories under the category, misspelled to conform with DTO -> Entity prop resolution requirements',
+    description: 'List of subcategories under the category',
     type: () => RecipeSubCategory,
     isArray: true,
   })
   @OneToMany(() => RecipeSubCategory, (sub) => sub.parentCategory, {
     cascade: true,
   })
-  subCategorys: RecipeSubCategory[] = [];
+  subCategories: RecipeSubCategory[] = [];
 
   /**
    * List of {@link Recipe} under the category.

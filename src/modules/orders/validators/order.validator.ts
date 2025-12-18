@@ -30,7 +30,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.orderedItemDtos.length === 0) {
+    if (dto.orderedItems.length === 0) {
       const err = new ValidationErrorNode(
         'orderedItems',
         id,
@@ -91,7 +91,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // DOESNT HANDLE CONTAINERS
     // False negative with 2 boxes of cookies with different contents
     const seen = new Set<string>();
-    for (const nestedDto of dto.orderedItemDtos) {
+    for (const nestedDto of dto.orderedItems) {
       if (!nestedDto.createDto) {
         throw new Error(
           'create order validation: orderMenuItem dto has no createDto',
@@ -114,7 +114,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // nested validator call
     const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
       'orderedItems',
-      dto.orderedItemDtos,
+      dto.orderedItems,
     );
     if (nestedDtoErrs) {
       results.push(nestedDtoErrs);
@@ -185,7 +185,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // False negative with 2 boxes of cookies with different contents
     const itemMap = new Map<string | number, string>();
     const seen = new Set<string>();
-    if (dto.orderedItemDtos && dto.orderedItemDtos.length) {
+    if (dto.orderedItems && dto.orderedItems.length) {
       const currentOrder = await this.repo.findOne({
         where: { id },
         relations: [
@@ -205,7 +205,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
           `${orderItem.menuItem.id}:${orderItem.size.id}`,
         );
       }
-      for (const nestedDto of dto.orderedItemDtos) {
+      for (const nestedDto of dto.orderedItems) {
         if (nestedDto.createDto && nestedDto.createId) {
           itemMap.set(
             nestedDto.createId,
@@ -236,12 +236,12 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       }
     }
 
-    if (dto.orderedItemDtos && dto.orderedItemDtos.length) {
+    if (dto.orderedItems && dto.orderedItems.length) {
       // nested validator
       const nestedDtoErrs =
         await this.orderItemValidator.validateManyNestedNode(
           'orderedItems',
-          dto.orderedItemDtos,
+          dto.orderedItems,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

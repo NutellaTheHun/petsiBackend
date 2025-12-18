@@ -134,8 +134,8 @@ describe('recipe category service', () => {
       throw new Error('category is null');
     }
 
-    expect(result.subCategorys).not.toBeNull();
-    expect(result.subCategorys?.length).toBeGreaterThan(0);
+    expect(result.subCategories).not.toBeNull();
+    expect(result.subCategories?.length).toBeGreaterThan(0);
   });
 
   it('should find recipes categories with recipes', async () => {
@@ -172,22 +172,22 @@ describe('recipe category service', () => {
 
     const createCategoryDto = {
       name: 'category with subCats',
-      subCategoryDtos: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
+      subCategories: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
     } as CreateRecipeCategoryDto;
 
     const result = await categoryService.create(createCategoryDto);
     if (!result) {
       throw new Error();
     }
-    if (!result.subCategorys) {
+    if (!result.subCategories) {
       throw new Error();
     }
     expect(result).not.toBeNull();
     expect(result?.name).toEqual('category with subCats');
-    expect(result?.subCategorys?.length).toEqual(3);
+    expect(result?.subCategories?.length).toEqual(3);
 
     testRecSubCatId = result?.id as number;
-    testSubCatIds = result.subCategorys.map((subCat) => subCat.id);
+    testSubCatIds = result.subCategories.map((subCat) => subCat.id);
   });
 
   it('should query the sub-categories', async () => {

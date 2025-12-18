@@ -72,7 +72,7 @@ describe('template validator', () => {
     const dto = {
       name: 'CREATE',
       isPie: true,
-      templateMenuItemDtos: itemDtos,
+      templateMenuItems: itemDtos,
     } as CreateTemplateDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -110,7 +110,7 @@ describe('template validator', () => {
     const dto = {
       name: template_a,
       isPie: true,
-      templateMenuItemDtos: itemDtos,
+      templateMenuItems: itemDtos,
     } as CreateTemplateDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -165,7 +165,7 @@ describe('template validator', () => {
     const dto = {
       name: 'UPDATE',
       isPie: true,
-      templateMenuItemDtos: itemDtos,
+      templateMenuItems: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -212,7 +212,7 @@ describe('template validator', () => {
     const dto = {
       name: template_b,
       isPie: true,
-      templateMenuItemDtos: itemDtos,
+      templateMenuItems: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

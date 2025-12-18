@@ -28,8 +28,8 @@ export class TemplateBuilder extends BuilderBase<Template> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    if (dto.templateMenuItemDtos !== undefined) {
-      this.itemsByBuilder(dto.templateMenuItemDtos);
+    if (dto.templateMenuItems !== undefined) {
+      this.itemsByBuilder(dto.templateMenuItems);
     }
   }
 
@@ -40,8 +40,8 @@ export class TemplateBuilder extends BuilderBase<Template> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    if (dto.templateMenuItemDtos !== undefined) {
-      this.itemsByBuilder(dto.templateMenuItemDtos);
+    if (dto.templateMenuItems !== undefined) {
+      this.itemsByBuilder(dto.templateMenuItems);
     }
   }
 

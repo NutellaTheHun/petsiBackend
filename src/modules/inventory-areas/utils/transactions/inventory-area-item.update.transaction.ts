@@ -20,15 +20,15 @@ export async function InventoryAreaItemUpdateInTransaction(
     });
   }
 
-  if (dto.countedItemSizeDto && dto.countedItemSizeId) {
+  if (dto.countedItemSize && dto.countedItemSizeId) {
     throw new Error(
       'Provide either countedItemSizeId OR countedItemSizeDto, not both.',
     );
   }
 
-  if (dto.countedItemSizeDto?.createDto !== undefined) {
+  if (dto.countedItemSize?.createDto !== undefined) {
     const itemSize = await InventoryItemSizeCreateInTransaction(
-      dto.countedItemSizeDto.createDto,
+      dto.countedItemSize.createDto,
       manager,
     );
     entity.countedItemSize = itemSize;

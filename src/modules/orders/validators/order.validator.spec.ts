@@ -85,7 +85,7 @@ describe('order validator', () => {
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedItemDtos: itemDtos,
+      orderedItems: itemDtos,
     } as CreateOrderDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -138,7 +138,7 @@ describe('order validator', () => {
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedItemDtos: itemDtos,
+      orderedItems: itemDtos,
     } as CreateOrderDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -206,7 +206,7 @@ describe('order validator', () => {
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedItemDtos: itemDtos,
+      orderedItems: itemDtos,
     } as UpdateOrderDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -279,7 +279,7 @@ describe('order validator', () => {
       recipient: 'CREATE',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedItemDtos: itemDtos,
+      orderedItems: itemDtos,
     } as UpdateOrderDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

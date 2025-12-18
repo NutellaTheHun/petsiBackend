@@ -137,7 +137,7 @@ describe('recipe service', () => {
       servingSizeQuantity: servingAmonut,
       servingSizeUnitTypeId: servingUnit.id,
       salesPrice: salesAmount,
-      ingredientDtos: ingredientDtos,
+      ingredients: ingredientDtos,
     } as CreateRecipeDto;
 
     const result = await recipeService.create(dto);
@@ -237,7 +237,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: [...updateIngredDtos, ...createIngredDtos],
+      ingredients: [...updateIngredDtos, ...createIngredDtos],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -299,7 +299,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: ingredUpdateDtos,
+      ingredients: ingredUpdateDtos,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -371,7 +371,7 @@ describe('recipe service', () => {
       }),
     );
     const dto = {
-      ingredientDtos: ingredUpdateDtos,
+      ingredients: ingredUpdateDtos,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -452,7 +452,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: [updatedDto, ...theRest],
+      ingredients: [updatedDto, ...theRest],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -517,7 +517,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: [updateDto, ...theRest],
+      ingredients: [updateDto, ...theRest],
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -549,7 +549,7 @@ describe('recipe service', () => {
     );
 
     const dto = {
-      ingredientDtos: ingredUpdateDtos,
+      ingredients: ingredUpdateDtos,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -678,12 +678,12 @@ describe('recipe service', () => {
       throw new Error('category is null');
     }
 
-    if (!category.subCategorys) {
+    if (!category.subCategories) {
       throw new Error('category subCategories is null');
     }
 
     const dto = {
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -692,7 +692,7 @@ describe('recipe service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.subCategory.id).toEqual(category.subCategorys[0].id);
+    expect(result?.subCategory.id).toEqual(category.subCategories[0].id);
 
     oldSubCategoryId = result?.subCategory.id as number;
   });
@@ -728,12 +728,12 @@ describe('recipe service', () => {
       throw new Error('category is null');
     }
 
-    if (!category.subCategorys) {
+    if (!category.subCategories) {
       throw new Error('category subCategories is null');
     }
 
     const dto = {
-      subCategoryId: category.subCategorys[1].id,
+      subCategoryId: category.subCategories[1].id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -742,7 +742,7 @@ describe('recipe service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.subCategory.id).toEqual(category.subCategorys[1].id);
+    expect(result?.subCategory.id).toEqual(category.subCategories[1].id);
 
     newSubCategoryId = result?.subCategory.id as number;
   });
@@ -829,13 +829,13 @@ describe('recipe service', () => {
     if (!cat) {
       throw new Error('recipe category is null');
     }
-    if (!cat.subCategorys) {
+    if (!cat.subCategories) {
       throw new Error('recipe sub-category is null');
     }
 
     const dto = {
       categoryId: cat.id,
-      subCategoryId: cat.subCategorys[0].id,
+      subCategoryId: cat.subCategories[0].id,
     } as UpdateRecipeDto;
 
     const result = await recipeService.update(testId, dto);
@@ -844,7 +844,7 @@ describe('recipe service', () => {
     }
 
     expect(result).not.toBeNull();
-    expect(result?.subCategory.id).toEqual(cat.subCategorys[0].id);
+    expect(result?.subCategory.id).toEqual(cat.subCategories[0].id);
 
     newSubCategoryId = result?.subCategory.id as number;
   });
@@ -934,13 +934,13 @@ describe('recipe service', () => {
     if (!category) {
       throw new Error('category is null');
     }
-    if (!category.subCategorys) {
+    if (!category.subCategories) {
       throw new Error('category subCategories is null');
     }
 
     const dto = {
       categoryId: category.id,
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
     } as UpdateRecipeDto;
 
     await recipeService.update(testId, dto);

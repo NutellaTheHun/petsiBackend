@@ -6,6 +6,10 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../../menu-items/menu-items.module';
+import { Order } from '../../entities/order.entity';
 import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
 
 export class CreateOrderMenuItemDto {
@@ -16,7 +20,7 @@ export class CreateOrderMenuItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly menuItemId: number;
+  readonly menuItemId: EntityId<MenuItem>;
 
   @ApiProperty({
     description:
@@ -26,7 +30,7 @@ export class CreateOrderMenuItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly sizeId: number;
+  readonly sizeId: EntityId<MenuItemSize>;
 
   @ApiProperty({ description: 'Amount being ordered.' })
   @IsNumber()
@@ -61,7 +65,7 @@ export class CreateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly containerOrderMenuItemDtos?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuItems?: NestedOrderContainerItemDto[];
 
   @ApiPropertyOptional({
     description:
@@ -71,5 +75,5 @@ export class CreateOrderMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentOrderId?: number;
+  readonly parentOrderId?: EntityId<Order>;
 }

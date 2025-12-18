@@ -50,8 +50,8 @@ export class OrderBuilder extends BuilderBase<Order> {
     if (dto.note !== undefined) {
       this.note(dto.note);
     }
-    if (dto.orderedItemDtos !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedItemDtos);
+    if (dto.orderedItems !== undefined) {
+      this.orderedItemsByBuilder(dto.orderedItems);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);
@@ -92,8 +92,8 @@ export class OrderBuilder extends BuilderBase<Order> {
     if (dto.note !== undefined) {
       this.note(dto.note);
     }
-    if (dto.orderedItemDtos !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedItemDtos);
+    if (dto.orderedItems !== undefined) {
+      this.orderedItemsByBuilder(dto.orderedItems);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);

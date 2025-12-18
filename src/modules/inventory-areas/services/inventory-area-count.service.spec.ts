@@ -133,7 +133,7 @@ describe('Inventory area count service', () => {
 
     const dto = {
       inventoryAreaId: areaA.id,
-      countedInventoryItemDtos: itemDtos,
+      countedInventoryItems: itemDtos,
     } as CreateInventoryAreaCountDto;
 
     const result = await countService.create(dto);
@@ -408,7 +408,7 @@ describe('Inventory area count service', () => {
     );
 
     const updateCountDto = {
-      countedInventoryItemDtos: nestedItemCountDtos,
+      countedInventoryItems: nestedItemCountDtos,
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateCountDto);
@@ -468,7 +468,7 @@ describe('Inventory area count service', () => {
     );
 
     const updateAreaCountDto = {
-      countedInventoryItemDtos: [updateAreaItemDto, ...theRest],
+      countedInventoryItems: [updateAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateAreaCountDto);
@@ -536,7 +536,7 @@ describe('Inventory area count service', () => {
     );
 
     const updateAreaCountDto = {
-      countedInventoryItemDtos: [updateAreaItemDto, ...theRest],
+      countedInventoryItems: [updateAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateAreaCountDto);
@@ -598,7 +598,7 @@ describe('Inventory area count service', () => {
     );
 
     const updateAreaCountDto = {
-      countedInventoryItemDtos: [updateAreaItemDto, ...theRest],
+      countedInventoryItems: [updateAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateAreaCountDto);
@@ -657,7 +657,7 @@ describe('Inventory area count service', () => {
     );
 
     const updateAreaCountDto = {
-      countedInventoryItemDtos: [updateAreaItemDto, ...theRest],
+      countedInventoryItems: [updateAreaItemDto, ...theRest],
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateAreaCountDto);
@@ -734,7 +734,7 @@ describe('Inventory area count service', () => {
     deletedAreaItemId = areaCount.countedInventoryItems[2].id;
 
     const updateAreaCountDto = {
-      countedInventoryItemDtos: [updateAreaItemDto, createAreaItemDto, theRest],
+      countedInventoryItems: [updateAreaItemDto, createAreaItemDto, theRest],
     } as UpdateInventoryAreaCountDto;
 
     const result = await countService.update(testCountId, updateAreaCountDto);

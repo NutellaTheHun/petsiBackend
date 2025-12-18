@@ -44,11 +44,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       id,
     );
 
-    if (dto.sizeDtos?.length) {
+    if (dto.sizes?.length) {
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
-        dto.sizeDtos,
+        dto.sizes,
       );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);
@@ -75,11 +75,11 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       );
     }
 
-    if (dto.sizeDtos?.length) {
+    if (dto.sizes?.length) {
       // nested inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
         'itemSizes',
-        dto.sizeDtos,
+        dto.sizes,
       );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

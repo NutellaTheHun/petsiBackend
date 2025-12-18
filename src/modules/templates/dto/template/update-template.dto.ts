@@ -53,5 +53,5 @@ export class UpdateTemplateDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly templateMenuItemDtos?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItems?: NestedTemplateMenuItemDto[];
 }

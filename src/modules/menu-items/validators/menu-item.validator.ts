@@ -41,7 +41,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       results.push(err);
     }
 
-    if (dto.containerMenuItemDtos?.length) {
+    if (dto.containerMenuItems?.length) {
       if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
         const err = new ValidationErrorNode(
           'type',
@@ -55,7 +55,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
           'fixedContents',
-          dto.containerMenuItemDtos,
+          dto.containerMenuItems,
         );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);
@@ -84,7 +84,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // containerItem dtos
-    if (dto.containerMenuItemDtos?.length) {
+    if (dto.containerMenuItems?.length) {
       if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
         const err = new ValidationErrorNode(
           'type',
@@ -98,7 +98,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
           'fixedContents',
-          dto.containerMenuItemDtos,
+          dto.containerMenuItems,
         );
       if (nestedDtoErr) {
         results.push(nestedDtoErr);

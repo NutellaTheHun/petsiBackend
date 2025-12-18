@@ -6,6 +6,8 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { UnitOfMeasureCategory } from '../../entities/unit-of-measure-category.entity';
 
 export class CreateUnitOfMeasureDto {
   @ApiProperty({
@@ -41,5 +43,5 @@ export class CreateUnitOfMeasureDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<UnitOfMeasureCategory>;
 }

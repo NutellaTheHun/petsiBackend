@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
 import { NestedInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
+import { InventoryItemSize } from '../../../inventory-items/entities/inventory-item-size.entity';
+import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
+import { InventoryAreaCount } from '../../entities/inventory-area-count.entity';
 
 export class CreateInventoryAreaItemDto {
   @ApiProperty({
@@ -11,7 +15,7 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly countedInventoryItemId: number;
+  readonly countedInventoryItemId: EntityId<InventoryItem>;
 
   @ApiProperty({
     description: 'The amount of InventoryItem per unit.',
@@ -33,7 +37,7 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly countedItemSizeId?: number;
+  readonly countedItemSizeId?: EntityId<InventoryItemSize>;
 
   @ApiProperty({
     description:
@@ -51,7 +55,7 @@ export class CreateInventoryAreaItemDto {
     },
   })
   @IsOptional()
-  readonly countedItemSizeDto?: NestedInventoryItemSizeDto;
+  readonly countedItemSize?: NestedInventoryItemSizeDto;
 
   @ApiProperty({
     description:
@@ -63,5 +67,5 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentInventoryCountId?: number;
+  readonly parentInventoryCountId?: EntityId<InventoryAreaCount>;
 }

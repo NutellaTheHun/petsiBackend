@@ -109,7 +109,7 @@ describe('recipe ingredient service', () => {
     );
 
     const updateRecipeDto = {
-      ingredientDtos: [createIngredDto, ...theRest],
+      ingredients: [createIngredDto, ...theRest],
     } as UpdateRecipeDto;
 
     const updateResult = await recipeService.update(
@@ -194,7 +194,7 @@ describe('recipe ingredient service', () => {
     );
 
     const updateRecipeDto = {
-      ingredientDtos: [createIngredDto, ...theRest],
+      ingredients: [createIngredDto, ...theRest],
     } as UpdateRecipeDto;
 
     const updateResult = await recipeService.update(
@@ -252,7 +252,7 @@ describe('recipe ingredient service', () => {
     });
 
     const updateRecipeDto = {
-      ingredientDtos: [recIngredDto],
+      ingredients: [recIngredDto],
     } as UpdateRecipeDto;
 
     await expect(
@@ -373,7 +373,7 @@ describe('recipe ingredient service', () => {
     });
 
     const updateRecipeDto = {
-      ingredientDtos: [updateRecIngredDto],
+      ingredients: [updateRecIngredDto],
     } as UpdateRecipeDto;
 
     await expect(

@@ -345,7 +345,7 @@ export class InventoryItemTestingUtil {
       const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
 
       await this.itemService.update(item.id, {
-        sizeDtos: [
+        sizes: [
           plainToInstance(NestedInventoryItemSizeDto, {
             mode: 'create',
             createDto: {

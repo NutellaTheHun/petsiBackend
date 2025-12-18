@@ -38,10 +38,10 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       results.push(err);
     }
 
-    if (dto.templateMenuItemDtos && dto.templateMenuItemDtos.length > 0) {
+    if (dto.templateMenuItems && dto.templateMenuItems.length > 0) {
       // check duplicate templateMenuItems
       const seen = new Set<number>();
-      for (const nestedDto of dto.templateMenuItemDtos) {
+      for (const nestedDto of dto.templateMenuItems) {
         if (!nestedDto.createDto) {
           throw new Error(
             `create template validation: nested template item missing create dto`,
@@ -63,7 +63,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
           'templateItems',
-          dto.templateMenuItemDtos,
+          dto.templateMenuItems,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);
@@ -91,7 +91,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       }
     }
 
-    if (dto.templateMenuItemDtos && dto.templateMenuItemDtos.length > 0) {
+    if (dto.templateMenuItems && dto.templateMenuItems.length > 0) {
       // check duplicate templateMenuItems
       const itemMap = new Map<string | number, number>();
       const seen = new Set<number>();
@@ -108,7 +108,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       for (const entry of currentTemplate.templateMenuItems) {
         itemMap.set(entry.id, entry.menuItem.id);
       }
-      for (const nestedDto of dto.templateMenuItemDtos) {
+      for (const nestedDto of dto.templateMenuItems) {
         if (nestedDto.createDto && nestedDto.createId) {
           itemMap.set(nestedDto.createId, nestedDto.createDto.menuItemId);
         } else if (nestedDto.updateDto && nestedDto.id) {
@@ -134,7 +134,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       const nestedDtoErrs =
         await this.templateItemValidator.validateManyNestedNode(
           'templateItems',
-          dto.templateMenuItemDtos,
+          dto.templateMenuItems,
         );
       if (nestedDtoErrs) {
         results.push(nestedDtoErrs);

@@ -9,6 +9,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
 
 export class UpdateOrderDto {
@@ -121,7 +123,7 @@ export class UpdateOrderDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<OrderCategory>;
 
   @ApiPropertyOptional({
     description:
@@ -154,5 +156,5 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly orderedItemDtos?: NestedOrderMenuItemDto[];
+  readonly orderedItems?: NestedOrderMenuItemDto[];
 }

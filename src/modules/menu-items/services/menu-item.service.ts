@@ -57,8 +57,8 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     manager: EntityManager,
   ): Promise<MenuItem> {
     let containerItems: MenuItemContainerItem[] = [];
-    if (dto.containerMenuItemDtos?.length) {
-      for (const nestedDto of dto.containerMenuItemDtos) {
+    if (dto.containerMenuItems?.length) {
+      for (const nestedDto of dto.containerMenuItems) {
         if (nestedDto.createDto) {
           const newItem = await MenuItemContainerItemCreateInTransaction(
             nestedDto.createDto,
@@ -119,13 +119,13 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       // handle currently ordered items with now invalid sizes?
     }
 
-    if (dto.containerMenuItemDtos?.length) {
+    if (dto.containerMenuItems?.length) {
       const existingItems = await manager.find(MenuItemContainerItem, {
         where: { parentMenuItem: { id: entity.id } },
       });
       const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.containerMenuItemDtos) {
+      for (const nestedDto of dto.containerMenuItems) {
         if (nestedDto.createDto) {
           const newItem = await MenuItemContainerItemCreateInTransaction(
             nestedDto.createDto,

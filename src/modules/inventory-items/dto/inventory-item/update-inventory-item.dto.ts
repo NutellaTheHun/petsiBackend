@@ -7,6 +7,9 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity';
 import { NestedInventoryItemSizeDto } from '../inventory-item-size/nested-inventory-item-size.dto';
 
 export class UpdateInventoryItemDto {
@@ -26,7 +29,7 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<InventoryItemCategory>;
 
   @ApiPropertyOptional({
     example: 2,
@@ -36,7 +39,7 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly vendorId?: number;
+  readonly vendorId?: EntityId<InventoryItemVendor>;
 
   @ApiPropertyOptional({
     description:
@@ -69,5 +72,5 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly sizeDtos?: NestedInventoryItemSizeDto[];
+  readonly sizes?: NestedInventoryItemSizeDto[];
 }

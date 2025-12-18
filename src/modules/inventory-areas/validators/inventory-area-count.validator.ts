@@ -34,7 +34,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     const results: ValidationErrorNode[] = [];
 
     this.helper.enforceNotEmpty(
-      dto.countedInventoryItemDtos,
+      dto.countedInventoryItems,
       'itemCountDtos',
       results,
       'Inventory count has no counted items',
@@ -42,10 +42,10 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
     );
 
     // Nested Validator Call
-    if (dto.countedInventoryItemDtos?.length) {
+    if (dto.countedInventoryItems?.length) {
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
-        dto.countedInventoryItemDtos,
+        dto.countedInventoryItems,
       );
       if (valErrs) {
         results.push(valErrs);
@@ -61,9 +61,9 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.countedInventoryItemDtos?.length) {
+    if (dto.countedInventoryItems?.length) {
       this.helper.enforceNotEmpty(
-        dto.countedInventoryItemDtos,
+        dto.countedInventoryItems,
         'itemCountDtos',
         results,
         'Inventory count cannot have 0 counted items',
@@ -73,7 +73,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
       // Nested Validator Call
       const valErrs = await this.areaItemValidator.validateManyNestedNode(
         'countedItems',
-        dto.countedInventoryItemDtos,
+        dto.countedInventoryItems,
       );
       if (valErrs) {
         results.push(valErrs);

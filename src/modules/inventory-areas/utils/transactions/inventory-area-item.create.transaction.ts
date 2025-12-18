@@ -13,9 +13,9 @@ export async function InventoryAreaItemCreateInTransaction(
     countedItemSize = manager.create(InventoryItemSize, {
       id: dto.countedItemSizeId,
     });
-  } else if (dto.countedItemSizeDto?.createDto) {
+  } else if (dto.countedItemSize?.createDto) {
     countedItemSize = await InventoryItemSizeCreateInTransaction(
-      dto.countedItemSizeDto.createDto,
+      dto.countedItemSize.createDto,
       manager,
     );
   } else {

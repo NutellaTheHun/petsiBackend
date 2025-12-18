@@ -98,7 +98,7 @@ describe('order menu item service', () => {
     });
 
     const updateOrderDto = {
-      orderedItemDtos: [createItemDto],
+      orderedItems: [createItemDto],
     } as UpdateOrderDto;
 
     const updateResult = await orderService.update(testOrderId, updateOrderDto);
@@ -307,7 +307,7 @@ describe('order menu item service', () => {
     });
 
     const updateOrderDto = {
-      orderedItemDtos: [itemDto],
+      orderedItems: [itemDto],
     } as UpdateOrderDto;
 
     const updateResult = await orderService.update(
@@ -382,7 +382,7 @@ describe('order menu item service', () => {
     );
 
     const dto = {
-      containerOrderMenuItemDtos: [cDto, ...theRest],
+      containerOrderMenuDtos: [cDto, ...theRest],
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
@@ -452,7 +452,7 @@ describe('order menu item service', () => {
     const moddedId = theRest[0].id;
 
     const dto = {
-      containerOrderMenuItemDtos: theRest,
+      containerOrderMenuDtos: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
@@ -496,7 +496,7 @@ describe('order menu item service', () => {
     const removedId = toUpdate.containerOrderMenuItems[0].id;
 
     const dto = {
-      containerOrderMenuItemDtos: theRest,
+      containerOrderMenuDtos: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);

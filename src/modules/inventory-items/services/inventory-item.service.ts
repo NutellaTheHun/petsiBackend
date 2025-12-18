@@ -48,8 +48,8 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     manager: EntityManager,
   ): Promise<InventoryItem> {
     let itemSizes: InventoryItemSize[] = [];
-    if (dto.sizeDtos) {
-      for (const nestedDto of dto.sizeDtos) {
+    if (dto.sizes) {
+      for (const nestedDto of dto.sizes) {
         if (nestedDto.createDto) {
           const newSize = await InventoryItemSizeCreateInTransaction(
             nestedDto.createDto,
@@ -101,13 +101,13 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       entity.vendor = newVendor;
     }
 
-    if (dto.sizeDtos) {
+    if (dto.sizes) {
       const existingSizes = await manager.find(InventoryItemSize, {
         where: { inventoryItem: { id: entity.id } },
       });
       const existingMap = new Map(existingSizes.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.sizeDtos) {
+      for (const nestedDto of dto.sizes) {
         if (nestedDto.createDto) {
           const newSize = await InventoryItemSizeCreateInTransaction(
             nestedDto.createDto,

@@ -159,7 +159,7 @@ describe('Inventory Item Service', () => {
 
     const itemDto = {
       name: 'testItemWithSizeDtos',
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
       vendorId: vend.id,
       categoryId: cat.id,
     } as CreateInventoryItemDto;
@@ -454,7 +454,7 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      sizeDtos: updateSizeDtos,
+      sizes: updateSizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);
@@ -509,7 +509,7 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      sizeDtos: updateSizeDtos,
+      sizes: updateSizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);
@@ -593,7 +593,7 @@ describe('Inventory Item Service', () => {
     ];
 
     const updateDto = {
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await itemService.update(invItemSizesTestId, updateDto);

@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItemSize } from '../../entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items.module';
 
 export class CreateMenuItemContainerItemDto {
   @ApiProperty({
@@ -10,7 +13,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly containedMenuItemId: number;
+  readonly containedMenuItemId: EntityId<MenuItem>;
 
   @ApiProperty({
     description: 'Id of a MenuItemSize entity. The size of the contained item',
@@ -19,7 +22,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly containedItemSizeId: number;
+  readonly containedItemSizeId: EntityId<MenuItemSize>;
 
   @ApiProperty({
     description: 'The amount of MenuItem/MenuItemSize combination',
@@ -38,7 +41,7 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly parentMenuItemId?: number;
+  readonly parentMenuItemId?: EntityId<MenuItem>;
 
   @ApiProperty({
     description: 'Id of a MenuItemSize entity of the parent container',
@@ -47,5 +50,5 @@ export class CreateMenuItemContainerItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly parentItemSizeId?: number;
+  readonly parentItemSizeId?: EntityId<MenuItemSize>;
 }

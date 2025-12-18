@@ -69,8 +69,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);
     }
-    if (dto.ingredientDtos !== undefined) {
-      this.ingredientsByBuilder(dto.ingredientDtos);
+    if (dto.ingredients !== undefined) {
+      this.ingredientsByBuilder(dto.ingredients);
     }
   }
 
@@ -109,8 +109,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);
     }
-    if (dto.ingredientDtos !== undefined) {
-      this.ingredientsByBuilder(dto.ingredientDtos);
+    if (dto.ingredients !== undefined) {
+      this.ingredientsByBuilder(dto.ingredients);
     }
   }
 

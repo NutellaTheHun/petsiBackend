@@ -6,6 +6,8 @@ import {
   IsOptional,
   ValidateNested,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { InventoryArea } from '../../entities/inventory-area.entity';
 import { NestedInventoryAreaItemDto } from '../inventory-area-item/nested-inventory-area-item.dto';
 
 export class CreateInventoryAreaCountDto {
@@ -15,7 +17,7 @@ export class CreateInventoryAreaCountDto {
   })
   @IsNumber()
   @IsNotEmpty()
-  readonly inventoryAreaId: number;
+  readonly inventoryAreaId: EntityId<InventoryArea>;
 
   @ApiProperty({
     description: 'Counted InventoryItems for the InventoryAreaCount.',
@@ -43,5 +45,5 @@ export class CreateInventoryAreaCountDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly countedInventoryItemDtos?: NestedInventoryAreaItemDto[];
+  readonly countedInventoryItems?: NestedInventoryAreaItemDto[];
 }

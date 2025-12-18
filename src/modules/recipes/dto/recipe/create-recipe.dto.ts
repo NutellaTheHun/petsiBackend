@@ -9,6 +9,11 @@ import {
   IsString,
   Min,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
+import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { RecipeCategory } from '../../entities/recipe-category.entity';
+import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
 import { NestedRecipeIngredientDto } from '../recipe-ingredient/nested-recipe-ingredient.dto';
 
 export class CreateRecipeDto {
@@ -28,7 +33,7 @@ export class CreateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly producedMenuItemId?: number;
+  readonly producedMenuItemId?: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -50,7 +55,7 @@ export class CreateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly batchResultUnitTypeId: number;
+  readonly batchResultUnitTypeId: EntityId<UnitOfMeasure>;
 
   @ApiPropertyOptional({
     description:
@@ -72,7 +77,7 @@ export class CreateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly servingSizeUnitTypeId: number;
+  readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure>;
 
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
@@ -101,7 +106,7 @@ export class CreateRecipeDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<RecipeCategory>;
 
   @ApiPropertyOptional({
     description:
@@ -112,7 +117,7 @@ export class CreateRecipeDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly subCategoryId?: number;
+  readonly subCategoryId?: EntityId<RecipeSubCategory>;
 
   @ApiPropertyOptional({
     description: 'Array of CreateRecipeIngredientDto.',
@@ -140,5 +145,5 @@ export class CreateRecipeDto {
   })
   @IsOptional()
   @IsArray()
-  readonly ingredientDtos?: NestedRecipeIngredientDto[];
+  readonly ingredients?: NestedRecipeIngredientDto[];
 }

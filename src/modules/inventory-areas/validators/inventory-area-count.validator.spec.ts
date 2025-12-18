@@ -91,7 +91,7 @@ describe('inventory area count validator', () => {
 
     const dto = {
       inventoryAreaId: area.id,
-      countedInventoryItemDtos: itemDtos,
+      countedInventoryItems: itemDtos,
     } as CreateInventoryAreaCountDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -135,7 +135,7 @@ describe('inventory area count validator', () => {
 
     const dto = {
       inventoryAreaId: area.id,
-      countedInventoryItemDtos: itemDtos,
+      countedInventoryItems: itemDtos,
     } as CreateInventoryAreaCountDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -182,7 +182,7 @@ describe('inventory area count validator', () => {
     ];
 
     const dto = {
-      countedInventoryItemDtos: itemDtos,
+      countedInventoryItems: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -228,7 +228,7 @@ describe('inventory area count validator', () => {
     ];
 
     const dto = {
-      countedInventoryItemDtos: itemDtos,
+      countedInventoryItems: itemDtos,
     } as UpdateInventoryAreaCountDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

@@ -117,7 +117,7 @@ describe('inventory item validator', () => {
       name: 'test item',
       categoryId: category.id,
       vendorId: vendor.id,
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as CreateInventoryItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -176,7 +176,7 @@ describe('inventory item validator', () => {
       name: FOOD_A,
       categoryId: category.id,
       vendorId: vendor.id,
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as CreateInventoryItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -249,7 +249,7 @@ describe('inventory item validator', () => {
       name: 'UPDATE ITEM NAME',
       categoryId: category.id,
       vendorId: vendor.id,
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -314,7 +314,7 @@ describe('inventory item validator', () => {
       name: FOOD_A,
       categoryId: category.id,
       vendorId: vendor.id,
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -373,7 +373,7 @@ describe('inventory item validator', () => {
       name: 'UPDATE ITEM NAME',
       categoryId: category.id,
       vendorId: vendor.id,
-      sizeDtos: sizeDtos,
+      sizes: sizeDtos,
     } as UpdateInventoryItemDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

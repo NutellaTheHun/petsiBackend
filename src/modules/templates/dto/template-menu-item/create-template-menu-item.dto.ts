@@ -6,6 +6,9 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItem } from '../../../menu-items/menu-items.module';
+import { Template } from '../../entities/template.entity';
 
 export class CreateTemplateMenuItemDto {
   @ApiProperty({
@@ -34,7 +37,7 @@ export class CreateTemplateMenuItemDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly menuItemId: number;
+  readonly menuItemId: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -44,5 +47,5 @@ export class CreateTemplateMenuItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentTemplateId?: number;
+  readonly parentTemplateId?: EntityId<Template>;
 }

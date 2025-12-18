@@ -7,6 +7,8 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
+import { EntityId } from '../../../common/types';
+import { Role } from '../../roles/entities/role.entity';
 
 export class CreateUserDto {
   @ApiProperty({ description: '', example: 'jsmith123' })
@@ -39,5 +41,5 @@ export class CreateUserDto {
   @IsNumber({}, { each: true })
   @IsPositive({ each: true })
   @IsOptional()
-  readonly roleIds?: number[];
+  readonly roleIds?: EntityId<Role>[];
 }

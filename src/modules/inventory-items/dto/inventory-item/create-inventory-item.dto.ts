@@ -7,6 +7,9 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity';
 import { NestedInventoryItemSizeDto } from '../inventory-item-size/nested-inventory-item-size.dto';
 
 export class CreateInventoryItemDto {
@@ -26,7 +29,7 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly categoryId?: number;
+  readonly categoryId?: EntityId<InventoryItemCategory>;
 
   @ApiPropertyOptional({
     description: 'Id of InventoryItemVendor entity.',
@@ -36,7 +39,7 @@ export class CreateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly vendorId?: number;
+  readonly vendorId?: EntityId<InventoryItemVendor>;
 
   @ApiPropertyOptional({
     description:
@@ -56,5 +59,5 @@ export class CreateInventoryItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly sizeDtos?: NestedInventoryItemSizeDto[];
+  readonly sizes?: NestedInventoryItemSizeDto[];
 }

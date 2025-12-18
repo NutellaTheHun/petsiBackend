@@ -1,5 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../../menu-items/menu-items.module';
 
 export class UpdateOrderContainerItemDto {
   @ApiPropertyOptional({
@@ -10,7 +13,7 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly containedMenuItemId?: number;
+  readonly containedMenuItemId?: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -20,7 +23,7 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly containedItemSizeId?: number;
+  readonly containedItemSizeId?: EntityId<MenuItemSize>;
 
   @ApiPropertyOptional({
     description:
@@ -40,7 +43,7 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentMenuItemIdCtx?: number;
+  readonly parentMenuItemIdCtx?: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -50,5 +53,5 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentMenuItemSizeIdCtx?: number;
+  readonly parentMenuItemSizeIdCtx?: EntityId<MenuItemSize>;
 }

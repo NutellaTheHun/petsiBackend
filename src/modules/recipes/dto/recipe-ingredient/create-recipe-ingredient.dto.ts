@@ -1,5 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
+import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { Recipe } from '../../entities/recipe.entity';
 
 export class CreateRecipeIngredientDto {
   @ApiPropertyOptional({
@@ -11,7 +15,7 @@ export class CreateRecipeIngredientDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly ingredientInventoryItemId?: number;
+  readonly ingredientInventoryItemId?: EntityId<InventoryItem>;
 
   @ApiPropertyOptional({
     description:
@@ -22,7 +26,7 @@ export class CreateRecipeIngredientDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly ingredientRecipeId?: number;
+  readonly ingredientRecipeId?: EntityId<Recipe>;
 
   @ApiProperty({
     description: 'The unit amount of the UnitofMeasure of the InventoryItem',
@@ -40,7 +44,7 @@ export class CreateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly quantityUnitTypeId: number;
+  readonly quantityUnitTypeId: EntityId<UnitOfMeasure>;
 
   @ApiPropertyOptional({
     description:
@@ -50,5 +54,5 @@ export class CreateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly parentRecipeId?: number;
+  readonly parentRecipeId?: EntityId<Recipe>;
 }

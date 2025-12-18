@@ -102,7 +102,7 @@ describe('Inventory Item Size Service', () => {
     } as NestedInventoryItemSizeDto;
 
     const updateItemDto = {
-      sizeDtos: [createItemSizeDto],
+      sizes: [createItemSizeDto],
     } as UpdateInventoryItemDto;
 
     const updateResult = await itemService.update(item.id, updateItemDto);

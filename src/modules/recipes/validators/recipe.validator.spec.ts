@@ -104,12 +104,12 @@ describe('recipe validator', () => {
     const dto = {
       name: 'CREATE',
       categoryId: category.id,
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
       batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as CreateRecipeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -162,7 +162,7 @@ describe('recipe validator', () => {
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as CreateRecipeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -221,12 +221,12 @@ describe('recipe validator', () => {
 
     const dto = {
       name: 'CREATE',
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
       batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as CreateRecipeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -284,12 +284,12 @@ describe('recipe validator', () => {
     const dto = {
       name: 'CREATE',
       categoryId: category.id,
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
       batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as CreateRecipeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -311,7 +311,7 @@ describe('recipe validator', () => {
 
     const badSubCats = subCats.filter(
       (subCat) =>
-        !category.subCategorys.some((validCat) => validCat.id === subCat.id),
+        !category.subCategories.some((validCat) => validCat.id === subCat.id),
     );
 
     const batchMeasurement = await measureService.findOneByName(POUND);
@@ -361,7 +361,7 @@ describe('recipe validator', () => {
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as CreateRecipeDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -427,12 +427,12 @@ describe('recipe validator', () => {
     const dto = {
       name: 'UPDATE',
       categoryId: category.id,
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
       batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as UpdateRecipeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -495,12 +495,12 @@ describe('recipe validator', () => {
     const dto = {
       name: REC_C,
       categoryId: category.id,
-      subCategoryId: category.subCategorys[0].id,
+      subCategoryId: category.subCategories[0].id,
       batchResultUnitTypeId: batchMeasurement.id,
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as UpdateRecipeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
@@ -527,7 +527,7 @@ describe('recipe validator', () => {
 
     const badSubCats = subCats.filter(
       (subCat) =>
-        !category.subCategorys.some((validCat) => validCat.id === subCat.id),
+        !category.subCategories.some((validCat) => validCat.id === subCat.id),
     );
 
     const batchMeasurement = await measureService.findOneByName(POUND);
@@ -578,7 +578,7 @@ describe('recipe validator', () => {
       batchResultQuantity: 1,
       servingSizeUnitTypeId: servingMeasurement.id,
       servingSizeQuantity: 1,
-      ingredientDtos: ingredDtos,
+      ingredients: ingredDtos,
     } as UpdateRecipeDto;
 
     const result = await validator.validateUpdateNode('root', dto, toUpdate.id);

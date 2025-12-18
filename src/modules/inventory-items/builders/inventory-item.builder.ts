@@ -40,8 +40,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    if (dto.sizeDtos !== undefined) {
-      this.sizesByBuilder(dto.sizeDtos);
+    if (dto.sizes !== undefined) {
+      this.sizesByBuilder(dto.sizes);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);
@@ -55,8 +55,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    if (dto.sizeDtos !== undefined) {
-      this.sizesByBuilder(dto.sizeDtos);
+    if (dto.sizes !== undefined) {
+      this.sizesByBuilder(dto.sizes);
     }
     if (dto.vendorId !== undefined) {
       this.vendorById(dto.vendorId);

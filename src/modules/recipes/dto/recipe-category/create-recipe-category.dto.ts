@@ -32,5 +32,5 @@ export class CreateRecipeCategoryDto {
   })
   @IsOptional()
   @IsArray()
-  readonly subCategoryDtos?: NestedRecipeSubCategoryDto[];
+  readonly subCategories?: NestedRecipeSubCategoryDto[];
 }

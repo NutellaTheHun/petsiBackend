@@ -93,7 +93,7 @@ describe('order category validator', () => {
       menuItemId: item.id,
       sizeId: item.sizes[0].id,
       quantity: 1,
-      containerOrderMenuItemDtos: containerDtos,
+      containerOrderMenuItems: containerDtos,
     } as CreateOrderMenuItemDto;
 
     const result = await validator.validateCreateNode('root', dto);
@@ -192,7 +192,7 @@ describe('order category validator', () => {
       menuItemId: parentMenuItem.id,
       sizeId: parentMenuItem.sizes[0].id,
       quantity: 1,
-      containerOrderMenuItemDtos: containerDtos,
+      containerOrderMenuDtos: containerDtos,
     } as UpdateOrderMenuItemDto;
 
     const result = await validator.validateUpdateNode(

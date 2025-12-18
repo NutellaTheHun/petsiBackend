@@ -137,7 +137,7 @@ describe('Template Service', () => {
     ];
 
     const dto = {
-      templateMenuItemDtos: itemDtos,
+      templateMenuItems: itemDtos,
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
@@ -204,7 +204,7 @@ describe('Template Service', () => {
     );
 
     const dto = {
-      templateMenuItemDtos: [uItemDto, ...theRest],
+      templateMenuItems: [uItemDto, ...theRest],
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);
@@ -259,7 +259,7 @@ describe('Template Service', () => {
     );
 
     const dto = {
-      templateMenuItemDtos: uItemDtos,
+      templateMenuItems: uItemDtos,
     } as UpdateTemplateDto;
 
     const result = await templateService.update(testId, dto);

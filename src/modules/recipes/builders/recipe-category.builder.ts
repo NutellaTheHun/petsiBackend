@@ -35,8 +35,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    if (dto.subCategoryDtos !== undefined) {
-      this.subCategoriesByBuilder(dto.subCategoryDtos);
+    if (dto.subCategories !== undefined) {
+      this.subCategoriesByBuilder(dto.subCategories);
     }
   }
 

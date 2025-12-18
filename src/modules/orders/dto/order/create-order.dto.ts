@@ -9,6 +9,8 @@ import {
   IsPositive,
   IsString,
 } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
 
 export class CreateOrderDto {
@@ -117,7 +119,7 @@ export class CreateOrderDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly categoryId: number;
+  readonly categoryId: EntityId<OrderCategory>;
 
   @ApiProperty({
     description: 'An array of CreateOrderMenuItemDtos.',
@@ -142,5 +144,5 @@ export class CreateOrderDto {
     ],
   })
   @IsArray()
-  readonly orderedItemDtos: NestedOrderMenuItemDto[];
+  readonly orderedItems: NestedOrderMenuItemDto[];
 }

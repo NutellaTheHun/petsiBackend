@@ -91,7 +91,7 @@ describe('order service', () => {
       isFrozen: false,
       isWeekly: false,
       weeklyFulfillment: 'sunday',
-      orderedItemDtos: itemDtos,
+      orderedItems: itemDtos,
     } as CreateOrderDto;
 
     try {
@@ -354,7 +354,7 @@ describe('order service', () => {
     ];
 
     const orderDto = {
-      orderedItemDtos: cDtos,
+      orderedItems: cDtos,
     } as UpdateOrderDto;
 
     const result = await orderService.update(testId, orderDto);
@@ -390,7 +390,7 @@ describe('order service', () => {
     );
 
     const orderDto = {
-      orderedItemDtos: [uDto, ...theRest],
+      orderedItems: [uDto, ...theRest],
     } as UpdateOrderDto;
 
     const result = await orderService.update(testId, orderDto);
@@ -435,7 +435,7 @@ describe('order service', () => {
     );
 
     const orderDto = {
-      orderedItemDtos: theRest,
+      orderedItems: theRest,
     } as UpdateOrderDto;
 
     const result = await orderService.update(testId, orderDto);
@@ -734,7 +734,7 @@ describe('order service', () => {
       recipient: 'order / orderItemComp test',
       fulfillmentDate: new Date(),
       fulfillmentType: 'pickup',
-      orderedItemDtos: oItemDtos,
+      orderedItems: oItemDtos,
     } as CreateOrderDto;
 
     const result = await orderService.create(orderDto);
@@ -838,7 +838,7 @@ describe('order service', () => {
     );
 
     const uOrderDto = {
-      orderedItemDtos: [updateOrderItemDto, ...theRest],
+      orderedItems: [updateOrderItemDto, ...theRest],
     } as UpdateOrderDto;
 
     const result = await orderService.update(testOrderCompItemId, uOrderDto);
@@ -928,7 +928,7 @@ describe('order service', () => {
     });
 
     const updateOrderDto = {
-      orderedItemDtos: [updateItemDto, theRestItems],
+      orderedItems: [updateItemDto, theRestItems],
     } as UpdateOrderDto;
 
     const result = await orderService.update(
@@ -1008,7 +1008,7 @@ describe('order service', () => {
     );
 
     const updateOrderDto = {
-      orderedItemDtos: [updateItemDto, ...theRestItems],
+      orderedItems: [updateItemDto, ...theRestItems],
     } as UpdateOrderDto;
 
     const result = await orderService.update(
