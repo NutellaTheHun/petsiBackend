@@ -51,38 +51,6 @@ export class MenuItemContainerItem {
   id: number;
 
   /**
-   * The parent {@link MenuItem}, "Box of 6...", "Pastry Breakfast Platter"
-   *
-   * Example:
-   * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
-   */
-  @ApiProperty({
-    example: menuItemExample(new Set<string>(), true),
-    description: 'The MenuItem that is the container to this item',
-    type: () => MenuItem,
-  })
-  @ManyToOne(() => MenuItem, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentMenuItem: MenuItem;
-
-  /**
-   * The Parent's {@link MenuItemSize} for the context of this component.
-   *
-   * A Box of 6 muffins with size regular, would only have one size.
-   *
-   * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
-   */
-  @ApiProperty({
-    example: menuItemSizeExample(new Set<string>(), true),
-    description: 'The size of the container to this item',
-    type: MenuItemSize,
-  })
-  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
-  parentItemSize: MenuItemSize;
-
-  /**
    * The {@link MenuItem} the component represents.
    * - For Example:
    * - Box of 6 scones:
@@ -120,4 +88,36 @@ export class MenuItemContainerItem {
   })
   @Column()
   quantity: number;
+
+  /**
+   * The parent {@link MenuItem}, "Box of 6...", "Pastry Breakfast Platter"
+   *
+   * Example:
+   * - Box of 6 Muffins(container): { 3 blue, 3 corn}{item}
+   */
+  @ApiProperty({
+    example: menuItemExample(new Set<string>(), true),
+    description: 'The MenuItem that is the container to this item',
+    type: () => MenuItem,
+  })
+  @ManyToOne(() => MenuItem, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentMenuItem: MenuItem;
+
+  /**
+   * The Parent's {@link MenuItemSize} for the context of this component.
+   *
+   * A Box of 6 muffins with size regular, would only have one size.
+   *
+   * Breakfast Pastry Platter has size Small, Med, Large, with a separate assortment of {@link menutitem} for each (different quantites)
+   */
+  @ApiProperty({
+    example: menuItemSizeExample(new Set<string>(), true),
+    description: 'The size of the container to this item',
+    type: MenuItemSize,
+  })
+  @ManyToOne(() => MenuItemSize, { onDelete: 'CASCADE' })
+  parentItemSize: MenuItemSize;
 }

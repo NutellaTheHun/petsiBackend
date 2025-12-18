@@ -50,6 +50,16 @@ export class UnitOfMeasure {
   abbreviation: string;
 
   /**
+   * The conversion value to the specified category property's baseUnit.
+   *
+   * - Example: UnitCategory: Volume, baseUnit is milliliter
+   * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
+   */
+  @ApiProperty({ example: '', description: '' })
+  @Column({ type: 'decimal', precision: 18, scale: 10 })
+  conversionFactorToBase: string | null;
+
+  /**
    * The {@link UnitOfMeasureCategory} of the unit of measurement, such as "Weight", "Volume", "unit"
    *
    * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
@@ -65,20 +75,4 @@ export class UnitOfMeasure {
     cascade: true,
   })
   category: UnitOfMeasureCategory | null = null;
-
-  /**
-   * The conversion value to the specified category property's baseUnit.
-   *
-   * - Example: UnitCategory: Volume, baseUnit is milliliter
-   * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
-   */
-  @ApiProperty({ example: '', description: '' })
-  @Column({ type: 'decimal', precision: 18, scale: 10 })
-  conversionFactorToBase: string | null;
-
-  /*getConversionFactor(): number | null {
-    return this.conversionFactorToBase
-      ? parseFloat(this.conversionFactorToBase)
-      : null;
-  }*/
 }

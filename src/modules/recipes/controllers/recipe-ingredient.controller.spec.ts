@@ -84,37 +84,37 @@ describe('recipe ingredient controller', () => {
         parentRecipe: recipes[0],
         ingredientInventoryItem: items[0],
         quantity: 1,
-        quantityMeasureType: units[0],
+        quantityUnitType: units[0],
       } as RecipeIngredient,
       {
         parentRecipe: recipes[0],
         ingredientInventoryItem: items[1],
         quantity: 2,
-        quantityMeasureType: units[1],
+        quantityUnitType: units[1],
       } as RecipeIngredient,
       {
         parentRecipe: recipes[1],
         ingredientInventoryItem: items[2],
         quantity: 3,
-        quantityMeasureType: units[2],
+        quantityUnitType: units[2],
       } as RecipeIngredient,
       {
         parentRecipe: recipes[1],
         ingredientInventoryItem: items[3],
         quantity: 4,
-        quantityMeasureType: units[3],
+        quantityUnitType: units[3],
       } as RecipeIngredient,
       {
         parentRecipe: recipes[2],
         ingredientInventoryItem: items[4],
         quantity: 5,
-        quantityMeasureType: units[0],
+        quantityUnitType: units[0],
       } as RecipeIngredient,
       {
         parentRecipe: recipes[2],
         ingredientInventoryItem: items[5],
         quantity: 6,
-        quantityMeasureType: units[1],
+        quantityUnitType: units[1],
       } as RecipeIngredient,
     ];
     ingredId = 1;
@@ -135,9 +135,7 @@ describe('recipe ingredient controller', () => {
           throw new Error('item not found');
         }
 
-        const unit = units.find(
-          (unit) => unit.id === dto.quantityMeasureTypeId,
-        );
+        const unit = units.find((unit) => unit.id === dto.quantityUnitTypeId);
         if (!unit) {
           throw new Error('unit not found');
         }
@@ -147,7 +145,7 @@ describe('recipe ingredient controller', () => {
           parentRecipe: recipe,
           ingredientInventoryItem: item,
           quantity: dto.quantity,
-          quantityMeasureType: unit,
+          quantityUnitType: unit,
         } as RecipeIngredient;
 
         ingredients.push(ingred);
@@ -175,14 +173,14 @@ describe('recipe ingredient controller', () => {
           if (dto.quantity) {
             ingredients[existIdx].quantity = dto.quantity;
           }
-          if (dto.quantityMeasureTypeId) {
+          if (dto.quantityUnitTypeId) {
             const unit = units.find(
-              (unit) => unit.id === dto.quantityMeasureTypeId,
+              (unit) => unit.id === dto.quantityUnitTypeId,
             );
             if (!unit) {
               throw new Error('unit not found');
             }
-            ingredients[existIdx].quantityMeasureType = unit;
+            ingredients[existIdx].quantityUnitType = unit;
           }
 
           return ingredients[existIdx];
@@ -265,14 +263,14 @@ describe('recipe ingredient controller', () => {
     const dto = {
       ingredientInventoryItemId: items[4].id,
       quantity: 4,
-      quantityMeasureTypeId: units[3].id,
+      quantityUnitTypeId: units[3].id,
     } as UpdateRecipeIngredientDto;
     const result = await controller.update(1, dto);
     expect(result).not.toBeNull();
     expect(result?.id).not.toBeNull();
     expect(result?.ingredientInventoryItem?.id).toEqual(items[4].id);
     expect(result?.quantity).toEqual(4);
-    expect(result?.quantityMeasureType.id).toEqual(units[3].id);
+    expect(result?.quantityUnitType.id).toEqual(units[3].id);
   });
 
   it('should fail update a recipe ingredient', async () => {
@@ -280,7 +278,7 @@ describe('recipe ingredient controller', () => {
       parentRecipeId: recipes[1].id,
       ingredientInventoryItemId: items[4].id,
       quantity: 4,
-      quantityMeasureTypeId: units[3].id,
+      quantityUnitTypeId: units[3].id,
     } as CreateRecipeIngredientDto;
 
     await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);

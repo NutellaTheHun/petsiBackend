@@ -3,6 +3,15 @@ import { IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 
 export class UpdateInventoryItemSizeDto {
   @ApiPropertyOptional({
+    description: 'Id of InventoryItemPackage entity.',
+    example: 2,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  readonly packageId?: number;
+
+  @ApiPropertyOptional({
     description: 'Id of UnitofMeasure entity.',
     example: 1,
   })
@@ -19,15 +28,6 @@ export class UpdateInventoryItemSizeDto {
   @IsPositive()
   @IsOptional()
   readonly measureAmount?: number;
-
-  @ApiPropertyOptional({
-    description: 'Id of InventoryItemPackage entity.',
-    example: 2,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly packageId?: number;
 
   @ApiPropertyOptional({
     description: 'Prsice paid for the InventoryItem entity.',

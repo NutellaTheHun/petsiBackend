@@ -12,15 +12,6 @@ export class UpdateTemplateMenuItemDto {
   readonly displayName?: string;
 
   @ApiPropertyOptional({
-    description: 'Id of the MenuItem entity being displayed on the Template.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsOptional()
-  @IsPositive()
-  readonly menuItemId?: number;
-
-  @ApiPropertyOptional({
     description:
       'The row position of the TemplateMenuItem on the parent Template.',
     example: 2,
@@ -29,6 +20,15 @@ export class UpdateTemplateMenuItemDto {
   @IsOptional()
   @IsPositive()
   readonly tablePosIndex?: number;
+
+  @ApiPropertyOptional({
+    description: 'Id of the MenuItem entity being displayed on the Template.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  @IsPositive()
+  readonly menuItemId?: number;
 
   @ApiPropertyOptional({
     description: 'Id of the parent Template entity.',

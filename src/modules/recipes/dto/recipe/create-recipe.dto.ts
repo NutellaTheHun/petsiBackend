@@ -31,14 +31,6 @@ export class CreateRecipeDto {
   readonly producedMenuItemId?: number;
 
   @ApiPropertyOptional({
-    description: 'If the recipe is used as an ingredient.(Not sold directly)',
-    example: false,
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly isIngredient: boolean;
-
-  @ApiPropertyOptional({
     description:
       'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
     example: 2,
@@ -92,6 +84,14 @@ export class CreateRecipeDto {
   @IsOptional()
   @Min(0)
   readonly salesPrice?: number;
+
+  @ApiPropertyOptional({
+    description: 'If the recipe is used as an ingredient.(Not sold directly)',
+    example: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  readonly isIngredient: boolean;
 
   @ApiPropertyOptional({
     description: 'Id of the RecipeCategory entity',

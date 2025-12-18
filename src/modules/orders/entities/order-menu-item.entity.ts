@@ -39,21 +39,6 @@ export class OrderMenuItem {
   id: number;
 
   /**
-   * The parent {@link Order} of the item.
-   */
-  @ApiProperty({
-    example: orderExample(new Set<string>(), true),
-    description: 'The Order this ordered item is on',
-    type: () => Order,
-  })
-  @ManyToOne(() => Order, (order) => order.orderedItems, {
-    orphanedRowAction: 'delete',
-
-    onDelete: 'CASCADE',
-  })
-  parentOrder: Order;
-
-  /**
    * The {@link MenuItem} being bought.
    * - Example: "Classic Apple", "Blueberry Muffin", "Large T-shirt", "Box of 6 Scones"
    */
@@ -69,16 +54,6 @@ export class OrderMenuItem {
   menuItem: MenuItem;
 
   /**
-   * The amount of the {@link MenuItem} / {@link MenuItemSize} combination being bought.
-   */
-  @ApiProperty({
-    example: 3,
-    description: 'The amount of the MenuItem being ordered',
-  })
-  @Column()
-  quantity: number;
-
-  /**
    * The {@link MenuItemSize} of the {@link MenuItem} being bought,
    * - Example: "small", "medium", "large", "cold", "hot", "regular"
    */
@@ -89,6 +64,16 @@ export class OrderMenuItem {
   })
   @ManyToOne(() => MenuItemSize, { eager: true })
   size: MenuItemSize;
+
+  /**
+   * The amount of the {@link MenuItem} / {@link MenuItemSize} combination being bought.
+   */
+  @ApiProperty({
+    example: 3,
+    description: 'The amount of the MenuItem being ordered',
+  })
+  @Column()
+  quantity: number;
 
   @ApiProperty({
     example: [orderContainerItemExample(new Set<string>(), false)],
@@ -103,4 +88,19 @@ export class OrderMenuItem {
     { cascade: true, eager: true },
   )
   containerOrderMenuItems: OrderContainerItem[] = [];
+
+  /**
+   * The parent {@link Order} of the item.
+   */
+  @ApiProperty({
+    example: orderExample(new Set<string>(), true),
+    description: 'The Order this ordered item is on',
+    type: () => Order,
+  })
+  @ManyToOne(() => Order, (order) => order.orderedItems, {
+    orphanedRowAction: 'delete',
+
+    onDelete: 'CASCADE',
+  })
+  parentOrder: Order;
 }

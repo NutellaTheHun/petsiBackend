@@ -47,18 +47,6 @@ export class UnitOfMeasureCategory {
   name: string;
 
   /**
-   * List of {@link UnitOfMeasure} under the category.
-   */
-  @ApiProperty({
-    example: [unitOfMeasureExample(new Set<string>(), true)],
-    description: 'List of units of measure under the category',
-    type: () => UnitOfMeasure,
-    isArray: true,
-  })
-  @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
-  units: UnitOfMeasure[] = [];
-
-  /**
    * The selected {@link UnitOfMeasure} that all units in the category convert to for conversions.
    *
    * the baseUnit reference must be within the parent's category. (Cant see the base category of weight to be a unit of measure from volume)
@@ -73,4 +61,16 @@ export class UnitOfMeasureCategory {
   @OneToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn()
   baseConversionUnit: UnitOfMeasure | null = null;
+
+  /**
+   * List of {@link UnitOfMeasure} under the category.
+   */
+  @ApiProperty({
+    example: [unitOfMeasureExample(new Set<string>(), true)],
+    description: 'List of units of measure under the category',
+    type: () => UnitOfMeasure,
+    isArray: true,
+  })
+  @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
+  units: UnitOfMeasure[] = [];
 }

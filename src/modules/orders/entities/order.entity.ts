@@ -30,17 +30,19 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  /**
-   * The category of order
-   * - Example: "Wholesale", "Special", "Square", "Farmers Market"
-   */
   @ApiProperty({
-    example: orderCategoryExample(new Set<string>(), true),
-    description: 'The assigned category of the order',
-    type: () => OrderCategory,
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'The date the order was created in the DB',
   })
-  @ManyToOne(() => OrderCategory)
-  category: OrderCategory;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'The date the order was last modified.',
+  })
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   /**
    * Name of the owner of the order, such as the name of a person or buisness.
@@ -180,6 +182,18 @@ export class Order {
   weeklyFulfillment: string | null = null;
 
   /**
+   * The category of order
+   * - Example: "Wholesale", "Special", "Square", "Farmers Market"
+   */
+  @ApiProperty({
+    example: orderCategoryExample(new Set<string>(), true),
+    description: 'The assigned category of the order',
+    type: () => OrderCategory,
+  })
+  @ManyToOne(() => OrderCategory)
+  category: OrderCategory;
+
+  /**
    * The list of {@link OrderMenuItem} that are being purchased.
    */
   @ApiProperty({
@@ -191,18 +205,4 @@ export class Order {
   })
   @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, { cascade: true })
   orderedItems: OrderMenuItem[] = [];
-
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'The date the order was created in the DB',
-  })
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'The date the order was last modified.',
-  })
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

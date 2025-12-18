@@ -39,6 +39,17 @@ export class TemplateMenuItem {
   displayName: string;
 
   /**
+   * The position along the column the row exists.
+   */
+  @ApiProperty({
+    example: 0,
+    description:
+      'The index specifying the row order of this template item on the template (0 being the first row at the top ignoring the header row)',
+  })
+  @Column()
+  tablePosIndex: number;
+
+  /**
    * The referenced {@link MenuItem} for the row.
    */
   @ApiProperty({
@@ -49,17 +60,6 @@ export class TemplateMenuItem {
   })
   @ManyToOne(() => MenuItem, { onDelete: 'CASCADE' })
   menuItem: MenuItem;
-
-  /**
-   * The position along the column the row exists.
-   */
-  @ApiProperty({
-    example: 0,
-    description:
-      'The index specifying the row order of this template item on the template (0 being the first row at the top ignoring the header row)',
-  })
-  @Column()
-  tablePosIndex: number;
 
   /**
    * The parent {@link Template}.

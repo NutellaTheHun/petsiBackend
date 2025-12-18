@@ -13,15 +13,14 @@ import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nest
 
 export class UpdateMenuItemDto {
   @ApiPropertyOptional({
-    description:
-      'Id of MenuItemCategory entity. Pass a null value to remove category',
-    example: 1,
-    type: 'number',
+    description: 'Name of MenuItem entity.',
+    example: 'box of 6 muffins',
+    type: 'string',
   })
+  @IsString()
+  @IsNotEmpty()
   @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly categoryId?: number;
+  readonly name?: string;
 
   @ApiPropertyOptional({
     description: 'Can be single, fixed_container, or variable_container',
@@ -33,14 +32,15 @@ export class UpdateMenuItemDto {
   readonly type?: string;
 
   @ApiPropertyOptional({
-    description: 'Name of MenuItem entity.',
-    example: 'box of 6 muffins',
-    type: 'string',
+    description:
+      'Id of MenuItemCategory entity. Pass a null value to remove category',
+    example: 1,
+    type: 'number',
   })
-  @IsString()
-  @IsNotEmpty()
   @IsOptional()
-  readonly name?: string;
+  @IsNumber()
+  @IsPositive()
+  readonly categoryId?: number;
 
   @ApiPropertyOptional({
     description:

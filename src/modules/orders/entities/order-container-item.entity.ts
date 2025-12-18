@@ -32,22 +32,6 @@ export class OrderContainerItem {
   id: number;
 
   /**
-   * The parent {@link OrderMenuItem} that represents the ordering of a {@link MenuItem}, where the ordered item is a container of other items.
-   *
-   * Example: Box of 6 Scones is the {@link parentOrderMenuItem} of the {@link containedMenuItem} { Lemon Glaze, size: regular, quantity: 6 }
-   */
-  @ApiProperty({
-    example: orderMenuItemExample(new Set<string>(), true),
-    description: 'The OrderMenuItem that is the container for this item',
-    type: () => OrderMenuItem,
-  })
-  @ManyToOne(() => OrderMenuItem, (parent) => parent.containerOrderMenuItems, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentOrderMenuItem: OrderMenuItem;
-
-  /**
    * The {@link MenuItem} within the {@link parentOrderMenuItem} that is being ordered.
    *
    * Example: Within the parent {@link menuItem} Breakfast Pastry Platter, size: small, one of the {@link containedMenuItem} would be a Blueberry muffin, size regular, quantity 2.
@@ -86,4 +70,20 @@ export class OrderContainerItem {
   })
   @Column()
   quantity: number;
+
+  /**
+   * The parent {@link OrderMenuItem} that represents the ordering of a {@link MenuItem}, where the ordered item is a container of other items.
+   *
+   * Example: Box of 6 Scones is the {@link parentOrderMenuItem} of the {@link containedMenuItem} { Lemon Glaze, size: regular, quantity: 6 }
+   */
+  @ApiProperty({
+    example: orderMenuItemExample(new Set<string>(), true),
+    description: 'The OrderMenuItem that is the container for this item',
+    type: () => OrderMenuItem,
+  })
+  @ManyToOne(() => OrderMenuItem, (parent) => parent.containerOrderMenuItems, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentOrderMenuItem: OrderMenuItem;
 }

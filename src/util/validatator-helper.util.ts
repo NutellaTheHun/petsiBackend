@@ -1,17 +1,6 @@
 import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
+import { ArrayKeys, NumericKeys } from '../common/types';
 import { ValidationErrorNode } from './exceptions/validation-error';
-
-type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | null | undefined ? K : never;
-}[keyof T];
-
-type StringKeys<T> = {
-  [K in keyof T]: T[K] extends string | null | undefined ? K : never;
-}[keyof T];
-
-type ArrayKeys<T> = {
-  [K in keyof T]: T[K] extends Array<any> ? K : never;
-}[keyof T];
 
 export class ValidatorHelper<
   TEntity extends ObjectLiteral,

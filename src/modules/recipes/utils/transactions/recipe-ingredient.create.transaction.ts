@@ -21,7 +21,7 @@ export async function RecipeIngredientCreateInTransaction(
 
     quantity: dto.quantity,
 
-    quantityMeasure: { id: dto.quantityMeasureTypeId },
+    quantityMeasure: { id: dto.quantityUnitTypeId },
   });
 
   return result;

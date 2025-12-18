@@ -291,7 +291,7 @@ describe('recipe service', () => {
         id: ingred.id,
         updateDto: {
           quantity: ingred.quantity,
-          quantityMeasurementId: ingred.quantityMeasureType.id,
+          quantityMeasurementId: ingred.quantityUnitType.id,
           ingredientRecipeId: ingred.ingredientRecipe?.id,
           ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
         },
@@ -342,19 +342,19 @@ describe('recipe service', () => {
     }
     testIngredientId = ingreds[0].id;
 
-    if (ingreds[0].quantityMeasureType.name === POUND) {
+    if (ingreds[0].quantityUnitType.name === POUND) {
       const unit = await unitOfMeasureService.findOneByName(OUNCE);
       if (!unit) {
         throw new Error('inv item not found');
       }
-      ingreds[0].quantityMeasureType = unit;
+      ingreds[0].quantityUnitType = unit;
       testUnitId = unit.id;
     } else {
       const unit = await unitOfMeasureService.findOneByName(POUND);
       if (!unit) {
         throw new Error('inv item not found');
       }
-      ingreds[0].quantityMeasureType = unit;
+      ingreds[0].quantityUnitType = unit;
       testUnitId = unit.id;
     }
 
@@ -364,7 +364,7 @@ describe('recipe service', () => {
         mode: 'update',
         updateDto: {
           quantity: ingred.quantity,
-          quantityMeasurementId: ingred.quantityMeasureType.id,
+          quantityMeasurementId: ingred.quantityUnitType.id,
           ingredientRecipeId: ingred.ingredientRecipe?.id,
           ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
         },
@@ -383,11 +383,11 @@ describe('recipe service', () => {
     if (!verify) {
       throw new Error('ingredient to verify is null');
     }
-    if (!verify.quantityMeasureType) {
+    if (!verify.quantityUnitType) {
       throw new Error('ingredient inv item is null');
     }
 
-    expect(verify.quantityMeasureType.id).toEqual(testUnitId);
+    expect(verify.quantityUnitType.id).toEqual(testUnitId);
   });
 
   it('should update ingredient (modify subRecipeIngredient)', async () => {

@@ -2,25 +2,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 
 export class CreateOrderContainerItemDto {
-  @ApiPropertyOptional({
-    description:
-      'Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly parentOrderMenuItemId?: number;
-
-  /*@ApiProperty({
-    description: "Id of the MenuItem that is this item's container",
-    example: 2,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly parentContainerMenuItemId: number;*/
-
   @ApiProperty({
     description: 'Id of the MenuItem that is being ordered',
     example: 3,
@@ -49,4 +30,34 @@ export class CreateOrderContainerItemDto {
   @IsNotEmpty()
   @IsPositive()
   readonly quantity: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsPositive()
+  readonly parentOrderMenuItemId?: number;
+
+  @ApiProperty({
+    description:
+      "Id of the MenuItem that is this item's container, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
+    example: 2,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsPositive()
+  readonly parentMenuItemIdCtx: number;
+
+  @ApiProperty({
+    description:
+      "Id of the MenuItemSize of the Menuitem that is this item's container, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
+    example: 2,
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsPositive()
+  readonly parentMenuItemSizeIdCtx: number;
 }

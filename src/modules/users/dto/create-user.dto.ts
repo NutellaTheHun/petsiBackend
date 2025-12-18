@@ -14,6 +14,11 @@ export class CreateUserDto {
   @IsNotEmpty()
   readonly name: string;
 
+  @ApiProperty({ description: '', example: 'strongPassword1234' })
+  @IsString()
+  @IsNotEmpty()
+  readonly password: string;
+
   @ApiPropertyOptional({
     description: '',
     example: 'jjsmithy@email.com',
@@ -23,11 +28,6 @@ export class CreateUserDto {
   @IsString()
   @IsOptional()
   readonly email?: string;
-
-  @ApiProperty({ description: '', example: 'strongPassword1234' })
-  @IsString()
-  @IsNotEmpty()
-  readonly password: string;
 
   @ApiPropertyOptional({
     description: 'Id of roles the user has.',

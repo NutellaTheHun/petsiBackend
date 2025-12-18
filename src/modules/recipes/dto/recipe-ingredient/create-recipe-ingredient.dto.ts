@@ -4,16 +4,6 @@ import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 export class CreateRecipeIngredientDto {
   @ApiPropertyOptional({
     description:
-      'Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly parentRecipeId?: number;
-
-  @ApiPropertyOptional({
-    description:
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',
     example: 2,
     type: 'number',
@@ -50,5 +40,15 @@ export class CreateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly quantityMeasureTypeId: number;
+  readonly quantityUnitTypeId: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  readonly parentRecipeId?: number;
 }

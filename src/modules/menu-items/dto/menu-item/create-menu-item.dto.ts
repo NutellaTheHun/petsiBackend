@@ -11,15 +11,14 @@ import {
 import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
 
 export class CreateMenuItemDto {
-  @ApiPropertyOptional({
-    description: 'Id of MenuItemCategory entity.',
-    example: 1,
-    type: 'number',
+  @ApiProperty({
+    description: 'Name of MenuItem entity.',
+    example: 'classic apple',
+    type: 'string',
   })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly categoryId?: number;
+  @IsString()
+  @IsNotEmpty()
+  readonly name: string;
 
   @ApiProperty({
     description: 'Can be single, fixed_container, or variable_container',
@@ -31,14 +30,15 @@ export class CreateMenuItemDto {
   @IsString()
   readonly type: string;
 
-  @ApiProperty({
-    description: 'Name of MenuItem entity.',
-    example: 'classic apple',
-    type: 'string',
+  @ApiPropertyOptional({
+    description: 'Id of MenuItemCategory entity.',
+    example: 1,
+    type: 'number',
   })
-  @IsString()
-  @IsNotEmpty()
-  readonly name: string;
+  @IsOptional()
+  @IsNumber()
+  @IsPositive()
+  readonly categoryId?: number;
 
   @ApiProperty({
     description:

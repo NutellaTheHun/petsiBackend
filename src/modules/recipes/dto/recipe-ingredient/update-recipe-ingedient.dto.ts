@@ -3,24 +3,6 @@ import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 
 export class UpdateRecipeIngredientDto {
   @ApiPropertyOptional({
-    description: 'The unit amount of the UnitofMeasure of the InventoryItem',
-    example: 1,
-  })
-  @IsNumber()
-  @IsOptional()
-  @IsPositive()
-  readonly quantity?: number;
-
-  @ApiPropertyOptional({
-    description: 'Id of the UnitofMeasure entity.',
-    example: 2,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly quantityMeasureTypeId?: number;
-
-  @ApiPropertyOptional({
     description:
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',
     example: 3,
@@ -41,4 +23,22 @@ export class UpdateRecipeIngredientDto {
   @IsNumber()
   @IsPositive()
   readonly ingredientRecipeId?: number;
+
+  @ApiPropertyOptional({
+    description: 'The unit amount of the UnitofMeasure of the InventoryItem',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  @IsPositive()
+  readonly quantity?: number;
+
+  @ApiPropertyOptional({
+    description: 'Id of the UnitofMeasure entity.',
+    example: 2,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  readonly quantityUnitTypeId?: number;
 }

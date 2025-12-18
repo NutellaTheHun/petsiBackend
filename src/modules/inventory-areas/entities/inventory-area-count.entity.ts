@@ -37,6 +37,16 @@ export class InventoryAreaCount {
   id: number;
 
   /**
+   * The date the {@link InventoryAreaCount} occurs (automatically handled by the database)
+   */
+  @ApiProperty({
+    example: '2025-06-05T23:00:17.814Z',
+    description: 'The date the count was taken',
+  })
+  @CreateDateColumn()
+  countDate: Date;
+
+  /**
    * Reference of the {@link InventoryArea} where the inventory count occurs.
    */
   @ApiProperty({
@@ -63,14 +73,4 @@ export class InventoryAreaCount {
   })
   @IsArray()
   countedInventoryItems: InventoryAreaItem[] = [];
-
-  /**
-   * The date the {@link InventoryAreaCount} occurs (automatically handled by the database)
-   */
-  @ApiProperty({
-    example: '2025-06-05T23:00:17.814Z',
-    description: 'The date the count was taken',
-  })
-  @CreateDateColumn()
-  countDate: Date;
 }

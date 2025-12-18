@@ -13,30 +13,12 @@ import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-ite
 
 export class CreateOrderDto {
   @ApiProperty({
-    example: 1,
-    description: 'Id of OrderType entity.',
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly categoryId: number;
-
-  @ApiProperty({
     description: 'Name of the owner of the order',
     example: 'John Smith',
   })
   @IsString()
   @IsNotEmpty()
   readonly recipient: string;
-
-  @ApiPropertyOptional({
-    description: 'Name of who is picking up the order or reciving the delivery',
-    example: 'Jane Doe',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly fulfillmentContactName?: string;
 
   @ApiProperty({
     description: 'Date the order is to be available or delivered.',
@@ -53,6 +35,15 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   readonly fulfillmentType: string;
+
+  @ApiPropertyOptional({
+    description: 'Name of who is picking up the order or reciving the delivery',
+    example: 'Jane Doe',
+    type: 'string',
+  })
+  @IsString()
+  @IsOptional()
+  readonly fulfillmentContactName?: string;
 
   @ApiPropertyOptional({
     description: 'for delivery contact information',
@@ -118,6 +109,15 @@ export class CreateOrderDto {
   @IsString()
   @IsOptional()
   readonly weeklyFulfillment?: string;
+
+  @ApiProperty({
+    example: 1,
+    description: 'Id of OrderType entity.',
+  })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsPositive()
+  readonly categoryId: number;
 
   @ApiProperty({
     description: 'An array of CreateOrderMenuItemDtos.',

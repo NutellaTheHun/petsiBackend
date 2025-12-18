@@ -130,7 +130,7 @@ describe('recipe ingredient service', () => {
     expect(result?.parentRecipe?.id).toEqual(recipeA.id);
     expect(result?.ingredientInventoryItem?.id).toEqual(item.id);
     expect(result?.quantity).toEqual(1);
-    expect(result?.quantityMeasureType.id).toEqual(unit.id);
+    expect(result?.quantityUnitType.id).toEqual(unit.id);
 
     testIngredId = result?.id as number;
     testRecipeId = recipeA.id;
@@ -173,7 +173,7 @@ describe('recipe ingredient service', () => {
       parentRecipeId: recipeA.id,
       ingredientRecipeId: subRec.id,
       quantity: 1,
-      quantityMeasureTypeId: unit.id,
+      quantityUnitTypeId: unit.id,
     } as CreateRecipeIngredientDto;
 
     const createIngredDto = plainToInstance(NestedRecipeIngredientDto, {
@@ -215,7 +215,7 @@ describe('recipe ingredient service', () => {
     expect(result?.parentRecipe?.id).toEqual(recipeA.id);
     expect(result?.ingredientRecipe?.id).toEqual(subRec.id);
     expect(result?.quantity).toEqual(1);
-    expect(result?.quantityMeasureType.id).toEqual(unit.id);
+    expect(result?.quantityUnitType.id).toEqual(unit.id);
 
     testSubRecId = result?.id as number;
   });
@@ -343,13 +343,13 @@ describe('recipe ingredient service', () => {
 
     const dto = {
       mode: 'update',
-      quantityMeasureTypeId: newUnit.id,
+      quantityUnitTypeId: newUnit.id,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testIngredId, dto);
 
     expect(result).not.toBeNull();
-    expect(result?.quantityMeasureType.id).toEqual(newUnit.id);
+    expect(result?.quantityUnitType.id).toEqual(newUnit.id);
   });
 
   it('should FAIL update inventoryItemID and subRecipe', async () => {

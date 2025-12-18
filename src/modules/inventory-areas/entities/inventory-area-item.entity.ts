@@ -35,20 +35,6 @@ export class InventoryAreaItem {
   id: number;
 
   /**
-   * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
-   */
-  @ApiProperty({
-    example: inventoryAreaCountExample(new Set<string>(), true),
-    description: 'The inventory count this item was recorded',
-    type: () => InventoryAreaCount,
-  })
-  @ManyToOne(() => InventoryAreaCount, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentInventoryCount: InventoryAreaCount;
-
-  /**
    * The {@link InventoryItem} being counted during the {@link InventoryAreaCount}.
    * - example: 6 pack of 28oz can of evaporated milk(countedItem.name)
    * - example: 10 lb flour(countedItem.name)
@@ -93,4 +79,18 @@ export class InventoryAreaItem {
     onDelete: 'CASCADE',
   })
   countedItemSize: InventoryItemSize;
+
+  /**
+   * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
+   */
+  @ApiProperty({
+    example: inventoryAreaCountExample(new Set<string>(), true),
+    description: 'The inventory count this item was recorded',
+    type: () => InventoryAreaCount,
+  })
+  @ManyToOne(() => InventoryAreaCount, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentInventoryCount: InventoryAreaCount;
 }

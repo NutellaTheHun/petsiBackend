@@ -20,6 +20,15 @@ export class UpdateUnitOfMeasureDto {
 
   @ApiPropertyOptional({
     description:
+      'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
+    example: '3785.4080001023799014',
+  })
+  @IsString()
+  @IsOptional()
+  readonly conversionFactorToBase?: string;
+
+  @ApiPropertyOptional({
+    description:
       'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
     example: 1,
     type: 'number',
@@ -28,13 +37,4 @@ export class UpdateUnitOfMeasureDto {
   @IsPositive()
   @IsOptional()
   readonly categoryId?: number;
-
-  @ApiPropertyOptional({
-    description:
-      'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
-    example: '3785.4080001023799014',
-  })
-  @IsString()
-  @IsOptional()
-  readonly conversionFactorToBase?: string;
 }

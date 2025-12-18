@@ -37,7 +37,8 @@ export class RecipeCategory {
    */
   @ApiProperty({
     example: [recipeSubCategoryExample(new Set<string>(), true)],
-    description: 'List of subcategories under the category',
+    description:
+      'List of subcategories under the category, misspelled to conform with DTO -> Entity prop resolution requirements',
     type: () => RecipeSubCategory,
     isArray: true,
   })

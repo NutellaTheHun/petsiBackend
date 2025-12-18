@@ -46,6 +46,18 @@ export class RecipeSubCategory {
   name: string;
 
   /**
+   * Recipes belonging to the sub-category.
+   */
+  @ApiProperty({
+    example: [recipeExample(new Set<string>(), true)],
+    description: 'List of Recipes under the subcategory',
+    type: () => Recipe,
+    isArray: true,
+  })
+  @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
+  recipes: Recipe[] = [];
+
+  /**
    * The owning category
    *
    * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
@@ -60,16 +72,4 @@ export class RecipeSubCategory {
     orphanedRowAction: 'delete',
   })
   parentCategory: RecipeCategory;
-
-  /**
-   * Recipes belonging to the sub-category.
-   */
-  @ApiProperty({
-    example: [recipeExample(new Set<string>(), true)],
-    description: 'List of Recipes under the subcategory',
-    type: () => Recipe,
-    isArray: true,
-  })
-  @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
-  recipes: Recipe[] = [];
 }

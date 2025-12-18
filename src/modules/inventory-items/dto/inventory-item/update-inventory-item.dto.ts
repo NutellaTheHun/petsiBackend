@@ -70,16 +70,4 @@ export class UpdateInventoryItemDto {
   @IsArray()
   @ValidateNested({ each: true })
   readonly sizeDtos?: NestedInventoryItemSizeDto[];
-
-  /*
-  @ApiPropertyOptional({
-    description: 'Price paid for the InventoryItem entity.',
-    example: 5.99,
-    nullable: true,
-    type: 'number',
-  })
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsOptional()
-  @Min(0)
-  cost?: number;*/
 }

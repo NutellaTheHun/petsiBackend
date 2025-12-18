@@ -38,6 +38,28 @@ export class MenuItem {
   @PrimaryGeneratedColumn()
   id: number;
 
+  /**
+   * The date the order is inserted into the database.
+   * (Square orders will technically have a different create date that is not used in this property)
+   */
+  @ApiProperty({
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'Date the item was created',
+  })
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({
+    example: '2025-06-06T19:22:07.102Z',
+    description: 'Date the item was last modified',
+  })
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
+  @Column({ unique: true })
+  name: string;
+
   @Column({
     type: 'enum',
     enum: Object.values(MENU_ITEM_TYPES),
@@ -57,10 +79,6 @@ export class MenuItem {
     eager: true,
   })
   category: MenuItemCategory | null = null;
-
-  @ApiProperty({ example: 'Class Apple Pie', description: 'Name of the item' })
-  @Column({ unique: true })
-  name: string;
 
   @ApiProperty({
     example: [menuItemSizeExample(new Set<string>(), false)],
@@ -103,22 +121,4 @@ export class MenuItem {
    */
   @Column({ nullable: true })
   variableMaxAmount: number | null = null;
-
-  /**
-   * The date the order is inserted into the database.
-   * (Square orders will technically have a different create date that is not used in this property)
-   */
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'Date the item was created',
-  })
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @ApiProperty({
-    example: '2025-06-06T19:22:07.102Z',
-    description: 'Date the item was last modified',
-  })
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

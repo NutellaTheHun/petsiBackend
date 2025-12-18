@@ -43,29 +43,20 @@ export class InventoryItemSize {
   id: number;
 
   /**
-   * Represents the quantity associated with the measureUnit property.
-   * - example: 6 pack of 28(measureAmount)oz can of evaporated milk
-   * - Example: 10(measureAmount) lb of flour
+   * The parent {@link InventoryItem} that this specific unit of measurement/package type combination refers to.
+   *
+   * An item can have multiple valid InventoryItemSizes
    */
   @ApiProperty({
-    example: '8',
-    description: 'The measure quantity of the measureUnit property',
+    example: inventoryItemExample(new Set<string>(), true),
+    description: 'The inventoryitem associated with this InventoryItemSize',
+    type: () => InventoryItem,
   })
-  @Column()
-  measureAmount: number;
-
-  /**
-   * {@link UnitOfMeasure} like "lbs", "oz", "fl oz", "ea."
-   * - example: 6 pack of 28oz(measureUnit) can of evaporated milk
-   * - Example: 10 lb(measureUnit) of flour
-   */
-  @ApiProperty({
-    example: unitOfMeasureExample(new Set<string>(), false),
-    description: 'The unit of measure scaling the measureAmount property',
-    type: UnitOfMeasure,
+  @ManyToOne(() => InventoryItem, (item) => item.sizes, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
-  @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-  measureType: UnitOfMeasure;
+  inventoryItem: InventoryItem;
 
   /**
    * Choice of {@link InventoryItemPackage} an inventory item is counted in. "Box", "Can", "Bag"
@@ -81,20 +72,29 @@ export class InventoryItemSize {
   package: InventoryItemPackage;
 
   /**
-   * The parent {@link InventoryItem} that this specific unit of measurement/package type combination refers to.
-   *
-   * An item can have multiple valid InventoryItemSizes
+   * {@link UnitOfMeasure} like "lbs", "oz", "fl oz", "ea."
+   * - example: 6 pack of 28oz(measureUnit) can of evaporated milk
+   * - Example: 10 lb(measureUnit) of flour
    */
   @ApiProperty({
-    example: inventoryItemExample(new Set<string>(), true),
-    description: 'The inventoryitem associated with this InventoryItemSize',
-    type: () => InventoryItem,
+    example: unitOfMeasureExample(new Set<string>(), false),
+    description: 'The unit of measure scaling the measureAmount property',
+    type: UnitOfMeasure,
   })
-  @ManyToOne(() => InventoryItem, (item) => item.sizes, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
+  @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
+  measureType: UnitOfMeasure;
+
+  /**
+   * Represents the quantity associated with the measureUnit property.
+   * - example: 6 pack of 28(measureAmount)oz can of evaporated milk
+   * - Example: 10(measureAmount) lb of flour
+   */
+  @ApiProperty({
+    example: '8',
+    description: 'The measure quantity of the measureUnit property',
   })
-  inventoryItem: InventoryItem;
+  @Column()
+  measureAmount: number;
 
   /**
    * The price paid for the item. Used for calculating recipe costs.

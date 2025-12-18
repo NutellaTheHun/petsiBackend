@@ -14,6 +14,11 @@ export class UpdateUserDto {
   @IsOptional()
   readonly name?: string;
 
+  @ApiPropertyOptional({ description: '', example: 'strongPassword1234' })
+  @IsString()
+  @IsOptional()
+  readonly password?: string;
+
   @ApiPropertyOptional({
     description: '',
     example: 'jjsmithy@email.com',
@@ -23,11 +28,6 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   readonly email?: string;
-
-  @ApiPropertyOptional({ description: '', example: 'strongPassword1234' })
-  @IsString()
-  @IsOptional()
-  readonly password?: string;
 
   @ApiPropertyOptional({
     description: 'Id of roles the user has.',

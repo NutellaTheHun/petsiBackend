@@ -57,38 +57,6 @@ export class Recipe {
   @JoinColumn()
   producedMenuItem: MenuItem | null = null;
 
-  /*
-    * A recipe with isIngredient set to true doesn't directly make a MenuItem, but is an ingredient to another recipe.
-
-    * Recipe "Apple Mix", is not a direct MenuItem, but is an ingredient to Recipes such as "Classic Apple", "Apple Crumb"
-    */
-  @ApiProperty({
-    example: false,
-    description:
-      'A flag for if a recipe is used as an ingredient in other recipes',
-  })
-  @Column({ default: false })
-  isIngredient: boolean = false;
-
-  /**
-   * A list of {@link RecipeIngredient} to make a Recipe. Can reference a {@link InventoryItem} or another recipe as the ingredient.
-   *
-   * Can be an {@link InventoryItem}: almonds sliced, (quantity), (unit of measure)
-   *
-   * Or a Recipe: Apple Mix, (quantity), (unit of measure),
-   * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
-   */
-  @ApiProperty({
-    example: [recipeIngredientExample(new Set<string>(), false)],
-    description: 'A list of ingredients for the recipe',
-    type: () => RecipeIngredient,
-    isArray: true,
-  })
-  @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, {
-    cascade: true,
-  })
-  ingredients: RecipeIngredient[] = [];
-
   /**
    * The total unit amount of the batchResultUnitOfMeaure property produced by the recipe.
    * - Examples:
@@ -177,6 +145,19 @@ export class Recipe {
   @Check(`"salesPrice" >= 0`)
   salesPrice: string | null = null;
 
+  /*
+    * A recipe with isIngredient set to true doesn't directly make a MenuItem, but is an ingredient to another recipe.
+
+    * Recipe "Apple Mix", is not a direct MenuItem, but is an ingredient to Recipes such as "Classic Apple", "Apple Crumb"
+    */
+  @ApiProperty({
+    example: false,
+    description:
+      'A flag for if a recipe is used as an ingredient in other recipes',
+  })
+  @Column({ default: false })
+  isIngredient: boolean = false;
+
   /**
    * The {@link RecipeCategory}, such as "Pie" or"Pastry"
    */
@@ -206,4 +187,23 @@ export class Recipe {
     onDelete: 'SET NULL',
   })
   subCategory: RecipeSubCategory | null = null;
+
+  /**
+   * A list of {@link RecipeIngredient} to make a Recipe. Can reference a {@link InventoryItem} or another recipe as the ingredient.
+   *
+   * Can be an {@link InventoryItem}: almonds sliced, (quantity), (unit of measure)
+   *
+   * Or a Recipe: Apple Mix, (quantity), (unit of measure),
+   * where the recipe Apple Mix holds ingredients of other inventory items or other recipes
+   */
+  @ApiProperty({
+    example: [recipeIngredientExample(new Set<string>(), false)],
+    description: 'A list of ingredients for the recipe',
+    type: () => RecipeIngredient,
+    isArray: true,
+  })
+  @OneToMany(() => RecipeIngredient, (ingredient) => ingredient.parentRecipe, {
+    cascade: true,
+  })
+  ingredients: RecipeIngredient[] = [];
 }

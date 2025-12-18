@@ -31,21 +31,6 @@ export class RecipeIngredient {
   id: number;
 
   /**
-   * The parent {@link Recipe} to the ingredient.
-   *
-   */
-  @ApiProperty({
-    example: recipeExample(new Set<string>(), true),
-    description: 'Recipe the ingredient is for',
-    type: () => Recipe,
-  })
-  @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentRecipe: Recipe;
-
-  /**
    * The {@link InventoryItem} that is being used as the ingredient.
    *
    * - Example:  "flour" or "pecan halves"
@@ -103,5 +88,20 @@ export class RecipeIngredient {
     type: UnitOfMeasure,
   })
   @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-  quantityMeasureType: UnitOfMeasure;
+  quantityUnitType: UnitOfMeasure;
+
+  /**
+   * The parent {@link Recipe} to the ingredient.
+   *
+   */
+  @ApiProperty({
+    example: recipeExample(new Set<string>(), true),
+    description: 'Recipe the ingredient is for',
+    type: () => Recipe,
+  })
+  @ManyToOne(() => Recipe, (recipe) => recipe.ingredients, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentRecipe: Recipe;
 }
