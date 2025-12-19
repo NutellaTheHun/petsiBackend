@@ -1,6 +1,6 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';

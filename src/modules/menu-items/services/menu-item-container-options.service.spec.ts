@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';
 import { item_b } from '../utils/constants';

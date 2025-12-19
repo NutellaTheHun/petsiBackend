@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { RoleService } from '../../roles/services/role.service';
 import {
   ROLE_ADMIN,

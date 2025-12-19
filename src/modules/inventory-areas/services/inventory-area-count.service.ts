@@ -6,7 +6,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { ServiceBase } from '../../../base/service-base';
+import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';

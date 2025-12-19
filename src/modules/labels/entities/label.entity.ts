@@ -6,9 +6,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { labelTypeExample } from '../../../util/swagger-examples/labels/label-type.example';
-import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { labelTypeExample } from '../../../common/swagger/examples/labels/label-type.example';
+import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';

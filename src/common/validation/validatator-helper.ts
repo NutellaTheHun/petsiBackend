@@ -1,6 +1,6 @@
 import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
-import { ArrayKeys, NumericKeys } from '../common/types';
-import { ValidationErrorNode } from './exceptions/validation-error';
+import { ArrayKeys, NumericKeys } from '../types';
+import { ValidationErrorNode } from './validation-error';
 
 export class ValidatorHelper<
   TEntity extends ObjectLiteral,

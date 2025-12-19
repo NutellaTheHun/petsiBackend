@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
+import { EntityBase } from '../../../common/base/entity.base';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 

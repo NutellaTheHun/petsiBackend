@@ -10,9 +10,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { menuItemCategoryExample } from '../../../util/swagger-examples/menu-items/menu-item-category.example';
-import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { menuItemCategoryExample } from '../../../common/swagger/examples/menu-items/menu-item-category.example';
+import { menuItemSizeExample } from '../../../common/swagger/examples/menu-items/menu-item-size.example';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MENU_ITEM_TYPES, MenuItemType } from '../utils/menu-item-type';

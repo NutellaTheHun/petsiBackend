@@ -8,9 +8,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { orderCategoryExample } from '../../../util/swagger-examples/orders/order-category.example';
-import { orderMenuItemExample } from '../../../util/swagger-examples/orders/order-menu-item.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { orderCategoryExample } from '../../../common/swagger/examples/orders/order-category.example';
+import { orderMenuItemExample } from '../../../common/swagger/examples/orders/order-menu-item.example';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from './order-category.entity';

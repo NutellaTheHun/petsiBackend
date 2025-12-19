@@ -1,8 +1,8 @@
 import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
 import { UpdateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/update-menu-item-container-options.dto';
 import { NestedMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/nested-menu-item-container-rule.dto';

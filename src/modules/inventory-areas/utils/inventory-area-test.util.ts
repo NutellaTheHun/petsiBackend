@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';

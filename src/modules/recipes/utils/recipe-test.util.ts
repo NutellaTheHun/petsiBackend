@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import {
   DRY_A,
   DRY_C,

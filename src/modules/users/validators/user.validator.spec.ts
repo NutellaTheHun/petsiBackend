@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { UserService } from '../services/user.service';

@@ -7,8 +7,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasure } from './unit-of-measure.entity';

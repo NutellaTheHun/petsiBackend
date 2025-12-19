@@ -9,12 +9,12 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
+import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
 import { recipeCategoryExample } from '../../../util/swagger-examples/recipes/recipe-category.example';
 import { recipeIngredientExample } from '../../../util/swagger-examples/recipes/recipe-ingredient.example';
 import { recipeSubCategoryExample } from '../../../util/swagger-examples/recipes/recipe-sub-category.example';
-import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';

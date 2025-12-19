@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { FOOD_A } from '../../inventory-items/utils/constants';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';

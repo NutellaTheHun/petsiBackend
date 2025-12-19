@@ -8,14 +8,14 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { AppLogger } from '../modules/app-logging/app-logger';
-import { RequestContextService } from '../modules/request-context/RequestContextService';
-import { DataBaseExceptionHandler } from '../util/exceptions/database-exception.handler';
-import { ValidationException } from '../util/exceptions/validation-exception';
-import { BuilderBase } from './builder-base';
-import { EntityBase } from './entity-base';
-import { PaginatedResult } from './paginated-result';
-import { ValidatorBase } from './validator-base';
+import { AppLogger } from '../../modules/app-logging/app-logger';
+import { RequestContextService } from '../../modules/request-context/RequestContextService';
+import { PaginatedResult } from '../dto/paginated-result';
+import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
+import { ValidationException } from '../validation/validation-exception';
+import { BuilderBase } from './builder.base';
+import { EntityBase } from './entity.base';
+import { ValidatorBase } from './validator.base';
 
 export abstract class ServiceBase<
   TEntity extends EntityBase<any, any, any, any>,

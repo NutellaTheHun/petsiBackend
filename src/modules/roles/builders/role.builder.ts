@@ -1,4 +1,4 @@
-import { BuilderBase } from '../../../base/builder-base';
+import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRoleDto } from '../dto/create-role.dto';

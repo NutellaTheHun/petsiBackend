@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import {
   DRY_A,

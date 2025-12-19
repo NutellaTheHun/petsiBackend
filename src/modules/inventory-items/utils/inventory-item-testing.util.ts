@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import * as UNIT_CONSTANT from '../../unit-of-measure/utils/constants';
 import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
 import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';

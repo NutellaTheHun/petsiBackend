@@ -1,4 +1,4 @@
-import { NestedDtoBase } from './nested-dto-base';
+import { NestedDtoBase } from './nested-dto.base';
 
 export abstract class EntityBase<
   TEntity,

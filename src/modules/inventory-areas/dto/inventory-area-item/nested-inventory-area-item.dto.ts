@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, ValidateNested } from 'class-validator';
-import { NestedDtoBase } from '../../../../base/nested-dto-base';
+import { NestedDtoBase } from '../../../../common/base/nested-dto.base';
 import { CreateInventoryAreaItemDto } from './create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from './update-inventory-area-item.dto';
 

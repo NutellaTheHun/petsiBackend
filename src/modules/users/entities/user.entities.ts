@@ -8,8 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { roleExample } from '../../../util/swagger-examples/roles/role.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { roleExample } from '../../../common/swagger/examples/roles/role.example';
 import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';

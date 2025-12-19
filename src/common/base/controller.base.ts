@@ -15,11 +15,14 @@ import {
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
-import { AppLogger } from '../modules/app-logging/app-logger';
-import { RequestContextService } from '../modules/request-context/RequestContextService';
-import { invalidateFindAllCache, trackFindAllKey } from '../util/cache.util';
-import { EntityBase } from './entity-base';
-import { ServiceBase } from './service-base';
+import {
+  invalidateFindAllCache,
+  trackFindAllKey,
+} from '../../infrastructure/cache/cache.util';
+import { AppLogger } from '../../modules/app-logging/app-logger';
+import { RequestContextService } from '../../modules/request-context/RequestContextService';
+import { EntityBase } from './entity.base';
+import { ServiceBase } from './service.base';
 
 export class ControllerBase<TEntity extends EntityBase<any, any, any, any>> {
   constructor(

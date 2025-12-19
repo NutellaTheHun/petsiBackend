@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { unitOfMeasureCategoryExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure-category.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { unitOfMeasureCategoryExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure-category.example';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { UnitOfMeasureCategory } from './unit-of-measure-category.entity';

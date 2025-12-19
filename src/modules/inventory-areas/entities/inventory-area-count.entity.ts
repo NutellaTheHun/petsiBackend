@@ -7,9 +7,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { inventoryAreaItemExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-item.example';
-import { inventoryAreaExample } from '../../../util/swagger-examples/inventory-areas/inventory-area.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { inventoryAreaItemExample } from '../../../common/swagger/examples/inventory-areas/inventory-area-item.example';
+import { inventoryAreaExample } from '../../../common/swagger/examples/inventory-areas/inventory-area.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';

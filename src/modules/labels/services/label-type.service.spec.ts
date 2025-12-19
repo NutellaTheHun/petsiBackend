@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { getLabelsTestingModule } from '../utils/label-testing.module';

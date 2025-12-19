@@ -6,10 +6,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { inventoryItemCategoryExample } from '../../../util/swagger-examples/inventory-items/inventory-item-category.example';
-import { inventoryItemSizeExample } from '../../../util/swagger-examples/inventory-items/inventory-item-size.example';
-import { inventoryItemVendorExample } from '../../../util/swagger-examples/inventory-items/inventory-item-vendor.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { inventoryItemCategoryExample } from '../../../common/swagger/examples/inventory-items/inventory-item-category.example';
+import { inventoryItemSizeExample } from '../../../common/swagger/examples/inventory-items/inventory-item-size.example';
+import { inventoryItemVendorExample } from '../../../common/swagger/examples/inventory-items/inventory-item-vendor.example';
 import { InventoryAreaCount } from '../../inventory-areas/entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RecipeIngredient } from '../../recipes/entities/recipe-ingredient.entity';

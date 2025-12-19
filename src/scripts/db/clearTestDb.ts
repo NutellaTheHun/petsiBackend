@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { DataSource } from 'typeorm';
-import { AppModule } from '../app.module';
+import { AppModule } from '../../app.module';
 
 async function clearTestDb() {
   const app = await NestFactory.createApplicationContext(AppModule);

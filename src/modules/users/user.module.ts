@@ -1,7 +1,7 @@
 import { CacheModule } from '@nestjs/cache-manager';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeORMPostgresTestingModule } from '../../typeorm/configs/TypeORMPostgresTesting';
+import { TypeORMPostgresTestingModule } from '../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { RoleModule } from '../roles/role.module';

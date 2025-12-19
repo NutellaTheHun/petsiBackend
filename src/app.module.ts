@@ -11,6 +11,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { DataSource } from 'typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.module';
 import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
@@ -27,7 +28,6 @@ import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
 import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 import { UserModule } from './modules/users/user.module';
-import { selectTypeOrmModule } from './typeorm/typeorm.module';
 import { RequestIdMiddleware } from './util/RequestIdMiddleware';
 
 @Module({

@@ -7,9 +7,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { recipeCategoryExample } from '../../../util/swagger-examples/recipes/recipe-category.example';
-import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
+import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';

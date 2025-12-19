@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategoryService } from '../services/order-category.service';

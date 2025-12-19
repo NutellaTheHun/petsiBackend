@@ -1,8 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { DatabaseException } from '../../../util/exceptions/database-exception';
-import { ValidationException } from '../../../util/exceptions/validation-exception';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';

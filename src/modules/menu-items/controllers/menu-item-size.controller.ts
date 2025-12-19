@@ -28,9 +28,9 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-import { ControllerBase } from '../../../base/controller-base';
-import { PaginatedResult } from '../../../base/paginated-result';
-import { Roles } from '../../../util/decorators/PublicRole';
+import { ControllerBase } from '../../../common/base/controller.base';
+import { Roles } from '../../../common/decorators/PublicRole';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import {

@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsOptional, ValidateNested } from 'class-validator';
-import { NestedDtoBase } from '../../../../base/nested-dto-base';
+import { NestedDtoBase } from '../../../../common/base/nested-dto.base';
 import { CreateOrderContainerItemDto } from './create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from './update-order-container-item.dto';
 

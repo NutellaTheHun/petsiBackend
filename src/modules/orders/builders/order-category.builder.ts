@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BuilderBase } from '../../../base/builder-base';
+import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';

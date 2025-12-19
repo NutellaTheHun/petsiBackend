@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { GlobalHttpExceptionFilter } from './util/exceptions/global-http-exception-filter';
+import { GlobalHttpExceptionFilter } from './common/exceptions/global-http-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(

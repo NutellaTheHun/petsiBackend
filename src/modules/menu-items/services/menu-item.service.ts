@@ -6,7 +6,7 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { ServiceBase } from '../../../base/service-base';
+import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';

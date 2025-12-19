@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { orderExample } from '../../../util/swagger-examples/orders/order.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { orderExample } from '../../../common/swagger/examples/orders/order.example';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { Order } from './order.entity';

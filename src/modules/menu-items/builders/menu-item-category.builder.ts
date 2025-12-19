@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { BuilderBase } from '../../../base/builder-base';
+import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';

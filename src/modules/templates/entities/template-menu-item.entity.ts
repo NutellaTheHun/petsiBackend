@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
-import { templateExample } from '../../../util/swagger-examples/templates/template.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
+import { templateExample } from '../../../common/swagger/examples/templates/template.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';

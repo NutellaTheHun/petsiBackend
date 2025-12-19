@@ -28,10 +28,10 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-import { ControllerBase } from '../../../base/controller-base';
-import { PaginatedResult } from '../../../base/paginated-result';
-import { invalidateFindAllCache } from '../../../util/cache.util';
-import { Roles } from '../../../util/decorators/PublicRole';
+import { ControllerBase } from '../../../common/base/controller.base';
+import { Roles } from '../../../common/decorators/PublicRole';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
+import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
 import { UpdateMenuItemSizeDto } from '../../menu-items/dto/menu-item-size/update-menu-item-size.dto';
 import { RequestContextService } from '../../request-context/RequestContextService';

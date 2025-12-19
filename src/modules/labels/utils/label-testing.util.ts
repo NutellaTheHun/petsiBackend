@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { LabelType } from '../entities/label-type.entity';

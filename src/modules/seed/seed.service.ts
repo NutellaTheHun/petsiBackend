@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseTestContext } from '../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../test/DatabaseTestContext';
 import { InventoryAreaTestUtil } from '../inventory-areas/utils/inventory-area-test.util';
 import { InventoryItemTestingUtil } from '../inventory-items/utils/inventory-item-testing.util';
 import { LabelTestingUtil } from '../labels/utils/label-testing.util';

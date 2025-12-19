@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { recipeSubCategoryExample } from '../../../util/swagger-examples/recipes/recipe-sub-category.example';
-import { recipeExample } from '../../../util/swagger-examples/recipes/recipe.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { recipeSubCategoryExample } from '../../../common/swagger/examples/recipes/recipe-sub-category.example';
+import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { RecipeSubCategory } from './recipe-sub-category.entity';

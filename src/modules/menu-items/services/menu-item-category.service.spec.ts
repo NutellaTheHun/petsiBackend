@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';

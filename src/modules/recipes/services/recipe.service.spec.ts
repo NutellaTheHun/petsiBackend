@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { error } from 'console';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { FOOD_A, FOOD_C, OTHER_C } from '../../inventory-items/utils/constants';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';

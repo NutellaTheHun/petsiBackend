@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidatorBase } from '../../../base/validator-base';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidatorBase } from '../../../common/base/validator.base';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';

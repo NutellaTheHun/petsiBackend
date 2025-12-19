@@ -1,11 +1,11 @@
 import { error } from 'console';
 import { Repository } from 'typeorm';
-import { AppLogger } from '../modules/app-logging/app-logger';
-import { RequestContextService } from '../modules/request-context/RequestContextService';
-import { ValidationErrorNode } from '../util/exceptions/validation-error';
-import { ValidationExceptionHandler } from '../util/exceptions/validation-exception.handler';
-import { ValidatorHelper } from '../util/validatator-helper.util';
-import { EntityBase } from './entity-base';
+import { AppLogger } from '../../modules/app-logging/app-logger';
+import { RequestContextService } from '../../modules/request-context/RequestContextService';
+import { ValidatorHelper } from '../validation/validatator-helper';
+import { ValidationErrorNode } from '../validation/validation-error';
+import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
+import { EntityBase } from './entity.base';
 
 export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
   protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto']>;

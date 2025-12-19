@@ -5,7 +5,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { Public } from '../../../util/decorators/PublicLogin';
+import { Public } from '../../../common/decorators/PublicLogin';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { AuthResponseDto } from '../dto/auth-response.dto';

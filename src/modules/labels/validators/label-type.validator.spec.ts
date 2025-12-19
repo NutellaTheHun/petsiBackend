@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelTypeService } from '../services/label-type.service';

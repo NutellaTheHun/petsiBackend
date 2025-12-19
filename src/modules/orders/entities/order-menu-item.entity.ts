@@ -6,9 +6,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { menuItemSizeExample } from '../../../util/swagger-examples/menu-items/menu-item-size.example';
-import { menuItemExample } from '../../../util/swagger-examples/menu-items/menu-item.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { menuItemSizeExample } from '../../../common/swagger/examples/menu-items/menu-item-size.example';
+import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { orderContainerItemExample } from '../../../util/swagger-examples/orders/order-container-item.example';
 import { orderExample } from '../../../util/swagger-examples/orders/order.example';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';

@@ -1,5 +1,5 @@
 import { TestingModule } from '@nestjs/testing';
-import { DatabaseTestContext } from '../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../test/DatabaseTestContext';
 import { InventoryAreaCountService } from '../inventory-areas/services/inventory-area-count.service';
 import { InventoryAreaItemService } from '../inventory-areas/services/inventory-area-item.service';
 import { InventoryAreaService } from '../inventory-areas/services/inventory-area.service';

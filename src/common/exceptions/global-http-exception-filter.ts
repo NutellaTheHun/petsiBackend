@@ -6,9 +6,9 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ValidationException } from '../validation/validation-exception';
 import { AppHttpException } from './app-http-exception';
 import { DatabaseException } from './database-exception';
-import { ValidationException } from './validation-exception';
 
 @Catch()
 export class GlobalHttpExceptionFilter implements ExceptionFilter {

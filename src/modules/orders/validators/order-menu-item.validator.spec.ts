@@ -1,8 +1,8 @@
 import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
-import { ValidationErrorNode } from '../../../util/exceptions/validation-error';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';

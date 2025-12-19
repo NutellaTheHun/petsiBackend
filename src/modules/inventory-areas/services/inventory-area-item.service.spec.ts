@@ -1,7 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasureCategoryBuilder } from '../builders/unit-of-measure-category.builder';
 import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';

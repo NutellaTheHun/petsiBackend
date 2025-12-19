@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { NestedDtoBase } from '../../../../base/nested-dto-base';
+import { NestedDtoBase } from '../../../../common/base/nested-dto.base';
 import { CreateRecipeSubCategoryDto } from './create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from './update-recipe-sub-category.dto';
 

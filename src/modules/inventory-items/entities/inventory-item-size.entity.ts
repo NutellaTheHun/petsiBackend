@@ -6,10 +6,10 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { inventoryItemPackageExample } from '../../../util/swagger-examples/inventory-items/inventory-item-package.example';
-import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
-import { unitOfMeasureExample } from '../../../util/swagger-examples/unit-of-measure/unit-of-measure.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { inventoryItemPackageExample } from '../../../common/swagger/examples/inventory-items/inventory-item-package.example';
+import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
+import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';

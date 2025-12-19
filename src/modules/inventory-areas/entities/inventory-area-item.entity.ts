@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../base/entity-base';
-import { inventoryAreaCountExample } from '../../../util/swagger-examples/inventory-areas/inventory-area-count.example';
-import { inventoryItemSizeExample } from '../../../util/swagger-examples/inventory-items/inventory-item-size.example';
-import { inventoryItemExample } from '../../../util/swagger-examples/inventory-items/inventory-item.example';
+import { EntityBase } from '../../../common/base/entity.base';
+import { inventoryAreaCountExample } from '../../../common/swagger/examples/inventory-areas/inventory-area-count.example';
+import { inventoryItemSizeExample } from '../../../common/swagger/examples/inventory-items/inventory-item-size.example';
+import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';

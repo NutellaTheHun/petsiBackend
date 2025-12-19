@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { DatabaseTestContext } from '../../../util/DatabaseTestContext';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
