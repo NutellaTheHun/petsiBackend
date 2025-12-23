@@ -11,9 +11,14 @@ export function orderContainerItemExample(
   return {
     id: 1,
 
-    parentOrderItem: handleSetHas(shallow, fnSet, orderMenuItemExample, true),
+    parentOrderMenuItem: handleSetHas(
+      shallow,
+      fnSet,
+      orderMenuItemExample,
+      true,
+    ),
 
-    containedItem: handleShallow(shallow, fnSet, menuItemExample, false),
+    containedMenuItem: handleShallow(shallow, fnSet, menuItemExample, false),
 
     containedItemSize: handleShallow(
       shallow,

@@ -127,16 +127,20 @@ export class CreateOrderDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
           menuItemId: 10,
-          menuItemSizeId: 2,
+          sizeId: 2,
           quantity: 3,
-          orderedItemContainerDtos: [
+          containerOrderMenuItems: [
             {
-              parentContainerMenuItemId: 10,
-              containedMenuItemId: 4,
-              containedMenuItemSizeId: 5,
-              quantity: 6,
+              mode: 'create',
+              createId: 'c1',
+              createDto: {
+                menuItemId: 2,
+                sizeId: 3,
+                quantity: 4,
+              },
             },
           ],
         },

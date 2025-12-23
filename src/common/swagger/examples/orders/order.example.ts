@@ -7,13 +7,15 @@ export function orderExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    orderCategory: handleSetHas(shallow, fnSet, orderCategoryExample, false),
+    category: handleSetHas(shallow, fnSet, orderCategoryExample, false),
 
     recipient: 'alberto',
 
     createdAt: new Date(),
 
     updatedAt: new Date(),
+
+    fulfillmentDate: new Date(),
 
     fulfilllmentType: 'delivery',
 

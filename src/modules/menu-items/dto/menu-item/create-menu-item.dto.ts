@@ -62,11 +62,13 @@ export class CreateMenuItemDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
-          parentContainerSizeId: 1,
           containedMenuItemId: 2,
           containedMenuItemSizeId: 3,
           quantity: 4,
+          parentMenuItemId: 5,
+          parentItemSizeId: 6,
         },
       },
     ],

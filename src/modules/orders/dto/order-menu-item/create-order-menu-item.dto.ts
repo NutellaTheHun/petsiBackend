@@ -45,20 +45,24 @@ export class CreateOrderMenuItemDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
-          parentContainerMenuItemId: 10,
-          containedMenuItemId: 4,
-          containedMenuItemSizeId: 5,
-          quantity: 6,
+          containedMenuItemId: 2,
+          containedItemSizeId: 3,
+          quantity: 4,
+          parentMenuItemIdCtx: 5,
+          parentMenuItemSizeIdCtx: 6,
         },
       },
       {
         mode: 'create',
+        createId: 'c7',
         createDto: {
-          parentContainerMenuItemId: 10,
-          containedMenuItemId: 7,
-          containedMenuItemSizeId: 8,
-          quantity: 9,
+          containedMenuItemId: 8,
+          containedItemSizeId: 9,
+          quantity: 10,
+          parentMenuItemIdCtx: 11,
+          parentMenuItemSizeIdCtx: 12,
         },
       },
     ],

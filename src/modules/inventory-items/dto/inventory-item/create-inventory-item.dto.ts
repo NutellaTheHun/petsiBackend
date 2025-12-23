@@ -48,10 +48,11 @@ export class CreateInventoryItemDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
-          measureUnitId: 1,
+          measureTypeId: 1,
           measureAmount: 2,
-          inventoryPackageId: 3,
+          packageId: 3,
           cost: 4.99,
         },
       },

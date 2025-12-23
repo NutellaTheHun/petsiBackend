@@ -5,7 +5,7 @@ export function roleExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    roleName: 'staff',
+    name: 'staff',
 
     users: [handleSetHas(shallow, fnSet, roleExample, false)],
   };

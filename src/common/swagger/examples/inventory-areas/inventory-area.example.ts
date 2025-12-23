@@ -6,7 +6,7 @@ export function inventoryAreaExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    areaName: 'dry storage',
+    name: 'dry storage',
 
     inventoryCounts: [
       handleSetHas(shallow, fnSet, inventoryAreaCountExample, false),

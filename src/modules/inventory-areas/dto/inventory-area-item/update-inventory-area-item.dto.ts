@@ -44,9 +44,9 @@ export class UpdateInventoryAreaItemDto {
       mode: 'update',
       id: 5,
       updateDto: {
-        measureUnitId: 1,
+        measureTypeId: 1,
         measureAmount: 2,
-        inventoryPackageId: 3,
+        packageId: 3,
         cost: 4,
       },
     },

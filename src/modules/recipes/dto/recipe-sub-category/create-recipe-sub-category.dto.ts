@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 
@@ -17,7 +23,7 @@ export class CreateRecipeSubCategoryDto {
     example: 1,
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
-  readonly parentCategoryId: EntityId<RecipeCategory>;
+  readonly parentCategoryId?: EntityId<RecipeCategory>;
 }

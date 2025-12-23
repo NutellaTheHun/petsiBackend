@@ -10,6 +10,8 @@ export function unitOfMeasureExample(fnSet: Set<string>, shallow: boolean) {
 
     abbreviation: 'lbs',
 
+    conversionFactorToBase: '1.3426436',
+
     category: handleSetHas(shallow, fnSet, unitOfMeasureCategoryExample, false),
   };
 }

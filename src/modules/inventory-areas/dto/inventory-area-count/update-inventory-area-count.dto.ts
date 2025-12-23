@@ -18,12 +18,12 @@ export class UpdateInventoryAreaCountDto {
     type: [NestedInventoryAreaItemDto],
     example: [
       {
+        mode: 'update',
         id: 1,
-        dto: {
-          measureUnitId: 4,
-          measureAmount: 5,
-          inventoryPackageId: 6,
-          cost: 7.99,
+        updateDto: {
+          countedInventoryItemId: 4,
+          amount: 5,
+          countedItemSizeId: 6,
         },
       },
     ],

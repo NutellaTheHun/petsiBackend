@@ -9,8 +9,8 @@ export function inventoryItemCategoryExample(
   return {
     id: 1,
 
-    categoryName: 'dry goods',
+    name: 'dry goods',
 
-    categoryItems: [handleSetHas(shallow, fnSet, inventoryItemExample, false)],
+    inventoryItems: [handleSetHas(shallow, fnSet, inventoryItemExample, false)],
   };
 }

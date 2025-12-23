@@ -132,23 +132,20 @@ export class UpdateOrderDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
-          orderId: 1,
           menuItemId: 2,
-          menuItemSizeId: 3,
+          sizeId: 3,
           quantity: 4,
         },
       },
       {
         mode: 'update',
-        id: 1,
+        id: 5,
         updateDto: {
-          id: 1,
-          dto: {
-            menuItemId: 2,
-            menuItemSizeId: 3,
-            quantity: 4,
-          },
+          menuItemId: 6,
+          sizeId: 7,
+          quantity: 8,
         },
       },
     ],

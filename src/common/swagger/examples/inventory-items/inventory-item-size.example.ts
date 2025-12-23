@@ -10,14 +10,9 @@ export function inventoryItemSizeExample(fnSet: Set<string>, shallow: boolean) {
 
     measureAmount: 2,
 
-    measureUnit: handleShallow(shallow, fnSet, unitOfMeasureExample, false),
+    measureType: handleShallow(shallow, fnSet, unitOfMeasureExample, false),
 
-    packageType: handleShallow(
-      shallow,
-      fnSet,
-      inventoryItemPackageExample,
-      false,
-    ),
+    package: handleShallow(shallow, fnSet, inventoryItemPackageExample, false),
 
     inventoryItem: handleSetHas(shallow, fnSet, inventoryItemExample, true),
 

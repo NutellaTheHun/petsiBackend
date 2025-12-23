@@ -9,8 +9,8 @@ export function inventoryItemVendorExample(
   return {
     id: 1,
 
-    vendorName: 'shaws',
+    name: 'shaws',
 
-    vendorItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
+    inventoryItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
   };
 }

@@ -66,17 +66,20 @@ export class UpdateMenuItemDto {
         mode: 'update',
         id: 1,
         updateDto: {
-          containedMenuItemId: 6,
-          containedMenuItemSizeId: 7,
-          quantity: 8,
+          containedMenuItemId: 2,
+          containedMenuItemSizeId: 3,
+          quantity: 4,
         },
       },
       {
         mode: 'create',
+        createId: 'c5',
         createDto: {
           containedMenuItemId: 6,
           containedMenuItemSizeId: 7,
           quantity: 8,
+          parentMenuItemId: 9,
+          parentItemSizeId: 10,
         },
       },
     ],

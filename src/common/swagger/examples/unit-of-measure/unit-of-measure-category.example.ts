@@ -9,8 +9,15 @@ export function unitOfMeasureCategoryExample(
   return {
     id: 1,
 
-    categoryName: 'Weight',
+    name: 'Weight',
 
-    unitsOfMeasure: [handleSetHas(shallow, fnSet, unitOfMeasureExample, false)],
+    baseConversionUnit: handleSetHas(
+      shallow,
+      fnSet,
+      unitOfMeasureExample,
+      false,
+    ),
+
+    units: [handleSetHas(shallow, fnSet, unitOfMeasureExample, false)],
   };
 }

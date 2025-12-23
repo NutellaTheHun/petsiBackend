@@ -7,7 +7,7 @@ export function recipeSubCategoryExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    subCategoryName: 'Savory Pie',
+    name: 'Savory Pie',
 
     parentCategory: handleSetHas(shallow, fnSet, recipeCategoryExample, true),
 

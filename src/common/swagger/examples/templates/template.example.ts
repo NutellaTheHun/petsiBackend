@@ -6,11 +6,11 @@ export function templateExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    templateName: 'Summer Pies',
+    name: 'Summer Pies',
 
     isPie: true,
 
-    templateItems: [
+    templateMenuItems: [
       handleSetHas(shallow, fnSet, templateMenuItemExample, false),
     ],
   };

@@ -14,7 +14,7 @@ export function inventoryAreaCountExample(
 
     inventoryArea: handleSetHas(shallow, fnSet, inventoryAreaExample, true),
 
-    countedItems: [
+    countedInventoryItems: [
       handleSetHas(shallow, fnSet, inventoryAreaItemExample, false),
     ],
   };

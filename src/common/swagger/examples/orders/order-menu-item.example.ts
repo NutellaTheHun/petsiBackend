@@ -9,7 +9,7 @@ export function orderMenuItemExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    order: handleSetHas(shallow, fnSet, orderExample, true),
+    parentOrder: handleSetHas(shallow, fnSet, orderExample, true),
 
     menuItem: handleShallow(shallow, fnSet, menuItemExample, false),
 
@@ -17,7 +17,7 @@ export function orderMenuItemExample(fnSet: Set<string>, shallow: boolean) {
 
     size: handleShallow(shallow, fnSet, menuItemSizeExample, false),
 
-    orderedContainerItems: [
+    containerOrderMenuItems: [
       handleSetHas(shallow, fnSet, orderContainerItemExample, false),
     ],
   };

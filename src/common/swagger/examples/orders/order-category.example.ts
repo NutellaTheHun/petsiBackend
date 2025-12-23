@@ -6,8 +6,8 @@ export function orderCategoryExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    categoryName: 'wholesale',
+    name: 'wholesale',
 
-    orders: [handleSetHas(shallow, fnSet, orderMenuItemExample, false)],
+    orderItems: [handleSetHas(shallow, fnSet, orderMenuItemExample, false)],
   };
 }

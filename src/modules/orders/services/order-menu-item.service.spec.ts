@@ -382,7 +382,7 @@ describe('order menu item service', () => {
     );
 
     const dto = {
-      containerOrderMenuDtos: [cDto, ...theRest],
+      containerOrderMenuItems: [cDto, ...theRest],
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
@@ -452,7 +452,7 @@ describe('order menu item service', () => {
     const moddedId = theRest[0].id;
 
     const dto = {
-      containerOrderMenuDtos: theRest,
+      containerOrderMenuItems: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);
@@ -496,7 +496,7 @@ describe('order menu item service', () => {
     const removedId = toUpdate.containerOrderMenuItems[0].id;
 
     const dto = {
-      containerOrderMenuDtos: theRest,
+      containerOrderMenuItems: theRest,
     } as UpdateOrderMenuItemDto;
 
     const result = await orderItemService.update(testOrderItemCompsId, dto);

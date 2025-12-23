@@ -25,17 +25,20 @@ export class CreateInventoryAreaCountDto {
     example: [
       {
         mode: 'create',
+        createId: 'c132',
         createDto: {
           countedInventoryItemId: 1,
-          countedAmount: 2,
-          countedItemSizeId: 3,
+          amount: 2,
+          parentInventoryCountId: 3,
           countedItemSizeDto: {
             mode: 'create',
+            createId: 'c5325',
             createDto: {
-              measureUnitId: 4,
-              measureAmount: 5,
-              inventoryPackageId: 6,
-              cost: 7.99,
+              inventoryItemId: 4,
+              measureTypeId: 5,
+              measureAmount: 6,
+              packageId: 7,
+              cost: 8.99,
             },
           },
         },

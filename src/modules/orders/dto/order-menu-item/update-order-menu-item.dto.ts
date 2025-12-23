@@ -37,25 +37,30 @@ export class UpdateOrderMenuItemDto {
     type: [NestedOrderContainerItemDto],
     example: [
       {
-        create: {
-          parentContainerMenuItemId: 10,
-          containedMenuItemId: 4,
-          containedMenuItemSizeId: 5,
-          quantity: 6,
+        mode: 'create',
+        createId: 'c1',
+        createDto: {
+          containedMenuItemId: 2,
+          containedItemSizeId: 3,
+          quantity: 4,
+          parentMenuItemIdCtx: 5,
+          parentMenuItemSizeIdCtx: 6,
         },
-        update: {
-          id: 1,
-          dto: {
-            parentContainerMenuItemId: 10,
-            containedMenuItemId: 4,
-            containedMenuItemSizeId: 5,
-            quantity: 6,
-          },
+      },
+      {
+        mode: 'update',
+        id: 7,
+        updateDto: {
+          containedMenuItemId: 8,
+          containedItemSizeId: 9,
+          quantity: 10,
+          parentMenuItemIdCtx: 11,
+          parentMenuItemSizeIdCtx: 12,
         },
       },
     ],
   })
   @IsArray()
   @IsOptional()
-  readonly containerOrderMenuDtos?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuItems?: NestedOrderContainerItemDto[];
 }

@@ -15,7 +15,12 @@ export function inventoryAreaItemExample(fnSet: Set<string>, shallow: boolean) {
       true,
     ),
 
-    countedItem: handleShallow(shallow, fnSet, inventoryItemExample, false),
+    countedInventoryItem: handleShallow(
+      shallow,
+      fnSet,
+      inventoryItemExample,
+      false,
+    ),
 
     amount: 1,
 

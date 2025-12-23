@@ -5,6 +5,6 @@ export function inventoryItemPackageExample(
   fnSet.add(inventoryItemPackageExample.name);
   return {
     id: 1,
-    packageName: 'box',
+    name: 'box',
   };
 }

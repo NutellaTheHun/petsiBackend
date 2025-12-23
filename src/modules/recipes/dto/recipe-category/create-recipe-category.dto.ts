@@ -18,12 +18,14 @@ export class CreateRecipeCategoryDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
           subCategoryName: 'savory pies',
         },
       },
       {
         mode: 'create',
+        createId: 'c2',
         createDto: {
           subCategoryName: 'sweet pies',
         },

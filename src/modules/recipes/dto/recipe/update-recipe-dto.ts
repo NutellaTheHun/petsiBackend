@@ -127,19 +127,18 @@ export class UpdateRecipeDto {
         mode: 'update',
         id: 1,
         updateDto: {
-          ngredientInventoryItemId: 2,
-          ingredientRecipeId: null,
+          ingredientInventoryItemId: 2,
           quantity: 3,
-          quantityMeasurementId: 4,
+          quantityUnitTypeId: 4,
         },
       },
       {
         mode: 'create',
+        createId: 'c5',
         createDto: {
-          ingredientInventoryItemId: null,
           ingredientRecipeId: 5,
           quantity: 6,
-          quantityMeasurementId: 7,
+          quantityUnitTypeId: 7,
         },
       },
     ],

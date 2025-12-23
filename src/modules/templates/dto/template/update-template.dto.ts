@@ -33,9 +33,10 @@ export class UpdateTemplateDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
           displayName: 'CLAPPLE',
-          menuItemId: 1,
+          menuItemId: 2,
           tablePosIndex: 0,
         },
       },
@@ -44,7 +45,7 @@ export class UpdateTemplateDto {
         id: 3,
         updateDto: {
           displayName: 'MIX',
-          menuItemId: 2,
+          menuItemId: 4,
           tablePosIndex: 1,
         },
       },

@@ -70,8 +70,8 @@ export class OrderMenuItemBuilder extends BuilderBase<OrderMenuItem> {
     if (dto.quantity !== undefined) {
       this.quantity(dto.quantity);
     }
-    if (dto.containerOrderMenuDtos !== undefined) {
-      this.containerItemsByBuilder(dto.containerOrderMenuDtos);
+    if (dto.containerOrderMenuItems !== undefined) {
+      this.containerItemsByBuilder(dto.containerOrderMenuItems);
     }
   }
 

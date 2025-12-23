@@ -7,12 +7,12 @@ export function inventoryItemExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    itemName: 'flour',
+    name: 'flour',
 
     category: handleSetHas(shallow, fnSet, inventoryItemCategoryExample, false),
 
     vendor: handleSetHas(shallow, fnSet, inventoryItemExample, false),
 
-    itemSizes: [handleSetHas(shallow, fnSet, inventoryItemSizeExample, false)],
+    sizes: [handleSetHas(shallow, fnSet, inventoryItemSizeExample, false)],
   };
 }

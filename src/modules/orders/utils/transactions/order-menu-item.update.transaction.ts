@@ -28,13 +28,13 @@ export async function OrderMenuItemUpdateInTransaction(
     entity.quantity = dto.quantity;
   }
 
-  if (dto.containerOrderMenuDtos) {
+  if (dto.containerOrderMenuItems) {
     const existingItems = manager.find(OrderContainerItem, {
       where: { parentOrderMenuItem: { id: entity.id } },
     });
     const existingMap = new Map((await existingItems).map((i) => [i.id, i]));
 
-    for (const nestedDto of dto.containerOrderMenuDtos) {
+    for (const nestedDto of dto.containerOrderMenuItems) {
       if (nestedDto.createDto) {
         const newItem = await OrderContainerItemCreateInTransaction(
           nestedDto.createDto,

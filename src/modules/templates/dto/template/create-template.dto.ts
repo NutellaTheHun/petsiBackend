@@ -33,17 +33,19 @@ export class CreateTemplateDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
           displayName: 'CLAPPLE',
-          menuItemId: 1,
+          menuItemId: 2,
           tablePosIndex: 0,
         },
       },
       {
         mode: 'create',
+        createId: 'c3',
         createDto: {
           displayName: 'MIX',
-          menuItemId: 2,
+          menuItemId: 4,
           tablePosIndex: 1,
         },
       },

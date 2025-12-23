@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { UnitOfMeasure } from '../../entities/unit-of-measure.entity';
 
 export class UpdateUnitOfMeasureCategoryDto {
   @ApiPropertyOptional({
@@ -19,5 +21,5 @@ export class UpdateUnitOfMeasureCategoryDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly baseConversionUnitId?: number;
+  readonly baseConversionUnitId?: EntityId<UnitOfMeasure>;
 }

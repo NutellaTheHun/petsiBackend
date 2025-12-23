@@ -125,20 +125,20 @@ export class CreateRecipeDto {
     example: [
       {
         mode: 'create',
+        createId: 'c1',
         createDto: {
-          ingredientInventoryItemId: 1,
-          ingredientRecipeId: null,
-          quantity: 2,
-          quantityMeasurementId: 3,
+          ingredientInventoryItemId: 2,
+          quantity: 3,
+          quantityUnitTypeId: 4,
         },
       },
       {
         mode: 'create',
+        createId: 'c5',
         createDto: {
-          ingredientInventoryItemId: null,
-          ingredientRecipeId: 4,
-          quantity: 5,
-          quantityMeasurementId: 6,
+          ingredientRecipeId: 5,
+          quantity: 6,
+          quantityUnitTypeId: 7,
         },
       },
     ],

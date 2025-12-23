@@ -22,5 +22,12 @@ export function recipeIngredientExample(fnSet: Set<string>, shallow: boolean) {
     quantity: 2,
 
     quantityMeasure: handleShallow(shallow, fnSet, unitOfMeasureExample, false),
+
+    quantityUnitType: handleShallow(
+      shallow,
+      fnSet,
+      unitOfMeasureExample,
+      false,
+    ),
   };
 }

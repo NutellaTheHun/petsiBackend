@@ -211,9 +211,9 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       ) {
         throw new Error();
       }
-      if (dto.containerOrderMenuDtos?.length) {
+      if (dto.containerOrderMenuItems?.length) {
         // check valid items for container
-        for (const nestedDto of dto.containerOrderMenuDtos) {
+        for (const nestedDto of dto.containerOrderMenuItems) {
           if (nestedDto.createDto) {
             const createDto = nestedDto.createDto;
             if (!createDto) {
@@ -338,7 +338,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         const nestedDtoErrs =
           await this.orderContainerItemValidator.validateManyNestedNode(
             'orderedContainerItems',
-            dto.containerOrderMenuDtos,
+            dto.containerOrderMenuItems,
           );
         if (nestedDtoErrs) {
           results.push(nestedDtoErrs);

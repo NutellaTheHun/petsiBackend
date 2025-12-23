@@ -10,7 +10,7 @@ export function recipeExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    recipeName: 'Classic Apple Pie',
+    name: 'Classic Apple Pie',
 
     producedMenuItem: handleShallow(shallow, fnSet, menuItemExample, false),
 
@@ -20,7 +20,7 @@ export function recipeExample(fnSet: Set<string>, shallow: boolean) {
 
     batchResultQuantity: 2,
 
-    batchResultUnitOfMeasurement: handleShallow(
+    batchResultUnitType: handleShallow(
       shallow,
       fnSet,
       unitOfMeasureExample,
@@ -29,7 +29,7 @@ export function recipeExample(fnSet: Set<string>, shallow: boolean) {
 
     servingSizeQuantity: 3,
 
-    servingSizeUnitOfMeasurement: handleShallow(
+    servingSizeUnitType: handleShallow(
       shallow,
       fnSet,
       unitOfMeasureExample,

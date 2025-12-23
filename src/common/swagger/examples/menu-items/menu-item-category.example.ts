@@ -6,8 +6,8 @@ export function menuItemCategoryExample(fnSet: Set<string>, shallow: boolean) {
   return {
     id: 1,
 
-    categoryName: 'pie',
+    name: 'pie',
 
-    categoryItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
+    menuItems: [handleSetHas(shallow, fnSet, menuItemExample, false)],
   };
 }
