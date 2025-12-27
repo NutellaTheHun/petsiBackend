@@ -1,0 +1,29 @@
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { RecipeCategory } from '../../entities/recipe-category.entity';
+
+export class CreateRecipeSubCategoryDto {
+  @ApiProperty({
+    description: 'Name of the RecipeSubCategory entity.',
+    example: 'Sweet Pie',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly name: string;
+
+  @ApiProperty({
+    description: 'Id of the RecipeCategory parent entity.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  @IsPositive()
+  readonly parentCategoryId?: EntityId<RecipeCategory>;
+}

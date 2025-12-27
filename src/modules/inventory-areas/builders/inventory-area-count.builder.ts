@@ -1,0 +1,89 @@
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../common/base/builder.base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
+import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItemService } from '../services/inventory-area-item.service';
+import { InventoryAreaService } from '../services/inventory-area.service';
+import { InventoryAreaItemBuilder } from './inventory-area-item.builder';
+
+@Injectable()
+export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
+  constructor(
+    @Inject(forwardRef(() => InventoryAreaService))
+    private readonly areaService: InventoryAreaService,
+
+    @Inject(forwardRef(() => InventoryAreaItemService))
+    private readonly areaItemService: InventoryAreaItemService,
+
+    @Inject(forwardRef(() => InventoryAreaItemBuilder))
+    private readonly itemCountBuilder: InventoryAreaItemBuilder,
+
+    logger: AppLogger,
+    requestContextService: RequestContextService,
+  ) {
+    super(
+      InventoryAreaCount,
+      'InventoryAreaCountBuilder',
+      requestContextService,
+      logger,
+    );
+  }
+
+  protected createEntity(dto: CreateInventoryAreaCountDto): void {
+    if (dto.inventoryAreaId !== undefined) {
+      this.inventoryAreaById(dto.inventoryAreaId);
+    }
+    if (dto.countedInventoryItems !== undefined) {
+      this.countedItemsByBuilder(dto.countedInventoryItems);
+    }
+  }
+
+  protected updateEntity(dto: UpdateInventoryAreaCountDto): void {
+    if (dto.inventoryAreaId !== undefined) {
+      this.inventoryAreaById(dto.inventoryAreaId);
+    }
+    if (dto.countedInventoryItems !== undefined) {
+      this.countedItemsByBuilder(dto.countedInventoryItems);
+    }
+  }
+
+  public inventoryAreaById(id: number): this {
+    return this.setPropById(
+      this.areaService.findOne.bind(this.areaService),
+      'inventoryArea',
+      id,
+    );
+  }
+
+  public inventoryAreaByName(name: string): this {
+    return this.setPropByName(
+      this.areaService.findOneByName.bind(this.areaService),
+      'inventoryArea',
+      name,
+    );
+  }
+
+  public countedItemsById(ids: number[]): this {
+    return this.setPropsByIds(
+      this.areaItemService.findEntitiesById.bind(this.areaItemService),
+      'countedItems',
+      ids,
+    );
+  }
+
+  public countedItemsByBuilder(
+    dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
+  ): this {
+    return this.setPropByBuilder(
+      this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
+      'countedItems',
+      this.entity,
+      dtos,
+    );
+  }
+}

@@ -1,0 +1,50 @@
+import { Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../common/base/builder.base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
+import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
+import { LabelType } from '../entities/label-type.entity';
+
+@Injectable()
+export class LabelTypeBuilder extends BuilderBase<LabelType> {
+  constructor(requestContextService: RequestContextService, logger: AppLogger) {
+    super(LabelType, 'LabelTypeBuilder', requestContextService, logger);
+  }
+
+  protected createEntity(dto: CreateLabelTypeDto): void {
+    if (dto.name !== undefined) {
+      this.name(dto.name);
+    }
+    if (dto.length !== undefined) {
+      this.labelLength(dto.length);
+    }
+    if (dto.width !== undefined) {
+      this.labelWidth(dto.width);
+    }
+  }
+
+  protected updateEntity(dto: UpdateLabelTypeDto): void {
+    if (dto.name !== undefined) {
+      this.name(dto.name);
+    }
+    if (dto.length !== undefined) {
+      this.labelLength(dto.length);
+    }
+    if (dto.width !== undefined) {
+      this.labelWidth(dto.width);
+    }
+  }
+
+  public name(name: string): this {
+    return this.setPropByVal('labelTypeName', name);
+  }
+
+  public labelWidth(val: number): this {
+    return this.setPropByVal('labelTypeWidth', val);
+  }
+
+  public labelLength(val: number): this {
+    return this.setPropByVal('labelTypeLength', val);
+  }
+}

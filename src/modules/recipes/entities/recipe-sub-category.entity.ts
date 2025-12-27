@@ -1,0 +1,75 @@
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
+import { EntityBase } from '../../../common/base/entity.base';
+import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
+import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
+import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
+import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { RecipeCategory } from './recipe-category.entity';
+import { Recipe } from './recipe.entity';
+
+export type RecipeSubCategoryEntity = EntityBase<
+  RecipeSubCategory,
+  CreateRecipeSubCategoryDto,
+  UpdateRecipeSubCategoryDto,
+  NestedRecipeSubCategoryDto
+>;
+
+/**
+ * A category within a {@link RecipeCategory}
+ *
+ * Such as "Scone" or "Muffin" within the "Pastry" category.
+ */
+@Entity()
+@Unique(['subCategoryName', 'parentCategory'])
+export class RecipeSubCategory {
+  @ApiProperty({
+    example: 1,
+    description: 'The unique identifier of the entity',
+  })
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ApiProperty({
+    example: 'Savory Pie',
+    description: 'Name of the subcategory',
+  })
+  @Column()
+  name: string;
+
+  /**
+   * Recipes belonging to the sub-category.
+   */
+  @ApiProperty({
+    example: [recipeExample(new Set<string>(), true)],
+    description: 'List of Recipes under the subcategory',
+    type: () => Recipe,
+    isArray: true,
+  })
+  @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
+  recipes: Recipe[] = [];
+
+  /**
+   * The owning category
+   *
+   * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
+   */
+  @ApiProperty({
+    example: recipeCategoryExample(new Set<string>(), true),
+    description: 'Category this subcategory is for',
+    type: () => RecipeCategory,
+  })
+  @ManyToOne(() => RecipeCategory, {
+    onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
+  })
+  parentCategory: RecipeCategory;
+}

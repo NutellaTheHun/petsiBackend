@@ -1,0 +1,47 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+} from 'class-validator';
+import { EntityId } from '../../../../common/types';
+import { UnitOfMeasureCategory } from '../../entities/unit-of-measure-category.entity';
+
+export class CreateUnitOfMeasureDto {
+  @ApiProperty({
+    description: 'Name of the UnitofMeasure entity.',
+    example: 'Pound',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly name: string;
+
+  @ApiProperty({
+    description: "abbrieviation of the UnitofMeasure entity's name.",
+    example: 'lb',
+  })
+  @IsString()
+  @IsNotEmpty()
+  readonly abbreviation: string;
+
+  @ApiPropertyOptional({
+    description:
+      'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
+    example: '3785.4080001023799014',
+  })
+  @IsString()
+  @IsOptional()
+  readonly conversionFactorToBase?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+  readonly categoryId?: EntityId<UnitOfMeasureCategory>;
+}

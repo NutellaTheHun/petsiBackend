@@ -1,0 +1,181 @@
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { BuilderBase } from '../../../common/base/builder.base';
+import { AppLogger } from '../../app-logging/app-logger';
+import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { Recipe } from '../entities/recipe.entity';
+import { RecipeIngredientService } from '../services/recipe-ingredient.service';
+import { RecipeService } from '../services/recipe.service';
+
+@Injectable()
+export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
+  constructor(
+    @Inject(forwardRef(() => RecipeService))
+    private readonly recipeService: RecipeService,
+
+    @Inject(forwardRef(() => RecipeIngredientService))
+    private readonly ingredientService: RecipeIngredientService,
+
+    private readonly itemService: InventoryItemService,
+    private readonly unitService: UnitOfMeasureService,
+
+    requestContextService: RequestContextService,
+    logger: AppLogger,
+  ) {
+    super(
+      RecipeIngredient,
+      'RecipeIngredientBuilder',
+      requestContextService,
+      logger,
+    );
+  }
+
+  protected createEntity(
+    dto: CreateRecipeIngredientDto,
+    parent?: Recipe,
+  ): void {
+    if (dto.ingredientInventoryItemId !== undefined) {
+      this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
+    }
+    if (dto.quantity !== undefined) {
+      this.quantity(dto.quantity);
+    }
+    if (dto.ingredientRecipeId !== undefined) {
+      this.ingredientRecipeById(dto.ingredientRecipeId);
+    }
+    if (dto.quantityUnitTypeId !== undefined) {
+      this.quantityUnitOfMeasureById(dto.quantityUnitTypeId);
+    }
+
+    // If the parentRecipeId is provided, use it to set the parentRecipe. (Through recipe-ingredient endpoint)
+    // If the parentRecipeId is not provided, but a parent is provided, use the parent to set the parentRecipe. (Through create recipe endpoint)
+    if (parent) {
+      this.setPropByVal('parentRecipe', parent);
+    } else if (dto.parentRecipeId !== undefined) {
+      this.parentRecipeById(dto.parentRecipeId);
+    }
+  }
+
+  protected updateEntity(dto: UpdateRecipeIngredientDto): void {
+    if (dto.ingredientInventoryItemId !== undefined) {
+      this.entity.ingredientRecipe = null;
+      this.ingredientInventoryItemById(dto.ingredientInventoryItemId);
+    }
+    if (dto.quantity !== undefined) {
+      this.quantity(dto.quantity);
+    }
+    if (dto.ingredientRecipeId !== undefined) {
+      this.entity.ingredientInventoryItem = null;
+      this.ingredientRecipeById(dto.ingredientRecipeId);
+    }
+    if (dto.quantityUnitTypeId !== undefined) {
+      this.quantityUnitOfMeasureById(dto.quantityUnitTypeId);
+    }
+  }
+
+  /**
+   * Handles both create and update recipe ingredient DTOs, for when updating recipes involving new and modified ingredients.
+   */
+  public async buildMany(
+    parent: Recipe,
+    dtos: (CreateRecipeIngredientDto | NestedRecipeIngredientDto)[],
+  ): Promise<RecipeIngredient[]> {
+    const results: RecipeIngredient[] = [];
+    for (const dto of dtos) {
+      if (dto instanceof CreateRecipeIngredientDto) {
+        results.push(await this.buildCreateDto(dto));
+      } else {
+        if (dto.createId && dto.createDto) {
+          results.push(await this.buildCreateDto(dto.createDto, parent));
+        }
+        if (dto.id && dto.updateDto) {
+          const ingred = await this.ingredientService.findOne(dto.id);
+          if (!ingred) {
+            throw new Error('recipe ingredient not found');
+          }
+          results.push(await this.buildUpdateDto(ingred, dto.updateDto));
+        }
+      }
+    }
+    return results;
+  }
+
+  public parentRecipeById(id: number): this {
+    return this.setPropById(
+      this.recipeService.findOne.bind(this.recipeService),
+      'parentRecipe',
+      id,
+    );
+  }
+
+  public parentRecipeByName(name: string): this {
+    return this.setPropByName(
+      this.recipeService.findOneByName.bind(this.recipeService),
+      'parentRecipe',
+      name,
+    );
+  }
+
+  public ingredientInventoryItemById(id: number | null): this {
+    if (id === null) {
+      return this.setPropByVal('ingredientInventoryItem', null);
+    }
+    return this.setPropById(
+      this.itemService.findOne.bind(this.itemService),
+      'ingredientInventoryItem',
+      id,
+    );
+  }
+
+  public ingredientInventoryItemByName(name: string): this {
+    return this.setPropByName(
+      this.itemService.findOneByName.bind(this.itemService),
+      'ingredientInventoryItem',
+      name,
+    );
+  }
+
+  public ingredientRecipeById(id: number | null): this {
+    if (id === null) {
+      return this.setPropByVal('ingredientRecipe', null);
+    }
+    return this.setPropById(
+      this.recipeService.findOne.bind(this.recipeService),
+      'ingredientRecipe',
+      id,
+    );
+  }
+
+  public ingredientRecipeByName(name: string): this {
+    return this.setPropByName(
+      this.recipeService.findOneByName.bind(this.recipeService),
+      'ingredientRecipe',
+      name,
+    );
+  }
+
+  public quantity(amount: number): this {
+    return this.setPropByVal('quantity', amount);
+  }
+
+  public quantityUnitOfMeasureById(id: number): this {
+    return this.setPropById(
+      this.unitService.findOne.bind(this.unitService),
+      'quantityMeasure',
+      id,
+    );
+  }
+
+  public quantityUnitOfMeasureByName(name: string): this {
+    return this.setPropByName(
+      this.unitService.findOneByName.bind(this.unitService),
+      'quantityMeasure',
+      name,
+    );
+  }
+}

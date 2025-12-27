@@ -1,0 +1,94 @@
+import { TestingModule } from '@nestjs/testing';
+import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
+import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
+import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
+import { VENDOR_A, VENDOR_B } from '../utils/constants';
+import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
+import { InventoryItemVendorValidator } from './inventory-item-vendor.validator';
+
+describe('inventory item vendor validator', () => {
+  let testingUtil: InventoryItemTestingUtil;
+  let dbTestContext: DatabaseTestContext;
+
+  let validator: InventoryItemVendorValidator;
+  let service: InventoryItemVendorService;
+
+  beforeAll(async () => {
+    const module: TestingModule = await getInventoryItemTestingModule();
+    validator = module.get<InventoryItemVendorValidator>(
+      InventoryItemVendorValidator,
+    );
+    service = module.get<InventoryItemVendorService>(
+      InventoryItemVendorService,
+    );
+
+    dbTestContext = new DatabaseTestContext();
+    testingUtil = module.get<InventoryItemTestingUtil>(
+      InventoryItemTestingUtil,
+    );
+    await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
+  });
+
+  afterAll(async () => {
+    await dbTestContext.executeCleanupFunctions();
+  });
+
+  it('should be defined', () => {
+    expect(validator).toBeDefined;
+  });
+
+  it('should validate create', async () => {
+    const dto = {
+      name: 'TEST CREATE',
+    } as CreateInventoryItemVendorDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeNull();
+  });
+
+  it('should fail create (name already exists)', async () => {
+    const dto = {
+      name: VENDOR_B,
+    } as CreateInventoryItemVendorDto;
+
+    const result = await validator.validateCreateNode('root', dto);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('vendorName');
+  });
+
+  it('should validate update', async () => {
+    const toUpdate = await service.findOneByName(VENDOR_A);
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const dto = {
+      name: 'TEST UPDATE',
+    } as UpdateInventoryItemVendorDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeNull();
+  });
+
+  it('should fail update (name already exists)', async () => {
+    const toUpdate = await service.findOneByName(VENDOR_A);
+    if (!toUpdate) {
+      throw new Error();
+    }
+
+    const dto = {
+      name: VENDOR_A,
+    } as UpdateInventoryItemVendorDto;
+
+    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
+    expect(result).toBeInstanceOf(ValidationErrorNode);
+    expect(result?.children.length).toEqual(1);
+    expect(result?.children[0].message).not.toBeNull();
+    expect(result?.field).toEqual('vendorName');
+  });
+});
