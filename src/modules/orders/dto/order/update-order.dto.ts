@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -11,7 +11,8 @@ import {
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
-import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
+import { NestedUpdateOrderMenuItemDto } from '../order-menu-item/nested-update-order-menu-item.dto';
 
 export class UpdateOrderDto {
   @ApiPropertyOptional({
@@ -126,32 +127,32 @@ export class UpdateOrderDto {
   readonly categoryId?: EntityId<OrderCategory>;
 
   @ApiPropertyOptional({
-    description:
-      'An array of CreateChildOrderMenuItemDtos. Child dtos are used when creating an Order entity with child entites.',
-    type: () => [NestedOrderMenuItemDto],
+    description: 'TODO',
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateOrderMenuItemDto) },
+      { $ref: getSchemaPath(NestedUpdateOrderMenuItemDto) },
+    ],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          menuItemId: 2,
-          sizeId: 3,
-          quantity: 4,
-        },
+        menuItemId: 2,
+        sizeId: 3,
+        quantity: 4,
       },
       {
-        mode: 'update',
         id: 5,
-        updateDto: {
-          menuItemId: 6,
-          sizeId: 7,
-          quantity: 8,
-        },
+        menuItemId: 6,
+        sizeId: 7,
+        quantity: 8,
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly orderedItems?: NestedOrderMenuItemDto[];
+  readonly orderedItems?: (
+    | NestedCreateOrderMenuItemDto
+    | NestedUpdateOrderMenuItemDto
+  )[];
 }

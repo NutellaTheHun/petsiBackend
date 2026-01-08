@@ -1,47 +1,46 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-} from 'class-validator';
+import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
+import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { NestedUpdate } from '../../../../common/base/nested-update.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
-import { Order } from '../../entities/order.entity';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
+import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 
-export class CreateOrderMenuItemDto {
-  @ApiProperty({
+export class NestedUpdateOrderMenuItemDto extends NestedUpdate {
+  @ApiPropertyOptional({
     description: 'Id of MenuItem entity being ordered.',
+    example: 1,
+  })
+  @IsNumber()
+  @IsOptional()
+  @IsPositive()
+  readonly menuItemId?: EntityId<MenuItem>;
+
+  @ApiPropertyOptional({
+    description:
+      'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
     example: 2,
   })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
-  readonly menuItemId: EntityId<MenuItem>;
+  readonly sizeId?: EntityId<MenuItemSize>;
 
-  @ApiProperty({
-    description:
-      'Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.',
-    example: 3,
-  })
+  @ApiPropertyOptional({ description: 'Amount being ordered.', example: 3 })
   @IsNumber()
-  @IsNotEmpty()
+  @IsOptional()
   @IsPositive()
-  readonly sizeId: EntityId<MenuItemSize>;
-
-  @ApiProperty({ description: 'Amount being ordered.' })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly quantity: number;
+  readonly quantity?: number;
 
   @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
-    type: [NestedCreateOrderContainerItemDto],
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateOrderContainerItemDto) },
+      { $ref: getSchemaPath(NestedUpdateOrderContainerItemDto) },
+    ],
     example: [
       {
         createId: 'c1',
@@ -52,7 +51,7 @@ export class CreateOrderMenuItemDto {
         parentMenuItemSizeIdCtx: 6,
       },
       {
-        createId: 'c7',
+        id: 7,
         containedMenuItemId: 8,
         containedItemSizeId: 9,
         quantity: 10,
@@ -63,15 +62,8 @@ export class CreateOrderMenuItemDto {
   })
   @IsArray()
   @IsOptional()
-  readonly containerOrderMenuItems?: NestedCreateOrderContainerItemDto[];
-
-  @ApiPropertyOptional({
-    description:
-      'Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsOptional()
-  @IsPositive()
-  readonly parentOrderId: EntityId<Order>;
+  readonly containerOrderMenuItems?: (
+    | NestedCreateOrderContainerItemDto
+    | NestedUpdateOrderContainerItemDto
+  )[];
 }

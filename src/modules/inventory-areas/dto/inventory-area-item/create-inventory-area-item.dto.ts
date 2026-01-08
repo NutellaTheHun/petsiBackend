@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { EntityId } from '../../../../common/types';
-import { NestedInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemSize } from '../../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 import { InventoryAreaCount } from '../../entities/inventory-area-count.entity';
@@ -42,21 +42,18 @@ export class CreateInventoryAreaItemDto {
   @ApiProperty({
     description:
       'Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.',
-    type: NestedInventoryItemSizeDto,
+    type: NestedCreateInventoryItemSizeDto,
     required: false,
     example: {
-      mode: 'create',
       createId: 1,
-      createDto: {
-        measureTypeId: 2,
-        measureAmount: 3,
-        packageId: 4,
-        cost: 5.99,
-      },
+      measureTypeId: 2,
+      measureAmount: 3,
+      packageId: 4,
+      cost: 5.99,
     },
   })
   @IsOptional()
-  readonly countedItemSize?: NestedInventoryItemSizeDto;
+  readonly countedItemSize?: NestedCreateInventoryItemSizeDto;
 
   @ApiProperty({
     description:
@@ -68,5 +65,5 @@ export class CreateInventoryAreaItemDto {
   @IsNumber()
   @IsPositive()
   @IsNotEmpty()
-  readonly parentInventoryCountId?: EntityId<InventoryAreaCount>;
+  readonly parentInventoryCountId: EntityId<InventoryAreaCount>;
 }

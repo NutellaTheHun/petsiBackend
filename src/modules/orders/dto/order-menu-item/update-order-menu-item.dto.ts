@@ -1,9 +1,10 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
-import { NestedOrderContainerItemDto } from '../order-container-item/nested-order-container-item.dto';
+import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
+import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 
 export class UpdateOrderMenuItemDto {
   @ApiPropertyOptional({
@@ -34,33 +35,34 @@ export class UpdateOrderMenuItemDto {
   @ApiPropertyOptional({
     description:
       'Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem',
-    type: [NestedOrderContainerItemDto],
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateOrderContainerItemDto) },
+      { $ref: getSchemaPath(NestedUpdateOrderContainerItemDto) },
+    ],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          containedMenuItemId: 2,
-          containedItemSizeId: 3,
-          quantity: 4,
-          parentMenuItemIdCtx: 5,
-          parentMenuItemSizeIdCtx: 6,
-        },
+        containedMenuItemId: 2,
+        containedItemSizeId: 3,
+        quantity: 4,
+        parentMenuItemIdCtx: 5,
+        parentMenuItemSizeIdCtx: 6,
       },
       {
-        mode: 'update',
         id: 7,
-        updateDto: {
-          containedMenuItemId: 8,
-          containedItemSizeId: 9,
-          quantity: 10,
-          parentMenuItemIdCtx: 11,
-          parentMenuItemSizeIdCtx: 12,
-        },
+        containedMenuItemId: 8,
+        containedItemSizeId: 9,
+        quantity: 10,
+        parentMenuItemIdCtx: 11,
+        parentMenuItemSizeIdCtx: 12,
       },
     ],
   })
   @IsArray()
   @IsOptional()
-  readonly containerOrderMenuItems?: NestedOrderContainerItemDto[];
+  readonly containerOrderMenuItems?: (
+    | NestedCreateOrderContainerItemDto
+    | NestedUpdateOrderContainerItemDto
+  )[];
 }

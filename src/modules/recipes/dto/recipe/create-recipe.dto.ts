@@ -14,7 +14,7 @@ import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
-import { NestedRecipeIngredientDto } from '../recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../recipe-ingredient/nested-create-recipe-ingredient.dto';
 
 export class CreateRecipeDto {
   @ApiProperty({
@@ -121,29 +121,23 @@ export class CreateRecipeDto {
 
   @ApiPropertyOptional({
     description: 'Array of CreateRecipeIngredientDto.',
-    type: [NestedRecipeIngredientDto],
+    type: [NestedCreateRecipeIngredientDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          ingredientInventoryItemId: 2,
-          quantity: 3,
-          quantityUnitTypeId: 4,
-        },
+        ingredientInventoryItemId: 2,
+        quantity: 3,
+        quantityUnitTypeId: 4,
       },
       {
-        mode: 'create',
         createId: 'c5',
-        createDto: {
-          ingredientRecipeId: 5,
-          quantity: 6,
-          quantityUnitTypeId: 7,
-        },
+        ingredientRecipeId: 5,
+        quantity: 6,
+        quantityUnitTypeId: 7,
       },
     ],
   })
   @IsOptional()
   @IsArray()
-  readonly ingredients?: NestedRecipeIngredientDto[];
+  readonly ingredients?: NestedCreateRecipeIngredientDto[];
 }

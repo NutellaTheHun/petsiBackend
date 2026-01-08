@@ -1,8 +1,13 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  getSchemaPath,
+} from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryArea } from '../../entities/inventory-area.entity';
-import { NestedInventoryAreaItemDto } from '../inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../inventory-area-item/nested-create-inventory-area-item.dto copy';
+import { NestedUpdateInventoryAreaItemDto } from '../inventory-area-item/nested-update-inventory-area-item.dto';
 
 export class UpdateInventoryAreaCountDto {
   @ApiPropertyOptional({
@@ -15,16 +20,17 @@ export class UpdateInventoryAreaCountDto {
 
   @ApiProperty({
     description: 'Counted InventoryItems for the InventoryAreaCount.',
-    type: [NestedInventoryAreaItemDto],
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateInventoryAreaItemDto) },
+      { $ref: getSchemaPath(NestedUpdateInventoryAreaItemDto) },
+    ],
     example: [
       {
-        mode: 'update',
         id: 1,
-        updateDto: {
-          countedInventoryItemId: 4,
-          amount: 5,
-          countedItemSizeId: 6,
-        },
+        countedInventoryItemId: 4,
+        amount: 5,
+        countedItemSizeId: 6,
       },
     ],
     required: false,
@@ -32,5 +38,8 @@ export class UpdateInventoryAreaCountDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly countedInventoryItems?: NestedInventoryAreaItemDto[];
+  readonly countedInventoryItems?: (
+    | NestedCreateInventoryAreaItemDto
+    | NestedUpdateInventoryAreaItemDto
+  )[];
 }

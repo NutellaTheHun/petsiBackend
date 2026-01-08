@@ -6,13 +6,13 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
+import { NestedCreate } from '../../../../common/base/nested-create.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
-import { Order } from '../../entities/order.entity';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 
-export class CreateOrderMenuItemDto {
+export class NestedCreateOrderMenuItemDto extends NestedCreate {
   @ApiProperty({
     description: 'Id of MenuItem entity being ordered.',
     example: 2,
@@ -64,14 +64,4 @@ export class CreateOrderMenuItemDto {
   @IsArray()
   @IsOptional()
   readonly containerOrderMenuItems?: NestedCreateOrderContainerItemDto[];
-
-  @ApiPropertyOptional({
-    description:
-      'Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsOptional()
-  @IsPositive()
-  readonly parentOrderId: EntityId<Order>;
 }

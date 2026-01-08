@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -6,7 +6,7 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { NestedTemplateMenuItemDto } from '../template-menu-item/nested-template-menu-item.dto copy';
+import { NestedTemplateMenuItemDto } from '../template-menu-item/nested-template-menu-item.dto';
 
 export class UpdateTemplateDto {
   @ApiPropertyOptional({
@@ -27,32 +27,32 @@ export class UpdateTemplateDto {
   readonly isPie?: boolean;
 
   @ApiPropertyOptional({
-    description:
-      'Mixed array of CreateChildTemplateMenuItemDtos and UpdateChildTemplateMenuItemDto, child dtos are used when updating a Template entity with created/updated child TemplateMenuItem entites.',
-    type: [NestedTemplateMenuItemDto],
+    description: 'TODO',
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedTemplateMenuItemDto) },
+      { $ref: getSchemaPath(NestedTemplateMenuItemDto) },
+    ],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          displayName: 'CLAPPLE',
-          menuItemId: 2,
-          tablePosIndex: 0,
-        },
+        displayName: 'CLAPPLE',
+        menuItemId: 2,
+        tablePosIndex: 0,
       },
       {
-        mode: 'update',
         id: 3,
-        updateDto: {
-          displayName: 'MIX',
-          menuItemId: 4,
-          tablePosIndex: 1,
-        },
+        displayName: 'MIX',
+        menuItemId: 4,
+        tablePosIndex: 1,
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly templateMenuItems?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItems?: (
+    | NestedTemplateMenuItemDto
+    | NestedTemplateMenuItemDto
+  )[];
 }

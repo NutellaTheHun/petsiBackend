@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedRecipeSubCategoryDto } from '../recipe-sub-category/nested-recipe-sub-category.dto';
 
 export class CreateRecipeCategoryDto {
@@ -17,22 +18,16 @@ export class CreateRecipeCategoryDto {
     type: [NestedRecipeSubCategoryDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          subCategoryName: 'savory pies',
-        },
+        name: 'savory pies',
       },
       {
-        mode: 'create',
         createId: 'c2',
-        createDto: {
-          subCategoryName: 'sweet pies',
-        },
+        name: 'sweet pies',
       },
     ],
   })
   @IsOptional()
   @IsArray()
-  readonly subCategories?: NestedRecipeSubCategoryDto[];
+  readonly subCategories?: NestedCreateRecipeSubCategoryDto[];
 }

@@ -5,7 +5,7 @@ import { menuItemExample } from '../../../common/swagger/examples/menu-items/men
 import { templateExample } from '../../../common/swagger/examples/templates/template.example';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { Template } from './template.entity';
 

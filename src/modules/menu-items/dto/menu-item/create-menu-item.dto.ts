@@ -11,7 +11,7 @@ import {
 import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
-import { NestedMenuItemContainerItemDto } from '../menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-item/nested-create-menu-item-container-item.dto';
 
 export class CreateMenuItemDto {
   @ApiProperty({
@@ -58,25 +58,22 @@ export class CreateMenuItemDto {
 
   @ApiPropertyOptional({
     description: 'Array of CreateMenutItemContainerItemDtos',
-    type: () => [NestedMenuItemContainerItemDto],
+    type: () => [NestedCreateMenuItemContainerItemDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          containedMenuItemId: 2,
-          containedMenuItemSizeId: 3,
-          quantity: 4,
-          parentMenuItemId: 5,
-          parentItemSizeId: 6,
-        },
+        containedMenuItemId: 2,
+        containedMenuItemSizeId: 3,
+        quantity: 4,
+        parentMenuItemId: 5,
+        parentItemSizeId: 6,
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly containerMenuItems?: NestedMenuItemContainerItemDto[];
+  readonly containerMenuItems?: NestedCreateMenuItemContainerItemDto[];
 
   @ApiPropertyOptional({
     description:

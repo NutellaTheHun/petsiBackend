@@ -11,7 +11,7 @@ import {
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
-import { NestedOrderMenuItemDto } from '../order-menu-item/nested-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
 
 export class CreateOrderDto {
   @ApiProperty({
@@ -123,30 +123,30 @@ export class CreateOrderDto {
 
   @ApiProperty({
     description: 'An array of CreateOrderMenuItemDtos.',
-    type: [NestedOrderMenuItemDto],
+    type: [NestedCreateOrderMenuItemDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          menuItemId: 10,
-          sizeId: 2,
-          quantity: 3,
-          containerOrderMenuItems: [
-            {
-              mode: 'create',
-              createId: 'c1',
-              createDto: {
-                menuItemId: 2,
-                sizeId: 3,
-                quantity: 4,
-              },
-            },
-          ],
-        },
+        menuItemId: 10,
+        sizeId: 2,
+        quantity: 3,
+        containerOrderMenuItems: [
+          {
+            createId: 'c1',
+            menuItemId: 2,
+            sizeId: 3,
+            quantity: 4,
+          },
+          {
+            createId: 'c1',
+            menuItemId: 5,
+            sizeId: 6,
+            quantity: 7,
+          },
+        ],
       },
     ],
   })
   @IsArray()
-  readonly orderedItems: NestedOrderMenuItemDto[];
+  readonly orderedItems: NestedCreateOrderMenuItemDto[];
 }

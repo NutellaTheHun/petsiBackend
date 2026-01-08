@@ -1,15 +1,16 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { NestedUpdate } from '../../../../common/base/nested-update.base';
 import { EntityId } from '../../../../common/types';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { Recipe } from '../../entities/recipe.entity';
 
-export class CreateRecipeIngredientDto {
+export class NestedUpdateRecipeIngredientDto extends NestedUpdate {
   @ApiPropertyOptional({
     description:
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',
-    example: 2,
+    example: 3,
     type: 'number',
   })
   @IsOptional()
@@ -20,7 +21,7 @@ export class CreateRecipeIngredientDto {
   @ApiPropertyOptional({
     description:
       'Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.',
-    example: 3,
+    example: 4,
     type: 'number',
   })
   @IsOptional()
@@ -28,31 +29,21 @@ export class CreateRecipeIngredientDto {
   @IsPositive()
   readonly ingredientRecipeId?: EntityId<Recipe>;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The unit amount of the UnitofMeasure of the InventoryItem',
-    example: 4,
+    example: 1,
   })
   @IsNumber()
+  @IsOptional()
   @IsPositive()
-  @IsNotEmpty()
-  readonly quantity: number;
-
-  @ApiProperty({
-    description: 'Id of the UnitofMeasure entity.',
-    example: 5,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsNotEmpty()
-  readonly quantityUnitTypeId: EntityId<UnitOfMeasure>;
+  readonly quantity?: number;
 
   @ApiPropertyOptional({
-    description:
-      'Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.',
-    example: 1,
+    description: 'Id of the UnitofMeasure entity.',
+    example: 2,
   })
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly parentRecipeId: EntityId<Recipe>;
+  readonly quantityUnitTypeId?: EntityId<UnitOfMeasure>;
 }

@@ -1,11 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { NestedCreate } from '../../../../common/base/nested-create.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
-import { OrderMenuItem } from '../../entities/order-menu-item.entity';
 
-export class CreateOrderContainerItemDto {
+export class NestedCreateOrderContainerItemDto extends NestedCreate {
   @ApiProperty({
     description: 'Id of the MenuItem that is being ordered',
     example: 3,
@@ -34,16 +34,6 @@ export class CreateOrderContainerItemDto {
   @IsNotEmpty()
   @IsPositive()
   readonly quantity: number;
-
-  @ApiPropertyOptional({
-    description:
-      'Id of the OrderMenuItem that is the parent. Only used when creating through the OrderMenuItem endpoint, since the parent isnt assigned an Id yet.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly parentOrderMenuItemId: EntityId<OrderMenuItem>;
 
   @ApiProperty({
     description:

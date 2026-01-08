@@ -1,22 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
+import { NestedCreate } from '../../../../common/base/nested-create.base';
 import { EntityId } from '../../../../common/types';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
-import { InventoryItem } from '../../entities/inventory-item.entity';
 
-export class CreateInventoryItemSizeDto {
-  @ApiProperty({
-    description:
-      'Id of InventoryItem entity. Is required if sending DTO to inventory-item-size endpoint. Is not required if sending DTO as a nested dto of a create inventory-item request.',
-    example: 1,
-    required: false,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsNotEmpty()
-  readonly inventoryItemId: EntityId<InventoryItem>;
-
+export class NestedCreateInventoryItemSizeDto extends NestedCreate{
   @ApiProperty({
     description: 'Id of InventoryItemPackage entity.',
     example: 3,

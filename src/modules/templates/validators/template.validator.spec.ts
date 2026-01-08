@@ -4,7 +4,7 @@ import { ValidationErrorNode } from '../../../common/validation/validation-error
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b } from '../../menu-items/utils/constants';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateService } from '../services/template.service';

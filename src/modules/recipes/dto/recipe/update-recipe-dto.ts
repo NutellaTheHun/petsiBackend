@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import {
   IsArray,
   IsBoolean,
@@ -14,7 +14,8 @@ import { MenuItem } from '../../../menu-items/menu-items.module';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
-import { NestedRecipeIngredientDto } from '../recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../recipe-ingredient/nested-update-recipe-ingedient.dto';
 
 export class UpdateRecipeDto {
   @ApiPropertyOptional({
@@ -119,32 +120,32 @@ export class UpdateRecipeDto {
   readonly subCategoryId?: EntityId<RecipeSubCategory>;
 
   @ApiPropertyOptional({
-    description:
-      'Mixed array of CreateChildRecipeIngredientDtos and UpdateChildRecipeIngredientDtos. Child dtos are used when creating/updating child RecipeIngredient entites through updating the Recipe entity.',
-    type: [NestedRecipeIngredientDto],
+    description: 'TODO',
+    type: 'array',
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateRecipeIngredientDto) },
+      { $ref: getSchemaPath(NestedUpdateRecipeIngredientDto) },
+    ],
     example: [
       {
         mode: 'update',
         id: 1,
-        updateDto: {
-          ingredientInventoryItemId: 2,
-          quantity: 3,
-          quantityUnitTypeId: 4,
-        },
+        ingredientInventoryItemId: 2,
+        quantity: 3,
+        quantityUnitTypeId: 4,
       },
       {
-        mode: 'create',
         createId: 'c5',
-        createDto: {
-          ingredientRecipeId: 5,
-          quantity: 6,
-          quantityUnitTypeId: 7,
-        },
+        ingredientRecipeId: 5,
+        quantity: 6,
+        quantityUnitTypeId: 7,
       },
     ],
   })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly ingredients?: NestedRecipeIngredientDto[];
+  readonly ingredients?:
+    | NestedCreateRecipeIngredientDto
+    | NestedUpdateRecipeIngredientDto[];
 }

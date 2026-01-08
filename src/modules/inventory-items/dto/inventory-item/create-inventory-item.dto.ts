@@ -1,16 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
+    IsArray,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsPositive,
+    IsString,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
 import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity';
-import { NestedInventoryItemSizeDto } from '../inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../inventory-item-size/nested-create-inventory-item-size.dto';
 
 export class CreateInventoryItemDto {
   @ApiProperty({
@@ -44,7 +44,7 @@ export class CreateInventoryItemDto {
   @ApiPropertyOptional({
     description:
       'Child dtos are used when creating/updating an entity through a parent (InventoryItem).',
-    type: [NestedInventoryItemSizeDto],
+    type: [NestedCreateInventoryItemSizeDto],
     example: [
       {
         mode: 'create',
@@ -60,5 +60,5 @@ export class CreateInventoryItemDto {
   })
   @IsOptional()
   @IsArray()
-  readonly sizes?: NestedInventoryItemSizeDto[];
+  readonly sizes?: NestedCreateInventoryItemSizeDto[];
 }

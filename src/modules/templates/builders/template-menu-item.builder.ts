@@ -4,7 +4,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto copy';
+import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';

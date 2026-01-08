@@ -6,7 +6,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { NestedTemplateMenuItemDto } from '../template-menu-item/nested-template-menu-item.dto copy';
+import { NestedCreateTemplateMenuItemDto } from '../template-menu-item/nested-create-template-menu-item.dto';
 
 export class CreateTemplateDto {
   @ApiProperty({
@@ -27,31 +27,24 @@ export class CreateTemplateDto {
   readonly isPie?: boolean;
 
   @ApiPropertyOptional({
-    description:
-      'Array of CreateChildTemplateMenuItemDtos, child dtos are used when creating a Template entity with child TemplateMenuItem entites.',
-    type: [NestedTemplateMenuItemDto],
+    description: 'TODO',
+    type: [NestedCreateTemplateMenuItemDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          displayName: 'CLAPPLE',
-          menuItemId: 2,
-          tablePosIndex: 0,
-        },
+        displayName: 'CLAPPLE',
+        menuItemId: 2,
+        tablePosIndex: 0,
       },
       {
-        mode: 'create',
         createId: 'c3',
-        createDto: {
-          displayName: 'MIX',
-          menuItemId: 4,
-          tablePosIndex: 1,
-        },
+        displayName: 'MIX',
+        menuItemId: 4,
+        tablePosIndex: 1,
       },
     ],
   })
   @IsOptional()
   @IsArray()
-  readonly templateMenuItems?: NestedTemplateMenuItemDto[];
+  readonly templateMenuItems?: NestedCreateTemplateMenuItemDto[];
 }
