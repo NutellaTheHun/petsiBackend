@@ -59,8 +59,7 @@ export class UpdateMenuItemDto {
   readonly sizeIds?: EntityId<MenuItemSize>[];
 
   @ApiPropertyOptional({
-    description:
-      'Array of CreateChildMenutItemContainerItemDtos. Child dtos are used when creating a parent with child entities. Pass a null value to remove defined container',
+    description: 'TODO',
     type: 'array',
     oneOf: [
       { $ref: getSchemaPath(NestedCreateMenuItemContainerItemDto) },

@@ -12,8 +12,7 @@ import {
   InventoryAreaItem,
   InventoryAreaItemEntity,
 } from '../entities/inventory-area-item.entity';
-import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction';
-import { InventoryAreaItemUpdateInTransaction } from '../utils/transactions/inventory-area-item.update.transaction';
+import { InventoryAreaItemComposer } from '../utils/composers/inventory-area-item.composer';
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
@@ -33,6 +32,8 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
 
     @Inject(forwardRef(() => InventoryAreaItemValidator))
     validator: InventoryAreaItemValidator,
+
+    private readonly areaItemComposer: InventoryAreaItemComposer,
   ) {
     super(
       repo,
@@ -48,15 +49,16 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     dto: CreateInventoryAreaItemDto,
     manager: EntityManager,
   ): Promise<InventoryAreaItem> {
-    const result = await InventoryAreaItemCreateInTransaction(dto, manager);
-    return result;
+    return await manager.save(
+      await this.areaItemComposer.composeCreate(dto, manager),
+    );
   }
   protected async updateEntity(
     dto: UpdateInventoryAreaItemDto,
     manager: EntityManager,
     entity: InventoryAreaItem,
   ): Promise<void> {
-    await InventoryAreaItemUpdateInTransaction(dto, manager, entity);
+    await this.areaItemComposer.composeUpdate(dto, manager, entity);
   }
 
   async findByItemName(

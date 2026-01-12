@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { NestedUpdate } from '../../../../common/base/nested-update.base';
+import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
 
-export class NestedUpdateOrderContainerItemDto extends NestedUpdate {
+export class NestedUpdateOrderContainerItemDto extends NestedUpdateDto {
   @ApiPropertyOptional({
     description:
       'Id of the MenuItem that is being ordered, requires parentMenuItemId_ctx and parentMenuItemSizeId_ctx to be populated',

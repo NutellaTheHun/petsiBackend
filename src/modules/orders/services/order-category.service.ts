@@ -39,9 +39,9 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     manager: EntityManager,
   ): Promise<OrderCategory> {
     const result = manager.create(OrderCategory, {
-      categoryName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -52,6 +52,7 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

@@ -1,13 +1,13 @@
 import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { NestedUpdate } from '../../../../common/base/nested-update.base';
+import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 
-export class NestedUpdateOrderMenuItemDto extends NestedUpdate {
+export class NestedUpdateOrderMenuItemDto extends NestedUpdateDto {
   @ApiPropertyOptional({
     description: 'Id of MenuItem entity being ordered.',
     example: 1,

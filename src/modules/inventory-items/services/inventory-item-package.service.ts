@@ -40,9 +40,9 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     manager: EntityManager,
   ): Promise<InventoryItemPackage> {
     const result = manager.create(InventoryItemPackage, {
-      packageName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: UpdateInventoryItemPackageDto,
@@ -52,6 +52,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

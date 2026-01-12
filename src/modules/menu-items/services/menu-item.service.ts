@@ -18,9 +18,8 @@ import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
+import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
-import { MenuItemContainerItemCreateInTransaction } from '../utils/transactions/menu-item-container-item.create.transaction';
-import { MenuItemContainerItemUpdateInTransaction } from '../utils/transactions/menu-item-container-item.update.transaction';
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
@@ -41,6 +40,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemValidator,
+    private readonly containerItemComposer: MenuItemContainerItemComposer,
   ) {
     super(
       repo,
@@ -56,31 +56,29 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     dto: CreateMenuItemDto,
     manager: EntityManager,
   ): Promise<MenuItem> {
-    let containerItems: MenuItemContainerItem[] = [];
-    if (dto.containerMenuItems?.length) {
-      for (const nestedDto of dto.containerMenuItems) {
-        if (nestedDto.createDto) {
-          const newItem = await MenuItemContainerItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          containerItems.push(newItem);
-        } else {
-          throw new Error('nested MenuItemContainerItem create dto is null');
-        }
-      }
-    }
-
-    const result = manager.create(MenuItem, {
+    const entity = manager.create(MenuItem, {
       type: dto.type,
       ...(dto.categoryId && { category: { id: dto.categoryId } }),
       itemName: dto.name,
       validSizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
-      containerItems,
       variableMaxAmount: dto.variableMaxAmount,
     });
+    const savedResult = await manager.save(entity);
 
-    return result;
+    if (dto.containerMenuItems?.length) {
+      savedResult.containerMenuItems =
+        await this.containerItemComposer.composeManyNestedEntity(
+          dto.containerMenuItems,
+          manager,
+          [],
+          {
+            parentMenuItemId:
+              savedResult.id /*, parentItemSizeId: savedResult.sizes[0]*/,
+          },
+        );
+    }
+
+    return await manager.save(savedResult);
   }
 
   protected async updateEntity(
@@ -123,34 +121,16 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       const existingItems = await manager.find(MenuItemContainerItem, {
         where: { parentMenuItem: { id: entity.id } },
       });
-      const existingMap = new Map(existingItems.map((i) => [i.id, i]));
-
-      for (const nestedDto of dto.containerMenuItems) {
-        if (nestedDto.createDto) {
-          const newItem = await MenuItemContainerItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          existingMap.set(newItem.id, newItem);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `MenuItemContainerItem to update with id ${nestedDto.id} was not found`,
-            );
-          }
-          await MenuItemContainerItemUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'nested MenuItemContainerItem dto for update MenuItem has neither create or update dto (with id)',
-          );
-        }
-      }
-      entity.containerMenuItems = Array.from(existingMap.values());
+      entity.containerMenuItems =
+        await this.containerItemComposer.composeManyNestedEntity(
+          dto.containerMenuItems,
+          manager,
+          existingItems,
+          {
+            parentMenuItemId: entity.id /*, parentItemSizeId: entity.sizes[0]*/,
+          },
+        );
+      await manager.save(entity);
     }
   }
 

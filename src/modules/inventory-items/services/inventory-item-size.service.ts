@@ -11,8 +11,7 @@ import {
   InventoryItemSize,
   InventoryItemSizeEntity,
 } from '../entities/inventory-item-size.entity';
-import { InventoryItemSizeCreateInTransaction } from '../utils/transactions/inventory-item-size.create.transaction';
-import { InventoryItemSizeUpdateInTransaction } from '../utils/transactions/inventory-item-size.update.transaction';
+import { InventoryItemSizeComposer } from '../utils/composers/inventory-item-size.composer';
 import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
@@ -29,6 +28,8 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
 
     @Inject(forwardRef(() => InventoryItemSizeValidator))
     validator: InventoryItemSizeValidator,
+
+    private readonly itemSizeComposer: InventoryItemSizeComposer,
   ) {
     super(
       reop,
@@ -44,8 +45,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
     dto: CreateInventoryItemSizeDto,
     manager: EntityManager,
   ): Promise<InventoryItemSize> {
-    const result = await InventoryItemSizeCreateInTransaction(dto, manager);
-    return result;
+    return await manager.save(
+      await this.itemSizeComposer.composeCreate(dto, manager),
+    );
   }
 
   protected async updateEntity(
@@ -53,7 +55,9 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
     manager: EntityManager,
     entity: InventoryItemSize,
   ): Promise<void> {
-    await InventoryItemSizeUpdateInTransaction(dto, manager, entity);
+    await manager.save(
+      await this.itemSizeComposer.composeUpdate(dto, manager, entity),
+    );
   }
 
   async findSizesByItemName(

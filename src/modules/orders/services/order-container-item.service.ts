@@ -11,8 +11,7 @@ import {
   OrderContainerItem,
   OrderContainerItemEntity,
 } from '../entities/order-container-item.entity';
-import { OrderContainerItemCreateInTransaction } from '../utils/transactions/order-container-item.create.transaction';
-import { OrderContainerItemUpdateInTransaction } from '../utils/transactions/order-container-item.update.transaction';
+import { OrderContainerItemComposer } from '../utils/composers/order-container-item.composer';
 import { OrderContainerItemValidator } from '../validators/order-container-item.validator';
 
 @Injectable()
@@ -27,6 +26,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderContainerItemValidator,
+    private readonly containerItemComposer: OrderContainerItemComposer,
   ) {
     super(
       repo,
@@ -42,7 +42,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
     dto: CreateOrderContainerItemDto,
     manager: EntityManager,
   ): Promise<OrderContainerItem> {
-    return await OrderContainerItemCreateInTransaction(dto, manager);
+    return await this.containerItemComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -50,7 +50,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
     manager: EntityManager,
     entity: OrderContainerItem,
   ): Promise<void> {
-    await OrderContainerItemUpdateInTransaction(dto, manager, entity);
+    await this.containerItemComposer.composeUpdate(dto, manager, entity);
   }
 
   protected applySortBy(

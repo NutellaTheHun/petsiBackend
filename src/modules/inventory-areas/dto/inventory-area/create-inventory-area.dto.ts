@@ -3,7 +3,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateInventoryAreaDto {
   @ApiProperty({
-    description: 'Name of the InventoryArea.',
+    description: 'Name of the inventory area.',
     example: 'Dry Storage',
   })
   @IsString()

@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
-import { NestedUpdate } from '../../../../common/base/nested-update.base';
+import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 
-export class NestedUpdateInventoryItemSizeDto extends NestedUpdate{
+export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
   @ApiPropertyOptional({
     description: 'Id of InventoryItemPackage entity.',
     example: 2,

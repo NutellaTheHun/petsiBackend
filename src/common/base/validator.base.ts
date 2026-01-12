@@ -6,8 +6,12 @@ import { ValidatorHelper } from '../validation/validatator-helper';
 import { ValidationErrorNode } from '../validation/validation-error';
 import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
 import { EntityBase } from './entity.base';
+import { NestedCreateDto } from './nested-create-dto.base';
+import { NestedUpdateDto } from './nested-update-dto.base';
 
-export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
+export abstract class ValidatorBase<
+  T extends EntityBase<any, any, any, any, any>,
+> {
   protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto']>;
   private exceptionHandler: ValidationExceptionHandler;
 
@@ -123,24 +127,22 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
    */
   public async validateNestedNode(
     field: string,
-    dto: T['__NDto'],
+    dto: unknown,
   ): Promise<ValidationErrorNode | null> {
     const result = new ValidationErrorNode(field);
 
-    if (dto?.createId && dto.createDto) {
+    if (this.isNestedCreateDto(dto)) {
       const valErrs = await this.doValidateCreateNode(dto, dto.createId);
       if (valErrs) {
         result.addChildren(valErrs);
       }
-    } else if (dto?.id && dto.updateDto) {
+    } else if (this.isNestedUpdateDto(dto)) {
       const child = await this.doValidateUpdateNode(dto, dto.id);
       if (child) {
         result.addChildren(child);
       }
     } else {
-      throw new error(
-        'validate nested node has neither create id or database id.',
-      );
+      throw new error('validateNestedNode received invalid nested DTO');
     }
 
     return result.isEmpty() ? null : result;
@@ -148,26 +150,44 @@ export abstract class ValidatorBase<T extends EntityBase<any, any, any, any>> {
 
   public async validateManyNestedNode(
     field: string,
-    dtos: T['__NDto'][],
+    dtos: unknown[],
   ): Promise<ValidationErrorNode | null> {
     const result = new ValidationErrorNode(field);
 
     for (const dto of dtos) {
-      if (dto?.createId && dto.createDto) {
+      if (this.isNestedCreateDto(dto)) {
         const child = await this.doValidateCreateNode(dto, dto.createId);
         if (child) {
           result.addChildren(child);
         }
-      } else if (dto?.id && dto.updateDto) {
+      } else if (this.isNestedUpdateDto(dto)) {
         const child = await this.doValidateUpdateNode(dto, dto.id);
         if (child) {
           result.addChildren(child);
         }
       } else {
-        throw new error('validate nested node has neither create id or id.');
+        throw new error('validateNestedNode received invalid nested DTO');
       }
     }
 
     return result.isEmpty() ? null : result;
+  }
+
+  private isNestedCreateDto(dto: unknown): dto is NestedCreateDto {
+    return (
+      typeof dto === 'object' &&
+      dto !== null &&
+      'createId' in dto &&
+      typeof (dto as any).createId === 'string'
+    );
+  }
+
+  private isNestedUpdateDto(dto: unknown): dto is NestedUpdateDto {
+    return (
+      typeof dto === 'object' &&
+      dto !== null &&
+      'id' in dto &&
+      typeof (dto as any).id === 'number'
+    );
   }
 }

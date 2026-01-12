@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { NestedCreate } from '../../../../common/base/nested-create.base';
+import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItem } from '../../../menu-items/menu-items.module';
 
-export class NestedCreateTemplateMenuItemDto extends NestedCreate {
+export class NestedCreateTemplateMenuItemDto extends NestedCreateDto {
   @ApiProperty({
     description:
       'Name to be used on the baking list representing the referenced MenuItem.',

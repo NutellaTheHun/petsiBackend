@@ -1,5 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items.module';
@@ -33,14 +33,14 @@ export class CreateMenuItemContainerItemDto {
   @IsNotEmpty()
   readonly quantity: number;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description:
       'Id of a MenuItem entity, the parent container to the child MenuItem component. Is required if sending DTO to menu-item-container-item endpoint. Is not required if sending DTO as a nested dto of a create menu-item request.',
     example: 1,
   })
   @IsNumber()
   @IsPositive()
-  @IsOptional()
+  @IsNotEmpty()
   readonly parentMenuItemId: EntityId<MenuItem>;
 
   @ApiProperty({
@@ -49,6 +49,6 @@ export class CreateMenuItemContainerItemDto {
   })
   @IsNumber()
   @IsPositive()
-  @IsOptional()
+  @IsNotEmpty()
   readonly parentItemSizeId: EntityId<MenuItemSize>;
 }

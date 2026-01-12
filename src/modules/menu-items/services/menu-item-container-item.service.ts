@@ -11,8 +11,7 @@ import {
   MenuItemContainerItem,
   MenuItemContainerItemEntity,
 } from '../entities/menu-item-container-item.entity';
-import { MenuItemContainerItemCreateInTransaction } from '../utils/transactions/menu-item-container-item.create.transaction';
-import { MenuItemContainerItemUpdateInTransaction } from '../utils/transactions/menu-item-container-item.update.transaction';
+import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
 import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
@@ -27,6 +26,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemContainerItemValidator,
+    private readonly containerItemComposer: MenuItemContainerItemComposer,
   ) {
     super(
       repo,
@@ -42,8 +42,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
     dto: CreateMenuItemContainerItemDto,
     manager: EntityManager,
   ): Promise<MenuItemContainerItem> {
-    const result = await MenuItemContainerItemCreateInTransaction(dto, manager);
-    return result;
+    return await this.containerItemComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -51,7 +50,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
     manager: EntityManager,
     entity: MenuItemContainerItem,
   ): Promise<void> {
-    await MenuItemContainerItemUpdateInTransaction(dto, manager, entity);
+    await this.containerItemComposer.composeUpdate(dto, manager, entity);
   }
 
   protected applySortBy(

@@ -46,13 +46,13 @@ export class CreateRecipeIngredientDto {
   @IsNotEmpty()
   readonly quantityUnitTypeId: EntityId<UnitOfMeasure>;
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description:
       'Id of the Recipe entity that is the parent. Is required if sending DTO to recipe-ingredient endpoint. Is not required if sending DTO as a nested dto of a create recipe request.',
     example: 1,
   })
   @IsNumber()
   @IsPositive()
-  @IsOptional()
+  @IsNotEmpty()
   readonly parentRecipeId: EntityId<Recipe>;
 }

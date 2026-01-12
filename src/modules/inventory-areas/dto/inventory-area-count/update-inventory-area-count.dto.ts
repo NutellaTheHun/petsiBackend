@@ -32,6 +32,12 @@ export class UpdateInventoryAreaCountDto {
         amount: 5,
         countedItemSizeId: 6,
       },
+      {
+        createId: 'c4798',
+        countedInventoryItemId: 7,
+        amount: 8,
+        countedItemSizeId: 9,
+      },
     ],
     required: false,
   })

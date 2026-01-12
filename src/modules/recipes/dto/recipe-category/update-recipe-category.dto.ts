@@ -1,6 +1,7 @@
 import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
-import { NestedRecipeSubCategoryDto } from '../recipe-sub-category/nested-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../recipe-sub-category/nested-update-recipe-sub-category.dto';
 
 export class UpdateRecipeCategoryDto {
   @ApiPropertyOptional({
@@ -16,8 +17,8 @@ export class UpdateRecipeCategoryDto {
       'Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent RecipeCategory with child RecipeSubCategory entities.',
     type: 'array',
     oneOf: [
-      { $ref: getSchemaPath(NestedRecipeSubCategoryDto) },
-      { $ref: getSchemaPath(NestedRecipeSubCategoryDto) },
+      { $ref: getSchemaPath(NestedCreateRecipeSubCategoryDto) },
+      { $ref: getSchemaPath(NestedUpdateRecipeSubCategoryDto) },
     ],
     example: [
       {
@@ -33,7 +34,7 @@ export class UpdateRecipeCategoryDto {
   @IsOptional()
   @IsArray()
   readonly subCategories?: (
-    | NestedRecipeSubCategoryDto
-    | NestedRecipeSubCategoryDto
+    | NestedCreateRecipeSubCategoryDto
+    | NestedUpdateRecipeSubCategoryDto
   )[];
 }

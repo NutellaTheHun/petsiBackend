@@ -14,7 +14,8 @@ import { orderExample } from '../../../common/swagger/examples/orders/order.exam
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
-import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
+import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderContainerItem } from './order-container-item.entity';
 import { Order } from './order.entity';
@@ -23,7 +24,8 @@ export type OrderMenuItemEntity = EntityBase<
   OrderMenuItem,
   CreateOrderMenuItemDto,
   UpdateOrderMenuItemDto,
-  NestedOrderMenuItemDto
+  NestedCreateOrderMenuItemDto,
+  NestedUpdateOrderMenuItemDto
 >;
 
 /**

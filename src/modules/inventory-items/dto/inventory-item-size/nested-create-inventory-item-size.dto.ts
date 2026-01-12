@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
-import { NestedCreate } from '../../../../common/base/nested-create.base';
+import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { EntityId } from '../../../../common/types';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 
-export class NestedCreateInventoryItemSizeDto extends NestedCreate{
+export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
   @ApiProperty({
     description: 'Id of InventoryItemPackage entity.',
     example: 3,

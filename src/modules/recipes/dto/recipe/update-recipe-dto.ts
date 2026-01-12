@@ -128,7 +128,6 @@ export class UpdateRecipeDto {
     ],
     example: [
       {
-        mode: 'update',
         id: 1,
         ingredientInventoryItemId: 2,
         quantity: 3,

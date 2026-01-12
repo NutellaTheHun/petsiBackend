@@ -14,8 +14,7 @@ import {
   InventoryItem,
   InventoryItemEntity,
 } from '../entities/inventory-item.entity';
-import { InventoryItemSizeCreateInTransaction } from '../utils/transactions/inventory-item-size.create.transaction';
-import { InventoryItemSizeUpdateInTransaction } from '../utils/transactions/inventory-item-size.update.transaction';
+import { InventoryItemSizeComposer } from '../utils/composers/inventory-item-size.composer';
 import { InventoryItemValidator } from '../validators/inventory-item.validator';
 
 @Injectable()
@@ -32,6 +31,8 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
 
     @Inject(forwardRef(() => InventoryItemValidator))
     validator: InventoryItemValidator,
+
+    private readonly itemSizeComposer: InventoryItemSizeComposer,
   ) {
     super(
       repo,
@@ -47,35 +48,26 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     dto: CreateInventoryItemDto,
     manager: EntityManager,
   ): Promise<InventoryItem> {
-    let itemSizes: InventoryItemSize[] = [];
-    if (dto.sizes) {
-      for (const nestedDto of dto.sizes) {
-        if (nestedDto.createDto) {
-          const newSize = await InventoryItemSizeCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          itemSizes.push(newSize);
-        } else {
-          throw new Error(
-            "InventoryItemSize NestedDto for InventoryItem create request doesn't have a createDto",
-          );
-        }
-      }
-    }
     const result = manager.create(InventoryItem, {
-      itemName: dto.name,
+      name: dto.name,
 
       ...(dto.categoryId && {
         category: { id: dto.categoryId },
       }),
 
       ...(dto.vendorId && { vendor: { id: dto.vendorId } }),
-
-      itemSizes: itemSizes,
     });
 
-    return result;
+    if (dto.sizes?.length) {
+      result.sizes = await this.itemSizeComposer.composeManyNestedEntity(
+        dto.sizes,
+        manager,
+        [],
+        { inventoryItemId: result.id },
+      );
+    }
+
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -101,37 +93,18 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       entity.vendor = newVendor;
     }
 
-    if (dto.sizes) {
+    if (dto.sizes?.length) {
       const existingSizes = await manager.find(InventoryItemSize, {
         where: { inventoryItem: { id: entity.id } },
       });
-      const existingMap = new Map(existingSizes.map((i) => [i.id, i]));
-
-      for (const nestedDto of dto.sizes) {
-        if (nestedDto.createDto) {
-          const newSize = await InventoryItemSizeCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-
-          existingMap.set(newSize.id, newSize);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `InventoryItemSize with id ${nestedDto.id} not found`,
-            );
-          }
-
-          await InventoryItemSizeUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        }
-      }
-      entity.sizes = Array.from(existingMap.values());
+      entity.sizes = await this.itemSizeComposer.composeManyNestedEntity(
+        dto.sizes,
+        manager,
+        existingSizes,
+      );
     }
+
+    await manager.save(entity);
   }
 
   async findOneByName(

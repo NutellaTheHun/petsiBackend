@@ -1,12 +1,12 @@
 import { NotFoundException } from '@nestjs/common';
 import {
-  DataSource,
-  EntityManager,
-  FindOptionsWhere,
-  In,
-  QueryBuilder,
-  Repository,
-  SelectQueryBuilder,
+    DataSource,
+    EntityManager,
+    FindOptionsWhere,
+    In,
+    QueryBuilder,
+    Repository,
+    SelectQueryBuilder,
 } from 'typeorm';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
@@ -18,7 +18,7 @@ import { EntityBase } from './entity.base';
 import { ValidatorBase } from './validator.base';
 
 export abstract class ServiceBase<
-  TEntity extends EntityBase<any, any, any, any>,
+  TEntity extends EntityBase<any, any, any, any, any>,
 > {
   private databaseExceptionHandler: DataBaseExceptionHandler;
   private readonly dataSource: DataSource;
@@ -52,13 +52,14 @@ export abstract class ServiceBase<
 
     // create entity
     //const entity = await this.builder.buildCreateDto(createDto);
-    let newEntityId;
+    //let newEntityId;
     await this.dataSource.transaction(async (manager) => {
-      const entity = await this.createEntity(createDto, manager);
+      //const entity = await this.createEntity(createDto, manager);
       try {
+        return await this.createEntity(createDto, manager);
         // save in DB
-        const saved = await manager.save(entity);
-        newEntityId = saved.id;
+        //const saved = await manager.save(entity);
+        //newEntityId = entity.id;
       } catch (err) {
         throw this.databaseExceptionHandler.handle(
           err,
@@ -68,8 +69,9 @@ export abstract class ServiceBase<
         );
       }
     });
+    throw new Error('entity creation failed');
 
-    const resultEntity = await this.entityRepo.findOne({
+    /*const resultEntity = await this.entityRepo.findOne({
       where: { id: newEntityId },
     });
 
@@ -77,7 +79,7 @@ export abstract class ServiceBase<
       resultEntity.password = undefined;
     }
 
-    return resultEntity;
+    return resultEntity;*/
   }
 
   /**

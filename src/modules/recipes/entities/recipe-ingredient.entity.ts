@@ -7,7 +7,8 @@ import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-m
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { Recipe } from './recipe.entity';
 
@@ -15,7 +16,8 @@ export type RecipeIngredientEntity = EntityBase<
   RecipeIngredient,
   CreateRecipeIngredientDto,
   UpdateRecipeIngredientDto,
-  NestedRecipeIngredientDto
+  NestedCreateRecipeIngredientDto,
+  NestedUpdateRecipeIngredientDto
 >;
 
 /**

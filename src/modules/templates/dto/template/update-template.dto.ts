@@ -6,7 +6,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { NestedTemplateMenuItemDto } from '../template-menu-item/nested-template-menu-item.dto';
+import { NestedCreateTemplateMenuItemDto } from '../template-menu-item/nested-create-template-menu-item.dto';
+import { NestedUpdateTemplateMenuItemDto } from '../template-menu-item/nested-update-template-menu-item.dto';
 
 export class UpdateTemplateDto {
   @ApiPropertyOptional({
@@ -30,8 +31,8 @@ export class UpdateTemplateDto {
     description: 'TODO',
     type: 'array',
     oneOf: [
-      { $ref: getSchemaPath(NestedTemplateMenuItemDto) },
-      { $ref: getSchemaPath(NestedTemplateMenuItemDto) },
+      { $ref: getSchemaPath(NestedCreateTemplateMenuItemDto) },
+      { $ref: getSchemaPath(NestedUpdateTemplateMenuItemDto) },
     ],
     example: [
       {
@@ -52,7 +53,7 @@ export class UpdateTemplateDto {
   @IsArray()
   @ValidateNested({ each: true })
   readonly templateMenuItems?: (
-    | NestedTemplateMenuItemDto
-    | NestedTemplateMenuItemDto
+    | NestedCreateTemplateMenuItemDto
+    | NestedUpdateTemplateMenuItemDto
   )[];
 }

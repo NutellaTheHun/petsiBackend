@@ -65,13 +65,13 @@ export class CreateOrderMenuItemDto {
   @IsOptional()
   readonly containerOrderMenuItems?: NestedCreateOrderContainerItemDto[];
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description:
       'Id of Order entity the OrderMenuItem belongs to. Is required if sending DTO to order-menu-item endpoint. Is not required if sending DTO as a nested dto of a create order request.',
     example: 1,
   })
   @IsNumber()
-  @IsOptional()
+  @IsNotEmpty()
   @IsPositive()
   readonly parentOrderId: EntityId<Order>;
 }

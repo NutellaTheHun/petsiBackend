@@ -1,11 +1,11 @@
 import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import {
-    IsArray,
-    IsNumber,
-    IsOptional,
-    IsPositive,
-    IsString,
-    ValidateNested,
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  ValidateNested,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
@@ -43,34 +43,27 @@ export class UpdateInventoryItemDto {
   readonly vendorId?: EntityId<InventoryItemVendor>;
 
   @ApiPropertyOptional({
-    description:
-      'Mixed array of CreateInventoryItemSizeDtos and NestedUpdateInventoryItemSizeDtos.',
-    //type: [NestedInventoryItemSizeDto],
+    description: 'TODO',
+    type: 'array',
     oneOf: [
-        { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto)},
-        { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto)},
+      { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto) },
+      { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto) },
     ],
     example: [
       {
-        mode: 'update',
         id: 1,
-        updateDto: {
-          measureTypeId: 2,
-          measureAmount: 3,
-          packageId: 4,
-          cost: 5.99,
-        },
+        measureTypeId: 2,
+        measureAmount: 3,
+        packageId: 4,
+        cost: 5.99,
       },
       {
-        mode: 'create',
         createId: 'c6',
-        createDto: {
-          inventoryItemId: 7,
-          measureTypeId: 8,
-          measureAmount: 9,
-          packageId: 10,
-          cost: 11.99,
-        },
+        inventoryItemId: 7,
+        measureTypeId: 8,
+        measureAmount: 9,
+        packageId: 10,
+        cost: 11.99,
       },
     ],
     nullable: true,
@@ -78,5 +71,8 @@ export class UpdateInventoryItemDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly sizes?: (NestedCreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto)[];
+  readonly sizes?: (
+    | NestedCreateInventoryItemSizeDto
+    | NestedUpdateInventoryItemSizeDto
+  )[];
 }

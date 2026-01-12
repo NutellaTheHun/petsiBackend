@@ -10,7 +10,8 @@ import { EntityBase } from '../../../common/base/entity.base';
 import { menuItemSizeExample } from '../../../common/swagger/examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
+import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemSize } from './menu-item-size.entity';
 import { MenuItem } from './menu-item.entity';
@@ -19,7 +20,8 @@ export type MenuItemContainerItemEntity = EntityBase<
   MenuItemContainerItem,
   CreateMenuItemContainerItemDto,
   UpdateMenuItemContainerItemDto,
-  NestedMenuItemContainerItemDto
+  NestedCreateMenuItemContainerItemDto,
+  NestedUpdateMenuItemContainerItemDto
 >;
 
 /**

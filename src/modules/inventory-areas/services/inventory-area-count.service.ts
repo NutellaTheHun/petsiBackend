@@ -1,4 +1,4 @@
-import { forwardRef, Inject } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Between,
@@ -18,10 +18,10 @@ import {
 } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { InventoryAreaItemCreateInTransaction } from '../utils/transactions/inventory-area-item.create.transaction';
-import { InventoryAreaItemUpdateInTransaction } from '../utils/transactions/inventory-area-item.update.transaction';
+import { InventoryAreaItemComposer } from '../utils/composers/inventory-area-item.composer';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
+@Injectable()
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
@@ -34,6 +34,8 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     requestContextService: RequestContextService,
     @Inject(forwardRef(() => InventoryAreaCountValidator))
     validator: InventoryAreaCountValidator,
+
+    private readonly areaItemResolver: InventoryAreaItemComposer,
   ) {
     super(
       repo,
@@ -49,29 +51,23 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     dto: CreateInventoryAreaCountDto,
     manager: EntityManager,
   ): Promise<InventoryAreaCount> {
-    let countedItems: InventoryAreaItem[] = [];
-    if (dto.countedInventoryItems) {
-      for (const itemDto of dto.countedInventoryItems) {
-        if (itemDto.createDto) {
-          const item = await InventoryAreaItemCreateInTransaction(
-            itemDto.createDto,
-            manager,
-          );
-          countedItems.push(item);
-        } else {
-          throw new Error(
-            'Create InventoryAreaCount: nested InventoryAreaItem DTO missing createDTO',
-          );
-        }
-      }
+    const entity = manager.create(InventoryAreaCount, {
+      inventoryArea: { id: dto.inventoryAreaId },
+    });
+    const savedEntity = await manager.save(entity);
+
+    if (dto.countedInventoryItems?.length) {
+      savedEntity.countedInventoryItems =
+        await this.areaItemResolver.composeManyNestedEntity(
+          dto.countedInventoryItems,
+          manager,
+          [],
+          { parentInventoryCountId: savedEntity.id },
+        );
+      await manager.save(savedEntity);
     }
 
-    const result = manager.create(InventoryAreaCount, {
-      inventoryArea: { id: dto.inventoryAreaId },
-      countedItems,
-    });
-
-    return result;
+    return savedEntity;
   }
 
   protected async updateEntity(
@@ -85,40 +81,20 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       });
     }
 
-    if (dto.countedInventoryItems) {
+    if (dto.countedInventoryItems?.length) {
       const existingItems = await manager.find(InventoryAreaItem, {
         where: { parentInventoryCount: { id: entity.id } },
-        relations: ['countedItemSize'],
       });
-      const existingMap = new Map(existingItems.map((i) => [i.id, i]));
 
-      for (const nested of dto.countedInventoryItems) {
-        if (nested.createDto) {
-          const newItem = await InventoryAreaItemCreateInTransaction(
-            nested.createDto,
-            manager,
-          );
-          existingMap.set(newItem.id, newItem);
-        } else if (nested.id && nested.updateDto) {
-          const toUpdate = existingMap.get(nested.id);
-          if (!toUpdate) {
-            throw new Error(
-              `Update inventoryAreaCount: areaItem with id ${nested.id} not found in existing items`,
-            );
-          }
-          await InventoryAreaItemUpdateInTransaction(
-            nested.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'Update inventoryAreaCount: nested dto doesnt have a create DTO or a id and update DTO combination',
-          );
-        }
-      }
-      entity.countedInventoryItems = Array.from(existingMap.values());
+      entity.countedInventoryItems =
+        await this.areaItemResolver.composeManyNestedEntity(
+          dto.countedInventoryItems,
+          manager,
+          existingItems,
+        );
     }
+
+    await manager.save(entity);
   }
 
   async findByAreaName(

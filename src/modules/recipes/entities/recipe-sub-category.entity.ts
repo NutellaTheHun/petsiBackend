@@ -11,7 +11,8 @@ import { EntityBase } from '../../../common/base/entity.base';
 import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
 import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from './recipe-category.entity';
 import { Recipe } from './recipe.entity';
@@ -20,7 +21,8 @@ export type RecipeSubCategoryEntity = EntityBase<
   RecipeSubCategory,
   CreateRecipeSubCategoryDto,
   UpdateRecipeSubCategoryDto,
-  NestedRecipeSubCategoryDto
+  NestedCreateRecipeSubCategoryDto,
+  NestedUpdateRecipeSubCategoryDto
 >;
 
 /**

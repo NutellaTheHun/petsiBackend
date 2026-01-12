@@ -39,9 +39,9 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     manager: EntityManager,
   ): Promise<InventoryArea> {
     const result = manager.create(InventoryArea, {
-      areaName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: CreateInventoryAreaDto,
@@ -51,6 +51,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

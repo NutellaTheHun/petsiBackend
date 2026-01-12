@@ -1,12 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
-import { NestedCreate } from '../../../../common/base/nested-create.base';
+import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { EntityId } from '../../../../common/types';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { Recipe } from '../../entities/recipe.entity';
 
-export class NestedCreateRecipeIngredientDto extends NestedCreate {
+export class NestedCreateRecipeIngredientDto extends NestedCreateDto {
   @ApiPropertyOptional({
     description:
       'Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.',

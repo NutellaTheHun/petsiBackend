@@ -6,13 +6,13 @@ import {
   IsOptional,
   IsPositive,
 } from 'class-validator';
-import { NestedCreate } from '../../../../common/base/nested-create.base';
+import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/menu-items.module';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 
-export class NestedCreateOrderMenuItemDto extends NestedCreate {
+export class NestedCreateOrderMenuItemDto extends NestedCreateDto {
   @ApiProperty({
     description: 'Id of MenuItem entity being ordered.',
     example: 2,

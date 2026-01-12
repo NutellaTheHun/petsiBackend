@@ -1,13 +1,16 @@
-import { NestedDtoBase } from './nested-dto.base';
+import { NestedCreateDto } from './nested-create-dto.base';
+import { NestedUpdateDto } from './nested-update-dto.base';
 
 export abstract class EntityBase<
   TEntity,
   CDto,
   UDto,
-  NDto extends NestedDtoBase<CDto, UDto> = never,
+  nCDto extends NestedCreateDto = NestedCreateDto,
+  nUDto extends NestedUpdateDto = NestedUpdateDto,
 > {
   declare __Entity: TEntity;
   declare __CDto: CDto;
   declare __UDto: UDto;
-  declare __NDto: NDto;
+  declare __NcDto: nCDto;
+  declare __NuDto: nUDto;
 }

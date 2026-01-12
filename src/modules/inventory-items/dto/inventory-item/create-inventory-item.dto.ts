@@ -1,11 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
-    IsArray,
-    IsNotEmpty,
-    IsNumber,
-    IsOptional,
-    IsPositive,
-    IsString,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryItemCategory } from '../../entities/inventory-item-category.entity';
@@ -47,14 +47,11 @@ export class CreateInventoryItemDto {
     type: [NestedCreateInventoryItemSizeDto],
     example: [
       {
-        mode: 'create',
         createId: 'c1',
-        createDto: {
-          measureTypeId: 1,
-          measureAmount: 2,
-          packageId: 3,
-          cost: 4.99,
-        },
+        measureTypeId: 1,
+        measureAmount: 2,
+        packageId: 3,
+        cost: 4.99,
       },
     ],
   })

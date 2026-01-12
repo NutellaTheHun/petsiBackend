@@ -16,49 +16,52 @@ import { InventoryArea } from './entities/inventory-area.entity';
 import { InventoryAreaCountService } from './services/inventory-area-count.service';
 import { InventoryAreaItemService } from './services/inventory-area-item.service';
 import { InventoryAreaService } from './services/inventory-area.service';
+import { InventoryAreaItemComposer } from './utils/composers/inventory-area-item.composer';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 import { InventoryAreaCountValidator } from './validators/inventory-area-count.validator';
 import { InventoryAreaItemValidator } from './validators/inventory-area-item.validator';
 import { InventoryAreaValidator } from './validators/inventory-area.validator';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            InventoryArea,
-            InventoryAreaCount,
-            InventoryAreaItem
-        ]),
-        InventoryItemsModule,
-        CacheModule.register(),
-        AppLoggingModule,
-        RequestContextModule,
-    ],
-    controllers: [
-        InventoryAreaController,
-        InventoryAreaCountController,
-        InventoryAreaItemController,
-    ],
-    providers: [
-        InventoryAreaService,
-        InventoryAreaCountService,
-        InventoryAreaItemService,
+  imports: [
+    TypeOrmModule.forFeature([
+      InventoryArea,
+      InventoryAreaCount,
+      InventoryAreaItem,
+    ]),
+    InventoryItemsModule,
+    CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
+  ],
+  controllers: [
+    InventoryAreaController,
+    InventoryAreaCountController,
+    InventoryAreaItemController,
+  ],
+  providers: [
+    InventoryAreaService,
+    InventoryAreaCountService,
+    InventoryAreaItemService,
 
-        InventoryAreaBuilder,
-        InventoryAreaCountBuilder,
-        InventoryAreaItemBuilder,
+    InventoryAreaBuilder,
+    InventoryAreaCountBuilder,
+    InventoryAreaItemBuilder,
 
-        InventoryAreaValidator,
-        InventoryAreaCountValidator,
-        InventoryAreaItemValidator,
+    InventoryAreaValidator,
+    InventoryAreaCountValidator,
+    InventoryAreaItemValidator,
 
-        InventoryAreaTestUtil,
-    ],
-    exports: [
-        InventoryAreaService,
-        InventoryAreaCountService,
-        InventoryAreaItemService,
+    InventoryAreaItemComposer,
 
-        InventoryAreaTestUtil,
-    ]
+    InventoryAreaTestUtil,
+  ],
+  exports: [
+    InventoryAreaService,
+    InventoryAreaCountService,
+    InventoryAreaItemService,
+
+    InventoryAreaTestUtil,
+  ],
 })
-export class InventoryAreasModule { }
+export class InventoryAreasModule {}

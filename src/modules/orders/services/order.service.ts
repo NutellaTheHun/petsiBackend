@@ -10,8 +10,7 @@ import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
-import { OrderMenuItemCreateInTransaction } from '../utils/transactions/order-menu-item.create.transaction';
-import { OrderMenuItemUpdateInTransaction } from '../utils/transactions/order-menu-item.update.transaction';
+import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { OrderValidator } from '../validators/order.validator';
 
 @Injectable()
@@ -26,6 +25,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderValidator,
+    private readonly orderMenuItemComposer: OrderMenuItemComposer,
   ) {
     super(
       repo,
@@ -41,23 +41,6 @@ export class OrderService extends ServiceBase<OrderEntity> {
     dto: CreateOrderDto,
     manager: EntityManager,
   ): Promise<Order> {
-    let orderedItems: OrderMenuItem[] = [];
-    if (dto.orderedItems) {
-      for (const nestedDto of dto.orderedItems) {
-        if (nestedDto.createDto) {
-          const newItem = await OrderMenuItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          orderedItems.push(newItem);
-        } else {
-          throw new Error(
-            'Create Order: nested OrderMenuItem has null create dto',
-          );
-        }
-      }
-    }
-
     const result = manager.create(Order, {
       orderCategory: { id: dto.categoryId },
       recipient: dto.recipient,
@@ -71,11 +54,22 @@ export class OrderService extends ServiceBase<OrderEntity> {
       email: dto.email ? dto.email : null,
       note: dto.note ? dto.note : null,
       weeklyFulfillment: dto.weeklyFulfillment ? dto.weeklyFulfillment : null,
-      orderedItems,
-
       isFrozen: dto.isFrozen ? dto.isFrozen : false,
       isWeekly: dto.isWeekly ? dto.isWeekly : false,
     });
+
+    if (dto.orderedItems.length) {
+      result.orderedItems =
+        await this.orderMenuItemComposer.composeManyNestedEntity(
+          dto.orderedItems,
+          manager,
+          [],
+          {
+            parentOrderId: result.id,
+          },
+        );
+    }
+
     return result;
   }
 
@@ -138,35 +132,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
       const existingItems = await manager.find(OrderMenuItem, {
         where: { parentOrder: { id: entity.id } },
       });
-      const existingMap = new Map(existingItems.map((i) => [i.id, i]));
-
-      for (const nestedDto of dto.orderedItems) {
-        if (nestedDto.createDto) {
-          const newItem = await OrderMenuItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          existingMap.set(newItem.id, newItem);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `Update Order: nested OrderMenuItem with id ${nestedDto.id} was not found in existing items`,
-            );
-          }
-          await OrderMenuItemUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'Update Order: nested OrderMenuItem dto has neither createDto or updateDto with id',
-          );
-        }
-      }
-      entity.orderedItems = Array.from(existingMap.values());
+      entity.orderedItems =
+        await this.orderMenuItemComposer.composeManyNestedEntity(
+          dto.orderedItems,
+          manager,
+          existingItems,
+          {
+            parentOrderId: entity.id,
+          },
+        );
     }
+
+    await manager.save(entity);
   }
 
   protected applySearch(
@@ -235,11 +212,5 @@ export class OrderService extends ServiceBase<OrderEntity> {
     } else if (sortBy === 'createdAt') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
-    /**
-          - orderCategory name \n
-      - recipient \n
-      - fulfillmentDate \n
-      - createdAt`,
-        */
   }
 }

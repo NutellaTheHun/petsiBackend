@@ -42,7 +42,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     const result = manager.create(MenuItemSize, {
       name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: UpdateMenuItemSizeDto,
@@ -52,6 +52,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

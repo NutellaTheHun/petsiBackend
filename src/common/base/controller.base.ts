@@ -24,7 +24,9 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { EntityBase } from './entity.base';
 import { ServiceBase } from './service.base';
 
-export class ControllerBase<TEntity extends EntityBase<any, any, any, any>> {
+export class ControllerBase<
+  TEntity extends EntityBase<any, any, any, any, any>,
+> {
   constructor(
     protected readonly entityService: ServiceBase<TEntity>,
     @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,

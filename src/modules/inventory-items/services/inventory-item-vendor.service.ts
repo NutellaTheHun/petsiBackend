@@ -40,9 +40,9 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     manager: EntityManager,
   ): Promise<InventoryItemVendor> {
     const result = manager.create(InventoryItemVendor, {
-      vendorName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -53,6 +53,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

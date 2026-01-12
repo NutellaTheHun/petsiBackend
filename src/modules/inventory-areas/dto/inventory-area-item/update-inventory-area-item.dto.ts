@@ -40,19 +40,20 @@ export class UpdateInventoryAreaItemDto {
   @ApiPropertyOptional({
     description:
       'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
-      oneOf:[
-        { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto)},
-        { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto)},
-      ],
-    type: Object,
+    oneOf: [
+      { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto) },
+      { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto) },
+    ],
     example: {
-        id: 5,
-        measureTypeId: 1,
-        measureAmount: 2,
-        packageId: 3,
-        cost: 4,
+      id: 5,
+      measureTypeId: 1,
+      measureAmount: 2,
+      packageId: 3,
+      cost: 4,
     },
   })
   @IsOptional()
-  readonly countedItemSize?: NestedCreateInventoryItemSizeDto | NestedUpdateInventoryItemSizeDto;
+  readonly countedItemSize?:
+    | NestedCreateInventoryItemSizeDto
+    | NestedUpdateInventoryItemSizeDto;
 }

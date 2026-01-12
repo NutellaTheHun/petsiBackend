@@ -41,9 +41,9 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     manager: EntityManager,
   ): Promise<InventoryItemCategory> {
     const result = manager.create(InventoryItemCategory, {
-      categoryName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: UpdateInventoryItemCategoryDto,
@@ -53,6 +53,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

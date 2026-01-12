@@ -43,7 +43,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
       imageUrl: dto.imageUrl,
       labelType: { id: dto.labelTypeId },
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -66,6 +66,8 @@ export class LabelService extends ServiceBase<LabelEntity> {
         id: dto.menuItemId,
       });
     }
+
+    await manager.save(entity);
   }
 
   async findByMenuItemId(

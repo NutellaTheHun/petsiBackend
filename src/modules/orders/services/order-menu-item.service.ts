@@ -11,8 +11,7 @@ import {
   OrderMenuItem,
   OrderMenuItemEntity,
 } from '../entities/order-menu-item.entity';
-import { OrderMenuItemCreateInTransaction } from '../utils/transactions/order-menu-item.create.transaction';
-import { OrderMenuItemUpdateInTransaction } from '../utils/transactions/order-menu-item.update.transaction';
+import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { OrderMenuItemValidator } from '../validators/order-menu-item.validator';
 
 @Injectable()
@@ -27,6 +26,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderMenuItemValidator,
+    private readonly menuItemComposer: OrderMenuItemComposer,
   ) {
     super(
       repo,
@@ -42,7 +42,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     dto: CreateOrderMenuItemDto,
     manager: EntityManager,
   ): Promise<OrderMenuItem> {
-    return await OrderMenuItemCreateInTransaction(dto, manager);
+    return await this.menuItemComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -50,7 +50,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     manager: EntityManager,
     entity: OrderMenuItem,
   ): Promise<void> {
-    await OrderMenuItemUpdateInTransaction(dto, manager, entity);
+    await this.menuItemComposer.composeUpdate(dto, manager, entity);
   }
 
   protected applySortBy(

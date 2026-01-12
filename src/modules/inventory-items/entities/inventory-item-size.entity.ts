@@ -13,7 +13,8 @@ import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-m
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemPackage } from './inventory-item-package.entity';
 import { InventoryItem } from './inventory-item.entity';
@@ -22,7 +23,8 @@ export type InventoryItemSizeEntity = EntityBase<
   InventoryItemSize,
   CreateInventoryItemSizeDto,
   UpdateInventoryItemSizeDto,
-  NestedInventoryItemSizeDto
+  NestedCreateInventoryItemSizeDto,
+  NestedUpdateInventoryItemSizeDto
 >;
 
 /**

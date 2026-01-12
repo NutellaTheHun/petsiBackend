@@ -1,11 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
-import { NestedUpdate } from '../../../../common/base/nested-update.base';
+import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { Template } from '../../entities/template.entity';
 
-export class NestedUpdateTemplateMenuItemDto extends NestedUpdate {
+export class NestedUpdateTemplateMenuItemDto extends NestedUpdateDto {
   @ApiPropertyOptional({
     description:
       'Name to be used on the baking list representing the referenced MenuItem.',

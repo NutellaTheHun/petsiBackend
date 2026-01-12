@@ -37,11 +37,11 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     manager: EntityManager,
   ): Promise<LabelType> {
     const result = manager.create(LabelType, {
-      labelTypeLength: dto.length,
-      labelTypeWidth: dto.width,
-      labelTypeName: dto.name,
+      length: dto.length,
+      width: dto.width,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: UpdateLabelTypeDto,
@@ -57,6 +57,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

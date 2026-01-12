@@ -41,9 +41,9 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     manager: EntityManager,
   ): Promise<MenuItemCategory> {
     const result = manager.create(MenuItemCategory, {
-      categoryName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
   protected async updateEntity(
     dto: UpdateMenuItemCategoryDto,
@@ -53,6 +53,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

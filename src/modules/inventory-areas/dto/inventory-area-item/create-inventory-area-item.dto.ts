@@ -29,7 +29,7 @@ export class CreateInventoryAreaItemDto {
 
   @ApiProperty({
     description:
-      'Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSizeDto must be populated.',
+      'Id for InventoryItemSize entity. If countedItemSizeId is null, countedItemSize must be populated.',
     example: 3,
     type: Number,
     required: false,
@@ -41,11 +41,11 @@ export class CreateInventoryAreaItemDto {
 
   @ApiProperty({
     description:
-      'Is optional, if countedItemSizeDto is null, countedItemSizeId must be populated.',
+      'Is optional, if countedItemSize is null, countedItemSizeId must be populated.',
     type: NestedCreateInventoryItemSizeDto,
     required: false,
     example: {
-      createId: 1,
+      createId: 'c1356',
       measureTypeId: 2,
       measureAmount: 3,
       packageId: 4,
@@ -56,9 +56,7 @@ export class CreateInventoryAreaItemDto {
   readonly countedItemSize?: NestedCreateInventoryItemSizeDto;
 
   @ApiProperty({
-    description:
-      'Id for InventoryAreaCount entity. Is required if sending DTO to inventory-area-item endpoint. Is not required if sending DTO as a nested dto of a create inventory-area-count request.',
-    example: 1,
+    description: 'TODO',
     type: Number,
     required: false,
   })
