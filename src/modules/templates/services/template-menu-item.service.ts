@@ -11,8 +11,7 @@ import {
   TemplateMenuItem,
   TemplateMenuItemEntity,
 } from '../entities/template-menu-item.entity';
-import { TemplateMenuItemCreateInTransaction } from '../utils/transactions/template-menu-item.create.transaction';
-import { TemplateMenuItemUpdateInTransaction } from '../utils/transactions/template-menu-item.update.transaction';
+import { TemplateMenuItemComposer } from '../utils/transactions/template-menu-item.composer';
 import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
@@ -27,6 +26,7 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: TemplateMenuItemValidator,
+    private readonly templateItemComposer: TemplateMenuItemComposer,
   ) {
     super(
       repo,
@@ -42,7 +42,7 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
     dto: CreateTemplateMenuItemDto,
     manager: EntityManager,
   ): Promise<TemplateMenuItem> {
-    return await TemplateMenuItemCreateInTransaction(dto, manager);
+    return await this.templateItemComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -50,7 +50,7 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
     manager: EntityManager,
     entity: TemplateMenuItem,
   ): Promise<void> {
-    await TemplateMenuItemUpdateInTransaction(dto, manager, entity);
+    await this.templateItemComposer.composeUpdate(dto, manager, entity);
   }
 
   protected applySortBy(

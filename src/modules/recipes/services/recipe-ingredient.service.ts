@@ -12,8 +12,7 @@ import {
   RecipeIngredient,
   RecipeIngredientEntity,
 } from '../entities/recipe-ingredient.entity';
-import { RecipeIngredientCreateInTransaction } from '../utils/transactions/recipe-ingredient.create.transaction';
-import { RecipeIngredientUpdateInTransaction } from '../utils/transactions/recipe-ingredient.update.transaction';
+import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 import { RecipeService } from './recipe.service';
 
@@ -34,6 +33,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeIngredientValidator,
+    private readonly ingredientComposer: RecipeIngredientComposer,
   ) {
     super(
       repo,
@@ -49,7 +49,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     dto: CreateRecipeIngredientDto,
     manager: EntityManager,
   ): Promise<RecipeIngredient> {
-    return await RecipeIngredientCreateInTransaction(dto, manager);
+    return await this.ingredientComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -57,7 +57,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     manager: EntityManager,
     entity: RecipeIngredient,
   ): Promise<void> {
-    await RecipeIngredientUpdateInTransaction(dto, manager, entity);
+    await this.ingredientComposer.composeUpdate(dto, manager, entity);
   }
 
   async findByRecipeName(

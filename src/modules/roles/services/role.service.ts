@@ -38,9 +38,9 @@ export class RoleService extends ServiceBase<RoleEntity> {
     manager: EntityManager,
   ): Promise<Role> {
     const result = manager.create(Role, {
-      roleName: dto.name,
+      name: dto.name,
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -51,6 +51,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

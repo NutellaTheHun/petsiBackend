@@ -13,8 +13,7 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
-import { RecipeIngredientCreateInTransaction } from '../utils/transactions/recipe-ingredient.create.transaction';
-import { RecipeIngredientUpdateInTransaction } from '../utils/transactions/recipe-ingredient.update.transaction';
+import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
 import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
@@ -29,6 +28,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeValidator,
+    private readonly ingredientComposer: RecipeIngredientComposer,
   ) {
     super(
       repo,
@@ -44,24 +44,6 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     dto: CreateRecipeDto,
     manager: EntityManager,
   ): Promise<Recipe> {
-    let ingredients: RecipeIngredient[] = [];
-    if (dto.ingredients) {
-      for (const nestedDto of dto.ingredients) {
-        if (nestedDto.createDto) {
-          const newIngred = await RecipeIngredientCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-
-          ingredients.push(newIngred);
-        } else {
-          throw new Error(
-            'Create Recipe: nested recipe ingredient dto missing create DTO',
-          );
-        }
-      }
-    }
-
     const result = manager.create(Recipe, {
       recipeName: dto.name,
 
@@ -92,9 +74,18 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       category: dto.categoryId ? { id: dto.categoryId } : null,
 
       subCategory: dto.subCategoryId ? { id: dto.subCategoryId } : null,
-
-      ingredients,
     });
+
+    if (dto.ingredients?.length) {
+      result.ingredients =
+        await this.ingredientComposer.composeManyNestedEntity(
+          dto.ingredients,
+          manager,
+          [],
+          { parentRecipeId: result.id },
+        );
+      await manager.save(result);
+    }
 
     return result;
   }
@@ -156,40 +147,21 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       });
     }
 
-    if (dto.ingredients) {
+    if (dto.ingredients?.length) {
       const existingIngreds = await manager.find(RecipeIngredient, {
         where: { parentRecipe: { id: entity.id } },
       });
-      const existingMap = new Map(existingIngreds.map((i) => [i.id, i]));
 
-      for (const nestedDto of dto.ingredients) {
-        if (nestedDto.createDto) {
-          const newIngred = await RecipeIngredientCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          existingMap.set(newIngred.id, newIngred);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `Updating Recipe: nested ingredient update with id ${nestedDto.id} not found in existing ingredients`,
-            );
-          }
-          await RecipeIngredientUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'Updating Recipe: nested RecipeIngredient dto has neither createDto of updateDto with id',
-          );
-        }
-      }
-
-      entity.ingredients = Array.from(existingMap.values());
+      entity.ingredients =
+        await this.ingredientComposer.composeManyNestedEntity(
+          dto.ingredients,
+          manager,
+          existingIngreds,
+          { parentRecipeId: entity.id },
+        );
     }
+
+    await manager.save(entity);
   }
 
   async findOneByName(

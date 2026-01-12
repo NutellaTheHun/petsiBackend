@@ -144,7 +144,8 @@ export class UpdateRecipeDto {
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  readonly ingredients?:
+  readonly ingredients?: (
     | NestedCreateRecipeIngredientDto
-    | NestedUpdateRecipeIngredientDto[];
+    | NestedUpdateRecipeIngredientDto
+  )[];
 }

@@ -42,12 +42,12 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     manager: EntityManager,
   ): Promise<UnitOfMeasureCategory> {
     const result = manager.create(UnitOfMeasureCategory, {
-      categoryName: dto.name,
+      name: dto.name,
       baseConversionUnit: dto.baseConversionUnitId
         ? { id: dto.baseConversionUnitId }
         : null,
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -64,6 +64,7 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

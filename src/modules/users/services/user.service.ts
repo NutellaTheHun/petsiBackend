@@ -46,7 +46,7 @@ export class UserService extends ServiceBase<UserEntity> {
       roles,
       password,
     });
-    return result;
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -69,15 +69,9 @@ export class UserService extends ServiceBase<UserEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
-  }
 
-  /*
-  async create(createUserDto: CreateUserDto) {
-    const user = (await super.create(createUserDto)) as User;
-    user.password = '';
-    return user;
+    await manager.save(entity);
   }
-    */
 
   async findOneByName(
     username: string,

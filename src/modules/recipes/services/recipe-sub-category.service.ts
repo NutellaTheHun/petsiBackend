@@ -11,8 +11,7 @@ import {
   RecipeSubCategory,
   RecipeSubCategoryEntity,
 } from '../entities/recipe-sub-category.entity';
-import { RecipeSubCategoryCreateInTransaction } from '../utils/transactions/recipe-sub-category.create.transaction';
-import { RecipeSubCategoryUpdateInTransaction } from '../utils/transactions/recipe-sub-category.update.transaction';
+import { RecipeSubCategoryComposer } from '../utils/composers/recipe-sub-category.composer';
 import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
@@ -27,6 +26,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeSubCategoryValidator,
+    private readonly subCategoryComposer: RecipeSubCategoryComposer,
   ) {
     super(
       repo,
@@ -42,7 +42,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     dto: CreateRecipeSubCategoryDto,
     manager: EntityManager,
   ): Promise<RecipeSubCategory> {
-    return await RecipeSubCategoryCreateInTransaction(dto, manager);
+    return await this.subCategoryComposer.composeCreate(dto, manager);
   }
 
   protected async updateEntity(
@@ -50,7 +50,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     manager: EntityManager,
     entity: RecipeSubCategory,
   ): Promise<void> {
-    await RecipeSubCategoryUpdateInTransaction(dto, manager, entity);
+    await this.subCategoryComposer.composeUpdate(dto, manager, entity);
   }
 
   async findOneByName(

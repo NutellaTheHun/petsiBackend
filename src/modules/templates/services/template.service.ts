@@ -9,8 +9,7 @@ import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template, TemplateEntity } from '../entities/template.entity';
-import { TemplateMenuItemCreateInTransaction } from '../utils/transactions/template-menu-item.create.transaction';
-import { TemplateMenuItemUpdateInTransaction } from '../utils/transactions/template-menu-item.update.transaction';
+import { TemplateMenuItemComposer } from '../utils/transactions/template-menu-item.composer';
 import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
@@ -24,6 +23,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: TemplateValidator,
+    private readonly tempalateItemComposer: TemplateMenuItemComposer,
   ) {
     super(
       repo,
@@ -39,30 +39,25 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     dto: CreateTemplateDto,
     manager: EntityManager,
   ): Promise<Template> {
-    let templateItems: TemplateMenuItem[] = [];
-    if (dto.templateMenuItems) {
-      for (const nestedDto of dto.templateMenuItems) {
-        if (nestedDto.createDto) {
-          const newTemplateItem = await TemplateMenuItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          templateItems.push(newTemplateItem);
-        } else {
-          throw new Error(
-            'Create Template: nested TemplateMenuItem dto is missing create dto',
-          );
-        }
-      }
-    }
-
-    const result = manager.create(Template, {
+    const entity = manager.create(Template, {
       templateName: dto.name,
       isPie: dto.isPie,
-      templateItems,
     });
 
-    return result;
+    const savedEntity = await manager.save(entity);
+
+    if (dto.templateMenuItems?.length) {
+      savedEntity.templateMenuItems =
+        await this.tempalateItemComposer.composeManyNestedEntity(
+          dto.templateMenuItems,
+          manager,
+          [],
+          { parentTemplateId: savedEntity.id },
+        );
+      await manager.save(savedEntity);
+    }
+
+    return savedEntity;
   }
 
   protected async updateEntity(
@@ -82,35 +77,16 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
       const existingItems = await manager.find(TemplateMenuItem, {
         where: { parentTemplate: { id: entity.id } },
       });
-      const existingMap = new Map(existingItems.map((i) => [i.id, i]));
-
-      for (const nestedDto of dto.templateMenuItems) {
-        if (nestedDto.createDto) {
-          const newTemplateItem = await TemplateMenuItemCreateInTransaction(
-            nestedDto.createDto,
-            manager,
-          );
-          existingMap.set(newTemplateItem.id, newTemplateItem);
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const toUpdate = existingMap.get(nestedDto.id);
-          if (!toUpdate) {
-            throw new Error(
-              `Update Template: templateMenuItem to update with id ${nestedDto.id} not found`,
-            );
-          }
-          await TemplateMenuItemUpdateInTransaction(
-            nestedDto.updateDto,
-            manager,
-            toUpdate,
-          );
-        } else {
-          throw new Error(
-            'Update Template: nested templateMenuItem dto has neither createDto or updateDto with ID',
-          );
-        }
-      }
-      entity.templateMenuItems = Array.from(existingMap.values());
+      entity.templateMenuItems =
+        await this.tempalateItemComposer.composeManyNestedEntity(
+          dto.templateMenuItems,
+          manager,
+          existingItems,
+          { parentTemplateId: entity.id },
+        );
     }
+
+    await manager.save(entity);
   }
 
   async findOneByName(

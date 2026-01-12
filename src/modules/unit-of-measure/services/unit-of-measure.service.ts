@@ -48,7 +48,8 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
       category: dto.categoryId ? { id: dto.categoryId } : null,
       conversionFactorToBase: dto.conversionFactorToBase,
     });
-    return result;
+
+    return await manager.save(result);
   }
 
   protected async updateEntity(
@@ -73,6 +74,8 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     if (dto.name !== undefined) {
       entity.name = dto.name;
     }
+
+    await manager.save(entity);
   }
 
   async findOneByName(
