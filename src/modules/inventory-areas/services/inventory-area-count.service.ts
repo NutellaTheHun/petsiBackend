@@ -54,6 +54,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     const entity = manager.create(InventoryAreaCount, {
       inventoryArea: { id: dto.inventoryAreaId },
     });
+
     const savedEntity = await manager.save(entity);
 
     if (dto.countedInventoryItems?.length) {
@@ -91,6 +92,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
           dto.countedInventoryItems,
           manager,
           existingItems,
+          { parentInventoryCountId: entity.id },
         );
     }
 

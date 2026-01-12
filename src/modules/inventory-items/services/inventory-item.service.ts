@@ -50,24 +50,23 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
   ): Promise<InventoryItem> {
     const result = manager.create(InventoryItem, {
       name: dto.name,
-
-      ...(dto.categoryId && {
-        category: { id: dto.categoryId },
-      }),
-
-      ...(dto.vendorId && { vendor: { id: dto.vendorId } }),
+      category: dto.categoryId ? { id: dto.categoryId } : undefined,
+      vendor: dto.vendorId ? { id: dto.vendorId } : undefined,
     });
 
+    const savedResult = await manager.save(result);
+
     if (dto.sizes?.length) {
-      result.sizes = await this.itemSizeComposer.composeManyNestedEntity(
+      savedResult.sizes = await this.itemSizeComposer.composeManyNestedEntity(
         dto.sizes,
         manager,
         [],
-        { inventoryItemId: result.id },
+        { inventoryItemId: savedResult.id },
       );
+      await manager.save(savedResult);
     }
 
-    return await manager.save(result);
+    return savedResult;
   }
 
   protected async updateEntity(
@@ -101,6 +100,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
         dto.sizes,
         manager,
         existingSizes,
+        { inventoryItemId: entity.id },
       );
     }
 

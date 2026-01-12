@@ -58,19 +58,23 @@ export class OrderService extends ServiceBase<OrderEntity> {
       isWeekly: dto.isWeekly ? dto.isWeekly : false,
     });
 
+    const savedResult = await manager.save(result);
+
     if (dto.orderedItems.length) {
-      result.orderedItems =
+      savedResult.orderedItems =
         await this.orderMenuItemComposer.composeManyNestedEntity(
           dto.orderedItems,
           manager,
           [],
           {
-            parentOrderId: result.id,
+            parentOrderId: savedResult.id,
           },
         );
+
+      await manager.save(savedResult);
     }
 
-    return result;
+    return savedResult;
   }
 
   protected async updateEntity(
@@ -78,16 +82,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
     manager: EntityManager,
     entity: Order,
   ): Promise<void> {
-    if (dto.deliveryAddress !== undefined) {
-      entity.deliveryAddress = dto.deliveryAddress;
-    }
-
-    if (dto.email !== undefined) {
-      entity.email = dto.email;
-    }
-
-    if (dto.fulfillmentContactName !== undefined) {
-      entity.fulfillmentContactName = dto.fulfillmentContactName;
+    if (dto.recipient !== undefined) {
+      entity.recipient = dto.recipient;
     }
 
     if (dto.fulfillmentDate !== undefined) {
@@ -98,6 +94,26 @@ export class OrderService extends ServiceBase<OrderEntity> {
       entity.fulfillmentType = dto.fulfillmentType;
     }
 
+    if (dto.fulfillmentContactName !== undefined) {
+      entity.fulfillmentContactName = dto.fulfillmentContactName;
+    }
+
+    if (dto.deliveryAddress !== undefined) {
+      entity.deliveryAddress = dto.deliveryAddress;
+    }
+
+    if (dto.phoneNumber !== undefined) {
+      entity.phoneNumber = dto.phoneNumber;
+    }
+
+    if (dto.email !== undefined) {
+      entity.email = dto.email;
+    }
+
+    if (dto.note !== undefined) {
+      entity.note = dto.note;
+    }
+
     if (dto.isFrozen !== undefined) {
       entity.isFrozen = dto.isFrozen;
     }
@@ -106,26 +122,14 @@ export class OrderService extends ServiceBase<OrderEntity> {
       entity.isWeekly = dto.isWeekly;
     }
 
-    if (dto.note !== undefined) {
-      entity.note = dto.note;
+    if (dto.weeklyFulfillment !== undefined) {
+      entity.weeklyFulfillment = dto.weeklyFulfillment;
     }
 
     if (dto.categoryId !== undefined) {
       entity.category = manager.create(OrderCategory, {
         id: dto.categoryId,
       });
-    }
-
-    if (dto.phoneNumber !== undefined) {
-      entity.phoneNumber = dto.phoneNumber;
-    }
-
-    if (dto.recipient !== undefined) {
-      entity.recipient = dto.recipient;
-    }
-
-    if (dto.weeklyFulfillment !== undefined) {
-      entity.weeklyFulfillment = dto.weeklyFulfillment;
     }
 
     if (dto.orderedItems) {

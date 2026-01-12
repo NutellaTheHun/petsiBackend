@@ -40,7 +40,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     manager: EntityManager,
   ): Promise<Template> {
     const entity = manager.create(Template, {
-      templateName: dto.name,
+      name: dto.name,
       isPie: dto.isPie,
     });
 

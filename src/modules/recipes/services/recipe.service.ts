@@ -45,7 +45,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     manager: EntityManager,
   ): Promise<Recipe> {
     const result = manager.create(Recipe, {
-      recipeName: dto.name,
+      name: dto.name,
 
       isIngredient: dto.isIngredient,
 
@@ -57,7 +57,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         ? dto.batchResultQuantity
         : null,
 
-      batchResultMeasurement: dto.batchResultUnitTypeId
+      batchResultUnitType: dto.batchResultUnitTypeId
         ? { id: dto.batchResultUnitTypeId }
         : null,
 
@@ -65,7 +65,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         ? dto.servingSizeQuantity
         : null,
 
-      servingSizeMeasurement: dto.servingSizeUnitTypeId
+      servingSizeUnitType: dto.servingSizeUnitTypeId
         ? { id: dto.servingSizeUnitTypeId }
         : null,
 
@@ -76,18 +76,20 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       subCategory: dto.subCategoryId ? { id: dto.subCategoryId } : null,
     });
 
+    const savedResult = await manager.save(result);
+
     if (dto.ingredients?.length) {
-      result.ingredients =
+      savedResult.ingredients =
         await this.ingredientComposer.composeManyNestedEntity(
           dto.ingredients,
           manager,
           [],
-          { parentRecipeId: result.id },
+          { parentRecipeId: savedResult.id },
         );
       await manager.save(result);
     }
 
-    return result;
+    return savedResult;
   }
 
   protected async updateEntity(

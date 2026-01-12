@@ -58,11 +58,12 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
   ): Promise<MenuItem> {
     const entity = manager.create(MenuItem, {
       type: dto.type,
-      ...(dto.categoryId && { category: { id: dto.categoryId } }),
-      itemName: dto.name,
-      validSizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
+      category: dto.categoryId ? { id: dto.categoryId } : undefined,
+      name: dto.name,
+      sizes: dto.sizeIds.map((id) => manager.create(MenuItemSize, { id })),
       variableMaxAmount: dto.variableMaxAmount,
     });
+
     const savedResult = await manager.save(entity);
 
     if (dto.containerMenuItems?.length) {
@@ -130,8 +131,8 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             parentMenuItemId: entity.id /*, parentItemSizeId: entity.sizes[0]*/,
           },
         );
-      await manager.save(entity);
     }
+    await manager.save(entity);
   }
 
   async findOneByName(

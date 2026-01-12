@@ -16,7 +16,7 @@ export class RecipeSubCategoryComposer extends ComposerBase<RecipeSubCategoryEnt
     manager: EntityManager,
   ): Promise<RecipeSubCategory> {
     const result = manager.create(RecipeSubCategory, {
-      subCategoryName: dto.name,
+      name: dto.name,
       parentCategory: { id: dto.parentCategoryId },
     });
     return result;

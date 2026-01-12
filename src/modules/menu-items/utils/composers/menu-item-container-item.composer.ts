@@ -19,7 +19,7 @@ export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContaine
     dto: CreateMenuItemContainerItemDto,
     manager: EntityManager,
   ): Promise<MenuItemContainerItem> {
-    const result = await manager.create(MenuItemContainerItem, {
+    const result = manager.create(MenuItemContainerItem, {
       parentMenuItem: { id: dto.parentMenuItemId },
       parentItemSize: { id: dto.parentItemSizeId },
       containedMenuItem: { id: dto.containedMenuItemId },
@@ -49,6 +49,7 @@ export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContaine
       entity.quantity = dto.quantity;
     }
   }
+
   protected resolveCreateDto(
     dto: NestedCreateMenuItemContainerItemDto,
     context?: ResolverContext,

@@ -31,7 +31,7 @@ export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntit
 
       quantity: dto.quantity,
 
-      quantityMeasure: { id: dto.quantityUnitTypeId },
+      quantityUnitType: { id: dto.quantityUnitTypeId },
     });
 
     return result;
