@@ -38,7 +38,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'itemName',
+      'name',
       results,
       'Item with this name already exists',
       id,
@@ -47,7 +47,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     if (dto.sizes?.length) {
       // inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
-        'itemSizes',
+        'sizes',
         dto.sizes,
       );
       if (nestedDtoErrs) {
@@ -68,7 +68,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'itemName',
+        'name',
         results,
         'Item with this name already exists',
         id,
@@ -78,7 +78,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
     if (dto.sizes?.length) {
       // nested inventoryItemSizeValidator Call
       const nestedDtoErrs = await this.itemSizeValidator.validateManyNestedNode(
-        'itemSizes',
+        'sizes',
         dto.sizes,
       );
       if (nestedDtoErrs) {

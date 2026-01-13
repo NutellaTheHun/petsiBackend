@@ -61,7 +61,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     if (exists) {
       // to specific, not a 'prop' problem but a collection, the parent entity is more the problem
       const err = new ValidationErrorNode(
-        'measureUnit', // but must reference a prop? make it a array, make FE process multi prop errors
+        'measureType', // but must reference a prop? make it a array, make FE process multi prop errors
         id,
         'Inventory item size already exists',
       );
@@ -103,7 +103,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     if (dto.measureTypeId || dto.packageId) {
       const currentSize = await this.repo.findOne({
         where: { id },
-        relations: ['inventoryItem', 'measureUnit', 'packageType'],
+        relations: ['inventoryItem', 'measureType', 'package'],
       });
       if (!currentSize) {
         throw new NotFoundException();
@@ -118,7 +118,7 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
         },
       });
       if (exists) {
-        const prop = dto.measureTypeId ? 'measureUnit' : 'packageType';
+        const prop = dto.measureTypeId ? 'measureType' : 'package';
         const err = new ValidationErrorNode(
           prop,
           id,

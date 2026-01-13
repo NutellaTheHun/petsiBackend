@@ -34,7 +34,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'packageName',
+      'name',
       results,
       'Package name already exists',
       id,
@@ -53,7 +53,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'packageName',
+        'name',
         results,
         'Package name already exists',
         id,

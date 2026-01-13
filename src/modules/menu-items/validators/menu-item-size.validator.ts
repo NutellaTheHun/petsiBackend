@@ -31,14 +31,14 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
     const results: ValidationErrorNode[] = [];
 
     // exists
-    if (await this.helper.exists(this.repo, 'name', dto.name)) {
-      const err = new ValidationErrorNode(
-        'name',
-        id,
-        'Menu item size already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Menu item size already exists.',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -50,14 +50,14 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
     const results: ValidationErrorNode[] = [];
 
     if (dto.name) {
-      if (await this.helper.exists(this.repo, 'name', dto.name)) {
-        const err = new ValidationErrorNode(
-          'name',
-          id,
-          'Menu item size already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Menu item size already exists.',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

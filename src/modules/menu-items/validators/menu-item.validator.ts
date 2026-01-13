@@ -31,15 +31,15 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // itemName exists
-    if (await this.helper.exists(this.repo, 'itemName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'itemName',
-        id,
-        'Menu item already exists.',
-      );
-      results.push(err);
-    }
+    // name must be unique
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Menu item already exists.',
+      id,
+    );
 
     if (dto.containerMenuItems?.length) {
       if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
@@ -51,10 +51,26 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
         results.push(err);
       }
 
+      // if variableMaxAmount, validate each container item quantity totals to variableMaxAmount
+      if (dto.variableMaxAmount) {
+        let sum = 0;
+        for (const containerItem of dto.containerMenuItems) {
+          sum += containerItem.quantity;
+        }
+        if (sum !== dto.variableMaxAmount) {
+          const err = new ValidationErrorNode(
+            'containerMenuItems',
+            id,
+            'container items do not total to variable max amount',
+          );
+          results.push(err);
+        }
+      }
+
       // nested validator call
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
-          'fixedContents',
+          'containerMenuItems',
           dto.containerMenuItems,
         );
       if (nestedDtoErr) {
@@ -73,14 +89,14 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
 
     // exists
     if (dto.name) {
-      if (await this.helper.exists(this.repo, 'itemName', dto.name)) {
-        const err = new ValidationErrorNode(
-          'itemName',
-          id,
-          'Menu item already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Menu item already exists.',
+        id,
+      );
     }
 
     // containerItem dtos
@@ -94,10 +110,55 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
         results.push(err);
       }
 
+      // if variableMaxAmount, validate each container item quantity totals to variableMaxAmount
+      if (dto.variableMaxAmount) {
+        // get current container items
+        const currentContainerItems = await this.repo.findOne({
+          where: { id },
+          relations: ['containerMenuItems'],
+        });
+        if (!currentContainerItems) {
+          throw new Error();
+        }
+
+        // Combine current container items with new container items
+        const itemMap = new Map<string | number, number>();
+
+        // Add current container items to itemMap
+        for (const containerItem of currentContainerItems.containerMenuItems) {
+          itemMap.set(containerItem.id, containerItem.quantity);
+        }
+
+        // Add new container items to itemMap, updating or creating as needed
+        for (const nestedDto of dto.containerMenuItems) {
+          if ('createId' in nestedDto) {
+            itemMap.set(nestedDto.createId, nestedDto.quantity);
+          } else if ('id' in dto) {
+            if (nestedDto.quantity) {
+              itemMap.set(nestedDto.id, nestedDto.quantity);
+            }
+          }
+        }
+
+        // Validate that the total quantity of container items equals the variableMaxAmount
+        let sum = 0;
+        for (const quantity of itemMap.values()) {
+          sum += quantity;
+        }
+        if (sum !== dto.variableMaxAmount) {
+          const err = new ValidationErrorNode(
+            'containerMenuItems',
+            id,
+            'container items do not total to variable max amount',
+          );
+          results.push(err);
+        }
+      }
+
       // nested validator call
       const nestedDtoErr =
         await this.menuItemContainerValidator.validateManyNestedNode(
-          'fixedContents',
+          'containerMenuItems',
           dto.containerMenuItems,
         );
       if (nestedDtoErr) {

@@ -34,7 +34,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'vendorName',
+      'name',
       results,
       'Vendor name already exists',
       id,
@@ -54,7 +54,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'vendorName',
+        'name',
         results,
         'Vendor name already exists',
         id,

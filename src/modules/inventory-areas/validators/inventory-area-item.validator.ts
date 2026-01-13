@@ -40,7 +40,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     // Counted Amount
     this.helper.enforcePositive(
       dto.amount,
-      'countedAmount',
+      'amount',
       results,
       'Amount must be greater than 0',
       id,
@@ -49,7 +49,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     // InventoryItemSize ID and InventoryItemSizeDto
     this.helper.enforceOnlyOne(
       dto,
-      'countedItemSizeDto',
+      'countedItemSize',
       'countedItemSizeId',
       results,
       'Must provide an item size or a new item size',
@@ -63,7 +63,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         dto.countedItemSizeId,
         dto.countedInventoryItemId,
         this.inventoryItemRepo,
-        'itemSizes',
+        'sizes',
         results,
         'Invalid size for inventory item',
         id,
@@ -94,7 +94,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     if (dto.amount) {
       this.helper.enforcePositive(
         dto.amount,
-        'countedAmount',
+        'amount',
         results,
         'Amount must be greater than 0',
         id,
@@ -105,7 +105,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     if (dto.countedInventoryItemId) {
       this.helper.enforceOnlyOne(
         dto,
-        'countedItemSizeDto',
+        'countedItemSize',
         'countedItemSizeId',
         results,
         'Must provide an item size or a new item size',
@@ -134,7 +134,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         dto.countedItemSizeId,
         countedItemId,
         this.inventoryItemRepo,
-        'itemSizes',
+        'sizes',
         results,
         'Invalid size for inventory item',
         id,

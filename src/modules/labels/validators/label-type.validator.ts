@@ -31,7 +31,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'labelTypeName',
+      'name',
       results,
       'Item with this name already exists',
       id,
@@ -40,7 +40,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     // length
     this.helper.enforcePositive(
       dto.length,
-      'labelTypeLength',
+      'length',
       results,
       'Must be greater than 0',
       id,
@@ -49,7 +49,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     // width
     this.helper.enforcePositive(
       dto.width,
-      'labelTypeWidth',
+      'width',
       results,
       'Must be greater than 0',
       id,
@@ -68,7 +68,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'labelTypeName',
+        'name',
         results,
         'Item with this name already exists',
         id,
@@ -78,7 +78,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     if (dto.length) {
       this.helper.enforcePositive(
         dto.length,
-        'labelTypeLength',
+        'length',
         results,
         'Must be greater than 0',
         id,
@@ -87,7 +87,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity> {
     if (dto.width) {
       this.helper.enforcePositive(
         dto.width,
-        'labelTypeWidth',
+        'width',
         results,
         'Must be greater than 0',
         id,

@@ -34,7 +34,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'categoryName',
+      'name',
       results,
       'Inventory category name already exists',
       id,
@@ -54,7 +54,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'categoryName',
+        'name',
         results,
         'Inventory category name already exists',
         id,

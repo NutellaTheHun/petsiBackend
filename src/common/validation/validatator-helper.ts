@@ -15,9 +15,12 @@ export class ValidatorHelper<
    * @param id of target entity
    * @returns nothing
    */
-  public enforceNotEmpty<Prop extends ArrayKeys<TEntity>>(
-    val: TEntity[Prop] | null | undefined,
-    prop: Prop,
+  public enforceNotEmpty<
+    DtoProp extends ArrayKeys<TDto>,
+    EntityProp extends ArrayKeys<TEntity>,
+  >(
+    val: TDto[DtoProp] | null | undefined,
+    prop: EntityProp,
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,
@@ -37,9 +40,12 @@ export class ValidatorHelper<
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  public enforcePositive<Prop extends NumericKeys<TEntity>>(
-    val: number,
-    prop: Prop,
+  public enforcePositive<
+    DtoProp extends NumericKeys<TDto>,
+    EntityProp extends keyof TEntity,
+  >(
+    val: TDto[DtoProp] | null | undefined,
+    prop: EntityProp,
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,
@@ -61,9 +67,12 @@ export class ValidatorHelper<
    * @param errArr array that resulting error is pushed to
    * @param errMsg message detailing the error
    */
-  public enforceNonNegative<Prop extends NumericKeys<TEntity>>(
-    val: number,
-    prop: Prop,
+  public enforceNonNegative<
+    DtoProp extends NumericKeys<TDto>,
+    EntityProp extends NumericKeys<TEntity>,
+  >(
+    val: TDto[DtoProp],
+    prop: EntityProp,
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,

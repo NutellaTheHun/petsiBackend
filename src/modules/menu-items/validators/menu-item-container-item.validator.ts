@@ -34,9 +34,11 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
+    let parentItem: MenuItem | null = null;
+
     const containedItem = await this.menuItemRepo.findOne({
       where: { id: dto.containedMenuItemId },
-      relations: ['validSizes'],
+      relations: ['sizes'],
     });
     if (!containedItem) {
       throw new Error();
@@ -46,30 +48,16 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     await this.helper.enforceInList(
       dto.containedItemSizeId,
       containedItem.sizes.map((x) => x.id),
+      'containedItemSize',
       results,
       'Invalid size',
       id,
     );
 
-    // contained item size must be valid to the contained item
-    /*if (
-      !this.helper.isValidSize(
-        dto.containedItemSizeId,
-        containedItem.validSizes,
-      )
-    ) {
-      const err = new ValidationErrorNode(
-        'containedItemSize',
-        id,
-        'Invalid size',
-      );
-      results.push(err);
-    }*/
-
     // Contained items must be of type single (no containers in containers)
     if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
       const err = new ValidationErrorNode(
-        'containedItem',
+        'containedMenuItem',
         id,
         'contained item must be of type single',
       );
@@ -77,107 +65,128 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     }
 
     if (dto.parentMenuItemId) {
-      const parentItem = await this.menuItemRepo.findOne({
+      parentItem = await this.menuItemRepo.findOne({
         where: { id: dto.parentMenuItemId },
-        relations: ['validSizes'],
+        relations: ['sizes'],
       });
       if (!parentItem) {
         throw new Error();
       }
       if (parentItem.type !== MENU_ITEM_TYPES.CONTAINER) {
         const err = new ValidationErrorNode(
-          'parent',
+          'parentMenuItem',
           id,
           'parent item must be of type container',
         );
         results.push(err);
       }
+    }
 
-      // validate parent item / size
-      if (dto.parentItemSizeId) {
-        if (!this.helper.isValidSize(dto.parentItemSizeId, parentItem.sizes)) {
-          const err = new ValidationErrorNode(
-            'parentItemSize',
-            id,
-            'Invalid size',
-          );
-          results.push(err);
+    // validate parent item / size
+    if (dto.parentItemSizeId) {
+      if (!parentItem) {
+        parentItem = await this.menuItemRepo.findOne({
+          where: { id: dto.parentMenuItemId },
+          relations: ['sizes'],
+        });
+        if (!parentItem) {
+          throw new Error();
         }
-        // valid contained item size to menu item
-        await this.helper.enforceInList(
-          dto.parentItemSizeId,
-          parentItem.sizes.map((x) => x.id),
-          'parentItemSize',
-          results,
-          'Invalid size',
-          id,
-        );
       }
+      await this.helper.enforceInList(
+        dto.parentItemSizeId,
+        parentItem.sizes.map((x) => x.id),
+        'parentItemSize',
+        results,
+        'Invalid size',
+        id,
+      );
     }
 
     // validate quanitity
-    if (dto.quantity <= 0) {
-      const err = new ValidationErrorNode('quantity', id, 'Invalid quanity');
-      results.push(err);
-    }
+    await this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      results,
+      'Invalid quantity',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateMenuItemContainerItemDto,
-    id?: number,
+    id: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // validate size
-    if ((dto.containedMenuItemId || dto.containedItemSizeId) && id) {
-      const currentEntity = await this.repo.findOne({
+    let currentEntity: MenuItemContainerItem | null = null;
+
+    // If updating contained item or size, get the current entity
+    if (dto.containedMenuItemId || dto.containedItemSizeId) {
+      currentEntity = await this.repo.findOne({
         where: { id },
-        relations: ['containedItem', 'containedItemSize'],
+        relations: [
+          'containedMenuItem',
+          'containedItemSize',
+          'containedItem.sizes',
+        ],
       });
       if (!currentEntity) {
         throw new Error(
           `MenuItemContainerItem validation: entity to update with id ${id} not found`,
         );
       }
+    }
 
-      const itemId =
-        dto.containedMenuItemId ?? currentEntity.containedMenuItem.id;
-      const sizeId =
-        dto.containedItemSizeId ?? currentEntity.containedItemSize.id;
-
-      const containedItem = await this.menuItemRepo.findOne({
-        where: { id: itemId },
-        relations: ['validSizes'],
-      });
-      if (!containedItem) {
-        throw new Error();
-      }
-
-      if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+    // Validate contained item type
+    if (dto.containedMenuItemId) {
+      if (currentEntity?.containedMenuItem.type !== MENU_ITEM_TYPES.SINGLE) {
         const err = new ValidationErrorNode(
-          'containedItem',
+          'containedMenuItem',
           id,
           'contained item must be of type single',
         );
         results.push(err);
       }
-
-      if (!this.helper.isValidSize(sizeId, containedItem.sizes)) {
-        const err = new ValidationErrorNode(
-          'containedItemSize',
-          id,
-          'Invalid size',
-        );
-        results.push(err);
-      }
     }
 
-    // validate quanitity
-    if (dto.quantity && dto.quantity <= 0) {
-      const err = new ValidationErrorNode('quantity', id, 'Invalid quanity');
-      results.push(err);
+    // Validate contained item size is valid to the contained menu item
+    if (dto.containedItemSizeId) {
+      let sizes = currentEntity?.containedMenuItem.sizes.map((x) => x.id) ?? [];
+
+      // Handle if updating both contained item and size
+      if (dto.containedMenuItemId) {
+        const newContainedItem = await this.menuItemRepo.findOne({
+          where: { id: dto.containedMenuItemId },
+          relations: ['sizes'],
+        });
+        if (!newContainedItem) {
+          throw new Error();
+        }
+        sizes = newContainedItem.sizes.map((x) => x.id);
+      }
+
+      await this.helper.enforceInList(
+        dto.containedItemSizeId,
+        sizes,
+        'containedItemSize',
+        results,
+        'Invalid size',
+        id,
+      );
+    }
+
+    // Validate quantity is greater than 0
+    if (dto.quantity) {
+      await this.helper.enforcePositive(
+        dto.quantity,
+        'quantity',
+        results,
+        'Invalid quantity',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

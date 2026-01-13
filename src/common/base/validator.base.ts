@@ -152,7 +152,7 @@ export abstract class ValidatorBase<
     field: string,
     dtos: unknown[],
   ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
+    const result = new ValidationErrorNode(String(field));
 
     for (const dto of dtos) {
       if (this.isNestedCreateDto(dto)) {

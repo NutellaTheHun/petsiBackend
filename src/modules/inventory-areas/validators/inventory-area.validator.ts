@@ -33,7 +33,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'areaName',
+      'name',
       results,
       'Inventory area name already exists.',
       id,
@@ -52,7 +52,7 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'areaName',
+        'name',
         results,
         'Inventory area name already exists.',
         id,

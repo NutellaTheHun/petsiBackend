@@ -33,7 +33,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
-      'categoryName',
+      'name',
       results,
       'Item with this name already exists',
       id,
@@ -52,7 +52,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
-        'categoryName',
+        'name',
         results,
         'Item with this name already exists',
         id,
