@@ -59,11 +59,12 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
 
     // CountedItemSize Reference
     if (dto.countedItemSizeId) {
-      await this.helper.enforceValidSize<InventoryItem>(
+      await this.helper.enforceValidSize(
         dto.countedItemSizeId,
         dto.countedInventoryItemId,
         this.inventoryItemRepo,
         'sizes',
+        'countedItemSize',
         results,
         'Invalid size for inventory item',
         id,
@@ -130,11 +131,12 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         countedItemId = currentItem.countedInventoryItem.id;
       }
 
-      await this.helper.enforceValidSize<InventoryItem>(
+      await this.helper.enforceValidSize(
         dto.countedItemSizeId,
         countedItemId,
         this.inventoryItemRepo,
         'sizes',
+        'countedItemSize',
         results,
         'Invalid size for inventory item',
         id,

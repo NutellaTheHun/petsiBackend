@@ -8,57 +8,59 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import {
-  OrderCategory,
-  OrderCategoryEntity,
+    OrderCategory,
+    OrderCategoryEntity,
 } from '../entities/order-category.entity';
 
 @Injectable()
 export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity> {
-  constructor(
-    @InjectRepository(OrderCategory)
-    private readonly repo: Repository<OrderCategory>,
+    constructor(
+        @InjectRepository(OrderCategory)
+        private readonly repo: Repository<OrderCategory>,
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'OrderCategory', requestContextService, logger);
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateOrderCategoryDto,
-    id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
-
-    // name exists
-    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Order category with that name already exists.',
-      );
-      results.push(err);
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'OrderCategory', requestContextService, logger);
     }
 
-    return this.checkValidateResult(results);
-  }
+    protected async doValidateCreateNode(
+        dto: CreateOrderCategoryDto,
+        id?: string,
+    ): Promise<ValidationErrorNode[] | null> {
+        const results: ValidationErrorNode[] = [];
 
-  protected async doValidateUpdateNode(
-    dto: UpdateOrderCategoryDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+        // name exists
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            results,
+            'Order category with that name already exists.',
+            id,
+        );
 
-    // name exists
-    if (dto.name) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Order category with that name already exists.',
-      );
-      results.push(err);
+        return this.checkValidateResult(results);
     }
 
-    return this.checkValidateResult(results);
-  }
+    protected async doValidateUpdateNode(
+        dto: UpdateOrderCategoryDto,
+        id?: number,
+    ): Promise<ValidationErrorNode[] | null> {
+        const results: ValidationErrorNode[] = [];
+
+        // name exists
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                results,
+                'Order category with that name already exists.',
+                id,
+            );
+        }
+
+        return this.checkValidateResult(results);
+    }
 }

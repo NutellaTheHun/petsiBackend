@@ -43,7 +43,7 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentMenuItemIdCtx?: EntityId<MenuItem>;
+  readonly parentMenuItemIdCtx: EntityId<MenuItem>;
 
   @ApiPropertyOptional({
     description:
@@ -53,5 +53,5 @@ export class UpdateOrderContainerItemDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentMenuItemSizeIdCtx?: EntityId<MenuItemSize>;
+  readonly parentMenuItemSizeIdCtx: EntityId<MenuItemSize>;
 }

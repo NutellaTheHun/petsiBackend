@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
@@ -18,14 +18,19 @@ import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContainerItemEntity> {
   constructor(
     @InjectRepository(MenuItemContainerItem)
-    private readonly repo: Repository<MenuItemContainerItem>,
+    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
-    super(repo, 'MenuItemContainerItem', requestContextService, logger);
+    super(
+      containerItemRepo,
+      'MenuItemContainerItem',
+      requestContextService,
+      logger,
+    );
   }
 
   protected async doValidateCreateNode(
@@ -34,8 +39,6 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    let parentItem: MenuItem | null = null;
-
     const containedItem = await this.menuItemRepo.findOne({
       where: { id: dto.containedMenuItemId },
       relations: ['sizes'],
@@ -43,16 +46,6 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     if (!containedItem) {
       throw new Error();
     }
-
-    // valid contained item size to menu item
-    await this.helper.enforceInList(
-      dto.containedItemSizeId,
-      containedItem.sizes.map((x) => x.id),
-      'containedItemSize',
-      results,
-      'Invalid size',
-      id,
-    );
 
     // Contained items must be of type single (no containers in containers)
     if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
@@ -64,43 +57,56 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       results.push(err);
     }
 
-    if (dto.parentMenuItemId) {
-      parentItem = await this.menuItemRepo.findOne({
-        where: { id: dto.parentMenuItemId },
-        relations: ['sizes'],
-      });
-      if (!parentItem) {
-        throw new Error();
-      }
-      if (parentItem.type !== MENU_ITEM_TYPES.CONTAINER) {
-        const err = new ValidationErrorNode(
-          'parentMenuItem',
-          id,
-          'parent item must be of type container',
-        );
-        results.push(err);
-      }
+    // valid container item / size
+    await this.helper.enforceValidSize(
+      dto.containedItemSizeId,
+      containedItem.id,
+      this.menuItemRepo,
+      'sizes',
+      'containedItemSize',
+      results,
+      'Invalid size',
+      id,
+    );
+
+    const parentItem = await this.menuItemRepo.findOne({
+      where: { id: dto.parentMenuItemId },
+      relations: ['sizes'],
+    });
+    if (!parentItem) {
+      throw new Error();
+    }
+
+    // parent item must be a container
+    if (parentItem.type !== MENU_ITEM_TYPES.CONTAINER) {
+      const err = new ValidationErrorNode(
+        'parentMenuItem',
+        id,
+        'parent item must be of type container',
+      );
+      results.push(err);
     }
 
     // validate parent item / size
-    if (dto.parentItemSizeId) {
-      if (!parentItem) {
-        parentItem = await this.menuItemRepo.findOne({
-          where: { id: dto.parentMenuItemId },
-          relations: ['sizes'],
-        });
-        if (!parentItem) {
-          throw new Error();
-        }
-      }
-      await this.helper.enforceInList(
-        dto.parentItemSizeId,
-        parentItem.sizes.map((x) => x.id),
-        'parentItemSize',
-        results,
-        'Invalid size',
+    await this.helper.enforceValidSize(
+      dto.parentItemSizeId,
+      parentItem.id,
+      this.menuItemRepo,
+      'sizes',
+      'parentItemSize',
+      results,
+      'Invalid size',
+      id,
+    );
+
+    // validate parent item is not equal to contained item
+    if (parentItem.id === containedItem.id) {
+      const err = new ValidationErrorNode(
+        'parentMenuItem',
         id,
+        'parent menu item cannot be equal to contained menu item',
       );
+      results.push(err);
     }
 
     // validate quanitity
@@ -112,6 +118,18 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       id,
     );
 
+    // if container is set to variable max amount, quantity must equal the variable max amount
+    if (parentItem.variableMaxAmount) {
+      if (dto.quantity !== parentItem.variableMaxAmount) {
+        const err = new ValidationErrorNode(
+          'quantity',
+          id,
+          'quantity must equal the variable max amount of the container',
+        );
+        results.push(err);
+      }
+    }
+
     return this.checkValidateResult(results);
   }
 
@@ -121,56 +139,34 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    let currentEntity: MenuItemContainerItem | null = null;
+    const containerEntity = await this.containerItemRepo.findOne({
+      where: { id },
+      relations: [
+        'containedMenuItem',
+        'containedItemSize',
+        'containedMenuItem.parentMenuItem',
+        'containedMenuItem.parentItemSize',
+      ],
+    });
+    if (!containerEntity) {
+      throw new Error(
+        `MenuItemContainerItem validation: entity to update with id ${id} not found`,
+      );
+    }
 
-    // If updating contained item or size, get the current entity
+    // Validate new contained item / item size combination
     if (dto.containedMenuItemId || dto.containedItemSizeId) {
-      currentEntity = await this.repo.findOne({
-        where: { id },
-        relations: [
-          'containedMenuItem',
-          'containedItemSize',
-          'containedItem.sizes',
-        ],
-      });
-      if (!currentEntity) {
-        throw new Error(
-          `MenuItemContainerItem validation: entity to update with id ${id} not found`,
-        );
-      }
-    }
+      const containedItemId =
+        dto.containedMenuItemId ?? containerEntity.containedMenuItem.id;
 
-    // Validate contained item type
-    if (dto.containedMenuItemId) {
-      if (currentEntity?.containedMenuItem.type !== MENU_ITEM_TYPES.SINGLE) {
-        const err = new ValidationErrorNode(
-          'containedMenuItem',
-          id,
-          'contained item must be of type single',
-        );
-        results.push(err);
-      }
-    }
+      const containedItemSizeId =
+        dto.containedItemSizeId ?? containerEntity.containedItemSize.id;
 
-    // Validate contained item size is valid to the contained menu item
-    if (dto.containedItemSizeId) {
-      let sizes = currentEntity?.containedMenuItem.sizes.map((x) => x.id) ?? [];
-
-      // Handle if updating both contained item and size
-      if (dto.containedMenuItemId) {
-        const newContainedItem = await this.menuItemRepo.findOne({
-          where: { id: dto.containedMenuItemId },
-          relations: ['sizes'],
-        });
-        if (!newContainedItem) {
-          throw new Error();
-        }
-        sizes = newContainedItem.sizes.map((x) => x.id);
-      }
-
-      await this.helper.enforceInList(
-        dto.containedItemSizeId,
-        sizes,
+      await this.helper.enforceValidSize(
+        containedItemSizeId,
+        containedItemId,
+        this.menuItemRepo,
+        'sizes',
         'containedItemSize',
         results,
         'Invalid size',
@@ -178,8 +174,37 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
       );
     }
 
-    // Validate quantity is greater than 0
+    if (dto.containedMenuItemId) {
+      const containedItem = await this.menuItemRepo.findOne({
+        where: { id: dto.containedMenuItemId },
+      });
+      if (!containedItem) {
+        throw new NotFoundException();
+      }
+
+      // Validate contained item type is single
+      if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+        const err = new ValidationErrorNode(
+          'containedMenuItem',
+          id,
+          'contained item must be of type single',
+        );
+        results.push(err);
+      }
+
+      // validate contained item doesnt equal parent item
+      if (containedItem.id === containerEntity.parentMenuItem.id) {
+        const err = new ValidationErrorNode(
+          'containedMenuItem',
+          id,
+          'contained item cannot be equal to parent item',
+        );
+        results.push(err);
+      }
+    }
+
     if (dto.quantity) {
+      // must be greater than 0
       await this.helper.enforcePositive(
         dto.quantity,
         'quantity',
@@ -187,6 +212,18 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
         'Invalid quantity',
         id,
       );
+
+      // if container is set to variable max amount, quantity must equal the variable max amount
+      if (containerEntity.parentMenuItem.variableMaxAmount) {
+        if (dto.quantity !== containerEntity.parentMenuItem.variableMaxAmount) {
+          const err = new ValidationErrorNode(
+            'quantity',
+            id,
+            'quantity must equal the variable max amount of the container',
+          );
+          results.push(err);
+        }
+      }
     }
 
     return this.checkValidateResult(results);

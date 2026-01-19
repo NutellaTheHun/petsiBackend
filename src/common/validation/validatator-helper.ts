@@ -125,18 +125,22 @@ export class ValidatorHelper<
    * @param sizeId Give Id that must be validated
    * @param foreignRepo repository of entity being validated, can be from a foreign entity
    * @param foreignEntitySizeArrayProp propery of entity contained the list of valid sizes, typically will be from a foreign entity
+   * @param prop property of entity being validated
    * @param errArr array that resulting error is pushed to
    * @param errMsg description of error
    * @param id id of entity (for error messaging)
    * @returns
    */
   public async enforceValidSize<
+    Entity extends ObjectLiteral,
+    Prop extends keyof Entity,
     ForeignEntity extends ObjectLiteral & { id: number },
   >(
     sizeId: number,
     foreignEntityId: number,
     foreignRepo: Repository<ForeignEntity>,
     foreignEntitySizeArrayProp: ArrayKeys<ForeignEntity>,
+    prop: Prop,
     errArr: ValidationErrorNode[],
     errMsg: string,
     id?: number | string,
@@ -157,14 +161,7 @@ export class ValidatorHelper<
 
     const validIds = sizeArray.map((s) => s.id);
 
-    this.enforceInList(
-      sizeId,
-      validIds,
-      foreignEntitySizeArrayProp as string,
-      errArr,
-      errMsg,
-      id,
-    );
+    this.enforceInList(sizeId, validIds, String(prop), errArr, errMsg, id);
   }
 
   /**
@@ -219,6 +216,39 @@ export class ValidatorHelper<
     if (list.includes(val)) {
       errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
     }
+  }
+
+  /**
+   * Ensures there are no duplicate elements in an array based on a key extractor.
+   * A duplicate is determined if the same key is generated for more than one element.
+   * @param items Array of items to check for duplicates
+   * @param keyExtractor Function that extracts a unique key from each item
+   * @param prop Property name for error reporting
+   * @param errArr Array that resulting errors are pushed to
+   * @param errMsg Message describing the error
+   * @param id Optional id of the source entity
+   */
+  public enforceNoDuplicateElements<TItem>(
+    items: TItem[] | null | undefined,
+    keyExtractor: (item: TItem) => string | number,
+    prop: keyof TEntity,
+    errArr: ValidationErrorNode[],
+    errMsg: string,
+    id?: number | string,
+  ): void {
+    if (!items || items.length === 0) return;
+
+    const keyCounts = new Map<string | number, number>();
+
+    // Count occurrences of each key and track indices
+    items.forEach((item) => {
+      const key = keyExtractor(item);
+      const currentCount = keyCounts.get(key) || 0;
+      if (currentCount > 0) {
+        errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      }
+      keyCounts.set(key, currentCount + 1);
+    });
   }
 
   /**

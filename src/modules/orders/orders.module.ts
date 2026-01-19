@@ -25,6 +25,7 @@ import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderContainerItemValidator } from './validators/order-container-item.validator';
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
 import { OrderValidator } from './validators/order.validator';
+import { OrderMenuItemPatchValidator } from './validators/patch-validators/order-menu-item.patch.validator';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { OrderValidator } from './validators/order.validator';
     OrderCategoryValidator,
     OrderMenuItemValidator,
     OrderContainerItemValidator,
+    OrderMenuItemPatchValidator,
 
     OrderTestingUtil,
   ],

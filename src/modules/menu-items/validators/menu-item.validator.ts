@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
@@ -7,6 +7,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
@@ -18,6 +19,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     private readonly repo: Repository<MenuItem>,
 
     private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
+
+    @InjectRepository(MenuItemContainerItem)
+    private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -51,21 +55,15 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
         results.push(err);
       }
 
-      // if variableMaxAmount, validate each container item quantity totals to variableMaxAmount
-      if (dto.variableMaxAmount) {
-        let sum = 0;
-        for (const containerItem of dto.containerMenuItems) {
-          sum += containerItem.quantity;
-        }
-        if (sum !== dto.variableMaxAmount) {
-          const err = new ValidationErrorNode(
-            'containerMenuItems',
-            id,
-            'container items do not total to variable max amount',
-          );
-          results.push(err);
-        }
-      }
+      // validate no duplicates
+      this.helper.enforceNoDuplicateElements(
+        dto.containerMenuItems,
+        (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
+        'containerMenuItems',
+        results,
+        'duplicate container item',
+        id,
+      );
 
       // nested validator call
       const nestedDtoErr =
@@ -110,50 +108,61 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
         results.push(err);
       }
 
-      // if variableMaxAmount, validate each container item quantity totals to variableMaxAmount
-      if (dto.variableMaxAmount) {
-        // get current container items
-        const currentContainerItems = await this.repo.findOne({
-          where: { id },
-          relations: ['containerMenuItems'],
+      // validate no duplicates
+
+      // Get current container items
+      const currentContainerItems = await this.menuItemContainerItemRepo.find({
+        where: { parentMenuItem: { id } },
+        relations: ['containedMenuItem', 'containedItemSize'],
+      });
+      if (!currentContainerItems) {
+        throw new NotFoundException();
+      }
+      const currentContainerItemsMap = new Map<
+        string | number,
+        { containedMenuItemId: number; containedItemSizeId: number }
+      >();
+
+      // add current container items to map
+      for (const item of currentContainerItems) {
+        currentContainerItemsMap.set(item.id, {
+          containedMenuItemId: item.containedMenuItem.id,
+          containedItemSizeId: item.containedItemSize.id,
         });
-        if (!currentContainerItems) {
-          throw new Error();
-        }
+      }
 
-        // Combine current container items with new container items
-        const itemMap = new Map<string | number, number>();
-
-        // Add current container items to itemMap
-        for (const containerItem of currentContainerItems.containerMenuItems) {
-          itemMap.set(containerItem.id, containerItem.quantity);
-        }
-
-        // Add new container items to itemMap, updating or creating as needed
-        for (const nestedDto of dto.containerMenuItems) {
-          if ('createId' in nestedDto) {
-            itemMap.set(nestedDto.createId, nestedDto.quantity);
-          } else if ('id' in dto) {
-            if (nestedDto.quantity) {
-              itemMap.set(nestedDto.id, nestedDto.quantity);
-            }
+      // add items from DTO to map
+      for (const item of dto.containerMenuItems) {
+        if ('id' in item) {
+          const current = currentContainerItemsMap.get(item.id);
+          if (!current) {
+            throw new NotFoundException();
           }
-        }
-
-        // Validate that the total quantity of container items equals the variableMaxAmount
-        let sum = 0;
-        for (const quantity of itemMap.values()) {
-          sum += quantity;
-        }
-        if (sum !== dto.variableMaxAmount) {
-          const err = new ValidationErrorNode(
-            'containerMenuItems',
-            id,
-            'container items do not total to variable max amount',
-          );
-          results.push(err);
+          // if update dto, set values from dto if present, otherwise use current values
+          currentContainerItemsMap.set(item.id, {
+            containedMenuItemId:
+              item.containedMenuItemId ?? current.containedMenuItemId,
+            containedItemSizeId:
+              item.containedItemSizeId ?? current.containedItemSizeId,
+          });
+        } else if ('createId' in item) {
+          // add create items to map
+          currentContainerItemsMap.set(item.createId, {
+            containedMenuItemId: item.containedMenuItemId,
+            containedItemSizeId: item.containedItemSizeId,
+          });
         }
       }
+
+      // validate no duplicates from map values (with create dto items and updated dto items)
+      this.helper.enforceNoDuplicateElements(
+        Array.from(currentContainerItemsMap.values()),
+        (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
+        'containerMenuItems',
+        results,
+        'duplicate container item',
+        id,
+      );
 
       // nested validator call
       const nestedDtoErr =

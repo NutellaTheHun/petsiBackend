@@ -7,8 +7,10 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
+import { OrderMenuItemPatchValidator } from './patch-validators/order-menu-item.patch.validator';
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<OrderEntity> {
@@ -17,6 +19,11 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     private readonly repo: Repository<Order>,
 
     private readonly orderItemValidator: OrderMenuItemValidator,
+
+    @InjectRepository(OrderMenuItem)
+    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
+
+    private readonly orderMenuItemPatchValidator: OrderMenuItemPatchValidator,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -30,14 +37,44 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.orderedItems.length === 0) {
+    await this.helper.enforceNotEmpty(
+      dto.orderedItems,
+      'orderedItems',
+      results,
+      'Order has no items',
+      id,
+    );
+
+    //valid fulfillment type value
+    const validFulfillmentType = ['pickup', 'delivery'];
+    if (!validFulfillmentType.includes(dto.fulfillmentType)) {
       const err = new ValidationErrorNode(
-        'orderedItems',
+        'fulfillmentType',
         id,
-        'Order has no items',
+        'Invalid fulfillmentType value',
       );
       results.push(err);
     }
+
+    this.helper.enforceConditionalRequired(
+      dto,
+      'fulfillmentType',
+      'delivery',
+      ['deliveryAddress', 'phoneNumber'],
+      results,
+      'Order for delivery must have a delivery address',
+      id,
+    );
+
+    this.helper.enforceConditionalRequired(
+      dto,
+      'isWeekly',
+      true,
+      ['weeklyFulfillment'],
+      results,
+      'Order must have a day of the week selected for fulfillment',
+      id,
+    );
 
     // valid day of the week value
     const validDays = [
@@ -58,58 +95,16 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       results.push(err);
     }
 
-    //valid fulfillment type value
-    const validFulfillmentType = ['pickup', 'delivery'];
-    if (!validFulfillmentType.includes(dto.fulfillmentType)) {
-      const err = new ValidationErrorNode(
-        'fulfillmentType',
-        id,
-        'Invalid fulfillmentType value',
-      );
-      results.push(err);
-    }
+    // Check duplicate menuItem / menuItemSize combinations
+    // handle duplicate container contents
+    const omiValidator = new OrderMenuItemPatchValidator(dto.orderedItems);
 
-    if (dto.fulfillmentType === 'delivery' && !dto.deliveryAddress) {
-      const err = new ValidationErrorNode(
-        'deliveryAddress',
-        id,
-        'Order for delivery must have a delivery address',
-      );
-      results.push(err);
-    }
-
-    if (dto.isWeekly && !dto.weeklyFulfillment) {
-      const err = new ValidationErrorNode(
-        'weeklyFulfillment',
-        id,
-        'Order must have a day of the week selected for fulfillment',
-      );
-      results.push(err);
-    }
-
-    // check for duplicate orderMenuItems, (menuItem / menuItemSize combinations)
-    // DOESNT HANDLE CONTAINERS
-    // False negative with 2 boxes of cookies with different contents
-    const seen = new Set<string>();
-    for (const nestedDto of dto.orderedItems) {
-      if (!nestedDto.createDto) {
-        throw new Error(
-          'create order validation: orderMenuItem dto has no createDto',
-        );
-      }
-      const dto = nestedDto.createDto;
-      const key = `${dto.menuItemId}:${dto.sizeId}`;
-      if (seen.has(key)) {
-        const err = new ValidationErrorNode(
-          'orderedItems',
-          id,
-          'duplicate item on order',
-        );
-        results.push(err);
-      } else {
-        seen.add(key);
-      }
-    }
+    omiValidator.validateUnique(
+      'orderedItems',
+      results,
+      'duplicate order menu item',
+      id,
+    );
 
     // nested validator call
     const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
@@ -162,90 +157,57 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       results.push(err);
     }
 
-    if (dto.fulfillmentType === 'delivery' && !dto.deliveryAddress) {
-      const err = new ValidationErrorNode(
-        'deliveryAddress',
-        id,
-        'Order for delivery must have a delivery address',
-      );
-      results.push(err);
-    }
+    this.helper.enforceConditionalRequired(
+      dto,
+      'fulfillmentType',
+      'delivery',
+      ['deliveryAddress', 'phoneNumber'],
+      results,
+      'Order for delivery must have a delivery address',
+      id,
+    );
 
-    if (dto.isWeekly && !dto.weeklyFulfillment) {
-      const err = new ValidationErrorNode(
-        'weeklyFulfillment',
-        id,
-        'Order must have a day of the week selected for fulfillment',
-      );
-      results.push(err);
-    }
+    this.helper.enforceConditionalRequired(
+      dto,
+      'isWeekly',
+      true,
+      ['weeklyFulfillment'],
+      results,
+      'Order must have a day of the week selected for fulfillment',
+      id,
+    );
 
     // check for duplicate ordered items (menuItem / Size combinations)
-    // DOESNT HANDLE CONTAINERS
-    // False negative with 2 boxes of cookies with different contents
-    const itemMap = new Map<string | number, string>();
-    const seen = new Set<string>();
-    if (dto.orderedItems && dto.orderedItems.length) {
-      const currentOrder = await this.repo.findOne({
-        where: { id },
+    if (dto.orderedItems?.length) {
+      // Check duplicate menuItem / menuItemSize combinations
+      // handle duplicate container contents
+
+      const currentItems = await this.orderMenuItemRepo.find({
+        where: {
+          parentOrder: {
+            id: id,
+          },
+        },
         relations: [
-          'orderedItems',
-          'orderedItems.menuItem',
-          'orderedItems.size',
+          'menuItem',
+          'size',
+          'containerOrderMenuItems',
+          'containerOrderMenuItems.containedMenuItem',
+          'containerOrderMenuItems.containedItemSize',
         ],
       });
-      if (!currentOrder) {
-        throw new Error(
-          `update order validator: current order with id ${id} was not found`,
-        );
-      }
-      for (const orderItem of currentOrder.orderedItems) {
-        itemMap.set(
-          orderItem.id,
-          `${orderItem.menuItem.id}:${orderItem.size.id}`,
-        );
-      }
-      for (const nestedDto of dto.orderedItems) {
-        if (nestedDto.createDto && nestedDto.createId) {
-          itemMap.set(
-            nestedDto.createId,
-            `${nestedDto.createDto.menuItemId}:${nestedDto.createDto.sizeId}`,
-          );
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          const currentItem = itemMap.get(nestedDto.id);
 
-          const newMenuItemId =
-            nestedDto.updateDto.menuItemId ?? currentItem?.split(':')[0];
-          const newMenuitemSizeId =
-            nestedDto.updateDto.sizeId ?? currentItem?.split(':')[1];
+      const omiValidator = new OrderMenuItemPatchValidator(
+        dto.orderedItems,
+        currentItems,
+      );
 
-          itemMap.set(nestedDto.id, `${newMenuItemId}:${newMenuitemSizeId}`);
-        }
-      }
-      for (const val of itemMap.values()) {
-        if (seen.has(val)) {
-          const err = new ValidationErrorNode(
-            'orderedItems',
-            id,
-            'duplicate item on order',
-          );
-          results.push(err);
-        } else {
-          seen.add(val);
-        }
-      }
-    }
-
-    if (dto.orderedItems && dto.orderedItems.length) {
-      // nested validator
-      const nestedDtoErrs =
-        await this.orderItemValidator.validateManyNestedNode(
-          'orderedItems',
-          dto.orderedItems,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      omiValidator.validateUnique(
+        'orderedItems',
+        results,
+        'duplicate order menu item',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);
