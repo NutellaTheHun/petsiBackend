@@ -26,14 +26,14 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'roleName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'roleName',
-        id,
-        'Role with this name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Role with this name already exists.',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -45,14 +45,14 @@ export class RoleValidator extends ValidatorBase<RoleEntity> {
     const results: ValidationErrorNode[] = [];
 
     if (dto.name) {
-      if (await this.helper.exists(this.repo, 'roleName', dto.name)) {
-        const err = new ValidationErrorNode(
-          'roleName',
-          id,
-          'Role with this name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Role with this name already exists.',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

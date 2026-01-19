@@ -27,14 +27,14 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     const results: ValidationErrorNode[] = [];
 
     // username exists
-    if (await this.helper.exists(this.repo, 'username', dto.name)) {
-      const err = new ValidationErrorNode(
-        'username',
-        id,
-        'username name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'username name already exists.',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -46,12 +46,14 @@ export class UserValidator extends ValidatorBase<UserEntity> {
     const results: ValidationErrorNode[] = [];
 
     if (dto.name) {
-      const err = new ValidationErrorNode(
-        'username',
-        id,
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
         'username name already exists.',
+        id,
       );
-      results.push(err);
     }
 
     return this.checkValidateResult(results);

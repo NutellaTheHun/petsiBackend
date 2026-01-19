@@ -11,6 +11,7 @@ import { MenuItemContainerItem } from '../entities/menu-item-container-item.enti
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
+import { MenuItemContainerItemPatchValidator } from './patch-validators/menu-item.patch.validator';
 
 @Injectable()
 export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
@@ -56,9 +57,11 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       }
 
       // validate no duplicates
-      this.helper.enforceNoDuplicateElements(
+      const miciValidator = new MenuItemContainerItemPatchValidator(
         dto.containerMenuItems,
-        (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
+      );
+
+      miciValidator.validateUnique(
         'containerMenuItems',
         results,
         'duplicate container item',
@@ -118,46 +121,13 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       if (!currentContainerItems) {
         throw new NotFoundException();
       }
-      const currentContainerItemsMap = new Map<
-        string | number,
-        { containedMenuItemId: number; containedItemSizeId: number }
-      >();
 
-      // add current container items to map
-      for (const item of currentContainerItems) {
-        currentContainerItemsMap.set(item.id, {
-          containedMenuItemId: item.containedMenuItem.id,
-          containedItemSizeId: item.containedItemSize.id,
-        });
-      }
+      const miciValidator = new MenuItemContainerItemPatchValidator(
+        dto.containerMenuItems,
+        currentContainerItems,
+      );
 
-      // add items from DTO to map
-      for (const item of dto.containerMenuItems) {
-        if ('id' in item) {
-          const current = currentContainerItemsMap.get(item.id);
-          if (!current) {
-            throw new NotFoundException();
-          }
-          // if update dto, set values from dto if present, otherwise use current values
-          currentContainerItemsMap.set(item.id, {
-            containedMenuItemId:
-              item.containedMenuItemId ?? current.containedMenuItemId,
-            containedItemSizeId:
-              item.containedItemSizeId ?? current.containedItemSizeId,
-          });
-        } else if ('createId' in item) {
-          // add create items to map
-          currentContainerItemsMap.set(item.createId, {
-            containedMenuItemId: item.containedMenuItemId,
-            containedItemSizeId: item.containedItemSizeId,
-          });
-        }
-      }
-
-      // validate no duplicates from map values (with create dto items and updated dto items)
-      this.helper.enforceNoDuplicateElements(
-        Array.from(currentContainerItemsMap.values()),
-        (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
+      miciValidator.validateUnique(
         'containerMenuItems',
         results,
         'duplicate container item',

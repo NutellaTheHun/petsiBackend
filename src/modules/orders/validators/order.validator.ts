@@ -23,8 +23,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     @InjectRepository(OrderMenuItem)
     private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
 
-    private readonly orderMenuItemPatchValidator: OrderMenuItemPatchValidator,
-
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {
@@ -99,6 +97,7 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
     // handle duplicate container contents
     const omiValidator = new OrderMenuItemPatchValidator(dto.orderedItems);
 
+    // Currently doesnt provide ID of nested item, only providing parent ID (create ID)
     omiValidator.validateUnique(
       'orderedItems',
       results,
@@ -208,6 +207,16 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
         'duplicate order menu item',
         id,
       );
+
+      // nested validator call
+      const nestedDtoErrs =
+        await this.orderItemValidator.validateManyNestedNode(
+          'orderedItems',
+          dto.orderedItems,
+        );
+      if (nestedDtoErrs) {
+        results.push(nestedDtoErrs);
+      }
     }
 
     return this.checkValidateResult(results);

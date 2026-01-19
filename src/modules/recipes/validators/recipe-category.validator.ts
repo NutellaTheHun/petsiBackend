@@ -34,17 +34,27 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
     const results: ValidationErrorNode[] = [];
 
     // Exists
-    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Recipe category already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Recipe category already exists.',
+      id,
+    );
 
-    // nested validator call
-    if (dto.subCategories && dto.subCategories.length) {
+    if (dto.subCategories?.length) {
+      // No duplicate sub categories
+      await this.helper.enforceNoDuplicateElements(
+        dto.subCategories,
+        (item) => `${item.name}`,
+        'subCategories',
+        results,
+        'duplicate sub category',
+        id,
+      );
+
+      // nested validator call
       const nestedDtoErrs =
         await this.subCategoryValidator.validateManyNestedNode(
           'subCategories',
@@ -66,18 +76,28 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
 
     if (dto.name) {
       // Exists
-      if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
-        const err = new ValidationErrorNode(
-          'categoryName',
-          id,
-          'Recipe category already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Recipe category already exists.',
+        id,
+      );
     }
 
-    // nested validator call
-    if (dto.subCategories && dto.subCategories.length) {
+    if (dto.subCategories?.length) {
+      // No duplicate sub categories
+      await this.helper.enforceNoDuplicateElements(
+        dto.subCategories,
+        (item) => `${item.name}`,
+        'subCategories',
+        results,
+        'duplicate sub category',
+        id,
+      );
+
+      // nested validator call
       const nestedDtoErrs =
         await this.subCategoryValidator.validateManyNestedNode(
           'subCategories',

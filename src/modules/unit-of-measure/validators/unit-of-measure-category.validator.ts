@@ -29,14 +29,14 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'categoryName',
-        id,
-        'Category with this name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Category with this name already exists.',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -48,14 +48,14 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
     const results: ValidationErrorNode[] = [];
 
     if (dto.name) {
-      if (await this.helper.exists(this.repo, 'categoryName', dto.name)) {
-        const err = new ValidationErrorNode(
-          'categoryName',
-          id,
-          'Category with this name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Category with this name already exists.',
+        id,
+      );
     }
 
     return this.checkValidateResult(results);

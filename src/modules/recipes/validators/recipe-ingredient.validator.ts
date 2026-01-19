@@ -30,18 +30,22 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    // no ingredient reference
-    if (!dto.ingredientInventoryItemId && !dto.ingredientRecipeId) {
-      const err = new ValidationErrorNode(
-        'ingredientInventoryItem',
-        id,
-        'missing reference for ingredient',
-      );
-      results.push(err);
-    }
+    // Validate only ingredientInventoryItemId or ingredientRecipeId is populated
+    this.helper.enforceOnlyOne(
+      dto,
+      'ingredientInventoryItemId',
+      'ingredientRecipeId',
+      results,
+      'missing reference for ingredient',
+      'cannot provide both an inventory item and a recipe as an ingredient',
+      id,
+    );
 
     // if ingredient recipe, cannot equal parent
-    if (dto.ingredientRecipeId === dto.parentRecipeId) {
+    if (
+      dto.ingredientRecipeId &&
+      dto.ingredientRecipeId === dto.parentRecipeId
+    ) {
       const err = new ValidationErrorNode(
         'ingredientRecipe',
         id,
@@ -51,14 +55,13 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     }
 
     // quantity cant be less than equal 0
-    if (dto.quantity <= 0) {
-      const err = new ValidationErrorNode(
-        'quantity',
-        id,
-        'quantity cannot be 0',
-      );
-      results.push(err);
-    }
+    this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      results,
+      'quantity cannot be 0',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }
@@ -68,6 +71,16 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     id?: number,
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
+
+    // Validate only one of the two properties are populated
+    if (dto.ingredientInventoryItemId && dto.ingredientRecipeId) {
+      const err = new ValidationErrorNode(
+        'ingredientInventoryItemId',
+        id,
+        'cannot provide both an inventory item and a recipe as an ingredient',
+      );
+      results.push(err);
+    }
 
     // if ingredient recipe, cannot equal parent
     if (dto.ingredientRecipeId) {
@@ -92,14 +105,13 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     }
 
     // quantity cant be less than equal 0
-    if (dto.quantity && dto.quantity <= 0) {
-      const err = new ValidationErrorNode(
-        'quantity',
-        id,
-        'quantity cannot be 0',
-      );
-      results.push(err);
-    }
+    this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      results,
+      'quantity cannot be 0',
+      id,
+    );
 
     return this.checkValidateResult(results);
   }

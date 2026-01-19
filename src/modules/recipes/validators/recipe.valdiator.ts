@@ -8,7 +8,9 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
+import { RecipeIngredientPatchValidator } from './patch-validators/recipe-ingredient.patch.validator';
 import { RecipeIngredientValidator } from './recipe-ingredient.validator';
 
 @Injectable()
@@ -20,6 +22,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     private readonly recipeCategoryRepo: Repository<RecipeCategory>,
 
     private readonly ingredientValidator: RecipeIngredientValidator,
+
+    @InjectRepository(RecipeIngredient)
+    private readonly recipeIngredientRepo: Repository<RecipeIngredient>,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
@@ -34,14 +39,14 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
     const results: ValidationErrorNode[] = [];
 
     // Exists
-    if (await this.helper.exists(this.repo, 'recipeName', dto.name)) {
-      const err = new ValidationErrorNode(
-        'recipeName',
-        id,
-        'Recipe with this name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Recipe with this name already exists.',
+      id,
+    );
 
     // subcategory with no category assignment
     if (dto.subCategoryId && !dto.categoryId) {
@@ -63,66 +68,77 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
-        const err = new ValidationErrorNode(
-          'subCategory',
-          id,
-          'Invalid category / subcategory combination',
-        );
-        results.push(err);
-      }
+      this.helper.enforceInList(
+        dto.subCategoryId,
+        category.subCategories.map((cat) => cat.id),
+        'subCategory',
+        results,
+        'Invalid category / subcategory combination',
+        id,
+      );
     }
 
-    if (dto.batchResultQuantity && dto.batchResultQuantity <= 0) {
-      const err = new ValidationErrorNode(
+    // batchResultUnitType and batchResultQuantity are coupled
+    this.helper.enforceMutualRequired(
+      dto,
+      ['batchResultUnitTypeId', 'batchResultQuantity'],
+      results,
+      'batchResultUnitTypeId and batchResultQuantity must both be populated',
+      id,
+    );
+
+    // if batchResultQuantity must be positive
+    if (dto.batchResultQuantity !== undefined) {
+      this.helper.enforcePositive(
+        dto.batchResultQuantity,
         'batchResultQuantity',
-        id,
+        results,
         'batch result quantity cannot be 0',
+        id,
       );
-      results.push(err);
     }
 
-    if (dto.salesPrice && dto.salesPrice <= 0) {
-      const err = new ValidationErrorNode(
+    // if salesPrice is populated, it must be positive
+    if (dto.salesPrice !== undefined) {
+      this.helper.enforcePositive(
+        dto.salesPrice,
         'salesPrice',
+        results,
+        'sales price cannot be 0',
         id,
-        'batch result quantity cannot be 0',
       );
-      results.push(err);
     }
 
-    if (dto.servingSizeQuantity && dto.servingSizeQuantity <= 0) {
-      const err = new ValidationErrorNode(
+    // servingSizeQuantity and servingSizeUnitTypeId are coupled
+    this.helper.enforceMutualRequired(
+      dto,
+      ['servingSizeQuantity', 'servingSizeUnitTypeId'],
+      results,
+      'servingSizeQuantity and servingSizeUnitTypeId must both be populated',
+      id,
+    );
+
+    // if servingSizeQuantity must be positive
+    if (dto.servingSizeQuantity !== undefined) {
+      this.helper.enforcePositive(
+        dto.servingSizeQuantity,
         'servingSizeQuantity',
+        results,
+        'serving size quantity cannot be 0',
         id,
-        'batch result quantity cannot be 0',
       );
-      results.push(err);
     }
 
-    //check dupliate ingredients
-    const seen = new Set<string>();
-    if (dto.ingredients && dto.ingredients.length) {
-      for (const nestedDto of dto.ingredients) {
-        if (!nestedDto.createDto) {
-          throw new Error(
-            `create recipe validator: nested ingredient is missing create dto`,
-          );
-        }
-        const key = `${nestedDto.createDto.ingredientInventoryItemId ?? 0}: ${nestedDto.createDto.ingredientRecipeId ?? 0}`;
-        if (seen.has(key)) {
-          const err = new ValidationErrorNode(
-            'ingredients',
-            id, //missing what particular ingredient
-            'duplicate ingredient',
-          );
-          results.push(err);
-        } else {
-          seen.add(key);
-        }
-      }
-    }
-    if (dto.ingredients && dto.ingredients.length) {
+    if (dto.ingredients?.length) {
+      //check dupliate ingredients
+      const riValidator = new RecipeIngredientPatchValidator(dto.ingredients);
+      riValidator.validateUnique(
+        'ingredients',
+        results,
+        'duplicate ingredient',
+        id,
+      );
+
       // nested validator call
       const nestedDtoErrs =
         await this.ingredientValidator.validateManyNestedNode(
@@ -143,15 +159,15 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
   ): Promise<ValidationErrorNode[] | null> {
     const results: ValidationErrorNode[] = [];
 
-    if (dto.name) {
-      if (await this.helper.exists(this.repo, 'recipeName', dto.name)) {
-        const err = new ValidationErrorNode(
-          'recipeName',
-          id,
-          'Recipe with this name already exists.',
-        );
-        results.push(err);
-      }
+    if (dto.name !== undefined) {
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Recipe with this name already exists.',
+        id,
+      );
     }
 
     // Validate category / subcategory
@@ -174,97 +190,45 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       }
     }
 
-    if (dto.batchResultQuantity && dto.batchResultQuantity <= 0) {
-      const err = new ValidationErrorNode(
+    if (dto.batchResultQuantity !== undefined) {
+      this.helper.enforcePositive(
+        dto.batchResultQuantity,
         'batchResultQuantity',
-        id,
+        results,
         'batch result quantity cannot be 0',
+        id,
       );
-      results.push(err);
     }
 
-    if (dto.salesPrice && dto.salesPrice <= 0) {
-      const err = new ValidationErrorNode(
+    if (dto.salesPrice !== undefined) {
+      this.helper.enforcePositive(
+        dto.salesPrice,
         'salesPrice',
+        results,
+        'sales price cannot be 0',
         id,
-        'batch result quantity cannot be 0',
       );
-      results.push(err);
     }
 
-    if (dto.servingSizeQuantity && dto.servingSizeQuantity <= 0) {
-      const err = new ValidationErrorNode(
-        'servingSizeQuantity',
-        id,
-        'batch result quantity cannot be 0',
-      );
-      results.push(err);
-    }
-
-    // check duplicate ingredients
-    const itemMap = new Map<string | number, string>();
-    const seen = new Set<string>();
-    if (dto.ingredients && dto.ingredients.length) {
-      const currentRecipe = await this.repo.findOne({
+    if (dto.ingredients?.length) {
+      // check duplicate ingredients
+      const currentIngredients = await this.recipeIngredientRepo.find({
         where: { id },
-        relations: [
-          'ingredients',
-          'ingredients.ingredientInventoryItem',
-          'ingredients.ingredientRecipe',
-        ],
+        relations: ['ingredientInventoryItem', 'ingredientRecipe'],
       });
-      if (!currentRecipe) {
-        throw new Error(
-          `update recipe validator: recipe being updated with id ${id} not found`,
-        );
+      if (!currentIngredients) {
+        throw new NotFoundException();
       }
-
-      for (const ingred of currentRecipe.ingredients) {
-        itemMap.set(
-          ingred.id,
-          `${ingred.ingredientInventoryItem?.id ?? 0}: ${ingred.ingredientRecipe?.id ?? 0}`,
-        );
-      }
-
-      for (const nestedDto of dto.ingredients) {
-        if (nestedDto.createDto && nestedDto.createId) {
-          itemMap.set(
-            nestedDto.createId,
-            `${nestedDto.createDto.ingredientInventoryItemId ?? 0}: ${nestedDto.createDto.ingredientRecipeId ?? 0}`,
-          );
-        } else if (nestedDto.updateDto && nestedDto.id) {
-          if (
-            nestedDto.updateDto.ingredientInventoryItemId ||
-            nestedDto.updateDto.ingredientRecipeId
-          ) {
-            const currentItem = itemMap.get(nestedDto.id);
-            if (!currentItem) {
-              throw new Error(`item to update was not found`);
-            }
-            const newInvIngredId =
-              nestedDto.updateDto.ingredientInventoryItemId ??
-              currentItem.split(':')[0];
-            const newRecIngredId =
-              nestedDto.updateDto.ingredientRecipeId ??
-              currentItem.split(':')[1];
-
-            itemMap.set(nestedDto.id, `${newInvIngredId}:${newRecIngredId}`);
-          }
-        }
-      }
-
-      for (const val of itemMap.values()) {
-        if (seen.has(val)) {
-          const err = new ValidationErrorNode(
-            'ingredients',
-            id, //missing what particular ingredient
-            'duplicate ingredient',
-          );
-          results.push(err);
-        } else {
-          seen.add(val);
-        }
-      }
+      const riValidator = new RecipeIngredientPatchValidator(
+        dto.ingredients,
+        currentIngredients,
+      );
+      riValidator.validateUnique(
+        'ingredients',
+        results,
+        'duplicate ingredient',
+        id,
+      );
 
       // nested validator call
       const nestedDtoErrs =

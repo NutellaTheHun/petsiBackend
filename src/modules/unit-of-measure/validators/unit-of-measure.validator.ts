@@ -30,32 +30,33 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
     const results: ValidationErrorNode[] = [];
 
     // name exists
-    if (await this.helper.exists(this.repo, 'name', dto.name)) {
-      const err = new ValidationErrorNode(
-        'name',
-        id,
-        'Unit of measure with this name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.name,
+      this.repo,
+      'name',
+      results,
+      'Unit of measure with this name already exists.',
+      id,
+    );
 
     // abbreviation exists
-    if (await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)) {
-      const err = new ValidationErrorNode(
-        'abbreviation',
-        id,
-        'abbreviation with this name already exists.',
-      );
-      results.push(err);
-    }
+    await this.helper.enforceUnique(
+      dto.abbreviation,
+      this.repo,
+      'abbreviation',
+      results,
+      'abbreviation with this name already exists.',
+      id,
+    );
 
-    if (dto.conversionFactorToBase && Number(dto.conversionFactorToBase) <= 0) {
-      const err = new ValidationErrorNode(
+    if (dto.conversionFactorToBase) {
+      this.helper.enforcePositive(
+        dto.conversionFactorToBase,
         'conversionFactorToBase',
-        id,
+        results,
         'conversion factor cannot be 0',
+        id,
       );
-      results.push(err);
     }
 
     return this.checkValidateResult(results);
@@ -69,37 +70,36 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
 
     // name exists
     if (dto.name) {
-      if (await this.helper.exists(this.repo, 'name', dto.name)) {
-        const err = new ValidationErrorNode(
-          'name',
-          id,
-          'Unit of measure with this name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.name,
+        this.repo,
+        'name',
+        results,
+        'Unit of measure with this name already exists.',
+        id,
+      );
     }
 
     // abbreviation exists
     if (dto.abbreviation) {
-      if (
-        await this.helper.exists(this.repo, 'abbreviation', dto.abbreviation)
-      ) {
-        const err = new ValidationErrorNode(
-          'abbreviation',
-          id,
-          'abbreviation with this name already exists.',
-        );
-        results.push(err);
-      }
+      await this.helper.enforceUnique(
+        dto.abbreviation,
+        this.repo,
+        'abbreviation',
+        results,
+        'abbreviation with this name already exists.',
+        id,
+      );
     }
 
-    if (dto.conversionFactorToBase && Number(dto.conversionFactorToBase) <= 0) {
-      const err = new ValidationErrorNode(
+    if (dto.conversionFactorToBase) {
+      this.helper.enforcePositive(
+        dto.conversionFactorToBase,
         'conversionFactorToBase',
+        results,
+        'conversion factor must be greater than 0',
         id,
-        'conversion factor cannot be 0',
       );
-      results.push(err);
     }
 
     return this.checkValidateResult(results);
