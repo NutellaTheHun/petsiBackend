@@ -1,12 +1,12 @@
 import { NotFoundException } from '@nestjs/common';
 import {
-    DataSource,
-    EntityManager,
-    FindOptionsWhere,
-    In,
-    QueryBuilder,
-    Repository,
-    SelectQueryBuilder,
+  DataSource,
+  EntityManager,
+  FindOptionsWhere,
+  In,
+  QueryBuilder,
+  Repository,
+  SelectQueryBuilder,
 } from 'typeorm';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
@@ -41,10 +41,8 @@ export abstract class ServiceBase<
     const requestId = this.requestContextService.getRequestId();
 
     if (this.validator) {
-      const validationErrors = await this.validator.validateCreateNode(
-        'root',
-        createDto,
-      );
+      const validationErrors =
+        await this.validator.validateCreateNode(createDto);
       if (validationErrors) {
         throw new ValidationException(validationErrors); // logging?
       }
@@ -90,7 +88,6 @@ export abstract class ServiceBase<
 
     if (this.validator) {
       const validationErrors = await this.validator.validateUpdateNode(
-        'root',
         updateDto,
         id,
       );

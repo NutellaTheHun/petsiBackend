@@ -1,12 +1,7 @@
-import { AggregatePatchValidatorBase } from '../../../../common/base/aggregate-patch-validator.base';
+import { AggregateValidatorBase } from '../../../../common/base/aggregate-validator.base';
 import { MenuItemContainerItemEntity } from '../../entities/menu-item-container-item.entity';
 
-/*type MenuItemContainerItemIdentity = {
-  containedMenuItemId: number;
-  containedItemSizeId: number;
-};*/
-
-export class MenuItemContainerItemPatchValidator extends AggregatePatchValidatorBase<MenuItemContainerItemEntity> {
+export class MenuItemContainerItemAggregateValidator extends AggregateValidatorBase<MenuItemContainerItemEntity> {
   protected entityKey(entity: MenuItemContainerItemEntity['__Entity']): string {
     return this.entityContainerItemKey(entity);
   }
@@ -40,21 +35,4 @@ export class MenuItemContainerItemPatchValidator extends AggregatePatchValidator
   ): string {
     return `${dto.containedMenuItemId}:${dto.containedItemSizeId}`;
   }
-  /*
-  private entityContainerItemToIdentity(
-    entity: MenuItemContainerItemEntity['__Entity'],
-  ): MenuItemContainerItemIdentity {
-    return {
-      containedMenuItemId: entity.containedMenuItem.id,
-      containedItemSizeId: entity.containedItemSize.id,
-    };
-  }
-  private dtoContainerItemToIdentity(
-    dto: MenuItemContainerItemEntity['__NcDto'],
-  ): MenuItemContainerItemIdentity {
-    return {
-      containedMenuItemId: dto.containedMenuItemId,
-      containedItemSizeId: dto.containedItemSizeId,
-    };
-  }*/
 }

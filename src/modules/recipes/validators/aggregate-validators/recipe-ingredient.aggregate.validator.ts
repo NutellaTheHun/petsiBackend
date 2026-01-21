@@ -1,7 +1,7 @@
-import { AggregatePatchValidatorBase } from '../../../../common/base/aggregate-patch-validator.base';
+import { AggregateValidatorBase } from '../../../../common/base/aggregate-validator.base';
 import { RecipeIngredientEntity } from '../../entities/recipe-ingredient.entity';
 
-export class RecipeIngredientPatchValidator extends AggregatePatchValidatorBase<RecipeIngredientEntity> {
+export class RecipeIngredientAggregateValidator extends AggregateValidatorBase<RecipeIngredientEntity> {
   protected entityKey(entity: RecipeIngredientEntity['__Entity']): string {
     return this.entityIngredientKey(entity);
   }

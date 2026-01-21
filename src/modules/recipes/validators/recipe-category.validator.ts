@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
@@ -30,84 +30,74 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity>
   protected async doValidateCreateNode(
     dto: CreateRecipeCategoryDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // Exists
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
       'name',
-      results,
+      errorMap,
       'Recipe category already exists.',
-      id,
     );
 
     if (dto.subCategories?.length) {
       // No duplicate sub categories
-      await this.helper.enforceNoDuplicateElements(
+      this.helper.enforceNoDuplicateElements(
         dto.subCategories,
         (item) => `${item.name}`,
         'subCategories',
-        results,
+        errorMap,
         'duplicate sub category',
-        id,
       );
 
       // nested validator call
-      const nestedDtoErrs =
-        await this.subCategoryValidator.validateManyNestedNode(
-          'subCategories',
-          dto.subCategories,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.subCategoryValidator.validateManyNestedNode(
+        'subCategories',
+        dto.subCategories,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateRecipeCategoryDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
+    // Exists
     if (dto.name) {
-      // Exists
       await this.helper.enforceUnique(
         dto.name,
         this.repo,
         'name',
-        results,
+        errorMap,
         'Recipe category already exists.',
-        id,
       );
     }
 
-    if (dto.subCategories?.length) {
+    if (dto.subCategories && dto.subCategories?.length) {
       // No duplicate sub categories
-      await this.helper.enforceNoDuplicateElements(
+      this.helper.enforceNoDuplicateElements(
         dto.subCategories,
         (item) => `${item.name}`,
         'subCategories',
-        results,
+        errorMap,
         'duplicate sub category',
-        id,
       );
 
       // nested validator call
-      const nestedDtoErrs =
-        await this.subCategoryValidator.validateManyNestedNode(
-          'subCategories',
-          dto.subCategories,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.subCategoryValidator.validateManyNestedNode(
+        'subCategories',
+        dto.subCategories,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

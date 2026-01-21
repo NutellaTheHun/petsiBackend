@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemSizeValidator } from '../../inventory-items/validators/inventory-item-size.validator';
@@ -34,16 +34,15 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
   protected async doValidateCreateNode(
     dto: CreateInventoryAreaItemDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // Counted Amount
     this.helper.enforcePositive(
       dto.amount,
       'amount',
-      results,
+      errorMap,
       'Amount must be greater than 0',
-      id,
     );
 
     // InventoryItemSize ID and InventoryItemSizeDto
@@ -51,10 +50,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
       dto,
       'countedItemSize',
       'countedItemSizeId',
-      results,
+      errorMap,
       'Must provide an item size or a new item size',
       'Cannot provide both an existing and new item size',
-      id,
     );
 
     // CountedItemSize Reference
@@ -65,40 +63,36 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         this.inventoryItemRepo,
         'sizes',
         'countedItemSize',
-        results,
+        errorMap,
         'Invalid size for inventory item',
-        id,
       );
     }
 
     // Nested validator call
     if (dto.countedItemSize) {
-      const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
+      await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
         dto.countedItemSize,
+        errorMap,
       );
-      if (nestedDtoErr) {
-        results.push(nestedDtoErr);
-      }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateInventoryAreaItemDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // Counted Amount
     if (dto.amount) {
       this.helper.enforcePositive(
         dto.amount,
         'amount',
-        results,
+        errorMap,
         'Amount must be greater than 0',
-        id,
       );
     }
 
@@ -108,10 +102,9 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         dto,
         'countedItemSize',
         'countedItemSizeId',
-        results,
+        errorMap,
         'Must provide an item size or a new item size',
         'Cannot provide both an existing and new item size',
-        id,
       );
     }
 
@@ -137,23 +130,20 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
         this.inventoryItemRepo,
         'sizes',
         'countedItemSize',
-        results,
+        errorMap,
         'Invalid size for inventory item',
-        id,
       );
     }
 
     // Nested ItemSize validation
     if (dto.countedItemSize) {
-      const nestedDtoErr = await this.itemSizeValidator.validateNestedNode(
+      await this.itemSizeValidator.validateNestedNode(
         'countedItemSize',
         dto.countedItemSize,
+        errorMap,
       );
-      if (nestedDtoErr) {
-        results.push(nestedDtoErr);
-      }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

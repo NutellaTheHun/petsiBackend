@@ -57,32 +57,67 @@ export class ValidationErrorNode {
   }
 }
 
-export class ValidationErrorMap {
-  children: Map<string, ValidationErrorMap[]>;
+export type ValidationErrorResponse = {
   id?: string | number;
-  errMessage?: string;
+  message?: string;
+  errors?: Record<string, ValidationErrorResponse[]>;
+};
 
-  constructor(id: string | number, errMessage?: string) {
+export class ValidationErrorMap {
+  private children: Map<string, ValidationErrorMap[]>;
+  id?: string | number;
+  errMessage?: string | null;
+
+  constructor(id?: string | number, errMessage?: string | null) {
     this.id = id;
-    this.errMessage = errMessage;
-    this.children = new Map();
+    this.errMessage = errMessage ?? null;
   }
 
   public addChild(field: string, child: ValidationErrorMap) {
-    const currentChildren = this.children.get(field);
-    if (currentChildren) {
-      currentChildren.push(child);
-    } else {
-      this.children.set(field, [child]);
+    if (!this.children) {
+      this.children = new Map();
     }
+    const list = this.children.get(field) ?? [];
+    list.push(child);
+    this.children.set(field, list);
   }
 
   public addChildren(field: string, children: ValidationErrorMap[]) {
-    const currentChildren = this.children.get(field);
-    if (currentChildren) {
-      currentChildren.push(...children);
-    } else {
-      this.children.set(field, children);
+    if (!this.children) {
+      this.children = new Map();
     }
+    const list = this.children.get(field) ?? [];
+    list.push(...children);
+    this.children.set(field, list);
+  }
+
+  public isEmpty(): boolean {
+    const hasMessage = !!this.errMessage;
+    const hasChildren = !!this.children && this.children.size > 0;
+    return !hasMessage && !hasChildren;
+  }
+
+  public getResult(): ValidationErrorResponse {
+    const result: ValidationErrorResponse = {};
+
+    if (this.id !== undefined) {
+      result.id = this.id;
+    }
+
+    if (this.errMessage) {
+      result.message = this.errMessage;
+    }
+
+    if (this.children && this.children.size > 0) {
+      const errors: Record<string, ValidationErrorResponse[]> = {};
+
+      for (const [field, children] of this.children.entries()) {
+        errors[field] = children.map((child) => child.getResult());
+      }
+
+      result.errors = errors;
+    }
+
+    return result;
   }
 }

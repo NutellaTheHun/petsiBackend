@@ -1,6 +1,6 @@
 import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
 import { ArrayKeys, NumericKeys } from '../types';
-import { ValidationErrorNode } from './validation-error';
+import { ValidationErrorMap } from './validation-error';
 
 export class ValidatorHelper<
   TEntity extends ObjectLiteral,
@@ -9,24 +9,24 @@ export class ValidatorHelper<
   /**
    * Array must not be empty
    * @param val any array
-   * @param prop array property of entity
-   * @param errArr array error is pushed to
+   * @param field array property of entity
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id of target entity
-   * @returns nothing
    */
   public enforceNotEmpty<
     DtoProp extends ArrayKeys<TDto>,
     EntityProp extends ArrayKeys<TEntity>,
   >(
     val: TDto[DtoProp] | null | undefined,
-    prop: EntityProp,
-    errArr: ValidationErrorNode[],
+    field: EntityProp,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     if (!val || val.length === 0) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -34,10 +34,10 @@ export class ValidatorHelper<
    * Value must be greater than 0,
    * Fails if value is less than or equal to 0,
    * VALUE CANNOT EQUAL 0
+   * ignores validation if value is null or undefined
    * @param val Value being evaluated
-   * @param prop corresponding property of entity
-   * @param id id of entity holding the property
-   * @param errArr array that resulting error is pushed to
+   * @param field corresponding property of entity
+   * @param rootErrMap error map to add error to
    * @param errMsg message detailing the error
    */
   public enforcePositive<
@@ -45,15 +45,17 @@ export class ValidatorHelper<
     EntityProp extends keyof TEntity,
   >(
     val: TDto[DtoProp] | null | undefined,
-    prop: EntityProp,
-    errArr: ValidationErrorNode[],
+    field: EntityProp,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     if (val == null) return;
 
     if (val <= 0) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -62,9 +64,8 @@ export class ValidatorHelper<
    * Fails if value is less than 0,
    * VALUE CAN BE 0
    * @param val Value being evaluated
-   * @param prop corresponding property of entity
-   * @param id id of entity holding the property
-   * @param errArr array that resulting error is pushed to
+   * @param field corresponding property of entity
+   * @param rootErrMap error map to add error to
    * @param errMsg message detailing the error
    */
   public enforceNonNegative<
@@ -72,14 +73,16 @@ export class ValidatorHelper<
     EntityProp extends NumericKeys<TEntity>,
   >(
     val: TDto[DtoProp],
-    prop: EntityProp,
-    errArr: ValidationErrorNode[],
+    field: EntityProp,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     if (val == null) return;
     if (val < 0) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -88,26 +91,23 @@ export class ValidatorHelper<
    * @param val value to be found in array
    * @param list array to be searched
    * @param prop property the value represents
-   * @param errArr array that resulting error is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id of source entity
-   * @returns
    */
-  //Entity extends ObjectLiteral,
-  // Prop extends keyof Entity,
-  //Prop extends ArrayKeys<Dto>
   public enforceInList<Entity extends ObjectLiteral, Prop extends keyof Entity>(
-    val: string | number,
+    val: string | number | null | undefined,
     list: (string | number)[],
-    prop: Entity[Prop],
-    errArr: ValidationErrorNode[],
+    field: Entity[Prop],
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     if (val == null) return;
 
     if (!list.includes(val)) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -120,30 +120,27 @@ export class ValidatorHelper<
    *
    * validating size of an OrderMenuItem must get list of valid sizes from the MenuItem entity
    *
-   * @param entityId Entity of concern
-   * @param foreignEntityId Entity of foreign enttiy containing valid sizes
    * @param sizeId Give Id that must be validated
+   * @param foreignEntityId Entity of foreign enttiy containing valid sizes
    * @param foreignRepo repository of entity being validated, can be from a foreign entity
    * @param foreignEntitySizeArrayProp propery of entity contained the list of valid sizes, typically will be from a foreign entity
-   * @param prop property of entity being validated
-   * @param errArr array that resulting error is pushed to
+   * @param field property of entity being validated
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id id of entity (for error messaging)
-   * @returns
+   * @param id id of the entity being validated
    */
   public async enforceValidSize<
     Entity extends ObjectLiteral,
     Prop extends keyof Entity,
     ForeignEntity extends ObjectLiteral & { id: number },
   >(
-    sizeId: number,
+    sizeId: number | null | undefined,
     foreignEntityId: number,
     foreignRepo: Repository<ForeignEntity>,
     foreignEntitySizeArrayProp: ArrayKeys<ForeignEntity>,
-    prop: Prop,
-    errArr: ValidationErrorNode[],
+    field: Prop,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): Promise<void> {
     if (sizeId == null) return;
 
@@ -161,36 +158,37 @@ export class ValidatorHelper<
 
     const validIds = sizeArray.map((s) => s.id);
 
-    this.enforceInList(sizeId, validIds, String(prop), errArr, errMsg, id);
+    this.enforceInList(sizeId, validIds, String(field), rootErrMap, errMsg);
   }
 
   /**
    * Entity with provided value for property must not be found in the database.
    * @param repo repo that is being checked for uniqueness
-   * @param prop Name of property being checked for uniqueness
+   * @param field Name of property being checked for uniqueness
    * @param val value being checked against prop for uniqueness
-   * @param errArr array that the resulting error object is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id entity that is the source of the error
    */
   public async enforceUnique<
     Entity extends ObjectLiteral,
     Prop extends keyof Entity,
   >(
-    val: string | number,
+    val: string | number | null | undefined,
     repo: Repository<Entity>,
-    prop: Prop,
-    errArr: ValidationErrorNode[],
+    field: Prop,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): Promise<void> {
     if (val == null) return;
 
     const exists = await repo.findOne({
-      where: { [prop]: val } as FindOptionsWhere<Entity>,
+      where: { [field]: val } as FindOptionsWhere<Entity>,
     });
     if (exists) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -199,22 +197,23 @@ export class ValidatorHelper<
    * @param list list of strings being checked against
    * @param prop property being checked for uniqueness
    * @param val value being checked against list for uniqueness
-   * @param errArr array that resulting error is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg message describing error
-   * @param id id to entity that is error source
    */
-  public async enforceUniqueInArr<Prop extends keyof TEntity>(
-    val: string | number,
+  public async enforceNotInList<Prop extends keyof TEntity>(
+    val: string | number | null | undefined,
     list: (string | number)[],
-    prop: Prop,
-    errArr: ValidationErrorNode[],
+    field: Prop,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): Promise<void> {
     if (val == null) return;
 
     if (list.includes(val)) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -224,15 +223,14 @@ export class ValidatorHelper<
    * @param items Array of items to check for duplicates
    * @param keyExtractor Function that extracts a unique key from each item
    * @param prop Property name for error reporting
-   * @param errArr Array that resulting errors are pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg Message describing the error
-   * @param id Optional id of the source entity
    */
   public enforceNoDuplicateElements<TItem>(
     items: TItem[] | null | undefined,
     keyExtractor: (item: TItem) => string | number,
-    prop: keyof TEntity,
-    errArr: ValidationErrorNode[],
+    field: keyof TEntity,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
     id?: number | string,
   ): void {
@@ -241,11 +239,15 @@ export class ValidatorHelper<
     const keyCounts = new Map<string | number, number>();
 
     // Count occurrences of each key and track indices
+    // CURRENTLY DOESNT PROVIDE CHILD IDS
     items.forEach((item) => {
       const key = keyExtractor(item);
       const currentCount = keyCounts.get(key) || 0;
       if (currentCount > 0) {
-        errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+        rootErrMap.addChild(
+          String(field),
+          new ValidationErrorMap(undefined, errMsg),
+        );
       }
       keyCounts.set(key, currentCount + 1);
     });
@@ -253,32 +255,32 @@ export class ValidatorHelper<
 
   /**
    * entity with given value for prop must be found in database.
-   * @param repo repo that is being checked for uniqueness
-   * @param prop Name of property being checked for uniqueness
    * @param val value being checked against prop for uniqueness
-   * @param errArr array that the resulting error object is pushed to
+   * @param repo repo that is being checked for uniqueness
+   * @param field Name of property being checked for uniqueness
+   * @param rootErrMap Error map to add error to
    * @param errMsg description of error
-   * @param id entity that is the source of the error
-   * @returns
    */
-  public async enforceExists<
+  public async enforceEntityExists<
     Entity extends ObjectLiteral,
     Prop extends keyof Entity,
   >(
-    val: string | number,
+    val: string | number | null | undefined,
     repo: Repository<Entity>,
-    prop: Prop,
-    errArr: ValidationErrorNode[],
+    field: Prop,
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): Promise<void> {
     if (val == null) return;
 
     const exists = await repo.findOne({
-      where: { [prop]: val } as FindOptionsWhere<Entity>,
+      where: { [field]: val } as FindOptionsWhere<Entity>,
     });
     if (!exists) {
-      errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      rootErrMap.addChild(
+        String(field),
+        new ValidationErrorMap(undefined, errMsg),
+      );
     }
   }
 
@@ -288,10 +290,8 @@ export class ValidatorHelper<
    * @param hinge property of Dto whos state determines the required dependents
    * @param hingeValue the state of the hinge property that requires the dependents
    * @param dependents the properties that must be populated if the hinge is set to the hingeValue
-   * @param errArr array that the resulting error object is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id entity that is the source of the error
-   * @returns
    */
   public enforceConditionalRequired<
     Prop extends keyof TDto,
@@ -301,9 +301,8 @@ export class ValidatorHelper<
     hinge: Prop,
     hingeValue: TDto[Prop],
     dependents: Dep,
-    errArr: ValidationErrorNode[],
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     const currentVal = dto[hinge];
 
@@ -314,7 +313,10 @@ export class ValidatorHelper<
         const val = dto[dep];
         if (val == null || (Array.isArray(val) && val.length === 0)) {
           // Should probably pass the dependent Props, or both, not just hinge
-          errArr.push(new ValidationErrorNode(String(dep), id, errMsg));
+          rootErrMap.addChild(
+            String(dep),
+            new ValidationErrorMap(undefined, errMsg),
+          );
         }
       }
     }
@@ -324,66 +326,67 @@ export class ValidatorHelper<
    * All properties within mutuals array must all be the same state, either undefined/null or populated.
    * @param dto source DTO
    * @param mutuals array of properties that are grouped together
-   * @param errArr array that the resulting error object is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsg description of error
-   * @param id entity that is the source of the error
-   * @returns
    */
   public enforceMutualRequired<Dep extends readonly (keyof TDto)[]>(
     dto: TDto,
     mutuals: Dep,
-    errArr: ValidationErrorNode[],
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     if (mutuals.length < 2) return;
 
-    const hasAny = mutuals.some((prop) => dto[prop] != undefined);
-    const hasMissing = mutuals.some((prop) => dto[prop] == undefined);
+    const hasAny = mutuals.some((field) => dto[field] != undefined);
+    const hasMissing = mutuals.some((field) => dto[field] == undefined);
 
     if (hasAny && hasMissing) {
-      for (const prop of mutuals) {
-        errArr.push(new ValidationErrorNode(String(prop), id, errMsg));
+      for (const field of mutuals) {
+        rootErrMap.addChild(
+          String(field),
+          new ValidationErrorMap(undefined, errMsg),
+        );
       }
     }
   }
 
   /**
    * Only one of the two given properties must be populated.
-   *
    * Cannot both be populated or both be vacant.
    * @param firstProp any prop of dto
    * @param secondProp any prop of dto
-   * @param errArr array resulting error is pushed to
+   * @param rootErrMap error map to add error to
    * @param errMsgMissing description of error when both properties are missing
    * @param errMsgPopulated description of error when both props are populated
-   * @param id of source entity
    */
   public enforceOnlyOne<Prop extends keyof TDto>(
     dto: TDto,
-    firstProp: Prop,
-    secondProp: Prop,
-    errArr: ValidationErrorNode[],
+    firstfield: Prop,
+    secondfield: Prop,
+    rootErrMap: ValidationErrorMap,
     errMsgMissing: string,
     errMsgPopulated: string,
-    id?: number | string,
   ): void {
-    const firstVal = dto[firstProp];
-    const secondVal = dto[secondProp];
+    const firstVal = dto[firstfield];
+    const secondVal = dto[secondfield];
 
     if (firstVal && secondVal) {
-      errArr.push(
-        new ValidationErrorNode(String(firstProp), id, errMsgMissing),
+      rootErrMap.addChild(
+        String(firstfield),
+        new ValidationErrorMap(undefined, errMsgMissing),
       );
-      errArr.push(
-        new ValidationErrorNode(String(secondProp), id, errMsgMissing),
+      rootErrMap.addChild(
+        String(secondfield),
+        new ValidationErrorMap(undefined, errMsgMissing),
       );
     } else if (firstVal == null && secondVal == null) {
-      errArr.push(
-        new ValidationErrorNode(String(firstProp), id, errMsgPopulated),
+      rootErrMap.addChild(
+        String(firstfield),
+        new ValidationErrorMap(undefined, errMsgPopulated),
       );
-      errArr.push(
-        new ValidationErrorNode(String(secondProp), id, errMsgPopulated),
+      rootErrMap.addChild(
+        String(secondfield),
+        new ValidationErrorMap(undefined, errMsgPopulated),
       );
     }
   }

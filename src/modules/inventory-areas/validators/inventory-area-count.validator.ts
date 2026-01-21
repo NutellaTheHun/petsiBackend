@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
@@ -30,56 +30,50 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
   protected async doValidateCreateNode(
     dto: CreateInventoryAreaCountDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     this.helper.enforceNotEmpty(
       dto.countedInventoryItems,
       'countedInventoryItems',
-      results,
+      errorMap,
       'Inventory count has no counted items',
-      id,
     );
 
     // Nested Validator Call
     if (dto.countedInventoryItems?.length) {
-      const valErrs = await this.areaItemValidator.validateManyNestedNode(
+      await this.areaItemValidator.validateManyNestedNode(
         'countedInventoryItems',
         dto.countedInventoryItems,
+        errorMap,
       );
-      if (valErrs) {
-        results.push(valErrs);
-      }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateInventoryAreaCountDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     if (dto.countedInventoryItems?.length) {
       this.helper.enforceNotEmpty(
         dto.countedInventoryItems,
         'countedInventoryItems',
-        results,
+        errorMap,
         'Inventory count cannot have 0 counted items',
-        id,
       );
 
       // Nested Validator Call
-      const valErrs = await this.areaItemValidator.validateManyNestedNode(
+      await this.areaItemValidator.validateManyNestedNode(
         'countedInventoryItems',
         dto.countedInventoryItems,
+        errorMap,
       );
-      if (valErrs) {
-        results.push(valErrs);
-      }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

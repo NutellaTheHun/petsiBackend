@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -31,8 +31,8 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
   protected async doValidateCreateNode(
     dto: CreateRecipeSubCategoryDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // validate name is not equal to parent category name
     const parentCategory = await this.recipeCategoryRepo.findOne({
@@ -45,21 +45,22 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
     }
 
     if (dto.name === parentCategory.name) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'name',
-        id,
-        'Recipe subcategory name cannot be the same as the parent category name',
+        new ValidationErrorMap(
+          undefined,
+          'Recipe subcategory name cannot be the same as the parent category name',
+        ),
       );
-      results.push(err);
     }
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateRecipeSubCategoryDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     if (dto.name) {
       const entity = await this.repo.findOne({
@@ -73,26 +74,26 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
       }
 
       // Validate name is unique within its category
-      await this.helper.enforceUniqueInArr(
+      await this.helper.enforceNotInList(
         dto.name,
         entity.parentCategory.subCategories.map((cat) => cat.name),
         'name',
-        results,
+        errorMap,
         'Recipe subcategory already exists.',
-        id,
       );
 
       // Validate name is not equal to parent category name
       if (dto.name === entity.parentCategory.name) {
-        const err = new ValidationErrorNode(
+        errorMap.addChild(
           'name',
-          id,
-          'Recipe subcategory name cannot be the same as the parent category name',
+          new ValidationErrorMap(
+            undefined,
+            'Recipe subcategory name cannot be the same as the parent category name',
+          ),
         );
-        results.push(err);
       }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

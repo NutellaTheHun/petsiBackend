@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -26,17 +26,16 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
   protected async doValidateCreateNode(
     dto: CreateTemplateDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // exists
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
       'name',
-      results,
+      errorMap,
       'Template with this name already exists.',
-      id,
     );
 
     if (dto.templateMenuItems?.length) {
@@ -48,38 +47,33 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       // enforce no duplicate tablePosIndex
       tmiValidator.enforceUniqueTablePosIndex(
         'templateMenuItems',
-        results,
+        errorMap,
         'duplicate table position on template',
-        id,
       );
 
       // enforce no duplicate menuItem
       tmiValidator.enforceUniqueMenuItem(
         'templateMenuItems',
-        results,
+        errorMap,
         'duplicate menu item on template',
-        id,
       );
 
       // nested dto validation
-      const nestedDtoErrs =
-        await this.templateItemValidator.validateManyNestedNode(
-          'templateItems',
-          dto.templateMenuItems,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.templateItemValidator.validateManyNestedNode(
+        'templateMenuItems',
+        dto.templateMenuItems,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateTemplateDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // exists
     if (dto.name) {
@@ -87,9 +81,8 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
         dto.name,
         this.repo,
         'name',
-        results,
+        errorMap,
         'Template with this name already exists.',
-        id,
       );
     }
 
@@ -112,30 +105,25 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       // enforce no duplicate tablePosIndex
       tmiValidator.enforceUniqueTablePosIndex(
         'templateMenuItems',
-        results,
+        errorMap,
         'duplicate table position on template',
-        id,
       );
 
       // enforce no duplicate menuItem
       tmiValidator.enforceUniqueMenuItem(
         'templateMenuItems',
-        results,
+        errorMap,
         'duplicate menu item on template',
-        id,
       );
 
       // nested dto validation
-      const nestedDtoErrs =
-        await this.templateItemValidator.validateManyNestedNode(
-          'templateItems',
-          dto.templateMenuItems,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.templateItemValidator.validateManyNestedNode(
+        'templateMenuItems',
+        dto.templateMenuItems,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

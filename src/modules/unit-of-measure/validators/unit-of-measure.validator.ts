@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
@@ -26,17 +26,16 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
   protected async doValidateCreateNode(
     dto: CreateUnitOfMeasureDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // name exists
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
       'name',
-      results,
+      errorMap,
       'Unit of measure with this name already exists.',
-      id,
     );
 
     // abbreviation exists
@@ -44,29 +43,27 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       dto.abbreviation,
       this.repo,
       'abbreviation',
-      results,
+      errorMap,
       'abbreviation with this name already exists.',
-      id,
     );
 
     if (dto.conversionFactorToBase) {
       this.helper.enforcePositive(
         dto.conversionFactorToBase,
         'conversionFactorToBase',
-        results,
+        errorMap,
         'conversion factor cannot be 0',
-        id,
       );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateUnitOfMeasureDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // name exists
     if (dto.name) {
@@ -74,9 +71,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
         dto.name,
         this.repo,
         'name',
-        results,
+        errorMap,
         'Unit of measure with this name already exists.',
-        id,
       );
     }
 
@@ -86,9 +82,8 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
         dto.abbreviation,
         this.repo,
         'abbreviation',
-        results,
+        errorMap,
         'abbreviation with this name already exists.',
-        id,
       );
     }
 
@@ -96,12 +91,11 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
       this.helper.enforcePositive(
         dto.conversionFactorToBase,
         'conversionFactorToBase',
-        results,
+        errorMap,
         'conversion factor must be greater than 0',
-        id,
       );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

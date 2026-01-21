@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
@@ -27,27 +27,26 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
   protected async doValidateCreateNode(
     dto: CreateInventoryItemCategoryDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // Already exists check
     await this.helper.enforceUnique(
       dto.name,
       this.repo,
       'name',
-      results,
+      errorMap,
       'Inventory category name already exists',
-      id,
     );
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateInventoryItemCategoryDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // Already exists check
     if (dto.name) {
@@ -55,12 +54,11 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         dto.name,
         this.repo,
         'name',
-        results,
+        errorMap,
         'Inventory category name already exists',
-        id,
       );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

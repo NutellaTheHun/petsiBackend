@@ -1,4 +1,4 @@
-import { AggregatePatchValidatorBase } from '../../../../common/base/aggregate-patch-validator.base';
+import { AggregateValidatorBase } from '../../../../common/base/aggregate-validator.base';
 import { NestedCreateOrderContainerItemDto } from '../../dto/order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../../dto/order-container-item/nested-update-order-container-item.dto';
 import { OrderContainerItem } from '../../entities/order-container-item.entity';
@@ -15,7 +15,7 @@ type ContainerItemIdentity = {
   quantity: number;
 };
 
-export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<OrderMenuItemEntity> {
+export class OrderMenuItemAggregateValidator extends AggregateValidatorBase<OrderMenuItemEntity> {
   protected entityKey(entity: OrderMenuItemEntity['__Entity']): string {
     return this.entityOrderMenuItemKey(entity);
   }
@@ -40,6 +40,9 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
   }
 
   // Helpers
+  /**
+   * Returns a key for a orderMenuItem entity from a nested create dto, if there are container items, the key will include the container item contents.
+   */
   private dtoOrderMenuItemKey(dto: OrderMenuItemEntity['__NcDto']): string {
     const base = `${dto.menuItemId}:${dto.sizeId}`;
 
@@ -50,6 +53,9 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
     return `${base}::${this.dtoContainerContentsKey(dto.containerOrderMenuItems)}`;
   }
 
+  /**
+   * Returns a key for a list of container items from a nested create dto, the key is a sorted list of the container item contents.
+   */
   private dtoContainerContentsKey(
     items: NestedCreateOrderContainerItemDto[],
   ): string {
@@ -62,6 +68,9 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
       .join('|');
   }
 
+  /**
+   * Returns a key for a orderMenuItem from an entity, if there are container items, the key will include the container item contents.
+   */
   private entityOrderMenuItemKey(
     entity: OrderMenuItemEntity['__Entity'],
   ): string {
@@ -77,6 +86,9 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
     return `${base}::${contents}`;
   }
 
+  /**
+   * Returns a key for a list of container items from an entity, the key is a sorted list of the container item contents.
+   */
   private entityContainerContentsKey(items: OrderContainerItem[]): string {
     return items
       .map(
@@ -87,6 +99,10 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
       .join('|');
   }
 
+  /**
+   * combines a list of entities and dtos into a list of identities. Required when updating an order menu item.
+   * Handles the patching from update dtos over entities and includes unaffected entities, and includes create dto items for validation.
+   */
   private mergeContainerIdentities(
     entities: OrderContainerItem[],
     dtos: (
@@ -113,6 +129,9 @@ export class OrderMenuItemPatchValidator extends AggregatePatchValidatorBase<Ord
     return [...map.values()];
   }
 
+  /**
+   * Applies an update to a container item from a nested update dto that relates to validation.
+   */
   private applyContainerUpdate(
     entity: OrderContainerItem,
     dto: NestedUpdateOrderContainerItemDto,

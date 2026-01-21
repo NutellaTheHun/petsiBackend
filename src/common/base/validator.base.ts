@@ -1,9 +1,11 @@
-import { error } from 'console';
 import { Repository } from 'typeorm';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { ValidatorHelper } from '../validation/validatator-helper';
-import { ValidationErrorNode } from '../validation/validation-error';
+import {
+  ValidationErrorMap,
+  ValidationErrorResponse,
+} from '../validation/validation-error';
 import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
 import { EntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
@@ -29,14 +31,14 @@ export abstract class ValidatorBase<
   }
 
   /**
-   * Entity implementation of buisness logic validation. If the resulting array is empty, returns null.
+   * Entity implementation of buisness logic validation.
    * @param result
    * @param dto
    */
   protected abstract doValidateCreateNode(
     dto: T['__CDto'],
     id?: string,
-  ): Promise<ValidationErrorNode[] | null>;
+  ): Promise<ValidationErrorMap>;
 
   /**
    * Entity implementation of buisness logic validation
@@ -46,52 +48,43 @@ export abstract class ValidatorBase<
   protected abstract doValidateUpdateNode(
     dto: T['__UDto'],
     id: number,
-  ): Promise<ValidationErrorNode[] | null>;
+  ): Promise<ValidationErrorMap>;
 
   /**
-   * If the resulting array has elements, it is returned, otherwise returns null
-   * @param result
-   * @returns
+   * If the resulting error map is not empty, returns the result as a ValidationErrorResponse, otherwise returns null
+   * @param result error map to validate
    */
-  protected checkValidateResult(
-    result: ValidationErrorNode[],
-  ): ValidationErrorNode[] | null {
-    if (result.length > 0) {
-      return result;
+  protected validateResult(
+    result: ValidationErrorMap,
+  ): ValidationErrorResponse | null {
+    if (result.isEmpty()) {
+      return null;
     }
-    return null;
+    return result.getResult();
   }
 
   /**
-   * root level validation function of DTOs, is still called within other root level validation calls.
-   * @param field
-   * @param dto
-   * @returns
+   * root level validation function of DTOs, only called by service.base.create.
+   * @param dto root DTO to validate
+   * @returns ValidationErrorResponse if validation errors are found, otherwise null
    */
   public async validateCreateNode(
-    field: string,
     dto: T['__CDto'],
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
-
-    const valErrs = await this.doValidateCreateNode(dto);
-    if (valErrs && valErrs.length > 0) {
-      result.addChildren(valErrs);
-    }
-
-    return result.isEmpty() ? null : result;
+  ): Promise<ValidationErrorResponse | null> {
+    const result = await this.doValidateCreateNode(dto);
+    return this.validateResult(result);
   }
 
   public async validateManyCreateNode(
     field: string,
     dtos: T['__CDto'][],
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
+  ): Promise<ValidationErrorMap | null> {
+    const result = new ValidationErrorMap(undefined, field);
 
     for (const dto of dtos) {
       const valErrs = await this.doValidateCreateNode(dto);
       if (valErrs) {
-        result.addChildren(valErrs);
+        result.addChild(field, valErrs);
       }
     }
 
@@ -99,78 +92,72 @@ export abstract class ValidatorBase<
   }
 
   /**
-   * root level validation function of DTOs, is still called within other root level validation calls.
+   * root level validation function of DTOs, only called by service.base.update.
    * @param field
    * @param dto
    * @returns
    */
   public async validateUpdateNode(
-    field: string,
     dto: T['__UDto'],
     id: number,
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
+  ): Promise<ValidationErrorResponse | null> {
+    const result = await this.doValidateUpdateNode(dto, id);
 
-    const valErrs = await this.doValidateUpdateNode(dto, id);
-    if (valErrs) {
-      result.addChildren(valErrs);
-    }
-
-    return result.isEmpty() ? null : result;
+    return this.validateResult(result);
   }
 
   /**
-   * Wrapper function to parse nested DTOs.
-   * @param field
-   * @param dto
-   * @returns
+   * Wrapper function to parse nested DTOs. Adds validation errors to the given rootErrorMap under the given field.
+   * @param field property corresponding to nested DTO
+   * @param dto nested DTO to validate
+   * @param rootErrorMap error map that validation errors will be added to under the given field
    */
   public async validateNestedNode(
     field: string,
     dto: unknown,
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(field);
-
+    rootErrorMap: ValidationErrorMap,
+  ): Promise<void> {
     if (this.isNestedCreateDto(dto)) {
       const valErrs = await this.doValidateCreateNode(dto, dto.createId);
-      if (valErrs) {
-        result.addChildren(valErrs);
+      if (!valErrs.isEmpty()) {
+        rootErrorMap.addChild(field, valErrs);
       }
     } else if (this.isNestedUpdateDto(dto)) {
-      const child = await this.doValidateUpdateNode(dto, dto.id);
-      if (child) {
-        result.addChildren(child);
+      const valErrs = await this.doValidateUpdateNode(dto, dto.id);
+      if (!valErrs.isEmpty()) {
+        rootErrorMap.addChild(field, valErrs);
       }
     } else {
-      throw new error('validateNestedNode received invalid nested DTO');
+      throw new Error('validateNestedNode received invalid nested DTO');
     }
-
-    return result.isEmpty() ? null : result;
   }
 
+  /**
+   * Wrapper function to parse multiple nested DTOs. Adds validation errors to the given rootErrorMap under the given field.
+   * @param field property corresponding to nested DTO
+   * @param dtos array of nested DTOs to validate
+   * @param rootErrorMap error map that validation errors will be added to under the given field
+   */
   public async validateManyNestedNode(
     field: string,
     dtos: unknown[],
-  ): Promise<ValidationErrorNode | null> {
-    const result = new ValidationErrorNode(String(field));
-
+    rootErrorMap: ValidationErrorMap,
+  ): Promise<void> {
     for (const dto of dtos) {
       if (this.isNestedCreateDto(dto)) {
-        const child = await this.doValidateCreateNode(dto, dto.createId);
-        if (child) {
-          result.addChildren(child);
+        const valErrs = await this.doValidateCreateNode(dto, dto.createId);
+        if (!valErrs.isEmpty()) {
+          rootErrorMap.addChild(field, valErrs);
         }
       } else if (this.isNestedUpdateDto(dto)) {
-        const child = await this.doValidateUpdateNode(dto, dto.id);
-        if (child) {
-          result.addChildren(child);
+        const valErrs = await this.doValidateUpdateNode(dto, dto.id);
+        if (!valErrs.isEmpty()) {
+          rootErrorMap.addChild(field, valErrs);
         }
       } else {
-        throw new error('validateNestedNode received invalid nested DTO');
+        throw new Error('validateNestedNode received invalid nested DTO');
       }
     }
-
-    return result.isEmpty() ? null : result;
   }
 
   private isNestedCreateDto(dto: unknown): dto is NestedCreateDto {

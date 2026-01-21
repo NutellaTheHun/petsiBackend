@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -27,25 +27,23 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
   protected async doValidateCreateNode(
     dto: CreateInventoryItemSizeDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // measureAmount
     this.helper.enforcePositive(
       dto.measureAmount,
       'measureAmount',
-      results,
+      errorMap,
       'cannot be less than or equal to 0',
-      id,
     );
 
     // cost
     this.helper.enforcePositive(
       dto.cost,
       'cost',
-      results,
+      errorMap,
       'cannot be less than or equal to 0',
-      id,
     );
 
     // check for current package / unit of measure / cost already exists?
@@ -59,32 +57,29 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       },
     });
     if (exists) {
-      // to specific, not a 'prop' problem but a collection, the parent entity is more the problem
-      const err = new ValidationErrorNode(
-        'measureType', // but must reference a prop? make it a array, make FE process multi prop errors
-        id,
-        'Inventory item size already exists',
+      // Most relevant conflict signal for FE is the measure type selection.
+      errorMap.addChild(
+        'measureType',
+        new ValidationErrorMap(undefined, 'Inventory item size already exists'),
       );
-      results.push(err);
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateInventoryItemSizeDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // measureAmount cannot be less than or equal to 0
     if (dto.measureAmount) {
       this.helper.enforcePositive(
         dto.measureAmount,
         'measureAmount',
-        results,
+        errorMap,
         'cannot be less than or equal to 0',
-        id,
       );
     }
 
@@ -93,9 +88,8 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       this.helper.enforcePositive(
         dto.cost,
         'cost',
-        results,
+        errorMap,
         'cannot be less than or equal to 0',
-        id,
       );
     }
 
@@ -119,15 +113,16 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
       });
       if (exists) {
         const prop = dto.measureTypeId ? 'measureType' : 'package';
-        const err = new ValidationErrorNode(
+        errorMap.addChild(
           prop,
-          id,
-          'Inventory item size already exists',
+          new ValidationErrorMap(
+            undefined,
+            'Inventory item size already exists',
+          ),
         );
-        results.push(err);
       }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

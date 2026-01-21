@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { OrderMenuItemAggregateValidator } from './aggregate-validators/order-menu-item.aggregate.validator';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
-import { OrderMenuItemPatchValidator } from './patch-validators/order-menu-item.patch.validator';
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<OrderEntity> {
@@ -32,26 +32,23 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
   protected async doValidateCreateNode(
     dto: CreateOrderDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
-    await this.helper.enforceNotEmpty(
+    this.helper.enforceNotEmpty(
       dto.orderedItems,
       'orderedItems',
-      results,
+      errorMap,
       'Order has no items',
-      id,
     );
 
     //valid fulfillment type value
     const validFulfillmentType = ['pickup', 'delivery'];
     if (!validFulfillmentType.includes(dto.fulfillmentType)) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'fulfillmentType',
-        id,
-        'Invalid fulfillmentType value',
+        new ValidationErrorMap(undefined, 'Invalid fulfillmentType value'),
       );
-      results.push(err);
     }
 
     this.helper.enforceConditionalRequired(
@@ -59,9 +56,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'fulfillmentType',
       'delivery',
       ['deliveryAddress', 'phoneNumber'],
-      results,
+      errorMap,
       'Order for delivery must have a delivery address',
-      id,
     );
 
     this.helper.enforceConditionalRequired(
@@ -69,9 +65,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'isWeekly',
       true,
       ['weeklyFulfillment'],
-      results,
+      errorMap,
       'Order must have a day of the week selected for fulfillment',
-      id,
     );
 
     // valid day of the week value
@@ -85,43 +80,38 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'saturday',
     ];
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'weeklyFulfillment',
-        id,
-        'Invalid weeklyFulfillment value',
+        new ValidationErrorMap(undefined, 'Invalid weeklyFulfillment value'),
       );
-      results.push(err);
     }
 
     // Check duplicate menuItem / menuItemSize combinations
     // handle duplicate container contents
-    const omiValidator = new OrderMenuItemPatchValidator(dto.orderedItems);
+    const omiValidator = new OrderMenuItemAggregateValidator(dto.orderedItems);
 
     // Currently doesnt provide ID of nested item, only providing parent ID (create ID)
     omiValidator.validateUnique(
       'orderedItems',
-      results,
+      errorMap,
       'duplicate order menu item',
-      id,
     );
 
     // nested validator call
-    const nestedDtoErrs = await this.orderItemValidator.validateManyNestedNode(
+    await this.orderItemValidator.validateManyNestedNode(
       'orderedItems',
       dto.orderedItems,
+      errorMap,
     );
-    if (nestedDtoErrs) {
-      results.push(nestedDtoErrs);
-    }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateOrderDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     // valididate weeklyFulfillment
     const validDays = [
@@ -134,12 +124,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       'saturday',
     ];
     if (dto.weeklyFulfillment && !validDays.includes(dto.weeklyFulfillment)) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'weeklyFulfillment',
-        id,
-        'Invalid weeklyFulfillment value',
+        new ValidationErrorMap(undefined, 'Invalid weeklyFulfillment value'),
       );
-      results.push(err);
     }
 
     // validate fulfillmentType
@@ -148,36 +136,36 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
       dto.fulfillmentType &&
       !validFulfillmentType.includes(dto.fulfillmentType)
     ) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'fulfillmentType',
-        id,
-        'Invalid fulfillmentType value',
+        new ValidationErrorMap(undefined, 'Invalid fulfillmentType value'),
       );
-      results.push(err);
     }
 
-    this.helper.enforceConditionalRequired(
-      dto,
-      'fulfillmentType',
-      'delivery',
-      ['deliveryAddress', 'phoneNumber'],
-      results,
-      'Order for delivery must have a delivery address',
-      id,
-    );
+    if (dto.fulfillmentType) {
+      this.helper.enforceConditionalRequired(
+        dto,
+        'fulfillmentType',
+        'delivery',
+        ['deliveryAddress', 'phoneNumber'],
+        errorMap,
+        'Order for delivery must have a delivery address',
+      );
+    }
 
-    this.helper.enforceConditionalRequired(
-      dto,
-      'isWeekly',
-      true,
-      ['weeklyFulfillment'],
-      results,
-      'Order must have a day of the week selected for fulfillment',
-      id,
-    );
+    if (dto.isWeekly) {
+      this.helper.enforceConditionalRequired(
+        dto,
+        'isWeekly',
+        true,
+        ['weeklyFulfillment'],
+        errorMap,
+        'Order must have a day of the week selected for fulfillment',
+      );
+    }
 
     // check for duplicate ordered items (menuItem / Size combinations)
-    if (dto.orderedItems?.length) {
+    if (dto.orderedItems && dto.orderedItems?.length) {
       // Check duplicate menuItem / menuItemSize combinations
       // handle duplicate container contents
 
@@ -196,29 +184,25 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
         ],
       });
 
-      const omiValidator = new OrderMenuItemPatchValidator(
+      const omiValidator = new OrderMenuItemAggregateValidator(
         dto.orderedItems,
         currentItems,
       );
 
       omiValidator.validateUnique(
         'orderedItems',
-        results,
+        errorMap,
         'duplicate order menu item',
-        id,
       );
 
       // nested validator call
-      const nestedDtoErrs =
-        await this.orderItemValidator.validateManyNestedNode(
-          'orderedItems',
-          dto.orderedItems,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.orderItemValidator.validateManyNestedNode(
+        'orderedItems',
+        dto.orderedItems,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

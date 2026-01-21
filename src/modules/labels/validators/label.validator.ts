@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -24,8 +24,8 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
   protected async doValidateCreateNode(
     dto: CreateLabelDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     const exists = await this.repo.findOne({
       where: {
@@ -34,22 +34,23 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
       },
     });
     if (exists) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'labelType',
-        id,
-        'Label type already exists for this item.',
+        new ValidationErrorMap(
+          undefined,
+          'Label type already exists for this item.',
+        ),
       );
-      results.push(err);
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateLabelDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     if (dto.labelTypeId || dto.menuItemId) {
       const currentLabel = await this.repo.findOne({
@@ -70,15 +71,16 @@ export class LabelValidator extends ValidatorBase<LabelEntity> {
         },
       });
       if (exists) {
-        const err = new ValidationErrorNode(
+        errorMap.addChild(
           'labelType',
-          id,
-          'Label type already exists for this item.',
+          new ValidationErrorMap(
+            undefined,
+            'Label type already exists for this item.',
+          ),
         );
-        results.push(err);
       }
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

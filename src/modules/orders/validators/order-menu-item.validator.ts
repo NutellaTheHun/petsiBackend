@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
@@ -37,8 +37,8 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
   protected async doValidateCreateNode(
     dto: CreateOrderMenuItemDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     const menuItem = await this.menuItemRepo.findOne({
       where: { id: dto.menuItemId },
@@ -55,19 +55,17 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       this.menuItemRepo,
       'sizes',
       'size',
-      results,
+      errorMap,
       'Invalid size',
-      id,
     );
 
     if (menuItem.type === MENU_ITEM_TYPES.CONTAINER) {
       // must have container items
-      await this.helper.enforceNotEmpty(
+      this.helper.enforceNotEmpty(
         dto.containerOrderMenuItems,
         'containerOrderMenuItems',
-        results,
+        errorMap,
         'container must have at least one item',
-        id,
       );
 
       // validate no duplicates
@@ -75,41 +73,40 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         dto.containerOrderMenuItems,
         (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
         'containerOrderMenuItems',
-        results,
+        errorMap,
         'duplicate container item',
-        id,
       );
 
       // validate container quantity based on variableMax
       if (menuItem.variableMaxAmount) {
         if (dto.quantity !== menuItem.variableMaxAmount) {
-          const err = new ValidationErrorNode(
+          errorMap.addChild(
             'quantity',
-            id,
-            'quantity must equal the variable max amount of the container',
+            new ValidationErrorMap(
+              undefined,
+              'quantity must equal the variable max amount of the container',
+            ),
           );
-          results.push(err);
         }
       }
 
       // Nested validator call
-      const nestedDtoErrs =
+      if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
         await this.orderContainerItemValidator.validateManyNestedNode(
           'containerOrderMenuItems',
-          dto.containerOrderMenuItems ?? [],
+          dto.containerOrderMenuItems,
+          errorMap,
         );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
       }
     }
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateOrderMenuItemDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     const currentOrderItem = await this.repo.findOne({
       where: { id },
@@ -130,31 +127,27 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         this.menuItemRepo,
         'sizes',
         'size',
-        results,
+        errorMap,
         'Invalid size',
-        id,
       );
     }
 
     if (dto.quantity) {
-      await this.helper.enforcePositive(
+      this.helper.enforcePositive(
         dto.quantity,
         'quantity',
-        results,
+        errorMap,
         'Invalid quantity',
-        id,
       );
     }
 
-    if (dto.containerOrderMenuItems?.length) {
+    if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
       // validate menu item is a container
       if (currentOrderItem.menuItem.type !== MENU_ITEM_TYPES.CONTAINER) {
-        const err = new ValidationErrorNode(
+        errorMap.addChild(
           'menuItem',
-          id,
-          'menu item is not a container',
+          new ValidationErrorMap(undefined, 'menu item is not a container'),
         );
-        results.push(err);
       }
 
       // validate container items are not duplicates
@@ -210,22 +203,18 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         Array.from(containerItemsMap.values()),
         (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
         'containerOrderMenuItems',
-        results,
+        errorMap,
         'duplicate container item',
-        id,
       );
 
       // nested validator call
-      const nestedDtoErrs =
-        await this.orderContainerItemValidator.validateManyNestedNode(
-          'orderedContainerItems',
-          dto.containerOrderMenuItems,
-        );
-      if (nestedDtoErrs) {
-        results.push(nestedDtoErrs);
-      }
+      await this.orderContainerItemValidator.validateManyNestedNode(
+        'containerOrderMenuItems',
+        dto.containerOrderMenuItems,
+        errorMap,
+      );
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

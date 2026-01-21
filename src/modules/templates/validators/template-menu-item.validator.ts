@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
+import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -26,36 +26,38 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEnt
   protected async doValidateCreateNode(
     dto: CreateTemplateMenuItemDto,
     id?: string,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
     if (dto.tablePosIndex < 0) {
-      const err = new ValidationErrorNode(
+      errorMap.addChild(
         'tablePosIndex',
-        id,
-        'positional index cannot be less than 0',
+        new ValidationErrorMap(
+          undefined,
+          'positional index cannot be less than 0',
+        ),
       );
-      results.push(err);
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 
   protected async doValidateUpdateNode(
     dto: UpdateTemplateMenuItemDto,
-    id?: number,
-  ): Promise<ValidationErrorNode[] | null> {
-    const results: ValidationErrorNode[] = [];
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
 
-    if (dto.tablePosIndex && dto.tablePosIndex < 0) {
-      const err = new ValidationErrorNode(
+    if (dto.tablePosIndex !== undefined && dto.tablePosIndex < 0) {
+      errorMap.addChild(
         'tablePosIndex',
-        id,
-        'positional index cannot be less than 0',
+        new ValidationErrorMap(
+          undefined,
+          'positional index cannot be less than 0',
+        ),
       );
-      results.push(err);
     }
 
-    return this.checkValidateResult(results);
+    return errorMap;
   }
 }

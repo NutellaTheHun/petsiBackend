@@ -1,9 +1,9 @@
-import { ValidationErrorNode } from '../validation/validation-error';
+import { ValidationErrorMap } from '../validation/validation-error';
 import { EntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
 import { NestedUpdateDto } from './nested-update-dto.base';
 
-export abstract class AggregatePatchValidatorBase<
+export abstract class AggregateValidatorBase<
   TEntity extends EntityBase<any, any, any, NestedCreateDto, NestedUpdateDto>,
 > {
   protected identities = new Map<string | number, string>();
@@ -55,14 +55,13 @@ export abstract class AggregatePatchValidatorBase<
 
   validateUnique(
     field: string,
-    errArr: ValidationErrorNode[],
+    rootErrMap: ValidationErrorMap,
     errMsg: string,
-    id?: number | string,
   ): void {
     const seen = new Set<string>();
     for (const key of this.identities.values()) {
       if (seen.has(key)) {
-        errArr.push(new ValidationErrorNode(field, id, errMsg));
+        rootErrMap.addChild(field, new ValidationErrorMap(undefined, errMsg));
       }
       seen.add(key);
     }

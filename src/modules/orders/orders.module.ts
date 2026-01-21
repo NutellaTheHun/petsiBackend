@@ -21,11 +21,11 @@ import { OrderContainerItemService } from './services/order-container-item.servi
 import { OrderMenuItemService } from './services/order-menu-item.service';
 import { OrderService } from './services/order.service';
 import { OrderTestingUtil } from './utils/order-testing.util';
+import { OrderMenuItemAggregateValidator } from './validators/aggregate-validators/order-menu-item.aggregate.validator';
 import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderContainerItemValidator } from './validators/order-container-item.validator';
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
 import { OrderValidator } from './validators/order.validator';
-import { OrderMenuItemPatchValidator } from './validators/patch-validators/order-menu-item.patch.validator';
 
 @Module({
   imports: [
@@ -61,7 +61,7 @@ import { OrderMenuItemPatchValidator } from './validators/patch-validators/order
     OrderCategoryValidator,
     OrderMenuItemValidator,
     OrderContainerItemValidator,
-    OrderMenuItemPatchValidator,
+    OrderMenuItemAggregateValidator,
 
     OrderTestingUtil,
   ],
