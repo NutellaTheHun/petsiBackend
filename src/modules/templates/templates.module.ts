@@ -12,41 +12,34 @@ import { TemplateMenuItem } from './entities/template-menu-item.entity';
 import { Template } from './entities/template.entity';
 import { TemplateMenuItemService } from './services/template-menu-item.service';
 import { TemplateService } from './services/template.service';
+import { TemplateMenuItemComposer } from './utils/composers/template-menu-item.composer';
 import { TemplateTestingUtil } from './utils/template-testing.util';
 import { TemplateMenuItemValidator } from './validators/template-menu-item.validator';
 import { TemplateValidator } from './validators/template.validator';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Template,
-            TemplateMenuItem,
-        ]),
-        MenuItemsModule,
-        CacheModule.register(),
-        AppLoggingModule,
-        RequestContextModule,
-    ],
-    controllers: [
-        TemplateController,
-        TemplateMenuItemController,
-    ],
-    providers: [
-        TemplateService,
-        TemplateMenuItemService,
+  imports: [
+    TypeOrmModule.forFeature([Template, TemplateMenuItem]),
+    MenuItemsModule,
+    CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
+  ],
+  controllers: [TemplateController, TemplateMenuItemController],
+  providers: [
+    TemplateService,
+    TemplateMenuItemService,
 
-        TemplateBuilder,
-        TemplateMenuItemBuilder,
+    TemplateBuilder,
+    TemplateMenuItemBuilder,
 
-        TemplateValidator,
-        TemplateMenuItemValidator,
+    TemplateValidator,
+    TemplateMenuItemValidator,
 
-        TemplateTestingUtil,
-    ],
-    exports: [
-        TemplateService,
-        TemplateMenuItemService,
-        TemplateTestingUtil,
-    ]
+    TemplateMenuItemComposer,
+
+    TemplateTestingUtil,
+  ],
+  exports: [TemplateService, TemplateMenuItemService, TemplateTestingUtil],
 })
-export class TemplatesModule { }
+export class TemplatesModule {}

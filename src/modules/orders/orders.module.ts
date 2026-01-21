@@ -20,6 +20,8 @@ import { OrderCategoryService } from './services/order-category.service';
 import { OrderContainerItemService } from './services/order-container-item.service';
 import { OrderMenuItemService } from './services/order-menu-item.service';
 import { OrderService } from './services/order.service';
+import { OrderContainerItemComposer } from './utils/composers/order-container-item.composer';
+import { OrderMenuItemComposer } from './utils/composers/order-menu-item.composer';
 import { OrderTestingUtil } from './utils/order-testing.util';
 import { OrderMenuItemAggregateValidator } from './validators/aggregate-validators/order-menu-item.aggregate.validator';
 import { OrderCategoryValidator } from './validators/order-category.validator';
@@ -62,6 +64,9 @@ import { OrderValidator } from './validators/order.validator';
     OrderMenuItemValidator,
     OrderContainerItemValidator,
     OrderMenuItemAggregateValidator,
+
+    OrderMenuItemComposer,
+    OrderContainerItemComposer,
 
     OrderTestingUtil,
   ],

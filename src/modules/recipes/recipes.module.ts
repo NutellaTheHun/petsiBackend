@@ -22,6 +22,8 @@ import { RecipeCategoryService } from './services/recipe-category.service';
 import { RecipeIngredientService } from './services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from './services/recipe-sub-category.service';
 import { RecipeService } from './services/recipe.service';
+import { RecipeIngredientComposer } from './utils/composers/recipe-ingredient.composer';
+import { RecipeSubCategoryComposer } from './utils/composers/recipe-sub-category.composer';
 import { RecipeTestUtil } from './utils/recipe-test.util';
 import { RecipeCategoryValidator } from './validators/recipe-category.validator';
 import { RecipeIngredientValidator } from './validators/recipe-ingredient.validator';
@@ -29,51 +31,54 @@ import { RecipeSubCategoryValidator } from './validators/recipe-sub-category.val
 import { RecipeValidator } from './validators/recipe.valdiator';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Recipe,
-            RecipeCategory,
-            RecipeSubCategory,
-            RecipeIngredient
-        ]),
-        UnitOfMeasureModule,
-        InventoryItemsModule,
-        MenuItemsModule,
-        CacheModule.register(),
-        AppLoggingModule,
-        RequestContextModule,
-    ],
-    controllers: [
-        RecipeController,
-        RecipeCategoryController,
-        RecipeSubCategoryController,
-        RecipeIngredientController
-    ],
-    providers: [
-        RecipeService,
-        RecipeCategoryService,
-        RecipeSubCategoryService,
-        RecipeIngredientService,
+  imports: [
+    TypeOrmModule.forFeature([
+      Recipe,
+      RecipeCategory,
+      RecipeSubCategory,
+      RecipeIngredient,
+    ]),
+    UnitOfMeasureModule,
+    InventoryItemsModule,
+    MenuItemsModule,
+    CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
+  ],
+  controllers: [
+    RecipeController,
+    RecipeCategoryController,
+    RecipeSubCategoryController,
+    RecipeIngredientController,
+  ],
+  providers: [
+    RecipeService,
+    RecipeCategoryService,
+    RecipeSubCategoryService,
+    RecipeIngredientService,
 
-        RecipeBuilder,
-        RecipeIngredientBuilder,
-        RecipeCategoryBuilder,
-        RecipeSubCategoryBuilder,
+    RecipeBuilder,
+    RecipeIngredientBuilder,
+    RecipeCategoryBuilder,
+    RecipeSubCategoryBuilder,
 
-        RecipeValidator,
-        RecipeIngredientValidator,
-        RecipeCategoryValidator,
-        RecipeSubCategoryValidator,
+    RecipeValidator,
+    RecipeIngredientValidator,
+    RecipeCategoryValidator,
+    RecipeSubCategoryValidator,
 
-        RecipeTestUtil,
-    ],
-    exports: [
-        RecipeService,
-        RecipeCategoryService,
-        RecipeSubCategoryService,
-        RecipeIngredientService,
+    RecipeIngredientComposer,
+    RecipeSubCategoryComposer,
 
-        RecipeTestUtil,
-    ],
+    RecipeTestUtil,
+  ],
+  exports: [
+    RecipeService,
+    RecipeCategoryService,
+    RecipeSubCategoryService,
+    RecipeIngredientService,
+
+    RecipeTestUtil,
+  ],
 })
-export class RecipesModule { }
+export class RecipesModule {}

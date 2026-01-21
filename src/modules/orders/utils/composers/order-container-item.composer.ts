@@ -67,8 +67,6 @@ export class OrderContainerItemComposer extends ComposerBase<OrderContainerItemE
       containedItemSizeId: dto.containedItemSizeId,
       quantity: dto.quantity,
       parentOrderMenuItemId: context.parentOrderMenuItemId,
-      parentMenuItemIdCtx: context.parentMenuItemId,
-      parentMenuItemSizeIdCtx: context.parentMenuItemSizeId,
     };
   }
 }

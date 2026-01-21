@@ -11,7 +11,7 @@ import {
   TemplateMenuItem,
   TemplateMenuItemEntity,
 } from '../entities/template-menu-item.entity';
-import { TemplateMenuItemComposer } from '../utils/transactions/template-menu-item.composer';
+import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.composer';
 import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
