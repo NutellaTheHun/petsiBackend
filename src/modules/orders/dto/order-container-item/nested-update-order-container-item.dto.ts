@@ -36,7 +36,7 @@ export class NestedUpdateOrderContainerItemDto extends NestedUpdateDto {
   @IsPositive()
   readonly quantity?: number;
 
-  @ApiPropertyOptional({
+  /*@ApiPropertyOptional({
     description:
       "Id of the MenuItem that is this item's container, must be provided when updating containedMenuItem or containedMenuItemSize, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
     example: 2,
@@ -54,5 +54,5 @@ export class NestedUpdateOrderContainerItemDto extends NestedUpdateDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentMenuItemSizeIdCtx?: EntityId<MenuItemSize>;
+  readonly parentMenuItemSizeIdCtx?: EntityId<MenuItemSize>;*/
 }

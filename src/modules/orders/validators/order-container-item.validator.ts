@@ -9,6 +9,8 @@ import { MenuItem } from '../../menu-items/menu-items.module';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
+import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
+import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/nested-update-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import {
   OrderContainerItem,
@@ -76,14 +78,21 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       'Invalid size',
     );
 
-    const parentMenuItem = await this.menuItemRepo.findOne({
-      where: { id: dto.parentMenuItemIdCtx },
-      relations: ['sizes', 'containerMenuItems'],
+    const parentOrderMenuItem = await this.orderMenuItemRepo.findOne({
+      where: { id: dto.parentOrderMenuItemId },
+      relations: [
+        'menuItem',
+        'size',
+        'menuItem.sizes',
+        'menuItem.containerMenuItems',
+      ],
     });
-    if (!parentMenuItem) {
+    if (!parentOrderMenuItem) {
       throw new NotFoundException();
     }
-    // validate parent item type is container
+
+    const parentMenuItem = parentOrderMenuItem.menuItem;
+
     if (parentMenuItem.type !== MENU_ITEM_TYPES.CONTAINER) {
       errorMap.addChild(
         'type',
@@ -96,7 +105,7 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     // validate parent item / size combination
     this.helper.enforceInList(
-      dto.parentMenuItemSizeIdCtx,
+      parentOrderMenuItem.size.id,
       parentMenuItem.sizes.map((x) => x.id),
       'parentItemSize',
       errorMap,
@@ -104,21 +113,10 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     );
 
     // Validate contained item and size is valid in parent container
-    const containerItems = await this.menuItemContainerItemRepo.find({
-      where: {
-        parentMenuItem: { id: dto.parentMenuItemIdCtx },
-        parentItemSize: { id: dto.parentMenuItemSizeIdCtx },
-      },
-      relations: ['containedItem', 'containedItemSize'],
-    });
-    if (containerItems.length === 0) {
-      throw new Error();
-    }
-
     const containedItemSizeCombination = `${dto.containedMenuItemId}:${dto.containedItemSizeId}`;
     this.helper.enforceInList(
       containedItemSizeCombination,
-      containerItems.map(
+      parentMenuItem.containerMenuItems.map(
         (x) => `${x.containedMenuItem.id}:${x.containedItemSize.id}`,
       ),
       'containedItemSize',
@@ -160,6 +158,51 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     return errorMap;
   }
 
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateOrderContainerItemDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
+
+    // Validate Contained item
+    const containedItem = await this.menuItemRepo.findOne({
+      where: { id: dto.containedMenuItemId },
+      relations: ['sizes'],
+    });
+    if (!containedItem) {
+      throw new NotFoundException();
+    }
+    // contained item type single
+    if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+      errorMap.addChild(
+        'type',
+        new ValidationErrorMap(
+          undefined,
+          'Only items of type single can be in a container',
+        ),
+      );
+    }
+
+    // validate contained item / size combination
+    this.helper.enforceInList(
+      dto.containedItemSizeId,
+      containedItem.sizes.map((x) => x.id),
+      'containedItemSize',
+      errorMap,
+      'Invalid size',
+    );
+
+    // validate quantity is greater than 0
+    this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      errorMap,
+      'quantity must be greater than 0',
+    );
+
+    return errorMap;
+  }
+
   protected async doValidateUpdateNode(
     dto: UpdateOrderContainerItemDto,
     id: number,
@@ -168,14 +211,19 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     const currentEntity = await this.orderContainerItemRepo.findOne({
       where: { id },
-      relations: ['containedItem', 'containedItemSize', 'parentOrderMenuItem'],
+      relations: [
+        'containedItem',
+        'containedItemSize',
+        'parentOrderMenuItem',
+        'parentOrderMenuItem.menuItem',
+      ],
     });
     if (!currentEntity) {
       throw new Error();
     }
 
     const parentContainer = await this.menuItemRepo.findOne({
-      where: { id: dto.parentMenuItemIdCtx },
+      where: { id: currentEntity.parentOrderMenuItem.menuItem.id },
       relations: [
         'containerMenuItems',
         'containerMenuItems.containedItem',
@@ -267,5 +315,16 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
     }
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateOrderContainerItemDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateOrderContainerItemDto,
+      id,
+    );
   }
 }

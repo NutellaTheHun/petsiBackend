@@ -8,6 +8,8 @@ import { InventoryItem } from '../../inventory-items/entities/inventory-item.ent
 import { InventoryItemSizeValidator } from '../../inventory-items/validators/inventory-item-size.validator';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto copy';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import {
   InventoryAreaItem,
@@ -80,6 +82,28 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     return errorMap;
   }
 
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateInventoryAreaItemDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested create and root create
+    return await this.doValidateCreateNode(
+      dto as unknown as CreateInventoryAreaItemDto,
+      id,
+    );
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateInventoryAreaItemDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateInventoryAreaItemDto,
+      id,
+    );
+  }
+
   protected async doValidateUpdateNode(
     dto: UpdateInventoryAreaItemDto,
     id: number,
@@ -99,6 +123,17 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
     // If new counted InventoryItem, must have new size assignment.
     if (dto.countedInventoryItemId) {
       this.helper.enforceOnlyOne(
+        dto,
+        'countedItemSize',
+        'countedItemSizeId',
+        errorMap,
+        'Must provide an item size or a new item size',
+        'Cannot provide both an existing and new item size',
+      );
+    }
+
+    if (dto.countedItemSize || dto.countedItemSizeId) {
+      await this.helper.enforceOnlyOne(
         dto,
         'countedItemSize',
         'countedItemSizeId',

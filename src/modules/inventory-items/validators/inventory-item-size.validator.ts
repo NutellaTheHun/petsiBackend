@@ -6,6 +6,8 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import {
   InventoryItemSize,
@@ -67,6 +69,31 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     return errorMap;
   }
 
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateInventoryItemSizeDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
+
+    // measureAmount
+    this.helper.enforcePositive(
+      dto.measureAmount,
+      'measureAmount',
+      errorMap,
+      'cannot be less than or equal to 0',
+    );
+
+    // cost
+    this.helper.enforcePositive(
+      dto.cost,
+      'cost',
+      errorMap,
+      'cannot be less than or equal to 0',
+    );
+
+    return errorMap;
+  }
+
   protected async doValidateUpdateNode(
     dto: UpdateInventoryItemSizeDto,
     id: number,
@@ -124,5 +151,16 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
     }
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateInventoryItemSizeDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateInventoryItemSizeDto,
+      id,
+    );
   }
 }

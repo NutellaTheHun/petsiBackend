@@ -6,6 +6,8 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
+import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
+import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import {
   TemplateMenuItem,
@@ -42,6 +44,17 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEnt
     return errorMap;
   }
 
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateTemplateMenuItemDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested create and root create
+    return await this.doValidateCreateNode(
+      dto as unknown as CreateTemplateMenuItemDto,
+      id,
+    );
+  }
+
   protected async doValidateUpdateNode(
     dto: UpdateTemplateMenuItemDto,
     id: number,
@@ -59,5 +72,16 @@ export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEnt
     }
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateTemplateMenuItemDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateTemplateMenuItemDto,
+      id,
+    );
   }
 }

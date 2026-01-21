@@ -50,11 +50,25 @@ export abstract class ValidatorBase<
     id: number,
   ): Promise<ValidationErrorMap>;
 
+  protected doValidateNestedCreateNode(
+    dto: T['__NcDto'],
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    throw new Error('nested validation not supported for this entity');
+  }
+
+  protected doValidateNestedUpdateNode(
+    dto: T['__NuDto'],
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    throw new Error('nested validation not supported for this entity');
+  }
+
   /**
    * If the resulting error map is not empty, returns the result as a ValidationErrorResponse, otherwise returns null
    * @param result error map to validate
    */
-  protected validateResult(
+  protected getValidateResponse(
     result: ValidationErrorMap,
   ): ValidationErrorResponse | null {
     if (result.isEmpty()) {
@@ -72,23 +86,7 @@ export abstract class ValidatorBase<
     dto: T['__CDto'],
   ): Promise<ValidationErrorResponse | null> {
     const result = await this.doValidateCreateNode(dto);
-    return this.validateResult(result);
-  }
-
-  public async validateManyCreateNode(
-    field: string,
-    dtos: T['__CDto'][],
-  ): Promise<ValidationErrorMap | null> {
-    const result = new ValidationErrorMap(undefined, field);
-
-    for (const dto of dtos) {
-      const valErrs = await this.doValidateCreateNode(dto);
-      if (valErrs) {
-        result.addChild(field, valErrs);
-      }
-    }
-
-    return result.isEmpty() ? null : result;
+    return this.getValidateResponse(result);
   }
 
   /**
@@ -103,7 +101,7 @@ export abstract class ValidatorBase<
   ): Promise<ValidationErrorResponse | null> {
     const result = await this.doValidateUpdateNode(dto, id);
 
-    return this.validateResult(result);
+    return this.getValidateResponse(result);
   }
 
   /**
@@ -118,12 +116,12 @@ export abstract class ValidatorBase<
     rootErrorMap: ValidationErrorMap,
   ): Promise<void> {
     if (this.isNestedCreateDto(dto)) {
-      const valErrs = await this.doValidateCreateNode(dto, dto.createId);
+      const valErrs = await this.doValidateNestedCreateNode(dto, dto.createId);
       if (!valErrs.isEmpty()) {
         rootErrorMap.addChild(field, valErrs);
       }
     } else if (this.isNestedUpdateDto(dto)) {
-      const valErrs = await this.doValidateUpdateNode(dto, dto.id);
+      const valErrs = await this.doValidateNestedUpdateNode(dto, dto.id);
       if (!valErrs.isEmpty()) {
         rootErrorMap.addChild(field, valErrs);
       }
@@ -145,12 +143,15 @@ export abstract class ValidatorBase<
   ): Promise<void> {
     for (const dto of dtos) {
       if (this.isNestedCreateDto(dto)) {
-        const valErrs = await this.doValidateCreateNode(dto, dto.createId);
+        const valErrs = await this.doValidateNestedCreateNode(
+          dto,
+          dto.createId,
+        );
         if (!valErrs.isEmpty()) {
           rootErrorMap.addChild(field, valErrs);
         }
       } else if (this.isNestedUpdateDto(dto)) {
-        const valErrs = await this.doValidateUpdateNode(dto, dto.id);
+        const valErrs = await this.doValidateNestedUpdateNode(dto, dto.id);
         if (!valErrs.isEmpty()) {
           rootErrorMap.addChild(field, valErrs);
         }

@@ -6,6 +6,8 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import {
   RecipeIngredient,
@@ -22,6 +24,33 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     requestContextService: RequestContextService,
   ) {
     super(repo, 'RecipeIngredient', requestContextService, logger);
+  }
+
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateRecipeIngredientDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
+
+    // Validate only ingredientInventoryItemId or ingredientRecipeId is populated
+    this.helper.enforceOnlyOne(
+      dto,
+      'ingredientInventoryItemId',
+      'ingredientRecipeId',
+      errorMap,
+      'missing reference for ingredient',
+      'cannot provide both an inventory item and a recipe as an ingredient',
+    );
+
+    // quantity cant be less than equal 0
+    this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      errorMap,
+      'quantity cannot be 0',
+    );
+
+    return errorMap;
   }
 
   protected async doValidateCreateNode(
@@ -63,6 +92,17 @@ export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEnt
     );
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateRecipeIngredientDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateRecipeIngredientDto,
+      id,
+    );
   }
 
   protected async doValidateUpdateNode(

@@ -6,6 +6,8 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import {
@@ -54,6 +56,25 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
       );
     }
     return errorMap;
+  }
+
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateRecipeSubCategoryDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
+    return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateRecipeSubCategoryDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateRecipeSubCategoryDto,
+      id,
+    );
   }
 
   protected async doValidateUpdateNode(

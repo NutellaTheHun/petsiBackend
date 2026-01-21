@@ -6,6 +6,8 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
+import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
+import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import {
   MenuItemContainerItem,
@@ -134,6 +136,53 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     return errorMap;
   }
 
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateMenuItemContainerItemDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    const errorMap = new ValidationErrorMap(id);
+
+    const containedItem = await this.menuItemRepo.findOne({
+      where: { id: dto.containedMenuItemId },
+      relations: ['sizes'],
+    });
+    if (!containedItem) {
+      throw new Error();
+    }
+
+    // Contained items must be of type single (no containers in containers)
+    if (containedItem.type !== MENU_ITEM_TYPES.SINGLE) {
+      errorMap.addChild(
+        'containedMenuItem',
+        new ValidationErrorMap(
+          undefined,
+          'contained item must be of type single',
+        ),
+      );
+    }
+
+    // valid container item / size
+    await this.helper.enforceValidSize(
+      dto.containedItemSizeId,
+      containedItem.id,
+      this.menuItemRepo,
+      'sizes',
+      'containedItemSize',
+      errorMap,
+      'Invalid size',
+    );
+
+    // validate quanitity
+    this.helper.enforcePositive(
+      dto.quantity,
+      'quantity',
+      errorMap,
+      'Invalid quantity',
+    );
+
+    return errorMap;
+  }
+
   protected async doValidateUpdateNode(
     dto: UpdateMenuItemContainerItemDto,
     id: number,
@@ -229,5 +278,16 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
     }
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateMenuItemContainerItemDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateMenuItemContainerItemDto,
+      id,
+    );
   }
 }

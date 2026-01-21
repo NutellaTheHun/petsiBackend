@@ -35,7 +35,7 @@ export class NestedCreateOrderContainerItemDto extends NestedCreateDto {
   @IsPositive()
   readonly quantity: number;
 
-  @ApiProperty({
+  /*@ApiProperty({
     description:
       "Id of the MenuItem that is this item's container, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
     example: 2,
@@ -53,5 +53,5 @@ export class NestedCreateOrderContainerItemDto extends NestedCreateDto {
   @IsNumber()
   @IsNotEmpty()
   @IsPositive()
-  readonly parentMenuItemSizeIdCtx: EntityId<MenuItemSize>;
+  readonly parentMenuItemSizeIdCtx: EntityId<MenuItemSize>;*/
 }

@@ -8,6 +8,8 @@ import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
+import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import {
@@ -100,6 +102,17 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       }
     }
     return errorMap;
+  }
+
+  protected async doValidateNestedCreateNode(
+    dto: NestedCreateOrderMenuItemDto,
+    id: string,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested create and root create
+    return await this.doValidateCreateNode(
+      dto as unknown as CreateOrderMenuItemDto,
+      id,
+    );
   }
 
   protected async doValidateUpdateNode(
@@ -216,5 +229,16 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
     }
 
     return errorMap;
+  }
+
+  protected async doValidateNestedUpdateNode(
+    dto: NestedUpdateOrderMenuItemDto,
+    id: number,
+  ): Promise<ValidationErrorMap> {
+    // Currently no difference in validation between nested update and root update
+    return await this.doValidateUpdateNode(
+      dto as unknown as UpdateOrderMenuItemDto,
+      id,
+    );
   }
 }
