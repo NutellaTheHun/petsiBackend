@@ -97,7 +97,18 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
 
     // containerItem dtos
     if (dto.containerMenuItems?.length) {
-      if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
+      let type = dto.type;
+      if (!dto.type) {
+        const currentEntity = await this.repo.findOne({
+          where: { id },
+        });
+        if (!currentEntity) {
+          throw new NotFoundException();
+        }
+        type = currentEntity.type;
+      }
+
+      if (type !== MENU_ITEM_TYPES.CONTAINER) {
         // dto.type?
         errorMap.addChild(
           'type',
@@ -107,8 +118,6 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
           ),
         );
       }
-
-      // validate no duplicates
 
       // Get current container items
       const currentContainerItems = await this.menuItemContainerItemRepo.find({
