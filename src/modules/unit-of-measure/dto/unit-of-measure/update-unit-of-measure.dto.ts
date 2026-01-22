@@ -38,5 +38,5 @@ export class UpdateUnitOfMeasureDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly categoryId?: EntityId<UnitOfMeasureCategory>;
+  readonly categoryId?: EntityId<UnitOfMeasureCategory> | null;
 }

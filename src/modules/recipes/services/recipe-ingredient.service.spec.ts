@@ -13,7 +13,8 @@ import {
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { FL_OUNCE, GALLON } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
@@ -91,20 +92,16 @@ describe('recipe ingredient service', () => {
       BadRequestException,
     );*/
 
-    const createIngredDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'create',
-      createDto: {
-        ingredientInventoryItemId: item.id,
-        quantity: 1,
-        quantityMeasurementId: unit.id,
-      },
+    const createIngredDto = plainToInstance(NestedCreateRecipeIngredientDto, {
+      createId: 'c1',
+      ingredientInventoryItemId: item.id,
+      quantity: 1,
+      quantityUnitTypeId: unit.id,
     });
 
     const theRest = recipeA.ingredients.map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {},
       }),
     );
 
@@ -176,20 +173,16 @@ describe('recipe ingredient service', () => {
       quantityUnitTypeId: unit.id,
     } as CreateRecipeIngredientDto;
 
-    const createIngredDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'create',
-      createDto: {
-        ingredientRecipeId: subRec.id,
-        quantity: 1,
-        quantityMeasurementId: unit.id,
-      },
+    const createIngredDto = plainToInstance(NestedCreateRecipeIngredientDto, {
+      createId: 'c1',
+      ingredientRecipeId: subRec.id,
+      quantity: 1,
+      quantityUnitTypeId: unit.id,
     });
 
     const theRest = recipeA.ingredients.map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {},
       }),
     );
 
@@ -241,14 +234,12 @@ describe('recipe ingredient service', () => {
       throw new Error('unit of measure not found');
     }
 
-    const recIngredDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'create',
-      createDto: {
-        ingredientInventoryItemId: item.id,
-        ingredientRecipeId: subRec.id,
-        quantity: 1,
-        quantityMeasurementId: unit.id,
-      },
+    const recIngredDto = plainToInstance(NestedCreateRecipeIngredientDto, {
+      createId: 'c1',
+      ingredientInventoryItemId: item.id,
+      ingredientRecipeId: subRec.id,
+      quantity: 1,
+      quantityUnitTypeId: unit.id,
     });
 
     const updateRecipeDto = {
@@ -272,9 +263,7 @@ describe('recipe ingredient service', () => {
     }
 
     const dto = {
-      mode: 'update',
       ingredientInventoryItemId: newItem.id,
-      ingredientRecipeId: null,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testSubRecId, dto);
@@ -301,9 +290,7 @@ describe('recipe ingredient service', () => {
     }
 
     const dto = {
-      mode: 'update',
       ingredientRecipeId: newRec.id,
-      ingredientInventoryItemId: null,
     } as UpdateRecipeIngredientDto;
 
     const result = await ingredientService.update(testIngredId, dto);
@@ -325,7 +312,6 @@ describe('recipe ingredient service', () => {
 
   it('should update quantity', async () => {
     const dto = {
-      mode: 'update',
       quantity: 10,
     } as UpdateRecipeIngredientDto;
 
@@ -342,7 +328,6 @@ describe('recipe ingredient service', () => {
     }
 
     const dto = {
-      mode: 'update',
       quantityUnitTypeId: newUnit.id,
     } as UpdateRecipeIngredientDto;
 
@@ -363,14 +348,14 @@ describe('recipe ingredient service', () => {
       throw new Error('inventory item not found');
     }
 
-    const updateRecIngredDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'update',
-      id: 1,
-      updateDto: {
+    const updateRecIngredDto = plainToInstance(
+      NestedUpdateRecipeIngredientDto,
+      {
+        id: 1,
         ingredientRecipeId: newRec.id,
         ingredientInventoryItemId: newItem.id,
       },
-    });
+    );
 
     const updateRecipeDto = {
       ingredients: [updateRecIngredDto],

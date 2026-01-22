@@ -62,9 +62,13 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     }
 
     if (dto.categoryId !== undefined) {
-      entity.category = manager.create(UnitOfMeasureCategory, {
-        id: dto.categoryId,
-      });
+      if (dto.categoryId === null) {
+        entity.category = null;
+      } else {
+        entity.category = manager.create(UnitOfMeasureCategory, {
+          id: dto.categoryId,
+        });
+      }
     }
 
     if (dto.conversionFactorToBase !== undefined) {

@@ -200,12 +200,12 @@ describe('UnitOfMeasureCategoryService', () => {
     } as UpdateUnitOfMeasureDto);
 
     const verifyNotInOld = await categoryService.findOne(oldCategoryId, [
-      'unitsOfMeasure',
+      'units',
     ]);
     expect(verifyNotInOld?.units.find((u) => u.id == unit.id)).toBeUndefined();
 
     const verifyInNew = await categoryService.findOne(newCategory.id, [
-      'unitsOfMeasure',
+      'units',
     ]);
     expect(verifyInNew?.units.find((u) => u.id == unit.id)).not.toBeUndefined();
   });
@@ -222,7 +222,7 @@ describe('UnitOfMeasureCategoryService', () => {
     await unitService.remove(unitToRemove.id);
 
     const category = await categoryService.findOne(unitToRemove.category.id, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!category) {
       throw new Error('category not found');

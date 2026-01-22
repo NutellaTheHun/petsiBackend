@@ -108,10 +108,16 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     }
 
     if (dto.categoryId !== undefined) {
-      entity.category = manager.create(RecipeCategory, { id: dto.categoryId });
+      if (dto.categoryId === null) {
+        entity.category = null;
+      } else {
+        entity.category = manager.create(RecipeCategory, {
+          id: dto.categoryId,
+        });
 
-      if (dto.subCategoryId === undefined) {
-        entity.subCategory = null;
+        if (dto.subCategoryId === undefined) {
+          entity.subCategory = null;
+        }
       }
     }
 
@@ -120,9 +126,14 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     }
 
     if (dto.producedMenuItemId !== undefined) {
-      entity.producedMenuItem = manager.create(MenuItem, {
-        id: dto.producedMenuItemId,
-      });
+      if (dto.producedMenuItemId === null) {
+        entity.producedMenuItem = null;
+        // TODO: clear sales price?
+      } else {
+        entity.producedMenuItem = manager.create(MenuItem, {
+          id: dto.producedMenuItemId,
+        });
+      }
     }
 
     if (dto.name !== undefined) {
@@ -144,9 +155,13 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     }
 
     if (dto.subCategoryId !== undefined) {
-      entity.subCategory = manager.create(RecipeSubCategory, {
-        id: dto.subCategoryId,
-      });
+      if (dto.subCategoryId === null) {
+        entity.subCategory = null;
+      } else {
+        entity.subCategory = manager.create(RecipeSubCategory, {
+          id: dto.subCategoryId,
+        });
+      }
     }
 
     if (dto.ingredients?.length) {

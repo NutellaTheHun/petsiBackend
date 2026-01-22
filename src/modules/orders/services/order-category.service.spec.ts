@@ -82,7 +82,7 @@ describe('order category service', () => {
   });
 
   it('should sort all order types', async () => {
-    const results = await service.findAll({ sortBy: 'categoryName' });
+    const results = await service.findAll({ sortBy: 'name' });
 
     expect(results).not.toBeNull();
     expect(results.items.length).toEqual(5);

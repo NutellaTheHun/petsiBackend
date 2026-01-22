@@ -11,7 +11,8 @@ import {
   FOOD_C,
 } from '../../inventory-items/utils/constants';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
-import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { AREA_A } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
@@ -68,13 +69,15 @@ describe('Inventory area item service', () => {
   });
 
   it('should create an item ', async () => {
-    const counts = await countService.findByAreaName(AREA_A, ['countedItems']);
+    const counts = await countService.findByAreaName(AREA_A, [
+      'countedInventoryItems',
+    ]);
     if (!counts) {
       throw new NotFoundException();
     }
     if (!counts[0]) throw new Error('area a counts is empty');
 
-    const item = await itemService.findOneByName(FOOD_A, ['itemSizes']);
+    const item = await itemService.findOneByName(FOOD_A, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -93,23 +96,25 @@ describe('Inventory area item service', () => {
       BadRequestException,
     );*/
 
-    const createAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'create',
-      createDto: {
+    const createAreaItemDto = plainToInstance(
+      NestedCreateInventoryAreaItemDto,
+      {
+        createId: 'c1',
         countedInventoryItemId: item.id,
-        countedAmount: 1,
+        amount: 1,
         countedItemSizeId: item.sizes[0].id,
       },
-    });
+    );
 
     if (!counts[0].countedInventoryItems) {
       throw new Error();
     }
     const theRest = counts[0].countedInventoryItems.map((item) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryAreaItemDto, {
         id: item.id,
-        updateDto: {},
+        countedInventoryItemId: item.countedInventoryItem.id,
+        amount: item.amount,
+        countedItemSizeId: item.countedItemSize.id,
       }),
     );
 
@@ -142,7 +147,9 @@ describe('Inventory area item service', () => {
   });
 
   it("should update the inventory count's reference of items", async () => {
-    const count = await countService.findOne(oldAreaCountId, ['countedItems']);
+    const count = await countService.findOne(oldAreaCountId, [
+      'countedInventoryItems',
+    ]);
     if (!count) {
       throw new NotFoundException();
     }
@@ -153,7 +160,7 @@ describe('Inventory area item service', () => {
   });
 
   it('should update an item (inventory item and item size)', async () => {
-    const newItem = await itemService.findOneByName(FOOD_B, ['itemSizes']);
+    const newItem = await itemService.findOneByName(FOOD_B, ['sizes']);
     if (!newItem) {
       throw new NotFoundException();
     }
@@ -184,7 +191,7 @@ describe('Inventory area item service', () => {
 
   it('should fail to update an item (not found)', async () => {
     const dto = {
-      measureAmount: 2,
+      amount: 2,
     } as UpdateInventoryAreaItemDto;
 
     await expect(areaItemService.update(0, dto)).rejects.toThrow(Error);
@@ -201,7 +208,7 @@ describe('Inventory area item service', () => {
   it('should sort all items by item name', async () => {
     const results = await areaItemService.findAll({
       limit: 20,
-      sortBy: 'countedItem',
+      sortBy: 'countedInventoryItem',
     });
     expect(results).not.toBeNull();
     expect(results.items.length).toEqual(15);
@@ -274,7 +281,7 @@ describe('Inventory area item service', () => {
 
   it("should delete area items when it's referenced inventoryItem is deleted", async () => {
     const areaItems = await areaItemService.findByItemName(FOOD_C, [
-      'countedItem',
+      'countedInventoryItem',
     ]);
     if (!areaItems) {
       throw new NotFoundException();

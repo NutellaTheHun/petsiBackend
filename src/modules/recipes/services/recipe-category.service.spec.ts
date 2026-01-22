@@ -4,7 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
@@ -149,25 +150,19 @@ describe('recipe category service', () => {
   });
 
   it('should create a recipe category with subCategories', async () => {
-    const subCatDtoOne = plainToInstance(NestedRecipeSubCategoryDto, {
-      mode: 'create',
-      createDto: {
-        subCategoryName: 'subCatOne',
-      },
+    const subCatDtoOne = plainToInstance(NestedCreateRecipeSubCategoryDto, {
+      createId: 'c1',
+      name: 'subCatOne',
     });
 
-    const subCatDtoTwo = plainToInstance(NestedRecipeSubCategoryDto, {
-      mode: 'create',
-      createDto: {
-        subCategoryName: 'subCatTwo',
-      },
+    const subCatDtoTwo = plainToInstance(NestedCreateRecipeSubCategoryDto, {
+      createId: 'c2',
+      name: 'subCatTwo',
     });
 
-    const subCatDtoThree = plainToInstance(NestedRecipeSubCategoryDto, {
-      mode: 'create',
-      createDto: {
-        subCategoryName: 'subCatThree',
-      },
+    const subCatDtoThree = plainToInstance(NestedCreateRecipeSubCategoryDto, {
+      createId: 'c3',
+      name: 'subCatThree',
     });
 
     const createCategoryDto = {
@@ -196,7 +191,7 @@ describe('recipe category service', () => {
     expect(result.length).toEqual(3);
   });
 
-  /*it('should modify a subCategory', async () => {
+  it('should modify a subCategory', async () => {
     const category = await categoryService.findOne(testRecSubCatId, [
       'subCategories',
     ]);
@@ -209,19 +204,14 @@ describe('recipe category service', () => {
 
     modifiedSubCatId = category.subCategories[0].id;
 
-    const updateSubCatDto = plainToInstance(NestedRecipeSubCategoryDto, {
-      mode: 'update',
+    const updateSubCatDto = plainToInstance(NestedUpdateRecipeSubCategoryDto, {
       id: modifiedSubCatId,
-      updateDto: {
-        subCategoryName: 'UPDATED SUBCAT',
-      },
+      name: 'UPDATED SUBCAT',
     });
 
     const theRest = category.subCategories.slice(1).map((subCat) =>
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeSubCategoryDto, {
         id: subCat.id,
-        uppdateDto: {},
       }),
     );
 
@@ -244,61 +234,8 @@ describe('recipe category service', () => {
     expect(result.subCategories.length).toEqual(3);
     for (const subCat of result.subCategories) {
       if (subCat.id === modifiedSubCatId) {
-        expect(subCat.subCategoryName).toEqual('UPDATED SUBCAT');
+        expect(subCat.name).toEqual('UPDATED SUBCAT');
       }
     }
-  });*/
-  /*
-  it('should query modified sub-category', async () => {
-    const result = await recipeSubCategoryService.findOne(modifiedSubCatId);
-    expect(result.subCategoryName).toEqual('UPDATED SUBCAT');
-  });*/
-
-  /*it('should remove a subCategory', async () => {
-    const category = await categoryService.findOne(testRecSubCatId, [
-      'subCategories',
-    ]);
-    if (!category) {
-      throw new NotFoundException();
-    }
-    if (!category.subCategories) {
-      throw new Error();
-    }
-
-    removedSubCatId = category.subCategories[0].id;
-
-    const theRest = category.subCategories.slice(1).map((subCat) =>
-      plainToInstance(NestedRecipeSubCategoryDto, {
-        mode: 'update',
-        id: subCat.id,
-        updateDto: {},
-      }),
-    );
-
-    const updateCategoryDto = {
-      subCategoryDtos: theRest,
-    } as UpdateRecipeCategoryDto;
-
-    const result = await categoryService.update(
-      testRecSubCatId,
-      updateCategoryDto,
-    );
-    if (!result) {
-      throw new Error();
-    }
-    if (!result.subCategories) {
-      throw new Error();
-    }
-    expect(result).not.toBeNull();
-    expect(result.subCategories.length).toEqual(2);
-    expect(
-      result.subCategories.findIndex((subCat) => subCat.id === removedSubCatId),
-    ).toEqual(-1);
-  });*/
-
-  /*it('should not query the removed subCategory', async () => {
-    await expect(
-      recipeSubCategoryService.findOne(removedSubCatId),
-    ).rejects.toThrow(NotFoundException);
-  });*/
+  });
 });

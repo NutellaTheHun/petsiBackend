@@ -1,7 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
@@ -16,7 +15,6 @@ describe('order container item service', () => {
 
   let menuItemService: MenuItemService;
   let orderItemService: OrderMenuItemService;
-  let optionService: MenuItemContainerOptionsService;
 
   let testId: number;
   let testIds: number[];
@@ -30,9 +28,6 @@ describe('order container item service', () => {
     service = module.get<OrderContainerItemService>(OrderContainerItemService);
     menuItemService = module.get<MenuItemService>(MenuItemService);
     orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
-    optionService = module.get<MenuItemContainerOptionsService>(
-      MenuItemContainerOptionsService,
-    );
   });
 
   afterAll(async () => {
@@ -62,7 +57,7 @@ describe('order container item service', () => {
   });
 
   it('should sort all container items', async () => {
-    const results = await service.findAll({ sortBy: 'containeditem' });
+    const results = await service.findAll({ sortBy: 'containedMenuItem' });
 
     expect(results).not.toBeNull();
   });
@@ -75,7 +70,7 @@ describe('order container item service', () => {
   });
 
   it('should update item', async () => {
-    const toUpdate = await service.findOne(testId, ['parentOrderItem']);
+    const toUpdate = await service.findOne(testId, ['parentOrderMenuItem']);
     if (!toUpdate) {
       throw new Error();
     }
@@ -90,32 +85,30 @@ describe('order container item service', () => {
 
     const parentMenuItem = await menuItemService.findOne(
       parentOrderItem.menuItem.id,
-      ['validSizes', 'containerOptions'],
+      ['sizes', 'containerMenuItems'],
     );
     if (!parentMenuItem) {
       throw new Error();
     }
-    if (!parentMenuItem.containerOptions) {
+    if (!parentMenuItem.containerMenuItems) {
       throw new Error();
     }
 
-    const options = await optionService.findOne(
-      parentMenuItem.containerOptions.id,
-    );
-
     const dto = {
       parentContainerMenuItemId: parentMenuItem.id,
-      containedMenuItemId: options.containerRules[0].validItem.id,
-      containedItemSizeId: options.containerRules[0].validSizes[0].id,
+      containedMenuItemId:
+        parentMenuItem.containerMenuItems[0].containedMenuItem.id,
+      containedItemSizeId:
+        parentMenuItem.containerMenuItems[0].containedItemSize.id,
     } as UpdateOrderContainerItemDto;
 
     const result = await service.update(testId, dto);
     expect(result).not.toBeNull();
     expect(result.containedMenuItem.id).toEqual(
-      options.containerRules[0].validItem.id,
+      parentMenuItem.containerMenuItems[0].containedMenuItem.id,
     );
     expect(result.containedItemSize.id).toEqual(
-      options.containerRules[0].validSizes[0].id,
+      parentMenuItem.containerMenuItems[0].containedItemSize.id,
     );
   });
 

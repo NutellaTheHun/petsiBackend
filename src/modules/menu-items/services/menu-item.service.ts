@@ -88,9 +88,13 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     entity: MenuItem,
   ): Promise<void> {
     if (dto.categoryId !== undefined) {
-      entity.category = manager.create(MenuItemCategory, {
-        id: dto.categoryId,
-      });
+      if (dto.categoryId === null) {
+        entity.category = null;
+      } else {
+        entity.category = manager.create(MenuItemCategory, {
+          id: dto.categoryId,
+        });
+      }
     }
 
     if (dto.name !== undefined) {

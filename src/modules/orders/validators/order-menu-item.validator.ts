@@ -69,7 +69,9 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         errorMap,
         'container must have at least one item',
       );
+    }
 
+    if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
       // validate no duplicates
       this.helper.enforceNoDuplicateElements(
         dto.containerOrderMenuItems,
@@ -81,7 +83,11 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
 
       // validate container quantity based on variableMax
       if (menuItem.variableMaxAmount) {
-        if (dto.quantity !== menuItem.variableMaxAmount) {
+        const totalQuantity = dto.containerOrderMenuItems.reduce(
+          (acc, item) => acc + item.quantity,
+          0,
+        );
+        if (totalQuantity !== menuItem.variableMaxAmount) {
           errorMap.addChild(
             'quantity',
             new ValidationErrorMap(
@@ -93,13 +99,11 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       }
 
       // Nested validator call
-      if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
-        await this.orderContainerItemValidator.validateManyNestedNode(
-          'containerOrderMenuItems',
-          dto.containerOrderMenuItems,
-          errorMap,
-        );
-      }
+      await this.orderContainerItemValidator.validateManyNestedNode(
+        'containerOrderMenuItems',
+        dto.containerOrderMenuItems,
+        errorMap,
+      );
     }
     return errorMap;
   }
@@ -177,7 +181,11 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
       // map to combine current contained items with items from DTO
       const containerItemsMap = new Map<
         string | number,
-        { containedMenuItemId: number; containedItemSizeId: number }
+        {
+          containedMenuItemId: number;
+          containedItemSizeId: number;
+          quantity: number;
+        }
       >();
 
       // add current container items to map
@@ -185,6 +193,7 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
         containerItemsMap.set(item.id, {
           containedMenuItemId: item.containedMenuItem.id,
           containedItemSizeId: item.containedItemSize.id,
+          quantity: item.quantity,
         });
       }
 
@@ -201,13 +210,32 @@ export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
               item.containedMenuItemId ?? current.containedMenuItemId,
             containedItemSizeId:
               item.containedItemSizeId ?? current.containedItemSizeId,
+            quantity: item.quantity ?? current.quantity,
           });
         } else if ('createId' in item) {
           // add create items to map
           containerItemsMap.set(item.createId, {
             containedMenuItemId: item.containedMenuItemId,
             containedItemSizeId: item.containedItemSizeId,
+            quantity: item.quantity,
           });
+        }
+      }
+
+      // validate container quantity based on variableMax
+      if (currentOrderItem.menuItem.variableMaxAmount) {
+        const totalQuantity = Array.from(containerItemsMap.values()).reduce(
+          (acc, item) => acc + item.quantity,
+          0,
+        );
+        if (totalQuantity !== currentOrderItem.menuItem.variableMaxAmount) {
+          errorMap.addChild(
+            'quantity',
+            new ValidationErrorMap(
+              undefined,
+              'quantity must equal the variable max amount of the container',
+            ),
+          );
         }
       }
 

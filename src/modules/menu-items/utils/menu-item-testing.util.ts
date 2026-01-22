@@ -122,7 +122,7 @@ export class MenuItemTestingUtil {
   // Menu Item
 
   /**
-   * Creates Menu Item entities, entities with name ItemF and ItemG are of type container, all other entities are of type single
+   * Creates Menu Item entities, entities with name ItemF and ItemG are of type container, with itemG having a variableMaxAmount of 3, all other entities are of type single
    * @param testContext
    */
   public async getTestMenuItemEntities(
@@ -149,8 +149,12 @@ export class MenuItemTestingUtil {
       }
 
       let type = MENU_ITEM_TYPES.SINGLE;
+      let variableMaxAmount: number | null = null;
       if (itemName === item_f || itemName === item_g) {
         type = MENU_ITEM_TYPES.CONTAINER;
+        if (itemName === item_g) {
+          variableMaxAmount = 3;
+        }
       }
 
       results.push(
@@ -163,8 +167,12 @@ export class MenuItemTestingUtil {
             sizeIds[sizeIdx++ % sizeIds.length],
           ])
           .type(type)
+          .variableMaxAmount(variableMaxAmount)
           .build(),
       );
+
+      variableMaxAmount = null;
+      type = MENU_ITEM_TYPES.SINGLE;
     }
 
     return results;
@@ -260,14 +268,14 @@ export class MenuItemTestingUtil {
         parentItemSize: itemF.sizes[0],
         containedMenuItem: itemA,
         containedItemSize: itemA.sizes[0],
-        quantity: 1,
+        quantity: 3,
       },
       {
         parentMenuItem: itemF,
         parentItemSize: itemF.sizes[0],
         containedMenuItem: itemB,
         containedItemSize: itemB.sizes[0],
-        quantity: 1,
+        quantity: 3,
       },
 
       {
@@ -275,14 +283,14 @@ export class MenuItemTestingUtil {
         parentItemSize: itemG.sizes[0],
         containedMenuItem: itemC,
         containedItemSize: itemC.sizes[0],
-        quantity: 1,
+        quantity: 3,
       },
       {
         parentMenuItem: itemG,
         parentItemSize: itemG.sizes[0],
         containedMenuItem: itemD,
         containedItemSize: itemD.sizes[0],
-        quantity: 1,
+        quantity: 3,
       },
     ] as MenuItemContainerItem[];
 

@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { item_a, item_c, item_e, item_f, item_g } from '../utils/constants';
@@ -45,7 +45,7 @@ describe('menu item container item service', () => {
   });
 
   it('should fail to create a container item (bad request) then create properly for tests.', async () => {
-    const parent = await menuItemService.findOneByName(item_a, ['validSizes']);
+    const parent = await menuItemService.findOneByName(item_a, ['sizes']);
     if (!parent) {
       throw new NotFoundException();
     }
@@ -53,7 +53,7 @@ describe('menu item container item service', () => {
       throw new Error();
     }
 
-    const item = await menuItemService.findOneByName(item_e, ['validSizes']);
+    const item = await menuItemService.findOneByName(item_e, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -72,15 +72,13 @@ describe('menu item container item service', () => {
     await expect(componentService.create(dto)).rejects.toThrow();*/
 
     const definedContainerDto = plainToInstance(
-      NestedMenuItemContainerItemDto,
+      NestedCreateMenuItemContainerItemDto,
       {
-        mode: 'create',
-        createDto: {
-          parentContainerSizeId: parent.sizes[0].id,
-          containedMenuItemId: item.id,
-          containedMenuItemSizeId: item.sizes[0].id,
-          quantity: 1,
-        },
+        createId: 'c1',
+        parentContainerSizeId: parent.sizes[0].id,
+        containedMenuItemId: item.id,
+        containedMenuItemSizeId: item.sizes[0].id,
+        quantity: 1,
       },
     );
 
@@ -92,31 +90,31 @@ describe('menu item container item service', () => {
     if (!updateResult) {
       throw new Error();
     }
-    if (!updateResult.definedContainerItems) {
+    if (!updateResult.containerMenuItems) {
       throw new Error();
     }
 
-    const result = updateResult.definedContainerItems[0];
+    const result = updateResult.containerMenuItems[0];
 
     expect(result).not.toBeNull();
 
     testId = result?.id as number;
-    testParentItemId = result?.parentContainer.id as number;
+    testParentItemId = result?.parentMenuItem.id as number;
   });
 
   it('should query menu item with container item reference', async () => {
     const parentItem = await menuItemService.findOne(testParentItemId, [
-      'definedContainerItems',
+      'containerMenuItems',
     ]);
     if (!parentItem) {
       throw new NotFoundException();
     }
-    if (!parentItem.definedContainerItems) {
+    if (!parentItem.containerMenuItems) {
       throw new Error();
     }
 
     expect(
-      parentItem.definedContainerItems.findIndex((comp) => comp.id === testId),
+      parentItem.containerMenuItems.findIndex((comp) => comp.id === testId),
     ).not.toEqual(-1);
   });
 
@@ -127,7 +125,7 @@ describe('menu item container item service', () => {
   });
 
   it('should update containedItem', async () => {
-    const newItem = await menuItemService.findOneByName(item_f, ['validSizes']);
+    const newItem = await menuItemService.findOneByName(item_f, ['sizes']);
     if (!newItem) {
       throw new NotFoundException();
     }
@@ -158,7 +156,7 @@ describe('menu item container item service', () => {
   });
 
   it('should update contained item size', async () => {
-    const item = await menuItemService.findOneByName(item_f, ['validSizes']);
+    const item = await menuItemService.findOneByName(item_f, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -227,22 +225,22 @@ describe('menu item container item service', () => {
 
   it('should query menu item without container item reference', async () => {
     const parentItem = await menuItemService.findOne(testParentItemId, [
-      'definedContainerItems',
+      'containerMenuItems',
     ]);
     if (!parentItem) {
       throw new NotFoundException();
     }
-    if (!parentItem.definedContainerItems) {
+    if (!parentItem.containerMenuItems) {
       throw new Error();
     }
 
     const container = await componentService.findEntitiesById(
-      parentItem.definedContainerItems.map((comp) => comp.id),
-      ['containedItem'],
+      parentItem.containerMenuItems.map((comp) => comp.id),
+      ['containedMenuItem'],
     );
 
     expect(
-      container.findIndex((comp) => comp.containedItem.id === testId),
+      container.findIndex((comp) => comp.containedMenuItem.id === testId),
     ).toEqual(-1);
   });
 
@@ -257,22 +255,22 @@ describe('menu item container item service', () => {
     await menuItemService.remove(toDelete.id);
 
     const parentItem = await menuItemService.findOneByName(item_g, [
-      'definedContainerItems',
+      'containerMenuItems',
     ]);
     if (!parentItem) {
       throw new NotFoundException();
     }
-    if (!parentItem.definedContainerItems) {
+    if (!parentItem.containerMenuItems) {
       throw new Error();
     }
 
     const container = await componentService.findEntitiesById(
-      parentItem.definedContainerItems.map((comp) => comp.id),
-      ['containedItem'],
+      parentItem.containerMenuItems.map((comp) => comp.id),
+      ['containedMenuItem'],
     );
 
     expect(
-      container.findIndex((comp) => comp.containedItem.id === deleteId),
+      container.findIndex((comp) => comp.containedMenuItem.id === deleteId),
     ).toEqual(-1);
   });
 });

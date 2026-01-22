@@ -4,7 +4,8 @@ import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON } from '../../unit-of-measure/utils/constants';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import {
@@ -231,7 +232,7 @@ describe('Inventory Item Service', () => {
 
   it('new category should gain reference to item', async () => {
     const oldCat = await categoryService.findOne(oldCategoryId, [
-      'categoryItems',
+      'inventoryItems',
     ]);
     if (!oldCat) {
       throw new NotFoundException();
@@ -261,7 +262,7 @@ describe('Inventory Item Service', () => {
 
   it('old item category should loose reference to item', async () => {
     const oldCat = await categoryService.findOne(oldCategoryId, [
-      'categoryItems',
+      'inventoryItems',
     ]);
     if (!oldCat) {
       throw new NotFoundException();
@@ -274,7 +275,7 @@ describe('Inventory Item Service', () => {
 
   it('new item category should gain reference to item', async () => {
     const newCat = await categoryService.findOne(newCategoryId, [
-      'categoryItems',
+      'inventoryItems',
     ]);
     if (!newCat) {
       throw new NotFoundException();
@@ -297,7 +298,7 @@ describe('Inventory Item Service', () => {
 
   it('old item category should loose reference to item', async () => {
     const newCat = await categoryService.findOne(newCategoryId, [
-      'categoryItems',
+      'inventoryItems',
     ]);
     if (!newCat) {
       throw new NotFoundException();
@@ -326,7 +327,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('vendor should gain reference to item', async () => {
-    const oldVend = await vendorService.findOne(oldVendorId, ['vendorItems']);
+    const oldVend = await vendorService.findOne(oldVendorId, [
+      'inventoryItems',
+    ]);
     if (!oldVend) {
       throw new NotFoundException();
     }
@@ -354,7 +357,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('old vendor should loose reference to item', async () => {
-    const oldVend = await vendorService.findOne(oldVendorId, ['vendorItems']);
+    const oldVend = await vendorService.findOne(oldVendorId, [
+      'inventoryItems',
+    ]);
     if (!oldVend) {
       throw new NotFoundException();
     }
@@ -365,7 +370,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('new vendor should gain reference to item', async () => {
-    const newVend = await vendorService.findOne(newVendorId, ['vendorItems']);
+    const newVend = await vendorService.findOne(newVendorId, [
+      'inventoryItems',
+    ]);
     if (!newVend) {
       throw new NotFoundException();
     }
@@ -386,7 +393,9 @@ describe('Inventory Item Service', () => {
   });
 
   it('old vendor should loose reference to item', async () => {
-    const newVend = await vendorService.findOne(newVendorId, ['vendorItems']);
+    const newVend = await vendorService.findOne(newVendorId, [
+      'inventoryItems',
+    ]);
     if (!newVend) {
       throw new NotFoundException();
     }
@@ -397,7 +406,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('should modify a item size, and item should gain reference to modified size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -407,7 +416,7 @@ describe('Inventory Item Service', () => {
 
     const sizes = await sizeService.findEntitiesById(
       item.sizes.map((size) => size.id),
-      ['inventoryItem', 'measureUnit', 'packageType'],
+      ['inventoryItem', 'measureType', 'package'],
     );
     if (!sizes) {
       throw new Error('queried sizes are null');
@@ -417,11 +426,11 @@ describe('Inventory Item Service', () => {
 
     const itemSizes = await sizeService.findEntitiesById(
       item.sizes.map((size) => size.id),
-      ['measureUnit', 'packageType'],
+      ['measureType', 'package'],
     );
 
-    const itemUnitSizeIds = itemSizes.map((size) => size.measureUnit.id);
-    const itemPkgIds = itemSizes.map((size) => size.packageType.id);
+    const itemUnitSizeIds = itemSizes.map((size) => size.measureType.id);
+    const itemPkgIds = itemSizes.map((size) => size.package.id);
 
     const units = (await measureService.findAll()).items;
     const pkgs = (await packageService.findAll()).items;
@@ -434,22 +443,17 @@ describe('Inventory Item Service', () => {
     );
 
     const updateSizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryItemSizeDto, {
         id: item.sizes[0].id,
-        updateDto: {
-          measureUnitId: newUnits[0].id,
-          inventoryPackageTypeId: newPkgs[0].id,
-          cost: 12.5,
-        },
+        measureTypeId: newUnits[0].id,
+        packageId: newPkgs[0].id,
+        cost: 12.5,
       }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryItemSizeDto, {
         id: item.sizes[1].id,
-        updateDto: {
-          measureUnitId: newUnits[1].id,
-          inventoryPackageTypeId: newPkgs[1].id,
-        },
+        measureTypeId: newUnits[1].id,
+        packageId: newPkgs[1].id,
+        cost: 12.5,
       }),
     ];
 
@@ -470,7 +474,7 @@ describe('Inventory Item Service', () => {
 
     // should reflect updated item size when queried
     const updatedSize = await sizeService.findOne(updateItemSizeId, [
-      'measureUnit',
+      'measureType',
     ]);
     if (!updatedSize) {
       throw new NotFoundException();
@@ -481,7 +485,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('should update inventory item with removed item size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -491,7 +495,7 @@ describe('Inventory Item Service', () => {
 
     const sizes = await sizeService.findEntitiesById(
       item.sizes.map((size) => size.id),
-      ['inventoryItem', 'measureUnit', 'packageType'],
+      ['inventoryItem', 'measureType', 'package'],
     );
     if (!sizes) {
       throw new Error('queried sizes are null');
@@ -501,10 +505,8 @@ describe('Inventory Item Service', () => {
     savedSizeId = sizes[1].id;
 
     const updateSizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryItemSizeDto, {
         id: sizes[1].id,
-        updateDto: {},
       }),
     ];
 
@@ -532,7 +534,7 @@ describe('Inventory Item Service', () => {
   });
 
   it('should update item with both a new and modified size', async () => {
-    const item = await itemService.findOne(invItemSizesTestId, ['itemSizes']);
+    const item = await itemService.findOne(invItemSizesTestId, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -542,7 +544,7 @@ describe('Inventory Item Service', () => {
 
     const sizes = await sizeService.findEntitiesById(
       item.sizes.map((size) => size.id),
-      ['inventoryItem', 'measureUnit', 'packageType'],
+      ['inventoryItem', 'measureType', 'package'],
     );
     if (!sizes) {
       throw new Error('queried sizes are null');
@@ -550,8 +552,8 @@ describe('Inventory Item Service', () => {
 
     updateItemPkgId = item.sizes[0].id;
 
-    const itemUnitSizeIds = sizes.map((size) => size.measureUnit.id);
-    const itemPkgIds = sizes.map((size) => size.packageType.id);
+    const itemUnitSizeIds = sizes.map((size) => size.measureType.id);
+    const itemPkgIds = sizes.map((size) => size.package.id);
 
     const units = (await measureService.findAll()).items;
     const pkgs = (await packageService.findAll()).items;
@@ -573,22 +575,18 @@ describe('Inventory Item Service', () => {
     }
 
     const sizeDtos = [
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryItemSizeDto, {
         id: sizes[0].id,
-        updateDto: {
-          measureUnitId: newUnits[0].id,
-          inventoryPackageId: newPkgs[0].id,
-        },
+        measureTypeId: newUnits[0].id,
+        packageId: newPkgs[0].id,
+        cost: 12.5,
       }),
-      plainToInstance(NestedInventoryItemSizeDto, {
-        mode: 'create',
-        createDto: {
-          measureUnitId: createUnit.id,
-          inventoryPackageId: createPkg.id,
-          cost: 7.01,
-          measureAmount: 1,
-        },
+      plainToInstance(NestedCreateInventoryItemSizeDto, {
+        createId: 'c2',
+        measureTypeId: createUnit.id,
+        packageId: createPkg.id,
+        cost: 7.01,
+        measureAmount: 1,
       }),
     ];
 
@@ -675,7 +673,7 @@ describe('Inventory Item Service', () => {
   // remove
   it('should remove an item', async () => {
     const itemToRemove = await itemService.findOne(invItemSizesTestId, [
-      'itemSizes',
+      'sizes',
       'category',
       'vendor',
     ]);
@@ -698,7 +696,7 @@ describe('Inventory Item Service', () => {
 
   it("removed item's vendor should lose reference to item", async () => {
     const vendor = await vendorService.findOne(removalVendorId, [
-      'vendorItems',
+      'inventoryItems',
     ]);
     if (!vendor) {
       throw new NotFoundException();
@@ -710,7 +708,7 @@ describe('Inventory Item Service', () => {
 
   it("removed item's category should lose reference to item", async () => {
     const category = await categoryService.findOne(removalCategoryId, [
-      'categoryItems',
+      'inventoryItems',
     ]);
     if (!category) {
       throw new NotFoundException();

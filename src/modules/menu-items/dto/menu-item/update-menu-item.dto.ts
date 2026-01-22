@@ -44,7 +44,7 @@ export class UpdateMenuItemDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly categoryId?: EntityId<MenuItemCategory>;
+  readonly categoryId?: EntityId<MenuItemCategory> | null;
 
   @ApiPropertyOptional({
     description:

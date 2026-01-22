@@ -30,7 +30,7 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly categoryId?: EntityId<InventoryItemCategory>;
+  readonly categoryId?: EntityId<InventoryItemCategory> | null;
 
   @ApiPropertyOptional({
     example: 2,
@@ -40,7 +40,7 @@ export class UpdateInventoryItemDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly vendorId?: EntityId<InventoryItemVendor>;
+  readonly vendorId?: EntityId<InventoryItemVendor> | null;
 
   @ApiPropertyOptional({
     description: 'TODO',

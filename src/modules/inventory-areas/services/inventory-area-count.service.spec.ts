@@ -2,7 +2,8 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import {
@@ -17,7 +18,8 @@ import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-mea
 import { FL_OUNCE, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
-import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { AREA_A, AREA_B } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
@@ -82,12 +84,12 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
 
-    const foodA = await itemService.findOneByName(FOOD_A, ['itemSizes']);
+    const foodA = await itemService.findOneByName(FOOD_A, ['sizes']);
     if (!foodA) {
       throw new Error();
     }
 
-    const foodB = await itemService.findOneByName(FOOD_B, ['itemSizes']);
+    const foodB = await itemService.findOneByName(FOOD_B, ['sizes']);
     if (!foodB) {
       throw new Error();
     }
@@ -102,32 +104,26 @@ describe('Inventory area count service', () => {
       throw new Error();
     }
 
-    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'create',
-      createDto: {
-        measureAmount: 1,
-        measureUnitId: unit.id,
-        inventoryPackageId: pkg.id,
-        cost: 1,
-      },
+    const sizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
+      createId: 'c1',
+      packageId: pkg.id,
+      measureTypeId: unit.id,
+      measureAmount: 1,
+      cost: 1,
     });
 
     const itemDtos = [
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
-        createDto: {
-          countedInventoryItemId: foodA.id,
-          countedAmount: 1,
-          countedItemSizeId: foodA.sizes[0].id,
-        },
+      plainToInstance(NestedCreateInventoryAreaItemDto, {
+        createId: 'c2',
+        countedInventoryItemId: foodA.id,
+        amount: 1,
+        countedItemSizeId: foodA.sizes[0].id,
       }),
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
-        createDto: {
-          countedInventoryItemId: foodB.id,
-          countedAmount: 1,
-          countedItemSizeDto: sizeDto,
-        },
+      plainToInstance(NestedCreateInventoryAreaItemDto, {
+        createId: 'c3',
+        countedInventoryItemId: foodB.id,
+        amount: 1,
+        countedItemSize: sizeDto,
       }),
     ];
 
@@ -339,7 +335,7 @@ describe('Inventory area count service', () => {
 
   it('should update area count with (created) counted items, with pre-existing sizes and created sizes', async () => {
     const itemsRequest = await itemService.findAll({
-      relations: ['itemSizes'],
+      relations: ['sizes'],
     });
     const items = itemsRequest.items;
     if (!items) {
@@ -383,28 +379,23 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
 
-    const sizeDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'create',
-      createDto: {
-        measureUnitId: uom.id,
-        inventoryPackageId: pkg.id,
-        inventoryItemId: items[2].id,
-        cost: 12,
-        measureAmount: 1,
-      },
+    const sizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
+      createId: 'c4',
+      packageId: pkg.id,
+      measureTypeId: uom.id,
+      measureAmount: 1,
+      cost: 12,
     });
     const item_c = { itemId: items[2].id, sizeDto };
 
-    const itemCountDtos = testingUtil.createNestedInventoryAreaItemDtos(
-      testCountId,
-      [item_a, item_b, item_c],
-    );
+    const itemCountDtos = testingUtil.createNestedInventoryAreaItemDtos([
+      item_a,
+      item_b,
+      item_c,
+    ]);
 
     const nestedItemCountDtos = itemCountDtos.map((dto) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'create',
-        createDto: dto,
-      }),
+      plainToInstance(NestedCreateInventoryAreaItemDto, dto),
     );
 
     const updateCountDto = {
@@ -424,7 +415,7 @@ describe('Inventory area count service', () => {
     const results = await areaItemService.findEntitiesById(testItemCountIds, [
       'parentInventoryCount',
       'countedItemSize',
-      'countedItem',
+      'countedInventoryItem',
     ]);
     if (!results) {
       throw new Error('results is null');
@@ -432,7 +423,7 @@ describe('Inventory area count service', () => {
 
     for (const item of results) {
       expect(item.parentInventoryCount).not.toBeNull();
-      expect(item.countedItem).not.toBeNull();
+      expect(item.countedInventoryItem).not.toBeNull();
       expect(item.countedItemSize).not.toBeNull();
     }
   });
@@ -440,8 +431,8 @@ describe('Inventory area count service', () => {
   it("should update an area count item's unit amount", async () => {
     const areaCount = await countService.findOne(
       testCountId,
-      ['countedItems'],
-      ['countedItems.countedItemSize'],
+      ['countedInventoryItems'],
+      ['countedInventoryItems.countedItemSize'],
     );
     if (!areaCount) {
       throw new NotFoundException();
@@ -451,19 +442,17 @@ describe('Inventory area count service', () => {
     }
 
     updateItemTestId = areaCount.countedInventoryItems[0].id;
-    const updateAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
-      id: updateItemTestId,
-      updateDto: {
-        countedAmount: 10,
+    const updateAreaItemDto = plainToInstance(
+      NestedUpdateInventoryAreaItemDto,
+      {
+        id: updateItemTestId,
+        amount: 10,
       },
-    });
+    );
 
     const theRest = areaCount.countedInventoryItems.splice(1).map((areaItem) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryAreaItemDto, {
         id: areaItem.id,
-        updateDto: {},
       }),
     );
 
@@ -494,8 +483,8 @@ describe('Inventory area count service', () => {
   it("should update an area count item's size unit of measure", async () => {
     const areaCount = await countService.findOne(
       testCountId,
-      ['countedItems'],
-      ['countedItems.countedItemSize'],
+      ['countedInventoryItems'],
+      ['countedInventoryItems.countedItemSize'],
     );
     if (!areaCount) {
       throw new NotFoundException();
@@ -511,27 +500,25 @@ describe('Inventory area count service', () => {
     if (!uom) {
       throw new NotFoundException();
     }
-    const itemSizeUpdateDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'update',
-      id: itemSizeTestId,
-      updateDto: {
-        measureUnitId: uom.id,
+    const itemSizeUpdateDto = plainToInstance(
+      NestedUpdateInventoryItemSizeDto,
+      {
+        id: itemSizeTestId,
+        measureTypeId: uom.id,
       },
-    });
+    );
 
-    const updateAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
-      id: updateItemTestId,
-      updateDto: {
-        countedItemSizeDto: itemSizeUpdateDto,
+    const updateAreaItemDto = plainToInstance(
+      NestedUpdateInventoryAreaItemDto,
+      {
+        id: updateItemTestId,
+        countedItemSize: itemSizeUpdateDto,
       },
-    });
+    );
 
     const theRest = areaCount.countedInventoryItems.splice(1).map((areaItem) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryAreaItemDto, {
         id: areaItem.id,
-        updateDto: {},
       }),
     );
 
@@ -556,8 +543,8 @@ describe('Inventory area count service', () => {
   it("should update an area count item size's package", async () => {
     const areaCount = await countService.findOne(
       testCountId,
-      ['countedItems'],
-      ['countedItems.countedItemSize'],
+      ['countedInventoryItems'],
+      ['countedInventoryItems.countedItemSize'],
     );
     if (!areaCount) {
       throw new NotFoundException();
@@ -573,27 +560,25 @@ describe('Inventory area count service', () => {
     if (!pkg) {
       throw new NotFoundException();
     }
-    const itemSizeUpdateDto = plainToInstance(NestedInventoryItemSizeDto, {
-      mode: 'update',
-      id: itemSizeTestId,
-      updateDto: {
-        inventoryPackageId: pkg.id,
+    const itemSizeUpdateDto = plainToInstance(
+      NestedUpdateInventoryItemSizeDto,
+      {
+        id: itemSizeTestId,
+        packageId: pkg.id,
       },
-    });
+    );
 
-    const updateAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
-      id: updateItemTestId,
-      updateDto: {
-        countedItemSizeDto: itemSizeUpdateDto,
+    const updateAreaItemDto = plainToInstance(
+      NestedUpdateInventoryAreaItemDto,
+      {
+        id: updateItemTestId,
+        countedItemSize: itemSizeUpdateDto,
       },
-    });
+    );
 
     const theRest = areaCount.countedInventoryItems.splice(1).map((areaItem) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryAreaItemDto, {
         id: areaItem.id,
-        updateDto: {},
       }),
     );
 
@@ -618,8 +603,8 @@ describe('Inventory area count service', () => {
   it("should update an area count item's inventory item (which means also size)", async () => {
     const areaCount = await countService.findOne(
       testCountId,
-      ['countedItems'],
-      ['countedItems.countedItemSize'],
+      ['countedInventoryItems'],
+      ['countedInventoryItems.countedItemSize'],
     );
     if (!areaCount) {
       throw new NotFoundException();
@@ -631,7 +616,7 @@ describe('Inventory area count service', () => {
     updateItemTestId = areaCount.countedInventoryItems[0].id;
     itemSizeTestId = areaCount.countedInventoryItems[0].countedItemSize.id;
 
-    const item = await itemService.findOneByName(FOOD_C, ['itemSizes']);
+    const item = await itemService.findOneByName(FOOD_C, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -639,20 +624,18 @@ describe('Inventory area count service', () => {
       throw new NotFoundException();
     }
 
-    const updateAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
-      id: updateItemTestId,
-      updateDto: {
+    const updateAreaItemDto = plainToInstance(
+      NestedUpdateInventoryAreaItemDto,
+      {
+        id: updateItemTestId,
         countedInventoryItemId: item.id,
         countedItemSizeId: item.sizes[0].id,
       },
-    });
+    );
 
     const theRest = areaCount.countedInventoryItems.splice(1).map((areaItem) =>
-      plainToInstance(NestedInventoryAreaItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateInventoryAreaItemDto, {
         id: areaItem.id,
-        updateDto: {},
       }),
     );
 
@@ -687,8 +670,8 @@ describe('Inventory area count service', () => {
   it("should update an area count item's with creating a new counted item, modifying another item, and removing another item", async () => {
     const areaCount = await countService.findOne(
       testCountId,
-      ['countedItems'],
-      ['countedItems.countedItemSize'],
+      ['countedInventoryItems'],
+      ['countedInventoryItems.countedItemSize'],
     );
     if (!areaCount) {
       throw new NotFoundException();
@@ -699,36 +682,33 @@ describe('Inventory area count service', () => {
 
     updateItemTestId = areaCount.countedInventoryItems[0].id;
 
-    const updateAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
-      id: updateItemTestId,
-      updateDto: {
-        countedAmount: 50,
+    const updateAreaItemDto = plainToInstance(
+      NestedUpdateInventoryAreaItemDto,
+      {
+        id: updateItemTestId,
+        amount: 50,
       },
-    });
+    );
 
-    const item = await itemService.findOneByName(DRY_B, ['itemSizes']);
+    const item = await itemService.findOneByName(DRY_B, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
     if (!item.sizes) {
       throw new Error('item sizes is null');
     }
-    const createAreaItemDto = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'create',
-      createDto: {
-        parentInventoryCountId: testCountId,
-        countedAmount: 100,
-        measureAmount: 200,
+    const createAreaItemDto = plainToInstance(
+      NestedCreateInventoryAreaItemDto,
+      {
+        createId: 'c5',
+        amount: 100,
         countedInventoryItemId: item.id,
         countedItemSizeId: item.sizes[0].id,
       },
-    });
+    );
 
-    const theRest = plainToInstance(NestedInventoryAreaItemDto, {
-      mode: 'update',
+    const theRest = plainToInstance(NestedUpdateInventoryAreaItemDto, {
       id: areaCount.countedInventoryItems[1].id,
-      updateDto: {},
     });
 
     deletedAreaItemId = areaCount.countedInventoryItems[2].id;

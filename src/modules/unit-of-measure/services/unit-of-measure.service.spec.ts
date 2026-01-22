@@ -147,7 +147,7 @@ describe('UnitOfMeasureService', () => {
 
   it('category should contain reference to unit of measure', async () => {
     const weightCategory = await categoryService.findOneByName(WEIGHT, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!weightCategory) {
       throw new Error('weight category not found');
@@ -177,7 +177,7 @@ describe('UnitOfMeasureService', () => {
 
   it('old category should not have reference to unit of measure', async () => {
     const weightCategory = await categoryService.findOneByName(WEIGHT, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!weightCategory) {
       throw new Error('weight category not found');
@@ -190,7 +190,7 @@ describe('UnitOfMeasureService', () => {
 
   it('new category should have reference to unit of measure', async () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!volumeCategory) {
       throw new Error('weight category not found');
@@ -242,7 +242,7 @@ describe('UnitOfMeasureService', () => {
 
   it('new category should lose reference to unit of measure', async () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!volumeCategory) {
       throw new Error('weight category not found');
@@ -433,14 +433,14 @@ describe('UnitOfMeasureService', () => {
     const unitB = await unitService.findOneByName(LITER, ['category']);
     if (!unitB) throw new Error('unitB not found');
 
-    unitA.conversionFactorToBase = undefined;
+    unitA.conversionFactorToBase = null;
 
     expect(() => unitService.convert(1, unitA, unitB)).toThrow(Error);
   });
 
   it('should set unit category to null when deleting category', async () => {
     const volumeCategory = await categoryService.findOneByName(VOLUME, [
-      'unitsOfMeasure',
+      'units',
     ]);
     if (!volumeCategory) {
       throw new Error('weight category not found');

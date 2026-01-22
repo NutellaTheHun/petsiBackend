@@ -312,7 +312,7 @@ export abstract class ServiceBase<
   async findEntitiesById(
     ids: number[],
     relations?: Array<keyof TEntity['__Entity']>,
-  ): Promise<TEntity[]> {
+  ): Promise<TEntity['__Entity'][]> {
     // Get requestId
     const requestId = this.requestContextService.getRequestId();
 

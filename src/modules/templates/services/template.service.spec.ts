@@ -5,7 +5,8 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
+import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
+import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { template_a } from '../utils/constants';
@@ -118,21 +119,17 @@ describe('Template Service', () => {
     }
 
     const itemDtos = [
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'itemA',
-          menuItemId: itemA.id,
-          tablePosIndex: 0,
-        },
+      plainToInstance(NestedCreateTemplateMenuItemDto, {
+        createId: 'c1',
+        displayName: 'itemA',
+        menuItemId: itemA.id,
+        tablePosIndex: 0,
       }),
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          displayName: 'itemB',
-          menuItemId: itemB.id,
-          tablePosIndex: 1,
-        },
+      plainToInstance(NestedCreateTemplateMenuItemDto, {
+        createId: 'c2',
+        displayName: 'itemB',
+        menuItemId: itemB.id,
+        tablePosIndex: 1,
       }),
     ];
 
@@ -169,7 +166,9 @@ describe('Template Service', () => {
   });
 
   it('should modify a template item', async () => {
-    const template = await templateService.findOne(testId, ['templateItems']);
+    const template = await templateService.findOne(testId, [
+      'templateMenuItems',
+    ]);
     if (!template) {
       throw new NotFoundException();
     }
@@ -185,21 +184,16 @@ describe('Template Service', () => {
     }
     modifiedMenuItemId = newItem.id;
 
-    const uItemDto = plainToInstance(NestedTemplateMenuItemDto, {
-      mode: 'update',
+    const uItemDto = plainToInstance(NestedUpdateTemplateMenuItemDto, {
       id: modifiedItemId,
-      updateDto: {
-        displayName: 'update display name',
-        tablePosIndex: 10,
-        menuItemId: modifiedMenuItemId,
-      },
+      displayName: 'update display name',
+      tablePosIndex: 10,
+      menuItemId: modifiedMenuItemId,
     });
 
     const theRest = template.templateMenuItems.slice(1).map((item) =>
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateTemplateMenuItemDto, {
         id: item.id,
-        updateDto: {},
       }),
     );
 
@@ -240,7 +234,9 @@ describe('Template Service', () => {
   });
 
   it('should remove a template item', async () => {
-    const template = await templateService.findOne(testId, ['templateItems']);
+    const template = await templateService.findOne(testId, [
+      'templateMenuItems',
+    ]);
     if (!template) {
       throw new NotFoundException();
     }
@@ -251,10 +247,8 @@ describe('Template Service', () => {
     deletedItemId = template.templateMenuItems[0].id;
 
     const uItemDtos = template.templateMenuItems.slice(1).map((item) =>
-      plainToInstance(NestedTemplateMenuItemDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateTemplateMenuItemDto, {
         id: item.id,
-        updateDto: {},
       }),
     );
 
@@ -305,7 +299,9 @@ describe('Template Service', () => {
   });
 
   it('should remove a template', async () => {
-    const template = await templateService.findOne(testId, ['templateItems']);
+    const template = await templateService.findOne(testId, [
+      'templateMenuItems',
+    ]);
     if (!template) {
       throw new NotFoundException();
     }

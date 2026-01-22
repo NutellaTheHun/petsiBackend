@@ -4,7 +4,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasureCategoryService } from '../../unit-of-measure/services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { BOX_PKG, CAN_PKG, DRY_A, FOOD_A, OTHER_A } from '../utils/constants';
@@ -92,14 +92,12 @@ describe('Inventory Item Size Service', () => {
     );*/
 
     const createItemSizeDto = {
-      mode: 'create',
-      createDto: {
-        measureTypeId: unit.id,
-        packageId: packageType?.id,
-        cost: 5,
-        measureAmount: 1,
-      },
-    } as NestedInventoryItemSizeDto;
+      createId: 'c1',
+      measureTypeId: unit.id,
+      packageId: packageType?.id,
+      cost: 5,
+      measureAmount: 1,
+    } as NestedCreateInventoryItemSizeDto;
 
     const updateItemDto = {
       sizes: [createItemSizeDto],
@@ -124,7 +122,7 @@ describe('Inventory Item Size Service', () => {
   });
 
   it('should update inventoryItem query with new size', async () => {
-    const item = await itemService.findOne(testItemId, ['itemSizes']);
+    const item = await itemService.findOne(testItemId, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -201,8 +199,8 @@ describe('Inventory Item Size Service', () => {
   it('should retain all updated properties', async () => {
     const verify = await sizeService.findOne(testId, [
       'inventoryItem',
-      'measureUnit',
-      'packageType',
+      'measureType',
+      'package',
     ]);
     if (!verify) {
       throw new NotFoundException();
@@ -240,7 +238,7 @@ describe('Inventory Item Size Service', () => {
 
   // If a package is deleted, the itemSizes are also deleted.
   it('should delete a package and delete the item size', async () => {
-    const item = await itemService.findOneByName(DRY_A, ['itemSizes']);
+    const item = await itemService.findOneByName(DRY_A, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -248,7 +246,7 @@ describe('Inventory Item Size Service', () => {
       throw new Error('item sizes is empty');
     }
 
-    const size = await sizeService.findOne(item.sizes[0].id, ['packageType']);
+    const size = await sizeService.findOne(item.sizes[0].id, ['package']);
     if (!size) {
       throw new NotFoundException();
     }
@@ -265,7 +263,7 @@ describe('Inventory Item Size Service', () => {
 
   // If a item is deleted, the itemSizes are also deleted.
   it('should delete a item and delete the item size', async () => {
-    const item = await itemService.findOneByName(OTHER_A, ['itemSizes']);
+    const item = await itemService.findOneByName(OTHER_A, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }
@@ -298,7 +296,7 @@ describe('Inventory Item Size Service', () => {
   });
 
   it('should query inventoryItem with removed size not present', async () => {
-    const item = await itemService.findOne(testItemId, ['itemSizes']);
+    const item = await itemService.findOne(testItemId, ['sizes']);
     if (!item) {
       throw new NotFoundException();
     }

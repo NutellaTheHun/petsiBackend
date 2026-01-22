@@ -121,7 +121,7 @@ describe('User Service', () => {
   });
 
   it('should sortby all users', async () => {
-    const results = await usersService.findAll({ sortBy: 'username' });
+    const results = await usersService.findAll({ sortBy: 'name' });
     expect(results.items.length).toEqual(5);
   });
 

@@ -75,10 +75,14 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     entity: InventoryItem,
   ): Promise<void> {
     if (dto.categoryId !== undefined) {
-      const newCategory = manager.create(InventoryItemCategory, {
-        id: dto.categoryId,
-      });
-      entity.category = newCategory;
+      if (dto.categoryId === null) {
+        entity.category = null;
+      } else {
+        const newCategory = manager.create(InventoryItemCategory, {
+          id: dto.categoryId,
+        });
+        entity.category = newCategory;
+      }
     }
 
     if (dto.name !== undefined) {
@@ -86,10 +90,14 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     }
 
     if (dto.vendorId !== undefined) {
-      const newVendor = manager.create(InventoryItemVendor, {
-        id: dto.vendorId,
-      });
-      entity.vendor = newVendor;
+      if (dto.vendorId === null) {
+        entity.vendor = null;
+      } else {
+        const newVendor = manager.create(InventoryItemVendor, {
+          id: dto.vendorId,
+        });
+        entity.vendor = newVendor;
+      }
     }
 
     if (dto.sizes?.length) {

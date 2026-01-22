@@ -15,7 +15,7 @@ import {
   OUNCE,
   POUND,
 } from '../../unit-of-measure/utils/constants';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import {
@@ -197,7 +197,7 @@ describe('recipe service', () => {
 
     const testIngredients = await ingredientService.findEntitiesById(
       testRecipe.ingredients.map((i) => i.id),
-      ['ingredientInventoryItem', 'ingredientRecipe', 'quantityMeasure'],
+      ['ingredientInventoryItem', 'ingredientRecipe', 'quantityUnitType'],
     );
     if (!testIngredients) {
       throw new error('recipe ingredients is null');
@@ -224,15 +224,12 @@ describe('recipe service', () => {
     });*/
 
     const updateIngredDtos = testIngredients.map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {
-          quantity: ingred.quantity,
-          quantityMeasurementId: ingred.quantityMeasure.id,
-          ingredientRecipeId: ingred.ingredientRecipe?.id,
-          ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
-        },
+        quantity: ingred.quantity,
+        quantityUnitTypeId: ingred.quantityUnitType.id,
+        ingredientRecipeId: ingred.ingredientRecipe?.id,
+        ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
       }),
     );
 
@@ -259,7 +256,7 @@ describe('recipe service', () => {
     const ingreds = await ingredientService.findByRecipeId(testId, [
       'ingredientInventoryItem',
       'ingredientRecipe',
-      'quantityMeasure',
+      'quantityUnitType',
     ]);
     if (!ingreds) {
       throw new Error('ingredient is null');
@@ -286,15 +283,12 @@ describe('recipe service', () => {
     }
 
     const ingredUpdateDtos = ingreds.map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {
-          quantity: ingred.quantity,
-          quantityMeasurementId: ingred.quantityUnitType.id,
-          ingredientRecipeId: ingred.ingredientRecipe?.id,
-          ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
-        },
+        quantity: ingred.quantity,
+        quantityUnitTypeId: ingred.quantityUnitType.id,
+        ingredientRecipeId: ingred.ingredientRecipe?.id,
+        ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
       }),
     );
 
@@ -332,7 +326,7 @@ describe('recipe service', () => {
     const ingreds = await ingredientService.findByRecipeId(testId, [
       'ingredientInventoryItem',
       'ingredientRecipe',
-      'quantityMeasure',
+      'quantityUnitType',
     ]);
     if (!ingreds) {
       throw new Error('ingredient is null');
@@ -359,15 +353,12 @@ describe('recipe service', () => {
     }
 
     const ingredUpdateDtos = ingreds.map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        mode: 'update',
-        updateDto: {
-          quantity: ingred.quantity,
-          quantityMeasurementId: ingred.quantityUnitType.id,
-          ingredientRecipeId: ingred.ingredientRecipe?.id,
-          ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
-        },
+        quantity: ingred.quantity,
+        quantityUnitTypeId: ingred.quantityUnitType.id,
+        ingredientRecipeId: ingred.ingredientRecipe?.id,
+        ingredientInventoryItemId: ingred.ingredientInventoryItem?.id,
       }),
     );
     const dto = {
@@ -378,7 +369,7 @@ describe('recipe service', () => {
     expect(result).not.toBeNull();
 
     const verify = await ingredientService.findOne(testIngredientId, [
-      'quantityMeasure',
+      'quantityUnitType',
     ]);
     if (!verify) {
       throw new Error('ingredient to verify is null');
@@ -404,7 +395,7 @@ describe('recipe service', () => {
     const ingreds = await ingredientService.findByRecipeId(testId, [
       'ingredientInventoryItem',
       'ingredientRecipe',
-      'quantityMeasure',
+      'quantityUnitType',
     ]);
     if (!ingreds) {
       throw new Error('ingredient is null');
@@ -434,20 +425,14 @@ describe('recipe service', () => {
       testSubRecipeId = subRec.id;
     }
 
-    const updatedDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'update',
+    const updatedDto = plainToInstance(NestedUpdateRecipeIngredientDto, {
       id: ingreds[0].id,
-      updateDto: {
-        ingredientRecipeId: ingreds[0].ingredientRecipe?.id,
-        ingredientInventoryItemId: null,
-      },
+      ingredientRecipeId: ingreds[0].ingredientRecipe?.id,
     });
 
     const theRest = ingreds.slice(1).map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {},
       }),
     );
 
@@ -485,7 +470,7 @@ describe('recipe service', () => {
     const ingreds = await ingredientService.findByRecipeId(testId, [
       'ingredientInventoryItem',
       'ingredientRecipe',
-      'quantityMeasure',
+      'quantityUnitType',
     ]);
     if (!ingreds) {
       throw new Error('ingredient is null');
@@ -500,19 +485,14 @@ describe('recipe service', () => {
       ingreds[0].quantity = testQuantity;
     }
 
-    const updateDto = plainToInstance(NestedRecipeIngredientDto, {
-      mode: 'update',
+    const updateDto = plainToInstance(NestedUpdateRecipeIngredientDto, {
       id: ingreds[0].id,
-      updateDto: {
-        quantity: ingreds[0].quantity,
-      },
+      quantity: ingreds[0].quantity,
     });
 
     const theRest = ingreds.slice(1).map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {},
       }),
     );
 
@@ -541,10 +521,8 @@ describe('recipe service', () => {
     }
 
     const ingredUpdateDtos = testRecipe.ingredients.slice(1).map((ingred) =>
-      plainToInstance(NestedRecipeIngredientDto, {
-        mode: 'update',
+      plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: ingred.id,
-        updateDto: {},
       }),
     );
 

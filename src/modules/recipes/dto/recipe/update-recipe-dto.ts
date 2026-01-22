@@ -34,7 +34,7 @@ export class UpdateRecipeDto {
   @IsNumber()
   @IsPositive()
   @IsOptional()
-  readonly producedMenuItemId?: EntityId<MenuItem>;
+  readonly producedMenuItemId?: EntityId<MenuItem> | null;
 
   @ApiPropertyOptional({
     description:
@@ -106,7 +106,7 @@ export class UpdateRecipeDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly categoryId?: EntityId<RecipeCategory>;
+  readonly categoryId?: EntityId<RecipeCategory> | null;
 
   @ApiPropertyOptional({
     description:
@@ -117,7 +117,7 @@ export class UpdateRecipeDto {
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly subCategoryId?: EntityId<RecipeSubCategory>;
+  readonly subCategoryId?: EntityId<RecipeSubCategory> | null;
 
   @ApiPropertyOptional({
     description: 'TODO',
