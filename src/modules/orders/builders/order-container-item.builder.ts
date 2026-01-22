@@ -5,7 +5,8 @@ import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.se
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
-import { NestedOrderContainerItemDto } from '../dto/order-container-item/nested-order-container-item.dto';
+import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
+import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/nested-update-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
@@ -49,7 +50,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
     // If the parentOrderMenuItemId is provided, use it to set the parentOrderItem. (Through order-menu-item endpoint)
     // If the parentOrderMenuItemId is not provided, but a parent is provided, use the parent to set the parentOrderItem. (Through create order-menu-item endpoint)
     if (parent) {
-      this.setPropByVal('parentOrderItem', parent);
+      this.setPropByVal('parentOrderMenuItem', parent);
     } else if (dto.parentOrderMenuItemId !== undefined) {
       this.parentOrderMenuItemById(dto.parentOrderMenuItemId);
     }
@@ -73,22 +74,26 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
 
   async buildMany(
     parent: OrderMenuItem,
-    dtos: (CreateOrderContainerItemDto | NestedOrderContainerItemDto)[],
+    dtos: (
+      | CreateOrderContainerItemDto
+      | NestedCreateOrderContainerItemDto
+      | NestedUpdateOrderContainerItemDto
+    )[],
   ): Promise<OrderContainerItem[]> {
     const results: OrderContainerItem[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateOrderContainerItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createId && dto.createDto) {
-          results.push(await this.buildCreateDto(dto.createDto, parent));
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const item = await this.componentService.findOne(dto.id);
           if (!item) {
-            throw new Error('order menu item container is null');
+            throw new Error('order container item not found');
           }
-          results.push(await this.buildUpdateDto(item, dto.updateDto));
+          results.push(await this.buildUpdateDto(item, dto));
         }
       }
     }
@@ -106,7 +111,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
   private containedMenuItemById(id: number): this {
     return this.setPropById(
       this.menuItemService.findOne.bind(this.menuItemService),
-      'containedItem',
+      'containedMenuItem',
       id,
     );
   }
@@ -118,7 +123,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
   private parentOrderMenuItemById(id: number): this {
     return this.setPropById(
       this.orderItemService.findOne.bind(this.orderItemService),
-      'parentOrderItem',
+      'parentOrderMenuItem',
       id,
     );
   }

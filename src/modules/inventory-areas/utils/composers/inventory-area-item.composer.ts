@@ -5,7 +5,7 @@ import { InventoryItemSize } from '../../../inventory-items/entities/inventory-i
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemSizeComposer } from '../../../inventory-items/utils/composers/inventory-item-size.composer';
 import { CreateInventoryAreaItemDto } from '../../dto/inventory-area-item/create-inventory-area-item.dto';
-import { NestedCreateInventoryAreaItemDto } from '../../dto/inventory-area-item/nested-create-inventory-area-item.dto copy';
+import { NestedCreateInventoryAreaItemDto } from '../../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../../dto/inventory-area-item/update-inventory-area-item.dto';
 import {
   InventoryAreaItem,

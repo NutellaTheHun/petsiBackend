@@ -3,12 +3,14 @@ import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemSizeBuilder } from '../../inventory-items/builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
-import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
-import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
@@ -91,28 +93,30 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
   public async buildMany(
     parent: InventoryAreaCount,
-    dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
+    dtos: (
+      | CreateInventoryAreaItemDto
+      | NestedCreateInventoryAreaItemDto
+      | NestedUpdateInventoryAreaItemDto
+    )[],
   ): Promise<InventoryAreaItem[]> {
     const results: InventoryAreaItem[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateInventoryAreaItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createId && dto.createDto) {
-          results.push(
-            await this.buildCreateDto(dto.createDto, parent, dto.createId),
-          );
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const countedItem = await this.itemCountService.findOne(dto.id, [
             'parentInventoryCount',
-            'countedItem',
+            'countedInventoryItem',
             'countedItemSize',
           ]);
           if (!countedItem) {
             throw new Error('counted item is null');
           }
-          results.push(await this.buildUpdateDto(countedItem, dto.updateDto));
+          results.push(await this.buildUpdateDto(countedItem, dto));
         }
       }
     }
@@ -122,7 +126,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   public countedItemById(id: number): this {
     return this.setPropById(
       this.itemService.findOne.bind(this.itemService),
-      'countedItem',
+      'countedInventoryItem',
       id,
     );
   }
@@ -130,7 +134,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   public countedItemByName(name: string): this {
     return this.setPropByName(
       this.itemService.findOne.bind(this.itemService),
-      'countedItem',
+      'countedInventoryItem',
       name,
     );
   }
@@ -151,7 +155,10 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   }
 
   public countedItemSizeByBuilder(
-    dto: CreateInventoryItemSizeDto | NestedInventoryItemSizeDto,
+    dto:
+      | CreateInventoryItemSizeDto
+      | NestedCreateInventoryItemSizeDto
+      | NestedUpdateInventoryItemSizeDto,
   ): this {
     return this.setPropByBuilder(
       this.itemSizeBuilder.buildDto.bind(this.itemSizeBuilder),

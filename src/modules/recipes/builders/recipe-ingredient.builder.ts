@@ -5,7 +5,8 @@ import { InventoryItemService } from '../../inventory-items/services/inventory-i
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
@@ -83,22 +84,26 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
    */
   public async buildMany(
     parent: Recipe,
-    dtos: (CreateRecipeIngredientDto | NestedRecipeIngredientDto)[],
+    dtos: (
+      | CreateRecipeIngredientDto
+      | NestedCreateRecipeIngredientDto
+      | NestedUpdateRecipeIngredientDto
+    )[],
   ): Promise<RecipeIngredient[]> {
     const results: RecipeIngredient[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateRecipeIngredientDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createId && dto.createDto) {
-          results.push(await this.buildCreateDto(dto.createDto, parent));
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const ingred = await this.ingredientService.findOne(dto.id);
           if (!ingred) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(ingred, dto.updateDto));
+          results.push(await this.buildUpdateDto(ingred, dto));
         }
       }
     }
@@ -166,7 +171,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
   public quantityUnitOfMeasureById(id: number): this {
     return this.setPropById(
       this.unitService.findOne.bind(this.unitService),
-      'quantityMeasure',
+      'quantityUnitType',
       id,
     );
   }
@@ -174,7 +179,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
   public quantityUnitOfMeasureByName(name: string): this {
     return this.setPropByName(
       this.unitService.findOneByName.bind(this.unitService),
-      'quantityMeasure',
+      'quantityUnitType',
       name,
     );
   }

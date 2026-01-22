@@ -1,14 +1,10 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
+import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
+import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItem } from '../menu-items.module';
@@ -45,7 +41,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
     // If the parentMenuItemId is provided, use it to set the parentMenuItem. (Through menu-item-container-item endpoint)
     // If the parentMenuItemId is not provided, but a parent is provided, use the parent to set the parentMenuItem. (Through create menu-item endpoint)
     if (parent) {
-      this.setPropByVal('parentContainer', parent);
+      this.setPropByVal('parentMenuItem', parent);
     } else if (dto.parentMenuItemId !== undefined) {
       this.parentContainerById(dto.parentMenuItemId);
     }
@@ -78,24 +74,26 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public async buildMany(
     parent: MenuItem,
-    dtos: (CreateMenuItemContainerItemDto | NestedMenuItemContainerItemDto)[],
+    dtos: (
+      | CreateMenuItemContainerItemDto
+      | NestedCreateMenuItemContainerItemDto
+      | NestedUpdateMenuItemContainerItemDto
+    )[],
   ): Promise<MenuItemContainerItem[]> {
     const results: MenuItemContainerItem[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateMenuItemContainerItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createDto && dto.createId) {
-          results.push(
-            await this.buildCreateDto(dto.createDto, parent, dto.createId),
-          ); // add createId ref?
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const comp = await this.componentService.findOne(dto.id);
           if (!comp) {
-            throw new NotFoundException();
+            throw new Error('menu item container item not found');
           }
-          results.push(await this.buildUpdateDto(comp, dto.updateDto));
+          results.push(await this.buildUpdateDto(comp, dto));
         }
       }
     }
@@ -105,7 +103,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public parentContainerById(id: number): this {
     return this.setPropById(
       this.menuItemService.findOne.bind(this.menuItemService),
-      'parentContainer',
+      'parentMenuItem',
       id,
     );
   }
@@ -113,7 +111,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public parentContainerByName(name: string): this {
     return this.setPropByName(
       this.menuItemService.findOneByName.bind(this.menuItemService),
-      'parentContainer',
+      'parentMenuItem',
       name,
     );
   }
@@ -121,7 +119,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public parentContainerSizeById(id: number): this {
     return this.setPropById(
       this.itemSizeService.findOne.bind(this.itemSizeService),
-      'parentContainerSize',
+      'parentItemSize',
       id,
     );
   }
@@ -129,7 +127,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public containedItemById(id: number): this {
     return this.setPropById(
       this.menuItemService.findOne.bind(this.menuItemService),
-      'containedItem',
+      'containedMenuItem',
       id,
     );
   }
@@ -137,7 +135,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
   public containedItemByName(name: string): this {
     return this.setPropByName(
       this.menuItemService.findOneByName.bind(this.menuItemService),
-      'containedItem',
+      'containedMenuItem',
       name,
     );
   }

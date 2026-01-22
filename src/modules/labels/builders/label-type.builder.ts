@@ -37,14 +37,14 @@ export class LabelTypeBuilder extends BuilderBase<LabelType> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('labelTypeName', name);
+    return this.setPropByVal('name', name);
   }
 
   public labelWidth(val: number): this {
-    return this.setPropByVal('labelTypeWidth', val);
+    return this.setPropByVal('width', val);
   }
 
   public labelLength(val: number): this {
-    return this.setPropByVal('labelTypeLength', val);
+    return this.setPropByVal('length', val);
   }
 }

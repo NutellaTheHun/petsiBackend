@@ -37,13 +37,13 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
   }
 
   public name(name: string): this {
-    return this.setPropByVal('vendorName', name);
+    return this.setPropByVal('name', name);
   }
 
   public vendorItemsByIds(ids: number[]): this {
     return this.setPropsByIds(
       this.itemService.findEntitiesById.bind(this.itemService),
-      'vendorItems',
+      'inventoryItems',
       ids,
     );
   }

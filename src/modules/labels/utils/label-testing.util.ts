@@ -26,14 +26,25 @@ export class LabelTestingUtil {
     testContext: DatabaseTestContext,
   ): Promise<LabelType[]> {
     const names = getTestLabelTypeNames();
+    const dimensions = [
+      { l: 200, w: 400 },
+      { l: 100, w: 200 },
+      { l: 300, w: 600 },
+      { l: 400, w: 800 },
+    ];
+    let dimensionIdx = 0;
     const results: LabelType[] = [];
 
     for (const name of names) {
+      const dimension = dimensions[dimensionIdx % dimensions.length];
+
       results.push({
         name: name,
-        length: 200,
-        width: 400,
+        length: dimension.l,
+        width: dimension.w,
       } as LabelType);
+
+      dimensionIdx++;
     }
 
     return results;
@@ -47,10 +58,11 @@ export class LabelTestingUtil {
     }
     this.initLabelTypes = true;
 
-    const types = await this.getTestLabelTypeEntities(testContext);
     testContext.addCleanupFunction(() => this.cleanupLabelTypeTestDatabase());
 
-    await this.typeService.insertEntities(types);
+    await this.typeService.insertEntities(
+      await this.getTestLabelTypeEntities(testContext),
+    );
   }
 
   public async cleanupLabelTypeTestDatabase(): Promise<void> {
@@ -62,11 +74,13 @@ export class LabelTestingUtil {
     testContext: DatabaseTestContext,
   ): Promise<Label[]> {
     await this.initLabelTypeTestDatabase(testContext);
+
     const typesRequest = await this.typeService.findAll();
     const types = typesRequest.items;
     if (!types) {
       throw new Error();
     }
+
     let typeIdx = 0;
 
     const urls = getTestImageUrls();
@@ -100,10 +114,11 @@ export class LabelTestingUtil {
     }
     this.initLabels = true;
 
-    const labels = await this.getTestLabelEntities(testContext);
     testContext.addCleanupFunction(() => this.cleanupLabelTestDatabase());
 
-    await this.labelService.insertEntities(labels);
+    await this.labelService.insertEntities(
+      await this.getTestLabelEntities(testContext),
+    );
   }
 
   public async cleanupLabelTestDatabase(): Promise<void> {

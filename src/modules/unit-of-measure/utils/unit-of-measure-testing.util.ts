@@ -163,12 +163,12 @@ export class UnitOfMeasureTestingUtil {
     }
     this.initCategory = true;
 
-    const categories = await this.getCategoryEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupUnitCategoryTestDatabase(),
     );
-
-    await this.categoryService.insertEntities(categories);
+    await this.categoryService.insertEntities(
+      await this.getCategoryEntities(testContext),
+    );
   }
 
   public async initUnitOfMeasureTestDatabase(
@@ -179,12 +179,13 @@ export class UnitOfMeasureTestingUtil {
     }
     this.initUnits = true;
 
-    const units = await this.getUnitsOfMeasureEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupUnitOfMeasureTestDatabase(),
     );
 
-    await this.unitService.insertEntities(units);
+    await this.unitService.insertEntities(
+      await this.getUnitsOfMeasureEntities(testContext),
+    );
   }
 
   private async cleanupUnitCategoryTestDatabase(): Promise<void> {

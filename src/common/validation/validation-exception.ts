@@ -1,9 +1,9 @@
-import { ValidationErrorNode } from './validation-error';
+import { ValidationErrorResponse } from './validation-error';
 
 export class ValidationException extends Error {
-  public readonly errors: ValidationErrorNode;
+  public readonly errors: ValidationErrorResponse;
 
-  constructor(errors: ValidationErrorNode, message = 'Validation failed') {
+  constructor(errors: ValidationErrorResponse, message = 'Validation failed') {
     super(message);
     this.name = 'ValidationException';
     this.errors = errors;

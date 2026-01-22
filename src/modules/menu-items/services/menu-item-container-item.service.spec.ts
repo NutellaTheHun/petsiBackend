@@ -28,7 +28,7 @@ describe('menu item container item service', () => {
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
 
-    await testingUtil.initMenuItemComponentTestDatabase(dbTestContext);
+    await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
 
     componentService = module.get<MenuItemContainerItemService>(
       MenuItemContainerItemService,

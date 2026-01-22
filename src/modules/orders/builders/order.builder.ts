@@ -3,7 +3,8 @@ import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
-import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
+import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order } from '../entities/order.entity';
@@ -115,7 +116,7 @@ export class OrderBuilder extends BuilderBase<Order> {
   public categoryById(id: number): this {
     return this.setPropById(
       this.typeService.findOne.bind(this.typeService),
-      'orderCategory',
+      'category',
       id,
     );
   }
@@ -123,7 +124,7 @@ export class OrderBuilder extends BuilderBase<Order> {
   public categoryByName(name: string): this {
     return this.setPropByName(
       this.typeService.findOneByName.bind(this.typeService),
-      'orderCategory',
+      'category',
       name,
     );
   }
@@ -185,7 +186,11 @@ export class OrderBuilder extends BuilderBase<Order> {
   }
 
   public orderedItemsByBuilder(
-    dtos: (CreateOrderMenuItemDto | NestedOrderMenuItemDto)[],
+    dtos: (
+      | CreateOrderMenuItemDto
+      | NestedCreateOrderMenuItemDto
+      | NestedUpdateOrderMenuItemDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.itemBuilder.buildMany.bind(this.itemBuilder),

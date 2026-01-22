@@ -37,13 +37,13 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
   }
 
   public categoryName(name: string): this {
-    return this.setPropByVal('categoryName', name);
+    return this.setPropByVal('name', name);
   }
 
   public categoryItemsById(ids: number[]): this {
     return this.setPropsByIds(
       this.itemService.findEntitiesById.bind(this.itemService),
-      'categoryItems',
+      'inventoryItems',
       ids,
     );
   }

@@ -5,7 +5,8 @@ import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
+import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { Recipe } from '../entities/recipe.entity';
@@ -115,7 +116,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('recipeName', name);
+    return this.setPropByVal('name', name);
   }
 
   public producedMenuItemById(id: number | null): this {
@@ -150,7 +151,11 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
   }
 
   public ingredientsByBuilder(
-    dtos: (CreateRecipeIngredientDto | NestedRecipeIngredientDto)[],
+    dtos: (
+      | CreateRecipeIngredientDto
+      | NestedCreateRecipeIngredientDto
+      | NestedUpdateRecipeIngredientDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.ingredientBuilder.buildMany.bind(this.ingredientBuilder),
@@ -169,11 +174,11 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public batchResultMeasurementById(id: number | null): this {
     if (id === null) {
-      return this.setPropByVal('batchResultMeasurement', null);
+      return this.setPropByVal('batchResultUnitType', null);
     }
     return this.setPropById(
       this.unitService.findOne.bind(this.unitService),
-      'batchResultMeasurement',
+      'batchResultUnitType',
       id,
     );
   }
@@ -181,7 +186,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
   public batchResultMeasurementByName(name: string): this {
     return this.setPropByName(
       this.unitService.findOneByName.bind(this.unitService),
-      'batchResultMeasurement',
+      'batchResultUnitType',
       name,
     );
   }
@@ -195,11 +200,11 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public servingSizeMeasurementById(id: number | null): this {
     if (id === null) {
-      return this.setPropByVal('servingSizeMeasurement', null);
+      return this.setPropByVal('servingSizeUnitType', null);
     }
     return this.setPropById(
       this.unitService.findOne.bind(this.unitService),
-      'servingSizeMeasurement',
+      'servingSizeUnitType',
       id,
     );
   }
@@ -207,7 +212,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
   public servingSizeMeasurementByName(name: string): this {
     return this.setPropByName(
       this.unitService.findOneByName.bind(this.unitService),
-      'servingSizeMeasurement',
+      'servingSizeUnitType',
       name,
     );
   }

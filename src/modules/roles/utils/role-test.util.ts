@@ -32,11 +32,11 @@ export class RoleTestUtil {
     }
     this.initRoles = true;
 
-    const roles = await this.getTestRoleEntities(testContext);
-
     testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-    await this.roleService.insertEntities(roles);
+    await this.roleService.insertEntities(
+      await this.getTestRoleEntities(testContext),
+    );
   }
 
   public async cleanupRoleTestingDatabase(): Promise<void> {

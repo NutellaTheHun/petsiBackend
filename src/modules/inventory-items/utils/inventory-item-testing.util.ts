@@ -8,10 +8,7 @@ import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.
 import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
 import { InventoryItemVendorBuilder } from '../builders/inventory-item-vendor.builder';
 import { InventoryItemBuilder } from '../builders/inventory-item.builder';
-import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
-import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
-import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
@@ -118,7 +115,7 @@ export class InventoryItemTestingUtil {
   ) {}
 
   /**
-   * Dependencies:
+   * Dependencies: None
    * @returns 3 vendors, VendorA, B, and C
    */
   public async getTestInventoryItemVendorEntities(
@@ -221,25 +218,28 @@ export class InventoryItemTestingUtil {
     const results: InventoryItemSize[] = [];
     let msrIdx = 0;
     let pkgIdx = 0;
+    let costVal = 0;
     for (let i = 0; i < this.itemNames.length; i++) {
       results.push(
         await this.sizeBuilder
           .reset()
-          //.InventoryItemByName(this.itemNames[i])
+          .inventoryItemByName(this.itemNames[i])
           .unitOfMeasureByName(
             this.measureNames[msrIdx++ % this.measureNames.length],
           )
           .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+          .costByValue(costVal++)
           .build(),
       );
       results.push(
         await this.sizeBuilder
           .reset()
-          //.InventoryItemByName(this.itemNames[i])
+          .inventoryItemByName(this.itemNames[i])
           .unitOfMeasureByName(
             this.measureNames[msrIdx++ % this.measureNames.length],
           )
           .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
+          .costByValue(costVal++)
           .build(),
       );
     }
@@ -254,12 +254,12 @@ export class InventoryItemTestingUtil {
     }
     this.initVendor = true;
 
-    const vendors = await this.getTestInventoryItemVendorEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemVendorTestDatabase(),
     );
-
-    await this.vendorService.insertEntities(vendors);
+    await this.vendorService.insertEntities(
+      await this.getTestInventoryItemVendorEntities(testContext),
+    );
   }
 
   public async initInventoryItemPackageTestDatabase(
@@ -270,13 +270,12 @@ export class InventoryItemTestingUtil {
     }
     this.initPackage = true;
 
-    const defaultPackages =
-      await this.getTestInventoryItemPackageEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemPackageTestDatabase(),
     );
-
-    await this.packageService.insertEntities(defaultPackages);
+    await this.packageService.insertEntities(
+      await this.getTestInventoryItemPackageEntities(testContext),
+    );
   }
 
   public async initInventoryItemCategoryTestDatabase(
@@ -287,17 +286,12 @@ export class InventoryItemTestingUtil {
     }
     this.initCategory = true;
 
-    const categories =
-      await this.getTestInventoryItemCategoryEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemCategoryTestDatabase(),
     );
-
-    for (const category of categories) {
-      await this.categoryService.create({
-        name: category.name,
-      } as CreateInventoryItemCategoryDto);
-    }
+    await this.categoryService.insertEntities(
+      await this.getTestInventoryItemCategoryEntities(testContext),
+    );
   }
 
   public async initInventoryItemTestDatabase(
@@ -308,18 +302,12 @@ export class InventoryItemTestingUtil {
     }
     this.initItem = true;
 
-    const items = await this.getTestInventoryItemEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemTestDatabase(),
     );
-
-    for (const item of items) {
-      await this.itemService.create({
-        name: item.name,
-        categoryId: item.category?.id,
-        vendorId: item.vendor?.id,
-      } as CreateInventoryItemDto);
-    }
+    await this.itemService.insertEntities(
+      await this.getTestInventoryItemEntities(testContext),
+    );
   }
 
   public async initInventoryItemSizeTestDatabase(
@@ -330,45 +318,13 @@ export class InventoryItemTestingUtil {
     }
     this.initSize = true;
 
-    const testingSizes =
-      await this.getTestInventoryItemSizeEntities(testContext);
-    let sizeIdx = 0;
-
-    const itemsRequest = await this.itemService.findAll();
-    const items = itemsRequest.items;
-
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemSizeTestDatabase(),
     );
-    for (const item of items) {
-      const dto1 = testingSizes[sizeIdx++ % testingSizes.length];
-      const dto2 = testingSizes[sizeIdx++ % testingSizes.length];
 
-      await this.itemService.update(item.id, {
-        sizes: [
-          plainToInstance(NestedInventoryItemSizeDto, {
-            mode: 'create',
-            createDto: {
-              inventoryItemId: item.id,
-              measureUnitId: dto1.measureType.id,
-              measureAmount: 1,
-              inventoryPackageId: dto1.package.id,
-              cost: 1,
-            },
-          }),
-          plainToInstance(NestedInventoryItemSizeDto, {
-            mode: 'create',
-            createDto: {
-              inventoryItemId: item.id,
-              measureUnitId: dto2.measureType.id,
-              measureAmount: 1,
-              inventoryPackageId: dto2.package.id,
-              cost: 1,
-            },
-          }),
-        ],
-      } as UpdateInventoryItemDto);
-    }
+    await this.sizeService.insertEntities(
+      await this.getTestInventoryItemSizeEntities(testContext),
+    );
   }
 
   public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
@@ -392,15 +348,18 @@ export class InventoryItemTestingUtil {
   }
 
   /**
-   * - Create's inventoryItemSize dtos for create method of an inventory item
+   * - Create's inventoryItemSize dtos for create method of an inventory item with an uneven distribution of properties.
+   * - Distribution of units of measure is normal
+   * - Distribution of packages is not equal with the use of a second iterator
+   * - Distribution of costs is not equal with the use of a second iterator
    */
   public createNestedInventoryItemSizeDtos(
     resultAmount: number,
     packageIds: number[],
     unitIds: number[],
     costs: number[],
-  ): NestedInventoryItemSizeDto[] {
-    const results: NestedInventoryItemSizeDto[] = [];
+  ): NestedCreateInventoryItemSizeDto[] {
+    const results: NestedCreateInventoryItemSizeDto[] = [];
 
     let packageIdx = 0;
     let costIdx = 0;
@@ -408,22 +367,18 @@ export class InventoryItemTestingUtil {
 
     let packageIter = 0;
     let costIter = 0;
+    let createId = 1;
 
     for (let i = 0; i < resultAmount; i++) {
       results.push(
-        plainToInstance(NestedInventoryItemSizeDto, {
-          mode: 'create',
-          createDto: {
-            measureUnitId: unitIds[unitIdx++],
-            inventoryPackageId: packageIds[packageIdx++],
-            cost: costs[costIter++],
-            measureAmount: 1,
-          },
+        plainToInstance(NestedCreateInventoryItemSizeDto, {
+          createId: `c${createId++}`,
+          measureTypeId: unitIds[unitIdx++ % unitIds.length],
+          packageId: packageIds[packageIdx++],
+          cost: costs[costIter++],
+          measureAmount: 1,
         }),
       );
-      if (unitIdx === unitIds.length) {
-        unitIdx = 0;
-      }
       if (packageIdx === packageIds.length) {
         packageIter++;
         packageIdx = packageIter;

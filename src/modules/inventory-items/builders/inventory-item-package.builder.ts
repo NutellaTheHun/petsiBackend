@@ -29,6 +29,6 @@ export class InventoryItemPackageBuilder extends BuilderBase<InventoryItemPackag
   }
 
   public name(name: string): this {
-    return this.setPropByVal('packageName', name);
+    return this.setPropByVal('name', name);
   }
 }

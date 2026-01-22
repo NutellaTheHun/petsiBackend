@@ -32,7 +32,7 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
   }
 
   public areaName(name: string): this {
-    return this.setPropByVal('areaName', name);
+    return this.setPropByVal('name', name);
   }
 
   public inventoryCountsById(ids: number[]): this {

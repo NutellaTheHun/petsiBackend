@@ -3,7 +3,6 @@ import { IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
-import { Template } from '../../entities/template.entity';
 
 export class NestedUpdateTemplateMenuItemDto extends NestedUpdateDto {
   @ApiPropertyOptional({
@@ -34,12 +33,12 @@ export class NestedUpdateTemplateMenuItemDto extends NestedUpdateDto {
   @IsPositive()
   readonly menuItemId?: EntityId<MenuItem>;
 
-  @ApiPropertyOptional({
+  /*@ApiPropertyOptional({
     description: 'Id of the parent Template entity.',
     example: 3,
   })
   @IsNumber()
   @IsOptional()
   @IsPositive()
-  readonly parentTemplateId?: EntityId<Template>;
+  readonly parentTemplateId?: EntityId<Template>;*/
 }

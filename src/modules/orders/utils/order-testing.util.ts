@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
+import { MenuItemContainerItemService } from '../../menu-items/services/menu-item-container-item.service';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
@@ -26,7 +26,7 @@ export class OrderTestingUtil {
 
     private readonly menuItemService: MenuItemService,
     private readonly menuItemTestUtil: MenuItemTestingUtil,
-    private readonly optionService: MenuItemContainerOptionsService,
+    private readonly menuContainerItemService: MenuItemContainerItemService,
   ) {
     this.orderTypeInit = false;
     this.orderInit = false;
@@ -57,10 +57,11 @@ export class OrderTestingUtil {
     }
     this.orderTypeInit = true;
 
-    const types = await this.getTestOrderTypeEntities(testContext);
     testContext.addCleanupFunction(() => this.cleanupOrderTypeTestDatabase());
 
-    await this.categoryService.insertEntities(types);
+    await this.categoryService.insertEntities(
+      await this.getTestOrderTypeEntities(testContext),
+    );
   }
 
   public async cleanupOrderTypeTestDatabase(): Promise<void> {
@@ -72,7 +73,9 @@ export class OrderTestingUtil {
     testContext: DatabaseTestContext,
   ): Promise<OrderMenuItem[]> {
     await this.initOrderTestDatabase(testContext);
-    await this.menuItemTestUtil.initMenuItemContainerTestDatabase(testContext);
+    await this.menuItemTestUtil.initMenuItemContainerItemTestDatabase(
+      testContext,
+    );
 
     const ordersRequest = await this.orderService.findAll();
     const orders = ordersRequest.items;
@@ -81,7 +84,7 @@ export class OrderTestingUtil {
     }
 
     const menuItemsRequest = await this.menuItemService.findAll({
-      relations: ['validSizes'],
+      relations: ['sizes'],
     });
     const menuItems = menuItemsRequest.items;
     if (!menuItems) {
@@ -111,12 +114,25 @@ export class OrderTestingUtil {
       }
     }
 
-    //Order Menu Item Components
-    //if(!menuItems[0].validSizes){ throw new Error(); }
+    //Order Menu Item Container Items
     const items = (
-      await this.menuItemService.findAll({ relations: ['containerOptions'] })
+      await this.menuItemService.findAll({
+        relations: [
+          'containerMenuItems',
+          'containerMenuItems.containedMenuItem',
+          'containerMenuItems.containedItemSize',
+        ],
+      })
     ).items;
-    const containerItems = items.filter((item) => item.containerOptions);
+    const containerItems = items.filter(
+      (item) => item.containerMenuItems.length > 0,
+    );
+    if (containerItems.length === 0) {
+      throw new Error();
+    }
+    if (containerItems[0].containerMenuItems.length < 2) {
+      throw new Error();
+    }
 
     const parentOrderItem = {
       parentOrder: orders[0],
@@ -125,34 +141,31 @@ export class OrderTestingUtil {
       size: menuItems[0].sizes[0],
     } as OrderMenuItem;
 
-    if (!containerItems[0].containerOptions) {
-      throw new Error();
-    }
-    const options = await this.optionService.findOne(
-      containerItems[0].containerOptions.id,
-    );
-    if (!options) {
-      throw new Error();
-    }
-
-    const comp_a = {
+    const containerItem_a = {
       parentOrderMenuItem: parentOrderItem,
-      containedMenuItem: options.containerRules[0].validItem,
-      containedItemSize: options.containerRules[0].validSizes[0],
+      containedMenuItem:
+        containerItems[0].containerMenuItems[0].containedMenuItem,
+      containedItemSize:
+        containerItems[0].containerMenuItems[0].containedItemSize,
       quantity: 1,
     } as OrderContainerItem;
 
     if (!menuItems[2].sizes) {
       throw new Error();
     }
-    const comp_b = {
+    const containerItem_b = {
       parentOrderMenuItem: parentOrderItem,
-      containedMenuItem: options.containerRules[1].validItem,
-      containedItemSize: options.containerRules[1].validSizes[0],
+      containedMenuItem:
+        containerItems[0].containerMenuItems[1].containedMenuItem,
+      containedItemSize:
+        containerItems[0].containerMenuItems[1].containedItemSize,
       quantity: 1,
     } as OrderContainerItem;
 
-    parentOrderItem.containerOrderMenuItems = [comp_a, comp_b];
+    parentOrderItem.containerOrderMenuItems = [
+      containerItem_a,
+      containerItem_b,
+    ];
     results.push(parentOrderItem);
 
     return results;
@@ -166,12 +179,12 @@ export class OrderTestingUtil {
     }
     this.orderMenuItemInit = true;
 
-    const oMenuItems = await this.getTestOrderMenuItemEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupOrderMenuItemTestDatabase(),
     );
-
-    await this.orderMenuItemService.insertEntities(oMenuItems);
+    await this.orderMenuItemService.insertEntities(
+      await this.getTestOrderMenuItemEntities(testContext),
+    );
   }
 
   public async cleanupOrderMenuItemTestDatabase(): Promise<void> {
@@ -236,10 +249,10 @@ export class OrderTestingUtil {
     }
     this.orderInit = true;
 
-    const orders = await this.getTestOrderEntities(testContext);
     testContext.addCleanupFunction(() => this.cleanupOrderTestDatabase());
-
-    await this.orderService.insertEntities(orders);
+    await this.orderService.insertEntities(
+      await this.getTestOrderEntities(testContext),
+    );
   }
 
   public async cleanupOrderTestDatabase(): Promise<void> {
@@ -250,17 +263,18 @@ export class OrderTestingUtil {
 
   public async createNestedOrderMenuItemDtos(
     amount: number,
-  ): Promise<NestedOrderMenuItemDto[]> {
+  ): Promise<NestedCreateOrderMenuItemDto[]> {
     const itemsRequest = await this.menuItemService.findAll({
-      relations: ['validSizes'],
+      relations: ['sizes'],
     });
     const items = itemsRequest.items;
     if (!items) {
       throw new Error();
     }
 
-    const results: NestedOrderMenuItemDto[] = [];
+    const results: NestedCreateOrderMenuItemDto[] = [];
     for (let i = 0; i < amount; i++) {
+      let createId = 1;
       const item = items[i % items.length];
       if (!item.sizes) {
         throw new Error();
@@ -270,13 +284,11 @@ export class OrderTestingUtil {
       }
 
       results.push(
-        plainToInstance(NestedOrderMenuItemDto, {
-          mode: 'create',
-          createDto: {
-            menuItemId: item.id,
-            quantity: 1,
-            menuItemSizeId: item.sizes[0].id,
-          },
+        plainToInstance(NestedCreateOrderMenuItemDto, {
+          createId: `c${createId++}`,
+          menuItemId: item.id,
+          quantity: 1,
+          sizeId: item.sizes[0].id,
         }),
       );
     }

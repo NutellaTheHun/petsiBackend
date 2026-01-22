@@ -202,7 +202,7 @@ export class SeedService {
   //private async seedMenuItemContainerRulesTestDb(ctx: DatabaseTestContext) {}
   private async seedMenuItemContainersTestDb(ctx: DatabaseTestContext) {
     await this.menuItemTestUtil.initMenuItemContainerTestDatabase(ctx);
-    await this.menuItemTestUtil.initMenuItemComponentTestDatabase(ctx);
+    await this.menuItemTestUtil.initMenuItemContainerItemTestDatabase(ctx);
   }
 
   private async seedMenuItemSizeTestDb(ctx: DatabaseTestContext) {

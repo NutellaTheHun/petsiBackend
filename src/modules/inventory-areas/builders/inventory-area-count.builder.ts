@@ -5,7 +5,8 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
-import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 import { InventoryAreaService } from '../services/inventory-area.service';
@@ -71,17 +72,21 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
   public countedItemsById(ids: number[]): this {
     return this.setPropsByIds(
       this.areaItemService.findEntitiesById.bind(this.areaItemService),
-      'countedItems',
+      'countedInventoryItems',
       ids,
     );
   }
 
   public countedItemsByBuilder(
-    dtos: (CreateInventoryAreaItemDto | NestedInventoryAreaItemDto)[],
+    dtos: (
+      | CreateInventoryAreaItemDto
+      | NestedCreateInventoryAreaItemDto
+      | NestedUpdateInventoryAreaItemDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.itemCountBuilder.buildMany.bind(this.itemCountBuilder),
-      'countedItems',
+      'countedInventoryItems',
       this.entity,
       dtos,
     );

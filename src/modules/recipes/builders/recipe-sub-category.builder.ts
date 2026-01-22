@@ -3,7 +3,8 @@ import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
@@ -51,22 +52,26 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
 
   public async buildMany(
     parent: RecipeCategory,
-    dtos: (CreateRecipeSubCategoryDto | NestedRecipeSubCategoryDto)[],
+    dtos: (
+      | CreateRecipeSubCategoryDto
+      | NestedCreateRecipeSubCategoryDto
+      | NestedUpdateRecipeSubCategoryDto
+    )[],
   ): Promise<RecipeSubCategory[]> {
     const results: RecipeSubCategory[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateRecipeSubCategoryDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createId && dto.createDto) {
-          results.push(await this.buildCreateDto(dto.createDto, parent));
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const subCat = await this.subCategoryService.findOne(dto.id);
           if (!subCat) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(subCat, dto.updateDto));
+          results.push(await this.buildUpdateDto(subCat, dto));
         }
       }
     }
@@ -74,7 +79,7 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('subCategoryName', name);
+    return this.setPropByVal('name', name);
   }
 
   public parentCategoryById(id: number): this {

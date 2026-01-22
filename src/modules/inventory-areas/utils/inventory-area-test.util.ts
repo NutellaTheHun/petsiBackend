@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
-import { NestedInventoryAreaItemDto } from '../dto/inventory-area-item/nested-inventory-area-item.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
@@ -18,6 +18,7 @@ import { AREA_A, AREA_B, AREA_C, AREA_D, getAreaNames } from './constants';
 
 @Injectable()
 export class InventoryAreaTestUtil {
+  // Flags to prevent duplicate initialization of test data
   private initCounts = false;
   private initItems = false;
   private initAreas = false;
@@ -95,7 +96,7 @@ export class InventoryAreaTestUtil {
     });
     const counts = countsRequest.items;
     const itemsRequest = await this.inventoryItemService.findAll({
-      relations: ['itemSizes'],
+      relations: ['sizes'],
     });
     const items = itemsRequest.items;
     let itemPtr = 0;
@@ -148,13 +149,13 @@ export class InventoryAreaTestUtil {
     }
     this.initAreas = true;
 
-    const areas = await this.getTestInventoryAreaEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryAreaTestDatabase(),
     );
-    const toInsert: InventoryArea[] = [];
 
-    await this.areaService.insertEntities(areas);
+    await this.areaService.insertEntities(
+      await this.getTestInventoryAreaEntities(testContext),
+    );
   }
 
   /**
@@ -225,38 +226,35 @@ export class InventoryAreaTestUtil {
   }
 
   public createNestedInventoryAreaItemDtos(
-    areaCountId: number,
     itemConfigs: {
       itemId: number;
       itemSizeId?: number;
-      sizeDto?: NestedInventoryItemSizeDto;
+      sizeDto?: NestedCreateInventoryItemSizeDto;
     }[],
   ) {
     let unitAmount = 1;
-    let measureAmount = 1;
-    const results: NestedInventoryAreaItemDto[] = [];
+    let createId = 0;
+    const results: NestedCreateInventoryAreaItemDto[] = [];
 
     for (const item of itemConfigs) {
       if (item.sizeDto) {
         results.push(
-          plainToInstance(NestedInventoryAreaItemDto, {
-            parentInventoryCountId: areaCountId,
-            countedAmount: unitAmount++,
-            measureAmount: measureAmount++,
+          plainToInstance(NestedCreateInventoryAreaItemDto, {
+            createId: `c${createId++}`,
+            amount: unitAmount++,
             countedInventoryItemId: item.itemId,
-            //itemSizeId: item.itemSizeId,
-            countedItemSizeDto: item.sizeDto,
+            //countedItemSizeId: item.itemSizeId,
+            countedItemSize: item.sizeDto,
           }),
         );
       } else {
         results.push(
-          plainToInstance(NestedInventoryAreaItemDto, {
-            parentInventoryCountId: areaCountId,
-            countedAmount: unitAmount++,
-            measureAmount: measureAmount++,
+          plainToInstance(NestedCreateInventoryAreaItemDto, {
+            createId: `c${createId++}`,
+            amount: unitAmount++,
             countedInventoryItemId: item.itemId,
             countedItemSizeId: item.itemSizeId,
-            //itemSizeDto: item.sizeDto
+            //countedItemSize: item.sizeDto
           }),
         );
       }

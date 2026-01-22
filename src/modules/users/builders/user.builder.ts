@@ -31,7 +31,7 @@ export class UserBuilder extends BuilderBase<User> {
       this.roles(dto.roleIds);
     }
     if (dto.name !== undefined) {
-      this.username(dto.name);
+      this.name(dto.name);
     }
   }
 
@@ -46,12 +46,12 @@ export class UserBuilder extends BuilderBase<User> {
       this.roles(dto.roleIds);
     }
     if (dto.name !== undefined) {
-      this.username(dto.name);
+      this.name(dto.name);
     }
   }
 
-  public username(name: string): this {
-    return this.setPropByVal('username', name);
+  public name(name: string): this {
+    return this.setPropByVal('name', name);
   }
 
   public email(email: string | null): this {

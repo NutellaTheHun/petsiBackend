@@ -3,7 +3,8 @@ import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
+import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItem } from '../entities/inventory-item.entity';
@@ -64,23 +65,27 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('itemName', name);
+    return this.setPropByVal('name', name);
   }
 
   public sizesByIds(ids: number[]): this {
     return this.setPropsByIds(
       this.sizeService.findEntitiesById.bind(this.sizeService),
-      'itemSizes',
+      'sizes',
       ids,
     );
   }
 
   public sizesByBuilder(
-    dtos: CreateInventoryItemSizeDto[] | NestedInventoryItemSizeDto[],
+    dtos: (
+      | CreateInventoryItemSizeDto
+      | NestedCreateInventoryItemSizeDto
+      | NestedUpdateInventoryItemSizeDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.itemSizeBuilder.buildMany.bind(this.itemSizeBuilder),
-      'itemSizes',
+      'sizes',
       this.entity,
       dtos,
     );

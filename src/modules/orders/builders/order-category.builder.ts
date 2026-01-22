@@ -25,6 +25,6 @@ export class OrderCategoryBuilder extends BuilderBase<OrderCategory> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('categoryName', name);
+    return this.setPropByVal('name', name);
   }
 }

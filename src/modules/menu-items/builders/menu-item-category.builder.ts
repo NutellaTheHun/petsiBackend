@@ -37,13 +37,13 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('categoryName', name);
+    return this.setPropByVal('name', name);
   }
 
   public menuItemsById(ids: number[]): this {
     return this.setPropsByIds(
       this.itemService.findEntitiesById.bind(this.itemService),
-      'categoryItems',
+      'menuItems',
       ids,
     );
   }

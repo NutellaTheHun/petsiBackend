@@ -44,10 +44,9 @@ export class TemplateTestingUtil {
     this.initTemplates = true;
 
     testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
-
-    const templates = await this.getTemplateEntities(testContext);
-
-    await this.templateService.insertEntities(templates);
+    await this.templateService.insertEntities(
+      await this.getTemplateEntities(testContext),
+    );
   }
 
   public async cleanupTemplateTestDatabase(): Promise<void> {
@@ -100,10 +99,9 @@ export class TemplateTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupTemplateMenuItemTestDatabase(),
     );
-
-    const items = await this.getTemplateMenuItemEntities(testContext);
-
-    await this.templateItemService.insertEntities(items);
+    await this.templateItemService.insertEntities(
+      await this.getTemplateMenuItemEntities(testContext),
+    );
   }
 
   public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {

@@ -6,7 +6,7 @@ import {
 import { IsArray, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryArea } from '../../entities/inventory-area.entity';
-import { NestedCreateInventoryAreaItemDto } from '../inventory-area-item/nested-create-inventory-area-item.dto copy';
+import { NestedCreateInventoryAreaItemDto } from '../inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../inventory-area-item/nested-update-inventory-area-item.dto';
 
 export class UpdateInventoryAreaCountDto {

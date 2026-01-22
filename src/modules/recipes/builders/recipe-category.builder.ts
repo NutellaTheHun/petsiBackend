@@ -5,7 +5,8 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeService } from '../services/recipe.service';
@@ -44,17 +45,21 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
     if (dto.name !== undefined) {
       this.name(dto.name);
     }
-    /*if (dto.subCategoryDtos !== undefined) {
-      this.subCategoriesByBuilder(dto.subCategoryDtos);
-    }*/
+    if (dto.subCategories !== undefined) {
+      this.subCategoriesByBuilder(dto.subCategories);
+    }
   }
 
   public name(name: string): this {
-    return this.setPropByVal('categoryName', name);
+    return this.setPropByVal('name', name);
   }
 
   public subCategoriesByBuilder(
-    dtos: (CreateRecipeSubCategoryDto | NestedRecipeSubCategoryDto)[],
+    dtos: (
+      | CreateRecipeSubCategoryDto
+      | NestedCreateRecipeSubCategoryDto
+      | NestedUpdateRecipeSubCategoryDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.subCategoryBuilder.buildMany.bind(this.subCategoryBuilder),

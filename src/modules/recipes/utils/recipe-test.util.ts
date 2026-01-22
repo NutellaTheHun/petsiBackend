@@ -29,6 +29,7 @@ import { RecipeCategoryBuilder } from '../builders/recipe-category.builder';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
 import { RecipeBuilder } from '../builders/recipe.builder';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
@@ -235,6 +236,7 @@ export class RecipeTestUtil {
     await this.initRecipeCategoryTestingDatabase(testContext);
     await this.initRecipeSubCategoryTestingDatabase(testContext);
     await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
+
     return [
       await this.recipeBuilder
         .reset()
@@ -447,31 +449,32 @@ export class RecipeTestUtil {
     subRecipeIds: number[],
     unitIds: number[],
     quantities: number[],
-  ): NestedRecipeIngredientDto[] {
-    const results: NestedRecipeIngredientDto[] = [];
+  ): NestedCreateRecipeIngredientDto[] {
+    const results: NestedCreateRecipeIngredientDto[] = [];
 
     let itemIndex = 0;
     let subRecipeIndex = 0;
+    let createId = 1;
 
     for (let i = 0; i < quantities.length; i++) {
       if (itemIndex < itemIds.length) {
         results.push(
-          plainToInstance(NestedRecipeIngredientDto, {
+          plainToInstance(NestedCreateRecipeIngredientDto, {
             mode: 'create',
             createDto: {
               ingredientInventoryItemId: itemIds[itemIndex++],
-              quantityMeasurementId: unitIds[i % unitIds.length],
+              quantityUnitTypeId: unitIds[i % unitIds.length],
               quantity: quantities[i],
             },
           }),
         );
       } else if (subRecipeIndex < subRecipeIds.length) {
         results.push(
-          plainToInstance(NestedRecipeIngredientDto, {
+          plainToInstance(NestedCreateRecipeIngredientDto, {
             mode: 'create',
             createDto: {
               ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
-              quantityMeasurementId: unitIds[i % unitIds.length],
+              quantityUnitTypeId: unitIds[i % unitIds.length],
               quantity: quantities[i],
             },
           }),
@@ -481,11 +484,11 @@ export class RecipeTestUtil {
         subRecipeIndex = 0;
 
         results.push(
-          plainToInstance(NestedRecipeIngredientDto, {
+          plainToInstance(NestedCreateRecipeIngredientDto, {
             mode: 'create',
             createDto: {
               ingredientInventoryItemId: itemIds[itemIndex++],
-              quantityMeasurementId: unitIds[i % unitIds.length],
+              quantityUnitTypeId: unitIds[i % unitIds.length],
               quantity: quantities[i],
             },
           }),

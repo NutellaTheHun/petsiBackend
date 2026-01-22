@@ -43,13 +43,13 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
   }
 
   public name(name: string): this {
-    return this.setPropByVal('categoryName', name);
+    return this.setPropByVal('name', name);
   }
 
   public unitsOfMeasureById(ids: number[]): this {
     return this.setPropsByIds(
       this.unitService.findEntitiesById.bind(this.unitService),
-      'unitsOfMeasure',
+      'units',
       ids,
     );
   }

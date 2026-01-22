@@ -3,7 +3,8 @@ import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
+import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
+import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template } from '../entities/template.entity';
@@ -46,7 +47,7 @@ export class TemplateBuilder extends BuilderBase<Template> {
   }
 
   public name(name: string): this {
-    return this.setPropByVal('templateName', name);
+    return this.setPropByVal('name', name);
   }
 
   public isPie(val: boolean): this {
@@ -54,11 +55,15 @@ export class TemplateBuilder extends BuilderBase<Template> {
   }
 
   public itemsByBuilder(
-    dtos: (CreateTemplateMenuItemDto | NestedTemplateMenuItemDto)[],
+    dtos: (
+      | CreateTemplateMenuItemDto
+      | NestedCreateTemplateMenuItemDto
+      | NestedUpdateTemplateMenuItemDto
+    )[],
   ): this {
     return this.setPropByBuilder(
       this.itemBuilder.buildMany.bind(this.itemBuilder),
-      'templateItems',
+      'templateMenuItems',
       this.entity,
       dtos,
     );

@@ -43,7 +43,7 @@ export class UserTestUtil {
           .reset()
           .email(this.emails[i])
           .password(`password${i}`)
-          .username(this.usernames[i])
+          .name(this.usernames[i])
           .roles([roles[i % roles.length]])
           .build(),
       );

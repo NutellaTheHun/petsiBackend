@@ -1,24 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
-import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
-import { CreateMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/create-menu-item-container-options.dto';
-import { CreateMenuItemContainerRuleDto } from '../dto/menu-item-container-rule/create-menu-item-container-rule.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemCategoryService } from '../services/menu-item-category.service';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
-import { MenuItemContainerRuleService } from '../services/menu-item-container-rule.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
 import {
-  getItemContainerTestNames,
   getTestCategoryNames,
   getTestItemNames,
   getTestSizeNames,
@@ -28,8 +21,8 @@ import {
   item_d,
   item_f,
   item_g,
-  SIZE_ONE,
 } from './constants';
+import { MENU_ITEM_TYPES } from './menu-item-type';
 
 @Injectable()
 export class MenuItemTestingUtil {
@@ -43,9 +36,7 @@ export class MenuItemTestingUtil {
     private readonly itemService: MenuItemService,
     private readonly sizeService: MenuItemSizeService,
     private readonly categoryService: MenuItemCategoryService,
-    private readonly componentService: MenuItemContainerItemService,
-    private readonly itemcomponentOptionsService: MenuItemContainerOptionsService,
-    private readonly componentOptionService: MenuItemContainerRuleService,
+    private readonly containerItemService: MenuItemContainerItemService,
 
     private readonly itemBuilder: MenuItemBuilder,
     private readonly sizeBuilder: MenuItemSizeBuilder,
@@ -78,12 +69,12 @@ export class MenuItemTestingUtil {
     }
     this.menuItemSizeInit = true;
 
-    const sizes = await this.getTestMenuItemSizeEntities(testContext);
     testContext.addCleanupFunction(() =>
       this.cleanupMenuItemSizeTestDatabase(),
     );
-
-    await this.sizeService.insertEntities(sizes);
+    await this.sizeService.insertEntities(
+      await this.getTestMenuItemSizeEntities(testContext),
+    );
   }
 
   public async cleanupMenuItemSizeTestDatabase(): Promise<void> {
@@ -115,12 +106,13 @@ export class MenuItemTestingUtil {
       return;
     }
     this.menuItemCategoryInit = true;
-    const categories = await this.getTestMenuItemCategoryEntities(testContext);
+
     testContext.addCleanupFunction(() =>
       this.cleanupMenuItemCategoryTestDatabase(),
     );
-
-    await this.categoryService.insertEntities(categories);
+    await this.categoryService.insertEntities(
+      await this.getTestMenuItemCategoryEntities(testContext),
+    );
   }
 
   public async cleanupMenuItemCategoryTestDatabase(): Promise<void> {
@@ -130,7 +122,7 @@ export class MenuItemTestingUtil {
   // Menu Item
 
   /**
-   * Creates Menu Item entities with category and name set
+   * Creates Menu Item entities, entities with name ItemF and ItemG are of type container, all other entities are of type single
    * @param testContext
    */
   public async getTestMenuItemEntities(
@@ -156,6 +148,11 @@ export class MenuItemTestingUtil {
         continue;
       }
 
+      let type = MENU_ITEM_TYPES.SINGLE;
+      if (itemName === item_f || itemName === item_g) {
+        type = MENU_ITEM_TYPES.CONTAINER;
+      }
+
       results.push(
         await this.itemBuilder
           .reset()
@@ -165,6 +162,7 @@ export class MenuItemTestingUtil {
             sizeIds[sizeIdx++ % sizeIds.length],
             sizeIds[sizeIdx++ % sizeIds.length],
           ])
+          .type(type)
           .build(),
       );
     }
@@ -179,10 +177,11 @@ export class MenuItemTestingUtil {
       return;
     }
     this.menuItemInit = true;
-    const items = await this.getTestMenuItemEntities(testContext);
-    testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
 
-    await this.itemService.insertEntities(items);
+    testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
+    await this.itemService.insertEntities(
+      await this.getTestMenuItemEntities(testContext),
+    );
   }
 
   public async cleanupMenuItemTestDatabase(): Promise<void> {
@@ -196,12 +195,13 @@ export class MenuItemTestingUtil {
    * @param testContext
    * @returns
    */
-  public async getTestMenuItemComponentEntities(
+  public async getTestMenuItemContainerItemEntities(
     testContext: DatabaseTestContext,
   ): Promise<MenuItemContainerItem[]> {
-    await this.initMenuItemContainerTestDatabase(testContext);
+    await this.initMenuItemTestDatabase(testContext);
 
-    const itemF = await this.itemService.findOneByName(item_f, ['validSizes']);
+    // Parent
+    const itemF = await this.itemService.findOneByName(item_f, ['sizes']);
     if (!itemF) {
       throw new NotFoundException();
     }
@@ -209,7 +209,8 @@ export class MenuItemTestingUtil {
       throw new Error();
     }
 
-    const itemA = await this.itemService.findOneByName(item_a, ['validSizes']);
+    // Child to F
+    const itemA = await this.itemService.findOneByName(item_a, ['sizes']);
     if (!itemA) {
       throw new NotFoundException();
     }
@@ -217,7 +218,8 @@ export class MenuItemTestingUtil {
       throw new Error();
     }
 
-    const itemB = await this.itemService.findOneByName(item_b, ['validSizes']);
+    // Child to F
+    const itemB = await this.itemService.findOneByName(item_b, ['sizes']);
     if (!itemB) {
       throw new NotFoundException();
     }
@@ -225,7 +227,8 @@ export class MenuItemTestingUtil {
       throw new Error();
     }
 
-    const itemG = await this.itemService.findOneByName(item_g, ['validSizes']);
+    // Parent
+    const itemG = await this.itemService.findOneByName(item_g, ['sizes']);
     if (!itemG) {
       throw new NotFoundException();
     }
@@ -233,7 +236,8 @@ export class MenuItemTestingUtil {
       throw new Error();
     }
 
-    const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
+    // Child to G
+    const itemC = await this.itemService.findOneByName(item_c, ['sizes']);
     if (!itemC) {
       throw new NotFoundException();
     }
@@ -241,7 +245,8 @@ export class MenuItemTestingUtil {
       throw new Error();
     }
 
-    const itemD = await this.itemService.findOneByName(item_d, ['validSizes']);
+    // Child to G
+    const itemD = await this.itemService.findOneByName(item_d, ['sizes']);
     if (!itemD) {
       throw new NotFoundException();
     }
@@ -292,194 +297,23 @@ export class MenuItemTestingUtil {
    * itemG is a container of items C and D.
    * @param testContext
    */
-  public async initMenuItemComponentTestDatabase(
+  public async initMenuItemContainerItemTestDatabase(
     testContext: DatabaseTestContext,
   ): Promise<void> {
     if (this.menuItemComponentInit) {
       return;
     }
     this.menuItemComponentInit = true;
-    const components = await this.getTestMenuItemComponentEntities(testContext);
     testContext.addCleanupFunction(() =>
-      this.cleanupMenuItemComponentTestDatabase(),
+      this.cleanupMenuItemContainerItemTestDatabase(),
     );
 
-    await this.componentService.insertEntities(components);
+    await this.containerItemService.insertEntities(
+      await this.getTestMenuItemContainerItemEntities(testContext),
+    );
   }
 
-  public async cleanupMenuItemComponentTestDatabase(): Promise<void> {
-    await this.componentService.getQueryBuilder().delete().execute();
-  }
-
-  //Menu Item Component Options
-  public async getTestMenuItemContainerEntities(
-    testContext: DatabaseTestContext,
-  ): Promise<MenuItem[]> {
-    await this.initMenuItemTestDatabase(testContext);
-
-    const results: MenuItem[] = [];
-
-    const categoryIds = (await this.categoryService.findAll()).items.map(
-      (cat) => cat.id,
-    );
-    let catIdx = 0;
-    const sizeIds = (await this.sizeService.findAll()).items.map(
-      (size) => size.id,
-    );
-    let sizeIdx = 0;
-
-    const itemA = await this.itemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error('item a is null');
-    }
-    if (!itemA.sizes) {
-      throw new Error('item a valid sizes is null');
-    }
-    const itemB = await this.itemService.findOneByName(item_b, ['validSizes']);
-    if (!itemB) {
-      throw new Error('item b is null');
-    }
-    if (!itemB.sizes) {
-      throw new Error('item b valid sizes is null');
-    }
-    const containerRuleDtos_A = [
-      plainToInstance(CreateMenuItemContainerRuleDto, {
-        //parentContainerOptionsId: itemA.id,
-        validMenuItemId: itemA.id,
-        validSizeIds: itemA.sizes.slice(1).map((size) => size.id),
-        //quantity: 2,
-      }),
-      plainToInstance(CreateMenuItemContainerRuleDto, {
-        //parentContainerOptionsId: itemB.id,
-        validMenuItemId: itemB.id,
-        validSizeIds: itemB.sizes.slice(1).map((size) => size.id),
-        //quantity: 2,
-      }),
-    ];
-
-    const optionsA = plainToInstance(CreateMenuItemContainerOptionsDto, {
-      //parentContainerMenuItemId: itemA.id,
-      containerRuleDtos: containerRuleDtos_A,
-      validQuantity: 4,
-    });
-
-    const itemC = await this.itemService.findOneByName(item_c, ['validSizes']);
-    if (!itemC) {
-      throw new Error('item c is null');
-    }
-    if (!itemC.sizes) {
-      throw new Error('item c valid sizes is null');
-    }
-    const itemD = await this.itemService.findOneByName(item_d, ['validSizes']);
-    if (!itemD) {
-      throw new Error('item d is null');
-    }
-    if (!itemD.sizes) {
-      throw new Error('item d valid sizes is null');
-    }
-    const containerRuleDtos_B = [
-      plainToInstance(CreateMenuItemContainerRuleDto, {
-        //parentContainerOptionsId: itemC.id,
-        validMenuItemId: itemC.id,
-        validSizeIds: itemC.sizes.slice(1).map((size) => size.id),
-        //quantity: 3,
-      }),
-      plainToInstance(CreateMenuItemContainerRuleDto, {
-        //parentContainerOptionsId: itemD.id,
-        validMenuItemId: itemD.id,
-        validSizeIds: itemD.sizes.slice(1).map((size) => size.id),
-        //quantity: 3,
-      }),
-    ];
-
-    const optionsB = plainToInstance(CreateMenuItemContainerOptionsDto, {
-      //parentContainerMenuItemId: itemB.id,
-      containerRuleDtos: containerRuleDtos_B,
-      validQuantity: 6,
-    });
-
-    const sizeOne = await this.sizeService.findOneByName(SIZE_ONE);
-    if (!sizeOne) {
-      throw new Error('size one is null');
-    }
-    const definedContainerDto_C = [
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: sizeOne.id,
-        containedMenuItemId: itemA.id,
-        containedMenuItemSizeId: itemA.sizes[0].id,
-        quantity: 2,
-      }),
-      plainToInstance(CreateMenuItemContainerItemDto, {
-        parentContainerSizeId: sizeOne.id,
-        containedMenuItemId: itemD.id,
-        containedMenuItemSizeId: itemD.sizes[0].id,
-        quantity: 3,
-      }),
-    ];
-
-    const containerItemNames = getItemContainerTestNames();
-    const options = [optionsA, optionsB] as CreateMenuItemContainerOptionsDto[];
-
-    results.push(
-      await this.itemBuilder
-        .reset()
-        .categorybyId(categoryIds[catIdx++ % categoryIds.length])
-        .name(containerItemNames[0])
-        .validSizesById([
-          sizeIds[sizeIdx++ % sizeIds.length],
-          sizeIds[sizeIdx++ % sizeIds.length],
-        ])
-        .containerOptionsByBuilder(options[0])
-        .build(),
-    );
-
-    results.push(
-      await this.itemBuilder
-        .reset()
-        .categorybyId(categoryIds[catIdx++ % categoryIds.length])
-        .name(containerItemNames[1])
-        .validSizesById([
-          sizeIds[sizeIdx++ % sizeIds.length],
-          sizeIds[sizeIdx++ % sizeIds.length],
-        ])
-        .containerOptionsByBuilder(options[1])
-        .build(),
-    );
-
-    results.push(
-      await this.itemBuilder
-        .reset()
-        .categorybyId(categoryIds[catIdx++ % categoryIds.length])
-        .name(containerItemNames[2])
-        .validSizesById([
-          sizeIds[sizeIdx++ % sizeIds.length],
-          sizeIds[sizeIdx++ % sizeIds.length],
-        ])
-        .definedContainerItemsByBuilder(definedContainerDto_C)
-        .build(),
-    );
-
-    return results;
-  }
-
-  public async initMenuItemContainerTestDatabase(
-    testContext: DatabaseTestContext,
-  ): Promise<void> {
-    if (this.menuItemContainerOptionsInit) {
-      return;
-    }
-    this.menuItemContainerOptionsInit = true;
-    const components = await this.getTestMenuItemContainerEntities(testContext);
-    testContext.addCleanupFunction(() =>
-      this.cleanupMenuItemContainerTestDatabase(),
-    );
-
-    await this.itemService.insertEntities(components);
-  }
-
-  public async cleanupMenuItemContainerTestDatabase(): Promise<void> {
-    await this.itemService.getQueryBuilder().delete().execute();
-    await this.componentOptionService.getQueryBuilder().delete().execute();
-    await this.itemcomponentOptionsService.getQueryBuilder().delete().execute();
+  public async cleanupMenuItemContainerItemTestDatabase(): Promise<void> {
+    await this.containerItemService.getQueryBuilder().delete().execute();
   }
 }

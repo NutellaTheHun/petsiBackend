@@ -4,7 +4,8 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemService } from '../../menu-items/services/menu-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
+import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
+import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
@@ -70,22 +71,26 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
   public async buildMany(
     parent: Template,
-    dtos: (CreateTemplateMenuItemDto | NestedTemplateMenuItemDto)[],
+    dtos: (
+      | CreateTemplateMenuItemDto
+      | NestedCreateTemplateMenuItemDto
+      | NestedUpdateTemplateMenuItemDto
+    )[],
   ): Promise<TemplateMenuItem[]> {
     const results: TemplateMenuItem[] = [];
     for (const dto of dtos) {
       if (dto instanceof CreateTemplateMenuItemDto) {
         results.push(await this.buildCreateDto(dto));
       } else {
-        if (dto.createId && dto.createDto) {
-          results.push(await this.buildCreateDto(dto.createDto, parent));
+        if ('createId' in dto) {
+          results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
-        if (dto.id && dto.updateDto) {
+        if ('id' in dto) {
           const item = await this.templateItemService.findOne(dto.id);
           if (!item) {
             throw new Error('recipe ingredient not found');
           }
-          results.push(await this.buildUpdateDto(item, dto.updateDto));
+          results.push(await this.buildUpdateDto(item, dto));
         }
       }
     }
