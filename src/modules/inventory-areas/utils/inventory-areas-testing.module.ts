@@ -16,9 +16,12 @@ import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreasModule } from '../inventory-areas.module';
+import { InventoryAreaCountService } from '../services/inventory-area-count.service';
 
-export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
-  return await Test.createTestingModule({
+export async function getInventoryAreasTestingModule(opts?: {
+  countServiceClass?: new (...args: any[]) => InventoryAreaCountService;
+}): Promise<TestingModule> {
+  const builder = Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
       TypeORMPostgresTestingModule([
@@ -49,6 +52,13 @@ export async function getInventoryAreasTestingModule(): Promise<TestingModule> {
     providers: [],
   })
     .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .compile();
+    .useClass(TestRequestContextService);
+
+  if (opts?.countServiceClass) {
+    builder
+      .overrideProvider(InventoryAreaCountService)
+      .useClass(opts.countServiceClass);
+  }
+
+  return builder.compile();
 }
