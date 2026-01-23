@@ -6,7 +6,6 @@ import { Between, DataSource, EntityManager, Like, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
-import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import {
   BOX_PKG,
@@ -22,7 +21,6 @@ import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
-import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { AREA_A, AREA_B, AREA_C, AREA_D } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
@@ -53,10 +51,8 @@ describe('Inventory area count service', () => {
 
   let inventoryAreaRepo: Repository<InventoryArea>;
   let inventoryAreaCountRepo: Repository<InventoryAreaCount>;
-  let inventoryAreaItemRepo: Repository<InventoryAreaItem>;
 
   let inventoryItemRepo: Repository<InventoryItem>;
-  let inventoryItemSizeRepo: Repository<InventoryItemSize>;
   let inventoryItemPackageRepo: Repository<InventoryItemPackage>;
 
   let unitOfMeasureRepo: Repository<UnitOfMeasure>;
@@ -77,9 +73,8 @@ describe('Inventory area count service', () => {
     ) as TestableInventoryAreaCountService;
     inventoryAreaRepo = module.get(getRepositoryToken(InventoryArea));
     inventoryAreaCountRepo = module.get(getRepositoryToken(InventoryAreaCount));
-    inventoryAreaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
+
     inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
-    inventoryItemSizeRepo = module.get(getRepositoryToken(InventoryItemSize));
     inventoryItemPackageRepo = module.get(
       getRepositoryToken(InventoryItemPackage),
     );
