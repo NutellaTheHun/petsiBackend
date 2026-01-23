@@ -144,6 +144,11 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       });
   }
 
+  /**
+   * Filters by inventoryArea id.
+   * @param query The query builder to filter.
+   * @param filters The filters to apply. <propertyName(entity), id>
+   */
   protected applyFilters(
     query: SelectQueryBuilder<InventoryAreaCount>,
     filters: Record<string, string[]>,

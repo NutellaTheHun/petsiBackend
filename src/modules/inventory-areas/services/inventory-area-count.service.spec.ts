@@ -78,6 +78,42 @@ describe('Inventory area count service', () => {
     expect(countService).toBeDefined();
   });
 
+  // Test createEntity() with no areaCountItems
+
+  // Test createEntity() with areaCountItems with itemSizeIDs
+
+  // Test createEntity() with areaCountItems with itemSizeDto
+
+  // Test createEntity() with areaCountItems with itemSizeId and itemSizeDto
+
+  // Test updateEntity() with inventoryAreaId
+
+  // Test updateEntity() with update areaCountItems
+
+  // Test updateEntity() with create areaCountItems
+
+  // Test updateEntity() with create and update areaCountItems
+
+  // Test findByAreaName()
+
+  // Test findByDate()
+
+  // Test ServceBase Methods:
+  //    Test findAll() with:
+  //        Test applySearch()
+  //        Test applyFilters()
+  //        Test applyDate()
+  //        Test applySortBy()
+
+  //    Test findOne() with:
+  //        relations
+
+  //    Test remove()
+
+  //    Test create()
+
+  //    Test update()
+
   it('should create area count with items', async () => {
     const areaA = await areaService.findOneByName(AREA_A);
     if (!areaA) {
