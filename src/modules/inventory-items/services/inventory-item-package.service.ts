@@ -67,7 +67,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'packageName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

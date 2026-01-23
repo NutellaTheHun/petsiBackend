@@ -129,7 +129,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     query: SelectQueryBuilder<InventoryItem>,
     search: string,
   ): void {
-    query.andWhere('(LOWER(entity.itemName) LIKE :search)', {
+    query.andWhere('(LOWER(entity.name) LIKE :search)', {
       search: `%${search.toLowerCase()}%`,
     });
   }
@@ -159,14 +159,14 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'itemName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     } else if (sortBy === 'vendor') {
       query.leftJoinAndSelect('entity.vendor', 'vendor');
-      query.orderBy('vendor.vendorName', sortOrder, 'NULLS LAST');
+      query.orderBy('vendor.name', sortOrder, 'NULLS LAST');
     } else if (sortBy === 'category') {
       query.leftJoinAndSelect('entity.category', 'category');
-      query.orderBy('category.categoryName', sortOrder, 'NULLS LAST');
+      query.orderBy('category.name', sortOrder, 'NULLS LAST');
     }
   }
 }

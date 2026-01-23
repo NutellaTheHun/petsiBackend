@@ -81,9 +81,9 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'countedItem') {
-      query.leftJoinAndSelect('entity.countedItem', 'inventoryItem');
-      query.orderBy(`inventoryItem.itemName`, sortOrder);
+    if (sortBy === 'countedInventoryItem') {
+      query.leftJoinAndSelect('entity.countedInventoryItem', 'inventoryItem');
+      query.orderBy(`inventoryItem.name`, sortOrder);
     }
     if (sortBy === 'amount') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
@@ -95,8 +95,8 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     search: string,
   ): void {
     query
-      .leftJoin('entity.countedItem', 'inventoryItem')
-      .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
+      .leftJoin('entity.countedInventoryItem', 'inventoryItem')
+      .andWhere('(LOWER(inventoryItem.name) LIKE :search)', {
         search: `%${search.toLowerCase()}%`,
       });
   }

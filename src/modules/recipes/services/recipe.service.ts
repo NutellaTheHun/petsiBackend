@@ -198,9 +198,9 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
       .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
       .andWhere(
         `
-            LOWER(entity.recipeName) LIKE :search
-            OR LOWER(inventoryItem.itemName) LIKE :search
-            OR LOWER(subRecipe.recipeName) LIKE :search
+            LOWER(entity.name) LIKE :search
+            OR LOWER(inventoryItem.name) LIKE :search
+            OR LOWER(subRecipe.name) LIKE :search
         `,
         { search: `%${search.toLowerCase()}%` },
       );
@@ -227,14 +227,14 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'recipeName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     } else if (sortBy === 'category') {
       query.leftJoinAndSelect('entity.category', 'category');
-      query.orderBy(`category.categoryName`, sortOrder, 'NULLS LAST');
+      query.orderBy(`category.name`, sortOrder, 'NULLS LAST');
     } else if (sortBy === 'subCategory') {
       query.leftJoinAndSelect('entity.subCategory', 'subCategory');
-      query.orderBy(`subCategory.subCategoryName`, sortOrder, 'NULLS LAST');
+      query.orderBy(`subCategory.name`, sortOrder, 'NULLS LAST');
     }
   }
 }

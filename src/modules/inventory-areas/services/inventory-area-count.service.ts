@@ -137,9 +137,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     //query.distinct(true);
 
     query
-      .leftJoin('entity.countedItems', 'areaItem')
-      .leftJoin('areaItem.countedItem', 'inventoryItem')
-      .andWhere('(LOWER(inventoryItem.itemName) LIKE :search)', {
+      .leftJoin('entity.countedInventoryItems', 'areaItem')
+      .leftJoin('areaItem.countedInventoryItem', 'inventoryItem')
+      .andWhere('(LOWER(inventoryItem.name) LIKE :search)', {
         search: `%${search.toLowerCase()}%`,
       });
   }
@@ -177,7 +177,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       query.orderBy(`entity.${sortBy}`, sortOrder);
     } else if (sortBy === 'inventoryArea') {
       query.leftJoinAndSelect('entity.inventoryArea', 'area');
-      query.orderBy(`area.areaName`, sortOrder);
+      query.orderBy(`area.name`, sortOrder);
     }
   }
 }

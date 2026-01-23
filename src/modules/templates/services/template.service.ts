@@ -103,7 +103,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     query: SelectQueryBuilder<Template>,
     search: string,
   ): void {
-    query.andWhere('(LOWER(entity.templateName) LIKE :search)', {
+    query.andWhere('(LOWER(entity.name) LIKE :search)', {
       search: `%${search.toLowerCase()}%`,
     });
   }
@@ -113,7 +113,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'templateName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

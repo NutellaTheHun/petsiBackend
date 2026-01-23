@@ -63,7 +63,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     }
     if (sortBy === 'menuItem') {
       query.leftJoinAndSelect('entity.menuItem', 'menuItem');
-      query.orderBy(`menuItem.itemName`, sortOrder);
+      query.orderBy(`menuItem.name`, sortOrder);
     }
   }
 }

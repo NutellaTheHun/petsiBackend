@@ -66,7 +66,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'areaName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

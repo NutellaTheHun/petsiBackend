@@ -65,7 +65,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'subCategoryName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

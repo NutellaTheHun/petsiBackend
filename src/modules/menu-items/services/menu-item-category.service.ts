@@ -71,7 +71,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'categoryName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

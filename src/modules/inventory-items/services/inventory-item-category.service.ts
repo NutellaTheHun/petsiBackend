@@ -71,7 +71,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'categoryName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

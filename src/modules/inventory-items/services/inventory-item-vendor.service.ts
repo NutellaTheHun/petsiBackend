@@ -68,7 +68,7 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'vendorName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

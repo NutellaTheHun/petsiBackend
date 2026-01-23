@@ -84,7 +84,7 @@ export class UserService extends ServiceBase<UserEntity> {
   }
 
   protected applySearch(query: SelectQueryBuilder<User>, search: string): void {
-    query.andWhere('(LOWER(entity.username) LIKE :search)', {
+    query.andWhere('(LOWER(entity.name) LIKE :search)', {
       search: `%${search.toLowerCase()}%`,
     });
   }
@@ -105,7 +105,7 @@ export class UserService extends ServiceBase<UserEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'username') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

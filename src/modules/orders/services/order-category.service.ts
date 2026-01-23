@@ -67,7 +67,7 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'categoryName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }

@@ -129,10 +129,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
         .leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
         .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
 
-      query.orderBy(
-        `COALESCE(inventoryItem.itemName, recipe.recipeName)`,
-        sortOrder,
-      );
+      query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
     }
   }
 }

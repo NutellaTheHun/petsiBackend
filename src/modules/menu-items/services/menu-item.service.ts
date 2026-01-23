@@ -153,7 +153,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     query: SelectQueryBuilder<MenuItem>,
     search: string,
   ): void {
-    query.andWhere('(LOWER(entity.itemName) LIKE :search)', {
+    query.andWhere('(LOWER(entity.name) LIKE :search)', {
       search: `%${search.toLowerCase()}%`,
     });
   }
@@ -174,17 +174,20 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'itemName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
     if (sortBy === 'category') {
       query.leftJoinAndSelect('entity.category', 'menuItemCategory');
-      query.orderBy(`menuItemCategory.categoryName`, sortOrder, 'NULLS LAST');
+      query.orderBy(`menuItemCategory.name`, sortOrder, 'NULLS LAST');
     }
   }
 
   /**
    * Update all current orders with menuItem that used to be of type container to single by removing the contained items within the ordered item
+   * TODO: is this to harsh? If a menuItem is switched to single, cant the system just ignore the container items?
+   * If user accidentally switches a menuItem to single, this would irreversibly delete the container items.
+   * Would atleast need a warning and/or just ignore the container items.
    */
   private async syncOrderMenuItems(id: number) {
     const activeOrderItems = await this.orderMenuItemRepo.find({

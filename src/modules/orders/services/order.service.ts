@@ -158,7 +158,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
       .leftJoin('entity.orderedItems', 'orderedItem')
       .leftJoin('orderedItem.menuItem', 'menuItem')
       .andWhere(
-        `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.itemName) LIKE :search)`,
+        `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.name) LIKE :search)`,
         { search: `%${search.toLowerCase()}%` },
       );
   }
@@ -168,7 +168,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
     filters: Record<string, string[]>,
   ): void {
     if (filters.category && filters.category.length > 0) {
-      query.andWhere('entity.orderCategory IN (:...categories)', {
+      query.andWhere('entity.category IN (:...categories)', {
         categories: filters.category,
       });
     }
@@ -206,9 +206,9 @@ export class OrderService extends ServiceBase<OrderEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'orderCategory') {
-      query.leftJoinAndSelect('entity.orderCategory', 'category');
-      query.orderBy(`category.categoryName`, sortOrder);
+    if (sortBy === 'category') {
+      query.leftJoinAndSelect('entity.category', 'category');
+      query.orderBy(`category.name`, sortOrder);
     } else if (sortBy === 'recipient') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     } else if (sortBy === 'fulfillmentDate') {

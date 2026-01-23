@@ -86,7 +86,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
     query: SelectQueryBuilder<Label>,
     search: string,
   ): void {
-    query.andWhere('(LOWER(menuItem.itemName) LIKE :search)', {
+    query.andWhere('(LOWER(menuItem.name) LIKE :search)', {
       search: `%${search.toLowerCase()}%`,
     });
   }

@@ -58,9 +58,9 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'containedItem') {
-      query.leftJoinAndSelect('entity.containedItem', 'menuItem');
-      query.orderBy(`menuItem.itemName`, sortOrder);
+    if (sortBy === 'containedMenuItem') {
+      query.leftJoinAndSelect('entity.containedMenuItem', 'menuItem');
+      query.orderBy(`menuItem.name`, sortOrder);
     }
   }
 }

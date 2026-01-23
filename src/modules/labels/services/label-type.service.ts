@@ -75,7 +75,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     sortBy: string,
     sortOrder: 'ASC' | 'DESC',
   ): void {
-    if (sortBy === 'labelTypeName') {
+    if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
   }
