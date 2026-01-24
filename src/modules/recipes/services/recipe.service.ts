@@ -1,12 +1,11 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItem } from '../../menu-items/menu-items.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { RecipeBuilder } from '../builders/recipe.builder';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -22,8 +21,8 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     @InjectRepository(Recipe)
     private readonly repo: Repository<Recipe>,
 
-    @Inject(forwardRef(() => RecipeBuilder))
-    builder: RecipeBuilder,
+    //@Inject(forwardRef(() => RecipeBuilder))
+    //builder: RecipeBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -32,7 +31,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'RecipeService',
       requestContextService,
       logger,

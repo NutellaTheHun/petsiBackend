@@ -4,7 +4,6 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { LabelTypeBuilder } from '../builders/label-type.builder';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType, LabelTypeEntity } from '../entities/label-type.entity';
@@ -16,7 +15,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     @InjectRepository(LabelType)
     private readonly repo: Repository<LabelType>,
 
-    builder: LabelTypeBuilder,
+    //builder: LabelTypeBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -24,7 +23,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'LabelTypeService',
       requestContextService,
       logger,

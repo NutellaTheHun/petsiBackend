@@ -1,10 +1,9 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import {
@@ -20,8 +19,8 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     @InjectRepository(RecipeSubCategory)
     private readonly repo: Repository<RecipeSubCategory>,
 
-    @Inject(forwardRef(() => RecipeSubCategoryBuilder))
-    builder: RecipeSubCategoryBuilder,
+    //@Inject(forwardRef(() => RecipeSubCategoryBuilder))
+    //builder: RecipeSubCategoryBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -30,7 +29,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'RecipeSubCategoryService',
       requestContextService,
       logger,

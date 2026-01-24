@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemContainerItemService } from '../../menu-items/services/menu-item-container-item.service';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
-import { OrderCategoryService } from '../services/order-category.service';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
-import { OrderService } from '../services/order.service';
 import { getTestOrderCategoryNames } from './constants';
 
 @Injectable()
@@ -20,13 +18,17 @@ export class OrderTestingUtil {
   private orderInit: boolean;
   private orderMenuItemInit: boolean;
   constructor(
-    private readonly orderMenuItemService: OrderMenuItemService,
-    private readonly categoryService: OrderCategoryService,
-    private readonly orderService: OrderService,
+    @InjectRepository(OrderMenuItem)
+    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
+    @InjectRepository(OrderCategory)
+    private readonly categoryRepo: Repository<OrderCategory>,
+    @InjectRepository(Order)
+    private readonly orderRepo: Repository<Order>,
 
-    private readonly menuItemService: MenuItemService,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
+
     private readonly menuItemTestUtil: MenuItemTestingUtil,
-    private readonly menuContainerItemService: MenuItemContainerItemService,
   ) {
     this.orderTypeInit = false;
     this.orderInit = false;
@@ -59,13 +61,13 @@ export class OrderTestingUtil {
 
     testContext.addCleanupFunction(() => this.cleanupOrderTypeTestDatabase());
 
-    await this.categoryService.insertEntities(
+    await this.categoryRepo.insert(
       await this.getTestOrderTypeEntities(testContext),
     );
   }
 
   public async cleanupOrderTypeTestDatabase(): Promise<void> {
-    await this.categoryService.getQueryBuilder().delete().execute();
+    await this.categoryRepo.delete({});
   }
 
   // Order Menu Item
@@ -77,16 +79,14 @@ export class OrderTestingUtil {
       testContext,
     );
 
-    const ordersRequest = await this.orderService.findAll();
-    const orders = ordersRequest.items;
+    const orders = await this.orderRepo.find();
     if (!orders) {
       throw new Error();
     }
 
-    const menuItemsRequest = await this.menuItemService.findAll({
+    const menuItems = await this.menuItemRepo.find({
       relations: ['sizes'],
     });
-    const menuItems = menuItemsRequest.items;
     if (!menuItems) {
       throw new Error();
     }
@@ -115,15 +115,13 @@ export class OrderTestingUtil {
     }
 
     //Order Menu Item Container Items
-    const items = (
-      await this.menuItemService.findAll({
-        relations: [
-          'containerMenuItems',
-          'containerMenuItems.containedMenuItem',
-          'containerMenuItems.containedItemSize',
-        ],
-      })
-    ).items;
+    const items = await this.menuItemRepo.find({
+      relations: [
+        'containerMenuItems',
+        'containerMenuItems.containedMenuItem',
+        'containerMenuItems.containedItemSize',
+      ],
+    });
     const containerItems = items.filter(
       (item) => item.containerMenuItems.length > 0,
     );
@@ -182,13 +180,13 @@ export class OrderTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupOrderMenuItemTestDatabase(),
     );
-    await this.orderMenuItemService.insertEntities(
+    await this.orderMenuItemRepo.insert(
       await this.getTestOrderMenuItemEntities(testContext),
     );
   }
 
   public async cleanupOrderMenuItemTestDatabase(): Promise<void> {
-    await this.orderMenuItemService.getQueryBuilder().delete().execute();
+    await this.orderMenuItemRepo.delete({});
   }
 
   // Order
@@ -210,8 +208,7 @@ export class OrderTestingUtil {
     const fulfilltype: string[] = ['fulfilltype_a', 'fulfilltype_b'];
     let fIdx = 0;
 
-    const orderTypesRequest = await this.categoryService.findAll();
-    const orderTypes = orderTypesRequest.items;
+    const orderTypes = await this.categoryRepo.find();
     if (!orderTypes) {
       throw new Error();
     }
@@ -250,13 +247,11 @@ export class OrderTestingUtil {
     this.orderInit = true;
 
     testContext.addCleanupFunction(() => this.cleanupOrderTestDatabase());
-    await this.orderService.insertEntities(
-      await this.getTestOrderEntities(testContext),
-    );
+    await this.orderRepo.insert(await this.getTestOrderEntities(testContext));
   }
 
   public async cleanupOrderTestDatabase(): Promise<void> {
-    await this.orderService.getQueryBuilder().delete().execute();
+    await this.orderRepo.delete({});
   }
 
   // Dtos
@@ -264,10 +259,9 @@ export class OrderTestingUtil {
   public async createNestedOrderMenuItemDtos(
     amount: number,
   ): Promise<NestedCreateOrderMenuItemDto[]> {
-    const itemsRequest = await this.menuItemService.findAll({
+    const items = await this.menuItemRepo.find({
       relations: ['sizes'],
     });
-    const items = itemsRequest.items;
     if (!items) {
       throw new Error();
     }

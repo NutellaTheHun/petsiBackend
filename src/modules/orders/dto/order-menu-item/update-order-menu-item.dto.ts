@@ -2,7 +2,7 @@ import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import { IsArray, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 

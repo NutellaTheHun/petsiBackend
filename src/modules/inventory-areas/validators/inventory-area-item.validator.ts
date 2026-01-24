@@ -21,6 +21,7 @@ export class InventoryAreaItemValidator extends ValidatorBase<InventoryAreaItemE
   constructor(
     @InjectRepository(InventoryAreaItem)
     private readonly repo: Repository<InventoryAreaItem>,
+
     @InjectRepository(InventoryItem)
     private readonly inventoryItemRepo: Repository<InventoryItem>,
 

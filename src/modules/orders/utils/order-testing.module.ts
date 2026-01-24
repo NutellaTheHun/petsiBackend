@@ -6,6 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -18,8 +19,19 @@ import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { OrdersModule } from '../orders.module';
+import { OrderCategoryService } from '../services/order-category.service';
+import { OrderContainerItemService } from '../services/order-container-item.service';
+import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderService } from '../services/order.service';
 
-export async function getOrdersTestingModule(): Promise<TestingModule> {
+export async function getOrdersTestingModule(opts?: {
+  orderMenuItemServiceClass?: new (...args: any[]) => OrderMenuItemService;
+  orderCategoryServiceClass?: new (...args: any[]) => OrderCategoryService;
+  orderServiceClass?: new (...args: any[]) => OrderService;
+  orderContainerItemServiceClass?: new (
+    ...args: any[]
+  ) => OrderContainerItemService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -28,6 +40,7 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
         OrderCategory,
         Order,
         OrderContainerItem,
+        MenuItem,
       ]),
       TypeOrmModule.forFeature([
         OrderMenuItem,
@@ -56,5 +69,13 @@ export async function getOrdersTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(OrderMenuItemService)
+    .useClass(opts?.orderMenuItemServiceClass || OrderMenuItemService)
+    .overrideProvider(OrderCategoryService)
+    .useClass(opts?.orderCategoryServiceClass || OrderCategoryService)
+    .overrideProvider(OrderService)
+    .useClass(opts?.orderServiceClass || OrderService)
+    .overrideProvider(OrderContainerItemService)
+    .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
     .compile();
 }

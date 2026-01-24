@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { RoleBuilder } from '../builders/role.builder';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role, RoleEntity } from '../entities/role.entity';
@@ -16,8 +15,8 @@ export class RoleService extends ServiceBase<RoleEntity> {
     @InjectRepository(Role)
     private readonly repo: Repository<Role>,
 
-    @Inject(forwardRef(() => RoleBuilder))
-    builder: RoleBuilder,
+    //@Inject(forwardRef(() => RoleBuilder))
+    //builder: RoleBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -25,7 +24,7 @@ export class RoleService extends ServiceBase<RoleEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'RoleService',
       requestContextService,
       logger,

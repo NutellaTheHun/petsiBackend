@@ -1,33 +1,57 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
+import { OrderContainerItem } from '../entities/order-container-item.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderContainerItemService } from './order-container-item.service';
-import { OrderMenuItemService } from './order-menu-item.service';
+
+class TestableOrderContainerItemService extends OrderContainerItemService {
+  async createEntityForTest(
+    dto: CreateOrderContainerItemDto,
+    manager: EntityManager,
+  ): Promise<OrderContainerItem> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateOrderContainerItemDto,
+    entity: OrderContainerItem,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('order container item service', () => {
   let service: OrderContainerItemService;
   let testingUtil: OrderTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let menuItemService: MenuItemService;
-  let orderItemService: OrderMenuItemService;
-
-  let testId: number;
-  let testIds: number[];
+  let menuItemRepo: Repository<MenuItem>;
+  let orderItemRepo: Repository<OrderMenuItem>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getOrdersTestingModule();
+    const module: TestingModule = await getOrdersTestingModule({
+      orderContainerItemServiceClass: TestableOrderContainerItemService,
+    });
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
+    dataSource = module.get(DataSource);
 
-    service = module.get<OrderContainerItemService>(OrderContainerItemService);
-    menuItemService = module.get<MenuItemService>(MenuItemService);
-    orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
+    service = module.get(
+      OrderContainerItemService,
+    ) as TestableOrderContainerItemService;
+
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
+    orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
   });
 
   afterAll(async () => {

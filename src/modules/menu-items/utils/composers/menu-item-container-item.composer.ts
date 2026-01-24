@@ -9,7 +9,7 @@ import {
   MenuItemContainerItemEntity,
 } from '../../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
-import { MenuItem } from '../../menu-items.module';
+import { MenuItem } from '../../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContainerItemEntity> {

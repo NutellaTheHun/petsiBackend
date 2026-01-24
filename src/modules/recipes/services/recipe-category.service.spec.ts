@@ -1,32 +1,47 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
-import { RecipeSubCategoryService } from './recipe-sub-category.service';
+
+class TestableRecipeCategoryService extends RecipeCategoryService {
+  async createEntityForTest(
+    dto: CreateRecipeCategoryDto,
+    manager: EntityManager,
+  ): Promise<RecipeCategory> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateRecipeCategoryDto,
+    entity: RecipeCategory,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('recipe category service', () => {
   let categoryService: RecipeCategoryService;
   let testUtil: RecipeTestUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let testId: number;
-  let testIds: number[];
-
-  let recipeSubCategoryService: RecipeSubCategoryService;
-  let testRecSubCatId: number;
-  let testSubCatIds: number[];
-  let modifiedSubCatId: number;
-  let removedSubCatId: number;
+  let recipeSubCategoryRepo: Repository<RecipeSubCategory>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
+    const module: TestingModule = await getRecipeTestingModule({
+      recipeCategoryServiceClass: TestableRecipeCategoryService,
+    });
 
     dbTestContext = new DatabaseTestContext();
     testUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
@@ -35,10 +50,12 @@ describe('recipe category service', () => {
     await testUtil.initRecipeTestingDatabase(dbTestContext);
     await testUtil.initRecipeIngredientTestingDatabase(dbTestContext);
 
-    categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
-    recipeSubCategoryService = module.get<RecipeSubCategoryService>(
-      RecipeSubCategoryService,
-    );
+    categoryService = module.get(
+      RecipeCategoryService,
+    ) as TestableRecipeCategoryService;
+    recipeSubCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

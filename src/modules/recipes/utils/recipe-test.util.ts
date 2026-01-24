@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import {
   DRY_A,
@@ -34,10 +36,6 @@ import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { RecipeCategoryService } from '../services/recipe-category.service';
-import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
-import { RecipeService } from '../services/recipe.service';
 import * as CONSTANT from './constants';
 
 @Injectable()
@@ -51,16 +49,20 @@ export class RecipeTestUtil {
     private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
     private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
 
-    private readonly ingredientService: RecipeIngredientService,
+    @InjectRepository(RecipeIngredient)
+    private readonly ingredientRepo: Repository<RecipeIngredient>,
     private readonly ingredientBuilder: RecipeIngredientBuilder,
 
-    private readonly categoryService: RecipeCategoryService,
+    @InjectRepository(RecipeCategory)
+    private readonly categoryRepo: Repository<RecipeCategory>,
     private readonly categorybuilder: RecipeCategoryBuilder,
 
-    private readonly subCategoryService: RecipeSubCategoryService,
+    @InjectRepository(RecipeSubCategory)
+    private readonly subCategoryRepo: Repository<RecipeSubCategory>,
     private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
 
-    private readonly recipeService: RecipeService,
+    @InjectRepository(Recipe)
+    private readonly recipeRepo: Repository<Recipe>,
     private readonly recipeBuilder: RecipeBuilder,
 
     //private readonly menuItemService: MenuItemsService,
@@ -327,7 +329,7 @@ export class RecipeTestUtil {
       this.cleanupRecipeIngredientTestingDatabase(),
     );
 
-    await this.ingredientService.insertEntities(
+    await this.ingredientRepo.insert(
       await this.getTestRecipeIngredientEntities(testContext),
     );
   }
@@ -354,12 +356,14 @@ export class RecipeTestUtil {
     );
 
     for (const category of categories) {
-      const exists = await this.categoryService.findOneByName(category.name);
+      const exists = await this.categoryRepo.findOne({
+        where: { name: category.name },
+      });
       if (!exists) {
         toInsert.push(category);
       }
     }
-    await this.categoryService.insertEntities(toInsert);
+    await this.categoryRepo.insert(toInsert);
   }
 
   /**
@@ -385,13 +389,15 @@ export class RecipeTestUtil {
     );
 
     for (const subCat of subCategories) {
-      const exists = await this.subCategoryService.findOneByName(subCat.name);
+      const exists = await this.subCategoryRepo.findOne({
+        where: { name: subCat.name },
+      });
       if (!exists) {
         toInsert.push(subCat);
       }
     }
 
-    await this.subCategoryService.insertEntities(toInsert);
+    await this.subCategoryRepo.insert(toInsert);
   }
 
   /**
@@ -413,29 +419,31 @@ export class RecipeTestUtil {
     testContext.addCleanupFunction(() => this.cleanupRecipeTestingDatabase());
 
     for (const recipe of recipes) {
-      const exists = await this.recipeService.findOneByName(recipe.name);
+      const exists = await this.recipeRepo.findOne({
+        where: { name: recipe.name },
+      });
       if (!exists) {
         toInsert.push(recipe);
       }
     }
 
-    await this.recipeService.insertEntities(toInsert);
+    await this.recipeRepo.insert(toInsert);
   }
 
   public async cleanupRecipeIngredientTestingDatabase(): Promise<void> {
-    await this.ingredientService.getQueryBuilder().delete().execute();
+    await this.ingredientRepo.delete({});
   }
 
   public async cleanupRecipeCategoryTestingDatabase(): Promise<void> {
-    await this.categoryService.getQueryBuilder().delete().execute();
+    await this.categoryRepo.delete({});
   }
 
   public async cleanupRecipeSubCategoryTestingDatabase(): Promise<void> {
-    await this.subCategoryService.getQueryBuilder().delete().execute();
+    await this.subCategoryRepo.delete({});
   }
 
   public async cleanupRecipeTestingDatabase(): Promise<void> {
-    await this.recipeService.getQueryBuilder().delete().execute();
+    await this.recipeRepo.delete({});
   }
 
   /**
@@ -460,23 +468,19 @@ export class RecipeTestUtil {
       if (itemIndex < itemIds.length) {
         results.push(
           plainToInstance(NestedCreateRecipeIngredientDto, {
-            mode: 'create',
-            createDto: {
-              ingredientInventoryItemId: itemIds[itemIndex++],
-              quantityUnitTypeId: unitIds[i % unitIds.length],
-              quantity: quantities[i],
-            },
+            createId: `c${createId++}`,
+            ingredientInventoryItemId: itemIds[itemIndex++],
+            quantityUnitTypeId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
           }),
         );
       } else if (subRecipeIndex < subRecipeIds.length) {
         results.push(
           plainToInstance(NestedCreateRecipeIngredientDto, {
-            mode: 'create',
-            createDto: {
-              ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
-              quantityUnitTypeId: unitIds[i % unitIds.length],
-              quantity: quantities[i],
-            },
+            createId: `c${createId++}`,
+            ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
+            quantityUnitTypeId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
           }),
         );
       } else {
@@ -485,12 +489,10 @@ export class RecipeTestUtil {
 
         results.push(
           plainToInstance(NestedCreateRecipeIngredientDto, {
-            mode: 'create',
-            createDto: {
-              ingredientInventoryItemId: itemIds[itemIndex++],
-              quantityUnitTypeId: unitIds[i % unitIds.length],
-              quantity: quantities[i],
-            },
+            createId: `c${createId++}`,
+            ingredientInventoryItemId: itemIds[itemIndex++],
+            quantityUnitTypeId: unitIds[i % unitIds.length],
+            quantity: quantities[i],
           }),
         );
       }

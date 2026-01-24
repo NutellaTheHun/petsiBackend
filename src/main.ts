@@ -3,15 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { writeFileSync } from 'fs';
-import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { GlobalHttpExceptionFilter } from './common/exceptions/global-http-exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(
     AppModule,
-    /* { logger: ['error', 'warn', 'log', 'debug'] }*/
-    { bufferLogs: true }, // optional, buffers logs until logger is initialized
+    /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
+    { bufferLogs: false }, // optional, buffers logs until logger is initialized
   );
 
   // Recommended when docker containerization
@@ -47,7 +46,7 @@ async function bootstrap() {
     }),
   );
 
-  app.useLogger(app.get(Logger));
+  //app.useLogger(app.get(Logger));
 
   app.useGlobalFilters(new GlobalHttpExceptionFilter());
 

@@ -4,7 +4,6 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.builder';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import {
@@ -19,7 +18,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     @InjectRepository(InventoryItemPackage)
     private readonly repo: Repository<InventoryItemPackage>,
 
-    builder: InventoryItemPackageBuilder,
+    //builder: InventoryItemPackageBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -27,7 +26,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'InventoryItemPackageService',
       requestContextService,
       logger,

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { RoleBuilder } from '../builders/role.builder';
 import { Role } from '../entities/role.entity';
-import { RoleService } from '../services/role.service';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from './constants';
 
 @Injectable()
@@ -10,7 +11,8 @@ export class RoleTestUtil {
   private initRoles = false;
 
   constructor(
-    private readonly roleService: RoleService,
+    @InjectRepository(Role)
+    private readonly roleRepo: Repository<Role>,
     private readonly roleBuilder: RoleBuilder,
   ) {}
 
@@ -34,12 +36,10 @@ export class RoleTestUtil {
 
     testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-    await this.roleService.insertEntities(
-      await this.getTestRoleEntities(testContext),
-    );
+    await this.roleRepo.insert(await this.getTestRoleEntities(testContext));
   }
 
   public async cleanupRoleTestingDatabase(): Promise<void> {
-    await this.roleService.getQueryBuilder().delete().execute();
+    await this.roleRepo.delete({});
   }
 }

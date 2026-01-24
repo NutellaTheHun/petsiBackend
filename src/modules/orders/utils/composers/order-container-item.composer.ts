@@ -1,7 +1,7 @@
 import { EntityManager, EntityTarget } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { CreateOrderContainerItemDto } from '../../dto/order-container-item/create-order-container-item.dto';
 import { NestedCreateOrderContainerItemDto } from '../../dto/order-container-item/nested-create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../../dto/order-container-item/update-order-container-item.dto';

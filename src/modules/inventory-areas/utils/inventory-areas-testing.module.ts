@@ -17,9 +17,13 @@ import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreasModule } from '../inventory-areas.module';
 import { InventoryAreaCountService } from '../services/inventory-area-count.service';
+import { InventoryAreaItemService } from '../services/inventory-area-item.service';
+import { InventoryAreaService } from '../services/inventory-area.service';
 
 export async function getInventoryAreasTestingModule(opts?: {
   countServiceClass?: new (...args: any[]) => InventoryAreaCountService;
+  areaItemServiceClass?: new (...args: any[]) => InventoryAreaItemService;
+  areaServiceClass?: new (...args: any[]) => InventoryAreaService;
 }): Promise<TestingModule> {
   const builder = Test.createTestingModule({
     imports: [
@@ -58,6 +62,18 @@ export async function getInventoryAreasTestingModule(opts?: {
     builder
       .overrideProvider(InventoryAreaCountService)
       .useClass(opts.countServiceClass);
+  }
+
+  if (opts?.areaItemServiceClass) {
+    builder
+      .overrideProvider(InventoryAreaItemService)
+      .useClass(opts.areaItemServiceClass);
+  }
+
+  if (opts?.areaServiceClass) {
+    builder
+      .overrideProvider(InventoryAreaService)
+      .useClass(opts.areaServiceClass);
   }
 
   return builder.compile();

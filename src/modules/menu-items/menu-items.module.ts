@@ -2,6 +2,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
+import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
 import { MenuItemContainerItemBuilder } from './builders/menu-item-container-item.builder';
@@ -33,6 +35,8 @@ import { MenuItemValidator } from './validators/menu-item.validator';
       MenuItemSize,
       MenuItem,
       MenuItemContainerItem,
+      OrderMenuItem,
+      OrderContainerItem,
     ]),
     CacheModule.register(),
     AppLoggingModule,
@@ -78,4 +82,4 @@ import { MenuItemValidator } from './validators/menu-item.validator';
 })
 export class MenuItemsModule {}
 
-export { MenuItem };
+//export { MenuItem };

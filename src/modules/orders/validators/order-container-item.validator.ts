@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
-import { MenuItem } from '../../menu-items/menu-items.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
@@ -26,9 +25,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
 
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
-
-    @InjectRepository(MenuItemContainerItem)
-    private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
     @InjectRepository(OrderMenuItem)
     private readonly orderMenuItemRepo: Repository<OrderMenuItem>,

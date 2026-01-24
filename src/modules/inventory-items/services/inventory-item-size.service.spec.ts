@@ -1,39 +1,55 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasureCategoryService } from '../../unit-of-measure/services/unit-of-measure-category.service';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasureCategory } from '../../unit-of-measure/entities/unit-of-measure-category.entity';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { GALLON, LITER } from '../../unit-of-measure/utils/constants';
+import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
 import { BOX_PKG, CAN_PKG, DRY_A, FOOD_A, OTHER_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
-import { InventoryItemPackageService } from './inventory-item-package.service';
 import { InventoryItemSizeService } from './inventory-item-size.service';
-import { InventoryItemService } from './inventory-item.service';
+
+class TestableInventoryItemSizeService extends InventoryItemSizeService {
+  async createEntityForTest(
+    dto: CreateInventoryItemSizeDto,
+    manager: EntityManager,
+  ): Promise<InventoryItemSize> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateInventoryItemSizeDto,
+    entity: InventoryItemSize,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('Inventory Item Size Service', () => {
   let module: TestingModule;
   let testingUtil: InventoryItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
   let sizeService: InventoryItemSizeService;
+  let dataSource: DataSource;
 
-  let unitService: UnitOfMeasureService;
-  let unitCategoryService: UnitOfMeasureCategoryService;
-  let packageService: InventoryItemPackageService;
-  let itemService: InventoryItemService;
-
-  let testId: number;
-  let testIds: number[];
-
-  let testPkgId: number;
-  let testUnitMeasureId: number;
-  let testItemId: number;
+  let unitRepo: Repository<UnitOfMeasure>;
+  let unitCategoryRepo: Repository<UnitOfMeasureCategory>;
+  let packageRepo: Repository<InventoryItemPackage>;
+  let itemRepo: Repository<InventoryItem>;
 
   beforeAll(async () => {
-    module = await getInventoryItemTestingModule();
+    module = await getInventoryItemTestingModule({
+      inventoryItemSizeServiceClass: TestableInventoryItemSizeService,
+    });
     dbTestContext = new DatabaseTestContext();
 
     testingUtil = module.get<InventoryItemTestingUtil>(
@@ -41,18 +57,16 @@ describe('Inventory Item Size Service', () => {
     );
     await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
 
-    sizeService = module.get<InventoryItemSizeService>(
+    sizeService = module.get(
       InventoryItemSizeService,
-    );
+    ) as TestableInventoryItemSizeService;
 
-    packageService = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-    unitCategoryService = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
-    );
-    itemService = module.get<InventoryItemService>(InventoryItemService);
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
+    dataSource = module.get(DataSource);
+
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+    unitCategoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
+    itemRepo = module.get(getRepositoryToken(InventoryItem));
+    unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
   });
 
   afterAll(async () => {

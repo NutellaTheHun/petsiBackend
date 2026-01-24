@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
-import { TemplateMenuItemService } from '../services/template-menu-item.service';
-import { TemplateService } from '../services/template.service';
 import { getTestTemplateNames } from './constants';
 
 @Injectable()
@@ -14,10 +14,14 @@ export class TemplateTestingUtil {
   private initItems = false;
 
   constructor(
-    private readonly templateService: TemplateService,
-    private readonly templateItemService: TemplateMenuItemService,
+    @InjectRepository(Template)
+    private readonly templateRepo: Repository<Template>,
+    @InjectRepository(TemplateMenuItem)
+    private readonly templateItemRepo: Repository<TemplateMenuItem>,
 
-    private readonly menuItemService: MenuItemService,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
+
     private readonly menuItemTestUtil: MenuItemTestingUtil,
   ) {}
 
@@ -44,13 +48,11 @@ export class TemplateTestingUtil {
     this.initTemplates = true;
 
     testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
-    await this.templateService.insertEntities(
-      await this.getTemplateEntities(testContext),
-    );
+    await this.templateRepo.insert(await this.getTemplateEntities(testContext));
   }
 
   public async cleanupTemplateTestDatabase(): Promise<void> {
-    await this.templateService.getQueryBuilder().delete().execute();
+    await this.templateRepo.delete({});
   }
 
   public async getTemplateMenuItemEntities(
@@ -59,15 +61,13 @@ export class TemplateTestingUtil {
     await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
     await this.initTemplateTestDatabase(testContext);
 
-    const itemsRequest = await this.menuItemService.findAll();
-    const items = itemsRequest.items;
+    const items = await this.menuItemRepo.find();
     if (!items) {
       throw new Error();
     }
     let itemIdx = 0;
 
-    const templatesRequest = await this.templateService.findAll();
-    const templates = templatesRequest.items;
+    const templates = await this.templateRepo.find();
     if (!templates) {
       throw new Error();
     }
@@ -99,12 +99,12 @@ export class TemplateTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupTemplateMenuItemTestDatabase(),
     );
-    await this.templateItemService.insertEntities(
+    await this.templateItemRepo.insert(
       await this.getTemplateMenuItemEntities(testContext),
     );
   }
 
   public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
-    await this.templateItemService.getQueryBuilder().delete().execute();
+    await this.templateItemRepo.delete({});
   }
 }

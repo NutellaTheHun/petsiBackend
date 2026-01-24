@@ -1,11 +1,10 @@
-import { forwardRef, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaBuilder } from '../builders/inventory-area.builder';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
+import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import {
   InventoryArea,
   InventoryAreaEntity,
@@ -17,8 +16,8 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     @InjectRepository(InventoryArea)
     private readonly repo: Repository<InventoryArea>,
 
-    @Inject(forwardRef(() => InventoryAreaBuilder))
-    builder: InventoryAreaBuilder,
+    //@Inject(forwardRef(() => InventoryAreaBuilder))
+    //builder: InventoryAreaBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -26,7 +25,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'InventoryAreaService',
       requestContextService,
       logger,
@@ -44,7 +43,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     return await manager.save(result);
   }
   protected async updateEntity(
-    dto: CreateInventoryAreaDto,
+    dto: UpdateInventoryAreaDto,
     manager: EntityManager,
     entity: InventoryArea,
   ): Promise<void> {

@@ -1,11 +1,17 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
+import { MenuItem } from '../entities/menu-item.entity';
 import {
   CAT_BLUE,
   CAT_GREEN,
@@ -19,47 +25,47 @@ import {
 } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
-import { MenuItemCategoryService } from './menu-item-category.service';
-import { MenuItemContainerItemService } from './menu-item-container-item.service';
-import { MenuItemSizeService } from './menu-item-size.service';
 import { MenuItemService } from './menu-item.service';
+
+class TestableMenuItemService extends MenuItemService {
+  async createEntityForTest(
+    dto: CreateMenuItemDto,
+    manager: EntityManager,
+  ): Promise<MenuItem> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateMenuItemDto,
+    entity: MenuItem,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('menu item service', () => {
   let testingUtil: MenuItemTestingUtil;
   let itemService: MenuItemService;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let categoryService: MenuItemCategoryService;
-  let sizeService: MenuItemSizeService;
-  let containerItemService: MenuItemContainerItemService;
-
-  let testId: number;
-  let testIds: number[];
-  let deletedValidSizeId: number;
-  let veganTakeNBakeId: number;
-  let takeNBakeId: number;
-  let veganId: number;
-
-  let containerMenuItemTestId: number;
-  let containerComponentModifyTestId: number;
-  let compIds: number[];
-  //let menuItemCompTestId: number;
-  //let menuItemCompOptionsTestId: number;
+  let categoryRepo: Repository<MenuItemCategory>;
+  let sizeRepo: Repository<MenuItemSize>;
+  let containerItemRepo: Repository<MenuItemContainerItem>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getMenuItemTestingModule();
+    const module: TestingModule = await getMenuItemTestingModule({
+      menuItemServiceClass: TestableMenuItemService,
+    });
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+    dataSource = module.get(DataSource);
+    itemService = module.get(MenuItemService) as TestableMenuItemService;
 
-    itemService = module.get<MenuItemService>(MenuItemService);
-    categoryService = module.get<MenuItemCategoryService>(
-      MenuItemCategoryService,
-    );
-    sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
-    containerItemService = module.get<MenuItemContainerItemService>(
-      MenuItemContainerItemService,
-    );
+    categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+    sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+    containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
   });
 
   afterAll(async () => {

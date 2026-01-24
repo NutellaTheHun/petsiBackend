@@ -21,10 +21,9 @@ import { Label } from '../labels/entities/label.entity';
 import { LabelsModule } from '../labels/labels.module';
 import { MenuItemCategory } from '../menu-items/entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../menu-items/entities/menu-item-container-item.entity';
-import { MenuItemContainerOptions } from '../menu-items/entities/menu-item-container-options.entity';
-import { MenuItemContainerRule } from '../menu-items/entities/menu-item-container-rule.entity';
 import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
-import { MenuItem, MenuItemsModule } from '../menu-items/menu-items.module';
+import { MenuItem } from '../menu-items/entities/menu-item.entity';
+import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { OrderCategory } from '../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
@@ -70,8 +69,6 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
         MenuItem,
         MenuItemCategory,
         MenuItemContainerItem,
-        MenuItemContainerOptions,
-        MenuItemContainerRule,
         MenuItemSize,
 
         Order,
@@ -110,8 +107,6 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
         MenuItem,
         MenuItemCategory,
         MenuItemContainerItem,
-        MenuItemContainerOptions,
-        MenuItemContainerRule,
         MenuItemSize,
 
         Order,

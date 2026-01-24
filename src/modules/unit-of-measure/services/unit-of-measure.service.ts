@@ -1,11 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import Big from 'big.js';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
@@ -21,8 +20,8 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     @InjectRepository(UnitOfMeasure)
     private readonly repo: Repository<UnitOfMeasure>,
 
-    @Inject(forwardRef(() => UnitOfMeasureBuilder))
-    builder: UnitOfMeasureBuilder,
+    //@Inject(forwardRef(() => UnitOfMeasureBuilder))
+    //builder: UnitOfMeasureBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -30,7 +29,7 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'UnitOfMeasureService',
       requestContextService,
       logger,

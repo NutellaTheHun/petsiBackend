@@ -16,8 +16,21 @@ import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipesModule } from '../recipes.module';
+import { RecipeCategoryService } from '../services/recipe-category.service';
+import { RecipeIngredientService } from '../services/recipe-ingredient.service';
+import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
+import { RecipeService } from '../services/recipe.service';
 
-export async function getRecipeTestingModule(): Promise<TestingModule> {
+export async function getRecipeTestingModule(opts?: {
+  recipeServiceClass?: new (...args: any[]) => RecipeService;
+  recipeIngredientServiceClass?: new (
+    ...args: any[]
+  ) => RecipeIngredientService;
+  recipeCategoryServiceClass?: new (...args: any[]) => RecipeCategoryService;
+  recipeSubCategoryServiceClass?: new (
+    ...args: any[]
+  ) => RecipeSubCategoryService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -49,5 +62,13 @@ export async function getRecipeTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(RecipeService)
+    .useClass(opts?.recipeServiceClass || RecipeService)
+    .overrideProvider(RecipeIngredientService)
+    .useClass(opts?.recipeIngredientServiceClass || RecipeIngredientService)
+    .overrideProvider(RecipeCategoryService)
+    .useClass(opts?.recipeCategoryServiceClass || RecipeCategoryService)
+    .overrideProvider(RecipeSubCategoryService)
+    .useClass(opts?.recipeSubCategoryServiceClass || RecipeSubCategoryService)
     .compile();
 }

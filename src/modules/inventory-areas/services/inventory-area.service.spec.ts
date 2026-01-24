@@ -1,32 +1,50 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseException } from '../../../common/exceptions/database-exception';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
+import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaService } from './inventory-area.service';
+
+class TestableInventoryAreaService extends InventoryAreaService {
+  async createEntityForTest(
+    dto: CreateInventoryAreaDto,
+    manager: EntityManager,
+  ) {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateInventoryAreaDto,
+    entity: InventoryArea,
+    manager: EntityManager,
+  ) {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('Inventory area service', () => {
   let testingUtil: InventoryAreaTestUtil;
   let dbTestContext: DatabaseTestContext;
   let service: InventoryAreaService;
-
-  const testAreaName = 'testAreaName';
-  const updateTestAreaName = 'UPDATED_TEST_AREA';
-  let testId: number;
-  let testIds: number[];
+  let dataSource: DataSource;
 
   beforeAll(async () => {
-    const module: TestingModule = await getInventoryAreasTestingModule();
+    const module: TestingModule = await getInventoryAreasTestingModule({
+      areaServiceClass: TestableInventoryAreaService,
+    });
 
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
     await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
 
-    service = module.get<InventoryAreaService>(InventoryAreaService);
+    service = module.get(InventoryAreaService) as TestableInventoryAreaService;
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

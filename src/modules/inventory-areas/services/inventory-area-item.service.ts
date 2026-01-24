@@ -5,7 +5,6 @@ import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import {
@@ -21,8 +20,8 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     @InjectRepository(InventoryAreaItem)
     private readonly repo: Repository<InventoryAreaItem>,
 
-    @Inject(forwardRef(() => InventoryAreaItemBuilder))
-    builder: InventoryAreaItemBuilder,
+    //@Inject(forwardRef(() => InventoryAreaItemBuilder))
+    //builder: InventoryAreaItemBuilder,
 
     @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
@@ -37,7 +36,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'InventoryAreaItemService',
       requestContextService,
       logger,

@@ -1,27 +1,47 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemSizeService } from './menu-item-size.service';
 
+class TestableMenuItemSizeService extends MenuItemSizeService {
+  async createEntityForTest(
+    dto: CreateMenuItemSizeDto,
+    manager: EntityManager,
+  ): Promise<MenuItemSize> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateMenuItemSizeDto,
+    entity: MenuItemSize,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 describe('menu item size service', () => {
   let testingUtil: MenuItemTestingUtil;
   let sizeService: MenuItemSizeService;
   let dbTestContext: DatabaseTestContext;
-
-  let testId: number;
-  let testIds: number[];
+  let dataSource: DataSource;
 
   beforeAll(async () => {
-    const module: TestingModule = await getMenuItemTestingModule();
+    const module: TestingModule = await getMenuItemTestingModule({
+      menuItemSizeServiceClass: TestableMenuItemSizeService,
+    });
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
+    dataSource = module.get(DataSource);
 
-    sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
+    sizeService = module.get(
+      MenuItemSizeService,
+    ) as TestableMenuItemSizeService;
   });
 
   afterAll(async () => {

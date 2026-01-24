@@ -4,7 +4,6 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { OrderCategoryBuilder } from '../builders/order-category.builder';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import {
@@ -19,14 +18,14 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     @InjectRepository(OrderCategory)
     private readonly repo: Repository<OrderCategory>,
 
-    builder: OrderCategoryBuilder,
+    //builder: OrderCategoryBuilder,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderCategoryValidator,
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'OrderCategoryService',
       requestContextService,
       logger,

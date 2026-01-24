@@ -1,8 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
@@ -12,37 +14,46 @@ import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-crea
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderCategory } from '../entities/order-category.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
 import { TYPE_A, TYPE_B, TYPE_C, TYPE_D } from '../utils/constants';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
-import { OrderCategoryService } from './order-category.service';
-import { OrderMenuItemService } from './order-menu-item.service';
 import { OrderService } from './order.service';
+
+class TestableOrderService extends OrderService {
+  async createEntityForTest(
+    dto: CreateOrderDto,
+    manager: EntityManager,
+  ): Promise<Order> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateOrderDto,
+    entity: Order,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('order service', () => {
   let orderService: OrderService;
   let testingUtil: OrderTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let categoryService: OrderCategoryService;
-  let orderItemService: OrderMenuItemService;
+  let categoryRepo: Repository<OrderCategory>;
+  let orderItemRepo: Repository<OrderMenuItem>;
 
-  let menuItemService: MenuItemService;
+  let menuItemRepo: Repository<MenuItem>;
   let menuItemTestUtil: MenuItemTestingUtil;
 
-  let testId: number;
-  let testIds: number[];
-
-  let modifiedItemId: number;
-  let deletedItemId: number;
-
-  let removedItemIds: number[];
-  let removedTypeId: number;
-
-  let testOrderCompItemId: number;
-
   beforeAll(async () => {
-    const module: TestingModule = await getOrdersTestingModule();
+    const module: TestingModule = await getOrdersTestingModule({
+      orderServiceClass: TestableOrderService,
+    });
 
     dbTestContext = new DatabaseTestContext();
 
@@ -52,11 +63,12 @@ describe('order service', () => {
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     await testingUtil.initOrderTestDatabase(dbTestContext);
 
-    orderService = module.get<OrderService>(OrderService);
-    categoryService = module.get<OrderCategoryService>(OrderCategoryService);
-    orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
+    orderService = module.get(OrderService) as TestableOrderService;
+    categoryRepo = module.get(getRepositoryToken(OrderCategory));
+    orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
 
-    menuItemService = module.get<MenuItemService>(MenuItemService);
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

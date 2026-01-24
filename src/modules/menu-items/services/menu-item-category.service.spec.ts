@@ -1,29 +1,49 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemCategoryService } from './menu-item-category.service';
+
+class TestableMenuItemCategoryService extends MenuItemCategoryService {
+  async createEntityForTest(
+    dto: CreateMenuItemCategoryDto,
+    manager: EntityManager,
+  ): Promise<MenuItemCategory> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateMenuItemCategoryDto,
+    entity: MenuItemCategory,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('menu item category service', () => {
   let testingUtil: MenuItemTestingUtil;
   let categoryService: MenuItemCategoryService;
   let dbTestContext: DatabaseTestContext;
-
-  let testId: number;
-  let testIds: number[];
+  let dataSource: DataSource;
 
   beforeAll(async () => {
-    const module: TestingModule = await getMenuItemTestingModule();
+    const module: TestingModule = await getMenuItemTestingModule({
+      menuItemCategoryServiceClass: TestableMenuItemCategoryService,
+    });
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await testingUtil.initMenuItemCategoryTestDatabase(dbTestContext);
 
-    categoryService = module.get<MenuItemCategoryService>(
+    categoryService = module.get(
       MenuItemCategoryService,
-    );
+    ) as TestableMenuItemCategoryService;
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

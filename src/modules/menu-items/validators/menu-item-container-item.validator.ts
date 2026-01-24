@@ -13,7 +13,7 @@ import {
   MenuItemContainerItem,
   MenuItemContainerItemEntity,
 } from '../entities/menu-item-container-item.entity';
-import { MenuItem } from '../menu-items.module';
+import { MenuItem } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 
 @Injectable()
@@ -21,6 +21,7 @@ export class MenuItemContainerItemValidator extends ValidatorBase<MenuItemContai
   constructor(
     @InjectRepository(MenuItemContainerItem)
     private readonly containerItemRepo: Repository<MenuItemContainerItem>,
+
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
 

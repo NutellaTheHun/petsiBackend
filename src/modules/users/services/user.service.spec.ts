@@ -1,7 +1,9 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { RoleService } from '../../roles/services/role.service';
+import { Role } from '../../roles/entities/role.entity';
 import {
   ROLE_ADMIN,
   ROLE_MANAGER,
@@ -10,33 +12,47 @@ import {
 import { RoleTestUtil } from '../../roles/utils/role-test.util';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { User } from '../entities/user.entities';
 import { USER_A } from '../utils/constants';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { UserService } from './user.service';
+
+class TestableUserService extends UserService {
+  async createEntityForTest(
+    dto: CreateUserDto,
+    manager: EntityManager,
+  ): Promise<User> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateUserDto,
+    entity: User,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('User Service', () => {
   let usersService: UserService;
   let userTestingUtil: UserTestUtil;
   let roleTestingUtil: RoleTestUtil;
   let dbTestContext: DatabaseTestContext;
-
-  let rolesService: RoleService;
-
-  const testUsername = 'testUsername';
-  const testUserPass = 'testPass';
-  const testUserEmail = 'email@emaill.com';
-  const updatedEmail = 'UPDATEnewEmail@email.com';
-  const updatedUsername = 'UPDATEnewEmail@email.com';
-  let testId: number;
-  let testIds: number[];
+  let dataSource: DataSource;
+  let roleRepo: Repository<Role>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getUserTestingModule();
-    usersService = module.get<UserService>(UserService);
-    rolesService = module.get<RoleService>(RoleService);
-
+    const module: TestingModule = await getUserTestingModule({
+      userServiceClass: TestableUserService,
+    });
+    dataSource = module.get(DataSource);
     dbTestContext = new DatabaseTestContext();
+
+    usersService = module.get(UserService) as TestableUserService;
+
+    roleRepo = module.get(getRepositoryToken(Role));
+
     userTestingUtil = module.get<UserTestUtil>(UserTestUtil);
     await userTestingUtil.initUserTestingDatabase(dbTestContext);
     roleTestingUtil = module.get<RoleTestUtil>(RoleTestUtil);

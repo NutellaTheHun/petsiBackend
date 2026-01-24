@@ -1,57 +1,76 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import {
   DRY_A,
   FOOD_A,
   FOOD_B,
   OTHER_A,
 } from '../../inventory-items/utils/constants';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { FL_OUNCE, GALLON } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { Recipe } from '../entities/recipe.entity';
 import { REC_A, REC_B, REC_C, REC_E } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeIngredientService } from './recipe-ingredient.service';
-import { RecipeService } from './recipe.service';
+
+class TestableRecipeIngredientService extends RecipeIngredientService {
+  async createEntityForTest(
+    dto: CreateRecipeIngredientDto,
+    manager: EntityManager,
+  ): Promise<RecipeIngredient> {
+    return this.createEntity(dto, manager);
+  }
+
+  async updateEntityForTest(
+    dto: UpdateRecipeIngredientDto,
+    entity: RecipeIngredient,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('recipe ingredient service', () => {
   let ingredientService: RecipeIngredientService;
   let testingUtil: RecipeTestUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let recipeService: RecipeService;
-  let inventoryItemService: InventoryItemService;
-  let unitOfMeasureService: UnitOfMeasureService;
-
-  let testIngredId: number;
-  let testSubRecId: number;
-  let testIds: number[];
-  let testRecipeId: number;
+  let recipeRepo: Repository<Recipe>;
+  let inventoryItemRepo: Repository<InventoryItem>;
+  let unitOfMeasureRepo: Repository<UnitOfMeasure>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
+    const module: TestingModule = await getRecipeTestingModule({
+      recipeIngredientServiceClass: TestableRecipeIngredientService,
+    });
 
     testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
 
-    ingredientService = module.get<RecipeIngredientService>(
+    ingredientService = module.get(
       RecipeIngredientService,
-    );
-    recipeService = module.get<RecipeService>(RecipeService);
-    inventoryItemService =
-      module.get<InventoryItemService>(InventoryItemService);
-    unitOfMeasureService =
-      module.get<UnitOfMeasureService>(UnitOfMeasureService);
+    ) as TestableRecipeIngredientService;
+
+    recipeRepo = module.get(getRepositoryToken(Recipe));
+    inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
+    unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

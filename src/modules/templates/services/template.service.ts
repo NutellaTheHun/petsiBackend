@@ -4,7 +4,6 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { TemplateBuilder } from '../builders/template.builder';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
@@ -18,7 +17,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,
 
-    builder: TemplateBuilder,
+    //builder: TemplateBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -27,7 +26,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'TemplateService',
       requestContextService,
       logger,

@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import * as UNIT_CONSTANT from '../../unit-of-measure/utils/constants';
 import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
@@ -14,11 +16,6 @@ import { InventoryItemPackage } from '../entities/inventory-item-package.entity'
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
-import { InventoryItemPackageService } from '../services/inventory-item-package.service';
-import { InventoryItemSizeService } from '../services/inventory-item-size.service';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
-import { InventoryItemService } from '../services/inventory-item.service';
 import * as CONSTANT from './constants';
 
 @Injectable()
@@ -96,19 +93,24 @@ export class InventoryItemTestingUtil {
   private initItem = false;
 
   constructor(
-    private readonly vendorService: InventoryItemVendorService,
+    @InjectRepository(InventoryItemVendor)
+    private readonly vendorRepo: Repository<InventoryItemVendor>,
     private readonly vendorBuilder: InventoryItemVendorBuilder,
 
-    private readonly packageService: InventoryItemPackageService,
+    @InjectRepository(InventoryItemPackage)
+    private readonly packageRepo: Repository<InventoryItemPackage>,
     private readonly packageBuilder: InventoryItemPackageBuilder,
 
-    private readonly categoryService: InventoryItemCategoryService,
+    @InjectRepository(InventoryItemCategory)
+    private readonly categoryRepo: Repository<InventoryItemCategory>,
     private readonly categoryBuilder: InventoryItemCategoryBuilder,
 
-    private readonly sizeService: InventoryItemSizeService,
+    @InjectRepository(InventoryItemSize)
+    private readonly sizeRepo: Repository<InventoryItemSize>,
     private readonly sizeBuilder: InventoryItemSizeBuilder,
 
-    private readonly itemService: InventoryItemService,
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
     private readonly itemBuilder: InventoryItemBuilder,
 
     private readonly unitOfMeasureTestingUtil: UnitOfMeasureTestingUtil,
@@ -257,7 +259,7 @@ export class InventoryItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemVendorTestDatabase(),
     );
-    await this.vendorService.insertEntities(
+    await this.vendorRepo.insert(
       await this.getTestInventoryItemVendorEntities(testContext),
     );
   }
@@ -273,7 +275,7 @@ export class InventoryItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemPackageTestDatabase(),
     );
-    await this.packageService.insertEntities(
+    await this.packageRepo.insert(
       await this.getTestInventoryItemPackageEntities(testContext),
     );
   }
@@ -289,7 +291,7 @@ export class InventoryItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemCategoryTestDatabase(),
     );
-    await this.categoryService.insertEntities(
+    await this.categoryRepo.insert(
       await this.getTestInventoryItemCategoryEntities(testContext),
     );
   }
@@ -305,7 +307,7 @@ export class InventoryItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryItemTestDatabase(),
     );
-    await this.itemService.insertEntities(
+    await this.itemRepo.insert(
       await this.getTestInventoryItemEntities(testContext),
     );
   }
@@ -322,29 +324,29 @@ export class InventoryItemTestingUtil {
       this.cleanupInventoryItemSizeTestDatabase(),
     );
 
-    await this.sizeService.insertEntities(
+    await this.sizeRepo.insert(
       await this.getTestInventoryItemSizeEntities(testContext),
     );
   }
 
   public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
-    await this.vendorService.getQueryBuilder().delete().execute();
+    await this.vendorRepo.delete({});
   }
 
   public async cleanupInventoryItemPackageTestDatabase(): Promise<void> {
-    await this.packageService.getQueryBuilder().delete().execute();
+    await this.packageRepo.delete({});
   }
 
   public async cleanupInventoryItemCategoryTestDatabase(): Promise<void> {
-    await this.categoryService.getQueryBuilder().delete().execute();
+    await this.categoryRepo.delete({});
   }
 
   public async cleanupInventoryItemSizeTestDatabase(): Promise<void> {
-    await this.sizeService.getQueryBuilder().delete().execute();
+    await this.sizeRepo.delete({});
   }
 
   public async cleanupInventoryItemTestDatabase(): Promise<void> {
-    await this.itemService.getQueryBuilder().delete().execute();
+    await this.itemRepo.delete({});
   }
 
   /**

@@ -1,37 +1,57 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b, item_g } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
+import { LabelType } from '../entities/label-type.entity';
+import { Label } from '../entities/label.entity';
 import { type_a, type_c, type_d } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
-import { LabelTypeService } from './label-type.service';
 import { LabelService } from './label.service';
+
+class TestableLabelService extends LabelService {
+  async createEntityForTest(
+    dto: CreateLabelDto,
+    manager: EntityManager,
+  ): Promise<Label> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateLabelDto,
+    entity: Label,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('Label Service', () => {
   let labelService: LabelService;
   let testingUtil: LabelTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let typeService: LabelTypeService;
-  let itemService: MenuItemService;
-
-  let testId: number;
-  let testIds: number[];
+  let labelTypeRepo: Repository<LabelType>;
+  let itemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getLabelsTestingModule();
+    const module: TestingModule = await getLabelsTestingModule({
+      labelServiceClass: TestableLabelService,
+    });
 
-    labelService = module.get<LabelService>(LabelService);
+    labelService = module.get(LabelService) as TestableLabelService;
     testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initLabelTestDatabase(dbTestContext);
+    dataSource = module.get(DataSource);
 
-    typeService = module.get<LabelTypeService>(LabelTypeService);
-    itemService = module.get<MenuItemService>(MenuItemService);
+    labelTypeRepo = module.get(getRepositoryToken(LabelType));
+    itemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {

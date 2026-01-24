@@ -10,7 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';

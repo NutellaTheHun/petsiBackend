@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { OrderCategoryBuilder } from './builders/order-category.builder';
@@ -23,7 +24,6 @@ import { OrderService } from './services/order.service';
 import { OrderContainerItemComposer } from './utils/composers/order-container-item.composer';
 import { OrderMenuItemComposer } from './utils/composers/order-menu-item.composer';
 import { OrderTestingUtil } from './utils/order-testing.util';
-import { OrderMenuItemAggregateValidator } from './validators/aggregate-validators/order-menu-item.aggregate.validator';
 import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderContainerItemValidator } from './validators/order-container-item.validator';
 import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
@@ -36,6 +36,7 @@ import { OrderValidator } from './validators/order.validator';
       OrderCategory,
       OrderMenuItem,
       OrderContainerItem,
+      MenuItem,
     ]),
     MenuItemsModule,
     CacheModule.register(),
@@ -63,7 +64,6 @@ import { OrderValidator } from './validators/order.validator';
     OrderCategoryValidator,
     OrderMenuItemValidator,
     OrderContainerItemValidator,
-    OrderMenuItemAggregateValidator,
 
     OrderMenuItemComposer,
     OrderContainerItemComposer,

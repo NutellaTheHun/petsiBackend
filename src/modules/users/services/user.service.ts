@@ -6,7 +6,6 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { Role } from '../../roles/entities/role.entity';
-import { UserBuilder } from '../builders/user.builder';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
@@ -18,14 +17,14 @@ export class UserService extends ServiceBase<UserEntity> {
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
 
-    userBuilder: UserBuilder,
+    //userBuilder: UserBuilder,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: UserValidator,
   ) {
     super(
       userRepo,
-      userBuilder,
+      //userBuilder,
       'UserService',
       requestContextService,
       logger,

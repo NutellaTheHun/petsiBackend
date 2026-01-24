@@ -13,8 +13,11 @@ import { UserModule } from '../../users/user.module';
 import { RoleController } from '../controllers/role.controller';
 import { Role } from '../entities/role.entity';
 import { RoleModule } from '../role.module';
+import { RoleService } from '../services/role.service';
 
-export async function getRoleTestingModule(): Promise<TestingModule> {
+export async function getRoleTestingModule(opts?: {
+  roleServiceClass?: new (...args: any[]) => RoleService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -34,5 +37,7 @@ export async function getRoleTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(RoleService)
+    .useClass(opts?.roleServiceClass || RoleService)
     .compile();
 }

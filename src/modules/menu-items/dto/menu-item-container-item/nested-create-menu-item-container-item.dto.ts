@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
-import { MenuItem } from '../../menu-items.module';
+import { MenuItem } from '../../entities/menu-item.entity';
 
 export class NestedCreateMenuItemContainerItemDto extends NestedCreateDto {
   @ApiProperty({

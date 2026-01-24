@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { OrderBuilder } from '../builders/order.builder';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -19,8 +18,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
     @InjectRepository(Order)
     repo: Repository<Order>,
 
-    @Inject(forwardRef(() => OrderBuilder))
-    builder: OrderBuilder,
+    //@Inject(forwardRef(() => OrderBuilder))
+    //builder: OrderBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -29,7 +28,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'OrderService',
       requestContextService,
       logger,

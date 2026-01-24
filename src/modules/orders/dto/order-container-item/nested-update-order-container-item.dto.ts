@@ -3,7 +3,7 @@ import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 
 export class NestedUpdateOrderContainerItemDto extends NestedUpdateDto {
   @ApiPropertyOptional({

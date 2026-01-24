@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeORMPostgresTestingModule } from '../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { Role } from '../roles/entities/role.entity';
 import { RoleModule } from '../roles/role.module';
 import { UserBuilder } from './builders/user.builder';
 import { UserController } from './controllers/user.controller';
@@ -15,7 +16,7 @@ import { UserValidator } from './validators/user.validator';
 @Module({
   imports: [
     TypeORMPostgresTestingModule([]),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Role]),
     forwardRef(() => RoleModule),
     CacheModule.register(),
     AppLoggingModule,

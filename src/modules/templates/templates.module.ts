@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { TemplateMenuItemBuilder } from './builders/template-menu-item.builder';
@@ -19,7 +20,7 @@ import { TemplateValidator } from './validators/template.validator';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Template, TemplateMenuItem]),
+    TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
     MenuItemsModule,
     CacheModule.register(),
     AppLoggingModule,

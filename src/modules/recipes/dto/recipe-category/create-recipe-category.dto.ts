@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
-import { NestedRecipeSubCategoryDto } from '../recipe-sub-category/nested-recipe-sub-category.dto';
 
 export class CreateRecipeCategoryDto {
   @ApiProperty({
@@ -15,7 +14,7 @@ export class CreateRecipeCategoryDto {
   @ApiPropertyOptional({
     description:
       'Array of CreateChildRecipeSubCategoryDtos, child dtos are used when creating the parent RecipeCategory with child RecipeSubCategory entities.',
-    type: [NestedRecipeSubCategoryDto],
+    type: [NestedCreateRecipeSubCategoryDto],
     example: [
       {
         createId: 'c1',

@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
@@ -7,10 +9,6 @@ import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { MenuItemCategoryService } from '../services/menu-item-category.service';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
-import { MenuItemService } from '../services/menu-item.service';
 import {
   getTestCategoryNames,
   getTestItemNames,
@@ -29,14 +27,17 @@ export class MenuItemTestingUtil {
   private menuItemSizeInit = false;
   private menuItemCategoryInit = false;
   private menuItemInit = false;
-  private menuItemContainerOptionsInit = false;
-  private menuItemComponentInit = false;
+  private menuItemContainerItemInit = false;
 
   constructor(
-    private readonly itemService: MenuItemService,
-    private readonly sizeService: MenuItemSizeService,
-    private readonly categoryService: MenuItemCategoryService,
-    private readonly containerItemService: MenuItemContainerItemService,
+    @InjectRepository(MenuItem)
+    private readonly itemRepo: Repository<MenuItem>,
+    @InjectRepository(MenuItemSize)
+    private readonly sizeRepo: Repository<MenuItemSize>,
+    @InjectRepository(MenuItemCategory)
+    private readonly categoryRepo: Repository<MenuItemCategory>,
+    @InjectRepository(MenuItemContainerItem)
+    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
 
     private readonly itemBuilder: MenuItemBuilder,
     private readonly sizeBuilder: MenuItemSizeBuilder,
@@ -51,7 +52,7 @@ export class MenuItemTestingUtil {
     const results: MenuItemSize[] = [];
 
     for (const name of sizeNames) {
-      const exists = await this.sizeService.findOneByName(name);
+      const exists = await this.sizeRepo.findOne({ where: { name } });
       if (exists) {
         continue;
       }
@@ -72,13 +73,13 @@ export class MenuItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupMenuItemSizeTestDatabase(),
     );
-    await this.sizeService.insertEntities(
+    await this.sizeRepo.insert(
       await this.getTestMenuItemSizeEntities(testContext),
     );
   }
 
   public async cleanupMenuItemSizeTestDatabase(): Promise<void> {
-    await this.sizeService.getQueryBuilder().delete().execute();
+    await this.sizeRepo.delete({});
   }
 
   // Menu Item Category
@@ -89,7 +90,7 @@ export class MenuItemTestingUtil {
     const results: MenuItemCategory[] = [];
 
     for (const name of categoryNames) {
-      const exists = await this.categoryService.findOneByName(name);
+      const exists = await this.categoryRepo.findOne({ where: { name } });
       if (exists) {
         continue;
       }
@@ -110,13 +111,13 @@ export class MenuItemTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupMenuItemCategoryTestDatabase(),
     );
-    await this.categoryService.insertEntities(
+    await this.categoryRepo.insert(
       await this.getTestMenuItemCategoryEntities(testContext),
     );
   }
 
   public async cleanupMenuItemCategoryTestDatabase(): Promise<void> {
-    await this.categoryService.getQueryBuilder().delete().execute();
+    await this.categoryRepo.delete({});
   }
 
   // Menu Item
@@ -132,18 +133,14 @@ export class MenuItemTestingUtil {
     await this.initMenuItemCategoryTestDatabase(testContext);
 
     const itemNames = getTestItemNames();
-    const categoryIds = (await this.categoryService.findAll()).items.map(
-      (cat) => cat.id,
-    );
+    const categoryIds = (await this.categoryRepo.find()).map((cat) => cat.id);
     let catIdx = 0;
-    const sizeIds = (await this.sizeService.findAll()).items.map(
-      (size) => size.id,
-    );
+    const sizeIds = (await this.sizeRepo.find()).map((size) => size.id);
     let sizeIdx = 0;
     const results: MenuItem[] = [];
 
     for (const itemName of itemNames) {
-      const exists = await this.itemService.findOneByName(itemName);
+      const exists = await this.itemRepo.findOne({ where: { name: itemName } });
       if (exists) {
         continue;
       }
@@ -187,13 +184,11 @@ export class MenuItemTestingUtil {
     this.menuItemInit = true;
 
     testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
-    await this.itemService.insertEntities(
-      await this.getTestMenuItemEntities(testContext),
-    );
+    await this.itemRepo.insert(await this.getTestMenuItemEntities(testContext));
   }
 
   public async cleanupMenuItemTestDatabase(): Promise<void> {
-    await this.itemService.getQueryBuilder().delete().execute();
+    await this.itemRepo.delete({});
   }
 
   // Menu Item Component
@@ -209,7 +204,10 @@ export class MenuItemTestingUtil {
     await this.initMenuItemTestDatabase(testContext);
 
     // Parent
-    const itemF = await this.itemService.findOneByName(item_f, ['sizes']);
+    const itemF = await this.itemRepo.findOne({
+      where: { name: item_f },
+      relations: ['sizes'],
+    });
     if (!itemF) {
       throw new NotFoundException();
     }
@@ -218,7 +216,10 @@ export class MenuItemTestingUtil {
     }
 
     // Child to F
-    const itemA = await this.itemService.findOneByName(item_a, ['sizes']);
+    const itemA = await this.itemRepo.findOne({
+      where: { name: item_a },
+      relations: ['sizes'],
+    });
     if (!itemA) {
       throw new NotFoundException();
     }
@@ -227,7 +228,10 @@ export class MenuItemTestingUtil {
     }
 
     // Child to F
-    const itemB = await this.itemService.findOneByName(item_b, ['sizes']);
+    const itemB = await this.itemRepo.findOne({
+      where: { name: item_b },
+      relations: ['sizes'],
+    });
     if (!itemB) {
       throw new NotFoundException();
     }
@@ -236,7 +240,10 @@ export class MenuItemTestingUtil {
     }
 
     // Parent
-    const itemG = await this.itemService.findOneByName(item_g, ['sizes']);
+    const itemG = await this.itemRepo.findOne({
+      where: { name: item_g },
+      relations: ['sizes'],
+    });
     if (!itemG) {
       throw new NotFoundException();
     }
@@ -245,7 +252,10 @@ export class MenuItemTestingUtil {
     }
 
     // Child to G
-    const itemC = await this.itemService.findOneByName(item_c, ['sizes']);
+    const itemC = await this.itemRepo.findOne({
+      where: { name: item_c },
+      relations: ['sizes'],
+    });
     if (!itemC) {
       throw new NotFoundException();
     }
@@ -254,7 +264,10 @@ export class MenuItemTestingUtil {
     }
 
     // Child to G
-    const itemD = await this.itemService.findOneByName(item_d, ['sizes']);
+    const itemD = await this.itemRepo.findOne({
+      where: { name: item_d },
+      relations: ['sizes'],
+    });
     if (!itemD) {
       throw new NotFoundException();
     }
@@ -308,20 +321,20 @@ export class MenuItemTestingUtil {
   public async initMenuItemContainerItemTestDatabase(
     testContext: DatabaseTestContext,
   ): Promise<void> {
-    if (this.menuItemComponentInit) {
+    if (this.menuItemContainerItemInit) {
       return;
     }
-    this.menuItemComponentInit = true;
+    this.menuItemContainerItemInit = true;
     testContext.addCleanupFunction(() =>
       this.cleanupMenuItemContainerItemTestDatabase(),
     );
 
-    await this.containerItemService.insertEntities(
+    await this.containerItemRepo.insert(
       await this.getTestMenuItemContainerItemEntities(testContext),
     );
   }
 
   public async cleanupMenuItemContainerItemTestDatabase(): Promise<void> {
-    await this.containerItemService.getQueryBuilder().delete().execute();
+    await this.containerItemRepo.delete({});
   }
 }

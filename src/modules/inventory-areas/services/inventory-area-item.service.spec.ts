@@ -1,9 +1,11 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import {
   DRY_A,
   FOOD_A,
@@ -11,53 +13,68 @@ import {
   FOOD_C,
 } from '../../inventory-items/utils/constants';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryArea } from '../entities/inventory-area.entity';
 import { AREA_A } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
-import { InventoryAreaCountService } from './inventory-area-count.service';
 import { InventoryAreaItemService } from './inventory-area-item.service';
-import { InventoryAreaService } from './inventory-area.service';
+
+class TestableInventoryAreaItemService extends InventoryAreaItemService {
+  async createEntityForTest(
+    dto: CreateInventoryAreaItemDto,
+    manager: EntityManager,
+  ) {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateInventoryAreaItemDto,
+    entity: InventoryAreaItem,
+    manager: EntityManager,
+  ) {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('Inventory area item service', () => {
   let module: TestingModule;
   let testingUtil: InventoryAreaTestUtil;
   let dbTestContext: DatabaseTestContext;
+  let areaItemService: TestableInventoryAreaItemService;
+  let dataSource: DataSource;
 
-  let areaItemService: InventoryAreaItemService;
-  let areaService: InventoryAreaService;
-  let countService: InventoryAreaCountService;
+  let inventoryAreaRepo: Repository<InventoryArea>;
+  let inventoryAreaItemRepo: Repository<InventoryAreaItem>;
+  let inventoryAreaCountRepo: Repository<InventoryAreaCount>;
 
-  let itemService: InventoryItemService;
-  let sizeService: InventoryItemSizeService;
-
-  let testId: number;
-  let testIds: number[];
-
-  let oldAreaCountId: number;
-  let newAreaCountId: number;
+  let inventoryItemRepo: Repository<InventoryItem>;
+  let inventoryItemSizeRepo: Repository<InventoryItemSize>;
 
   beforeAll(async () => {
-    module = await getInventoryAreasTestingModule();
+    module = await getInventoryAreasTestingModule({
+      areaItemServiceClass: TestableInventoryAreaItemService,
+    });
 
     testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
 
-    areaItemService = module.get<InventoryAreaItemService>(
-      InventoryAreaItemService,
-    );
-    areaService = module.get<InventoryAreaService>(InventoryAreaService);
-    countService = module.get<InventoryAreaCountService>(
-      InventoryAreaCountService,
-    );
+    dataSource = module.get(DataSource);
 
-    itemService = module.get<InventoryItemService>(InventoryItemService);
-    sizeService = module.get<InventoryItemSizeService>(
-      InventoryItemSizeService,
-    );
+    areaItemService = module.get(
+      InventoryAreaItemService,
+    ) as TestableInventoryAreaItemService;
+
+    inventoryAreaRepo = module.get(getRepositoryToken(InventoryArea));
+    inventoryAreaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
+    inventoryAreaCountRepo = module.get(getRepositoryToken(InventoryAreaCount));
+    inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
+    inventoryItemSizeRepo = module.get(getRepositoryToken(InventoryItemSize));
   });
 
   afterAll(async () => {

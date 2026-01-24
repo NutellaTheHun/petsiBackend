@@ -6,6 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -14,14 +15,19 @@ import { LabelController } from '../controllers/label.controller';
 import { LabelType } from '../entities/label-type.entity';
 import { Label } from '../entities/label.entity';
 import { LabelsModule } from '../labels.module';
+import { LabelTypeService } from '../services/label-type.service';
+import { LabelService } from '../services/label.service';
 
-export async function getLabelsTestingModule(): Promise<TestingModule> {
+export async function getLabelsTestingModule(opts?: {
+  labelTypeServiceClass?: new (...args: any[]) => LabelTypeService;
+  labelServiceClass?: new (...args: any[]) => LabelService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
 
-      TypeORMPostgresTestingModule([Label, LabelType]),
-      TypeOrmModule.forFeature([Label, LabelType]),
+      TypeORMPostgresTestingModule([Label, LabelType, MenuItem]),
+      TypeOrmModule.forFeature([Label, LabelType, MenuItem]),
 
       LabelsModule,
       MenuItemsModule,
@@ -40,5 +46,9 @@ export async function getLabelsTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(LabelTypeService)
+    .useClass(opts?.labelTypeServiceClass || LabelTypeService)
+    .overrideProvider(LabelService)
+    .useClass(opts?.labelServiceClass || LabelService)
     .compile();
 }

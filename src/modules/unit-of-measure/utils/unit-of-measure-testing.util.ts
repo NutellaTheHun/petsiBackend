@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasureCategoryBuilder } from '../builders/unit-of-measure-category.builder';
 import { UnitOfMeasureBuilder } from '../builders/unit-of-measure.builder';
-import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
-import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import * as CONSTANTS from './constants';
 
 @Injectable()
@@ -15,10 +14,12 @@ export class UnitOfMeasureTestingUtil {
   private initCategory = false;
 
   constructor(
-    private readonly categoryService: UnitOfMeasureCategoryService,
+    @InjectRepository(UnitOfMeasureCategory)
+    private readonly categoryRepo: Repository<UnitOfMeasureCategory>,
     private readonly categoryBuilder: UnitOfMeasureCategoryBuilder,
 
-    private readonly unitService: UnitOfMeasureService,
+    @InjectRepository(UnitOfMeasure)
+    private readonly unitRepo: Repository<UnitOfMeasure>,
     private readonly unitBuilder: UnitOfMeasureBuilder,
   ) {}
 
@@ -166,9 +167,7 @@ export class UnitOfMeasureTestingUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupUnitCategoryTestDatabase(),
     );
-    await this.categoryService.insertEntities(
-      await this.getCategoryEntities(testContext),
-    );
+    await this.categoryRepo.insert(await this.getCategoryEntities(testContext));
   }
 
   public async initUnitOfMeasureTestDatabase(
@@ -183,17 +182,17 @@ export class UnitOfMeasureTestingUtil {
       this.cleanupUnitOfMeasureTestDatabase(),
     );
 
-    await this.unitService.insertEntities(
+    await this.unitRepo.insert(
       await this.getUnitsOfMeasureEntities(testContext),
     );
   }
 
   private async cleanupUnitCategoryTestDatabase(): Promise<void> {
-    await this.categoryService.getQueryBuilder().delete().execute();
+    await this.categoryRepo.delete({});
   }
 
   private async cleanupUnitOfMeasureTestDatabase(): Promise<void> {
-    await this.unitService.getQueryBuilder().delete().execute();
+    await this.unitRepo.delete({});
   }
 
   public async initializeDefaultCategoryBaseUnits(): Promise<void> {
@@ -209,24 +208,23 @@ export class UnitOfMeasureTestingUtil {
     categoryName: string,
     baseUnitOfMeasure: string,
   ): Promise<void> {
-    const category =
-      await await this.categoryService.findOneByName(categoryName);
+    const category = await await this.categoryRepo.findOne({
+      where: { name: categoryName },
+    });
     if (!category) {
       throw new Error(`${categoryName} category not found.`);
     }
 
-    const baseUnit = await await this.unitService.findOneByName(
-      baseUnitOfMeasure,
-      ['category'],
-    );
+    const baseUnit = await await this.unitRepo.findOne({
+      where: { name: baseUnitOfMeasure },
+    });
     if (!baseUnit) {
       throw new Error('base unit not found');
     }
-    category.baseConversionUnit = baseUnit;
+    category.baseConversionUnit = baseUnit as UnitOfMeasure;
 
-    await await this.categoryService.update(category.id, {
-      name: category.name,
-      baseConversionUnitId: category.baseConversionUnit.id,
-    } as UpdateUnitOfMeasureCategoryDto);
+    await await this.categoryRepo.update(category.id, {
+      baseConversionUnit: category.baseConversionUnit,
+    });
   }
 }

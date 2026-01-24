@@ -4,7 +4,6 @@ import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import {
@@ -19,7 +18,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     @InjectRepository(MenuItemSize)
     private readonly repo: Repository<MenuItemSize>,
 
-    builder: MenuItemSizeBuilder,
+    //builder: MenuItemSizeBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -27,7 +26,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'MenuItemSizeService',
       requestContextService,
       logger,

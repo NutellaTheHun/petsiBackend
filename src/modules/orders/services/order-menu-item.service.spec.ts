@@ -1,48 +1,65 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b, item_f } from '../../menu-items/utils/constants';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/nested-update-order-container-item.dto';
+import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderContainerItem } from '../entities/order-container-item.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
-import { OrderContainerItemService } from './order-container-item.service';
 import { OrderMenuItemService } from './order-menu-item.service';
-import { OrderService } from './order.service';
+
+class TestableOrderMenuItemService extends OrderMenuItemService {
+  async createEntityForTest(
+    dto: CreateOrderMenuItemDto,
+    manager: EntityManager,
+  ): Promise<OrderMenuItem> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateOrderMenuItemDto,
+    entity: OrderMenuItem,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('order menu item service', () => {
   let orderItemService: OrderMenuItemService;
   let testingUtil: OrderTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let orderService: OrderService;
-  let componentService: OrderContainerItemService;
-
-  let menuItemService: MenuItemService;
-
-  let testId: number;
-  let testIds: number[];
-  let testOrderId: number;
-  let testOrderItemCompsId: number;
+  let orderRepo: Repository<Order>;
+  let containerItemRepo: Repository<OrderContainerItem>;
+  let menuItemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getOrdersTestingModule();
+    const module: TestingModule = await getOrdersTestingModule({
+      orderMenuItemServiceClass: TestableOrderMenuItemService,
+    });
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
+    dataSource = module.get(DataSource);
 
-    orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
-    orderService = module.get<OrderService>(OrderService);
-    componentService = module.get<OrderContainerItemService>(
-      OrderContainerItemService,
-    );
-
-    menuItemService = module.get<MenuItemService>(MenuItemService);
+    orderItemService = module.get(
+      OrderMenuItemService,
+    ) as TestableOrderMenuItemService;
+    orderRepo = module.get(getRepositoryToken(Order));
+    containerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {
@@ -476,7 +493,7 @@ describe('order menu item service', () => {
       toUpdate.containerOrderMenuItems.length - 1,
     );
 
-    await expect(componentService.findOne(removedId)).rejects.toThrow(
+    await expect(containerItemService.findOne(removedId)).rejects.toThrow(
       NotFoundException,
     );
   });

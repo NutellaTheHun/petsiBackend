@@ -20,8 +20,27 @@ import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemsModule } from '../inventory-items.module';
+import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
+import { InventoryItemPackageService } from '../services/inventory-item-package.service';
+import { InventoryItemSizeService } from '../services/inventory-item-size.service';
+import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
+import { InventoryItemService } from '../services/inventory-item.service';
 
-export async function getInventoryItemTestingModule(): Promise<TestingModule> {
+export async function getInventoryItemTestingModule(opts?: {
+  inventoryItemCategoryServiceClass?: new (
+    ...args: any[]
+  ) => InventoryItemCategoryService;
+  inventoryItemPackageServiceClass?: new (
+    ...args: any[]
+  ) => InventoryItemPackageService;
+  inventoryItemSizeServiceClass?: new (
+    ...args: any[]
+  ) => InventoryItemSizeService;
+  inventoryItemVendorServiceClass?: new (
+    ...args: any[]
+  ) => InventoryItemVendorService;
+  inventoryItemServiceClass?: new (...args: any[]) => InventoryItemService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -61,5 +80,15 @@ export async function getInventoryItemTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(InventoryItemCategoryService)
+    .useClass(opts?.inventoryItemCategoryServiceClass)
+    .overrideProvider(InventoryItemPackageService)
+    .useClass(opts?.inventoryItemPackageServiceClass)
+    .overrideProvider(InventoryItemSizeService)
+    .useClass(opts?.inventoryItemSizeServiceClass)
+    .overrideProvider(InventoryItemVendorService)
+    .useClass(opts?.inventoryItemVendorServiceClass)
+    .overrideProvider(InventoryItemService)
+    .useClass(opts?.inventoryItemServiceClass)
     .compile();
 }

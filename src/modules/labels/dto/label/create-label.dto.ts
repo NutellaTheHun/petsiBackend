@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { EntityId } from '../../../../common/types';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { LabelType } from '../../entities/label-type.entity';
 
 export class CreateLabelDto {

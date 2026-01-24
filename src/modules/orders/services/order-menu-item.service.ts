@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { OrderMenuItemBuilder } from '../builders/order-menu-item.builder';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
 import {
@@ -20,8 +19,8 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     @InjectRepository(OrderMenuItem)
     repo: Repository<OrderMenuItem>,
 
-    @Inject(forwardRef(() => OrderMenuItemBuilder))
-    builder: OrderMenuItemBuilder,
+    //@Inject(forwardRef(() => OrderMenuItemBuilder))
+    //builder: OrderMenuItemBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -30,7 +29,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'OrderMenuItemService',
       requestContextService,
       logger,

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { RoleService } from '../../roles/services/role.service';
+import { Role } from '../../roles/entities/role.entity';
 import { RoleTestUtil } from '../../roles/utils/role-test.util';
 import { UserBuilder } from '../builders/user.builder';
 import { User } from '../entities/user.entities';
-import { UserService } from '../services/user.service';
 import { USER_A, USER_B, USER_C, USER_D, USER_E } from './constants';
 
 @Injectable()
@@ -21,10 +22,13 @@ export class UserTestUtil {
   private initUsers = false;
 
   constructor(
-    private readonly roleTestUtil: RoleTestUtil,
-    private readonly userService: UserService,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly userBuilder: UserBuilder,
-    private readonly roleService: RoleService,
+
+    @InjectRepository(Role)
+    private readonly roleRepo: Repository<Role>,
+    private readonly roleTestUtil: RoleTestUtil,
   ) {}
 
   public async getTestUserEntities(
@@ -32,9 +36,7 @@ export class UserTestUtil {
   ): Promise<User[]> {
     await this.roleTestUtil.initRoleTestingDatabase(testContext);
 
-    const roles = (await this.roleService.findAll()).items.map(
-      (role) => role.id,
-    );
+    const roles = (await this.roleRepo.find()).map((role) => role.id);
 
     const results: User[] = [];
     for (let i = 0; i < this.usernames.length; i++) {
@@ -63,10 +65,10 @@ export class UserTestUtil {
 
     testContext.addCleanupFunction(() => this.cleanupUserTestingDatabase());
 
-    await this.userService.insertEntities(users);
+    await this.userRepo.insert(users);
   }
 
   public async cleanupUserTestingDatabase(): Promise<void> {
-    await this.userService.getQueryBuilder().delete().execute();
+    await this.userRepo.delete({});
   }
 }

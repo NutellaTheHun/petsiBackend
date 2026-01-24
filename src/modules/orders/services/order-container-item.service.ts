@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { OrderContainerItemBuilder } from '../builders/order-container-item.builder';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import {
@@ -20,8 +19,8 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
     @InjectRepository(OrderContainerItem)
     repo: Repository<OrderContainerItem>,
 
-    @Inject(forwardRef(() => OrderContainerItemBuilder))
-    builder: OrderContainerItemBuilder,
+    //@Inject(forwardRef(() => OrderContainerItemBuilder))
+    //builder: OrderContainerItemBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -30,7 +29,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'OrderContainerItemService',
       requestContextService,
       logger,

@@ -1,9 +1,13 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import Big from 'big.js';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import {
   CUP,
   EACH,
@@ -22,20 +26,36 @@ import {
 } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
-import { UnitOfMeasureCategoryService } from './unit-of-measure-category.service';
 import { UnitOfMeasureService } from './unit-of-measure.service';
+
+class TestableUnitOfMeasureService extends UnitOfMeasureService {
+  async createEntityForTest(
+    dto: CreateUnitOfMeasureDto,
+    manager: EntityManager,
+  ): Promise<UnitOfMeasure> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateUnitOfMeasureDto,
+    entity: UnitOfMeasure,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('UnitOfMeasureService', () => {
   let testingUtil: UnitOfMeasureTestingUtil;
   let dbTestContext: DatabaseTestContext;
   let unitService: UnitOfMeasureService;
-  let categoryService: UnitOfMeasureCategoryService;
+  let dataSource: DataSource;
 
-  let testId: number;
-  let testIds: number[];
+  let categoryRepo: Repository<UnitOfMeasureCategory>;
 
   beforeAll(async () => {
-    const module: TestingModule = await getUnitOfMeasureTestingModule();
+    const module: TestingModule = await getUnitOfMeasureTestingModule({
+      unitOfMeasureServiceClass: TestableUnitOfMeasureService,
+    });
 
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<UnitOfMeasureTestingUtil>(
@@ -43,10 +63,12 @@ describe('UnitOfMeasureService', () => {
     );
     await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
 
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    categoryService = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
-    );
+    unitService = module.get<UnitOfMeasureService>(
+      UnitOfMeasureService,
+    ) as TestableUnitOfMeasureService;
+    categoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

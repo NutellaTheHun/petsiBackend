@@ -1,13 +1,20 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { GALLON } from '../../unit-of-measure/utils/constants';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
 import {
   DAIRY_CAT,
   DRYGOOD_CAT,
@@ -18,69 +25,56 @@ import {
 } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
-import { InventoryItemCategoryService } from './inventory-item-category.service';
-import { InventoryItemPackageService } from './inventory-item-package.service';
-import { InventoryItemSizeService } from './inventory-item-size.service';
-import { InventoryItemVendorService } from './inventory-item-vendor.service';
 import { InventoryItemService } from './inventory-item.service';
 
+class TestableInventoryItemService extends InventoryItemService {
+  async createEntityForTest(
+    dto: CreateInventoryItemDto,
+    manager: EntityManager,
+  ): Promise<InventoryItem> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateInventoryItemDto,
+    entity: InventoryItem,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 describe('Inventory Item Service', () => {
   let module: TestingModule;
   let testingUtil: InventoryItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
   let itemService: InventoryItemService;
 
-  let testId: number;
-  let testIds: number[];
-  let invItemSizesTestId: number;
-  let oldCategoryId: number;
-  let newCategoryId: number;
-  let oldVendorId: number;
-  let newVendorId: number;
-  let sizeId: number;
-
-  let updateItemSizeId: number;
-  let updateItemPkgId: number;
-  let newUnitId: number;
-  let newPkgId: number;
-  let deletedSizeId: number;
-  let savedSizeId: number;
-
-  let removalId: number;
-  let removalCategoryId: number;
-  let removalVendorId: number;
-  let removalSizeId: number;
-
-  let categoryService: InventoryItemCategoryService;
-  let packageService: InventoryItemPackageService;
-  let sizeService: InventoryItemSizeService;
-  let vendorService: InventoryItemVendorService;
-  let measureService: UnitOfMeasureService;
+  let categoryRepo: Repository<InventoryItemCategory>;
+  let packageRepo: Repository<InventoryItemPackage>;
+  let sizeRepo: Repository<InventoryItemSize>;
+  let vendorRepo: Repository<InventoryItemVendor>;
+  let measureRepo: Repository<UnitOfMeasure>;
 
   beforeAll(async () => {
-    module = await getInventoryItemTestingModule();
+    module = await getInventoryItemTestingModule({
+      inventoryItemServiceClass: TestableInventoryItemService,
+    });
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     dbTestContext = new DatabaseTestContext();
     await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+    itemService = module.get(
+      InventoryItemService,
+    ) as TestableInventoryItemService;
+    dataSource = module.get(DataSource);
 
-    categoryService = module.get<InventoryItemCategoryService>(
-      InventoryItemCategoryService,
-    );
-    vendorService = module.get<InventoryItemVendorService>(
-      InventoryItemVendorService,
-    );
-    packageService = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-
-    measureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    sizeService = module.get<InventoryItemSizeService>(
-      InventoryItemSizeService,
-    );
-    itemService = module.get<InventoryItemService>(InventoryItemService);
+    categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+    sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+    vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+    measureRepo = module.get(getRepositoryToken(UnitOfMeasure));
   });
 
   afterAll(async () => {

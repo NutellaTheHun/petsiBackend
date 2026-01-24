@@ -7,7 +7,7 @@ import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
-import { MenuItem } from '../menu-items.module';
+import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';

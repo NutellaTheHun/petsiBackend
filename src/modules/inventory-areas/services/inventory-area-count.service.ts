@@ -1,15 +1,9 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Between,
-  EntityManager,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import {
@@ -27,11 +21,12 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     @InjectRepository(InventoryAreaCount)
     private readonly repo: Repository<InventoryAreaCount>,
 
-    @Inject(forwardRef(() => InventoryAreaCountBuilder))
-    builder: InventoryAreaCountBuilder,
+    //@Inject(forwardRef(() => InventoryAreaCountBuilder))
+    //builder: InventoryAreaCountBuilder,
 
     logger: AppLogger,
     requestContextService: RequestContextService,
+
     @Inject(forwardRef(() => InventoryAreaCountValidator))
     validator: InventoryAreaCountValidator,
 
@@ -39,7 +34,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'InventoryAreaCountService',
       requestContextService,
       logger,
@@ -99,7 +94,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
     await manager.save(entity);
   }
 
-  async findByAreaName(
+  /*async findByAreaName(
     name: string,
     relations?: Array<keyof InventoryAreaCount>,
   ): Promise<InventoryAreaCount[]> {
@@ -107,12 +102,9 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       where: { inventoryArea: { name: name } },
       relations,
     });
-  }
+  }*/
 
-  /**
-   * finds all counts for the given day of date, ignores time.
-   */
-  async findByDate(
+  /*async findByDate(
     date: Date,
     relations?: Array<keyof InventoryAreaCount>,
   ): Promise<InventoryAreaCount[]> {
@@ -128,7 +120,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
       },
       relations,
     });
-  }
+  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<InventoryAreaCount>,

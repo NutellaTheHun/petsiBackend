@@ -201,7 +201,6 @@ export class SeedService {
   //private async seedMenuItemContainerOptionsTestDb(ctx: DatabaseTestContext) {}
   //private async seedMenuItemContainerRulesTestDb(ctx: DatabaseTestContext) {}
   private async seedMenuItemContainersTestDb(ctx: DatabaseTestContext) {
-    await this.menuItemTestUtil.initMenuItemContainerTestDatabase(ctx);
     await this.menuItemTestUtil.initMenuItemContainerItemTestDatabase(ctx);
   }
 

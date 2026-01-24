@@ -1,10 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import {
@@ -19,8 +18,8 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     @InjectRepository(InventoryItemCategory)
     private readonly repo: Repository<InventoryItemCategory>,
 
-    @Inject(forwardRef(() => InventoryItemCategoryBuilder))
-    builder: InventoryItemCategoryBuilder,
+    //@Inject(forwardRef(() => InventoryItemCategoryBuilder))
+    //builder: InventoryItemCategoryBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -28,7 +27,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'InventoryItemCategoryService',
       requestContextService,
       logger,

@@ -10,19 +10,28 @@ import { RequestContextModule } from '../../request-context/request-context.modu
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryController } from '../controllers/menu-item-category.controller';
 import { MenuItemContainerItemController } from '../controllers/menu-item-container-item.controller';
-import { MenuItemContainerOptionsController } from '../controllers/menu-item-container-options.controller';
-import { MenuItemContainerRuleController } from '../controllers/menu-item-container-rule.controller';
 import { MenuItemSizeController } from '../controllers/menu-item-size.controller';
 import { MenuItemController } from '../controllers/menu-item.controller';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
-import { MenuItemContainerOptions } from '../entities/menu-item-container-options.entity';
-import { MenuItemContainerRule } from '../entities/menu-item-container-rule.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items.module';
+import { MenuItemCategoryService } from '../services/menu-item-category.service';
+import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
+import { MenuItemSizeService } from '../services/menu-item-size.service';
+import { MenuItemService } from '../services/menu-item.service';
 
-export async function getMenuItemTestingModule(): Promise<TestingModule> {
+export async function getMenuItemTestingModule(opts?: {
+  menuItemCategoryServiceClass?: new (
+    ...args: any[]
+  ) => MenuItemCategoryService;
+  menuItemSizeServiceClass?: new (...args: any[]) => MenuItemSizeService;
+  menuItemServiceClass?: new (...args: any[]) => MenuItemService;
+  menuItemContainerItemServiceClass?: new (
+    ...args: any[]
+  ) => MenuItemContainerItemService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -31,16 +40,12 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
         MenuItemSize,
         MenuItem,
         MenuItemContainerItem,
-        MenuItemContainerRule,
-        MenuItemContainerOptions,
       ]),
       TypeOrmModule.forFeature([
         MenuItemCategory,
         MenuItemSize,
         MenuItem,
         MenuItemContainerItem,
-        MenuItemContainerRule,
-        MenuItemContainerOptions,
       ]),
       MenuItemsModule,
       CacheModule.register(),
@@ -56,13 +61,21 @@ export async function getMenuItemTestingModule(): Promise<TestingModule> {
       MenuItemSizeController,
       MenuItemController,
       MenuItemContainerItemController,
-      MenuItemContainerRuleController,
-      MenuItemContainerOptionsController,
     ],
 
     providers: [],
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(MenuItemCategoryService)
+    .useClass(opts?.menuItemCategoryServiceClass || MenuItemCategoryService)
+    .overrideProvider(MenuItemSizeService)
+    .useClass(opts?.menuItemSizeServiceClass || MenuItemSizeService)
+    .overrideProvider(MenuItemService)
+    .useClass(opts?.menuItemServiceClass || MenuItemService)
+    .overrideProvider(MenuItemContainerItemService)
+    .useClass(
+      opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
+    )
     .compile();
 }

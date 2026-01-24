@@ -1,52 +1,63 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/nested-update-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
+import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import { Template } from '../entities/template.entity';
 import { template_a } from '../utils/constants';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
-import { TemplateMenuItemService } from './template-menu-item.service';
 import { TemplateService } from './template.service';
+
+class TestableTemplateService extends TemplateService {
+  async createEntityForTest(
+    dto: CreateTemplateDto,
+    manager: EntityManager,
+  ): Promise<Template> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateTemplateDto,
+    entity: Template,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
 
 describe('Template Service', () => {
   let templateService: TemplateService;
   let testingUtil: TemplateTestingUtil;
   let dbTestContext: DatabaseTestContext;
+  let dataSource: DataSource;
 
-  let templateItemService: TemplateMenuItemService;
+  let templateItemRepo: Repository<TemplateMenuItem>;
 
-  let menuItemService: MenuItemService;
+  let menuItemRepo: Repository<MenuItem>;
   let menuItemTestUtil: MenuItemTestingUtil;
 
-  let testId: number;
-  let testIds: number[];
-
-  let addedItemIds: number[];
-  let modifiedItemId: number;
-  let modifiedMenuItemId: number;
-  let deletedItemId: number;
-
-  let removedItemIds: number[];
-
   beforeAll(async () => {
-    const module: TestingModule = await getTemplateTestingModule();
+    const module: TestingModule = await getTemplateTestingModule({
+      templateServiceClass: TestableTemplateService,
+    });
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
     await testingUtil.initTemplateTestDatabase(dbTestContext);
 
-    templateService = module.get<TemplateService>(TemplateService);
-    templateItemService = module.get<TemplateMenuItemService>(
-      TemplateMenuItemService,
-    );
+    templateService = module.get(TemplateService) as TestableTemplateService;
+    dataSource = module.get(DataSource);
 
-    menuItemService = module.get<MenuItemService>(MenuItemService);
+    templateItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
     menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await menuItemTestUtil.initMenuItemTestDatabase(dbTestContext);
   });

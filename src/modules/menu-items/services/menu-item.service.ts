@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   EntityManager,
@@ -11,7 +11,6 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { MenuItemBuilder } from '../builders/menu-item.builder';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
@@ -34,8 +33,8 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     @InjectRepository(OrderContainerItem)
     private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
-    @Inject(forwardRef(() => MenuItemBuilder))
-    builder: MenuItemBuilder,
+    //@Inject(forwardRef(() => MenuItemBuilder))
+    //builder: MenuItemBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -44,7 +43,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'MenuItemService',
       requestContextService,
       logger,

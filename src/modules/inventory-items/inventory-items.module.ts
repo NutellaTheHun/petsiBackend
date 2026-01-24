@@ -90,6 +90,8 @@ import { InventoryItemValidator } from './validators/inventory-item.validator';
     InventoryItemSizeBuilder,
     InventoryItemSizeComposer,
 
+    InventoryItemSizeValidator,
+
     InventoryItemTestingUtil,
   ],
 })

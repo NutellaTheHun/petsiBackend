@@ -3,9 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItem } from '../../menu-items/menu-items.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { LabelBuilder } from '../builders/label.builder';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { LabelType } from '../entities/label-type.entity';
@@ -18,7 +17,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
     @InjectRepository(Label)
     private readonly repo: Repository<Label>,
 
-    builder: LabelBuilder,
+    //builder: LabelBuilder,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -26,7 +25,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'LabelService',
       requestContextService,
       logger,

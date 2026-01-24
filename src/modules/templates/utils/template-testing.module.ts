@@ -6,6 +6,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -13,14 +14,21 @@ import { TemplateMenuItemController } from '../controllers/template-menu-item.co
 import { TemplateController } from '../controllers/template.controller';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
+import { TemplateMenuItemService } from '../services/template-menu-item.service';
+import { TemplateService } from '../services/template.service';
 import { TemplatesModule } from '../templates.module';
 
-export async function getTemplateTestingModule(): Promise<TestingModule> {
+export async function getTemplateTestingModule(opts?: {
+  templateServiceClass?: new (...args: any[]) => TemplateService;
+  templateMenuItemServiceClass?: new (
+    ...args: any[]
+  ) => TemplateMenuItemService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([Template, TemplateMenuItem]),
-      TypeOrmModule.forFeature([Template, TemplateMenuItem]),
+      TypeORMPostgresTestingModule([Template, TemplateMenuItem, MenuItem]),
+      TypeOrmModule.forFeature([Template, TemplateMenuItem, MenuItem]),
       TemplatesModule,
       MenuItemsModule,
       CacheModule.register(),
@@ -37,5 +45,9 @@ export async function getTemplateTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(TemplateService)
+    .useClass(opts?.templateServiceClass || TemplateService)
+    .overrideProvider(TemplateMenuItemService)
+    .useClass(opts?.templateMenuItemServiceClass || TemplateMenuItemService)
     .compile();
 }

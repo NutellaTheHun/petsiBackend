@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityTarget } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
-import { MenuItem } from '../../../menu-items/menu-items.module';
+import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedCreateTemplateMenuItemDto } from '../../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../../dto/template-menu-item/update-template-menu-item.dto';
@@ -9,7 +9,6 @@ import {
   TemplateMenuItem,
   TemplateMenuItemEntity,
 } from '../../entities/template-menu-item.entity';
-import { Template } from '../../entities/template.entity';
 
 @Injectable()
 export class TemplateMenuItemComposer extends ComposerBase<TemplateMenuItemEntity> {
@@ -45,12 +44,12 @@ export class TemplateMenuItemComposer extends ComposerBase<TemplateMenuItemEntit
     if (dto.tablePosIndex !== undefined) {
       entity.tablePosIndex = dto.tablePosIndex;
     }
-
+    /*
     if (dto.parentTemplateId !== undefined) {
       entity.parentTemplate = manager.create(Template, {
         id: dto.parentTemplateId,
       });
-    }
+    }*/
   }
 
   protected resolveCreateDto(

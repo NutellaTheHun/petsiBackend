@@ -1,31 +1,52 @@
 import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { FOOD_CAT } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
 
+class TestableInventoryItemCategoryService extends InventoryItemCategoryService {
+  async createEntityForTest(
+    dto: CreateInventoryItemCategoryDto,
+    manager: EntityManager,
+  ): Promise<InventoryItemCategory> {
+    return this.createEntity(dto, manager);
+  }
+  async updateEntityForTest(
+    dto: UpdateInventoryItemCategoryDto,
+    entity: InventoryItemCategory,
+    manager: EntityManager,
+  ): Promise<void> {
+    return this.updateEntity(dto, manager, entity);
+  }
+}
+
 describe('Inventory Item Category Service', () => {
   let testingUtil: InventoryItemTestingUtil;
   let service: InventoryItemCategoryService;
   let dbTestContext: DatabaseTestContext;
-
-  let testId: number;
-  let testIds: number[];
+  let dataSource: DataSource;
 
   beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
+    const module: TestingModule = await getInventoryItemTestingModule({
+      inventoryItemCategoryServiceClass: TestableInventoryItemCategoryService,
+    });
     dbTestContext = new DatabaseTestContext();
+
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
 
     service = module.get<InventoryItemCategoryService>(
       InventoryItemCategoryService,
-    );
+    ) as TestableInventoryItemCategoryService;
+
+    dataSource = module.get(DataSource);
   });
 
   afterAll(async () => {

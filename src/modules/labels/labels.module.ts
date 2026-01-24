@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { LabelTypeBuilder } from './builders/label-type.builder';
@@ -17,40 +18,29 @@ import { LabelTypeValidator } from './validators/label-type.validator';
 import { LabelValidator } from './validators/label.validator';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Label,
-            LabelType,
-        ]),
-        MenuItemsModule,
-        CacheModule.register(),
-        AppLoggingModule,
-        RequestContextModule,
-    ],
+  imports: [
+    TypeOrmModule.forFeature([Label, LabelType, MenuItem]),
+    MenuItemsModule,
+    CacheModule.register(),
+    AppLoggingModule,
+    RequestContextModule,
+  ],
 
-    controllers: [
-        LabelController,
-        LabelTypeController,
-    ],
+  controllers: [LabelController, LabelTypeController],
 
-    providers: [
-        LabelService,
-        LabelTypeService,
+  providers: [
+    LabelService,
+    LabelTypeService,
 
-        LabelBuilder,
-        LabelTypeBuilder,
+    LabelBuilder,
+    LabelTypeBuilder,
 
-        LabelValidator,
-        LabelTypeValidator,
+    LabelValidator,
+    LabelTypeValidator,
 
-        LabelTestingUtil,
-    ],
+    LabelTestingUtil,
+  ],
 
-    exports: [
-        LabelService,
-        LabelTypeService,
-
-        LabelTestingUtil,
-    ]
+  exports: [LabelService, LabelTypeService, LabelTestingUtil],
 })
-export class LabelsModule { }
+export class LabelsModule {}

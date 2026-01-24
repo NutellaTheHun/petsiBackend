@@ -12,9 +12,16 @@ import { UnitOfMeasureCategoryController } from '../controllers/unit-of-measure-
 import { UnitOfMeasureController } from '../controllers/unit-of-measure.controller';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
+import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { UnitOfMeasureModule } from '../unit-of-measure.module';
 
-export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
+export async function getUnitOfMeasureTestingModule(opts?: {
+  unitOfMeasureServiceClass?: new (...args: any[]) => UnitOfMeasureService;
+  unitOfMeasureCategoryServiceClass?: new (
+    ...args: any[]
+  ) => UnitOfMeasureCategoryService;
+}): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
       ConfigModule.forRoot({ isGlobal: true }),
@@ -38,5 +45,11 @@ export async function getUnitOfMeasureTestingModule(): Promise<TestingModule> {
   })
     .overrideProvider(RequestContextService)
     .useClass(TestRequestContextService)
+    .overrideProvider(UnitOfMeasureService)
+    .useClass(opts?.unitOfMeasureServiceClass || UnitOfMeasureService)
+    .overrideProvider(UnitOfMeasureCategoryService)
+    .useClass(
+      opts?.unitOfMeasureCategoryServiceClass || UnitOfMeasureCategoryService,
+    )
     .compile();
 }

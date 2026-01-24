@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { LabelType } from '../entities/label-type.entity';
 import { Label } from '../entities/label.entity';
-import { LabelTypeService } from '../services/label-type.service';
-import { LabelService } from '../services/label.service';
 import { getTestImageUrls, getTestLabelTypeNames } from './constants';
 
 @Injectable()
@@ -14,11 +14,15 @@ export class LabelTestingUtil {
   private initLabelTypes = false;
 
   constructor(
-    private readonly labelService: LabelService,
-    private readonly typeService: LabelTypeService,
+    @InjectRepository(Label)
+    private readonly labelRepo: Repository<Label>,
+    @InjectRepository(LabelType)
+    private readonly typeRepo: Repository<LabelType>,
+
+    @InjectRepository(MenuItem)
+    private readonly itemRepo: Repository<MenuItem>,
 
     private readonly menuItemTestUtil: MenuItemTestingUtil,
-    private readonly itemService: MenuItemService,
   ) {}
 
   // Label Types
@@ -60,13 +64,13 @@ export class LabelTestingUtil {
 
     testContext.addCleanupFunction(() => this.cleanupLabelTypeTestDatabase());
 
-    await this.typeService.insertEntities(
+    await this.typeRepo.insert(
       await this.getTestLabelTypeEntities(testContext),
     );
   }
 
   public async cleanupLabelTypeTestDatabase(): Promise<void> {
-    await this.typeService.getQueryBuilder().delete().execute();
+    await this.typeRepo.delete({});
   }
 
   // Label
@@ -75,8 +79,7 @@ export class LabelTestingUtil {
   ): Promise<Label[]> {
     await this.initLabelTypeTestDatabase(testContext);
 
-    const typesRequest = await this.typeService.findAll();
-    const types = typesRequest.items;
+    const types = await this.typeRepo.find();
     if (!types) {
       throw new Error();
     }
@@ -86,8 +89,7 @@ export class LabelTestingUtil {
     const urls = getTestImageUrls();
 
     await this.menuItemTestUtil.initMenuItemTestDatabase(testContext);
-    const itemsRequest = await this.itemService.findAll();
-    const items = itemsRequest.items;
+    const items = await this.itemRepo.find();
     if (!items) {
       throw new Error();
     }
@@ -116,12 +118,10 @@ export class LabelTestingUtil {
 
     testContext.addCleanupFunction(() => this.cleanupLabelTestDatabase());
 
-    await this.labelService.insertEntities(
-      await this.getTestLabelEntities(testContext),
-    );
+    await this.labelRepo.insert(await this.getTestLabelEntities(testContext));
   }
 
   public async cleanupLabelTestDatabase(): Promise<void> {
-    await this.labelService.getQueryBuilder().delete().execute();
+    await this.labelRepo.delete({});
   }
 }

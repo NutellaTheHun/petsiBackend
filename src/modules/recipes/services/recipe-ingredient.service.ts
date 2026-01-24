@@ -5,7 +5,6 @@ import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import {
@@ -22,8 +21,8 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     @InjectRepository(RecipeIngredient)
     private readonly repo: Repository<RecipeIngredient>,
 
-    @Inject(forwardRef(() => RecipeIngredientBuilder))
-    builder: RecipeIngredientBuilder,
+    //@Inject(forwardRef(() => RecipeIngredientBuilder))
+    //builder: RecipeIngredientBuilder,
 
     @Inject(forwardRef(() => RecipeService))
     private readonly recipeService: RecipeService,
@@ -37,7 +36,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
   ) {
     super(
       repo,
-      builder,
+      //builder,
       'RecipeIngredientService',
       requestContextService,
       logger,

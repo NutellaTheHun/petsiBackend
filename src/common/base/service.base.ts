@@ -13,7 +13,6 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { PaginatedResult } from '../dto/paginated-result';
 import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
 import { ValidationException } from '../validation/validation-exception';
-import { BuilderBase } from './builder.base';
 import { EntityBase } from './entity.base';
 import { ValidatorBase } from './validator.base';
 
@@ -24,7 +23,7 @@ export abstract class ServiceBase<
   private readonly dataSource: DataSource;
   constructor(
     private readonly entityRepo: Repository<TEntity['__Entity']>,
-    private readonly builder: BuilderBase<TEntity['__Entity']>,
+    //private readonly builder: BuilderBase<TEntity['__Entity']>,
     public readonly servicePrefix: string,
     private readonly requestContextService: RequestContextService,
     private readonly logger: AppLogger,

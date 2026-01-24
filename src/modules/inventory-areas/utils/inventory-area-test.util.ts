@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
 import { InventoryAreaCountBuilder } from '../builders/inventory-area-count.builder';
 import { InventoryAreaItemBuilder } from '../builders/inventory-area-item.builder';
@@ -11,9 +13,6 @@ import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nes
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { InventoryAreaCountService } from '../services/inventory-area-count.service';
-import { InventoryAreaItemService } from '../services/inventory-area-item.service';
-import { InventoryAreaService } from '../services/inventory-area.service';
 import { AREA_A, AREA_B, AREA_C, AREA_D, getAreaNames } from './constants';
 
 @Injectable()
@@ -24,16 +23,20 @@ export class InventoryAreaTestUtil {
   private initAreas = false;
 
   constructor(
-    private readonly areaService: InventoryAreaService,
+    @InjectRepository(InventoryArea)
+    private readonly areaRepo: Repository<InventoryArea>,
     private readonly areaBuilder: InventoryAreaBuilder,
 
-    private readonly countService: InventoryAreaCountService,
+    @InjectRepository(InventoryAreaCount)
+    private readonly areaCountRepo: Repository<InventoryAreaCount>,
     private readonly areaCountBuilder: InventoryAreaCountBuilder,
 
-    private readonly itemCountService: InventoryAreaItemService,
-    private readonly itemCountBuilder: InventoryAreaItemBuilder,
+    @InjectRepository(InventoryAreaItem)
+    private readonly areaItemRepo: Repository<InventoryAreaItem>,
+    private readonly areaItemBuilder: InventoryAreaItemBuilder,
 
-    private readonly inventoryItemService: InventoryItemService,
+    @InjectRepository(InventoryItem)
+    private readonly inventoryItemRepo: Repository<InventoryItem>,
 
     private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
   ) {}
@@ -91,14 +94,13 @@ export class InventoryAreaTestUtil {
     );
 
     const results: InventoryAreaItem[] = [];
-    const countsRequest = await this.countService.findAll({
+    const counts = await this.areaCountRepo.find({
       relations: ['inventoryArea'],
     });
-    const counts = countsRequest.items;
-    const itemsRequest = await this.inventoryItemService.findAll({
+
+    const items = await this.inventoryItemRepo.find({
       relations: ['sizes'],
     });
-    const items = itemsRequest.items;
     let itemPtr = 0;
 
     for (let i = 0; i < counts.length; i++) {
@@ -108,7 +110,7 @@ export class InventoryAreaTestUtil {
       }
       const sizeA = itemA.sizes[0];
       results.push(
-        await this.itemCountBuilder
+        await this.areaItemBuilder
           .reset()
           .parentInventoryCountById(counts[i].id)
           .countedItemById(itemA.id)
@@ -123,7 +125,7 @@ export class InventoryAreaTestUtil {
       }
       const sizeB = itemB.sizes[0];
       results.push(
-        await this.itemCountBuilder
+        await this.areaItemBuilder
           .reset()
           .parentInventoryCountById(counts[i].id)
           .countedItemById(itemB.id)
@@ -153,7 +155,7 @@ export class InventoryAreaTestUtil {
       this.cleanupInventoryAreaTestDatabase(),
     );
 
-    await this.areaService.insertEntities(
+    await this.areaRepo.insert(
       await this.getTestInventoryAreaEntities(testContext),
     );
   }
@@ -175,7 +177,8 @@ export class InventoryAreaTestUtil {
     testContext.addCleanupFunction(() =>
       this.cleanupInventoryAreaCountTestDatabase(),
     );
-    await this.countService.insertEntities(
+
+    await this.areaCountRepo.insert(
       await this.getTestInventoryAreaCountEntities(testContext),
     );
   }
@@ -199,7 +202,7 @@ export class InventoryAreaTestUtil {
       this.cleanupInventoryAreaItemCountTestDatabase(),
     );
 
-    await this.itemCountService.insertEntities(
+    await this.areaItemRepo.insert(
       await this.getTestInventoryAreaItemCountEntities(testContext),
     );
   }
@@ -208,21 +211,21 @@ export class InventoryAreaTestUtil {
    * Deletes all rows in InventoryArea table
    */
   public async cleanupInventoryAreaTestDatabase(): Promise<void> {
-    await this.areaService.getQueryBuilder().delete().execute();
+    await this.areaRepo.delete({});
   }
 
   /**
    * Deletes all rows in InventoryAreaCount table
    */
   public async cleanupInventoryAreaCountTestDatabase(): Promise<void> {
-    await this.countService.getQueryBuilder().delete().execute();
+    await this.areaCountRepo.delete({});
   }
 
   /**
    * Deletes all rows in InventoryAreaItemCount table
    */
   public async cleanupInventoryAreaItemCountTestDatabase(): Promise<void> {
-    await this.itemCountService.getQueryBuilder().delete().execute();
+    await this.areaItemRepo.delete({});
   }
 
   public createNestedInventoryAreaItemDtos(
