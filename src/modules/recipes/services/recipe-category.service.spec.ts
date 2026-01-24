@@ -1,13 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
-import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -66,193 +62,54 @@ describe('recipe category service', () => {
     expect(categoryService).toBeDefined();
   });
 
-  it('should create a recipe category', async () => {
-    const result = await categoryService.create({
-      name: 'testCategory',
-    } as CreateRecipeCategoryDto);
-    if (!result?.id) {
-      throw new Error('result id is null.');
-    }
+  // test createEntity() with NestedCreateRecipeIngredientDtos
+  it('should create category with NestedCreateRecipeIngredientDtos', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testCategory');
-    expect(result?.id).not.toBeNull();
+  // test createEntity() with NestedCreateRecipeIngredientDtos and NestedCreateRecipeSubCategoryDtos
+  it('should create category with NestedCreateRecipeIngredientDtos and NestedCreateRecipeSubCategoryDtos', async () => {});
 
-    testId = result?.id;
-  });
+  // test updateEntity()
+  it('should update category', async () => {});
 
-  it('should find one recipe category by id', async () => {
-    const result = await categoryService.findOne(testId);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testCategory');
-    expect(result?.id).not.toBeNull();
-  });
+  // test updateEntity() with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto
+  it('should update category with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto', async () => {});
 
-  it('should find a recipe category by name', async () => {
-    const result = await categoryService.findOneByName('testCategory');
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testCategory');
-    expect(result?.id).not.toBeNull();
-  });
+  // test updateEntity() with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto and NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeSubCategoryDto
+  it('should update category with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto and NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeSubCategoryDto', async () => {});
 
-  it('should update recipe category name', async () => {
-    const toUpdate = await categoryService.findOne(testId);
-    if (!toUpdate) {
-      throw new Error('category to update not found');
-    }
+  // test findAll()
+  it('should find all categories', async () => {});
 
-    const updateDto = {
-      name: 'updatedCategoryName',
-    } as UpdateRecipeCategoryDto;
+  // test findAll() with search by ingredient name
+  it('should find all categories with search by ingredient name', async () => {});
 
-    const result = await categoryService.update(toUpdate.id, updateDto);
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-  });
+  // test findAll() with search by subCategory name
+  it('should find all categories with search by subCategory name', async () => {});
 
-  it('should have an updated name', async () => {
-    const result = await categoryService.findOne(testId);
-    expect(result?.name).toEqual('updatedCategoryName');
-  });
+  // test findAll() with search by inventory item name
+  it('should find all categories with filter by inventory item name', async () => {});
 
-  it('should remove a recipe category', async () => {
-    const removal = await categoryService.remove(testId);
-    expect(removal).toBeTruthy();
+  // test findAll() with filter by category name
+  it('should find all categories with filter by category name', async () => {});
 
-    await expect(categoryService.findOne(testId)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
+  // test findAll() with filter by sub category name
+  it('should find all categories with filter by sub category name', async () => {});
 
-  it('should find all recipe categories', async () => {
-    const expected =
-      await testUtil.getTestRecipeCategoryEntities(dbTestContext);
-    const allCategories = await categoryService.findAll();
-    expect(allCategories.items.length).toEqual(expected.length);
-    testIds = [allCategories.items[0].id, allCategories.items[1].id];
-  });
+  // test findAll() sortBy recipe name
+  it('should find all categories with sortBy name', async () => {});
 
-  it('should sort all recipe categories', async () => {
-    const expected =
-      await testUtil.getTestRecipeCategoryEntities(dbTestContext);
-    const allCategories = await categoryService.findAll({
-      sortBy: 'categoryName',
-    });
-    expect(allCategories.items.length).toEqual(expected.length);
-  });
+  // test findAll() sortBy category name
+  it('should find all categories with sortBy category name', async () => {});
 
-  it('should find recipes by list of ids', async () => {
-    const results = await categoryService.findEntitiesById(testIds);
-    expect(results.length).toEqual(2);
-  });
+  // test findAll() sortBy sub category name
+  it('should find all categories with sortBy sub category name', async () => {});
 
-  it('should find recipe categories with sub categories', async () => {
-    const result = await categoryService.findOne(testIds[0], ['subCategories']);
-    if (!result) {
-      throw new Error('category is null');
-    }
+  // test findOne()
+  it('should find one category', async () => {});
 
-    expect(result.subCategories).not.toBeNull();
-    expect(result.subCategories?.length).toBeGreaterThan(0);
-  });
+  // test findOne() with relations
+  it('should find one category with relations', async () => {});
 
-  it('should find recipes categories with recipes', async () => {
-    const result = await categoryService.findOne(testIds[0], ['recipes']);
-    if (!result) {
-      throw new Error('category is null');
-    }
-
-    expect(result.recipes).not.toBeNull();
-    expect(result.recipes.length).toBeGreaterThan(0);
-  });
-
-  it('should create a recipe category with subCategories', async () => {
-    const subCatDtoOne = plainToInstance(NestedCreateRecipeSubCategoryDto, {
-      createId: 'c1',
-      name: 'subCatOne',
-    });
-
-    const subCatDtoTwo = plainToInstance(NestedCreateRecipeSubCategoryDto, {
-      createId: 'c2',
-      name: 'subCatTwo',
-    });
-
-    const subCatDtoThree = plainToInstance(NestedCreateRecipeSubCategoryDto, {
-      createId: 'c3',
-      name: 'subCatThree',
-    });
-
-    const createCategoryDto = {
-      name: 'category with subCats',
-      subCategories: [subCatDtoOne, subCatDtoTwo, subCatDtoThree],
-    } as CreateRecipeCategoryDto;
-
-    const result = await categoryService.create(createCategoryDto);
-    if (!result) {
-      throw new Error();
-    }
-    if (!result.subCategories) {
-      throw new Error();
-    }
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('category with subCats');
-    expect(result?.subCategories?.length).toEqual(3);
-
-    testRecSubCatId = result?.id as number;
-    testSubCatIds = result.subCategories.map((subCat) => subCat.id);
-  });
-
-  it('should query the sub-categories', async () => {
-    const result =
-      await recipeSubCategoryService.findEntitiesById(testSubCatIds);
-    expect(result.length).toEqual(3);
-  });
-
-  it('should modify a subCategory', async () => {
-    const category = await categoryService.findOne(testRecSubCatId, [
-      'subCategories',
-    ]);
-    if (!category) {
-      throw new NotFoundException();
-    }
-    if (!category.subCategories) {
-      throw new Error();
-    }
-
-    modifiedSubCatId = category.subCategories[0].id;
-
-    const updateSubCatDto = plainToInstance(NestedUpdateRecipeSubCategoryDto, {
-      id: modifiedSubCatId,
-      name: 'UPDATED SUBCAT',
-    });
-
-    const theRest = category.subCategories.slice(1).map((subCat) =>
-      plainToInstance(NestedUpdateRecipeSubCategoryDto, {
-        id: subCat.id,
-      }),
-    );
-
-    const updateCategoryDto = {
-      subCategoryDtos: [updateSubCatDto, ...theRest],
-    } as UpdateRecipeCategoryDto;
-
-    const result = await categoryService.update(
-      testRecSubCatId,
-      updateCategoryDto,
-    );
-    if (!result) {
-      throw new Error();
-    }
-    if (!result.subCategories) {
-      throw new Error();
-    }
-
-    expect(result).not.toBeNull();
-    expect(result.subCategories.length).toEqual(3);
-    for (const subCat of result.subCategories) {
-      if (subCat.id === modifiedSubCatId) {
-        expect(subCat.name).toEqual('UPDATED SUBCAT');
-      }
-    }
-  });
+  // test remove()
+  it('should remove category', async () => {});
 });

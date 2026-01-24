@@ -20,10 +20,6 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
   constructor(
     @InjectRepository(RecipeIngredient)
     private readonly repo: Repository<RecipeIngredient>,
-
-    //@Inject(forwardRef(() => RecipeIngredientBuilder))
-    //builder: RecipeIngredientBuilder,
-
     @Inject(forwardRef(() => RecipeService))
     private readonly recipeService: RecipeService,
 
@@ -36,7 +32,6 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
   ) {
     super(
       repo,
-      //builder,
       'RecipeIngredientService',
       requestContextService,
       logger,
@@ -57,65 +52,6 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     entity: RecipeIngredient,
   ): Promise<void> {
     await this.ingredientComposer.composeUpdate(dto, manager, entity);
-  }
-
-  async findByRecipeName(
-    name: string,
-    relations?: Array<keyof RecipeIngredient>,
-  ): Promise<RecipeIngredient[]> {
-    const recipe = await this.recipeService.findOneByName(name, [
-      'ingredients',
-    ]);
-    if (!recipe?.ingredients) {
-      throw new Error('recipe ingredients not found');
-    }
-    return recipe.ingredients;
-  }
-
-  async findByRecipeId(
-    id: number,
-    relations?: Array<keyof RecipeIngredient>,
-  ): Promise<RecipeIngredient[]> {
-    return await this.repo.find({
-      where: {
-        parentRecipe: { id },
-      },
-      relations,
-    });
-  }
-
-  async findByInventoryItemName(
-    name: string,
-    relations?: Array<keyof RecipeIngredient>,
-  ): Promise<RecipeIngredient[]> {
-    const invItem = await this.inventoryItemService.findOneByName(name);
-    if (!invItem) {
-      throw new Error('inventory item not found');
-    }
-
-    return await this.repo.find({
-      where: {
-        ingredientInventoryItem: invItem,
-      },
-      relations,
-    });
-  }
-
-  async findByInventoryItemId(
-    id: number,
-    relations?: Array<keyof RecipeIngredient>,
-  ): Promise<RecipeIngredient[]> {
-    const invItem = await this.inventoryItemService.findOne(id);
-    if (!invItem) {
-      throw new Error('inventory item not found');
-    }
-
-    return await this.repo.find({
-      where: {
-        ingredientInventoryItem: invItem,
-      },
-      relations,
-    });
   }
 
   protected applySortBy(

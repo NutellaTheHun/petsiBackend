@@ -18,10 +18,6 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
   constructor(
     @InjectRepository(InventoryItemSize)
     private readonly reop: Repository<InventoryItemSize>,
-
-    //@Inject(forwardRef(() => InventoryItemSizeBuilder))
-    //builder: InventoryItemSizeBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
 
@@ -32,7 +28,6 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
   ) {
     super(
       reop,
-      //builder,
       'InventoryItemSizeService',
       requestContextService,
       logger,
@@ -59,7 +54,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
     );
   }
 
-  async findSizesByItemName(
+  /*async findSizesByItemName(
     name: string,
     relations?: Array<keyof InventoryItemSize>,
   ): Promise<InventoryItemSize[] | null> {
@@ -67,7 +62,7 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
       where: { inventoryItem: { name: name } },
       relations,
     });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemSize>,

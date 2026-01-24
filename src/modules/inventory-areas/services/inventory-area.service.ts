@@ -53,12 +53,12 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof InventoryArea>,
   ): Promise<InventoryArea | null> {
     return await this.repo.findOne({ where: { name: name }, relations });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryArea>,

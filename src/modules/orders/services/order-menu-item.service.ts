@@ -18,10 +18,6 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
   constructor(
     @InjectRepository(OrderMenuItem)
     repo: Repository<OrderMenuItem>,
-
-    //@Inject(forwardRef(() => OrderMenuItemBuilder))
-    //builder: OrderMenuItemBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderMenuItemValidator,
@@ -29,7 +25,6 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
   ) {
     super(
       repo,
-      //builder,
       'OrderMenuItemService',
       requestContextService,
       logger,

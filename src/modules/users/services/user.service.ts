@@ -16,20 +16,11 @@ export class UserService extends ServiceBase<UserEntity> {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
-
-    //userBuilder: UserBuilder,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: UserValidator,
   ) {
-    super(
-      userRepo,
-      //userBuilder,
-      'UserService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(userRepo, 'UserService', requestContextService, logger, validator);
   }
 
   protected async createEntity(

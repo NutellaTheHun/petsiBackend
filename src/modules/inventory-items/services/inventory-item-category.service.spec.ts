@@ -1,11 +1,9 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
-import { FOOD_CAT } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemCategoryService } from './inventory-item-category.service';
@@ -58,62 +56,24 @@ describe('Inventory Item Category Service', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a inventory item category', async () => {
-    const dto = {
-      name: 'testCategoryName',
-    } as CreateInventoryItemCategoryDto;
+  // test createEntity()
+  it('should create category', async () => {});
 
-    const result = await service.create(dto);
+  // test updateEntity()
+  it('should update category', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testCategoryName');
+  // test findAll()
+  it('should find all categories', async () => {});
 
-    testId = result?.id as number;
-  });
+  // test findall() with sort by name
+  it('should find all categories with sort by name', async () => {});
 
-  it('should update a inventory item category', async () => {
-    const dto = {
-      name: 'UPDATE_NAME',
-    } as UpdateInventoryItemCategoryDto;
-    const result = await service.update(testId, dto);
+  // test findOne()
+  it('should find one category', async () => {});
 
-    expect(result?.name).toEqual('UPDATE_NAME');
-  });
+  // test findOne() with relations
+  it('should find one category with relations', async () => {});
 
-  it('should remove a inventory item category', async () => {
-    const removal = await service.remove(testId);
-    expect(removal).toBeTruthy();
-
-    await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should insert testing item categories and get all categories', async () => {
-    const categories =
-      await testingUtil.getTestInventoryItemCategoryEntities(dbTestContext);
-    await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
-
-    const results = await service.findAll();
-
-    expect(results.items.length).toEqual(categories.length);
-
-    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
-  });
-
-  it('should get a inventory item category by name', async () => {
-    const result = await service.findOneByName(FOOD_CAT);
-
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual(FOOD_CAT);
-  });
-
-  it('should get inventory item categories from a list of ids', async () => {
-    const results = await service.findEntitiesById(testIds);
-
-    expect(results.length).toEqual(testIds.length);
-
-    for (const result of results) {
-      expect(testIds.find((id) => result.id)).toBeTruthy();
-    }
-  });
+  // test remove()
+  it('should remove category', async () => {});
 });

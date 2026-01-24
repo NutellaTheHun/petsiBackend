@@ -16,22 +16,12 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
     private readonly repo: Repository<Template>,
-
-    //builder: TemplateBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: TemplateValidator,
     private readonly tempalateItemComposer: TemplateMenuItemComposer,
   ) {
-    super(
-      repo,
-      //builder,
-      'TemplateService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'TemplateService', requestContextService, logger, validator);
   }
 
   protected async createEntity(
@@ -86,16 +76,6 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
     }
 
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    name: string,
-    relations?: Array<keyof Template>,
-  ): Promise<Template | null> {
-    return await this.repo.findOne({
-      where: { name: name },
-      relations: relations,
-    });
   }
 
   protected applySearch(

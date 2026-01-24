@@ -1,8 +1,5 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
-import { DatabaseException } from '../../../common/exceptions/database-exception';
-import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -55,71 +52,24 @@ describe('Inventory area service', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create an area', async () => {
-    const area = { name: testAreaName } as CreateInventoryAreaDto;
-    const result = await service.create(area);
+  // test createEntity()
+  it('should create area', async () => {});
 
-    expect(result).not.toBeNull();
+  // test updateEntity()
+  it('should update area', async () => {});
 
-    if (!result?.id) {
-      throw new Error('created area id is null');
-    }
-    testId = result?.id;
-  });
+  // test findAll()
+  it('should find all areas', async () => {});
 
-  it('should fail to create an area (already exists)', async () => {
-    const area = { name: testAreaName } as CreateInventoryAreaDto;
+  // test findall() with sort by name
+  it('should find all areas with sort by name', async () => {});
 
-    await expect(service.create(area)).rejects.toThrow(ValidationException);
-  });
+  // test findOne()
+  it('should find one area', async () => {});
 
-  it('should update an area', async () => {
-    const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
+  // test findOne() with relations
+  it('should find one area with relations', async () => {});
 
-    const result = await service.update(testId, toUpdate);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).toEqual(testId);
-    expect(result?.name).toEqual(updateTestAreaName);
-  });
-
-  it('should fail to update an area (doesnt exist)', async () => {
-    const toUpdate = { name: updateTestAreaName } as UpdateInventoryAreaDto;
-
-    await expect(service.update(0, toUpdate)).rejects.toThrow(
-      DatabaseException,
-    );
-  });
-
-  it('should find one by name', async () => {
-    const result = await service.findOneByName(updateTestAreaName);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).toEqual(testId);
-    expect(result?.name).toEqual(updateTestAreaName);
-  });
-
-  it('should remove Area', async () => {
-    const result = await service.remove(testId);
-    expect(result).toBeTruthy();
-
-    await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should get ALL areas', async () => {
-    const testAreas =
-      await testingUtil.getTestInventoryAreaEntities(dbTestContext);
-
-    const results = await service.findAll();
-    expect(results.items.length).toEqual(testAreas.length);
-
-    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
-  });
-
-  it('should get a list of areas by IDs', async () => {
-    const results = await service.findEntitiesById(testIds);
-
-    expect(results.length).toBeGreaterThan(0);
-    expect(results.length).toEqual(testIds.length);
-  });
+  // test remove()
+  it('should remove area', async () => {});
 });

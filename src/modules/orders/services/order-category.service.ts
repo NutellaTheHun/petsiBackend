@@ -54,12 +54,12 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof OrderCategory>,
   ): Promise<OrderCategory | null> {
     return this.repo.findOne({ where: { name: name }, relations });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<OrderCategory>,

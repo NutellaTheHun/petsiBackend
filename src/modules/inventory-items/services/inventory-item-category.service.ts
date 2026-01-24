@@ -17,17 +17,12 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
   constructor(
     @InjectRepository(InventoryItemCategory)
     private readonly repo: Repository<InventoryItemCategory>,
-
-    //@Inject(forwardRef(() => InventoryItemCategoryBuilder))
-    //builder: InventoryItemCategoryBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemCategoryValidator,
   ) {
     super(
       repo,
-      //builder,
       'InventoryItemCategoryService',
       requestContextService,
       logger,
@@ -44,6 +39,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     });
     return await manager.save(result);
   }
+
   protected async updateEntity(
     dto: UpdateInventoryItemCategoryDto,
     manager: EntityManager,
@@ -55,7 +51,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof InventoryItemCategory>,
   ): Promise<InventoryItemCategory | null> {
@@ -63,7 +59,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
       where: { name: name },
       relations,
     });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemCategory>,

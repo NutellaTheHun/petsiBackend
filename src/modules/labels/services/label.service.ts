@@ -69,7 +69,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
     await manager.save(entity);
   }
 
-  async findByMenuItemId(
+  /*async findByMenuItemId(
     itemId: number,
     relations?: Array<keyof Label>,
   ): Promise<Label[]> {
@@ -79,7 +79,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
       },
       relations,
     });
-  }
+  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<Label>,

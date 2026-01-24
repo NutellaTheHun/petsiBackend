@@ -55,12 +55,12 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof InventoryItemVendor>,
   ): Promise<InventoryItemVendor | null> {
     return await this.repo.findOne({ where: { name: name }, relations });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemVendor>,

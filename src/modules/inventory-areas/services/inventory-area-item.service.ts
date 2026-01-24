@@ -20,9 +20,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     @InjectRepository(InventoryAreaItem)
     private readonly repo: Repository<InventoryAreaItem>,
 
-    //@Inject(forwardRef(() => InventoryAreaItemBuilder))
-    //builder: InventoryAreaItemBuilder,
-
     @Inject(forwardRef(() => InventoryItemService))
     private readonly itemService: InventoryItemService,
 
@@ -36,7 +33,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
   ) {
     super(
       repo,
-      //builder,
       'InventoryAreaItemService',
       requestContextService,
       logger,
@@ -60,7 +56,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     await this.areaItemComposer.composeUpdate(dto, manager, entity);
   }
 
-  async findByItemName(
+  /*async findByItemName(
     name: string,
     relations?: Array<keyof InventoryAreaItem>,
   ): Promise<InventoryAreaItem[]> {
@@ -73,7 +69,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
       where: { countedInventoryItem: { id: item.id } },
       relations,
     });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryAreaItem>,

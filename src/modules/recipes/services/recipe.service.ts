@@ -20,23 +20,12 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
   constructor(
     @InjectRepository(Recipe)
     private readonly repo: Repository<Recipe>,
-
-    //@Inject(forwardRef(() => RecipeBuilder))
-    //builder: RecipeBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeValidator,
     private readonly ingredientComposer: RecipeIngredientComposer,
   ) {
-    super(
-      repo,
-      //builder,
-      'RecipeService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'RecipeService', requestContextService, logger, validator);
   }
 
   protected async createEntity(
@@ -178,13 +167,6 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     }
 
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    name: string,
-    relations?: Array<keyof Recipe>,
-  ): Promise<Recipe | null> {
-    return this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySearch(

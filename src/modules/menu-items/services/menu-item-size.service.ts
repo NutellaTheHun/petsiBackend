@@ -54,12 +54,12 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof MenuItemSize>,
   ): Promise<MenuItemSize | null> {
     return await this.repo.findOne({ where: { name: name }, relations });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<MenuItemSize>,

@@ -17,23 +17,12 @@ export class OrderService extends ServiceBase<OrderEntity> {
   constructor(
     @InjectRepository(Order)
     repo: Repository<Order>,
-
-    //@Inject(forwardRef(() => OrderBuilder))
-    //builder: OrderBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderValidator,
     private readonly orderMenuItemComposer: OrderMenuItemComposer,
   ) {
-    super(
-      repo,
-      //builder,
-      'OrderService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'OrderService', requestContextService, logger, validator);
   }
 
   protected async createEntity(

@@ -18,10 +18,6 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
   constructor(
     @InjectRepository(RecipeSubCategory)
     private readonly repo: Repository<RecipeSubCategory>,
-
-    //@Inject(forwardRef(() => RecipeSubCategoryBuilder))
-    //builder: RecipeSubCategoryBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeSubCategoryValidator,
@@ -29,7 +25,6 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
   ) {
     super(
       repo,
-      //builder,
       'RecipeSubCategoryService',
       requestContextService,
       logger,
@@ -50,13 +45,6 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     entity: RecipeSubCategory,
   ): Promise<void> {
     await this.subCategoryComposer.composeUpdate(dto, manager, entity);
-  }
-
-  async findOneByName(
-    name: string,
-    relations?: Array<keyof RecipeSubCategory>,
-  ): Promise<RecipeSubCategory | null> {
-    return this.repo.findOne({ where: { name: name }, relations });
   }
 
   protected applySortBy(

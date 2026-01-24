@@ -33,22 +33,12 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     @InjectRepository(OrderContainerItem)
     private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
-    //@Inject(forwardRef(() => MenuItemBuilder))
-    //builder: MenuItemBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemValidator,
     private readonly containerItemComposer: MenuItemContainerItemComposer,
   ) {
-    super(
-      repo,
-      //builder,
-      'MenuItemService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'MenuItemService', requestContextService, logger, validator);
   }
 
   protected async createEntity(
@@ -138,7 +128,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof MenuItem>,
   ): Promise<MenuItem | null> {
@@ -146,7 +136,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
       where: { name: name },
       relations: relations,
     });
-  }
+  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<MenuItem>,

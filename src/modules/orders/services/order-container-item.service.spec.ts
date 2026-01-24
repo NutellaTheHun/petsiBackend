@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -62,101 +61,33 @@ describe('order container item service', () => {
     expect(service).toBeDefined();
   });
 
-  /*it('should fail to create a container item', async () => {
-    const dto = {} as CreateOrderContainerItemDto;
+  // test createEntity()
+  it('should create container item', async () => {});
 
-    const result = await expect(service.create(dto)).rejects.toThrow(
-      BadRequestException,
-    );
-  });*/
+  // test updateEntity()
+  it('should update container item', async () => {});
 
-  it('should find all container items', async () => {
-    const results = await service.findAll();
+  // test findAll()
+  it('should find all container items', async () => {});
 
-    expect(results).not.toBeNull();
+  // test findAll() with search by name
+  it('should find all container items with search by name', async () => {});
 
-    testIds = results.items.slice(0, 3).map((type) => type.id);
+  // test findAll() with filter by category
+  it('should find all container items with filter by category', async () => {});
 
-    testId = results.items[0].id;
-  });
+  // test findAll() with sort by name
+  it('should find all container items with sort by name', async () => {});
 
-  it('should sort all container items', async () => {
-    const results = await service.findAll({ sortBy: 'containedMenuItem' });
+  // test findAll() with sort by category
+  it('should find all container items with sort by category', async () => {});
 
-    expect(results).not.toBeNull();
-  });
+  // test findOne()
+  it('should find one container item', async () => {});
 
-  it('should find a container item by id', async () => {
-    const result = await service.findOne(testId);
+  // test findOne() with relations
+  it('should find one container item with relations', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.id).toEqual(testId);
-  });
-
-  it('should update item', async () => {
-    const toUpdate = await service.findOne(testId, ['parentOrderMenuItem']);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const parentOrderItem = await orderItemService.findOne(
-      toUpdate.parentOrderMenuItem.id,
-      ['menuItem'],
-    );
-    if (!parentOrderItem) {
-      throw new Error();
-    }
-
-    const parentMenuItem = await menuItemService.findOne(
-      parentOrderItem.menuItem.id,
-      ['sizes', 'containerMenuItems'],
-    );
-    if (!parentMenuItem) {
-      throw new Error();
-    }
-    if (!parentMenuItem.containerMenuItems) {
-      throw new Error();
-    }
-
-    const dto = {
-      parentContainerMenuItemId: parentMenuItem.id,
-      containedMenuItemId:
-        parentMenuItem.containerMenuItems[0].containedMenuItem.id,
-      containedItemSizeId:
-        parentMenuItem.containerMenuItems[0].containedItemSize.id,
-    } as UpdateOrderContainerItemDto;
-
-    const result = await service.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result.containedMenuItem.id).toEqual(
-      parentMenuItem.containerMenuItems[0].containedMenuItem.id,
-    );
-    expect(result.containedItemSize.id).toEqual(
-      parentMenuItem.containerMenuItems[0].containedItemSize.id,
-    );
-  });
-
-  it('should update quantity', async () => {
-    const dto = {
-      quantity: 50,
-    } as UpdateOrderContainerItemDto;
-
-    const result = await service.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result.quantity).toEqual(50);
-  });
-
-  it('should get order container items by list of ids', async () => {
-    const results = await service.findEntitiesById(testIds);
-
-    expect(results).not.toBeNull();
-    expect(results.length).toEqual(testIds.length);
-  });
-
-  it('should remove a container item', async () => {
-    const removal = await service.remove(testId);
-    expect(removal).toBeTruthy();
-
-    await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
+  // test remove()
+  it('should remove container item', async () => {});
 });

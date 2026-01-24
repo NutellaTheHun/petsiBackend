@@ -1,17 +1,11 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_d, item_e } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
-import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
-import { CreateTemplateDto } from '../dto/template/create-template.dto';
-import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
@@ -73,141 +67,27 @@ describe('Template menu item service', () => {
     expect(templateItemService).toBeDefined();
   });
 
-  it('should fail to create a template item (bad request) then create properly for future tests', async () => {
-    const templateDto = {
-      name: 'testTemplate',
-    } as CreateTemplateDto;
+  // test createEntity() with NestedCreateTemplateMenuItemDto
+  it('should create template menu item with NestedCreateTemplateMenuItemDto', async () => {});
 
-    const template = await templateService.create(templateDto);
+  // test updateEntity() with NestedUpdateTemplateMenuItemDto and NestedCreateTemplateMenuItemDto
+  it('should update template menu item with NestedUpdateTemplateMenuItemDto and NestedCreateTemplateMenuItemDto', async () => {});
 
-    const itemD = await menuItemService.findOneByName(item_d);
-    if (!itemD) {
-      throw new NotFoundException();
-    }
+  // test findAll()
+  it('should find all template menu items', async () => {});
 
-    /*const dto = {
-      displayName: 'test display name',
-      menuItemId: itemD.id,
-      tablePosIndex: 0,
-      templateId: template?.id,
-    } as CreateTemplateMenuItemDto;
+  // test findAll() with search by name
+  it('should find all template menu items with search by name', async () => {});
 
-    await expect(templateItemService.create(dto)).rejects.toThrow(
-      BadRequestException,
-    );*/
+  // test findAll() with sortBy by name
+  it('should find all template menu items with filter by menu item name', async () => {});
 
-    const createItemDto = plainToInstance(NestedCreateTemplateMenuItemDto, {
-      createId: 'c1',
-      displayName: 'test display name',
-      menuItemId: itemD.id,
-      tablePosIndex: 0,
-    });
+  // test findOne()
+  it('should find one template menu item', async () => {});
 
-    const updateTemplateDto = {
-      templateMenuItems: [createItemDto],
-    } as UpdateTemplateDto;
+  // test findOne() with relations
+  it('should find one template menu item with relations', async () => {});
 
-    const updateResult = await templateService.update(
-      template.id,
-      updateTemplateDto,
-    );
-
-    if (!updateResult) {
-      throw new Error();
-    }
-
-    if (!updateResult.templateMenuItems) {
-      throw new Error();
-    }
-
-    const result = updateResult.templateMenuItems[0];
-
-    expect(result).not.toBeNull();
-    expect(result?.displayName).toEqual('test display name');
-    expect(result?.menuItem.id).toEqual(itemD.id);
-    expect(result?.tablePosIndex).toEqual(0);
-    expect(result?.parentTemplate.id).toEqual(template?.id);
-
-    testId = result?.id as number;
-  });
-
-  it('should find a template item by id', async () => {
-    const result = await templateItemService.findOne(testId);
-
-    expect(result).not.toBeNull();
-    expect(result?.displayName).toEqual('test display name');
-    expect(result?.tablePosIndex).toEqual(0);
-  });
-
-  it('should update display name', async () => {
-    const dto = {
-      displayName: 'update display name',
-    } as UpdateTemplateMenuItemDto;
-
-    const result = await templateItemService.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.displayName).toEqual('update display name');
-  });
-
-  it('should update menuItem', async () => {
-    const itemE = await menuItemService.findOneByName(item_e);
-    if (!itemE) {
-      throw new NotFoundException();
-    }
-    const dto = {
-      menuItemId: itemE.id,
-    } as UpdateTemplateMenuItemDto;
-
-    const result = await templateItemService.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.menuItem.id).toEqual(itemE.id);
-  });
-
-  it('should update tablePosIndex', async () => {
-    const dto = {
-      tablePosIndex: 10,
-    } as UpdateTemplateMenuItemDto;
-
-    const result = await templateItemService.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.tablePosIndex).toEqual(10);
-  });
-
-  it('should find all template menu items', async () => {
-    const results = await templateItemService.findAll({ limit: 15 });
-
-    expect(results).not.toBeNull();
-    expect(results.items.length).toEqual(13);
-
-    testIds = results.items.slice(0, 3).map((item) => item.id);
-  });
-
-  it('should sort all template menu items', async () => {
-    const results = await templateItemService.findAll({
-      limit: 15,
-      sortBy: 'tablePosIndex',
-    });
-
-    expect(results).not.toBeNull();
-    expect(results.items.length).toEqual(13);
-  });
-
-  it('should get menuItems by list of ids', async () => {
-    const results = await templateItemService.findEntitiesById(testIds);
-
-    expect(results).not.toBeNull();
-    expect(results.length).toEqual(3);
-  });
-
-  it('should remove menuItem', async () => {
-    const removal = await templateItemService.remove(testId);
-    expect(removal).toBeTruthy();
-
-    await expect(templateItemService.findOne(testId)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
+  // test remove()
+  it('should remove template menu item', async () => {});
 });

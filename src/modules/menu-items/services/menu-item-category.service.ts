@@ -55,7 +55,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof MenuItemCategory>,
   ): Promise<MenuItemCategory | null> {
@@ -63,7 +63,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
       where: { name: name },
       relations: relations,
     });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<MenuItemCategory>,

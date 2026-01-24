@@ -114,7 +114,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof InventoryItem>,
   ): Promise<InventoryItem | null> {
@@ -122,7 +122,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
       where: { name: name },
       relations: relations,
     });
-  }
+  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<InventoryItem>,

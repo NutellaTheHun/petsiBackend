@@ -59,7 +59,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof LabelType>,
   ): Promise<LabelType | null> {
@@ -67,7 +67,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
       where: { name: name },
       relations,
     });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<LabelType>,

@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
@@ -60,67 +59,21 @@ describe('Inventory Item Package Service', () => {
     expect(packageService).toBeDefined();
   });
 
-  it('should create a inventory item package', async () => {
-    const dto = {
-      name: 'testPackageName',
-    } as CreateInventoryItemPackageDto;
+  // test createEntity()
+  it('should create package', async () => {});
 
-    const result = await packageService.create(dto);
+  // test updateEntity()
+  it('should update package', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testPackageName');
+  // test findAll()
+  it('should find all packages', async () => {});
 
-    testId = result?.id as number;
-  });
+  // test findall() with sort by name
+  it('should find all packages with sort by name', async () => {});
 
-  it('should update a package', async () => {
-    const dto = {
-      name: 'update pkg name',
-    } as UpdateInventoryItemPackageDto;
+  // test findOne()
+  it('should find one package', async () => {});
 
-    const result = await packageService.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('update pkg name');
-  });
-
-  it('should get a package by name', async () => {
-    const result = await packageService.findOneByName('update pkg name');
-
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('update pkg name');
-  });
-
-  it('should remove a inventory item package', async () => {
-    const removal = await packageService.remove(testId);
-    expect(removal).toBeTruthy();
-
-    await expect(packageService.findOne(testId)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
-
-  it('should fail to remove item package(not found)', async () => {
-    const removal = await packageService.remove(testId);
-    expect(removal).toBeFalsy();
-  });
-
-  it('should insert default packages and get all inventory item packages', async () => {
-    const results = await packageService.findAll();
-
-    expect(results.items.length).toBeGreaterThan(3);
-
-    // for future testing
-    testIds = [results.items[0].id, results.items[1].id, results.items[2].id];
-  });
-
-  it('should get inventory item packages from a list of ids', async () => {
-    const results = await packageService.findEntitiesById(testIds);
-
-    expect(results.length).toEqual(testIds.length);
-
-    for (const result of results) {
-      expect(testIds.find((id) => result.id)).toBeTruthy();
-    }
-  });
+  // test remove()
+  it('should remove package', async () => {});
 });

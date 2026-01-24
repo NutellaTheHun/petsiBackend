@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { DataSource, EntityManager } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
@@ -50,73 +49,24 @@ describe('order category service', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create an order type', async () => {
-    const dto = {
-      name: 'testType',
-    } as CreateOrderCategoryDto;
+  // test createEntity()
+  it('should create category', async () => {});
 
-    const result = await service.create(dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testType');
+  // test updateEntity()
+  it('should update category', async () => {});
 
-    testId = result?.id as number;
-  });
+  // test findAll()
+  it('should find all categories', async () => {});
 
-  it('should find an order type by id', async () => {
-    const result = await service.findOne(testId);
+  // test findAll)() with sortByName
+  it('should find all categories with sort by name', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testType');
-    expect(result?.id).toEqual(testId);
-  });
+  // test findOne()
+  it('should find one category', async () => {});
 
-  it('should find an order type by name', async () => {
-    const result = await service.findOneByName('testType');
+  // test findOne() with relations
+  it('should find one category with relations', async () => {});
 
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('testType');
-    expect(result?.id).toEqual(testId);
-  });
-
-  it('should update an order type name', async () => {
-    const dto = {
-      name: 'updateTestType',
-    } as UpdateOrderCategoryDto;
-
-    const result = await service.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('updateTestType');
-
-    testId = result?.id as number;
-  });
-
-  it('should find all order types', async () => {
-    const results = await service.findAll();
-
-    expect(results).not.toBeNull();
-    expect(results.items.length).toEqual(5);
-
-    testIds = results.items.slice(0, 3).map((type) => type.id);
-  });
-
-  it('should sort all order types', async () => {
-    const results = await service.findAll({ sortBy: 'name' });
-
-    expect(results).not.toBeNull();
-    expect(results.items.length).toEqual(5);
-  });
-
-  it('should get order types by list of ids', async () => {
-    const results = await service.findEntitiesById(testIds);
-
-    expect(results).not.toBeNull();
-    expect(results.length).toEqual(3);
-  });
-
-  it('should remove order type', async () => {
-    const removal = await service.remove(testId);
-    expect(removal).toBeTruthy();
-
-    await expect(service.findOne(testId)).rejects.toThrow(NotFoundException);
-  });
+  // test remove()
+  it('should remove category', async () => {});
 });

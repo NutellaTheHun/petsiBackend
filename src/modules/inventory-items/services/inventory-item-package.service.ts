@@ -43,6 +43,7 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     });
     return await manager.save(result);
   }
+
   protected async updateEntity(
     dto: UpdateInventoryItemPackageDto,
     manager: EntityManager,
@@ -54,12 +55,12 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     await manager.save(entity);
   }
 
-  async findOneByName(
+  /*async findOneByName(
     name: string,
     relations?: Array<keyof InventoryItemPackage>,
   ): Promise<InventoryItemPackage | null> {
     return await this.repo.findOne({ where: { name: name }, relations });
-  }
+  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemPackage>,

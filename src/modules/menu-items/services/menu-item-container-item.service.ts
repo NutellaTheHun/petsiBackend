@@ -18,10 +18,6 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
   constructor(
     @InjectRepository(MenuItemContainerItem)
     repo: Repository<MenuItemContainerItem>,
-
-    //@Inject(forwardRef(() => MenuItemContainerItemBuilder))
-    //builder: MenuItemContainerItemBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemContainerItemValidator,
@@ -29,7 +25,6 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
   ) {
     super(
       repo,
-      //builder,
       'MenuItemContainerItemService',
       requestContextService,
       logger,
