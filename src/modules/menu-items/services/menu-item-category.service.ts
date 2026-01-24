@@ -16,18 +16,13 @@ import { MenuItemCategoryValidator } from '../validators/menu-item-category.vali
 export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity> {
   constructor(
     @InjectRepository(MenuItemCategory)
-    private readonly repo: Repository<MenuItemCategory>,
-
-    //@Inject(forwardRef(() => MenuItemCategoryBuilder))
-    //builder: MenuItemCategoryBuilder,
-
+    repo: Repository<MenuItemCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemCategoryValidator,
   ) {
     super(
       repo,
-      //builder,
       'MenuItemCategoryService',
       requestContextService,
       logger,
@@ -54,16 +49,6 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof MenuItemCategory>,
-  ): Promise<MenuItemCategory | null> {
-    return await this.repo.findOne({
-      where: { name: name },
-      relations: relations,
-    });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<MenuItemCategory>,

@@ -16,17 +16,13 @@ import { InventoryItemPackageValidator } from '../validators/inventory-item-pack
 export class InventoryItemPackageService extends ServiceBase<InventoryItemPackageEntity> {
   constructor(
     @InjectRepository(InventoryItemPackage)
-    private readonly repo: Repository<InventoryItemPackage>,
-
-    //builder: InventoryItemPackageBuilder,
-
+    repo: Repository<InventoryItemPackage>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemPackageValidator,
   ) {
     super(
       repo,
-      //builder,
       'InventoryItemPackageService',
       requestContextService,
       logger,
@@ -54,13 +50,6 @@ export class InventoryItemPackageService extends ServiceBase<InventoryItemPackag
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof InventoryItemPackage>,
-  ): Promise<InventoryItemPackage | null> {
-    return await this.repo.findOne({ where: { name: name }, relations });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemPackage>,

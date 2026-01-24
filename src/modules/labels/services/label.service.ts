@@ -15,22 +15,12 @@ import { LabelValidator } from '../validators/label.validator';
 export class LabelService extends ServiceBase<LabelEntity> {
   constructor(
     @InjectRepository(Label)
-    private readonly repo: Repository<Label>,
-
-    //builder: LabelBuilder,
-
+    repo: Repository<Label>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: LabelValidator,
   ) {
-    super(
-      repo,
-      //builder,
-      'LabelService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'LabelService', requestContextService, logger, validator);
   }
 
   protected async createEntity(
@@ -68,18 +58,6 @@ export class LabelService extends ServiceBase<LabelEntity> {
 
     await manager.save(entity);
   }
-
-  /*async findByMenuItemId(
-    itemId: number,
-    relations?: Array<keyof Label>,
-  ): Promise<Label[]> {
-    return await this.repo.find({
-      where: {
-        menuItem: { id: itemId },
-      },
-      relations,
-    });
-  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<Label>,

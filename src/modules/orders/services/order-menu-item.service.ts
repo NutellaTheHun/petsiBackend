@@ -21,6 +21,7 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderMenuItemValidator,
+
     private readonly menuItemComposer: OrderMenuItemComposer,
   ) {
     super(

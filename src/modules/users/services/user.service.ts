@@ -15,7 +15,7 @@ import { UserValidator } from '../validators/user.validator';
 export class UserService extends ServiceBase<UserEntity> {
   constructor(
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    userRepo: Repository<User>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: UserValidator,
@@ -61,16 +61,6 @@ export class UserService extends ServiceBase<UserEntity> {
     }
 
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    username: string,
-    relations?: Array<keyof User>,
-  ): Promise<User | null> {
-    return await this.userRepo.findOne({
-      where: { name: username },
-      relations: relations,
-    });
   }
 
   protected applySearch(query: SelectQueryBuilder<User>, search: string): void {

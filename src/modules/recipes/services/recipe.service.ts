@@ -19,10 +19,11 @@ import { RecipeValidator } from '../validators/recipe.valdiator';
 export class RecipeService extends ServiceBase<RecipeEntity> {
   constructor(
     @InjectRepository(Recipe)
-    private readonly repo: Repository<Recipe>,
+    repo: Repository<Recipe>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeValidator,
+
     private readonly ingredientComposer: RecipeIngredientComposer,
   ) {
     super(repo, 'RecipeService', requestContextService, logger, validator);

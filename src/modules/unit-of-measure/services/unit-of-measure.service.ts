@@ -18,18 +18,13 @@ import { UnitOfMeasureValidator } from '../validators/unit-of-measure.validator'
 export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
   constructor(
     @InjectRepository(UnitOfMeasure)
-    private readonly repo: Repository<UnitOfMeasure>,
-
-    //@Inject(forwardRef(() => UnitOfMeasureBuilder))
-    //builder: UnitOfMeasureBuilder,
-
+    repo: Repository<UnitOfMeasure>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: UnitOfMeasureValidator,
   ) {
     super(
       repo,
-      //builder,
       'UnitOfMeasureService',
       requestContextService,
       logger,
@@ -79,13 +74,6 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
     }
 
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    unitName: string,
-    relations?: Array<keyof UnitOfMeasure>,
-  ): Promise<UnitOfMeasure | null> {
-    return await this.repo.findOne({ where: { name: unitName }, relations });
   }
 
   convert(

@@ -17,18 +17,13 @@ import { UnitOfMeasureCategoryValidator } from '../validators/unit-of-measure-ca
 export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCategoryEntity> {
   constructor(
     @InjectRepository(UnitOfMeasureCategory)
-    private readonly repo: Repository<UnitOfMeasureCategory>,
-
-    //@Inject(forwardRef(() => UnitOfMeasureCategoryBuilder))
-    //builder: UnitOfMeasureCategoryBuilder,
-
+    repo: Repository<UnitOfMeasureCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: UnitOfMeasureCategoryValidator,
   ) {
     super(
       repo,
-      //builder,
       'UnitCategoryService',
       requestContextService,
       logger,
@@ -64,16 +59,6 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
       entity.name = dto.name;
     }
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    categoryName: string,
-    relations?: Array<keyof UnitOfMeasureCategory>,
-  ): Promise<UnitOfMeasureCategory | null> {
-    return this.repo.findOne({
-      where: { name: categoryName },
-      relations,
-    });
   }
 
   protected applySortBy(

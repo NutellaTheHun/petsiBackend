@@ -18,18 +18,14 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
   constructor(
     @InjectRepository(TemplateMenuItem)
     repo: Repository<TemplateMenuItem>,
-
-    //@Inject(forwardRef(() => TemplateMenuItemBuilder))
-    //builder: TemplateMenuItemBuilder,
-
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: TemplateMenuItemValidator,
+
     private readonly templateItemComposer: TemplateMenuItemComposer,
   ) {
     super(
       repo,
-      //builder,
       'TemplateMenuItemService',
       requestContextService,
       logger,

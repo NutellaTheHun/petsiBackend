@@ -16,16 +16,13 @@ import { OrderCategoryValidator } from '../validators/order-category.validator';
 export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
   constructor(
     @InjectRepository(OrderCategory)
-    private readonly repo: Repository<OrderCategory>,
-
-    //builder: OrderCategoryBuilder,
+    repo: Repository<OrderCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderCategoryValidator,
   ) {
     super(
       repo,
-      //builder,
       'OrderCategoryService',
       requestContextService,
       logger,
@@ -53,13 +50,6 @@ export class OrderCategoryService extends ServiceBase<OrderCategoryEntity> {
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof OrderCategory>,
-  ): Promise<OrderCategory | null> {
-    return this.repo.findOne({ where: { name: name }, relations });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<OrderCategory>,

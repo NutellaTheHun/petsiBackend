@@ -1,9 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
@@ -13,21 +12,16 @@ import {
 } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
-import { RecipeService } from './recipe.service';
 
 @Injectable()
 export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity> {
   constructor(
     @InjectRepository(RecipeIngredient)
-    private readonly repo: Repository<RecipeIngredient>,
-    @Inject(forwardRef(() => RecipeService))
-    private readonly recipeService: RecipeService,
-
-    private readonly inventoryItemService: InventoryItemService,
-
+    repo: Repository<RecipeIngredient>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeIngredientValidator,
+
     private readonly ingredientComposer: RecipeIngredientComposer,
   ) {
     super(

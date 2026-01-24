@@ -16,17 +16,13 @@ import { InventoryItemVendorValidator } from '../validators/inventory-item-vendo
 export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorEntity> {
   constructor(
     @InjectRepository(InventoryItemVendor)
-    private readonly repo: Repository<InventoryItemVendor>,
-
-    //builder: InventoryItemVendorBuilder,
-
+    repo: Repository<InventoryItemVendor>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemVendorValidator,
   ) {
     super(
       repo,
-      //builder,
       'InventoryItemVendorService',
       requestContextService,
       logger,
@@ -54,13 +50,6 @@ export class InventoryItemVendorService extends ServiceBase<InventoryItemVendorE
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof InventoryItemVendor>,
-  ): Promise<InventoryItemVendor | null> {
-    return await this.repo.findOne({ where: { name: name }, relations });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemVendor>,

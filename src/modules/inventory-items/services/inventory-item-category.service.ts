@@ -16,7 +16,7 @@ import { InventoryItemCategoryValidator } from '../validators/inventory-item-cat
 export class InventoryItemCategoryService extends ServiceBase<InventoryItemCategoryEntity> {
   constructor(
     @InjectRepository(InventoryItemCategory)
-    private readonly repo: Repository<InventoryItemCategory>,
+    repo: Repository<InventoryItemCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemCategoryValidator,
@@ -50,16 +50,6 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof InventoryItemCategory>,
-  ): Promise<InventoryItemCategory | null> {
-    return await this.repo.findOne({
-      where: { name: name },
-      relations,
-    });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemCategory>,

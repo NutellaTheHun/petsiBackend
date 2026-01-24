@@ -25,17 +25,15 @@ import { MenuItemValidator } from '../validators/menu-item.validator';
 export class MenuItemService extends ServiceBase<MenuItemEntity> {
   constructor(
     @InjectRepository(MenuItem)
-    private readonly repo: Repository<MenuItem>,
-
-    @InjectRepository(OrderMenuItem)
-    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
-
-    @InjectRepository(OrderContainerItem)
-    private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
-
+    repo: Repository<MenuItem>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemValidator,
+
+    @InjectRepository(OrderMenuItem)
+    private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
+    @InjectRepository(OrderContainerItem)
+    private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
     private readonly containerItemComposer: MenuItemContainerItemComposer,
   ) {
     super(repo, 'MenuItemService', requestContextService, logger, validator);
@@ -127,16 +125,6 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof MenuItem>,
-  ): Promise<MenuItem | null> {
-    return await this.repo.findOne({
-      where: { name: name },
-      relations: relations,
-    });
-  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<MenuItem>,

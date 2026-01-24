@@ -17,10 +17,11 @@ import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.va
 export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntity> {
   constructor(
     @InjectRepository(RecipeSubCategory)
-    private readonly repo: Repository<RecipeSubCategory>,
+    repo: Repository<RecipeSubCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeSubCategoryValidator,
+
     private readonly subCategoryComposer: RecipeSubCategoryComposer,
   ) {
     super(

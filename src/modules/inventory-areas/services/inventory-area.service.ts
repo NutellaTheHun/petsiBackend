@@ -14,18 +14,13 @@ import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
   constructor(
     @InjectRepository(InventoryArea)
-    private readonly repo: Repository<InventoryArea>,
-
-    //@Inject(forwardRef(() => InventoryAreaBuilder))
-    //builder: InventoryAreaBuilder,
-
+    repo: Repository<InventoryArea>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryAreaValidator,
   ) {
     super(
       repo,
-      //builder,
       'InventoryAreaService',
       requestContextService,
       logger,
@@ -52,13 +47,6 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof InventoryArea>,
-  ): Promise<InventoryArea | null> {
-    return await this.repo.findOne({ where: { name: name }, relations });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryArea>,

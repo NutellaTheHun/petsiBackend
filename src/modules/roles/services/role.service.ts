@@ -13,23 +13,12 @@ import { RoleValidator } from '../validators/role.validator';
 export class RoleService extends ServiceBase<RoleEntity> {
   constructor(
     @InjectRepository(Role)
-    private readonly repo: Repository<Role>,
-
-    //@Inject(forwardRef(() => RoleBuilder))
-    //builder: RoleBuilder,
-
+    repo: Repository<Role>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RoleValidator,
   ) {
-    super(
-      repo,
-      //builder,
-      'RoleService',
-      requestContextService,
-      logger,
-      validator,
-    );
+    super(repo, 'RoleService', requestContextService, logger, validator);
   }
 
   protected async createEntity(
@@ -51,16 +40,6 @@ export class RoleService extends ServiceBase<RoleEntity> {
       entity.name = dto.name;
     }
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    roleName: string,
-    relations?: Array<keyof Role>,
-  ): Promise<Role | null> {
-    return await this.repo.findOne({
-      where: { name: roleName },
-      relations: relations,
-    });
   }
 
   protected applySortBy(

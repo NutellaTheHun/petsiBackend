@@ -17,17 +17,16 @@ import { InventoryItemSizeValidator } from '../validators/inventory-item-size.va
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntity> {
   constructor(
     @InjectRepository(InventoryItemSize)
-    private readonly reop: Repository<InventoryItemSize>,
+    repo: Repository<InventoryItemSize>,
     requestContextService: RequestContextService,
     logger: AppLogger,
-
     @Inject(forwardRef(() => InventoryItemSizeValidator))
     validator: InventoryItemSizeValidator,
 
     private readonly itemSizeComposer: InventoryItemSizeComposer,
   ) {
     super(
-      reop,
+      repo,
       'InventoryItemSizeService',
       requestContextService,
       logger,
@@ -53,16 +52,6 @@ export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntit
       await this.itemSizeComposer.composeUpdate(dto, manager, entity),
     );
   }
-
-  /*async findSizesByItemName(
-    name: string,
-    relations?: Array<keyof InventoryItemSize>,
-  ): Promise<InventoryItemSize[] | null> {
-    return await this.reop.find({
-      where: { inventoryItem: { name: name } },
-      relations,
-    });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryItemSize>,

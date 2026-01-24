@@ -15,10 +15,11 @@ import { TemplateValidator } from '../validators/template.validator';
 export class TemplateService extends ServiceBase<TemplateEntity> {
   constructor(
     @InjectRepository(Template)
-    private readonly repo: Repository<Template>,
+    repo: Repository<Template>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: TemplateValidator,
+
     private readonly tempalateItemComposer: TemplateMenuItemComposer,
   ) {
     super(repo, 'TemplateService', requestContextService, logger, validator);

@@ -19,14 +19,9 @@ import { InventoryAreaCountValidator } from '../validators/inventory-area-count.
 export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
-    private readonly repo: Repository<InventoryAreaCount>,
-
-    //@Inject(forwardRef(() => InventoryAreaCountBuilder))
-    //builder: InventoryAreaCountBuilder,
-
+    repo: Repository<InventoryAreaCount>,
     logger: AppLogger,
     requestContextService: RequestContextService,
-
     @Inject(forwardRef(() => InventoryAreaCountValidator))
     validator: InventoryAreaCountValidator,
 
@@ -34,7 +29,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
   ) {
     super(
       repo,
-      //builder,
       'InventoryAreaCountService',
       requestContextService,
       logger,
@@ -93,34 +87,6 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
 
     await manager.save(entity);
   }
-
-  /*async findByAreaName(
-    name: string,
-    relations?: Array<keyof InventoryAreaCount>,
-  ): Promise<InventoryAreaCount[]> {
-    return await this.repo.find({
-      where: { inventoryArea: { name: name } },
-      relations,
-    });
-  }*/
-
-  /*async findByDate(
-    date: Date,
-    relations?: Array<keyof InventoryAreaCount>,
-  ): Promise<InventoryAreaCount[]> {
-    const startOfDay = new Date(date);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-
-    return await this.repo.find({
-      where: {
-        countDate: Between(startOfDay, endOfDay),
-      },
-      relations,
-    });
-  }*/
 
   protected applySearch(
     query: SelectQueryBuilder<InventoryAreaCount>,

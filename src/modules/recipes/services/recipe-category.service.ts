@@ -18,19 +18,15 @@ import { RecipeCategoryValidator } from '../validators/recipe-category.validator
 export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
   constructor(
     @InjectRepository(RecipeCategory)
-    private readonly repo: Repository<RecipeCategory>,
-
-    //@Inject(forwardRef(() => RecipeCategoryBuilder))
-    //builder: RecipeCategoryBuilder,
-
+    repo: Repository<RecipeCategory>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: RecipeCategoryValidator,
+
     private readonly subCategoryComposer: RecipeSubCategoryComposer,
   ) {
     super(
       repo,
-      //builder,
       'RecipeCategoryService',
       requestContextService,
       logger,
@@ -91,16 +87,6 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
     }
 
     await manager.save(entity);
-  }
-
-  async findOneByName(
-    name: string,
-    relations?: Array<keyof RecipeCategory>,
-  ): Promise<RecipeCategory | null> {
-    return await this.repo.findOne({
-      where: { name: name },
-      relations,
-    });
   }
 
   protected applySortBy(

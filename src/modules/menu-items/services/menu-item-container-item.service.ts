@@ -21,6 +21,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemContainerItemValidator,
+
     private readonly containerItemComposer: MenuItemContainerItemComposer,
   ) {
     super(

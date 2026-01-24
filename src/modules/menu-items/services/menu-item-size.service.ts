@@ -16,17 +16,13 @@ import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
   constructor(
     @InjectRepository(MenuItemSize)
-    private readonly repo: Repository<MenuItemSize>,
-
-    //builder: MenuItemSizeBuilder,
-
+    repo: Repository<MenuItemSize>,
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemSizeValidator,
   ) {
     super(
       repo,
-      //builder,
       'MenuItemSizeService',
       requestContextService,
       logger,
@@ -53,13 +49,6 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     }
     await manager.save(entity);
   }
-
-  /*async findOneByName(
-    name: string,
-    relations?: Array<keyof MenuItemSize>,
-  ): Promise<MenuItemSize | null> {
-    return await this.repo.findOne({ where: { name: name }, relations });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<MenuItemSize>,

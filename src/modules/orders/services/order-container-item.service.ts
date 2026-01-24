@@ -21,6 +21,7 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderContainerItemValidator,
+
     private readonly containerItemComposer: OrderContainerItemComposer,
   ) {
     super(

@@ -20,6 +20,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: OrderValidator,
+
     private readonly orderMenuItemComposer: OrderMenuItemComposer,
   ) {
     super(repo, 'OrderService', requestContextService, logger, validator);

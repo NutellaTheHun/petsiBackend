@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
@@ -18,14 +17,9 @@ import { InventoryAreaItemValidator } from '../validators/inventory-area-item.va
 export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntity> {
   constructor(
     @InjectRepository(InventoryAreaItem)
-    private readonly repo: Repository<InventoryAreaItem>,
-
-    @Inject(forwardRef(() => InventoryItemService))
-    private readonly itemService: InventoryItemService,
-
+    repo: Repository<InventoryAreaItem>,
     logger: AppLogger,
     requestContextService: RequestContextService,
-
     @Inject(forwardRef(() => InventoryAreaItemValidator))
     validator: InventoryAreaItemValidator,
 
@@ -55,21 +49,6 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
   ): Promise<void> {
     await this.areaItemComposer.composeUpdate(dto, manager, entity);
   }
-
-  /*async findByItemName(
-    name: string,
-    relations?: Array<keyof InventoryAreaItem>,
-  ): Promise<InventoryAreaItem[]> {
-    const item = await this.itemService.findOneByName(name);
-    if (!item) {
-      throw new Error('inventory item not found');
-    }
-
-    return await this.repo.find({
-      where: { countedInventoryItem: { id: item.id } },
-      relations,
-    });
-  }*/
 
   protected applySortBy(
     query: SelectQueryBuilder<InventoryAreaItem>,
