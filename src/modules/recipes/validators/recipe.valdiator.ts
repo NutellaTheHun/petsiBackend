@@ -123,7 +123,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
       );
     }
 
-    if (dto.ingredients?.length) {
+    if (dto.isIngredient && dto.ingredients?.length) {
       //check dupliate ingredients
       const riValidator = new RecipeIngredientAggregateValidator(
         dto.ingredients,
@@ -192,7 +192,40 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         throw new NotFoundException();
       }
 
-      if (!category.subCategories.find((cat) => cat.id === dto.subCategoryId)) {
+      if (
+        !category.subCategories.find(
+          (subCat) => subCat.id === dto.subCategoryId,
+        )
+      ) {
+        errorMap.addChild(
+          'subCategory',
+          new ValidationErrorMap(
+            undefined,
+            'Invalid category / subcategory combination',
+          ),
+        );
+      }
+    } else if (dto.subCategoryId) {
+      const currentRecipe = await this.repo.findOne({
+        where: { id },
+        relations: ['category'],
+      });
+      if (!currentRecipe) {
+        throw new NotFoundException();
+      }
+      if (!currentRecipe.category) {
+        errorMap.addChild(
+          'category',
+          new ValidationErrorMap(
+            undefined,
+            'Requires category if assigning sub-category',
+          ),
+        );
+      } else if (
+        !currentRecipe.category.subCategories.find(
+          (subCat) => subCat.id === dto.subCategoryId,
+        )
+      ) {
         errorMap.addChild(
           'subCategory',
           new ValidationErrorMap(

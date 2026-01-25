@@ -34,4 +34,14 @@ describe('template menu item validator', () => {
   it('should be defined', () => {
     expect(validator).toBeDefined;
   });
+
+  // Create Validation Tests
+  it('successfully validate create: no validation errors', async () => {});
+
+  it('fail validate create: positional index cannot be less than 0', async () => {});
+
+  // Update Validation Tests
+  it('successfully validate update: no validation errors', async () => {});
+
+  it('fail validate update: positional index cannot be less than 0', async () => {});
 });

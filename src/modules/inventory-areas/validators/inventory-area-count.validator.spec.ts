@@ -41,36 +41,41 @@ describe('inventory area count validator', () => {
     expect(validator).toBeDefined;
   });
 
-  // it should successfully validate a create dto with no validation errors
-  it('should successfully validate a create dto with no validation errors', async () => {});
+  // Create Validation Tests
+  it('successfully validate create no validation errors', async () => {});
 
-  // it should fail to validate a create dto with no counted inventory items
-  it('should fail to validate a create dto with no counted inventory items', async () => {});
+  it('fail validate create: no counted inventory items', async () => {});
 
-  // it should fail to validate a create dto with nestedCreateInventoryAreaItemDto errors
-  // amount with value 0
-  // invalid countedItemSizeId for countedInventoryItemId
-  // dto with both countedItemSize and countedItemSizeId
-  // error with nested itemSize validator:
-  //   measureAmount with value 0
-  //   cost with value 0
-  it('should fail to validate a create dto with nestedCreateInventoryAreaItemDto errors', async () => {});
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.amount with value 0', async () => {});
 
-  // should successfully validate a update dto with no validation errors
-  it('should successfully validate a update dto with no validation errors', async () => {});
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSizeId with invalid countedInventoryItemId', async () => {});
 
-  // should fail to validate a update dto with no counted inventory items
-  it('should fail to validate a update dto with no counted inventory items', async () => {});
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSize and inventoryAreaItem.countedItemSizeId both provided', async () => {});
 
-  // should fail to validate a update dto with nestedCreateInventoryAreaItemDto and nestedUpdateInventoryAreaItemDto errors
-  // nestedCreateInventoryAreaItemDto errors:
-  //   amount with value 0
-  //   invalid countedItemSizeId for countedInventoryItemId
-  //   dto with both countedItemSize and countedItemSizeId
-  // nestedUpdateInventoryAreaItemDto errors:
-  //   amount with value 0
-  //   invalid countedItemSizeId for countedInventoryItemId
-  //   dto with both countedItemSize and countedItemSizeId
-  //   countedInventoryItemId with no sizeId or sizeDto
-  it('should fail to validate a update dto with nestedCreateInventoryAreaItemDto and nestedUpdateInventoryAreaItemDto errors', async () => {});
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: neither inventoryAreaItem.countedItemSize and inventoryAreaItem.countedItemSizeId not provided', async () => {});
+
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {});
+
+  it('fail validate create: nestedCreateInventoryAreaItemDto errors: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {});
+
+  // Update Validation Tests
+  it('successfully validate update no validation errors', async () => {});
+
+  it('fail validate update: no counted inventory items', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto and nestedUpdateInventoryAreaItemDto errors', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.amount with value 0', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSizeId with invalid countedInventoryItemId', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSize and inventoryAreaItem.countedItemSizeId both provided', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto errors: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {});
+
+  it('fail validate update: nestedCreateInventoryAreaItemDto errors: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {});
+
+  it('fail validate update: nestedUpdateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSizeId with invalid countedInventoryItemId', async () => {});
+
+  it('fail validate update: nestedUpdateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSize and inventoryAreaItem.countedItemSizeId both provided', async () => {});
 });

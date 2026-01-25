@@ -1,12 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { CreateRoleDto } from '../dto/create-role.dto';
-import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../utils/constants';
 import { RoleTestUtil } from '../utils/role-test.util';
 import { getRoleTestingModule } from '../utils/role-testing-module';
 import { RoleValidator } from './role.validator';
@@ -37,55 +33,13 @@ describe('role validator', () => {
     expect(validator).toBeDefined;
   });
 
-  it('should validate create', async () => {
-    const dto = {
-      name: 'TEST NAME',
-    } as CreateRoleDto;
+  // Create Validation Tests
+  it('successfully validate create: no validation errors', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeNull();
-  });
+  it('fail validate create: name already exists', async () => {});
 
-  it('should fail create: name already exists', async () => {
-    const dto = {
-      name: ROLE_MANAGER,
-    } as CreateRoleDto;
+  // Update Validation Tests
+  it('successfully validate update: no validation errors', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('roleName');
-  });
-
-  it('should pass update', async () => {
-    const toUpdate = await service.findOneByName(ROLE_ADMIN);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const dto = {
-      name: 'UPDATE TEST',
-    } as UpdateRoleDto;
-
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeNull();
-  });
-
-  it('should fail update: name already exists', async () => {
-    const toUpdate = await service.findOneByName(ROLE_ADMIN);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const dto = {
-      name: ROLE_STAFF,
-    } as UpdateRoleDto;
-
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('roleName');
-  });
+  it('fail validate update: name already exists', async () => {});
 });

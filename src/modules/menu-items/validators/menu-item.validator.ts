@@ -45,7 +45,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
       'Menu item already exists.',
     );
 
-    if (dto.containerMenuItems?.length) {
+    if (dto.containerMenuItems && dto.containerMenuItems?.length) {
       if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
         errorMap.addChild(
           'type',
@@ -96,7 +96,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
     }
 
     // containerItem dtos
-    if (dto.containerMenuItems?.length) {
+    if (dto.containerMenuItems && dto.containerMenuItems?.length) {
       let type = dto.type;
       if (!dto.type) {
         const currentEntity = await this.repo.findOne({

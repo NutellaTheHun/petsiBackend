@@ -16,7 +16,7 @@ import { OrderMenuItemValidator } from './order-menu-item.validator';
 export class OrderValidator extends ValidatorBase<OrderEntity> {
   constructor(
     @InjectRepository(Order)
-    private readonly repo: Repository<Order>,
+    repo: Repository<Order>,
 
     private readonly orderItemValidator: OrderMenuItemValidator,
 

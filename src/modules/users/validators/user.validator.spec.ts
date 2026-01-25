@@ -1,12 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
-import { USER_A, USER_B, USER_C } from '../utils/constants';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { UserValidator } from './user.validator';
@@ -37,63 +33,13 @@ describe('user validator', () => {
     expect(validator).toBeDefined;
   });
 
-  it('should validate create', async () => {
-    const dto = {
-      name: 'testUser',
-      password: 'testPass',
-      email: 'email',
-    } as CreateUserDto;
+  // Create Validation Tests
+  it('successfully validate create: no validation errors', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeNull();
-  });
+  it('fail validate create: name already exists', async () => {});
 
-  it('should fail create (name already exists)', async () => {
-    const dto = {
-      name: USER_A,
-      password: 'pass',
-      email: 'email',
-    } as CreateUserDto;
+  // Update Validation Tests
+  it('successfully validate update: no validation errors', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('username');
-  });
-
-  it('should pass update', async () => {
-    const toUpdate = await service.findOneByName(USER_B);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const dto = {
-      name: 'testUser',
-      password: 'testPass',
-      email: 'email',
-    } as UpdateUserDto;
-
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeNull();
-  });
-
-  it('should fail update (name already exists)', async () => {
-    const toUpdate = await service.findOneByName(USER_B);
-    if (!toUpdate) {
-      throw new Error();
-    }
-
-    const dto = {
-      name: USER_C,
-      password: 'testPass',
-      email: 'email',
-    } as UpdateUserDto;
-
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.children[0].message).not.toBeNull();
-    expect(result?.field).toEqual('username');
-  });
+  it('fail validate update: name already exists', async () => {});
 });

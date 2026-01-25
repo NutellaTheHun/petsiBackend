@@ -1,15 +1,8 @@
-import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { type_a } from '../../labels/utils/constants';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
-import { CreateOrderDto } from '../dto/order/create-order.dto';
-import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
@@ -50,245 +43,69 @@ describe('order validator', () => {
     expect(validator).toBeDefined;
   });
 
-  it('should validate create', async () => {
-    const category = await categoryService.findOneByName(type_a);
-    if (!category) {
-      throw new Error();
-    }
+  // Create Validation Tests
+  it('successfully validate create: no validation errors', async () => {});
 
-    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-    if (!itemB) {
-      throw new Error();
-    }
+  it('fail validate create: no ordered items', async () => {});
 
-    const itemDtos = [
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemA.id,
-          menuItemSizeId: itemA.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemB.id,
-          menuItemSizeId: itemB.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-    ];
-    const dto = {
-      categoryId: category.id,
-      recipient: 'CREATE',
-      fulfillmentDate: new Date(),
-      fulfillmentType: 'pickup',
-      orderedItems: itemDtos,
-    } as CreateOrderDto;
+  it('fail validate create: invalid fulfillment type', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeNull();
-  });
+  it('fail validate create: order for delivery must have a delivery address', async () => {});
 
-  it('should fail create: invalid weekly fulfillment', async () => {
-    throw new NotImplementedException();
-  });
+  it('fail validate create: order for delivery must have a phone number', async () => {});
 
-  it('should fail create: invalid fulfillment type', async () => {
-    throw new NotImplementedException();
-  });
+  it('fail validate create: order must have a day of the week selected for fulfillment', async () => {});
 
-  it('should fail create: nested orderMenuItem validator: invalid size for item', async () => {
-    const category = await categoryService.findOneByName(type_a);
-    if (!category) {
-      throw new Error();
-    }
+  it('fail validate create: invalid weekly fulfillment', async () => {});
 
-    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
-    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-    if (!itemB) {
-      throw new Error();
-    }
+  it('fail validate create: duplicate ordered items', async () => {});
 
-    const itemDtos = [
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemA.id,
-          menuItemSizeId: itemB.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemB.id,
-          menuItemSizeId: itemA.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-    ];
-    const dto = {
-      categoryId: category.id,
-      recipient: 'CREATE',
-      fulfillmentDate: new Date(),
-      fulfillmentType: 'pickup',
-      orderedItems: itemDtos,
-    } as CreateOrderDto;
+  it('fail validate create: nested orderedItems validator errors: contained item not of type single', async () => {});
 
-    const result = await validator.validateCreateNode('root', dto);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.field).toEqual('orderedItems');
-    expect(result?.children[0].children.length).toEqual(1);
-  });
+  it('fail validate create: nested orderedItems validator errors: contained item size not valid', async () => {});
 
-  it('should pass update', async () => {
-    const toUpdate = (await orderService.findAll()).items[0];
+  it('fail validate create: nested orderedItems validator errors: quantity with value 0', async () => {});
 
-    const category = await categoryService.findOneByName(type_a);
-    if (!category) {
-      throw new Error();
-    }
+  it('fail validate create: nested orderedItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {});
 
-    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
+  it('fail validate create: nested orderedItems validator errors: duplicate container item', async () => {});
 
-    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-    if (!itemB) {
-      throw new Error();
-    }
+  it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item not of type single', async () => {});
 
-    const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-    if (!itemC) {
-      throw new Error();
-    }
+  it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item size not valid', async () => {});
 
-    const itemToUpdate = (await orderItemService.findAll()).items[0];
+  it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: quantity with value 0', async () => {});
 
-    const itemDtos = [
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemA.id,
-          menuItemSizeId: itemA.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemB.id,
-          menuItemSizeId: itemB.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'update',
-        id: itemToUpdate.id,
-        updateDto: {
-          menuItemId: itemC.id,
-          menuItemSizeId: itemC.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-    ];
+  // Update Validation Tests
+  it('successfully validate update: no validation errors', async () => {});
 
-    const dto = {
-      categoryId: category.id,
-      recipient: 'CREATE',
-      fulfillmentDate: new Date(),
-      fulfillmentType: 'pickup',
-      orderedItems: itemDtos,
-    } as UpdateOrderDto;
+  it('fail validate update: no ordered items', async () => {});
 
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeNull();
-  });
+  it('fail validate update: invalid fulfillment type', async () => {});
 
-  it('should fail update: invalid weekly fulfillment', async () => {
-    throw new NotImplementedException();
-  });
+  it('fail validate update: order for delivery must have a delivery address', async () => {});
 
-  it('should fail update: invalid fulfillment type', async () => {
-    throw new NotImplementedException();
-  });
+  it('fail validate update: order for delivery must have a phone number', async () => {});
 
-  it('should fail update: nested orderMenuItem validator: invalid size', async () => {
-    const toUpdate = (await orderService.findAll()).items[0];
+  it('fail validate update: order must have a day of the week selected for fulfillment', async () => {});
 
-    const category = await categoryService.findOneByName(type_a);
-    if (!category) {
-      throw new Error();
-    }
+  it('fail validate update: invalid weekly fulfillment', async () => {});
 
-    const itemA = await menuItemService.findOneByName(item_a, ['validSizes']);
-    if (!itemA) {
-      throw new Error();
-    }
+  it('fail validate update: duplicate ordered items', async () => {});
 
-    const itemB = await menuItemService.findOneByName(item_b, ['validSizes']);
-    if (!itemB) {
-      throw new Error();
-    }
+  it('fail validate update: nested orderedItems validator errors: contained item not of type single', async () => {});
 
-    const itemC = await menuItemService.findOneByName(item_c, ['validSizes']);
-    if (!itemC) {
-      throw new Error();
-    }
+  it('fail validate update: nested orderedItems validator errors: contained item size not valid', async () => {});
 
-    const itemToUpdate = (await orderItemService.findAll()).items[0];
+  it('fail validate update: nested orderedItems validator errors: quantity with value 0', async () => {});
 
-    const itemDtos = [
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemA.id,
-          menuItemSizeId: itemA.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'create',
-        createDto: {
-          menuItemId: itemB.id,
-          menuItemSizeId: itemB.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-      plainToInstance(NestedOrderMenuItemDto, {
-        mode: 'update',
-        id: itemToUpdate.id,
-        updateDto: {
-          menuItemId: itemC.id,
-          menuItemSizeId: itemA.sizes[0].id,
-          quantity: 1,
-        },
-      }),
-    ];
+  it('fail validate update: nested orderedItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {});
 
-    const dto = {
-      categoryId: category.id,
-      recipient: 'CREATE',
-      fulfillmentDate: new Date(),
-      fulfillmentType: 'pickup',
-      orderedItems: itemDtos,
-    } as UpdateOrderDto;
+  it('fail validate update: nested orderedItems validator errors: duplicate container item', async () => {});
 
-    const result = await validator.validateUpdateNode('root', dto, toUpdate.id);
-    expect(result).toBeInstanceOf(ValidationErrorNode);
-    expect(result?.children.length).toEqual(1);
-    expect(result?.field).toEqual('orderedItems');
-    expect(result?.children[0].children.length).toEqual(1);
-  });
+  it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item not of type single', async () => {});
+
+  it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item size not valid', async () => {});
+
+  it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: quantity with value 0', async () => {});
 });

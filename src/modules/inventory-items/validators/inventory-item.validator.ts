@@ -43,7 +43,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       'Item with this name already exists',
     );
 
-    if (dto.sizes?.length) {
+    if (dto.sizes && dto.sizes?.length) {
       // inventoryItemSizeValidator Call
       await this.itemSizeValidator.validateManyNestedNode(
         'sizes',
@@ -71,7 +71,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity> {
       );
     }
 
-    if (dto.sizes?.length) {
+    if (dto.sizes && dto.sizes?.length) {
       // nested inventoryItemSizeValidator Call
       await this.itemSizeValidator.validateManyNestedNode(
         'sizes',

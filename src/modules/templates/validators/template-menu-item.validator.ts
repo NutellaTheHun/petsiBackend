@@ -18,7 +18,7 @@ import {
 export class TemplateMenuItemValidator extends ValidatorBase<TemplateMenuItemEntity> {
   constructor(
     @InjectRepository(TemplateMenuItem)
-    private readonly repo: Repository<TemplateMenuItem>,
+    repo: Repository<TemplateMenuItem>,
     logger: AppLogger,
     requestContextService: RequestContextService,
   ) {

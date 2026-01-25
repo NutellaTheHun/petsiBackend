@@ -38,7 +38,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity> {
       'Template with this name already exists.',
     );
 
-    if (dto.templateMenuItems?.length) {
+    if (dto.templateMenuItems && dto.templateMenuItems?.length) {
       // check duplicate templateMenuItems
       const tmiValidator = new TemplateMenuItemAggregateValidator(
         dto.templateMenuItems,
