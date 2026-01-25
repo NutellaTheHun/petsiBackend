@@ -17,7 +17,7 @@ import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity> {
   constructor(
     @InjectRepository(InventoryAreaCount)
-    repo: Repository<InventoryAreaCount>,
+    private readonly repo: Repository<InventoryAreaCount>,
     logger: AppLogger,
     requestContextService: RequestContextService,
 
