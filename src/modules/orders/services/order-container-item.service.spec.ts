@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -28,11 +29,11 @@ class TestableOrderContainerItemService extends OrderContainerItemService {
 }
 
 describe('order container item service', () => {
-  let service: OrderContainerItemService;
+  let service: TestableOrderContainerItemService;
   let testingUtil: OrderTestingUtil;
   let dbTestContext: DatabaseTestContext;
   let dataSource: DataSource;
-
+  let orderContainerItemRepo: Repository<OrderContainerItem>;
   let menuItemRepo: Repository<MenuItem>;
   let orderItemRepo: Repository<OrderMenuItem>;
 
@@ -45,10 +46,8 @@ describe('order container item service', () => {
     await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
     dataSource = module.get(DataSource);
 
-    service = module.get(
-      OrderContainerItemService,
-    ) as TestableOrderContainerItemService;
-
+    service = module.get(OrderContainerItemService) as TestableOrderContainerItemService;
+    orderContainerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
     menuItemRepo = module.get(getRepositoryToken(MenuItem));
     orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
   });
@@ -62,32 +61,104 @@ describe('order container item service', () => {
   });
 
   // test createEntity()
-  it('should create container item', async () => {});
+  it('should create container item', async () => {
+    const existing = await orderContainerItemRepo.find({
+      take: 1,
+      relations: ['parentOrderMenuItem', 'containedMenuItem', 'containedItemSize'],
+    });
+    if (!existing.length) throw new Error('order container item not found');
+    const e = existing[0];
+
+    const dto: CreateOrderContainerItemDto = {
+      parentOrderMenuItemId: e.parentOrderMenuItem.id,
+      containedMenuItemId: e.containedMenuItem.id,
+      containedItemSizeId: e.containedItemSize.id,
+      quantity: 99,
+    };
+
+    await dataSource.transaction(async (manager) => {
+      const result = await service.createEntityForTest(dto, manager);
+      const saved = await manager.save(result);
+      expect(saved).not.toBeNull();
+      expect(saved?.id).toBeDefined();
+      expect(saved.quantity).toEqual(dto.quantity);
+    });
+  });
 
   // test updateEntity()
-  it('should update container item', async () => {});
+  it('should update container item', async () => {
+    const existing = await orderContainerItemRepo.find({
+      take: 1,
+      relations: ['parentOrderMenuItem', 'containedMenuItem', 'containedItemSize'],
+    });
+    if (!existing.length) throw new Error('order container item not found');
+
+    const dto: UpdateOrderContainerItemDto = { quantity: 5 };
+
+    await dataSource.transaction(async (manager) => {
+      await service.updateEntityForTest(dto, existing[0], manager);
+      await manager.save(existing[0]);
+    });
+
+    const result = await orderContainerItemRepo.findOne({
+      where: { id: existing[0].id },
+    });
+    if (!result) throw new Error('result not found');
+    expect(result.quantity).toEqual(dto.quantity);
+  });
 
   // test findAll()
-  it('should find all container items', async () => {});
+  it('should find all container items', async () => {
+    const repoResult = await orderContainerItemRepo.find();
+    const serviceResult = await service.findAll({ limit: 100 });
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.items.length).toEqual(repoResult.length);
+  });
 
-  // test findAll() with search by name
-  it('should find all container items with search by name', async () => {});
-
-  // test findAll() with filter by category
-  it('should find all container items with filter by category', async () => {});
-
-  // test findAll() with sort by name
-  it('should find all container items with sort by name', async () => {});
-
-  // test findAll() with sort by category
-  it('should find all container items with sort by category', async () => {});
+  // test findAll() with sort by containedMenuItem name
+  it('should find all container items with sort by containedMenuItem name', async () => {
+    const serviceResult = await service.findAll({
+      sortBy: 'containedMenuItem',
+      sortOrder: 'DESC',
+      limit: 100,
+    });
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.items.length).toBeGreaterThan(0);
+  });
 
   // test findOne()
-  it('should find one container item', async () => {});
+  it('should find one container item', async () => {
+    const c = await orderContainerItemRepo.find({ take: 1 });
+    if (!c.length) throw new Error('container item not found');
+
+    const serviceResult = await service.findOne(c[0].id);
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.id).toEqual(c[0].id);
+  });
 
   // test findOne() with relations
-  it('should find one container item with relations', async () => {});
+  it('should find one container item with relations', async () => {
+    const c = await orderContainerItemRepo.find({ take: 1 });
+    if (!c.length) throw new Error('container item not found');
+
+    const serviceResult = await service.findOne(c[0].id, [
+      'parentOrderMenuItem',
+      'containedMenuItem',
+    ]);
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.id).toEqual(c[0].id);
+    expect(serviceResult?.parentOrderMenuItem).toBeDefined();
+    expect(serviceResult?.containedMenuItem).toBeDefined();
+  });
 
   // test remove()
-  it('should remove container item', async () => {});
+  it('should remove container item', async () => {
+    const c = await orderContainerItemRepo.find({ take: 1 });
+    if (!c.length) throw new Error('container item not found');
+    const id = c[0].id;
+
+    const deleteResult = await service.remove(id);
+    expect(deleteResult).toBe(true);
+    await expect(service.findOne(id)).rejects.toThrow(NotFoundException);
+  });
 });

@@ -37,7 +37,9 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     dto: CreateRecipeSubCategoryDto,
     manager: EntityManager,
   ): Promise<RecipeSubCategory> {
-    return await this.subCategoryComposer.composeCreate(dto, manager);
+    return await manager.save(
+      await this.subCategoryComposer.composeCreate(dto, manager),
+    );
   }
 
   protected async updateEntity(
@@ -45,7 +47,9 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
     manager: EntityManager,
     entity: RecipeSubCategory,
   ): Promise<void> {
-    await this.subCategoryComposer.composeUpdate(dto, manager, entity);
+    await manager.save(
+      await this.subCategoryComposer.composeUpdate(dto, manager, entity),
+    );
   }
 
   protected applySortBy(

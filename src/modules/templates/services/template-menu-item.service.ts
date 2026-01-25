@@ -37,7 +37,9 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
     dto: CreateTemplateMenuItemDto,
     manager: EntityManager,
   ): Promise<TemplateMenuItem> {
-    return await this.templateItemComposer.composeCreate(dto, manager);
+    return await manager.save(
+      await this.templateItemComposer.composeCreate(dto, manager),
+    );
   }
 
   protected async updateEntity(
@@ -45,7 +47,9 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
     manager: EntityManager,
     entity: TemplateMenuItem,
   ): Promise<void> {
-    await this.templateItemComposer.composeUpdate(dto, manager, entity);
+    await manager.save(
+      await this.templateItemComposer.composeUpdate(dto, manager, entity),
+    );
   }
 
   protected applySortBy(

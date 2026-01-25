@@ -47,7 +47,9 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
     manager: EntityManager,
     entity: InventoryAreaItem,
   ): Promise<void> {
-    await this.areaItemComposer.composeUpdate(dto, manager, entity);
+    await manager.save(
+      await this.areaItemComposer.composeUpdate(dto, manager, entity),
+    );
   }
 
   protected applySortBy(

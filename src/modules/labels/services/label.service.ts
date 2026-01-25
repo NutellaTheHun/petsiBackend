@@ -63,9 +63,11 @@ export class LabelService extends ServiceBase<LabelEntity> {
     query: SelectQueryBuilder<Label>,
     search: string,
   ): void {
-    query.andWhere('(LOWER(menuItem.name) LIKE :search)', {
-      search: `%${search.toLowerCase()}%`,
-    });
+    query
+      .leftJoin('entity.menuItem', 'menuItem')
+      .andWhere('(LOWER(menuItem.name) LIKE :search)', {
+        search: `%${search.toLowerCase()}%`,
+      });
   }
 
   protected applyFilters(
@@ -86,7 +88,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
   ): void {
     if (sortBy === 'labelType') {
       query.leftJoinAndSelect('entity.labelType', 'labelType');
-      query.orderBy(`labelType.labelTypeName`, sortOrder);
+      query.orderBy('labelType.name', sortOrder);
     }
   }
 }

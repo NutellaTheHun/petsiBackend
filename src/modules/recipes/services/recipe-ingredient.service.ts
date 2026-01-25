@@ -37,7 +37,9 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     dto: CreateRecipeIngredientDto,
     manager: EntityManager,
   ): Promise<RecipeIngredient> {
-    return await this.ingredientComposer.composeCreate(dto, manager);
+    return await manager.save(
+      await this.ingredientComposer.composeCreate(dto, manager),
+    );
   }
 
   protected async updateEntity(
@@ -45,7 +47,9 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
     manager: EntityManager,
     entity: RecipeIngredient,
   ): Promise<void> {
-    await this.ingredientComposer.composeUpdate(dto, manager, entity);
+    await manager.save(
+      await this.ingredientComposer.composeUpdate(dto, manager, entity),
+    );
   }
 
   protected applySortBy(
