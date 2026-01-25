@@ -31,12 +31,21 @@ export class UserService extends ServiceBase<UserEntity> {
     const roles = dto.roleIds ? dto.roleIds.map((i) => ({ id: i })) : [];
 
     const result = manager.create(User, {
-      username: dto.name,
+      name: dto.name,
       email: dto.email,
       roles,
       password,
     });
-    return await manager.save(result);
+    await manager.save(result);
+
+    return {
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      roles: result.roles,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+    } as User;
   }
 
   protected async updateEntity(

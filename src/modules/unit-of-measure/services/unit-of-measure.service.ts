@@ -134,6 +134,5 @@ export class UnitOfMeasureService extends ServiceBase<UnitOfMeasureEntity> {
       query.leftJoinAndSelect('entity.category', 'category');
       query.orderBy('category.name', sortOrder, 'NULLS LAST');
     }
-    // category name
   }
 }

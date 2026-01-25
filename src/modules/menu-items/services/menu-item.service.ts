@@ -53,7 +53,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
 
     const savedResult = await manager.save(entity);
 
-    if (dto.containerMenuItems?.length) {
+    if (dto.containerMenuItems && dto.containerMenuItems?.length) {
       savedResult.containerMenuItems =
         await this.containerItemComposer.composeManyNestedEntity(
           dto.containerMenuItems,

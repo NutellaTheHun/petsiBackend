@@ -134,6 +134,27 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         'duplicate ingredient',
       );
 
+      //check if ingredient is a recipe and validate recipe.isIngredient is true. Else throw error.
+      for (const ingredient of dto.ingredients) {
+        if (ingredient.ingredientRecipeId) {
+          const recipe = await this.repo.findOne({
+            where: { id: ingredient.ingredientRecipeId },
+          });
+          if (!recipe) {
+            throw new NotFoundException();
+          }
+          if (!recipe.isIngredient) {
+            errorMap.addChild(
+              'ingredients',
+              new ValidationErrorMap(
+                undefined,
+                'this recipe is not set to be an ingredient',
+              ),
+            );
+          }
+        }
+      }
+
       // nested validator call
       await this.ingredientValidator.validateManyNestedNode(
         'ingredients',
