@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
-import { InventoryAreaService } from '../services/inventory-area.service';
+import { InventoryArea } from '../entities/inventory-area.entity';
 import { AREA_A } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
@@ -14,16 +16,17 @@ describe('inventory area validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryAreaValidator;
-  let service: InventoryAreaService;
+  let areaRepo: Repository<InventoryArea>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryAreasTestingModule();
-    validator = module.get<InventoryAreaValidator>(InventoryAreaValidator);
-    service = module.get<InventoryAreaService>(InventoryAreaService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
     await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
+
+    validator = module.get<InventoryAreaValidator>(InventoryAreaValidator);
+
+    areaRepo = module.get(getRepositoryToken(InventoryArea));
   });
 
   afterAll(async () => {

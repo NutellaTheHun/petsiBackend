@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
-import { InventoryItemPackageService } from '../services/inventory-item-package.service';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { BAG_PKG, PACKAGE_PKG } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
@@ -15,23 +17,21 @@ describe('inventory item package validator', () => {
 
   let validator: InventoryItemPackageValidator;
 
-  let service: InventoryItemPackageService;
+  let packageRepo: Repository<InventoryItemPackage>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
-    validator = module.get<InventoryItemPackageValidator>(
-      InventoryItemPackageValidator,
-    );
-
-    service = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     await testingUtil.initInventoryItemPackageTestDatabase(dbTestContext);
+
+    validator = module.get<InventoryItemPackageValidator>(
+      InventoryItemPackageValidator,
+    );
+
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
   });
 
   afterAll(async () => {

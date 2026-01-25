@@ -1,12 +1,14 @@
 import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { GRAM } from '../../unit-of-measure/utils/constants';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
-import { InventoryItemPackageService } from '../services/inventory-item-package.service';
-import { InventoryItemSizeService } from '../services/inventory-item-size.service';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
 import { FOOD_A, OTHER_PKG } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
@@ -17,27 +19,26 @@ describe('inventory item package validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryItemSizeValidator;
-  let service: InventoryItemSizeService;
+  let sizeRepo: Repository<InventoryItemSize>;
 
-  let unitService: UnitOfMeasureService;
-  let packageService: InventoryItemPackageService;
+  let unitRepo: Repository<UnitOfMeasure>;
+  let packageRepo: Repository<InventoryItemPackage>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
-    validator = module.get<InventoryItemSizeValidator>(
-      InventoryItemSizeValidator,
-    );
-    service = module.get<InventoryItemSizeService>(InventoryItemSizeService);
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    packageService = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+
+    validator = module.get<InventoryItemSizeValidator>(
+      InventoryItemSizeValidator,
+    );
+
+    sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+    unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
   });
 
   afterAll(async () => {

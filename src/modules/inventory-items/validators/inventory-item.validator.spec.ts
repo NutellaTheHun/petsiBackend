@@ -1,16 +1,17 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { KILOGRAM, POUND } from '../../unit-of-measure/utils/constants';
-import { NestedInventoryItemSizeDto } from '../dto/inventory-item-size/nested-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
-import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
-import { InventoryItemPackageService } from '../services/inventory-item-package.service';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
-import { InventoryItemService } from '../services/inventory-item.service';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
 import {
   BOX_PKG,
   CAN_PKG,
@@ -27,34 +28,28 @@ describe('inventory item validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryItemValidator;
-  let itemService: InventoryItemService;
+  let itemRepo: Repository<InventoryItem>;
 
-  let categoryService: InventoryItemCategoryService;
-  let vendorService: InventoryItemVendorService;
-  let unitService: UnitOfMeasureService;
-  let packageService: InventoryItemPackageService;
+  let categoryRepo: Repository<InventoryItemCategory>;
+  let vendorRepo: Repository<InventoryItemVendor>;
+  let unitRepo: Repository<UnitOfMeasure>;
+  let packageRepo: Repository<InventoryItemPackage>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
-    validator = module.get<InventoryItemValidator>(InventoryItemValidator);
-
-    itemService = module.get<InventoryItemService>(InventoryItemService);
-    categoryService = module.get<InventoryItemCategoryService>(
-      InventoryItemCategoryService,
-    );
-    vendorService = module.get<InventoryItemVendorService>(
-      InventoryItemVendorService,
-    );
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    packageService = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+
+    validator = module.get<InventoryItemValidator>(InventoryItemValidator);
+
+    itemRepo = module.get(getRepositoryToken(InventoryItem));
+    categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+    vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+    unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
   });
 
   afterAll(async () => {

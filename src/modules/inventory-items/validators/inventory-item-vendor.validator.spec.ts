@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { VENDOR_A, VENDOR_B } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
@@ -14,22 +16,20 @@ describe('inventory item vendor validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryItemVendorValidator;
-  let service: InventoryItemVendorService;
+  let vendorRepo: Repository<InventoryItemVendor>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
     validator = module.get<InventoryItemVendorValidator>(
       InventoryItemVendorValidator,
     );
-    service = module.get<InventoryItemVendorService>(
-      InventoryItemVendorService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
+
+    vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
   });
 
   afterAll(async () => {

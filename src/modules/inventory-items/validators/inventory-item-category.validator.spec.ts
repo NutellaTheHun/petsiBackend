@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
-import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
 import { DAIRY_CAT, DRYGOOD_CAT, FOOD_CAT } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
@@ -14,22 +16,21 @@ describe('inventory item category validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryItemCategoryValidator;
-  let service: InventoryItemCategoryService;
+  let categoryRepo: Repository<InventoryItemCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryItemTestingModule();
-    validator = module.get<InventoryItemCategoryValidator>(
-      InventoryItemCategoryValidator,
-    );
-    service = module.get<InventoryItemCategoryService>(
-      InventoryItemCategoryService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryItemTestingUtil>(
       InventoryItemTestingUtil,
     );
     await testingUtil.initInventoryItemCategoryTestDatabase(dbTestContext);
+
+    validator = module.get<InventoryItemCategoryValidator>(
+      InventoryItemCategoryValidator,
+    );
+
+    categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
   });
 
   afterAll(async () => {

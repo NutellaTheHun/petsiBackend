@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DataSource, EntityManager, Repository } from 'typeorm';
@@ -5,7 +6,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
-import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
+import { REC_CAT_A } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeCategoryService } from './recipe-category.service';
@@ -27,12 +28,12 @@ class TestableRecipeCategoryService extends RecipeCategoryService {
 }
 
 describe('recipe category service', () => {
-  let categoryService: RecipeCategoryService;
+  let categoryService: TestableRecipeCategoryService;
   let testUtil: RecipeTestUtil;
   let dbTestContext: DatabaseTestContext;
   let dataSource: DataSource;
 
-  let recipeSubCategoryRepo: Repository<RecipeSubCategory>;
+  let categoryRepo: Repository<RecipeCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule({
@@ -49,7 +50,7 @@ describe('recipe category service', () => {
     categoryService = module.get(
       RecipeCategoryService,
     ) as TestableRecipeCategoryService;
-    recipeSubCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+    categoryRepo = module.get(getRepositoryToken(RecipeCategory));
 
     dataSource = module.get(DataSource);
   });
@@ -62,54 +63,151 @@ describe('recipe category service', () => {
     expect(categoryService).toBeDefined();
   });
 
-  // test createEntity() with NestedCreateRecipeIngredientDtos
-  it('should create category with NestedCreateRecipeIngredientDtos', async () => {});
+  // test createEntity() with NestedCreateRecipeSubCategoryDtos
+  it('should create category', async () => {
+    const dto: CreateRecipeCategoryDto = {
+      name: 'Pies',
+    };
 
-  // test createEntity() with NestedCreateRecipeIngredientDtos and NestedCreateRecipeSubCategoryDtos
-  it('should create category with NestedCreateRecipeIngredientDtos and NestedCreateRecipeSubCategoryDtos', async () => {});
+    await dataSource.transaction(async (manager) => {
+      const result = await categoryService.createEntityForTest(dto, manager);
+      expect(result).not.toBeNull();
+      expect(result.id).toBeDefined();
+      expect(result.name).toEqual(dto.name);
+    });
+  });
+
+  // test createEntity() with multiple NestedCreateRecipeSubCategoryDtos
+  it('should create category with  NestedCreateRecipeSubCategoryDtos', async () => {
+    const dto: CreateRecipeCategoryDto = {
+      name: 'Pastries',
+      subCategories: [
+        { createId: 'c1', name: 'A' },
+        { createId: 'c2', name: 'B' },
+      ],
+    };
+
+    await dataSource.transaction(async (manager) => {
+      const result = await categoryService.createEntityForTest(dto, manager);
+      expect(result).not.toBeNull();
+      expect(result.subCategories?.length).toBe(2);
+      expect(result.subCategories?.map((s) => s.name).sort()).toEqual([
+        'A',
+        'B',
+      ]);
+    });
+  });
 
   // test updateEntity()
-  it('should update category', async () => {});
+  it('should update category', async () => {
+    const cat = await categoryRepo.findOne({ where: { name: REC_CAT_A } });
+    if (!cat) throw new Error('category not found');
 
-  // test updateEntity() with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto
-  it('should update category with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto', async () => {});
+    const dto: UpdateRecipeCategoryDto = { name: 'Updated Category A' };
 
-  // test updateEntity() with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto and NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeSubCategoryDto
-  it('should update category with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto and NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeSubCategoryDto', async () => {});
+    await dataSource.transaction(async (manager) => {
+      await categoryService.updateEntityForTest(dto, cat, manager);
+    });
+
+    const updated = await categoryRepo.findOne({ where: { id: cat.id } });
+    if (!updated) throw new Error('result not found');
+    expect(updated.name).toEqual(dto.name);
+  });
+
+  // test updateEntity() with NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeSubCategoryDto
+  it('should update category with NestedUpdateRecipeSubCategoryDto and NestedCreateRecipeIngredientDto', async () => {
+    const cat = await categoryRepo.findOne({
+      where: { name: 'Updated Category A' },
+      relations: ['subCategories'],
+    });
+    if (!cat?.subCategories?.length)
+      throw new Error('category with subCategories not found');
+    const existing = cat.subCategories[0];
+
+    const dto: UpdateRecipeCategoryDto = {
+      subCategories: [
+        { id: existing.id, name: 'Updated Sub' },
+        { createId: 'c2', name: 'New Sub' },
+      ],
+    };
+
+    await dataSource.transaction(async (manager) => {
+      await categoryService.updateEntityForTest(dto, cat, manager);
+    });
+
+    const updated = await categoryRepo.findOne({
+      where: { id: cat.id },
+      relations: ['subCategories'],
+    });
+    if (!updated) throw new Error('result not found');
+    const updatedSub = updated.subCategories?.find((s) => s.id === existing.id);
+    expect(updatedSub?.name).toEqual('Updated Sub');
+    const newSub = updated.subCategories?.find((s) => s.name === 'New Sub');
+    expect(newSub).toBeDefined();
+    expect(newSub?.id).toBeDefined();
+  });
 
   // test findAll()
-  it('should find all categories', async () => {});
+  it('should find all categories', async () => {
+    const repoResult = await categoryRepo.find();
+    const serviceResult = await categoryService.findAll({ limit: 100 });
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.items.length).toEqual(repoResult.length);
+  });
 
-  // test findAll() with search by ingredient name
-  it('should find all categories with search by ingredient name', async () => {});
-
-  // test findAll() with search by subCategory name
-  it('should find all categories with search by subCategory name', async () => {});
-
-  // test findAll() with search by inventory item name
-  it('should find all categories with filter by inventory item name', async () => {});
-
-  // test findAll() with filter by category name
-  it('should find all categories with filter by category name', async () => {});
-
-  // test findAll() with filter by sub category name
-  it('should find all categories with filter by sub category name', async () => {});
-
-  // test findAll() sortBy recipe name
-  it('should find all categories with sortBy name', async () => {});
-
-  // test findAll() sortBy category name
-  it('should find all categories with sortBy category name', async () => {});
-
-  // test findAll() sortBy sub category name
-  it('should find all categories with sortBy sub category name', async () => {});
+  // test findAll() sortBy name (category name; supported by applySortBy)
+  it('should find all categories with sortBy name', async () => {
+    const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
+    const serviceResult = await categoryService.findAll({
+      sortBy: 'name',
+      sortOrder: 'DESC',
+      limit: 100,
+    });
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.items.length).toEqual(repoResult.length);
+    if (repoResult.length > 0) {
+      expect(serviceResult?.items[0].name).toEqual(repoResult[0].name);
+    }
+  });
 
   // test findOne()
-  it('should find one category', async () => {});
+  it('should find one category', async () => {
+    const [cat] = await categoryRepo.find({ take: 1 });
+    if (!cat) throw new Error('category not found');
+    const serviceResult = await categoryService.findOne(cat.id);
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.id).toEqual(cat.id);
+  });
 
   // test findOne() with relations
-  it('should find one category with relations', async () => {});
+  it('should find one category with relations', async () => {
+    const [cat] = await categoryRepo.find({ take: 1 });
+    if (!cat) throw new Error('category not found');
+    const serviceResult = await categoryService.findOne(cat.id, [
+      'subCategories',
+      'recipes',
+    ]);
+    expect(serviceResult).not.toBeNull();
+    expect(serviceResult?.id).toEqual(cat.id);
+    expect(serviceResult?.subCategories).toBeDefined();
+    expect(Array.isArray(serviceResult?.subCategories)).toBe(true);
+    expect(serviceResult?.recipes).toBeDefined();
+    expect(Array.isArray(serviceResult?.recipes)).toBe(true);
+  });
 
   // test remove()
-  it('should remove category', async () => {});
+  it('should remove category', async () => {
+    let id: number;
+    await dataSource.transaction(async (manager) => {
+      const created = await (
+        categoryService as TestableRecipeCategoryService
+      ).createEntityForTest({ name: 'Category To Remove' }, manager);
+      id = created.id;
+    });
+    const deleteResult = await categoryService.remove(id!);
+    expect(deleteResult).toBe(true);
+    await expect(categoryService.findOne(id!)).rejects.toThrow(
+      NotFoundException,
+    );
+  });
 });

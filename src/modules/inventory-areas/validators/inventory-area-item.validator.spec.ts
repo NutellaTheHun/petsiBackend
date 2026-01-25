@@ -1,11 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { NestedInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-inventory-item-size.dto';
-import { InventoryItemPackageService } from '../../inventory-items/services/inventory-item-package.service';
-import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
+import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import {
   BAG_PKG,
   BOX_PKG,
@@ -14,7 +15,7 @@ import {
   FOOD_A,
   OTHER_A,
 } from '../../inventory-items/utils/constants';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import {
   FL_OUNCE,
   KILOGRAM,
@@ -22,8 +23,8 @@ import {
 } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
-import { InventoryAreaCountService } from '../services/inventory-area-count.service';
-import { InventoryAreaItemService } from '../services/inventory-area-item.service';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaItemValidator } from './inventory-area-item.validator';
@@ -34,42 +35,32 @@ describe('inventory area item validator', () => {
 
   let validator: InventoryAreaItemValidator;
 
-  let areaItemservice: InventoryAreaItemService;
-  let areaCountservice: InventoryAreaCountService;
-  let itemService: InventoryItemService;
-  let itemSizeService: InventoryItemSizeService;
-  let unitService: UnitOfMeasureService;
-  let packageService: InventoryItemPackageService;
+  let areaItemRepo: Repository<InventoryAreaItem>;
+  let areaCountRepo: Repository<InventoryAreaCount>;
+  let itemRepo: Repository<InventoryItem>;
+  let itemSizeRepo: Repository<InventoryItemSize>;
+
+  let measureRepo: Repository<UnitOfMeasure>;
+  let packageRepo: Repository<InventoryItemPackage>;
 
   let testCountId: number;
 
   beforeAll(async () => {
     const module: TestingModule = await getInventoryAreasTestingModule();
+    testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+    await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
+    dbTestContext = new DatabaseTestContext();
+
     validator = module.get<InventoryAreaItemValidator>(
       InventoryAreaItemValidator,
     );
 
-    areaItemservice = module.get<InventoryAreaItemService>(
-      InventoryAreaItemService,
-    );
-    areaCountservice = module.get<InventoryAreaCountService>(
-      InventoryAreaCountService,
-    );
-    itemService = module.get<InventoryItemService>(InventoryItemService);
-    itemSizeService = module.get<InventoryItemSizeService>(
-      InventoryItemSizeService,
-    );
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    packageService = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
-
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
-    await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
-
-    const counts = await areaCountservice.findAll();
-    testCountId = counts.items[0].id;
+    areaItemRepo = module.get(getRepositoryToken(InventoryAreaItem));
+    areaCountRepo = module.get(getRepositoryToken(InventoryAreaCount));
+    itemRepo = module.get(getRepositoryToken(InventoryItem));
+    itemSizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+    measureRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
   });
 
   afterAll(async () => {
