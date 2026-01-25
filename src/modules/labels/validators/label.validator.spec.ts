@@ -1,12 +1,14 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a } from '../../menu-items/utils/constants';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
-import { LabelTypeService } from '../services/label-type.service';
-import { LabelService } from '../services/label.service';
+import { LabelType } from '../entities/label-type.entity';
+import { Label } from '../entities/label.entity';
 import { type_b, type_c } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
@@ -17,21 +19,21 @@ describe('label validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: LabelValidator;
-  let labelService: LabelService;
-  let labelTypeService: LabelTypeService;
-  let itemService: MenuItemService;
+  let labelRepo: Repository<Label>;
+  let labelTypeRepo: Repository<LabelType>;
+  let itemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getLabelsTestingModule();
-    validator = module.get<LabelValidator>(LabelValidator);
-
-    labelService = module.get<LabelService>(LabelService);
-    labelTypeService = module.get<LabelTypeService>(LabelTypeService);
-    itemService = module.get<MenuItemService>(MenuItemService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
     await testingUtil.initLabelTestDatabase(dbTestContext);
+
+    validator = module.get<LabelValidator>(LabelValidator);
+
+    labelRepo = module.get(getRepositoryToken(Label));
+    labelTypeRepo = module.get(getRepositoryToken(LabelType));
+    itemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {

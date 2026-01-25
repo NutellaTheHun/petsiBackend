@@ -1,11 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
-import { NestedRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-recipe-sub-category.dto';
-import { RecipeCategoryService } from '../services/recipe-category.service';
+import { RecipeCategory } from '../entities/recipe-category.entity';
 import { REC_CAT_A, REC_CAT_B } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
@@ -16,16 +17,17 @@ describe('recipe category validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: RecipeCategoryValidator;
-  let service: RecipeCategoryService;
+  let categoryRepo: Repository<RecipeCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
-    validator = module.get<RecipeCategoryValidator>(RecipeCategoryValidator);
-    service = module.get<RecipeCategoryService>(RecipeCategoryService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
     await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
+
+    validator = module.get<RecipeCategoryValidator>(RecipeCategoryValidator);
+
+    categoryRepo = module.get(getRepositoryToken(RecipeCategory));
   });
 
   afterAll(async () => {

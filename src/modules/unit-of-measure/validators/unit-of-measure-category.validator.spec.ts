@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
-import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { VOLUME, WEIGHT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
@@ -14,22 +16,21 @@ describe('unit of measure category validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: UnitOfMeasureCategoryValidator;
-  let service: UnitOfMeasureCategoryService;
+  let categoryRepo: Repository<UnitOfMeasureCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-    validator = module.get<UnitOfMeasureCategoryValidator>(
-      UnitOfMeasureCategoryValidator,
-    );
-    service = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<UnitOfMeasureTestingUtil>(
       UnitOfMeasureTestingUtil,
     );
     await testingUtil.initUnitCategoryTestDatabase(dbTestContext);
+
+    validator = module.get<UnitOfMeasureCategoryValidator>(
+      UnitOfMeasureCategoryValidator,
+    );
+
+    categoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
   });
 
   afterAll(async () => {

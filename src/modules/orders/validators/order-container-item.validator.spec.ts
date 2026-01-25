@@ -1,14 +1,15 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemContainerOptionsService } from '../../menu-items/services/menu-item-container-options.service';
-import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_b, item_f } from '../../menu-items/utils/constants';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
-import { OrderContainerItemService } from '../services/order-container-item.service';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderContainerItem } from '../entities/order-container-item.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderContainerItemValidator } from './order-container-item.validator';
@@ -18,30 +19,25 @@ describe('order container item validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: OrderContainerItemValidator;
-  let containerService: OrderContainerItemService;
-  let orderItemService: OrderMenuItemService;
-  let menuItemService: MenuItemService;
-  let sizeService: MenuItemSizeService;
-  let optionsService: MenuItemContainerOptionsService;
+  let containerItemRepo: Repository<OrderContainerItem>;
+  let orderItemRepo: Repository<OrderMenuItem>;
+  let menuItemRepo: Repository<MenuItem>;
+  let sizeRepo: Repository<MenuItemSize>;
 
   beforeAll(async () => {
     const module: TestingModule = await getOrdersTestingModule();
-    validator = module.get<OrderContainerItemValidator>(
-      OrderContainerItemValidator,
-    );
-    containerService = module.get<OrderContainerItemService>(
-      OrderContainerItemService,
-    );
-    orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
-    menuItemService = module.get<MenuItemService>(MenuItemService);
-    sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
-    optionsService = module.get<MenuItemContainerOptionsService>(
-      MenuItemContainerOptionsService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
+
+    validator = module.get<OrderContainerItemValidator>(
+      OrderContainerItemValidator,
+    );
+
+    containerItemRepo = module.get(getRepositoryToken(OrderContainerItem));
+    orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
+    sizeRepo = module.get(getRepositoryToken(MenuItemSize));
   });
 
   afterAll(async () => {

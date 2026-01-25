@@ -1,17 +1,18 @@
 import { NotImplementedException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { type_a } from '../../labels/utils/constants';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b, item_c } from '../../menu-items/utils/constants';
-import { NestedOrderMenuItemDto } from '../dto/order-menu-item/nested-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
-import { OrderCategoryService } from '../services/order-category.service';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
-import { OrderService } from '../services/order.service';
+import { OrderCategory } from '../entities/order-category.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderValidator } from './order.validator';
@@ -21,22 +22,24 @@ describe('order validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: OrderValidator;
-  let orderService: OrderService;
-  let categoryService: OrderCategoryService;
-  let orderItemService: OrderMenuItemService;
-  let menuItemService: MenuItemService;
+
+  let orderRepo: Repository<Order>;
+  let categoryRepo: Repository<OrderCategory>;
+  let orderItemRepo: Repository<OrderMenuItem>;
+  let menuItemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getOrdersTestingModule();
-    validator = module.get<OrderValidator>(OrderValidator);
-    orderService = module.get<OrderService>(OrderService);
-    categoryService = module.get<OrderCategoryService>(OrderCategoryService);
-    orderItemService = module.get<OrderMenuItemService>(OrderMenuItemService);
-    menuItemService = module.get<MenuItemService>(MenuItemService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
+
+    validator = module.get<OrderValidator>(OrderValidator);
+
+    orderRepo = module.get(getRepositoryToken(Order));
+    categoryRepo = module.get(getRepositoryToken(OrderCategory));
+    orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {

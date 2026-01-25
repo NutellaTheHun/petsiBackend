@@ -1,11 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
-import { MenuItemService } from '../services/menu-item.service';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
+import { MenuItem } from '../entities/menu-item.entity';
 import { item_a, item_c, SIZE_FOUR } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
@@ -14,26 +16,24 @@ import { MenuItemContainerItemValidator } from './menu-item-container-item.valid
 describe('menu item container item validator', () => {
   let testingUtil: MenuItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
-
   let validator: MenuItemContainerItemValidator;
-  let containerService: MenuItemContainerItemService;
-  let itemService: MenuItemService;
-  let sizeService: MenuItemSizeService;
+  let containerItemRepo: Repository<MenuItemContainerItem>;
+  let itemRepo: Repository<MenuItem>;
+  let sizeRepo: Repository<MenuItemSize>;
 
   beforeAll(async () => {
     const module: TestingModule = await getMenuItemTestingModule();
+    dbTestContext = new DatabaseTestContext();
+    testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+    await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+
     validator = module.get<MenuItemContainerItemValidator>(
       MenuItemContainerItemValidator,
     );
-    containerService = module.get<MenuItemContainerItemService>(
-      MenuItemContainerItemService,
-    );
-    itemService = module.get<MenuItemService>(MenuItemService);
-    sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
 
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-    await testingUtil.initMenuItemContainerTestDatabase(dbTestContext);
+    containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+    itemRepo = module.get(getRepositoryToken(MenuItem));
+    sizeRepo = module.get(getRepositoryToken(MenuItemSize));
   });
 
   afterAll(async () => {

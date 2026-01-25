@@ -1,16 +1,15 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { NestedMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-menu-item-container-item.dto';
-import { NestedMenuItemContainerOptionsDto } from '../dto/menu-item-container-options/nested-menu-item-container-options.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
-import { MenuItemCategoryService } from '../services/menu-item-category.service';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemContainerOptionsService } from '../services/menu-item-container-options.service';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
-import { MenuItemService } from '../services/menu-item.service';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
+import { MenuItem } from '../entities/menu-item.entity';
 import { CAT_BLUE, item_a, item_b, SIZE_THREE } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
@@ -19,33 +18,24 @@ import { MenuItemValidator } from './menu-item.validator';
 describe('menu item validator', () => {
   let testingUtil: MenuItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
-
   let validator: MenuItemValidator;
-  let itemService: MenuItemService;
-  let categoryService: MenuItemCategoryService;
-  let sizeService: MenuItemSizeService;
-  let definedContainerService: MenuItemContainerItemService;
-  let containerOptionsService: MenuItemContainerOptionsService;
+  let itemRepo: Repository<MenuItem>;
+  let categoryRepo: Repository<MenuItemCategory>;
+  let sizeRepo: Repository<MenuItemSize>;
+  let itemContainerRepo: Repository<MenuItemContainerItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getMenuItemTestingModule();
-    validator = module.get<MenuItemValidator>(MenuItemValidator);
-
-    itemService = module.get<MenuItemService>(MenuItemService);
-    categoryService = module.get<MenuItemCategoryService>(
-      MenuItemCategoryService,
-    );
-    sizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
-    definedContainerService = module.get<MenuItemContainerItemService>(
-      MenuItemContainerItemService,
-    );
-    containerOptionsService = module.get<MenuItemContainerOptionsService>(
-      MenuItemContainerOptionsService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-    await testingUtil.initMenuItemContainerTestDatabase(dbTestContext);
+    await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+
+    validator = module.get<MenuItemValidator>(MenuItemValidator);
+
+    itemRepo = module.get(getRepositoryToken(MenuItem));
+    categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+    sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+    itemContainerRepo = module.get(getRepositoryToken(MenuItemContainerItem));
   });
 
   afterAll(async () => {
@@ -238,7 +228,7 @@ describe('menu item validator', () => {
   });
 
   it('should pass update: defined container', async () => {
-    const containerRequest = await definedContainerService.findAll({
+    const containerRequest = await itemContainerService.findAll({
       relations: ['parentContainer'],
     });
     if (!containerRequest) {

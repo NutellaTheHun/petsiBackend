@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
-import { LabelTypeService } from '../services/label-type.service';
+import { LabelType } from '../entities/label-type.entity';
 import { type_a, type_b } from '../utils/constants';
 import { getLabelsTestingModule } from '../utils/label-testing.module';
 import { LabelTestingUtil } from '../utils/label-testing.util';
@@ -14,16 +16,17 @@ describe('label type validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: LabelTypeValidator;
-  let service: LabelTypeService;
+  let typeRepo: Repository<LabelType>;
 
   beforeAll(async () => {
     const module: TestingModule = await getLabelsTestingModule();
-    validator = module.get<LabelTypeValidator>(LabelTypeValidator);
-    service = module.get<LabelTypeService>(LabelTypeService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
     await testingUtil.initLabelTypeTestDatabase(dbTestContext);
+
+    validator = module.get<LabelTypeValidator>(LabelTypeValidator);
+
+    typeRepo = module.get(getRepositoryToken(LabelType));
   });
 
   afterAll(async () => {

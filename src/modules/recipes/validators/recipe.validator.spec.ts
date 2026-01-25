@@ -1,17 +1,19 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_B } from '../../inventory-items/utils/constants';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { POUND } from '../../unit-of-measure/utils/constants';
-import { NestedRecipeIngredientDto } from '../dto/recipe-ingredient/nested-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
-import { RecipeCategoryService } from '../services/recipe-category.service';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
-import { RecipeService } from '../services/recipe.service';
+import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
+import { Recipe } from '../entities/recipe.entity';
 import { REC_A, REC_B, REC_C, REC_CAT_A } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
@@ -23,27 +25,27 @@ describe('recipe validator', () => {
 
   let validator: RecipeValidator;
 
-  let recipeService: RecipeService;
-  let categoryService: RecipeCategoryService;
-  let subCategoryService: RecipeSubCategoryService;
-  let measureService: UnitOfMeasureService;
-  let inventoryService: InventoryItemService;
+  let recipeRepo: Repository<Recipe>;
+  let categoryRepo: Repository<RecipeCategory>;
+  let subCategoryRepo: Repository<RecipeSubCategory>;
+  let ingredientRepo: Repository<RecipeIngredient>;
+  let unitOfMeasureRepo: Repository<UnitOfMeasure>;
+  let inventoryItemRepo: Repository<InventoryItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
-    validator = module.get<RecipeValidator>(RecipeValidator);
-
-    recipeService = module.get<RecipeService>(RecipeService);
-    categoryService = module.get<RecipeCategoryService>(RecipeCategoryService);
-    subCategoryService = module.get<RecipeSubCategoryService>(
-      RecipeSubCategoryService,
-    );
-    measureService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    inventoryService = module.get<InventoryItemService>(InventoryItemService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
     await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
+
+    validator = module.get<RecipeValidator>(RecipeValidator);
+
+    recipeRepo = module.get(getRepositoryToken(Recipe));
+    categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+    subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+    ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
+    unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
   });
 
   afterAll(async () => {

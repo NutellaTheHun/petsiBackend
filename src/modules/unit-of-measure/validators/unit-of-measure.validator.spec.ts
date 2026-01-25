@@ -1,10 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
-import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
-import { UnitOfMeasureService } from '../services/unit-of-measure.service';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { FL_OUNCE, GALLON, GRAM, OUNCE_ABBREV, UNIT } from '../utils/constants';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
 import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
@@ -15,22 +17,21 @@ describe('unit of measure validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: UnitOfMeasureValidator;
-  let unitService: UnitOfMeasureService;
-  let categoryService: UnitOfMeasureCategoryService;
+  let unitRepo: Repository<UnitOfMeasure>;
+  let categoryRepo: Repository<UnitOfMeasureCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getUnitOfMeasureTestingModule();
-    validator = module.get<UnitOfMeasureValidator>(UnitOfMeasureValidator);
-    unitService = module.get<UnitOfMeasureService>(UnitOfMeasureService);
-    categoryService = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
-    );
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<UnitOfMeasureTestingUtil>(
       UnitOfMeasureTestingUtil,
     );
     await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
+
+    validator = module.get<UnitOfMeasureValidator>(UnitOfMeasureValidator);
+
+    unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    categoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
   });
 
   afterAll(async () => {

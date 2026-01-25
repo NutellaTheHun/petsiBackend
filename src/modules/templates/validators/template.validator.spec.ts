@@ -1,13 +1,14 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_b } from '../../menu-items/utils/constants';
-import { NestedTemplateMenuItemDto } from '../dto/template-menu-item/nested-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
-import { TemplateService } from '../services/template.service';
+import { Template } from '../entities/template.entity';
 import { template_a, template_b } from '../utils/constants';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
@@ -18,19 +19,19 @@ describe('template validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: TemplateValidator;
-  let templateService: TemplateService;
-  let menuItemService: MenuItemService;
+  let templateRepo: Repository<Template>;
+  let menuItemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getTemplateTestingModule();
-    validator = module.get<TemplateValidator>(TemplateValidator);
-
-    templateService = module.get<TemplateService>(TemplateService);
-    menuItemService = module.get<MenuItemService>(MenuItemService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
     await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
+
+    validator = module.get<TemplateValidator>(TemplateValidator);
+
+    templateRepo = module.get(getRepositoryToken(Template));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {

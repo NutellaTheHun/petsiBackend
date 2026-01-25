@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { UserService } from '../services/user.service';
+import { User } from '../entities/user.entities';
 import { USER_A, USER_B, USER_C } from '../utils/constants';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
@@ -14,16 +16,17 @@ describe('user validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: UserValidator;
-  let service: UserService;
+  let userRepo: Repository<User>;
 
   beforeAll(async () => {
     const module: TestingModule = await getUserTestingModule();
-    validator = module.get<UserValidator>(UserValidator);
-    service = module.get<UserService>(UserService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<UserTestUtil>(UserTestUtil);
     await testingUtil.initUserTestingDatabase(dbTestContext);
+
+    validator = module.get<UserValidator>(UserValidator);
+
+    userRepo = module.get(getRepositoryToken(User));
   });
 
   afterAll(async () => {

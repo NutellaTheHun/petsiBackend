@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
-import { MenuItemCategoryService } from '../services/menu-item-category.service';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { CAT_BLUE, CAT_GREEN, CAT_RED } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
@@ -14,18 +16,19 @@ describe('menu item category validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: MenuItemCategoryValidator;
-  let service: MenuItemCategoryService;
+  let categoryRepo: Repository<MenuItemCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getMenuItemTestingModule();
-    validator = module.get<MenuItemCategoryValidator>(
-      MenuItemCategoryValidator,
-    );
-    service = module.get<MenuItemCategoryService>(MenuItemCategoryService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await testingUtil.initMenuItemCategoryTestDatabase(dbTestContext);
+
+    validator = module.get<MenuItemCategoryValidator>(
+      MenuItemCategoryValidator,
+    );
+
+    categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
   });
 
   afterAll(async () => {

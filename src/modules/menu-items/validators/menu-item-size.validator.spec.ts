@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { SIZE_FOUR, SIZE_ONE, SIZE_TWO } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
@@ -12,18 +14,18 @@ import { MenuItemSizeValidator } from './menu-item-size.validator';
 describe('menu item size validator', () => {
   let testingUtil: MenuItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
-
   let validator: MenuItemSizeValidator;
-  let service: MenuItemSizeService;
+  let sizeRepo: Repository<MenuItemSize>;
 
   beforeAll(async () => {
     const module: TestingModule = await getMenuItemTestingModule();
-    validator = module.get<MenuItemSizeValidator>(MenuItemSizeValidator);
-    service = module.get<MenuItemSizeService>(MenuItemSizeService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
     await testingUtil.initMenuItemSizeTestDatabase(dbTestContext);
+
+    validator = module.get<MenuItemSizeValidator>(MenuItemSizeValidator);
+
+    sizeRepo = module.get(getRepositoryToken(MenuItemSize));
   });
 
   afterAll(async () => {

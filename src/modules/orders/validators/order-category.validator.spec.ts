@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
-import { OrderCategoryService } from '../services/order-category.service';
+import { OrderCategory } from '../entities/order-category.entity';
 import { TYPE_A, TYPE_B } from '../utils/constants';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
@@ -14,16 +16,17 @@ describe('order category validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: OrderCategoryValidator;
-  let service: OrderCategoryService;
+  let categoryRepo: Repository<OrderCategory>;
 
   beforeAll(async () => {
     const module: TestingModule = await getOrdersTestingModule();
-    validator = module.get<OrderCategoryValidator>(OrderCategoryValidator);
-    service = module.get<OrderCategoryService>(OrderCategoryService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
     await testingUtil.initOrderCategoryTestDatabase(dbTestContext);
+
+    validator = module.get<OrderCategoryValidator>(OrderCategoryValidator);
+
+    categoryRepo = module.get(getRepositoryToken(OrderCategory));
   });
 
   afterAll(async () => {

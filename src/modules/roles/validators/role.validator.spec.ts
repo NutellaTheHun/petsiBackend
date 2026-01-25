@@ -1,9 +1,11 @@
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { ValidationErrorNode } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
-import { RoleService } from '../services/role.service';
+import { Role } from '../entities/role.entity';
 import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../utils/constants';
 import { RoleTestUtil } from '../utils/role-test.util';
 import { getRoleTestingModule } from '../utils/role-testing-module';
@@ -14,16 +16,17 @@ describe('role validator', () => {
   let dbTestContext: DatabaseTestContext;
 
   let validator: RoleValidator;
-  let service: RoleService;
+  let roleRepo: Repository<Role>;
 
   beforeAll(async () => {
     const module: TestingModule = await getRoleTestingModule();
-    validator = module.get<RoleValidator>(RoleValidator);
-    service = module.get<RoleService>(RoleService);
-
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
     await testingUtil.initRoleTestingDatabase(dbTestContext);
+
+    validator = module.get<RoleValidator>(RoleValidator);
+
+    roleRepo = module.get(getRepositoryToken(Role));
   });
 
   afterAll(async () => {
