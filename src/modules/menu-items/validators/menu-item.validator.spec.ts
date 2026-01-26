@@ -6,7 +6,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
-import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { item_a, item_b, item_f, item_g } from '../utils/constants';
@@ -22,7 +21,6 @@ describe('menu item validator', () => {
   let itemRepo: Repository<MenuItem>;
   let categoryRepo: Repository<MenuItemCategory>;
   let sizeRepo: Repository<MenuItemSize>;
-  let itemContainerRepo: Repository<MenuItemContainerItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getMenuItemTestingModule();
@@ -35,7 +33,6 @@ describe('menu item validator', () => {
     itemRepo = module.get(getRepositoryToken(MenuItem));
     categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
     sizeRepo = module.get(getRepositoryToken(MenuItemSize));
-    itemContainerRepo = module.get(getRepositoryToken(MenuItemContainerItem));
   });
 
   afterAll(async () => {
@@ -199,7 +196,12 @@ describe('menu item validator', () => {
     const errors = await validator.validateCreateNode(dto);
     expectValidationMessage(
       errors,
-      [{ prop: 'containerMenuItems' }],
+      [{ prop: 'containerMenuItems', id: 'c1' }],
+      'duplicate container item',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'containerMenuItems', id: 'c2' }],
       'duplicate container item',
     );
   });
@@ -209,8 +211,9 @@ describe('menu item validator', () => {
     if (sizes.length === 0) {
       throw new Error('sizes not found');
     }
+
     const containerItem = await itemRepo.findOne({
-      where: { name: item_f },
+      where: { type: MENU_ITEM_TYPES.CONTAINER },
       relations: ['sizes'],
     });
     if (!containerItem) {
@@ -344,21 +347,29 @@ describe('menu item validator', () => {
       throw new Error('contained item sizes not found');
     }
 
+    const newCategory = await categoryRepo.findOne({});
+    if (!newCategory) {
+      throw new Error('new category not found');
+    }
+
     const dto: UpdateMenuItemDto = {
       name: 'Updated Item Name',
+      type: MENU_ITEM_TYPES.CONTAINER,
+      categoryId: newCategory.id,
+      variableMaxAmount: 6,
       containerMenuItems:
         itemToUpdate.containerMenuItems &&
         itemToUpdate.containerMenuItems.length > 0
           ? [
               {
                 id: itemToUpdate.containerMenuItems[0].id,
-                quantity: 5,
+                quantity: 6,
               },
               {
                 createId: 'c1',
                 containedMenuItemId: containedItem.id,
                 containedItemSizeId: containedItem.sizes[0].id,
-                quantity: 3,
+                quantity: 6,
               },
             ]
           : [
@@ -366,7 +377,7 @@ describe('menu item validator', () => {
                 createId: 'c1',
                 containedMenuItemId: containedItem.id,
                 containedItemSizeId: containedItem.sizes[0].id,
-                quantity: 3,
+                quantity: 6,
               },
             ],
     };
@@ -473,7 +484,12 @@ describe('menu item validator', () => {
     const errors = await validator.validateUpdateNode(dto, containerItem.id);
     expectValidationMessage(
       errors,
-      [{ prop: 'containerMenuItems' }],
+      [{ prop: 'containerMenuItems', id: 'c1' }],
+      'duplicate container item',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'containerMenuItems', id: 'c2' }],
       'duplicate container item',
     );
   });

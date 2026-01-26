@@ -28,6 +28,7 @@ export class RecipeIngredientAggregateValidator extends AggregateValidatorBase<R
   ): string {
     return `${entity.ingredientInventoryItem?.id ?? 0}:${entity.ingredientRecipe?.id ?? 0}`;
   }
+
   private dtoIngredientKey(dto: RecipeIngredientEntity['__NcDto']): string {
     return `${dto.ingredientInventoryItemId ?? 0}:${dto.ingredientRecipeId ?? 0}`;
   }

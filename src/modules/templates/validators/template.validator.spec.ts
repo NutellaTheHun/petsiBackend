@@ -275,7 +275,12 @@ describe('template validator', () => {
     const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
     expectValidationMessage(
       errors,
-      [{ prop: 'templateMenuItems' }],
+      [{ prop: 'templateMenuItems', id: 'c1' }],
+      'duplicate menu item on template',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'templateMenuItems', id: 'c2' }],
       'duplicate menu item on template',
     );
   });
@@ -313,7 +318,12 @@ describe('template validator', () => {
     const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
     expectValidationMessage(
       errors,
-      [{ prop: 'templateMenuItems' }],
+      [{ prop: 'templateMenuItems', id: 'c1' }],
+      'duplicate table position on template',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'templateMenuItems', id: 'c2' }],
       'duplicate table position on template',
     );
   });

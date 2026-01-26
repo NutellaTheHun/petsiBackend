@@ -1311,7 +1311,18 @@ describe('order validator', () => {
     const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
     expectValidationMessage(
       errors,
-      [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems' }],
+      [
+        { prop: 'orderedItems', id: 'c1' },
+        { prop: 'containerOrderMenuItems', id: 'c2' },
+      ],
+      'duplicate container item',
+    );
+    expectValidationMessage(
+      errors,
+      [
+        { prop: 'orderedItems', id: 'c1' },
+        { prop: 'containerOrderMenuItems', id: 'c3' },
+      ],
       'duplicate container item',
     );
   });

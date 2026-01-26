@@ -431,7 +431,12 @@ describe('recipe validator', () => {
     const errors = await validator.validateCreateNode(dto);
     expectValidationMessage(
       errors,
-      [{ prop: 'ingredients' }],
+      [{ prop: 'ingredients', id: 'c1' }],
+      'duplicate ingredient',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'ingredients', id: 'c2' }],
       'duplicate ingredient',
     );
   });
@@ -839,7 +844,12 @@ describe('recipe validator', () => {
     const errors = await validator.validateUpdateNode(dto, recipeToUpdate.id);
     expectValidationMessage(
       errors,
-      [{ prop: 'ingredients' }],
+      [{ prop: 'ingredients', id: 'c1' }],
+      'duplicate ingredient',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'ingredients', id: 'c2' }],
       'duplicate ingredient',
     );
   });

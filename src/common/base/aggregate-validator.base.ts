@@ -58,12 +58,22 @@ export abstract class AggregateValidatorBase<
     rootErrMap: ValidationErrorMap,
     errMsg: string,
   ): void {
-    const seen = new Set<string>();
-    for (const key of this.identities.values()) {
+    // mappping of key to id.
+    const seen = new Map<string, string | number>();
+    for (const [id, key] of this.identities) {
       if (seen.has(key)) {
-        rootErrMap.addChild(field, new ValidationErrorMap(undefined, errMsg));
+        // add id of duplicate
+        rootErrMap.addChild(field, new ValidationErrorMap(id, errMsg));
+        // add id of first seen duplicate
+        const firstSeenId = seen.get(key);
+        if (firstSeenId) {
+          rootErrMap.addChild(
+            field,
+            new ValidationErrorMap(firstSeenId, errMsg),
+          );
+        }
       }
-      seen.add(key);
+      seen.set(key, id);
     }
   }
 }

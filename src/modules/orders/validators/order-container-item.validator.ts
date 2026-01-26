@@ -99,15 +99,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
       );
     }
 
-    // validate parent item / size combination
-    this.helper.enforceInList(
-      parentOrderMenuItem.size.id,
-      parentMenuItem.sizes.map((x) => x.id),
-      'parentItemSize',
-      errorMap,
-      'Invalid size',
-    );
-
     // Validate contained item and size is valid in parent container
     const containedItemSizeCombination = `${dto.containedMenuItemId}:${dto.containedItemSizeId}`;
     this.helper.enforceInList(

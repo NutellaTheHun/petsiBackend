@@ -98,7 +98,11 @@ describe('recipe category validator', () => {
       where: { name: REC_CAT_A },
       relations: ['subCategories'],
     });
-    if (!existingCategory || !existingCategory.subCategories || existingCategory.subCategories.length === 0) {
+    if (
+      !existingCategory ||
+      !existingCategory.subCategories ||
+      existingCategory.subCategories.length === 0
+    ) {
       throw new Error('existing category with subcategories not found');
     }
 
@@ -113,10 +117,11 @@ describe('recipe category validator', () => {
     };
 
     const errors = await validator.validateCreateNode(dto);
-    // The nested validator should catch this, but since nested create doesn't validate uniqueness,
-    // this test might need adjustment based on actual validator behavior
-    // For now, checking that validation runs
-    expect(errors).not.toBeNull();
+    expectValidationMessage(
+      errors,
+      [{ prop: 'subCategories', id: 'c1' }, { prop: 'name' }],
+      'Recipe subcategory already exists.',
+    );
   });
 
   // Update Validation Tests
@@ -131,29 +136,28 @@ describe('recipe category validator', () => {
 
     const dto: UpdateRecipeCategoryDto = {
       name: 'Updated Recipe Category',
-      subCategories: categoryToUpdate.subCategories && categoryToUpdate.subCategories.length > 0
-        ? [
-            {
-              id: categoryToUpdate.subCategories[0].id,
-              name: 'Updated Sub Category',
-            },
-            {
-              createId: 'c1',
-              name: 'New Sub Category',
-            },
-          ]
-        : [
-            {
-              createId: 'c1',
-              name: 'New Sub Category',
-            },
-          ],
+      subCategories:
+        categoryToUpdate.subCategories &&
+        categoryToUpdate.subCategories.length > 0
+          ? [
+              {
+                id: categoryToUpdate.subCategories[0].id,
+                name: 'Updated Sub Category',
+              },
+              {
+                createId: 'c1',
+                name: 'New Sub Category',
+              },
+            ]
+          : [
+              {
+                createId: 'c1',
+                name: 'New Sub Category',
+              },
+            ],
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      categoryToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
     expect(errors).toBeNull();
   });
 
@@ -170,10 +174,7 @@ describe('recipe category validator', () => {
       name: existingCategory.name,
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      categoryToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
     expectValidationMessage(
       errors,
       [{ prop: 'name' }],
@@ -202,10 +203,7 @@ describe('recipe category validator', () => {
       ],
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      categoryToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
     expectValidationMessage(
       errors,
       [{ prop: 'subCategories' }],
@@ -221,7 +219,10 @@ describe('recipe category validator', () => {
     if (!categoryToUpdate) {
       throw new Error('category not found');
     }
-    if (!categoryToUpdate.subCategories || categoryToUpdate.subCategories.length === 0) {
+    if (
+      !categoryToUpdate.subCategories ||
+      categoryToUpdate.subCategories.length === 0
+    ) {
       throw new Error('subcategories not found');
     }
 
@@ -235,10 +236,7 @@ describe('recipe category validator', () => {
       ],
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      categoryToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
     // The nested validator should catch this
     expect(errors).not.toBeNull();
   });

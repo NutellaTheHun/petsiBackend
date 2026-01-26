@@ -223,7 +223,12 @@ describe('order menu item validator', () => {
     const errors = await validator.validateCreateNode(dto);
     expectValidationMessage(
       errors,
-      [{ prop: 'containerOrderMenuItems' }],
+      [{ prop: 'containerOrderMenuItems', id: 'c1' }],
+      'duplicate container item',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'containerOrderMenuItems', id: 'c2' }],
       'duplicate container item',
     );
   });
@@ -588,7 +593,12 @@ describe('order menu item validator', () => {
     );
     expectValidationMessage(
       errors,
-      [{ prop: 'containerOrderMenuItems' }],
+      [{ prop: 'containerOrderMenuItems', id: 'c1' }],
+      'duplicate container item',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'containerOrderMenuItems', id: 'c2' }],
       'duplicate container item',
     );
   });

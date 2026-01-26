@@ -44,12 +44,16 @@ export class TemplateMenuItemAggregateValidator extends AggregateValidatorBase<T
     errMap: ValidationErrorMap,
     errMsg: string,
   ): void {
-    const seen = new Set<string>();
+    const seen = new Map<string, string | number>();
     for (const [id, key] of this.identities) {
       if (seen.has(key)) {
         errMap.addChild(field, new ValidationErrorMap(id, errMsg));
+        const firstSeenId = seen.get(key);
+        if (firstSeenId) {
+          errMap.addChild(field, new ValidationErrorMap(firstSeenId, errMsg));
+        }
       }
-      seen.add(key);
+      seen.set(key, id);
     }
   }
 
@@ -66,12 +70,16 @@ export class TemplateMenuItemAggregateValidator extends AggregateValidatorBase<T
     errMap: ValidationErrorMap,
     errMsg: string,
   ): void {
-    const seen = new Set<string>();
+    const seen = new Map<string, string | number>();
     for (const [id, key] of this.identities) {
       if (seen.has(key)) {
         errMap.addChild(field, new ValidationErrorMap(id, errMsg));
+        const firstSeenId = seen.get(key);
+        if (firstSeenId) {
+          errMap.addChild(field, new ValidationErrorMap(firstSeenId, errMsg));
+        }
       }
-      seen.add(key);
+      seen.set(key, id);
     }
   }
 }
