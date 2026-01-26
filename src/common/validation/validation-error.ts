@@ -110,3 +110,54 @@ export class ValidationErrorMap {
     return result;
   }
 }
+
+export type ErrorSelector =
+  | { prop: string }
+  | { prop: string; id?: string | number };
+
+export function findValidationErrorsByPath(
+  root: ValidationErrorResponse | null | undefined,
+  path: ErrorSelector[],
+): ValidationErrorResponse[] {
+  if (!root) return [];
+
+  let current: ValidationErrorResponse[] = [root];
+
+  for (const selector of path) {
+    const next: ValidationErrorResponse[] = [];
+
+    for (const node of current) {
+      if (!node.errors) continue;
+
+      const children = node.errors[selector.prop] ?? [];
+
+      if ('id' in selector && selector.id !== undefined) {
+        next.push(...children.filter((child) => child.id === selector.id));
+      } else {
+        next.push(...children);
+      }
+    }
+
+    current = next;
+  }
+
+  return current;
+}
+
+export function findValidationMessages(
+  root: ValidationErrorResponse | null,
+  path: ErrorSelector[],
+): string[] {
+  return findValidationErrorsByPath(root, path)
+    .map((e) => e.message)
+    .filter((m): m is string => !!m);
+}
+
+export function expectValidationMessage(
+  root: ValidationErrorResponse | null,
+  path: ErrorSelector[],
+  message: string,
+) {
+  const messages = findValidationMessages(root, path);
+  expect(messages).toContain(message);
+}

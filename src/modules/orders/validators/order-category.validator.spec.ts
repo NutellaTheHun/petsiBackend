@@ -1,8 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { expectValidationMessage } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
+import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
+import { TYPE_A } from '../utils/constants';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderCategoryValidator } from './order-category.validator';
@@ -34,12 +38,69 @@ describe('order category validator', () => {
   });
 
   // Create Validation Tests
-  it('successfully validate create: no validation errors', async () => {});
+  it('successfully validate create: no validation errors', async () => {
+    const dto: CreateOrderCategoryDto = {
+      name: 'New Order Category',
+    };
 
-  it('fail validate create: name already exists', async () => {});
+    const errors = await validator.validateCreateNode(dto);
+    expect(errors).toBeNull();
+  });
+
+  it('fail validate create: name already exists', async () => {
+    const dto: CreateOrderCategoryDto = {
+      name: TYPE_A,
+    };
+
+    const errors = await validator.validateCreateNode(dto);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'name' }],
+      'Order category with that name already exists.',
+    );
+  });
 
   // Update Validation Tests
-  it('successfully validate update: no validation errors', async () => {});
+  it('successfully validate update: no validation errors', async () => {
+    const categoryToUpdate = await categoryRepo.findOne({
+      where: { name: TYPE_A },
+    });
+    if (!categoryToUpdate) {
+      throw new Error('category not found');
+    }
 
-  it('fail validate update: name already exists', async () => {});
+    const dto: UpdateOrderCategoryDto = {
+      name: 'Updated Order Category',
+    };
+
+    const errors = await validator.validateUpdateNode(
+      dto,
+      categoryToUpdate.id,
+    );
+    expect(errors).toBeNull();
+  });
+
+  it('fail validate update: name already exists', async () => {
+    const categories = await categoryRepo.find();
+    if (categories.length < 2) {
+      throw new Error('Not enough categories for test');
+    }
+
+    const categoryToUpdate = categories[0];
+    const existingCategory = categories[1];
+
+    const dto: UpdateOrderCategoryDto = {
+      name: existingCategory.name,
+    };
+
+    const errors = await validator.validateUpdateNode(
+      dto,
+      categoryToUpdate.id,
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'name' }],
+      'Order category with that name already exists.',
+    );
+  });
 });

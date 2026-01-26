@@ -1,21 +1,27 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { expectValidationMessage } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { POUND } from '../../unit-of-measure/utils/constants';
+import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
+import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
+import { FOOD_A, PACKAGE_PKG } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemSizeValidator } from './inventory-item-size.validator';
 
-describe('inventory item package validator', () => {
+describe('inventory item size validator', () => {
   let testingUtil: InventoryItemTestingUtil;
   let dbTestContext: DatabaseTestContext;
 
   let validator: InventoryItemSizeValidator;
   let sizeRepo: Repository<InventoryItemSize>;
-
+  let itemRepo: Repository<InventoryItem>;
   let unitRepo: Repository<UnitOfMeasure>;
   let packageRepo: Repository<InventoryItemPackage>;
 
@@ -32,6 +38,7 @@ describe('inventory item package validator', () => {
     );
 
     sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
+    itemRepo = module.get(getRepositoryToken(InventoryItem));
     unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
     packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
   });
@@ -45,27 +52,217 @@ describe('inventory item package validator', () => {
   });
 
   // Create Validation Tests
-  it('successfully validate create: no validation errors', async () => {});
+  it('successfully validate create: no validation errors', async () => {
+    const item = await itemRepo.findOne({ where: { name: FOOD_A } });
+    if (!item) {
+      throw new Error('item not found');
+    }
+    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+    if (!pkg) {
+      throw new Error('package not found');
+    }
+    const uom = await unitRepo.findOne({ where: { name: POUND } });
+    if (!uom) {
+      throw new Error('uom not found');
+    }
 
-  it('fail validate create: measureAmount with value 0', async () => {});
+    const dto: CreateInventoryItemSizeDto = {
+      inventoryItemId: item.id,
+      packageId: pkg.id,
+      measureTypeId: uom.id,
+      measureAmount: 5,
+      cost: 10.99,
+    };
 
-  it('fail validate create: cost with value 0', async () => {});
+    const errors = await validator.validateCreateNode(dto);
+    expect(errors).toBeNull();
+  });
 
-  it('fail validate create: itemSize already exists for inventory item.', async () => {});
+  it('fail validate create: measureAmount with value 0', async () => {
+    const item = await itemRepo.findOne({ where: { name: FOOD_A } });
+    if (!item) {
+      throw new Error('item not found');
+    }
+    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+    if (!pkg) {
+      throw new Error('package not found');
+    }
+    const uom = await unitRepo.findOne({ where: { name: POUND } });
+    if (!uom) {
+      throw new Error('uom not found');
+    }
 
-  // Nested Create Validation Tests
-  it('successfully validate nestedCreate: no validation errors', async () => {});
+    const dto: CreateInventoryItemSizeDto = {
+      inventoryItemId: item.id,
+      packageId: pkg.id,
+      measureTypeId: uom.id,
+      measureAmount: 0,
+      cost: 10.99,
+    };
 
-  it('fail validate nestedCreate: measureAmount with value 0', async () => {});
+    const errors = await validator.validateCreateNode(dto);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureAmount' }],
+      'cannot be less than or equal to 0',
+    );
+  });
 
-  it('fail validate nestedCreate: cost with value 0', async () => {});
+  it('fail validate create: cost with value 0', async () => {
+    const item = await itemRepo.findOne({ where: { name: FOOD_A } });
+    if (!item) {
+      throw new Error('item not found');
+    }
+    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+    if (!pkg) {
+      throw new Error('package not found');
+    }
+    const uom = await unitRepo.findOne({ where: { name: POUND } });
+    if (!uom) {
+      throw new Error('uom not found');
+    }
+
+    const dto: CreateInventoryItemSizeDto = {
+      inventoryItemId: item.id,
+      packageId: pkg.id,
+      measureTypeId: uom.id,
+      measureAmount: 5,
+      cost: -1,
+    };
+
+    const errors = await validator.validateCreateNode(dto);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'cost' }],
+      'cannot be less than or equal to 0',
+    );
+  });
+
+  it('fail validate create: itemSize already exists for inventory item.', async () => {
+    const item = await itemRepo.findOne({
+      where: { name: FOOD_A },
+      relations: ['sizes'],
+    });
+    if (!item) {
+      throw new Error('item not found');
+    }
+    if (!item.sizes || item.sizes.length === 0) {
+      throw new Error('item sizes not found');
+    }
+
+    const existingSize = item.sizes[0];
+    const pkg = await packageRepo.findOne({
+      where: { id: existingSize.package.id },
+    });
+    if (!pkg) {
+      throw new Error('package not found');
+    }
+    const uom = await unitRepo.findOne({
+      where: { id: existingSize.measureType.id },
+    });
+    if (!uom) {
+      throw new Error('uom not found');
+    }
+
+    const dto: CreateInventoryItemSizeDto = {
+      inventoryItemId: item.id,
+      packageId: pkg.id,
+      measureTypeId: uom.id,
+      measureAmount: 5,
+      cost: 10.99,
+    };
+
+    const errors = await validator.validateCreateNode(dto);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureType' }],
+      'Inventory item size already exists',
+    );
+  });
 
   // Update Validation Tests
-  it('successfully validate update: no validation errors', async () => {});
+  it('successfully validate update: no validation errors', async () => {
+    const sizeToUpdate = await sizeRepo.findOne({
+      relations: ['inventoryItem', 'package', 'measureType'],
+    });
+    if (!sizeToUpdate) {
+      throw new Error('size not found');
+    }
 
-  it('fail validate update: measureAmount with value 0', async () => {});
+    const dto: UpdateInventoryItemSizeDto = {
+      measureAmount: 10,
+      cost: 15.99,
+    };
 
-  it('fail validate update: cost with value 0', async () => {});
+    const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+    expect(errors).toBeNull();
+  });
 
-  it('fail validate update: itemSize already exists for inventory item.', async () => {});
+  it('fail validate update: measureAmount with value 0', async () => {
+    const sizeToUpdate = await sizeRepo.findOne({});
+    if (!sizeToUpdate) {
+      throw new Error('size not found');
+    }
+
+    const dto: UpdateInventoryItemSizeDto = {
+      measureAmount: 0,
+    };
+
+    const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureAmount' }],
+      'cannot be less than or equal to 0',
+    );
+  });
+
+  it('fail validate update: cost with value 0', async () => {
+    const sizeToUpdate = await sizeRepo.findOne({});
+    if (!sizeToUpdate) {
+      throw new Error('size not found');
+    }
+
+    const dto: UpdateInventoryItemSizeDto = {
+      cost: -1,
+    };
+
+    const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'cost' }],
+      'cannot be less than or equal to 0',
+    );
+  });
+
+  it('fail validate update: itemSize already exists for inventory item.', async () => {
+    const sizes = await sizeRepo.find({
+      relations: ['inventoryItem', 'package', 'measureType'],
+    });
+    if (sizes.length < 2) {
+      throw new Error('Not enough sizes for test');
+    }
+
+    // Find two sizes with the same inventory item
+    const size1 = sizes[0];
+    const size2 = sizes.find(
+      (s) => s.inventoryItem.id === size1.inventoryItem.id && s.id !== size1.id,
+    );
+
+    if (!size2) {
+      throw new Error('Could not find two sizes for same item');
+    }
+
+    // Try to update size1 to match size2's package/measureType combination
+    const dto: UpdateInventoryItemSizeDto = {
+      packageId: size2.package.id,
+      measureTypeId: size2.measureType.id,
+    };
+
+    const errors = await validator.validateUpdateNode(dto, size1.id);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'package' }],
+      'Inventory item size already exists',
+    );
+  });
 });

@@ -353,8 +353,8 @@ export class ValidatorHelper<
   /**
    * Only one of the two given properties must be populated.
    * Cannot both be populated or both be vacant.
-   * @param firstProp any prop of dto
-   * @param secondProp any prop of dto
+   * @param firstProp any prop of dto, must match entity property name (the nested dto)
+   * @param secondProp any prop of dto, the (id property)
    * @param rootErrMap error map to add error to
    * @param errMsgMissing description of error when both properties are missing
    * @param errMsgPopulated description of error when both props are populated
@@ -375,17 +375,9 @@ export class ValidatorHelper<
         String(firstfield),
         new ValidationErrorMap(undefined, errMsgMissing),
       );
-      rootErrMap.addChild(
-        String(secondfield),
-        new ValidationErrorMap(undefined, errMsgMissing),
-      );
     } else if (firstVal == null && secondVal == null) {
       rootErrMap.addChild(
         String(firstfield),
-        new ValidationErrorMap(undefined, errMsgPopulated),
-      );
-      rootErrMap.addChild(
-        String(secondfield),
         new ValidationErrorMap(undefined, errMsgPopulated),
       );
     }

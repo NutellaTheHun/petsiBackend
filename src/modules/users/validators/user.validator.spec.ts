@@ -1,8 +1,12 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { expectValidationMessage } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 import { User } from '../entities/user.entities';
+import { USER_A } from '../utils/constants';
 import { UserTestUtil } from '../utils/user-test.util';
 import { getUserTestingModule } from '../utils/user-testing-module';
 import { UserValidator } from './user.validator';
@@ -34,12 +38,63 @@ describe('user validator', () => {
   });
 
   // Create Validation Tests
-  it('successfully validate create: no validation errors', async () => {});
+  it('successfully validate create: no validation errors', async () => {
+    const dto: CreateUserDto = {
+      name: 'New User Name',
+      password: 'password123',
+    };
 
-  it('fail validate create: name already exists', async () => {});
+    const errors = await validator.validateCreateNode(dto);
+    expect(errors).toBeNull();
+  });
+
+  it('fail validate create: name already exists', async () => {
+    const dto: CreateUserDto = {
+      name: USER_A,
+      password: 'password123',
+    };
+
+    const errors = await validator.validateCreateNode(dto);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'name' }],
+      'username name already exists.',
+    );
+  });
 
   // Update Validation Tests
-  it('successfully validate update: no validation errors', async () => {});
+  it('successfully validate update: no validation errors', async () => {
+    const userToUpdate = await userRepo.findOne({ where: { name: USER_A } });
+    if (!userToUpdate) {
+      throw new Error('user not found');
+    }
 
-  it('fail validate update: name already exists', async () => {});
+    const dto: UpdateUserDto = {
+      name: 'Updated User Name',
+    };
+
+    const errors = await validator.validateUpdateNode(dto, userToUpdate.id);
+    expect(errors).toBeNull();
+  });
+
+  it('fail validate update: name already exists', async () => {
+    const users = await userRepo.find();
+    if (users.length < 2) {
+      throw new Error('Not enough users for test');
+    }
+
+    const userToUpdate = users[0];
+    const existingUser = users[1];
+
+    const dto: UpdateUserDto = {
+      name: existingUser.name,
+    };
+
+    const errors = await validator.validateUpdateNode(dto, userToUpdate.id);
+    expectValidationMessage(
+      errors,
+      [{ prop: 'name' }],
+      'username name already exists.',
+    );
+  });
 });

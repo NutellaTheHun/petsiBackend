@@ -39,6 +39,7 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
     // validate name is not equal to parent category name
     const parentCategory = await this.recipeCategoryRepo.findOne({
       where: { id: dto.parentCategoryId },
+      relations: ['subCategories'],
     });
     if (!parentCategory) {
       throw new Error(
@@ -52,6 +53,19 @@ export class RecipeSubCategoryValidator extends ValidatorBase<RecipeSubCategoryE
         new ValidationErrorMap(
           undefined,
           'Recipe subcategory name cannot be the same as the parent category name',
+        ),
+      );
+    }
+    if (
+      parentCategory.subCategories.find(
+        (subCategory) => subCategory.name === dto.name,
+      )
+    ) {
+      errorMap.addChild(
+        'name',
+        new ValidationErrorMap(
+          undefined,
+          'Recipe subcategory name already exists',
         ),
       );
     }

@@ -69,15 +69,14 @@ export class CreateRecipeDto {
   @IsOptional()
   readonly servingSizeQuantity?: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description:
       'Id of the UnitofMeasure used to represent the unit size of what is sold.',
     example: 5,
   })
   @IsNumber()
   @IsPositive()
-  @IsNotEmpty()
-  readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure>;
+  readonly servingSizeUnitTypeId?: EntityId<UnitOfMeasure>;
 
   @ApiPropertyOptional({
     description: 'The price of purchasing the serving size amount.',
