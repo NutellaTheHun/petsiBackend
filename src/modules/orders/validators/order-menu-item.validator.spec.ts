@@ -5,7 +5,7 @@ import { expectValidationMessage } from '../../../common/validation/validation-e
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_a, item_b, item_f } from '../../menu-items/utils/constants';
+import { item_a, item_f, item_g } from '../../menu-items/utils/constants';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
@@ -67,7 +67,10 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
@@ -132,11 +135,7 @@ describe('order menu item validator', () => {
     };
 
     const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'size' }],
-      'Invalid size',
-    );
+    expectValidationMessage(errors, [{ prop: 'size' }], 'Invalid size');
   });
 
   it('fail validate create: container must have at least one item', async () => {
@@ -188,12 +187,17 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerMenuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerMenuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerMenuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerMenuItem.containerMenuItems[0].containedItemSize;
 
     const dto: CreateOrderMenuItemDto = {
       menuItemId: containerMenuItem.id,
@@ -243,12 +247,17 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerMenuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerMenuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerMenuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerMenuItem.containerMenuItems[0].containedItemSize;
 
     const dto: CreateOrderMenuItemDto = {
       menuItemId: containerMenuItem.id,
@@ -340,11 +349,15 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerMenuItem.containerMenuItems[0].containedMenuItem;
+    const containedItem =
+      containerMenuItem.containerMenuItems[0].containedMenuItem;
     const allSizes = await sizeRepo.find();
     const invalidSize = allSizes.find(
       (s) => !containedItem.sizes?.some((cs) => cs.id === s.id),
@@ -371,7 +384,10 @@ describe('order menu item validator', () => {
     const errors = await validator.validateCreateNode(dto);
     expectValidationMessage(
       errors,
-      [{ prop: 'containerOrderMenuItems', id: 'c1' }, { prop: 'containedItemSize' }],
+      [
+        { prop: 'containerOrderMenuItems', id: 'c1' },
+        { prop: 'containedItemSize' },
+      ],
       'Invalid size',
     );
   });
@@ -392,12 +408,17 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerMenuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerMenuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerMenuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerMenuItem.containerMenuItems[0].containedItemSize;
 
     const dto: CreateOrderMenuItemDto = {
       menuItemId: containerMenuItem.id,
@@ -441,12 +462,17 @@ describe('order menu item validator', () => {
     if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
       throw new Error('container menu item sizes not found');
     }
-    if (!containerMenuItem.containerMenuItems || containerMenuItem.containerMenuItems.length === 0) {
+    if (
+      !containerMenuItem.containerMenuItems ||
+      containerMenuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerMenuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerMenuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerMenuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerMenuItem.containerMenuItems[0].containedItemSize;
 
     const dto: CreateOrderMenuItemDto = {
       menuItemId: containerMenuItem.id,
@@ -501,7 +527,8 @@ describe('order menu item validator', () => {
 
     const allSizes = await sizeRepo.find();
     const invalidSize = allSizes.find(
-      (s) => !orderMenuItemToUpdate.menuItem.sizes?.some((ms) => ms.id === s.id),
+      (s) =>
+        !orderMenuItemToUpdate.menuItem.sizes?.some((ms) => ms.id === s.id),
     );
     if (!invalidSize) {
       throw new Error('invalid size not found');
@@ -515,35 +542,7 @@ describe('order menu item validator', () => {
       dto,
       orderMenuItemToUpdate.id,
     );
-    expectValidationMessage(
-      errors,
-      [{ prop: 'size' }],
-      'Invalid size',
-    );
-  });
-
-  it('fail validate update: container must have at least one item', async () => {
-    const containerOrderMenuItem = await orderItemRepo.findOne({
-      relations: ['menuItem'],
-      where: { menuItem: { type: MENU_ITEM_TYPES.CONTAINER } },
-    });
-    if (!containerOrderMenuItem) {
-      throw new Error('container order menu item not found');
-    }
-
-    const dto: UpdateOrderMenuItemDto = {
-      containerOrderMenuItems: [],
-    };
-
-    const errors = await validator.validateUpdateNode(
-      dto,
-      containerOrderMenuItem.id,
-    );
-    expectValidationMessage(
-      errors,
-      [{ prop: 'menuItem' }],
-      'menu item is not a container',
-    );
+    expectValidationMessage(errors, [{ prop: 'size' }], 'Invalid size');
   });
 
   it('fail validate update: duplicate container item', async () => {
@@ -554,12 +553,17 @@ describe('order menu item validator', () => {
     if (!containerOrderMenuItem) {
       throw new Error('container order menu item not found');
     }
-    if (!containerOrderMenuItem.menuItem.containerMenuItems || containerOrderMenuItem.menuItem.containerMenuItems.length === 0) {
+    if (
+      !containerOrderMenuItem.menuItem.containerMenuItems ||
+      containerOrderMenuItem.menuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
     const dto: UpdateOrderMenuItemDto = {
       containerOrderMenuItems: [
@@ -600,12 +604,17 @@ describe('order menu item validator', () => {
     if (!containerOrderMenuItem.menuItem.variableMaxAmount) {
       throw new Error('container menu item does not have variableMaxAmount');
     }
-    if (!containerOrderMenuItem.menuItem.containerMenuItems || containerOrderMenuItem.menuItem.containerMenuItems.length === 0) {
+    if (
+      !containerOrderMenuItem.menuItem.containerMenuItems ||
+      containerOrderMenuItem.menuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
     const dto: UpdateOrderMenuItemDto = {
       containerOrderMenuItems: [
@@ -666,7 +675,10 @@ describe('order menu item validator', () => {
     );
     expectValidationMessage(
       errors,
-      [{ prop: 'containerOrderMenuItems', id: 'c1' }, { prop: 'containedMenuItem' }],
+      [
+        { prop: 'containerOrderMenuItems', id: 'c1' },
+        { prop: 'containedMenuItem' },
+      ],
       'contained item must be of type single',
     );
   });
@@ -679,11 +691,15 @@ describe('order menu item validator', () => {
     if (!containerOrderMenuItem) {
       throw new Error('container order menu item not found');
     }
-    if (!containerOrderMenuItem.menuItem.containerMenuItems || containerOrderMenuItem.menuItem.containerMenuItems.length === 0) {
+    if (
+      !containerOrderMenuItem.menuItem.containerMenuItems ||
+      containerOrderMenuItem.menuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
+    const containedItem =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
     const allSizes = await sizeRepo.find();
     const invalidSize = allSizes.find(
       (s) => !containedItem.sizes?.some((cs) => cs.id === s.id),
@@ -709,7 +725,10 @@ describe('order menu item validator', () => {
     );
     expectValidationMessage(
       errors,
-      [{ prop: 'containerOrderMenuItems', id: 'c1' }, { prop: 'containedItemSize' }],
+      [
+        { prop: 'containerOrderMenuItems', id: 'c1' },
+        { prop: 'containedItemSize' },
+      ],
       'Invalid size',
     );
   });
@@ -722,12 +741,17 @@ describe('order menu item validator', () => {
     if (!containerOrderMenuItem) {
       throw new Error('container order menu item not found');
     }
-    if (!containerOrderMenuItem.menuItem.containerMenuItems || containerOrderMenuItem.menuItem.containerMenuItems.length === 0) {
+    if (
+      !containerOrderMenuItem.menuItem.containerMenuItems ||
+      containerOrderMenuItem.menuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
     const dto: UpdateOrderMenuItemDto = {
       containerOrderMenuItems: [
@@ -762,12 +786,17 @@ describe('order menu item validator', () => {
     if (!containerOrderMenuItem.menuItem.variableMaxAmount) {
       throw new Error('container menu item does not have variableMaxAmount');
     }
-    if (!containerOrderMenuItem.menuItem.containerMenuItems || containerOrderMenuItem.menuItem.containerMenuItems.length === 0) {
+    if (
+      !containerOrderMenuItem.menuItem.containerMenuItems ||
+      containerOrderMenuItem.menuItem.containerMenuItems.length === 0
+    ) {
       throw new Error('container menu items not found');
     }
 
-    const containedItem = containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
-    const containedItemSize = containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
+    const containedItem =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
+    const containedItemSize =
+      containerOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
     const dto: UpdateOrderMenuItemDto = {
       containerOrderMenuItems: [

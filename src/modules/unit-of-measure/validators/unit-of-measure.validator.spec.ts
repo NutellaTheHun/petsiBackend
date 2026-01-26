@@ -44,7 +44,7 @@ describe('unit of measure validator', () => {
 
   // Create Validation Tests
   it('successfully validate create: no validation errors', async () => {
-    const category = await categoryRepo.findOne();
+    const category = await categoryRepo.findOne({});
     if (!category) {
       throw new Error('category not found');
     }
@@ -61,7 +61,7 @@ describe('unit of measure validator', () => {
   });
 
   it('fail validate create: name already exists', async () => {
-    const category = await categoryRepo.findOne();
+    const category = await categoryRepo.findOne({});
     if (!category) {
       throw new Error('category not found');
     }
@@ -81,7 +81,7 @@ describe('unit of measure validator', () => {
   });
 
   it('fail validate create: abbreviation already exists', async () => {
-    const category = await categoryRepo.findOne();
+    const category = await categoryRepo.findOne({});
     if (!category) {
       throw new Error('category not found');
     }
@@ -101,7 +101,7 @@ describe('unit of measure validator', () => {
   });
 
   it('fail validate create: conversion factor cannot be 0', async () => {
-    const category = await categoryRepo.findOne();
+    const category = await categoryRepo.findOne({});
     if (!category) {
       throw new Error('category not found');
     }

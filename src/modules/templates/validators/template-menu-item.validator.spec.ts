@@ -4,10 +4,10 @@ import { Repository } from 'typeorm';
 import { expectValidationMessage } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { Template } from '../entities/template.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
+import { Template } from '../entities/template.entity';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
 import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemValidator } from './template-menu-item.validator';
@@ -46,11 +46,11 @@ describe('template menu item validator', () => {
 
   // Create Validation Tests
   it('successfully validate create: no validation errors', async () => {
-    const template = await templateRepo.findOne();
+    const template = await templateRepo.findOne({});
     if (!template) {
       throw new Error('template not found');
     }
-    const menuItem = await menuItemRepo.findOne();
+    const menuItem = await menuItemRepo.findOne({});
     if (!menuItem) {
       throw new Error('menu item not found');
     }
@@ -67,11 +67,11 @@ describe('template menu item validator', () => {
   });
 
   it('fail validate create: positional index cannot be less than 0', async () => {
-    const template = await templateRepo.findOne();
+    const template = await templateRepo.findOne({});
     if (!template) {
       throw new Error('template not found');
     }
-    const menuItem = await menuItemRepo.findOne();
+    const menuItem = await menuItemRepo.findOne({});
     if (!menuItem) {
       throw new Error('menu item not found');
     }
@@ -93,7 +93,7 @@ describe('template menu item validator', () => {
 
   // Update Validation Tests
   it('successfully validate update: no validation errors', async () => {
-    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne();
+    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
     if (!templateMenuItemToUpdate) {
       throw new Error('template menu item not found');
     }
@@ -110,7 +110,7 @@ describe('template menu item validator', () => {
   });
 
   it('fail validate update: positional index cannot be less than 0', async () => {
-    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne();
+    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
     if (!templateMenuItemToUpdate) {
       throw new Error('template menu item not found');
     }

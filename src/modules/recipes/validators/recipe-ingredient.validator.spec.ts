@@ -193,7 +193,7 @@ describe('recipe ingredient validator', () => {
   });
 
   it('fail validate update: missing reference for ingredient', async () => {
-    const ingredientToUpdate = await ingredientRepo.findOne();
+    const ingredientToUpdate = await ingredientRepo.findOne({});
     if (!ingredientToUpdate) {
       throw new Error('ingredient not found');
     }
@@ -217,7 +217,7 @@ describe('recipe ingredient validator', () => {
   });
 
   it('fail validate update: cannot provide both an inventory item and a recipe as an ingredient', async () => {
-    const ingredientToUpdate = await ingredientRepo.findOne();
+    const ingredientToUpdate = await ingredientRepo.findOne({});
     if (!ingredientToUpdate) {
       throw new Error('ingredient not found');
     }
@@ -249,7 +249,7 @@ describe('recipe ingredient validator', () => {
   });
 
   it('fail validate update: quantity cannot be 0', async () => {
-    const ingredientToUpdate = await ingredientRepo.findOne();
+    const ingredientToUpdate = await ingredientRepo.findOne({});
     if (!ingredientToUpdate) {
       throw new Error('ingredient not found');
     }

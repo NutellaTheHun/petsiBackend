@@ -59,7 +59,7 @@ describe('inventory item validator', () => {
     if (!category) {
       throw new Error('category not found');
     }
-    const vendor = await vendorRepo.findOne();
+    const vendor = await vendorRepo.findOne({});
     if (!vendor) {
       throw new Error('vendor not found');
     }
@@ -103,7 +103,7 @@ describe('inventory item validator', () => {
     if (!category) {
       throw new Error('category not found');
     }
-    const vendor = await vendorRepo.findOne();
+    const vendor = await vendorRepo.findOne({});
     if (!vendor) {
       throw new Error('vendor not found');
     }
@@ -127,7 +127,7 @@ describe('inventory item validator', () => {
     if (!category) {
       throw new Error('category not found');
     }
-    const vendor = await vendorRepo.findOne();
+    const vendor = await vendorRepo.findOne({});
     if (!vendor) {
       throw new Error('vendor not found');
     }
@@ -168,7 +168,7 @@ describe('inventory item validator', () => {
     if (!category) {
       throw new Error('category not found');
     }
-    const vendor = await vendorRepo.findOne();
+    const vendor = await vendorRepo.findOne({});
     if (!vendor) {
       throw new Error('vendor not found');
     }
@@ -223,7 +223,11 @@ describe('inventory item validator', () => {
       where: { id: itemToUpdate.id },
       relations: ['sizes'],
     });
-    if (!existingSizes || !existingSizes.sizes || existingSizes.sizes.length === 0) {
+    if (
+      !existingSizes ||
+      !existingSizes.sizes ||
+      existingSizes.sizes.length === 0
+    ) {
       throw new Error('item sizes not found');
     }
 

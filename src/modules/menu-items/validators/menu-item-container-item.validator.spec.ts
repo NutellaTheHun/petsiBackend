@@ -9,9 +9,9 @@ import { MenuItemContainerItem } from '../entities/menu-item-container-item.enti
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { item_a, item_b, item_f, item_g } from '../utils/constants';
-import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
+import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
 
 describe('menu item container item validator', () => {
@@ -196,11 +196,7 @@ describe('menu item container item validator', () => {
     };
 
     const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'quantity' }],
-      'Invalid quantity',
-    );
+    expectValidationMessage(errors, [{ prop: 'quantity' }], 'Invalid quantity');
   });
 
   it('fail validate create: parent menu item cannot be equal to contained menu item', async () => {
@@ -501,7 +497,7 @@ describe('menu item container item validator', () => {
   });
 
   it('fail validate update: quantity with value 0', async () => {
-    const containerItemToUpdate = await containerItemRepo.findOne();
+    const containerItemToUpdate = await containerItemRepo.findOne({});
     if (!containerItemToUpdate) {
       throw new Error('container item not found');
     }
@@ -514,11 +510,7 @@ describe('menu item container item validator', () => {
       dto,
       containerItemToUpdate.id,
     );
-    expectValidationMessage(
-      errors,
-      [{ prop: 'quantity' }],
-      'Invalid quantity',
-    );
+    expectValidationMessage(errors, [{ prop: 'quantity' }], 'Invalid quantity');
   });
 
   it('fail validate update: parent menu item cannot be equal to contained menu item', async () => {
@@ -550,7 +542,7 @@ describe('menu item container item validator', () => {
   });
 
   it('fail validate update: containedItemId item not of type single', async () => {
-    const containerItemToUpdate = await containerItemRepo.findOne();
+    const containerItemToUpdate = await containerItemRepo.findOne({});
     if (!containerItemToUpdate) {
       throw new Error('container item not found');
     }

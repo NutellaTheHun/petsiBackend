@@ -19,7 +19,7 @@ import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-in
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
-import { AREA_A, AREA_B, AREA_C } from '../utils/constants';
+import { AREA_A, AREA_C } from '../utils/constants';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaItemValidator } from './inventory-area-item.validator';
@@ -607,7 +607,7 @@ describe('inventory area item validator', () => {
 
     // Find another size with the same item that has different package/measureType
     const existingSizes = await itemSizeRepo.find({
-      where: { inventoryItem: { id: itemToUpdate.countedItem.id } },
+      where: { inventoryItem: { id: itemToUpdate.countedInventoryItem.id } },
       relations: ['package', 'measureType'],
     });
 

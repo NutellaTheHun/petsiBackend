@@ -9,10 +9,10 @@ import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { item_a, item_b, item_f } from '../utils/constants';
-import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
+import { item_a, item_b, item_f, item_g } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
+import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemValidator } from './menu-item.validator';
 
 describe('menu item validator', () => {
@@ -347,7 +347,8 @@ describe('menu item validator', () => {
     const dto: UpdateMenuItemDto = {
       name: 'Updated Item Name',
       containerMenuItems:
-        itemToUpdate.containerMenuItems && itemToUpdate.containerMenuItems.length > 0
+        itemToUpdate.containerMenuItems &&
+        itemToUpdate.containerMenuItems.length > 0
           ? [
               {
                 id: itemToUpdate.containerMenuItems[0].id,
