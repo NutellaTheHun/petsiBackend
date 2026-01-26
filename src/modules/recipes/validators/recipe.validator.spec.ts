@@ -5,8 +5,9 @@ import { expectValidationMessage } from '../../../common/validation/validation-e
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { OUNCE, POUND } from '../../unit-of-measure/utils/constants';
+import { GRAM, OUNCE, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -30,6 +31,7 @@ describe('recipe validator', () => {
   let ingredientRepo: Repository<RecipeIngredient>;
   let unitOfMeasureRepo: Repository<UnitOfMeasure>;
   let inventoryItemRepo: Repository<InventoryItem>;
+  let menuItemRepo: Repository<MenuItem>;
 
   beforeAll(async () => {
     const module: TestingModule = await getRecipeTestingModule();
@@ -45,6 +47,7 @@ describe('recipe validator', () => {
     ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
     unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
     inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
+    menuItemRepo = module.get(getRepositoryToken(MenuItem));
   });
 
   afterAll(async () => {
@@ -647,11 +650,44 @@ describe('recipe validator', () => {
     if (!batchUom) {
       throw new Error('batch uom not found');
     }
+    const newProducedMenuItem = await menuItemRepo.findOne({});
+    if (!newProducedMenuItem) {
+      throw new Error('new produced menu item not found');
+    }
+    const newBatchUom = await unitOfMeasureRepo.findOne({
+      where: { name: GRAM },
+    });
+    if (!newBatchUom) {
+      throw new Error('new batch uom not found');
+    }
+    const newServingUom = await unitOfMeasureRepo.findOne({
+      where: { name: OUNCE },
+    });
+    if (!newServingUom) {
+      throw new Error('new serving uom not found');
+    }
+
+    const newCategory = await categoryRepo.findOne({
+      where: { name: REC_CAT_A },
+      relations: ['subCategories'],
+    });
+    if (!newCategory) {
+      throw new Error('new category not found');
+    }
+    if (!newCategory.subCategories || newCategory.subCategories.length === 0) {
+      throw new Error('new category subcategories not found');
+    }
 
     const dto: UpdateRecipeDto = {
       name: 'Updated Recipe Name',
       batchResultQuantity: 10,
+      batchResultUnitTypeId: newBatchUom.id,
+      servingSizeQuantity: 2,
+      servingSizeUnitTypeId: newServingUom.id,
+      producedMenuItemId: newProducedMenuItem.id,
       salesPrice: 15.99,
+      categoryId: newCategory.id,
+      subCategoryId: newCategory.subCategories[0].id,
       ingredients:
         recipeToUpdate.ingredients && recipeToUpdate.ingredients.length > 0
           ? [

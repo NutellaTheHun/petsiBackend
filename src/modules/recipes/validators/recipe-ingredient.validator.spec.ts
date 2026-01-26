@@ -6,7 +6,7 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_A } from '../../inventory-items/utils/constants';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
+import { GRAM, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
@@ -180,9 +180,23 @@ describe('recipe ingredient validator', () => {
     if (!ingredientToUpdate) {
       throw new Error('ingredient not found');
     }
+    const newInventoryItem = await inventoryItemRepo.findOne({
+      where: { name: FOOD_A },
+    });
+    if (!newInventoryItem) {
+      throw new Error('new inventory item not found');
+    }
+    const newBatchUom = await unitOfMeasureRepo.findOne({
+      where: { name: GRAM },
+    });
+    if (!newBatchUom) {
+      throw new Error('new uom not found');
+    }
 
     const dto: UpdateRecipeIngredientDto = {
       quantity: 10,
+      ingredientInventoryItemId: newInventoryItem.id,
+      quantityUnitTypeId: newBatchUom.id,
     };
 
     const errors = await validator.validateUpdateNode(

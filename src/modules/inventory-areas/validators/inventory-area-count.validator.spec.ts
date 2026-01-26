@@ -215,7 +215,7 @@ describe('inventory area count validator', () => {
       errors,
       [
         { prop: 'countedInventoryItems', id: 'c1' },
-        { prop: 'countedItemSizeId' },
+        { prop: 'countedItemSize' },
       ],
       'Invalid size for inventory item',
     );

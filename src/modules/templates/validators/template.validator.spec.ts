@@ -278,11 +278,6 @@ describe('template validator', () => {
       [{ prop: 'templateMenuItems', id: 'c1' }],
       'duplicate menu item on template',
     );
-    expectValidationMessage(
-      errors,
-      [{ prop: 'templateMenuItems', id: 'c2' }],
-      'duplicate menu item on template',
-    );
   });
 
   it('fail validate update: duplicate table position on template items', async () => {

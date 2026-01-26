@@ -418,7 +418,17 @@ describe('order container item validator', () => {
       throw new Error('container item not found');
     }
 
+    const newItem = await menuItemRepo.findOne({
+      where: { type: MENU_ITEM_TYPES.SINGLE },
+      relations: ['sizes'],
+    });
+    if (!newItem) {
+      throw new Error('new item not found');
+    }
+
     const dto: UpdateOrderContainerItemDto = {
+      containedMenuItemId: newItem.id,
+      containedItemSizeId: newItem.sizes[0].id,
       quantity: 5,
     };
 

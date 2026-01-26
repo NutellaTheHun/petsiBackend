@@ -1,6 +1,6 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { expectValidationMessage } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -311,10 +311,16 @@ describe('menu item container item validator', () => {
   });
 
   it('fail validate create: parent with variable max amount and quantity not equal to variable max amount', async () => {
-    const parentContainer = await itemRepo.findOne({
-      where: { name: item_f },
+    // get containers where variableMaxAmount is not null
+    const variableContainers = await itemRepo.find({
+      where: { variableMaxAmount: Not(IsNull()) },
       relations: ['sizes'],
     });
+    if (variableContainers.length === 0) {
+      throw new Error('variable containers not found');
+    }
+
+    const parentContainer = variableContainers[0];
     if (!parentContainer) {
       throw new Error('parent container not found');
     }
@@ -366,7 +372,17 @@ describe('menu item container item validator', () => {
       throw new Error('container item not found');
     }
 
+    const newItem = await itemRepo.findOne({
+      where: { type: MENU_ITEM_TYPES.SINGLE },
+      relations: ['sizes'],
+    });
+    if (!newItem) {
+      throw new Error('new item not found');
+    }
+
     const dto: UpdateMenuItemContainerItemDto = {
+      containedMenuItemId: newItem.id,
+      containedItemSizeId: newItem.sizes[0].id,
       quantity: 5,
     };
 

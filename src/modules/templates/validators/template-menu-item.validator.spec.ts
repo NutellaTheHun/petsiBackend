@@ -97,9 +97,15 @@ describe('template menu item validator', () => {
     if (!templateMenuItemToUpdate) {
       throw new Error('template menu item not found');
     }
+    const newMenuItem = await menuItemRepo.findOne({});
+    if (!newMenuItem) {
+      throw new Error('new menu item not found');
+    }
 
     const dto: UpdateTemplateMenuItemDto = {
       tablePosIndex: 5,
+      menuItemId: newMenuItem.id,
+      displayName: 'Updated Display Name',
     };
 
     const errors = await validator.validateUpdateNode(

@@ -59,9 +59,7 @@ describe('label validator', () => {
       relations: ['menuItem', 'labelType'],
     });
     const existingCombinations = new Set(
-      existingLabels.map(
-        (l) => `${l.menuItem.id}-${l.labelType.id}`,
-      ),
+      existingLabels.map((l) => `${l.menuItem.id}-${l.labelType.id}`),
     );
 
     let menuItem = menuItems[0];
@@ -119,15 +117,34 @@ describe('label validator', () => {
     if (!labelToUpdate) {
       throw new Error('label not found');
     }
+    const menuItems = await itemRepo.find();
+    if (menuItems.length === 0) {
+      throw new Error('menu items not found');
+    }
+    const labelTypes = await labelTypeRepo.find();
+    if (labelTypes.length === 0) {
+      throw new Error('label types not found');
+    }
+    const newMenuItem = menuItems.find(
+      (m) => m.id !== labelToUpdate.menuItem.id,
+    );
+    if (!newMenuItem) {
+      throw new Error('new menu item not found');
+    }
+    const newLabelType = labelTypes.find(
+      (t) => t.id !== labelToUpdate.labelType.id,
+    );
+    if (!newLabelType) {
+      throw new Error('new label type not found');
+    }
 
     const dto: UpdateLabelDto = {
       imageUrl: 'new-url',
+      menuItemId: newMenuItem.id,
+      labelTypeId: newLabelType.id,
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      labelToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
     expect(errors).toBeNull();
   });
 
@@ -147,10 +164,7 @@ describe('label validator', () => {
       labelTypeId: existingLabel.labelType.id,
     };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      labelToUpdate.id,
-    );
+    const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
     expectValidationMessage(
       errors,
       [{ prop: 'labelType' }],

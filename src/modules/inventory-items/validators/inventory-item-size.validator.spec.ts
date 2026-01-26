@@ -141,7 +141,7 @@ describe('inventory item size validator', () => {
   it('fail validate create: itemSize already exists for inventory item.', async () => {
     const item = await itemRepo.findOne({
       where: { name: FOOD_A },
-      relations: ['sizes'],
+      relations: ['sizes', 'sizes.package', 'sizes.measureType'],
     });
     if (!item) {
       throw new Error('item not found');
@@ -151,23 +151,11 @@ describe('inventory item size validator', () => {
     }
 
     const existingSize = item.sizes[0];
-    const pkg = await packageRepo.findOne({
-      where: { id: existingSize.package.id },
-    });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({
-      where: { id: existingSize.measureType.id },
-    });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
 
     const dto: CreateInventoryItemSizeDto = {
       inventoryItemId: item.id,
-      packageId: pkg.id,
-      measureTypeId: uom.id,
+      packageId: existingSize.package.id,
+      measureTypeId: existingSize.measureType.id,
       measureAmount: 5,
       cost: 10.99,
     };
@@ -176,7 +164,17 @@ describe('inventory item size validator', () => {
     expectValidationMessage(
       errors,
       [{ prop: 'measureType' }],
-      'Inventory item size already exists',
+      'item size already exists',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'package' }],
+      'item size already exists',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureAmount' }],
+      'item size already exists',
     );
   });
 
@@ -189,7 +187,21 @@ describe('inventory item size validator', () => {
       throw new Error('size not found');
     }
 
+    const pkgs = await packageRepo.find();
+    const newPkg = pkgs.find((pkg) => pkg.id !== sizeToUpdate.package.id);
+    if (!newPkg) {
+      throw new Error('new package not found');
+    }
+
+    const uoms = await unitRepo.find();
+    const newUom = uoms.find((uom) => uom.id !== sizeToUpdate.measureType.id);
+    if (!newUom) {
+      throw new Error('new uom not found');
+    }
+
     const dto: UpdateInventoryItemSizeDto = {
+      packageId: newPkg.id,
+      measureTypeId: newUom.id,
       measureAmount: 10,
       cost: 15.99,
     };
@@ -256,12 +268,23 @@ describe('inventory item size validator', () => {
     const dto: UpdateInventoryItemSizeDto = {
       packageId: size2.package.id,
       measureTypeId: size2.measureType.id,
+      measureAmount: size2.measureAmount,
     };
 
     const errors = await validator.validateUpdateNode(dto, size1.id);
     expectValidationMessage(
       errors,
       [{ prop: 'package' }],
+      'Inventory item size already exists',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureType' }],
+      'Inventory item size already exists',
+    );
+    expectValidationMessage(
+      errors,
+      [{ prop: 'measureAmount' }],
       'Inventory item size already exists',
     );
   });

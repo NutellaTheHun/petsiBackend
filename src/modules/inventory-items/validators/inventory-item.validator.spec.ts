@@ -206,9 +206,18 @@ describe('inventory item validator', () => {
 
   // Update Validation Tests
   it('successfully validate update with no validation errors', async () => {
-    const itemToUpdate = await itemRepo.findOne({ where: { name: FOOD_A } });
+    const itemToUpdate = await itemRepo.findOne({
+      where: { name: FOOD_A },
+      relations: ['category', 'vendor'],
+    });
     if (!itemToUpdate) {
       throw new Error('item not found');
+    }
+    if (!itemToUpdate.category) {
+      throw new Error('item category not found');
+    }
+    if (!itemToUpdate.vendor) {
+      throw new Error('item vendor not found');
     }
     const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
     if (!pkg) {
@@ -217,6 +226,19 @@ describe('inventory item validator', () => {
     const uom = await unitRepo.findOne({ where: { name: POUND } });
     if (!uom) {
       throw new Error('uom not found');
+    }
+
+    const categories = await categoryRepo.find();
+    const newCategory = categories.find(
+      (c) => c.id !== itemToUpdate.category?.id,
+    );
+    if (!newCategory) {
+      throw new Error('new category not found');
+    }
+    const vendors = await vendorRepo.find();
+    const newVendor = vendors.find((v) => v.id !== itemToUpdate.vendor?.id);
+    if (!newVendor) {
+      throw new Error('new vendor not found');
     }
 
     const existingSizes = await itemRepo.findOne({
@@ -233,6 +255,8 @@ describe('inventory item validator', () => {
 
     const dto: UpdateInventoryItemDto = {
       name: 'Updated Item Name',
+      categoryId: newCategory.id,
+      vendorId: newVendor.id,
       sizes: [
         {
           id: existingSizes.sizes[0].id,

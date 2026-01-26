@@ -511,8 +511,45 @@ describe('order menu item validator', () => {
       throw new Error('order menu item not found');
     }
 
+    const newContainerItem = await menuItemRepo.findOne({
+      where: { type: MENU_ITEM_TYPES.CONTAINER },
+      relations: [
+        'sizes',
+        'containerMenuItems',
+        'containerMenuItems.containedMenuItem',
+        'containerMenuItems.containedItemSize',
+      ],
+    });
+    if (!newContainerItem) {
+      throw new Error('new container item not found');
+    }
+    let newQuantity = 5;
+    if (newContainerItem.variableMaxAmount) {
+      newQuantity = newContainerItem.variableMaxAmount;
+    }
+
     const dto: UpdateOrderMenuItemDto = {
       quantity: 5,
+      menuItemId: newContainerItem.id,
+      sizeId: newContainerItem.sizes[0].id,
+      containerOrderMenuItems: [
+        {
+          createId: 'c1',
+          containedMenuItemId:
+            newContainerItem.containerMenuItems[0].containedMenuItem.id,
+          containedItemSizeId:
+            newContainerItem.containerMenuItems[0].containedItemSize.id,
+          quantity: newQuantity,
+        },
+        {
+          createId: 'c2',
+          containedMenuItemId:
+            newContainerItem.containerMenuItems[1].containedMenuItem.id,
+          containedItemSizeId:
+            newContainerItem.containerMenuItems[1].containedItemSize.id,
+          quantity: newQuantity,
+        },
+      ],
     };
 
     const errors = await validator.validateUpdateNode(

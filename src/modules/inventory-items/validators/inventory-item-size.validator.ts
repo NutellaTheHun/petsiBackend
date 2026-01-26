@@ -56,12 +56,21 @@ export class InventoryItemSizeValidator extends ValidatorBase<InventoryItemSizeE
           id: dto.packageId,
         },
         inventoryItem: { id: dto.inventoryItemId },
+        measureAmount: dto.measureAmount,
       },
     });
     if (exists) {
       // Most relevant conflict signal for FE is the measure type selection.
       errorMap.addChild(
         'measureType',
+        new ValidationErrorMap(undefined, 'Inventory item size already exists'),
+      );
+      errorMap.addChild(
+        'package',
+        new ValidationErrorMap(undefined, 'Inventory item size already exists'),
+      );
+      errorMap.addChild(
+        'measureAmount',
         new ValidationErrorMap(undefined, 'Inventory item size already exists'),
       );
     }

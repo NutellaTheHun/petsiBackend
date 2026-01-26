@@ -873,9 +873,21 @@ describe('order validator', () => {
     if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
       throw new Error('single menu item sizes not found');
     }
+    const newCategory = await categoryRepo.findOne({ where: { name: TYPE_A } });
+    if (!newCategory) {
+      throw new Error('new category not found');
+    }
 
     const dto: UpdateOrderDto = {
       recipient: 'Updated Recipient',
+      fulfillmentDate: new Date(),
+      fulfillmentType: 'delivery',
+      deliveryAddress: '123 Main St',
+      phoneNumber: '1234567890',
+      categoryId: newCategory.id,
+      isWeekly: true,
+      weeklyFulfillment: 'monday',
+      note: 'Updated Note',
       orderedItems:
         orderToUpdate.orderedItems && orderToUpdate.orderedItems.length > 0
           ? [
