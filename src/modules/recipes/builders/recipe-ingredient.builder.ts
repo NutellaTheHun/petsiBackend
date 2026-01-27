@@ -1,29 +1,32 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { RecipeService } from '../services/recipe.service';
 
 @Injectable()
 export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
   constructor(
-    @Inject(forwardRef(() => RecipeService))
-    private readonly recipeService: RecipeService,
+    @InjectRepository(Recipe)
+    private readonly recipeRepo: Repository<Recipe>,
 
-    @Inject(forwardRef(() => RecipeIngredientService))
-    private readonly ingredientService: RecipeIngredientService,
+    @InjectRepository(RecipeIngredient)
+    private readonly ingredientRepo: Repository<RecipeIngredient>,
 
-    private readonly itemService: InventoryItemService,
-    private readonly unitService: UnitOfMeasureService,
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
+
+    @InjectRepository(UnitOfMeasure)
+    private readonly unitRepo: Repository<UnitOfMeasure>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -99,7 +102,9 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const ingred = await this.ingredientService.findOne(dto.id);
+          const ingred = await this.ingredientRepo.findOne({
+            where: { id: dto.id },
+          });
           if (!ingred) {
             throw new Error('recipe ingredient not found');
           }
@@ -112,7 +117,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public parentRecipeById(id: number): this {
     return this.setPropById(
-      this.recipeService.findOne.bind(this.recipeService),
+      async (id: number) => await this.recipeRepo.findOne({ where: { id } }),
       'parentRecipe',
       id,
     );
@@ -120,7 +125,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public parentRecipeByName(name: string): this {
     return this.setPropByName(
-      this.recipeService.findOneByName.bind(this.recipeService),
+      async (name: string) =>
+        await this.recipeRepo.findOne({ where: { name } }),
       'parentRecipe',
       name,
     );
@@ -131,7 +137,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       return this.setPropByVal('ingredientInventoryItem', null);
     }
     return this.setPropById(
-      this.itemService.findOne.bind(this.itemService),
+      async (id: number) => await this.itemRepo.findOne({ where: { id } }),
       'ingredientInventoryItem',
       id,
     );
@@ -139,7 +145,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public ingredientInventoryItemByName(name: string): this {
     return this.setPropByName(
-      this.itemService.findOneByName.bind(this.itemService),
+      async (name: string) => await this.itemRepo.findOne({ where: { name } }),
       'ingredientInventoryItem',
       name,
     );
@@ -150,7 +156,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       return this.setPropByVal('ingredientRecipe', null);
     }
     return this.setPropById(
-      this.recipeService.findOne.bind(this.recipeService),
+      async (id: number) => await this.recipeRepo.findOne({ where: { id } }),
       'ingredientRecipe',
       id,
     );
@@ -158,7 +164,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public ingredientRecipeByName(name: string): this {
     return this.setPropByName(
-      this.recipeService.findOneByName.bind(this.recipeService),
+      async (name: string) =>
+        await this.recipeRepo.findOne({ where: { name } }),
       'ingredientRecipe',
       name,
     );
@@ -170,7 +177,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public quantityUnitOfMeasureById(id: number): this {
     return this.setPropById(
-      this.unitService.findOne.bind(this.unitService),
+      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
       'quantityUnitType',
       id,
     );
@@ -178,7 +185,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
   public quantityUnitOfMeasureByName(name: string): this {
     return this.setPropByName(
-      this.unitService.findOneByName.bind(this.unitService),
+      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
       'quantityUnitType',
       name,
     );

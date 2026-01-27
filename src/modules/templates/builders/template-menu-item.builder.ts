@@ -1,7 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
 import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
@@ -9,19 +11,18 @@ import { NestedUpdateTemplateMenuItemDto } from '../dto/template-menu-item/neste
 import { UpdateTemplateMenuItemDto } from '../dto/template-menu-item/update-template-menu-item.dto';
 import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template } from '../entities/template.entity';
-import { TemplateMenuItemService } from '../services/template-menu-item.service';
-import { TemplateService } from '../services/template.service';
 
 @Injectable()
 export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
   constructor(
-    @Inject(forwardRef(() => TemplateService))
-    private readonly templateService: TemplateService,
+    @InjectRepository(Template)
+    private readonly templateRepo: Repository<Template>,
 
-    @Inject(forwardRef(() => TemplateMenuItemService))
-    private readonly templateItemService: TemplateMenuItemService,
+    @InjectRepository(TemplateMenuItem)
+    private readonly templateItemRepo: Repository<TemplateMenuItem>,
 
-    private menuItemService: MenuItemService,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -86,7 +87,9 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const item = await this.templateItemService.findOne(dto.id);
+          const item = await this.templateItemRepo.findOne({
+            where: { id: dto.id },
+          });
           if (!item) {
             throw new Error('recipe ingredient not found');
           }
@@ -103,7 +106,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
   public menuItemById(id: number): this {
     return this.setPropById(
-      this.menuItemService.findOne.bind(this.menuItemService),
+      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
       'menuItem',
       id,
     );
@@ -111,7 +114,8 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
   public menuItemByName(name: string): this {
     return this.setPropByName(
-      this.menuItemService.findOneByName.bind(this.menuItemService),
+      async (name: string) =>
+        await this.menuItemRepo.findOne({ where: { name } }),
       'menuItem',
       name,
     );
@@ -123,7 +127,7 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
   public parentTemplateById(id: number): this {
     return this.setPropById(
-      this.templateService.findOne.bind(this.templateService),
+      async (id: number) => await this.templateRepo.findOne({ where: { id } }),
       'parentTemplate',
       id,
     );
@@ -131,7 +135,8 @@ export class TemplateMenuItemBuilder extends BuilderBase<TemplateMenuItem> {
 
   public parentTemplateByName(name: string): this {
     return this.setPropByName(
-      this.templateService.findOneByName.bind(this.templateService),
+      async (name: string) =>
+        await this.templateRepo.findOne({ where: { name } }),
       'parentTemplate',
       name,
     );

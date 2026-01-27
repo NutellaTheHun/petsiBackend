@@ -38,9 +38,9 @@ export type MenuItemContainerItemEntity = EntityBase<
  * - Can be { lemon: 2, trip: 2, currant: 2 }
  */
 @Unique([
-  'parentContainer',
-  'parentContainerSize',
-  'containedItem',
+  'parentMenuItem',
+  'parentItemSize',
+  'containedMenuItem',
   'containedItemSize',
 ])
 @Entity()

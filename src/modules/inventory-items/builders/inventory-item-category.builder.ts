@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
-import { InventoryItemService } from '../services/inventory-item.service';
+import { InventoryItem } from '../entities/inventory-item.entity';
 
 @Injectable()
 export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCategory> {
   constructor(
-    @Inject(forwardRef(() => InventoryItemService))
-    private readonly itemService: InventoryItemService,
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -42,7 +44,8 @@ export class InventoryItemCategoryBuilder extends BuilderBase<InventoryItemCateg
 
   public categoryItemsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.itemService.findEntitiesById.bind(this.itemService),
+      async (ids: number[]) =>
+        await this.itemRepo.find({ where: { id: In(ids) } }),
       'inventoryItems',
       ids,
     );

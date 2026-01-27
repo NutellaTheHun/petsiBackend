@@ -41,5 +41,5 @@ export class InventoryItemCategory {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.category)
-  inventoryItems: InventoryItem[] = [];
+  inventoryItems: InventoryItem[];
 }

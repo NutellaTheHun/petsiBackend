@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { InventoryItemSize } from '../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../inventory-items/entities/inventory-item.entity';
 import { InventoryItemsModule } from '../inventory-items/inventory-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -30,6 +31,7 @@ import { InventoryAreaValidator } from './validators/inventory-area.validator';
       InventoryAreaCount,
       InventoryAreaItem,
       InventoryItem,
+      InventoryItemSize,
     ]),
     InventoryItemsModule,
     CacheModule.register(),

@@ -88,13 +88,13 @@ export class MenuItem {
   })
   @ManyToMany(() => MenuItemSize)
   @JoinTable()
-  sizes: MenuItemSize[] = [];
+  sizes: MenuItemSize[];
 
   // API PROPERTY HERE
   @OneToMany(() => MenuItemContainerItem, (ci) => ci.parentMenuItem, {
     cascade: true,
   })
-  containerMenuItems: MenuItemContainerItem[] = [];
+  containerMenuItems: MenuItemContainerItem[];
 
   // API PROPERTY HERE
   /**
@@ -119,6 +119,6 @@ export class MenuItem {
    *
    * Can be any combination of Blueberry, Corn, and Bannana muffins, but always totaling to 6
    */
-  @Column({ nullable: true })
+  @Column({ type: 'integer', nullable: true })
   variableMaxAmount: number | null = null;
 }

@@ -1,12 +1,14 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItemSizeBuilder } from '../../inventory-items/builders/inventory-item-size.builder';
 import { CreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
-import { InventoryItemSizeService } from '../../inventory-items/services/inventory-item-size.service';
-import { InventoryItemService } from '../../inventory-items/services/inventory-item.service';
+import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
@@ -14,20 +16,22 @@ import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nes
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
-import { InventoryAreaCountService } from '../services/inventory-area-count.service';
-import { InventoryAreaItemService } from '../services/inventory-area-item.service';
 
 @Injectable()
 export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
   constructor(
-    @Inject(forwardRef(() => InventoryAreaCountService))
-    private readonly countService: InventoryAreaCountService,
+    @InjectRepository(InventoryAreaCount)
+    private readonly countRepo: Repository<InventoryAreaCount>,
 
-    @Inject(forwardRef(() => InventoryAreaItemService))
-    private readonly itemCountService: InventoryAreaItemService,
+    @InjectRepository(InventoryAreaItem)
+    private readonly areaItemRepo: Repository<InventoryAreaItem>,
 
-    private readonly itemService: InventoryItemService,
-    private readonly sizeService: InventoryItemSizeService,
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
+
+    @InjectRepository(InventoryItemSize)
+    private readonly sizeRepo: Repository<InventoryItemSize>,
+
     private readonly itemSizeBuilder: InventoryItemSizeBuilder,
 
     logger: AppLogger,
@@ -108,11 +112,14 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const countedItem = await this.itemCountService.findOne(dto.id, [
-            'parentInventoryCount',
-            'countedInventoryItem',
-            'countedItemSize',
-          ]);
+          const countedItem = await this.areaItemRepo.findOne({
+            where: { id: dto.id },
+            relations: [
+              'parentInventoryCount',
+              'countedInventoryItem',
+              'countedItemSize',
+            ],
+          });
           if (!countedItem) {
             throw new Error('counted item is null');
           }
@@ -125,7 +132,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
   public countedItemById(id: number): this {
     return this.setPropById(
-      this.itemService.findOne.bind(this.itemService),
+      async (id: number) => await this.itemRepo.findOne({ where: { id } }),
       'countedInventoryItem',
       id,
     );
@@ -133,7 +140,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
   public countedItemByName(name: string): this {
     return this.setPropByName(
-      this.itemService.findOne.bind(this.itemService),
+      async (name: string) => await this.itemRepo.findOne({ where: { name } }),
       'countedInventoryItem',
       name,
     );
@@ -148,7 +155,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
   public countedItemSizeById(id: number): this {
     return this.setPropById(
-      this.sizeService.findOne.bind(this.sizeService),
+      async (id: number) => await this.sizeRepo.findOne({ where: { id } }),
       'countedItemSize',
       id,
     );
@@ -170,7 +177,7 @@ export class InventoryAreaItemBuilder extends BuilderBase<InventoryAreaItem> {
 
   public parentInventoryCountById(id: number): this {
     return this.setPropById(
-      this.countService.findOne.bind(this.countService),
+      async (id: number) => await this.countRepo.findOne({ where: { id } }),
       'parentInventoryCount',
       id,
     );

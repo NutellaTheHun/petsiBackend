@@ -96,5 +96,5 @@ export class InventoryItem {
   @OneToMany(() => InventoryItemSize, (size) => size.inventoryItem, {
     cascade: true,
   })
-  sizes: InventoryItemSize[] = [];
+  sizes: InventoryItemSize[];
 }

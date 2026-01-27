@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../test/DatabaseTestContext';
 import { InventoryAreaTestUtil } from '../inventory-areas/utils/inventory-area-test.util';
 import { InventoryItemTestingUtil } from '../inventory-items/utils/inventory-item-testing.util';
@@ -7,17 +9,20 @@ import { LabelTestingUtil } from '../labels/utils/label-testing.util';
 import { MenuItemTestingUtil } from '../menu-items/utils/menu-item-testing.util';
 import { OrderTestingUtil } from '../orders/utils/order-testing.util';
 import { RecipeTestUtil } from '../recipes/utils/recipe-test.util';
-import { RoleService } from '../roles/services/role.service';
+import { Role } from '../roles/entities/role.entity';
 import { TemplateTestingUtil } from '../templates/utils/template-testing.util';
 import { UnitOfMeasureTestingUtil } from '../unit-of-measure/utils/unit-of-measure-testing.util';
-import { UserService } from '../users/services/user.service';
+import { User } from '../users/entities/user.entities';
 
 @Injectable()
 export class SeedService {
   constructor(
-    private readonly userService: UserService,
-    private readonly roleService: RoleService,
     private readonly configService: ConfigService,
+
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
+    @InjectRepository(Role)
+    private readonly roleRepo: Repository<Role>,
 
     private readonly inventoryAreaTestUtil: InventoryAreaTestUtil,
     private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
@@ -33,67 +38,71 @@ export class SeedService {
     // Seed Roles
     const roles = ['admin', 'manager', 'staff'];
     for (const role of roles) {
-      const roleExists = await this.roleService.findOneByName(role);
+      const roleExists = await this.roleRepo.findOne({ where: { name: role } });
       if (!roleExists) {
-        await this.roleService.create({
-          roleName: role,
-        });
+        await this.roleRepo.save({ name: role });
       }
     }
 
     // Seed Admin account
-    const adminExists = await this.userService.findOneByName('admin');
+    const adminExists = await this.userRepo.findOne({
+      where: { name: 'admin' },
+    });
     if (!adminExists) {
       const pwrd = this.configService.get<string>('seed_admin_pwrd') || 'error';
       if (!pwrd) {
         throw new Error();
       }
 
-      const roles = await this.roleService.findAll();
+      const roles = await this.roleRepo.find();
 
-      await this.userService.create({
-        username: 'admin',
+      await this.userRepo.save({
+        name: 'admin',
         password: pwrd,
-        roleIds: roles.items.map((role) => role.id),
+        roles: roles,
       });
     }
 
     //Seed Manager account
-    const managerExist = await this.userService.findOneByName('manager');
+    const managerExist = await this.userRepo.findOne({
+      where: { name: 'manager' },
+    });
     if (!managerExist) {
       const pwrd = 'manager';
       if (!pwrd) {
         throw new Error();
       }
 
-      const role = await this.roleService.findOneByName('manager');
+      const role = await this.roleRepo.findOne({ where: { name: 'manager' } });
       if (!role) {
         throw new Error();
       }
-      await this.userService.create({
-        username: 'manager',
+      await this.userRepo.save({
+        name: 'manager',
         password: pwrd,
-        roleIds: [role.id],
+        roles: [role],
       });
     }
 
     //Seed Staff account
-    const staffExists = await this.userService.findOneByName('staff');
+    const staffExists = await this.userRepo.findOne({
+      where: { name: 'staff' },
+    });
     if (!staffExists) {
       const pwrd = 'staff';
       if (!pwrd) {
         throw new Error();
       }
 
-      const role = await this.roleService.findOneByName('staff');
+      const role = await this.roleRepo.findOne({ where: { name: 'staff' } });
       if (!role) {
         throw new Error();
       }
 
-      await this.userService.create({
-        username: 'staff',
+      await this.userRepo.save({
+        name: 'staff',
         password: pwrd,
-        roleIds: [role.id],
+        roles: [role],
       });
     }
 
@@ -298,11 +307,9 @@ export class SeedService {
   private async seedRoleTestDb(ctx: DatabaseTestContext) {
     const roles = ['admin', 'manager', 'staff'];
     for (const role of roles) {
-      const roleExists = await this.roleService.findOneByName(role);
+      const roleExists = await this.roleRepo.findOne({ where: { name: role } });
       if (!roleExists) {
-        await this.roleService.create({
-          roleName: role,
-        });
+        await this.roleRepo.save({ name: role });
       }
     }
   }
@@ -322,58 +329,64 @@ export class SeedService {
     await this.seedRoleTestDb(ctx);
 
     // Seed Admin account
-    const adminExists = await this.userService.findOneByName('admin');
+    const adminExists = await this.userRepo.findOne({
+      where: { name: 'admin' },
+    });
     if (!adminExists) {
       const pwrd = this.configService.get<string>('seed_admin_pwrd') || 'error';
       if (!pwrd) {
         throw new Error();
       }
 
-      const roles = await this.roleService.findAll();
+      const roles = await this.roleRepo.find();
 
-      await this.userService.create({
-        username: 'admin',
+      await this.userRepo.save({
+        name: 'admin',
         password: pwrd,
-        roleIds: roles.items.map((role) => role.id),
+        roles: roles,
       });
     }
 
     //Seed Manager account
-    const managerExist = await this.userService.findOneByName('manager');
+    const managerExist = await this.userRepo.findOne({
+      where: { name: 'manager' },
+    });
     if (!managerExist) {
       const pwrd = 'manager';
       if (!pwrd) {
         throw new Error();
       }
 
-      const role = await this.roleService.findOneByName('manager');
+      const role = await this.roleRepo.findOne({ where: { name: 'manager' } });
       if (!role) {
         throw new Error();
       }
-      await this.userService.create({
-        username: 'manager',
+      await this.userRepo.save({
+        name: 'manager',
         password: pwrd,
-        roleIds: [role.id],
+        roles: [role],
       });
     }
 
     //Seed Staff account
-    const staffExists = await this.userService.findOneByName('staff');
+    const staffExists = await this.userRepo.findOne({
+      where: { name: 'staff' },
+    });
     if (!staffExists) {
       const pwrd = 'staff';
       if (!pwrd) {
         throw new Error();
       }
 
-      const role = await this.roleService.findOneByName('staff');
+      const role = await this.roleRepo.findOne({ where: { name: 'staff' } });
       if (!role) {
         throw new Error();
       }
 
-      await this.userService.create({
-        username: 'staff',
+      await this.userRepo.save({
+        name: 'staff',
         password: pwrd,
-        roleIds: [role.id],
+        roles: [role],
       });
     }
   }

@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
-import { InventoryItemService } from '../services/inventory-item.service';
+import { InventoryItem } from '../entities/inventory-item.entity';
 
 @Injectable()
 export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor> {
   constructor(
-    @Inject(forwardRef(() => InventoryItemService))
-    private readonly itemService: InventoryItemService,
+    @InjectRepository(InventoryItem)
+    private readonly itemRepo: Repository<InventoryItem>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -42,7 +44,8 @@ export class InventoryItemVendorBuilder extends BuilderBase<InventoryItemVendor>
 
   public vendorItemsByIds(ids: number[]): this {
     return this.setPropsByIds(
-      this.itemService.findEntitiesById.bind(this.itemService),
+      async (ids: number[]) =>
+        await this.itemRepo.find({ where: { id: In(ids) } }),
       'inventoryItems',
       ids,
     );

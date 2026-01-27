@@ -1,37 +1,42 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasureService } from '../../unit-of-measure/services/unit-of-measure.service';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
-import { RecipeCategoryService } from '../services/recipe-category.service';
-import { RecipeIngredientService } from '../services/recipe-ingredient.service';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeIngredientBuilder } from './recipe-ingredient.builder';
 
 @Injectable()
 export class RecipeBuilder extends BuilderBase<Recipe> {
   constructor(
-    @Inject(forwardRef(() => RecipeIngredientService))
-    private readonly ingredientService: RecipeIngredientService,
+    @InjectRepository(RecipeIngredient)
+    private readonly ingredientRepo: Repository<RecipeIngredient>,
 
-    @Inject(forwardRef(() => RecipeCategoryService))
-    private readonly categoryService: RecipeCategoryService,
+    @InjectRepository(RecipeCategory)
+    private readonly categoryRepo: Repository<RecipeCategory>,
 
-    @Inject(forwardRef(() => RecipeSubCategoryService))
-    private readonly subCategoryService: RecipeSubCategoryService,
+    @InjectRepository(RecipeSubCategory)
+    private readonly subCategoryRepo: Repository<RecipeSubCategory>,
+
+    @InjectRepository(UnitOfMeasure)
+    private readonly unitRepo: Repository<UnitOfMeasure>,
+
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
     @Inject(forwardRef(() => RecipeIngredientBuilder))
     private readonly ingredientBuilder: RecipeIngredientBuilder,
-
-    private readonly unitService: UnitOfMeasureService,
-    private readonly menuItemService: MenuItemService,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -124,7 +129,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
       return this.setPropByVal('producedMenuItem', null);
     }
     return this.setPropById(
-      this.menuItemService.findOne.bind(this.menuItemService),
+      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
       'producedMenuItem',
       id,
     );
@@ -132,7 +137,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public producedMenuItemByName(name: string): this {
     return this.setPropByName(
-      this.menuItemService.findOneByName.bind(this.menuItemService),
+      async (name: string) =>
+        await this.menuItemRepo.findOne({ where: { name } }),
       'producedMenuItem',
       name,
     );
@@ -144,7 +150,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public ingredientsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.ingredientService.findEntitiesById.bind(this.ingredientService),
+      async (ids: number[]) =>
+        await this.ingredientRepo.find({ where: { id: In(ids) } }),
       'ingredients',
       ids,
     );
@@ -177,7 +184,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
       return this.setPropByVal('batchResultUnitType', null);
     }
     return this.setPropById(
-      this.unitService.findOne.bind(this.unitService),
+      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
       'batchResultUnitType',
       id,
     );
@@ -185,7 +192,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public batchResultMeasurementByName(name: string): this {
     return this.setPropByName(
-      this.unitService.findOneByName.bind(this.unitService),
+      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
       'batchResultUnitType',
       name,
     );
@@ -203,7 +210,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
       return this.setPropByVal('servingSizeUnitType', null);
     }
     return this.setPropById(
-      this.unitService.findOne.bind(this.unitService),
+      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
       'servingSizeUnitType',
       id,
     );
@@ -211,7 +218,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public servingSizeMeasurementByName(name: string): this {
     return this.setPropByName(
-      this.unitService.findOneByName.bind(this.unitService),
+      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
       'servingSizeUnitType',
       name,
     );
@@ -229,7 +236,7 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
       return this.setPropByVal('category', null);
     }
     return this.setPropById(
-      this.categoryService.findOne.bind(this.categoryService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'category',
       id,
     );
@@ -237,7 +244,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public categoryByName(name: string): this {
     return this.setPropByName(
-      this.categoryService.findOneByName.bind(this.categoryService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'category',
       name,
     );
@@ -248,7 +256,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
       return this.setPropByVal('subCategory', null);
     }
     return this.setPropById(
-      this.subCategoryService.findOne.bind(this.subCategoryService),
+      async (id: number) =>
+        await this.subCategoryRepo.findOne({ where: { id } }),
       'subCategory',
       id,
     );
@@ -256,7 +265,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
 
   public subCategoryByName(name: string): this {
     return this.setPropByName(
-      this.subCategoryService.findOneByName.bind(this.subCategoryService),
+      async (name: string) =>
+        await this.subCategoryRepo.findOne({ where: { name } }),
       'subCategory',
       name,
     );

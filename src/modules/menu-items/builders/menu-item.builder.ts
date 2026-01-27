@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -7,22 +9,26 @@ import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { MenuItemCategoryService } from '../services/menu-item-category.service';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemContainerItemBuilder } from './menu-item-container-item.builder';
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem> {
   constructor(
-    @Inject(forwardRef(() => MenuItemCategoryService))
-    private readonly categoryService: MenuItemCategoryService,
+    @InjectRepository(MenuItemCategory)
+    private readonly categoryRepo: Repository<MenuItemCategory>,
+
+    @InjectRepository(MenuItemContainerItem)
+    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
+
+    @InjectRepository(MenuItemSize)
+    private readonly sizeRepo: Repository<MenuItemSize>,
 
     @Inject(forwardRef(() => MenuItemContainerItemBuilder))
     private readonly containerItemBuilder: MenuItemContainerItemBuilder,
-
-    private readonly sizeService: MenuItemSizeService,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -98,7 +104,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
 
   public validSizesById(ids: number[]): this {
     return this.setPropsByIds(
-      this.sizeService.findEntitiesById.bind(this.sizeService),
+      async (ids: number[]) =>
+        await this.sizeRepo.find({ where: { id: In(ids) } }),
       'sizes',
       ids,
     );
@@ -109,7 +116,7 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
       return this.setPropByVal('category', null);
     }
     return this.setPropById(
-      this.categoryService.findOne.bind(this.categoryService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'category',
       id,
     );
@@ -117,7 +124,8 @@ export class MenuItemBuilder extends BuilderBase<MenuItem> {
 
   public categorybyName(name: string): this {
     return this.setPropByName(
-      this.categoryService.findOneByName.bind(this.categoryService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'category',
       name,
     );

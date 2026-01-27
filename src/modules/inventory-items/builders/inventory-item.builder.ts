@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -7,23 +9,23 @@ import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nes
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemSize } from '../entities/inventory-item-size.entity';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemCategoryService } from '../services/inventory-item-category.service';
-import { InventoryItemSizeService } from '../services/inventory-item-size.service';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 import { InventoryItemSizeBuilder } from './inventory-item-size.builder';
 
 @Injectable()
 export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
   constructor(
-    @Inject(forwardRef(() => InventoryItemCategoryService))
-    private readonly categoryService: InventoryItemCategoryService,
+    @InjectRepository(InventoryItemCategory)
+    private readonly categoryRepo: Repository<InventoryItemCategory>,
 
-    @Inject(forwardRef(() => InventoryItemSizeService))
-    private readonly sizeService: InventoryItemSizeService,
+    @InjectRepository(InventoryItemSize)
+    private readonly sizeRepo: Repository<InventoryItemSize>,
 
-    @Inject(forwardRef(() => InventoryItemVendorService))
-    private readonly vendorService: InventoryItemVendorService,
+    @InjectRepository(InventoryItemVendor)
+    private readonly vendorRepo: Repository<InventoryItemVendor>,
 
     @Inject(forwardRef(() => InventoryItemSizeBuilder))
     private readonly itemSizeBuilder: InventoryItemSizeBuilder,
@@ -70,7 +72,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
   public sizesByIds(ids: number[]): this {
     return this.setPropsByIds(
-      this.sizeService.findEntitiesById.bind(this.sizeService),
+      async (ids: number[]) =>
+        await this.sizeRepo.find({ where: { id: In(ids) } }),
       'sizes',
       ids,
     );
@@ -96,7 +99,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
       return this.setPropByVal('category', null);
     }
     return this.setPropById(
-      this.categoryService.findOne.bind(this.categoryService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'category',
       id,
     );
@@ -104,7 +107,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
   public categoryByName(name: string): this {
     return this.setPropByName(
-      this.categoryService.findOneByName.bind(this.categoryService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'category',
       name,
     );
@@ -115,7 +119,7 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
       return this.setPropByVal('vendor', null);
     }
     return this.setPropById(
-      this.vendorService.findOne.bind(this.vendorService),
+      async (id: number) => await this.vendorRepo.findOne({ where: { id } }),
       'vendor',
       id,
     );
@@ -123,7 +127,8 @@ export class InventoryItemBuilder extends BuilderBase<InventoryItem> {
 
   public vendorByName(name: string): this {
     return this.setPropByName(
-      this.vendorService.findOneByName.bind(this.vendorService),
+      async (name: string) =>
+        await this.vendorRepo.findOne({ where: { name } }),
       'vendor',
       name,
     );

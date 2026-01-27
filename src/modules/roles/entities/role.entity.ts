@@ -38,5 +38,5 @@ export class Role {
     isArray: true,
   })
   @ManyToMany(() => User, (user) => user.roles)
-  users: User[] = [];
+  users: User[];
 }

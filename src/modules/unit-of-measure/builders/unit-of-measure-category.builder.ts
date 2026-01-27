@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
-import { UnitOfMeasureService } from '../services/unit-of-measure.service';
+import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 
 @Injectable()
 export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCategory> {
   constructor(
-    @Inject(forwardRef(() => UnitOfMeasureService))
-    private readonly unitService: UnitOfMeasureService,
+    @InjectRepository(UnitOfMeasure)
+    private readonly unitRepo: Repository<UnitOfMeasure>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -48,7 +50,8 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
 
   public unitsOfMeasureById(ids: number[]): this {
     return this.setPropsByIds(
-      this.unitService.findEntitiesById.bind(this.unitService),
+      async (ids: number[]) =>
+        await this.unitRepo.find({ where: { id: In(ids) } }),
       'units',
       ids,
     );
@@ -59,7 +62,7 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
       return this.setPropByVal('baseConversionUnit', null);
     }
     return this.setPropById(
-      this.unitService.findOne.bind(this.unitService),
+      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
       'baseConversionUnit',
       id,
     );
@@ -67,7 +70,7 @@ export class UnitOfMeasureCategoryBuilder extends BuilderBase<UnitOfMeasureCateg
 
   public async baseConversionUnitByName(name: string): Promise<this> {
     return this.setPropByName(
-      this.unitService.findOneByName.bind(this.unitService),
+      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
       'baseConversionUnit',
       name,
     );

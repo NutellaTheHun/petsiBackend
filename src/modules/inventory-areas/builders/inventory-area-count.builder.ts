@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -8,18 +10,18 @@ import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-in
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
-import { InventoryAreaItemService } from '../services/inventory-area-item.service';
-import { InventoryAreaService } from '../services/inventory-area.service';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaItemBuilder } from './inventory-area-item.builder';
 
 @Injectable()
 export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
   constructor(
-    @Inject(forwardRef(() => InventoryAreaService))
-    private readonly areaService: InventoryAreaService,
+    @InjectRepository(InventoryArea)
+    private readonly areaRepo: Repository<InventoryArea>,
 
-    @Inject(forwardRef(() => InventoryAreaItemService))
-    private readonly areaItemService: InventoryAreaItemService,
+    @InjectRepository(InventoryAreaItem)
+    private readonly areaItemRepo: Repository<InventoryAreaItem>,
 
     @Inject(forwardRef(() => InventoryAreaItemBuilder))
     private readonly itemCountBuilder: InventoryAreaItemBuilder,
@@ -55,7 +57,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
 
   public inventoryAreaById(id: number): this {
     return this.setPropById(
-      this.areaService.findOne.bind(this.areaService),
+      async (id: number) => await this.areaRepo.findOne({ where: { id } }),
       'inventoryArea',
       id,
     );
@@ -63,7 +65,7 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
 
   public inventoryAreaByName(name: string): this {
     return this.setPropByName(
-      this.areaService.findOneByName.bind(this.areaService),
+      async (name: string) => await this.areaRepo.findOne({ where: { name } }),
       'inventoryArea',
       name,
     );
@@ -71,7 +73,8 @@ export class InventoryAreaCountBuilder extends BuilderBase<InventoryAreaCount> {
 
   public countedItemsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.areaItemService.findEntitiesById.bind(this.areaItemService),
+      async (ids: number[]) =>
+        await this.areaItemRepo.find({ where: { id: In(ids) } }),
       'countedInventoryItems',
       ids,
     );

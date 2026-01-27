@@ -38,5 +38,5 @@ export class OrderCategory {
     isArray: true,
   })
   @OneToMany(() => Order, (order) => order.category)
-  orders: Order[] = [];
+  orders: Order[];
 }

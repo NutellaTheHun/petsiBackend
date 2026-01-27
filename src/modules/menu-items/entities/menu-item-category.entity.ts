@@ -38,5 +38,5 @@ export class MenuItemCategory {
     isArray: true,
   })
   @OneToMany(() => MenuItem, (item) => item.category)
-  menuItems: MenuItem[] = [];
+  menuItems: MenuItem[];
 }

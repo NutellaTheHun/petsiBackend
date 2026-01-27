@@ -89,7 +89,7 @@ export class OrderMenuItem {
     (orderItem) => orderItem.parentOrderMenuItem,
     { cascade: true, eager: true },
   )
-  containerOrderMenuItems: OrderContainerItem[] = [];
+  containerOrderMenuItems: OrderContainerItem[];
 
   /**
    * The parent {@link Order} of the item.

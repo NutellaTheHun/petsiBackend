@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { UnitOfMeasure } from '../unit-of-measure/entities/unit-of-measure.entity';
 import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 import { InventoryItemCategoryBuilder } from './builders/inventory-item-category.builder';
 import { InventoryItemPackageBuilder } from './builders/inventory-item-package.builder';
@@ -40,6 +41,7 @@ import { InventoryItemValidator } from './validators/inventory-item.validator';
       InventoryItemPackage,
       InventoryItemSize,
       InventoryItemVendor,
+      UnitOfMeasure,
     ]),
 
     UnitOfMeasureModule,

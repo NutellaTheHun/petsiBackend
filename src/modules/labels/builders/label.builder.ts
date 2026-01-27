@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
+import { LabelType } from '../entities/label-type.entity';
 import { Label } from '../entities/label.entity';
-import { LabelTypeService } from '../services/label-type.service';
 
 @Injectable()
 export class LabelBuilder extends BuilderBase<Label> {
   constructor(
-    private readonly itemService: MenuItemService,
-    private readonly typeService: LabelTypeService,
+    @InjectRepository(MenuItem)
+    private readonly itemRepo: Repository<MenuItem>,
+
+    @InjectRepository(LabelType)
+    private readonly typeRepo: Repository<LabelType>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -46,7 +51,7 @@ export class LabelBuilder extends BuilderBase<Label> {
 
   public menuItemById(id: number): this {
     return this.setPropById(
-      this.itemService.findOne.bind(this.itemService),
+      async (id: number) => await this.itemRepo.findOne({ where: { id } }),
       'menuItem',
       id,
     );
@@ -54,7 +59,7 @@ export class LabelBuilder extends BuilderBase<Label> {
 
   public menuItemByName(name: string): this {
     return this.setPropByName(
-      this.itemService.findOneByName.bind(this.itemService),
+      async (name: string) => await this.itemRepo.findOne({ where: { name } }),
       'menuItem',
       name,
     );
@@ -66,7 +71,7 @@ export class LabelBuilder extends BuilderBase<Label> {
 
   public labelTypeById(id: number): this {
     return this.setPropById(
-      this.typeService.findOne.bind(this.typeService),
+      async (id: number) => await this.typeRepo.findOne({ where: { id } }),
       'labelType',
       id,
     );
@@ -74,7 +79,7 @@ export class LabelBuilder extends BuilderBase<Label> {
 
   public labelTypeByName(name: string): this {
     return this.setPropByName(
-      this.typeService.findOneByName.bind(this.typeService),
+      async (name: string) => await this.typeRepo.findOne({ where: { name } }),
       'labelType',
       name,
     );

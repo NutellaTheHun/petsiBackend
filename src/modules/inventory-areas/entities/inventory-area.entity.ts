@@ -49,5 +49,5 @@ export class InventoryArea {
     isArray: true,
   })
   @OneToMany(() => InventoryAreaCount, (areaCount) => areaCount.inventoryArea)
-  inventoryCounts: InventoryAreaCount[] = [];
+  inventoryCounts: InventoryAreaCount[];
 }

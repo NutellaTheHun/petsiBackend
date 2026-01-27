@@ -1,8 +1,10 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
-import { MenuItemSizeService } from '../../menu-items/services/menu-item-size.service';
-import { MenuItemService } from '../../menu-items/services/menu-item.service';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
@@ -10,20 +12,18 @@ import { NestedUpdateOrderContainerItemDto } from '../dto/order-container-item/n
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
-import { OrderContainerItemService } from '../services/order-container-item.service';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
 
 @Injectable()
 export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
   constructor(
-    @Inject(forwardRef(() => OrderContainerItemService))
-    private readonly componentService: OrderContainerItemService,
-
-    @Inject(forwardRef(() => OrderMenuItemService))
-    private readonly orderItemService: OrderMenuItemService,
-
-    private readonly menuItemService: MenuItemService,
-    private readonly sizeService: MenuItemSizeService,
+    @InjectRepository(OrderContainerItem)
+    private readonly containerItemRepo: Repository<OrderContainerItem>,
+    @InjectRepository(OrderMenuItem)
+    private readonly orderItemRepo: Repository<OrderMenuItem>,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
+    @InjectRepository(MenuItemSize)
+    private readonly sizeRepo: Repository<MenuItemSize>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -89,7 +89,9 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const item = await this.componentService.findOne(dto.id);
+          const item = await this.containerItemRepo.findOne({
+            where: { id: dto.id },
+          });
           if (!item) {
             throw new Error('order container item not found');
           }
@@ -102,7 +104,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
 
   private containedItemSizeById(id: number): this {
     return this.setPropById(
-      this.sizeService.findOne.bind(this.sizeService),
+      async (id: number) => await this.sizeRepo.findOne({ where: { id } }),
       'containedItemSize',
       id,
     );
@@ -110,7 +112,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
 
   private containedMenuItemById(id: number): this {
     return this.setPropById(
-      this.menuItemService.findOne.bind(this.menuItemService),
+      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
       'containedMenuItem',
       id,
     );
@@ -122,7 +124,7 @@ export class OrderContainerItemBuilder extends BuilderBase<OrderContainerItem> {
 
   private parentOrderMenuItemById(id: number): this {
     return this.setPropById(
-      this.orderItemService.findOne.bind(this.orderItemService),
+      async (id: number) => await this.orderItemRepo.findOne({ where: { id } }),
       'parentOrderMenuItem',
       id,
     );

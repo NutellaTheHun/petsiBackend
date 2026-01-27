@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
@@ -11,10 +12,12 @@ import {
 } from '../entities/inventory-area.entity';
 import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
+@Injectable()
 export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
   constructor(
     @InjectRepository(InventoryArea)
     repo: Repository<InventoryArea>,
+
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryAreaValidator,

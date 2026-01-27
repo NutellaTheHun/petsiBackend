@@ -1,4 +1,6 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -8,21 +10,19 @@ import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nes
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
-import { RecipeCategoryService } from '../services/recipe-category.service';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
-import { RecipeService } from '../services/recipe.service';
+import { Recipe } from '../entities/recipe.entity';
 
 @Injectable()
 export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
   constructor(
-    @Inject(forwardRef(() => RecipeCategoryService))
-    private readonly categoryService: RecipeCategoryService,
+    @InjectRepository(RecipeCategory)
+    private readonly categoryRepo: Repository<RecipeCategory>,
 
-    @Inject(forwardRef(() => RecipeSubCategoryService))
-    private readonly subCategoryService: RecipeSubCategoryService,
+    @InjectRepository(RecipeSubCategory)
+    private readonly subCategoryRepo: Repository<RecipeSubCategory>,
 
-    @Inject(forwardRef(() => RecipeService))
-    private readonly recipeService: RecipeService,
+    @InjectRepository(Recipe)
+    private readonly recipeRepo: Repository<Recipe>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -67,7 +67,9 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const subCat = await this.subCategoryService.findOne(dto.id);
+          const subCat = await this.subCategoryRepo.findOne({
+            where: { id: dto.id },
+          });
           if (!subCat) {
             throw new Error('recipe ingredient not found');
           }
@@ -84,7 +86,7 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
 
   public parentCategoryById(id: number): this {
     return this.setPropById(
-      this.categoryService.findOne.bind(this.categoryService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'parentCategory',
       id,
     );
@@ -92,7 +94,8 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
 
   public parentCategoryByName(name: string): this {
     return this.setPropByName(
-      this.categoryService.findOneByName.bind(this.categoryService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'parentCategory',
       name,
     );
@@ -100,7 +103,8 @@ export class RecipeSubCategoryBuilder extends BuilderBase<RecipeSubCategory> {
 
   public recipesById(ids: number[]): this {
     return this.setPropsByIds(
-      this.recipeService.findEntitiesById.bind(this.recipeService),
+      async (ids: number[]) =>
+        await this.recipeRepo.find({ where: { id: In(ids) } }),
       'recipes',
       ids,
     );

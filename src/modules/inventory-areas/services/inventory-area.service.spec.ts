@@ -38,13 +38,14 @@ describe('Inventory area service', () => {
     const module: TestingModule = await getInventoryAreasTestingModule({
       areaServiceClass: TestableInventoryAreaService,
     });
+    dataSource = module.get(DataSource);
 
     dbTestContext = new DatabaseTestContext();
     testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
     await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
 
     service = module.get(InventoryAreaService) as TestableInventoryAreaService;
-    dataSource = module.get(DataSource);
+
     inventoryAreaRepo = module.get(getRepositoryToken(InventoryArea));
   });
 

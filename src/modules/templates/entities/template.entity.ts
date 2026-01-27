@@ -59,5 +59,5 @@ export class Template {
     (templateItem) => templateItem.parentTemplate,
     { cascade: true },
   )
-  templateMenuItems: TemplateMenuItem[] = [];
+  templateMenuItems: TemplateMenuItem[];
 }

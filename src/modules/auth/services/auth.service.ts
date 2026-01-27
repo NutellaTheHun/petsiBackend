@@ -1,15 +1,18 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UserService } from '../../users/services/user.service';
+import { User } from '../../users/entities/user.entities';
 import { isPassHashMatch } from '../utils/hash';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly configSerivce: ConfigService,
     private readonly requestContextService: RequestContextService,
@@ -22,7 +25,10 @@ export class AuthService {
   ): Promise<{ access_token: string; roles: string[] }> {
     const requestId = this.requestContextService.getRequestId();
 
-    const user = await this.userService.findOneByName(username, ['roles']);
+    const user = await this.userRepo.findOne({
+      where: { name: username },
+      relations: ['roles'],
+    });
     if (!user) {
       this.logger.logAction('Authentication', requestId, 'SIGN IN', 'FAIL', {
         requestId,

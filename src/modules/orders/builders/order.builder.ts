@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -7,18 +9,19 @@ import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-crea
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderCategory } from '../entities/order-category.entity';
+import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
-import { OrderCategoryService } from '../services/order-category.service';
-import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderMenuItemBuilder } from './order-menu-item.builder';
 
 @Injectable()
 export class OrderBuilder extends BuilderBase<Order> {
   constructor(
-    private readonly typeService: OrderCategoryService,
+    @InjectRepository(OrderCategory)
+    private readonly categoryRepo: Repository<OrderCategory>,
 
-    @Inject(forwardRef(() => OrderMenuItemService))
-    private readonly itemService: OrderMenuItemService,
+    @InjectRepository(OrderMenuItem)
+    private readonly orderItemRepo: Repository<OrderMenuItem>,
 
     @Inject(forwardRef(() => OrderMenuItemBuilder))
     private readonly itemBuilder: OrderMenuItemBuilder,
@@ -115,7 +118,7 @@ export class OrderBuilder extends BuilderBase<Order> {
 
   public categoryById(id: number): this {
     return this.setPropById(
-      this.typeService.findOne.bind(this.typeService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'category',
       id,
     );
@@ -123,7 +126,8 @@ export class OrderBuilder extends BuilderBase<Order> {
 
   public categoryByName(name: string): this {
     return this.setPropByName(
-      this.typeService.findOneByName.bind(this.typeService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'category',
       name,
     );
@@ -179,7 +183,8 @@ export class OrderBuilder extends BuilderBase<Order> {
 
   public orderedItemsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.itemService.findEntitiesById.bind(this.itemService),
+      async (ids: number[]) =>
+        await this.orderItemRepo.find({ where: { id: In(ids) } }),
       'orderedItems',
       ids,
     );

@@ -72,5 +72,5 @@ export class UnitOfMeasureCategory {
     isArray: true,
   })
   @OneToMany(() => UnitOfMeasure, (unit) => unit.category)
-  units: UnitOfMeasure[] = [];
+  units: UnitOfMeasure[];
 }

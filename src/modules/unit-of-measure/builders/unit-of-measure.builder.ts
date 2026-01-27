@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
-import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
   constructor(
-    @Inject(forwardRef(() => UnitOfMeasureCategoryService))
-    private readonly categoryService: UnitOfMeasureCategoryService,
+    @InjectRepository(UnitOfMeasureCategory)
+    private readonly categoryRepo: Repository<UnitOfMeasureCategory>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -62,7 +64,7 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
       return this.setPropByVal('category', null);
     }
     return this.setPropById(
-      this.categoryService.findOne.bind(this.categoryService),
+      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
       'category',
       id,
     );
@@ -70,7 +72,8 @@ export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
 
   public categoryByName(name: string): this {
     return this.setPropByName(
-      this.categoryService.findOneByName.bind(this.categoryService),
+      async (name: string) =>
+        await this.categoryRepo.findOne({ where: { name } }),
       'category',
       name,
     );

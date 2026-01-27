@@ -1,4 +1,6 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -7,21 +9,20 @@ import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
-import { MenuItemSizeService } from '../services/menu-item-size.service';
-import { MenuItemService } from '../services/menu-item.service';
 
 @Injectable()
 export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerItem> {
   constructor(
-    @Inject(forwardRef(() => MenuItemContainerItemService))
-    private readonly componentService: MenuItemContainerItemService,
+    @InjectRepository(MenuItemContainerItem)
+    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
 
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly menuItemService: MenuItemService,
+    @InjectRepository(MenuItem)
+    private readonly menuItemRepo: Repository<MenuItem>,
 
-    private readonly itemSizeService: MenuItemSizeService,
+    @InjectRepository(MenuItemSize)
+    private readonly itemSizeRepo: Repository<MenuItemSize>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -89,7 +90,9 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
           results.push(await this.buildCreateDto(dto, parent, dto.createId));
         }
         if ('id' in dto) {
-          const comp = await this.componentService.findOne(dto.id);
+          const comp = await this.containerItemRepo.findOne({
+            where: { id: dto.id },
+          });
           if (!comp) {
             throw new Error('menu item container item not found');
           }
@@ -102,7 +105,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public parentContainerById(id: number): this {
     return this.setPropById(
-      this.menuItemService.findOne.bind(this.menuItemService),
+      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
       'parentMenuItem',
       id,
     );
@@ -110,7 +113,8 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public parentContainerByName(name: string): this {
     return this.setPropByName(
-      this.menuItemService.findOneByName.bind(this.menuItemService),
+      async (name: string) =>
+        await this.menuItemRepo.findOne({ where: { name } }),
       'parentMenuItem',
       name,
     );
@@ -118,7 +122,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public parentContainerSizeById(id: number): this {
     return this.setPropById(
-      this.itemSizeService.findOne.bind(this.itemSizeService),
+      async (id: number) => await this.itemSizeRepo.findOne({ where: { id } }),
       'parentItemSize',
       id,
     );
@@ -126,7 +130,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public containedItemById(id: number): this {
     return this.setPropById(
-      this.menuItemService.findOne.bind(this.menuItemService),
+      async (id: number) => await this.menuItemRepo.findOne({ where: { id } }),
       'containedMenuItem',
       id,
     );
@@ -134,7 +138,8 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public containedItemByName(name: string): this {
     return this.setPropByName(
-      this.menuItemService.findOneByName.bind(this.menuItemService),
+      async (name: string) =>
+        await this.menuItemRepo.findOne({ where: { name } }),
       'containedMenuItem',
       name,
     );
@@ -142,7 +147,7 @@ export class MenuItemContainerItemBuilder extends BuilderBase<MenuItemContainerI
 
   public containedItemSizeById(id: number): this {
     return this.setPropById(
-      this.itemSizeService.findOne.bind(this.itemSizeService),
+      async (id: number) => await this.itemSizeRepo.findOne({ where: { id } }),
       'containedItemSize',
       id,
     );

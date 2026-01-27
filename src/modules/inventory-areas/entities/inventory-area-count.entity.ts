@@ -72,5 +72,5 @@ export class InventoryAreaCount {
     cascade: true,
   })
   @IsArray()
-  countedInventoryItems: InventoryAreaItem[] = [];
+  countedInventoryItems: InventoryAreaItem[];
 }

@@ -204,5 +204,5 @@ export class Order {
     isArray: true,
   })
   @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, { cascade: true })
-  orderedItems: OrderMenuItem[] = [];
+  orderedItems: OrderMenuItem[];
 }

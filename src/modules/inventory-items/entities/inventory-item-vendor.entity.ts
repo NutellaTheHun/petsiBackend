@@ -38,5 +38,5 @@ export class InventoryItemVendor {
     isArray: true,
   })
   @OneToMany(() => InventoryItem, (item) => item.vendor)
-  inventoryItems: InventoryItem[] = [];
+  inventoryItems: InventoryItem[];
 }

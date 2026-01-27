@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
@@ -37,6 +38,7 @@ import { OrderValidator } from './validators/order.validator';
       OrderMenuItem,
       OrderContainerItem,
       MenuItem,
+      MenuItemSize,
     ]),
     MenuItemsModule,
     CacheModule.register(),

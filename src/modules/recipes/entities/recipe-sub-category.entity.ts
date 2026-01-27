@@ -5,7 +5,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
@@ -31,7 +30,6 @@ export type RecipeSubCategoryEntity = EntityBase<
  * Such as "Scone" or "Muffin" within the "Pastry" category.
  */
 @Entity()
-@Unique(['subCategoryName', 'parentCategory'])
 export class RecipeSubCategory {
   @ApiProperty({
     example: 1,
@@ -57,7 +55,7 @@ export class RecipeSubCategory {
     isArray: true,
   })
   @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
-  recipes: Recipe[] = [];
+  recipes: Recipe[];
 
   /**
    * The owning category

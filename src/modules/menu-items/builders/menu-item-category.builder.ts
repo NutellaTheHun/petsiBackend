@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
-import { MenuItemService } from '../services/menu-item.service';
+import { MenuItem } from '../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
   constructor(
-    @Inject(forwardRef(() => MenuItemService))
-    private readonly itemService: MenuItemService,
+    @InjectRepository(MenuItem)
+    private readonly itemRepo: Repository<MenuItem>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -42,7 +44,8 @@ export class MenuItemCategoryBuilder extends BuilderBase<MenuItemCategory> {
 
   public menuItemsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.itemService.findEntitiesById.bind(this.itemService),
+      async (ids: number[]) =>
+        await this.itemRepo.find({ where: { id: In(ids) } }),
       'menuItems',
       ids,
     );

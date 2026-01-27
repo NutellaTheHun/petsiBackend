@@ -1,17 +1,19 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
+import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
-import { InventoryAreaCountService } from '../services/inventory-area-count.service';
 
 @Injectable()
 export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
   constructor(
-    @Inject(forwardRef(() => InventoryAreaCountService))
-    private readonly countService: InventoryAreaCountService,
+    @InjectRepository(InventoryAreaCount)
+    private readonly countRepo: Repository<InventoryAreaCount>,
     logger: AppLogger,
 
     requestContextService: RequestContextService,
@@ -37,7 +39,8 @@ export class InventoryAreaBuilder extends BuilderBase<InventoryArea> {
 
   public inventoryCountsById(ids: number[]): this {
     return this.setPropsByIds(
-      this.countService.findEntitiesById.bind(this.countService),
+      async (ids: number[]) =>
+        await this.countRepo.find({ where: { id: In(ids) } }),
       'inventoryCounts',
       ids,
     );

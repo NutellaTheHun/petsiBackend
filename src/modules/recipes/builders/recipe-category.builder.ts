@@ -1,4 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -8,15 +10,14 @@ import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-re
 import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
-import { RecipeService } from '../services/recipe.service';
+import { Recipe } from '../entities/recipe.entity';
 import { RecipeSubCategoryBuilder } from './recipe-sub-category.builder';
 
 @Injectable()
 export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
   constructor(
-    @Inject(forwardRef(() => RecipeSubCategoryService))
-    private readonly recipeService: RecipeService,
+    @InjectRepository(Recipe)
+    private readonly recipeRepo: Repository<Recipe>,
 
     @Inject(forwardRef(() => RecipeSubCategoryBuilder))
     private readonly subCategoryBuilder: RecipeSubCategoryBuilder,
@@ -71,7 +72,8 @@ export class RecipeCategoryBuilder extends BuilderBase<RecipeCategory> {
 
   public recipesById(ids: number[]): this {
     return this.setPropsByIds(
-      this.recipeService.findEntitiesById.bind(this.recipeService),
+      async (ids: number[]) =>
+        await this.recipeRepo.find({ where: { id: In(ids) } }),
       'recipes',
       ids,
     );
