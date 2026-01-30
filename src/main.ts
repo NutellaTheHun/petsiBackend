@@ -7,59 +7,60 @@ import { AppModule } from './app.module';
 import { GlobalHttpExceptionFilter } from './common/exceptions/global-http-exception-filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(
-    AppModule,
-    /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
-    { bufferLogs: false }, // optional, buffers logs until logger is initialized
-  );
+    const app = await NestFactory.create(
+        AppModule,
+        /*{ logger: ['error', 'warn', 'log', 'debug'] }*/
+        { bufferLogs: false }, // optional, buffers logs until logger is initialized
+    );
 
-  // Recommended when docker containerization
-  app.enableShutdownHooks();
+    // Recommended when docker containerization
+    app.enableShutdownHooks();
 
-  const config = new DocumentBuilder()
-    .setTitle('PetsiBackend')
-    .setDescription('Petsi CRUD API documentation')
-    .addBearerAuth()
-    .setVersion('1.0')
-    .build();
+    const config = new DocumentBuilder()
+        .setTitle('PetsiBackend')
+        .setDescription('Petsi CRUD API documentation')
+        .addBearerAuth()
+        .setVersion('1.0')
+        .build();
 
-  const configService = app.get(ConfigService);
-  const apiDocPath = configService.get('API_DOC_PATH') || 'api';
+    const configService = app.get(ConfigService);
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(apiDocPath, app, document);
+    const apiDocPath = configService.get('API_DOC_PATH') || 'api';
 
-  //writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
-  if (process.env.NODE_ENV !== 'production') {
-    writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
-  }
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup(apiDocPath, app, document);
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true, // strips unknown properties
-      forbidNonWhitelisted: true, // throws on unknown properties
-      transform: true, // auto-transform payload to DTO instances
-      exceptionFactory: (errors) => {
-        console.error('Validation errors:', errors); // logs errors server-side
-        return new BadRequestException(errors);
-      },
-    }),
-  );
+    //writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
+    if (process.env.NODE_ENV !== 'production') {
+        writeFileSync('./swagger.json', JSON.stringify(document, null, 2));
+    }
 
-  //app.useLogger(app.get(Logger));
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true, // strips unknown properties
+            forbidNonWhitelisted: true, // throws on unknown properties
+            transform: true, // auto-transform payload to DTO instances
+            exceptionFactory: (errors) => {
+                console.error('Validation errors:', errors); // logs errors server-side
+                return new BadRequestException(errors);
+            },
+        }),
+    );
 
-  app.useGlobalFilters(new GlobalHttpExceptionFilter());
+    //app.useLogger(app.get(Logger));
 
-  app.enableCors(); // FOR DEVELOPEMENT
-  // When in production, look into this
-  /*app.enableCors({
-    origin:
-      process.env.NODE_ENV === 'production' ? ['https://yourdomain.com'] : true,
-  });*/
+    app.useGlobalFilters(new GlobalHttpExceptionFilter());
 
-  app.getHttpAdapter().getInstance().set('etag', false);
+    app.enableCors(); // FOR DEVELOPEMENT
+    // When in production, look into this
+    /*app.enableCors({
+      origin:
+        process.env.NODE_ENV === 'production' ? ['https://yourdomain.com'] : true,
+    });*/
 
-  //await app.listen(process.env.PORT ?? 3000);
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
+    app.getHttpAdapter().getInstance().set('etag', false);
+
+    //await app.listen(process.env.PORT ?? 3000);
+    await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
 }
 bootstrap();

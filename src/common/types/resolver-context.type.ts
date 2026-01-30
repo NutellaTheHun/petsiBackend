@@ -1,1 +1,1 @@
-type ResolverContext = Record<string, any>;
+export type ResolverContext = Record<string, any>;
