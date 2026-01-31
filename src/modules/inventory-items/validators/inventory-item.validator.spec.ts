@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationMessage } from '../../../common/validation/validation-error';
+import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { POUND } from '../../unit-of-measure/utils/constants';
@@ -17,413 +17,413 @@ import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemValidator } from './inventory-item.validator';
 
 describe('inventory item validator', () => {
-  let testingUtil: InventoryItemTestingUtil;
-  let dbTestContext: DatabaseTestContext;
+    let testingUtil: InventoryItemTestingUtil;
+    let dbTestContext: DatabaseTestContext;
 
-  let validator: InventoryItemValidator;
-  let itemRepo: Repository<InventoryItem>;
+    let validator: InventoryItemValidator;
+    let itemRepo: Repository<InventoryItem>;
 
-  let categoryRepo: Repository<InventoryItemCategory>;
-  let vendorRepo: Repository<InventoryItemVendor>;
-  let unitRepo: Repository<UnitOfMeasure>;
-  let packageRepo: Repository<InventoryItemPackage>;
+    let categoryRepo: Repository<InventoryItemCategory>;
+    let vendorRepo: Repository<InventoryItemVendor>;
+    let unitRepo: Repository<UnitOfMeasure>;
+    let packageRepo: Repository<InventoryItemPackage>;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<InventoryItemTestingUtil>(
-      InventoryItemTestingUtil,
-    );
-    await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
+    beforeAll(async () => {
+        const module: TestingModule = await getInventoryItemTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        await testingUtil.initInventoryItemSizeTestDatabase(dbTestContext);
 
-    validator = module.get<InventoryItemValidator>(InventoryItemValidator);
+        validator = module.get<InventoryItemValidator>(InventoryItemValidator);
 
-    itemRepo = module.get(getRepositoryToken(InventoryItem));
-    categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
-    vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
-    unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
-    packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
-  });
-
-  afterAll(async () => {
-    await dbTestContext.executeCleanupFunctions();
-  });
-
-  it('should be defined', () => {
-    expect(validator).toBeDefined;
-  });
-
-  // Create Validation Tests
-  it('successfully validate create with no validation errors', async () => {
-    const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
-    if (!category) {
-      throw new Error('category not found');
-    }
-    const vendor = await vendorRepo.findOne({});
-    if (!vendor) {
-      throw new Error('vendor not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
-
-    const dto: CreateInventoryItemDto = {
-      name: 'New Item Name',
-      categoryId: category.id,
-      vendorId: vendor.id,
-      sizes: [
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 5,
-          cost: 10.99,
-        },
-        {
-          createId: 'c2',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 10,
-          cost: 20.99,
-        },
-      ],
-    };
-
-    const errors = await validator.validateCreateNode(dto);
-    expect(errors).toBeNull();
-  });
-
-  it('fail validate create: name already exists', async () => {
-    const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
-    if (!category) {
-      throw new Error('category not found');
-    }
-    const vendor = await vendorRepo.findOne({});
-    if (!vendor) {
-      throw new Error('vendor not found');
-    }
-
-    const dto: CreateInventoryItemDto = {
-      name: FOOD_A,
-      categoryId: category.id,
-      vendorId: vendor.id,
-    };
-
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'name' }],
-      'Item with this name already exists',
-    );
-  });
-
-  it('fail validate create: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-    const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
-    if (!category) {
-      throw new Error('category not found');
-    }
-    const vendor = await vendorRepo.findOne({});
-    if (!vendor) {
-      throw new Error('vendor not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
-
-    const dto: CreateInventoryItemDto = {
-      name: 'New Item Name',
-      categoryId: category.id,
-      vendorId: vendor.id,
-      sizes: [
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 0,
-          cost: 10.99,
-        },
-      ],
-    };
-
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'sizes', id: 'c1' }, { prop: 'measureAmount' }],
-      'cannot be less than or equal to 0',
-    );
-  });
-
-  it('fail validate create: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
-    const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
-    if (!category) {
-      throw new Error('category not found');
-    }
-    const vendor = await vendorRepo.findOne({});
-    if (!vendor) {
-      throw new Error('vendor not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
-
-    const dto: CreateInventoryItemDto = {
-      name: 'New Item Name',
-      categoryId: category.id,
-      vendorId: vendor.id,
-      sizes: [
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 5,
-          cost: -1,
-        },
-      ],
-    };
-
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'sizes', id: 'c1' }, { prop: 'cost' }],
-      'cannot be less than or equal to 0',
-    );
-  });
-
-  // Update Validation Tests
-  it('successfully validate update with no validation errors', async () => {
-    const itemToUpdate = await itemRepo.findOne({
-      where: { name: FOOD_A },
-      relations: ['category', 'vendor'],
+        itemRepo = module.get(getRepositoryToken(InventoryItem));
+        categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
+        vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+        unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
+        packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
     });
-    if (!itemToUpdate) {
-      throw new Error('item not found');
-    }
-    if (!itemToUpdate.category) {
-      throw new Error('item category not found');
-    }
-    if (!itemToUpdate.vendor) {
-      throw new Error('item vendor not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
 
-    const categories = await categoryRepo.find();
-    const newCategory = categories.find(
-      (c) => c.id !== itemToUpdate.category?.id,
-    );
-    if (!newCategory) {
-      throw new Error('new category not found');
-    }
-    const vendors = await vendorRepo.find();
-    const newVendor = vendors.find((v) => v.id !== itemToUpdate.vendor?.id);
-    if (!newVendor) {
-      throw new Error('new vendor not found');
-    }
-
-    const existingSizes = await itemRepo.findOne({
-      where: { id: itemToUpdate.id },
-      relations: ['sizes'],
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
     });
-    if (
-      !existingSizes ||
-      !existingSizes.sizes ||
-      existingSizes.sizes.length === 0
-    ) {
-      throw new Error('item sizes not found');
-    }
 
-    const dto: UpdateInventoryItemDto = {
-      name: 'Updated Item Name',
-      categoryId: newCategory.id,
-      vendorId: newVendor.id,
-      sizes: [
-        {
-          id: existingSizes.sizes[0].id,
-          measureAmount: 15,
-          cost: 25.99,
-        },
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 20,
-          cost: 30.99,
-        },
-      ],
-    };
-
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expect(errors).toBeNull();
-  });
-
-  it('fail validate update: name already exists', async () => {
-    const items = await itemRepo.find();
-    if (items.length < 2) {
-      throw new Error('Not enough items for test');
-    }
-
-    const itemToUpdate = items[0];
-    const existingItem = items[1];
-
-    const dto: UpdateInventoryItemDto = {
-      name: existingItem.name,
-    };
-
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'name' }],
-      'Item with this name already exists',
-    );
-  });
-
-  it('fail validate update: nestedUpdateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-    const itemToUpdate = await itemRepo.findOne({
-      where: { name: FOOD_A },
-      relations: ['sizes'],
+    it('should be defined', () => {
+        expect(validator).toBeDefined;
     });
-    if (!itemToUpdate) {
-      throw new Error('item not found');
-    }
-    if (!itemToUpdate.sizes || itemToUpdate.sizes.length === 0) {
-      throw new Error('item sizes not found');
-    }
 
-    const dto: UpdateInventoryItemDto = {
-      sizes: [
-        {
-          id: itemToUpdate.sizes[0].id,
-          measureAmount: 0,
-        },
-      ],
-    };
+    // Create Validation Tests
+    it('successfully validate create with no validation errors', async () => {
+        const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
+        if (!category) {
+            throw new Error('category not found');
+        }
+        const vendor = await vendorRepo.findOne({});
+        if (!vendor) {
+            throw new Error('vendor not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
 
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [
-        { prop: 'sizes', id: itemToUpdate.sizes[0].id },
-        { prop: 'measureAmount' },
-      ],
-      'cannot be less than or equal to 0',
-    );
-  });
+        const dto: CreateInventoryItemDto = {
+            name: 'New Item Name',
+            categoryId: category.id,
+            vendorId: vendor.id,
+            sizes: [
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 5,
+                    cost: 10.99,
+                },
+                {
+                    createId: 'c2',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 10,
+                    cost: 20.99,
+                },
+            ],
+        };
 
-  it('fail validate update: nestedUpdateInventoryItemSizeDto errors: cost with value 0', async () => {
-    const itemToUpdate = await itemRepo.findOne({
-      where: { name: FOOD_A },
-      relations: ['sizes'],
+        const errors = await validator.validateCreateNode(dto);
+        expect(errors).toBeNull();
     });
-    if (!itemToUpdate) {
-      throw new Error('item not found');
-    }
-    if (!itemToUpdate.sizes || itemToUpdate.sizes.length === 0) {
-      throw new Error('item sizes not found');
-    }
 
-    const dto: UpdateInventoryItemDto = {
-      sizes: [
-        {
-          id: itemToUpdate.sizes[0].id,
-          cost: -1,
-        },
-      ],
-    };
+    it('fail validate create: name already exists', async () => {
+        const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
+        if (!category) {
+            throw new Error('category not found');
+        }
+        const vendor = await vendorRepo.findOne({});
+        if (!vendor) {
+            throw new Error('vendor not found');
+        }
 
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'sizes', id: itemToUpdate.sizes[0].id }, { prop: 'cost' }],
-      'cannot be less than or equal to 0',
-    );
-  });
+        const dto: CreateInventoryItemDto = {
+            name: FOOD_A,
+            categoryId: category.id,
+            vendorId: vendor.id,
+        };
 
-  it('fail validate update: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-    const itemToUpdate = await itemRepo.findOne({ where: { name: FOOD_A } });
-    if (!itemToUpdate) {
-      throw new Error('item not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'name' }],
+            'Item with this name already exists',
+        );
+    });
 
-    const dto: UpdateInventoryItemDto = {
-      sizes: [
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 0,
-          cost: 10.99,
-        },
-      ],
-    };
+    it('fail validate create: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
+        const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
+        if (!category) {
+            throw new Error('category not found');
+        }
+        const vendor = await vendorRepo.findOne({});
+        if (!vendor) {
+            throw new Error('vendor not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
 
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'sizes', id: 'c1' }, { prop: 'measureAmount' }],
-      'cannot be less than or equal to 0',
-    );
-  });
+        const dto: CreateInventoryItemDto = {
+            name: 'New Item Name',
+            categoryId: category.id,
+            vendorId: vendor.id,
+            sizes: [
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 0,
+                    cost: 10.99,
+                },
+            ],
+        };
 
-  it('fail validate update: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
-    const itemToUpdate = await itemRepo.findOne({ where: { name: FOOD_A } });
-    if (!itemToUpdate) {
-      throw new Error('item not found');
-    }
-    const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-    if (!pkg) {
-      throw new Error('package not found');
-    }
-    const uom = await unitRepo.findOne({ where: { name: POUND } });
-    if (!uom) {
-      throw new Error('uom not found');
-    }
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'sizes', id: 'c1' }, { prop: 'measureAmount' }],
+            'cannot be less than or equal to 0',
+        );
+    });
 
-    const dto: UpdateInventoryItemDto = {
-      sizes: [
-        {
-          createId: 'c1',
-          packageId: pkg.id,
-          measureTypeId: uom.id,
-          measureAmount: 5,
-          cost: -1,
-        },
-      ],
-    };
+    it('fail validate create: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
+        const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
+        if (!category) {
+            throw new Error('category not found');
+        }
+        const vendor = await vendorRepo.findOne({});
+        if (!vendor) {
+            throw new Error('vendor not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
 
-    const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'sizes', id: 'c1' }, { prop: 'cost' }],
-      'cannot be less than or equal to 0',
-    );
-  });
+        const dto: CreateInventoryItemDto = {
+            name: 'New Item Name',
+            categoryId: category.id,
+            vendorId: vendor.id,
+            sizes: [
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 5,
+                    cost: -1,
+                },
+            ],
+        };
+
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'sizes', id: 'c1' }, { prop: 'cost' }],
+            'cannot be less than or equal to 0',
+        );
+    });
+
+    // Update Validation Tests
+    it('successfully validate update with no validation errors', async () => {
+        const itemToUpdate = await itemRepo.findOne({
+            where: { name: FOOD_A },
+            relations: ['category', 'vendor'],
+        });
+        if (!itemToUpdate) {
+            throw new Error('item not found');
+        }
+        if (!itemToUpdate.category) {
+            throw new Error('item category not found');
+        }
+        if (!itemToUpdate.vendor) {
+            throw new Error('item vendor not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
+
+        const categories = await categoryRepo.find();
+        const newCategory = categories.find(
+            (c) => c.id !== itemToUpdate.category?.id,
+        );
+        if (!newCategory) {
+            throw new Error('new category not found');
+        }
+        const vendors = await vendorRepo.find();
+        const newVendor = vendors.find((v) => v.id !== itemToUpdate.vendor?.id);
+        if (!newVendor) {
+            throw new Error('new vendor not found');
+        }
+
+        const existingSizes = await itemRepo.findOne({
+            where: { id: itemToUpdate.id },
+            relations: ['sizes'],
+        });
+        if (
+            !existingSizes ||
+            !existingSizes.sizes ||
+            existingSizes.sizes.length === 0
+        ) {
+            throw new Error('item sizes not found');
+        }
+
+        const dto: UpdateInventoryItemDto = {
+            name: 'Updated Item Name',
+            categoryId: newCategory.id,
+            vendorId: newVendor.id,
+            sizes: [
+                {
+                    id: existingSizes.sizes[0].id,
+                    measureAmount: 15,
+                    cost: 25.99,
+                },
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 20,
+                    cost: 30.99,
+                },
+            ],
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expect(errors).toBeNull();
+    });
+
+    it('fail validate update: name already exists', async () => {
+        const items = await itemRepo.find();
+        if (items.length < 2) {
+            throw new Error('Not enough items for test');
+        }
+
+        const itemToUpdate = items[0];
+        const existingItem = items[1];
+
+        const dto: UpdateInventoryItemDto = {
+            name: existingItem.name,
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'name' }],
+            'Item with this name already exists',
+        );
+    });
+
+    it('fail validate update: nestedUpdateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
+        const itemToUpdate = await itemRepo.findOne({
+            where: { name: FOOD_A },
+            relations: ['sizes'],
+        });
+        if (!itemToUpdate) {
+            throw new Error('item not found');
+        }
+        if (!itemToUpdate.sizes || itemToUpdate.sizes.length === 0) {
+            throw new Error('item sizes not found');
+        }
+
+        const dto: UpdateInventoryItemDto = {
+            sizes: [
+                {
+                    id: itemToUpdate.sizes[0].id,
+                    measureAmount: 0,
+                },
+            ],
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [
+                { prop: 'sizes', id: itemToUpdate.sizes[0].id },
+                { prop: 'measureAmount' },
+            ],
+            'cannot be less than or equal to 0',
+        );
+    });
+
+    it('fail validate update: nestedUpdateInventoryItemSizeDto errors: cost with value 0', async () => {
+        const itemToUpdate = await itemRepo.findOne({
+            where: { name: FOOD_A },
+            relations: ['sizes'],
+        });
+        if (!itemToUpdate) {
+            throw new Error('item not found');
+        }
+        if (!itemToUpdate.sizes || itemToUpdate.sizes.length === 0) {
+            throw new Error('item sizes not found');
+        }
+
+        const dto: UpdateInventoryItemDto = {
+            sizes: [
+                {
+                    id: itemToUpdate.sizes[0].id,
+                    cost: -1,
+                },
+            ],
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'sizes', id: itemToUpdate.sizes[0].id }, { prop: 'cost' }],
+            'cannot be less than or equal to 0',
+        );
+    });
+
+    it('fail validate update: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
+        const itemToUpdate = await itemRepo.findOne({ where: { name: FOOD_A } });
+        if (!itemToUpdate) {
+            throw new Error('item not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
+
+        const dto: UpdateInventoryItemDto = {
+            sizes: [
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 0,
+                    cost: 10.99,
+                },
+            ],
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'sizes', id: 'c1' }, { prop: 'measureAmount' }],
+            'cannot be less than or equal to 0',
+        );
+    });
+
+    it('fail validate update: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
+        const itemToUpdate = await itemRepo.findOne({ where: { name: FOOD_A } });
+        if (!itemToUpdate) {
+            throw new Error('item not found');
+        }
+        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
+        if (!pkg) {
+            throw new Error('package not found');
+        }
+        const uom = await unitRepo.findOne({ where: { name: POUND } });
+        if (!uom) {
+            throw new Error('uom not found');
+        }
+
+        const dto: UpdateInventoryItemDto = {
+            sizes: [
+                {
+                    createId: 'c1',
+                    packageId: pkg.id,
+                    measureTypeId: uom.id,
+                    measureAmount: 5,
+                    cost: -1,
+                },
+            ],
+        };
+
+        const errors = await validator.validateUpdateNode(dto, itemToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'sizes', id: 'c1' }, { prop: 'cost' }],
+            'cannot be less than or equal to 0',
+        );
+    });
 });

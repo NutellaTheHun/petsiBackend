@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationMessage } from '../../../common/validation/validation-error';
+import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -13,126 +13,126 @@ import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateMenuItemValidator } from './template-menu-item.validator';
 
 describe('template menu item validator', () => {
-  let testingUtil: TemplateTestingUtil;
-  let dbTestContext: DatabaseTestContext;
+    let testingUtil: TemplateTestingUtil;
+    let dbTestContext: DatabaseTestContext;
 
-  let validator: TemplateMenuItemValidator;
-  let templateMenuItemRepo: Repository<TemplateMenuItem>;
-  let templateRepo: Repository<Template>;
-  let menuItemRepo: Repository<MenuItem>;
+    let validator: TemplateMenuItemValidator;
+    let templateMenuItemRepo: Repository<TemplateMenuItem>;
+    let templateRepo: Repository<Template>;
+    let menuItemRepo: Repository<MenuItem>;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getTemplateTestingModule();
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
-    await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
+    beforeAll(async () => {
+        const module: TestingModule = await getTemplateTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<TemplateTestingUtil>(TemplateTestingUtil);
+        await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
 
-    validator = module.get<TemplateMenuItemValidator>(
-      TemplateMenuItemValidator,
-    );
+        validator = module.get<TemplateMenuItemValidator>(
+            TemplateMenuItemValidator,
+        );
 
-    templateMenuItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
-    templateRepo = module.get(getRepositoryToken(Template));
-    menuItemRepo = module.get(getRepositoryToken(MenuItem));
-  });
+        templateMenuItemRepo = module.get(getRepositoryToken(TemplateMenuItem));
+        templateRepo = module.get(getRepositoryToken(Template));
+        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+    });
 
-  afterAll(async () => {
-    await dbTestContext.executeCleanupFunctions();
-  });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-  it('should be defined', () => {
-    expect(validator).toBeDefined;
-  });
+    it('should be defined', () => {
+        expect(validator).toBeDefined;
+    });
 
-  // Create Validation Tests
-  it('successfully validate create: no validation errors', async () => {
-    const template = await templateRepo.findOne({});
-    if (!template) {
-      throw new Error('template not found');
-    }
-    const menuItem = await menuItemRepo.findOne({});
-    if (!menuItem) {
-      throw new Error('menu item not found');
-    }
+    // Create Validation Tests
+    it('successfully validate create: no validation errors', async () => {
+        const template = await templateRepo.findOne({});
+        if (!template) {
+            throw new Error('template not found');
+        }
+        const menuItem = await menuItemRepo.findOne({});
+        if (!menuItem) {
+            throw new Error('menu item not found');
+        }
 
-    const dto: CreateTemplateMenuItemDto = {
-      displayName: 'Display Name',
-      tablePosIndex: 0,
-      menuItemId: menuItem.id,
-      parentTemplateId: template.id,
-    };
+        const dto: CreateTemplateMenuItemDto = {
+            displayName: 'Display Name',
+            tablePosIndex: 0,
+            menuItemId: menuItem.id,
+            parentTemplateId: template.id,
+        };
 
-    const errors = await validator.validateCreateNode(dto);
-    expect(errors).toBeNull();
-  });
+        const errors = await validator.validateCreateNode(dto);
+        expect(errors).toBeNull();
+    });
 
-  it('fail validate create: positional index cannot be less than 0', async () => {
-    const template = await templateRepo.findOne({});
-    if (!template) {
-      throw new Error('template not found');
-    }
-    const menuItem = await menuItemRepo.findOne({});
-    if (!menuItem) {
-      throw new Error('menu item not found');
-    }
+    it('fail validate create: positional index cannot be less than 0', async () => {
+        const template = await templateRepo.findOne({});
+        if (!template) {
+            throw new Error('template not found');
+        }
+        const menuItem = await menuItemRepo.findOne({});
+        if (!menuItem) {
+            throw new Error('menu item not found');
+        }
 
-    const dto: CreateTemplateMenuItemDto = {
-      displayName: 'Display Name',
-      tablePosIndex: -1,
-      menuItemId: menuItem.id,
-      parentTemplateId: template.id,
-    };
+        const dto: CreateTemplateMenuItemDto = {
+            displayName: 'Display Name',
+            tablePosIndex: -1,
+            menuItemId: menuItem.id,
+            parentTemplateId: template.id,
+        };
 
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'tablePosIndex' }],
-      'positional index cannot be less than 0',
-    );
-  });
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'tablePosIndex' }],
+            'positional index cannot be less than 0',
+        );
+    });
 
-  // Update Validation Tests
-  it('successfully validate update: no validation errors', async () => {
-    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
-    if (!templateMenuItemToUpdate) {
-      throw new Error('template menu item not found');
-    }
-    const newMenuItem = await menuItemRepo.findOne({});
-    if (!newMenuItem) {
-      throw new Error('new menu item not found');
-    }
+    // Update Validation Tests
+    it('successfully validate update: no validation errors', async () => {
+        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
+        if (!templateMenuItemToUpdate) {
+            throw new Error('template menu item not found');
+        }
+        const newMenuItem = await menuItemRepo.findOne({});
+        if (!newMenuItem) {
+            throw new Error('new menu item not found');
+        }
 
-    const dto: UpdateTemplateMenuItemDto = {
-      tablePosIndex: 5,
-      menuItemId: newMenuItem.id,
-      displayName: 'Updated Display Name',
-    };
+        const dto: UpdateTemplateMenuItemDto = {
+            tablePosIndex: 5,
+            menuItemId: newMenuItem.id,
+            displayName: 'Updated Display Name',
+        };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      templateMenuItemToUpdate.id,
-    );
-    expect(errors).toBeNull();
-  });
+        const errors = await validator.validateUpdateNode(
+            dto,
+            templateMenuItemToUpdate.id,
+        );
+        expect(errors).toBeNull();
+    });
 
-  it('fail validate update: positional index cannot be less than 0', async () => {
-    const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
-    if (!templateMenuItemToUpdate) {
-      throw new Error('template menu item not found');
-    }
+    it('fail validate update: positional index cannot be less than 0', async () => {
+        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
+        if (!templateMenuItemToUpdate) {
+            throw new Error('template menu item not found');
+        }
 
-    const dto: UpdateTemplateMenuItemDto = {
-      tablePosIndex: -1,
-    };
+        const dto: UpdateTemplateMenuItemDto = {
+            tablePosIndex: -1,
+        };
 
-    const errors = await validator.validateUpdateNode(
-      dto,
-      templateMenuItemToUpdate.id,
-    );
-    expectValidationMessage(
-      errors,
-      [{ prop: 'tablePosIndex' }],
-      'positional index cannot be less than 0',
-    );
-  });
+        const errors = await validator.validateUpdateNode(
+            dto,
+            templateMenuItemToUpdate.id,
+        );
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'tablePosIndex' }],
+            'positional index cannot be less than 0',
+        );
+    });
 });

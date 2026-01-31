@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationMessage } from '../../../common/validation/validation-error';
+import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -14,161 +14,161 @@ import { LabelTestingUtil } from '../utils/label-testing.util';
 import { LabelValidator } from './label.validator';
 
 describe('label validator', () => {
-  let testingUtil: LabelTestingUtil;
-  let dbTestContext: DatabaseTestContext;
+    let testingUtil: LabelTestingUtil;
+    let dbTestContext: DatabaseTestContext;
 
-  let validator: LabelValidator;
-  let labelRepo: Repository<Label>;
-  let labelTypeRepo: Repository<LabelType>;
-  let itemRepo: Repository<MenuItem>;
+    let validator: LabelValidator;
+    let labelRepo: Repository<Label>;
+    let labelTypeRepo: Repository<LabelType>;
+    let itemRepo: Repository<MenuItem>;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getLabelsTestingModule();
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
-    await testingUtil.initLabelTestDatabase(dbTestContext);
+    beforeAll(async () => {
+        const module: TestingModule = await getLabelsTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<LabelTestingUtil>(LabelTestingUtil);
+        await testingUtil.initLabelTestDatabase(dbTestContext);
 
-    validator = module.get<LabelValidator>(LabelValidator);
+        validator = module.get<LabelValidator>(LabelValidator);
 
-    labelRepo = module.get(getRepositoryToken(Label));
-    labelTypeRepo = module.get(getRepositoryToken(LabelType));
-    itemRepo = module.get(getRepositoryToken(MenuItem));
-  });
-
-  afterAll(async () => {
-    await dbTestContext.executeCleanupFunctions();
-  });
-
-  it('should be defined', () => {
-    expect(validator).toBeDefined;
-  });
-
-  // Create Validation Tests
-  it('successfully validate create with no validation errors', async () => {
-    const labelTypes = await labelTypeRepo.find();
-    if (labelTypes.length === 0) {
-      throw new Error('label types not found');
-    }
-    const menuItems = await itemRepo.find();
-    if (menuItems.length === 0) {
-      throw new Error('menu items not found');
-    }
-
-    // Find a combination that doesn't exist
-    const existingLabels = await labelRepo.find({
-      relations: ['menuItem', 'labelType'],
+        labelRepo = module.get(getRepositoryToken(Label));
+        labelTypeRepo = module.get(getRepositoryToken(LabelType));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
     });
-    const existingCombinations = new Set(
-      existingLabels.map((l) => `${l.menuItem.id}-${l.labelType.id}`),
-    );
 
-    let menuItem = menuItems[0];
-    let labelType = labelTypes[0];
-    for (const item of menuItems) {
-      for (const type of labelTypes) {
-        if (!existingCombinations.has(`${item.id}-${type.id}`)) {
-          menuItem = item;
-          labelType = type;
-          break;
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
+
+    it('should be defined', () => {
+        expect(validator).toBeDefined;
+    });
+
+    // Create Validation Tests
+    it('successfully validate create with no validation errors', async () => {
+        const labelTypes = await labelTypeRepo.find();
+        if (labelTypes.length === 0) {
+            throw new Error('label types not found');
         }
-      }
-      if (!existingCombinations.has(`${menuItem.id}-${labelType.id}`)) {
-        break;
-      }
-    }
+        const menuItems = await itemRepo.find();
+        if (menuItems.length === 0) {
+            throw new Error('menu items not found');
+        }
 
-    const dto: CreateLabelDto = {
-      imageUrl: url_red,
-      menuItemId: menuItem.id,
-      labelTypeId: labelType.id,
-    };
+        // Find a combination that doesn't exist
+        const existingLabels = await labelRepo.find({
+            relations: ['menuItem', 'labelType'],
+        });
+        const existingCombinations = new Set(
+            existingLabels.map((l) => `${l.menuItem.id}-${l.labelType.id}`),
+        );
 
-    const errors = await validator.validateCreateNode(dto);
-    expect(errors).toBeNull();
-  });
+        let menuItem = menuItems[0];
+        let labelType = labelTypes[0];
+        for (const item of menuItems) {
+            for (const type of labelTypes) {
+                if (!existingCombinations.has(`${item.id}-${type.id}`)) {
+                    menuItem = item;
+                    labelType = type;
+                    break;
+                }
+            }
+            if (!existingCombinations.has(`${menuItem.id}-${labelType.id}`)) {
+                break;
+            }
+        }
 
-  it('fail validate create: labelType and menuItemalready exists for this item.', async () => {
-    const existingLabel = await labelRepo.findOne({
-      relations: ['menuItem', 'labelType'],
+        const dto: CreateLabelDto = {
+            imageUrl: url_red,
+            menuItemId: menuItem.id,
+            labelTypeId: labelType.id,
+        };
+
+        const errors = await validator.validateCreateNode(dto);
+        expect(errors).toBeNull();
     });
-    if (!existingLabel) {
-      throw new Error('existing label not found');
-    }
 
-    const dto: CreateLabelDto = {
-      imageUrl: url_red,
-      menuItemId: existingLabel.menuItem.id,
-      labelTypeId: existingLabel.labelType.id,
-    };
+    it('fail validate create: labelType and menuItemalready exists for this item.', async () => {
+        const existingLabel = await labelRepo.findOne({
+            relations: ['menuItem', 'labelType'],
+        });
+        if (!existingLabel) {
+            throw new Error('existing label not found');
+        }
 
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'labelType' }],
-      'Label type already exists for this item.',
-    );
-  });
+        const dto: CreateLabelDto = {
+            imageUrl: url_red,
+            menuItemId: existingLabel.menuItem.id,
+            labelTypeId: existingLabel.labelType.id,
+        };
 
-  // Update Validation Tests
-  it('successfully validate update with no validation errors', async () => {
-    const labelToUpdate = await labelRepo.findOne({
-      relations: ['menuItem', 'labelType'],
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'labelType' }],
+            'Label type already exists for this item.',
+        );
     });
-    if (!labelToUpdate) {
-      throw new Error('label not found');
-    }
-    const menuItems = await itemRepo.find();
-    if (menuItems.length === 0) {
-      throw new Error('menu items not found');
-    }
-    const labelTypes = await labelTypeRepo.find();
-    if (labelTypes.length === 0) {
-      throw new Error('label types not found');
-    }
-    const newMenuItem = menuItems.find(
-      (m) => m.id !== labelToUpdate.menuItem.id,
-    );
-    if (!newMenuItem) {
-      throw new Error('new menu item not found');
-    }
-    const newLabelType = labelTypes.find(
-      (t) => t.id !== labelToUpdate.labelType.id,
-    );
-    if (!newLabelType) {
-      throw new Error('new label type not found');
-    }
 
-    const dto: UpdateLabelDto = {
-      imageUrl: 'new-url',
-      menuItemId: newMenuItem.id,
-      labelTypeId: newLabelType.id,
-    };
+    // Update Validation Tests
+    it('successfully validate update with no validation errors', async () => {
+        const labelToUpdate = await labelRepo.findOne({
+            relations: ['menuItem', 'labelType'],
+        });
+        if (!labelToUpdate) {
+            throw new Error('label not found');
+        }
+        const menuItems = await itemRepo.find();
+        if (menuItems.length === 0) {
+            throw new Error('menu items not found');
+        }
+        const labelTypes = await labelTypeRepo.find();
+        if (labelTypes.length === 0) {
+            throw new Error('label types not found');
+        }
+        const newMenuItem = menuItems.find(
+            (m) => m.id !== labelToUpdate.menuItem.id,
+        );
+        if (!newMenuItem) {
+            throw new Error('new menu item not found');
+        }
+        const newLabelType = labelTypes.find(
+            (t) => t.id !== labelToUpdate.labelType.id,
+        );
+        if (!newLabelType) {
+            throw new Error('new label type not found');
+        }
 
-    const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
-    expect(errors).toBeNull();
-  });
+        const dto: UpdateLabelDto = {
+            imageUrl: 'new-url',
+            menuItemId: newMenuItem.id,
+            labelTypeId: newLabelType.id,
+        };
 
-  it('fail validate update: labelType and menuItem already exists for this item.', async () => {
-    const labels = await labelRepo.find({
-      relations: ['menuItem', 'labelType'],
+        const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
+        expect(errors).toBeNull();
     });
-    if (labels.length < 2) {
-      throw new Error('Not enough labels for test');
-    }
 
-    const labelToUpdate = labels[0];
-    const existingLabel = labels[1];
+    it('fail validate update: labelType and menuItem already exists for this item.', async () => {
+        const labels = await labelRepo.find({
+            relations: ['menuItem', 'labelType'],
+        });
+        if (labels.length < 2) {
+            throw new Error('Not enough labels for test');
+        }
 
-    const dto: UpdateLabelDto = {
-      menuItemId: existingLabel.menuItem.id,
-      labelTypeId: existingLabel.labelType.id,
-    };
+        const labelToUpdate = labels[0];
+        const existingLabel = labels[1];
 
-    const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'labelType' }],
-      'Label type already exists for this item.',
-    );
-  });
+        const dto: UpdateLabelDto = {
+            menuItemId: existingLabel.menuItem.id,
+            labelTypeId: existingLabel.labelType.id,
+        };
+
+        const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'labelType' }],
+            'Label type already exists for this item.',
+        );
+    });
 });

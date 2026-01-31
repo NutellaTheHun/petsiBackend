@@ -8,72 +8,66 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import {
-  InventoryAreaCount,
-  InventoryAreaCountEntity,
+    InventoryAreaCount,
+    InventoryAreaCountEntity,
 } from '../entities/inventory-area-count.entity';
 import { InventoryAreaItemValidator } from './inventory-area-item.validator';
 
 @Injectable()
 export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCountEntity> {
-  constructor(
-    @InjectRepository(InventoryAreaCount)
-    private readonly repo: Repository<InventoryAreaCount>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
+    constructor(
+        @InjectRepository(InventoryAreaCount)
+        private readonly repo: Repository<InventoryAreaCount>,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
 
-    @Inject(forwardRef(() => InventoryAreaItemValidator))
-    private readonly areaItemValidator: InventoryAreaItemValidator,
-  ) {
-    super(repo, 'InventoryAreaCount', requestContextService, logger);
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateInventoryAreaCountDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    this.helper.enforceNotEmpty(
-      dto.countedInventoryItems,
-      'countedInventoryItems',
-      errorMap,
-      'Inventory count has no counted items',
-    );
-
-    // Nested Validator Call
-    if (dto.countedInventoryItems?.length) {
-      await this.areaItemValidator.validateManyNestedNode(
-        'countedInventoryItems',
-        dto.countedInventoryItems,
-        errorMap,
-      );
+        @Inject(forwardRef(() => InventoryAreaItemValidator))
+        private readonly areaItemValidator: InventoryAreaItemValidator,
+    ) {
+        super(repo, 'InventoryAreaCount', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async doValidateCreateNode(
+        dto: CreateInventoryAreaCountDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-  protected async doValidateUpdateNode(
-    dto: UpdateInventoryAreaCountDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        this.helper.enforceArrayNotEmpty(
+            dto.countedInventoryItems,
+            'countedInventoryItems',
+            errorMap,
+            'Inventory count has no counted items',
+        );
 
-    if (dto.countedInventoryItems?.length) {
-      this.helper.enforceNotEmpty(
-        dto.countedInventoryItems,
-        'countedInventoryItems',
-        errorMap,
-        'Inventory count cannot have 0 counted items',
-      );
+        // Nested Validator Call
+        if (dto.countedInventoryItems?.length) {
+            await this.areaItemValidator.validateManyNestedNode(
+                'countedInventoryItems',
+                dto.countedInventoryItems,
+                errorMap,
+            );
+        }
 
-      // Nested Validator Call
-      await this.areaItemValidator.validateManyNestedNode(
-        'countedInventoryItems',
-        dto.countedInventoryItems,
-        errorMap,
-      );
+        return errorMap;
     }
 
-    return errorMap;
-  }
+    protected async doValidateUpdateNode(
+        dto: UpdateInventoryAreaCountDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (dto.inventoryAreaId && dto.countedInventoryItems?.length) {
+
+            // Nested Validator Call
+            await this.areaItemValidator.validateManyNestedNode(
+                'countedInventoryItems',
+                dto.countedInventoryItems,
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

@@ -1,163 +1,260 @@
+import { ValidationErrorCode } from "./validation-error-codes";
+
 export class ValidationErrorNode {
-  constructor(
-    field: string,
-    id?: string | number,
-    message?: string,
-    children: ValidationErrorNode[] = [],
-  ) {
-    this.field = field;
-    this.id = id;
-    this.message = message;
-    this.children = children;
-  }
+    constructor(
+        field: string,
+        id?: string | number,
+        message?: string,
+        children: ValidationErrorNode[] = [],
+    ) {
+        this.field = field;
+        this.id = id;
+        this.message = message;
+        this.children = children;
+    }
 
-  field: string;
+    field: string;
 
-  id?: string | number;
+    id?: string | number;
 
-  message?: string;
+    message?: string;
 
-  children: ValidationErrorNode[];
+    children: ValidationErrorNode[];
 
-  public addChild(err: ValidationErrorNode) {
-    this.children.push(err);
-  }
+    public addChild(err: ValidationErrorNode) {
+        this.children.push(err);
+    }
 
-  public addChildren(errs: ValidationErrorNode[]) {
-    if (!errs || errs.length === 0) return;
-    this.children.push(...errs);
-  }
+    public addChildren(errs: ValidationErrorNode[]) {
+        if (!errs || errs.length === 0) return;
+        this.children.push(...errs);
+    }
 
-  public addFieldError(field: string, message: string, id?: string | number) {
-    this.addChild(new ValidationErrorNode(field, id, message));
-  }
+    public addFieldError(field: string, message: string, id?: string | number) {
+        this.addChild(new ValidationErrorNode(field, id, message));
+    }
 
-  /**
-   * Returns true if ValidationErrorNode has no message, and no children.
-   *
-   * validationErrorNode with only a field is considered empty.
-   *
-   * Id is not considered for empty or not.
-   */
-  public isEmpty(): boolean {
-    const noMessage = !this.message;
-    const noChildren = this.children?.length === 0;
-    return noMessage && noChildren;
-  }
+    /**
+     * Returns true if ValidationErrorNode has no message, and no children.
+     *
+     * validationErrorNode with only a field is considered empty.
+     *
+     * Id is not considered for empty or not.
+     */
+    public isEmpty(): boolean {
+        const noMessage = !this.message;
+        const noChildren = this.children?.length === 0;
+        return noMessage && noChildren;
+    }
 }
 
+/**
+ * Response object to be returned to the client. A translated version of ValidationErrorMap.
+ */
 export type ValidationErrorResponse = {
-  id?: string | number;
-  message?: string;
-  errors?: Record<string, ValidationErrorResponse[]>;
+    id?: string | number;
+    errorPayload?: ValidationErrorPayload[];
+    nestedErrors?: Record<string, ValidationErrorResponse[]>;
 };
 
-export class ValidationErrorMap {
-  private children: Map<string, ValidationErrorMap[]>;
-  id?: string | number;
-  errMessage?: string | null;
+/**
+ * Actual error information to be returned to the client. Must contain an error code and fields must be atleast a size of 1.
+ */
+export type ValidationErrorPayload = { errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[] };
 
-  constructor(id?: string | number, errMessage?: string | null) {
-    this.id = id;
-    this.errMessage = errMessage ?? null;
-  }
-
-  public addChild(field: string, child: ValidationErrorMap) {
-    if (!this.children) {
-      this.children = new Map();
+export function createValidationErrorPayload(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]): ValidationErrorPayload {
+    if (fields && fields.length === 0) {
+        throw new Error("Fields cannot be empty");
     }
-    const list = this.children.get(field) ?? [];
-    list.push(child);
-    this.children.set(field, list);
-  }
-
-  public addChildren(field: string, children: ValidationErrorMap[]) {
-    if (!this.children) {
-      this.children = new Map();
-    }
-    const list = this.children.get(field) ?? [];
-    list.push(...children);
-    this.children.set(field, list);
-  }
-
-  public isEmpty(): boolean {
-    const hasMessage = !!this.errMessage;
-    const hasChildren = !!this.children && this.children.size > 0;
-    return !hasMessage && !hasChildren;
-  }
-
-  public getResult(): ValidationErrorResponse {
-    const result: ValidationErrorResponse = {};
-
-    if (this.id !== undefined) {
-      result.id = this.id;
-    }
-
-    if (this.errMessage) {
-      result.message = this.errMessage;
-    }
-
-    if (this.children && this.children.size > 0) {
-      const errors: Record<string, ValidationErrorResponse[]> = {};
-
-      for (const [field, children] of this.children.entries()) {
-        errors[field] = children.map((child) => child.getResult());
-      }
-
-      result.errors = errors;
-    }
-
-    return result;
-  }
+    return { errorCode, ids, fields };
 }
+
+export class ValidationErrorMap {
+    /**
+     * Nested ValidationErrorMap objects, key is property, ValidationErrorMap array is resulting validation errors for that property from its validator.
+     */
+    private children?: Map<string, ValidationErrorMap[]>;
+    /**
+     * id to identify entity who errs pertains to.
+     */
+    id?: string | number;
+    /**
+     * Actual errors resulting from validation, contains error code, ids associated with error, and fields associated with error.
+     */
+    errors?: ValidationErrorPayload[];
+
+    constructor(id?: string | number, errs?: ValidationErrorPayload[]) {
+        this.id = id;
+        this.errors = errs;
+    }
+
+    public addChild(field: string, child: ValidationErrorMap) {
+        if (!this.children) {
+            this.children = new Map();
+        }
+        const list = this.children.get(field) ?? [];
+        list.push(child);
+        this.children.set(field, list);
+    }
+
+    public addChildren(field: string, children: ValidationErrorMap[]) {
+        if (!this.children) {
+            this.children = new Map();
+        }
+        const list = this.children.get(field) ?? [];
+        list.push(...children);
+        this.children.set(field, list);
+    }
+
+    public addError(errorCode: ValidationErrorCode, ids?: (string | number)[], fields?: string[]) {
+        const newError = createValidationErrorPayload(errorCode, ids, fields);
+        if (this.errors) {
+            this.errors.push(newError);
+        } else {
+            this.errors = [newError];
+        }
+    }
+
+    public isEmpty(): boolean {
+        const hasErrs = !!this.errors && this.errors.length > 0;
+        const hasChildren = !!this.children && this.children.size > 0;
+        return !hasErrs && !hasChildren;
+    }
+
+    /**
+     * 
+     * @returns ValidationErrorResponse object containing id, errs, and errors. A object more suitable for returning to the client.
+     */
+    public buildResponse(): ValidationErrorResponse {
+        const result: ValidationErrorResponse = {};
+
+        if (this.id !== undefined) {
+            result.id = this.id;
+        }
+
+        if (this.errors) {
+            result.errorPayload = this.errors;
+        }
+
+        if (this.children && this.children.size > 0) {
+            const errors: Record<string, ValidationErrorResponse[]> = {};
+
+            for (const [field, children] of this.children.entries()) {
+                errors[field] = children.map((child) => child.buildResponse());
+            }
+
+            result.nestedErrors = errors;
+        }
+
+        return result;
+    }
+}
+
+
+// Helper functions to make testing easier
 
 export type ErrorSelector =
-  | { prop: string }
-  | { prop: string; id?: string | number };
+    | { prop: string }
+    | { prop: string; id?: string | number };
 
-export function findValidationErrorsByPath(
-  root: ValidationErrorResponse | null | undefined,
-  path: ErrorSelector[],
-): ValidationErrorResponse[] {
-  if (!root) return [];
+export function findValidationErrorResponseByPath(
+    root: ValidationErrorResponse | null | undefined,
+    path: ErrorSelector[],
+): ValidationErrorResponse | null {
+    if (!root) return null;
 
-  let current: ValidationErrorResponse[] = [root];
+    let current: ValidationErrorResponse = root;
 
-  for (const selector of path) {
-    const next: ValidationErrorResponse[] = [];
+    for (const selector of path) {
+        let next = current.nestedErrors?.[selector.prop] ?? [];
 
-    for (const node of current) {
-      if (!node.errors) continue;
+        if (next.length === 0) return null;
 
-      const children = node.errors[selector.prop] ?? [];
+        if ('id' in selector && selector.id !== undefined) {
+            next = next.filter((err) => err.id === selector.id);
+            if (next.length === 0) return null;
+        }
 
-      if ('id' in selector && selector.id !== undefined) {
-        next.push(...children.filter((child) => child.id === selector.id));
-      } else {
-        next.push(...children);
-      }
+        current = next[0];
     }
 
-    current = next;
-  }
-
-  return current;
+    return current;
 }
 
-export function findValidationMessages(
-  root: ValidationErrorResponse | null,
-  path: ErrorSelector[],
-): string[] {
-  return findValidationErrorsByPath(root, path)
-    .map((e) => e.message)
-    .filter((m): m is string => !!m);
+export function findValidationErrors(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+): ValidationErrorPayload[] | null {
+    const errResponse = findValidationErrorResponseByPath(root, path);
+
+    return errResponse?.errorPayload ?? null;
 }
 
-export function expectValidationMessage(
-  root: ValidationErrorResponse | null,
-  path: ErrorSelector[],
-  message: string,
+export function expectValidationErrorPayload(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+    payload: ValidationErrorPayload,
 ) {
-  const messages = findValidationMessages(root, path);
-  expect(messages).toContain(message);
+    const errors = findValidationErrors(root, path);
+    expect(errors).toContainEqual(payload);
+}
+
+export function expectValidationErrorCode(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+    errorCode: ValidationErrorCode,
+) {
+    const errors = findValidationErrors(root, path);
+    expect(errors).toBeTruthy();
+    expect(errors!.some(e => e.errorCode === errorCode)).toBe(true);
+}
+
+export function expectValidationErrorSize(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+    size: number,
+) {
+    const errors = findValidationErrors(root, path);
+    expect(errors).toBeTruthy();
+    expect(errors!.length).toBe(size);
+}
+
+export function expectValidationNestedErrorsSize(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+    size: number,
+) {
+    const errResponse = findValidationErrorResponseByPath(root, path);
+    expect(errResponse?.nestedErrors).toBeTruthy();
+    expect(Object.keys(errResponse?.nestedErrors ?? {}).length).toBe(size);
+}
+
+// Even Lazier functions
+
+export function expectZeroValidationError(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+) {
+    expectValidationErrorSize(root, path, 0);
+}
+
+export function expectOneValidationError(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+) {
+    expectValidationErrorSize(root, path, 1);
+}
+
+export function expectZeroValidationNestedErrors(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+) {
+    expectValidationNestedErrorsSize(root, path, 0);
+}
+
+export function expectOneValidationNestedError(
+    root: ValidationErrorResponse | null,
+    path: ErrorSelector[],
+) {
+    expectValidationNestedErrorsSize(root, path, 1);
 }

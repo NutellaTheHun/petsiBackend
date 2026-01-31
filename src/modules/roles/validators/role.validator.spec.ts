@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationMessage } from '../../../common/validation/validation-error';
+import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -12,87 +12,87 @@ import { getRoleTestingModule } from '../utils/role-testing-module';
 import { RoleValidator } from './role.validator';
 
 describe('role validator', () => {
-  let testingUtil: RoleTestUtil;
-  let dbTestContext: DatabaseTestContext;
+    let testingUtil: RoleTestUtil;
+    let dbTestContext: DatabaseTestContext;
 
-  let validator: RoleValidator;
-  let roleRepo: Repository<Role>;
+    let validator: RoleValidator;
+    let roleRepo: Repository<Role>;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRoleTestingModule();
-    dbTestContext = new DatabaseTestContext();
-    testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
-    await testingUtil.initRoleTestingDatabase(dbTestContext);
+    beforeAll(async () => {
+        const module: TestingModule = await getRoleTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<RoleTestUtil>(RoleTestUtil);
+        await testingUtil.initRoleTestingDatabase(dbTestContext);
 
-    validator = module.get<RoleValidator>(RoleValidator);
+        validator = module.get<RoleValidator>(RoleValidator);
 
-    roleRepo = module.get(getRepositoryToken(Role));
-  });
+        roleRepo = module.get(getRepositoryToken(Role));
+    });
 
-  afterAll(async () => {
-    await dbTestContext.executeCleanupFunctions();
-  });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-  it('should be defined', () => {
-    expect(validator).toBeDefined;
-  });
+    it('should be defined', () => {
+        expect(validator).toBeDefined;
+    });
 
-  // Create Validation Tests
-  it('successfully validate create: no validation errors', async () => {
-    const dto: CreateRoleDto = {
-      name: 'New Role Name',
-    };
+    // Create Validation Tests
+    it('successfully validate create: no validation errors', async () => {
+        const dto: CreateRoleDto = {
+            name: 'New Role Name',
+        };
 
-    const errors = await validator.validateCreateNode(dto);
-    expect(errors).toBeNull();
-  });
+        const errors = await validator.validateCreateNode(dto);
+        expect(errors).toBeNull();
+    });
 
-  it('fail validate create: name already exists', async () => {
-    const dto: CreateRoleDto = {
-      name: ROLE_ADMIN,
-    };
+    it('fail validate create: name already exists', async () => {
+        const dto: CreateRoleDto = {
+            name: ROLE_ADMIN,
+        };
 
-    const errors = await validator.validateCreateNode(dto);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'name' }],
-      'Role with this name already exists.',
-    );
-  });
+        const errors = await validator.validateCreateNode(dto);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'name' }],
+            'Role with this name already exists.',
+        );
+    });
 
-  // Update Validation Tests
-  it('successfully validate update: no validation errors', async () => {
-    const roleToUpdate = await roleRepo.findOne({ where: { name: ROLE_ADMIN } });
-    if (!roleToUpdate) {
-      throw new Error('role not found');
-    }
+    // Update Validation Tests
+    it('successfully validate update: no validation errors', async () => {
+        const roleToUpdate = await roleRepo.findOne({ where: { name: ROLE_ADMIN } });
+        if (!roleToUpdate) {
+            throw new Error('role not found');
+        }
 
-    const dto: UpdateRoleDto = {
-      name: 'Updated Role Name',
-    };
+        const dto: UpdateRoleDto = {
+            name: 'Updated Role Name',
+        };
 
-    const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
-    expect(errors).toBeNull();
-  });
+        const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
+        expect(errors).toBeNull();
+    });
 
-  it('fail validate update: name already exists', async () => {
-    const roles = await roleRepo.find();
-    if (roles.length < 2) {
-      throw new Error('Not enough roles for test');
-    }
+    it('fail validate update: name already exists', async () => {
+        const roles = await roleRepo.find();
+        if (roles.length < 2) {
+            throw new Error('Not enough roles for test');
+        }
 
-    const roleToUpdate = roles[0];
-    const existingRole = roles[1];
+        const roleToUpdate = roles[0];
+        const existingRole = roles[1];
 
-    const dto: UpdateRoleDto = {
-      name: existingRole.name,
-    };
+        const dto: UpdateRoleDto = {
+            name: existingRole.name,
+        };
 
-    const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
-    expectValidationMessage(
-      errors,
-      [{ prop: 'name' }],
-      'Role with this name already exists.',
-    );
-  });
+        const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'name' }],
+            'Role with this name already exists.',
+        );
+    });
 });
