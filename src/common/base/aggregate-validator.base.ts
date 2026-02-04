@@ -1,79 +1,78 @@
 import { ValidationErrorMap } from '../validation/validation-error';
-import { EntityBase } from './entity.base';
+import { NestedEntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
 import { NestedUpdateDto } from './nested-update-dto.base';
+import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 
 export abstract class AggregateValidatorBase<
-  TEntity extends EntityBase<any, any, any, NestedCreateDto, NestedUpdateDto>,
+    TEntity extends NestedEntityBase<any, any, any, NestedCreateDto, NestedUpdateDto>,
+    TIdentity extends ValidatorIdentityBaseInterface,
 > {
-  protected identities = new Map<string | number, string>();
+    protected identities = new Map<string | number, string>();
 
-  protected abstract entityKey(entity: TEntity['__Entity']): string;
-  protected abstract createDtoKey(dto: TEntity['__NcDto']): string;
-  protected abstract applyUpdateKey(
-    entity: TEntity['__Entity'],
-    dto: TEntity['__NuDto'],
-  ): string;
+    protected abstract entityKey(entity: TEntity['__Entity']): string;
+    protected abstract createIdentityKey(identity: TIdentity): string;
+    protected abstract applyUpdateKey(
+        entity: TEntity['__Entity'],
+        identity: TIdentity,
+    ): string;
 
-  constructor(
-    dtos: (TEntity['__NcDto'] | TEntity['__NuDto'])[],
-    entities?: TEntity['__Entity'][],
-  ) {
-    if (entities?.length) {
-      this.seed(entities);
-    }
-    for (const dto of dtos) {
-      if ('createId' in dto) {
-        this.applyCreate(dto.createId, dto);
-      } else {
-        const entity = entities?.find((e) => e.id === dto.id);
-        if (!entity) {
-          throw new Error('entity not found');
+    constructor(
+        identities: TIdentity[],
+        entities?: TEntity['__Entity'][],
+    ) {
+        if (entities?.length) {
+            this.seed(entities);
         }
-        this.applyUpdate(dto.id, entity, dto);
-      }
-    }
-  }
-
-  seed(entities: TEntity['__Entity'][]): void {
-    for (const entity of entities) {
-      this.identities.set((entity as any).id, this.entityKey(entity));
-    }
-  }
-
-  applyCreate(createId: string, dto: TEntity['__NcDto']): void {
-    this.identities.set(createId, this.createDtoKey(dto));
-  }
-
-  applyUpdate(
-    id: number,
-    entity: TEntity['__Entity'],
-    dto: TEntity['__NuDto'],
-  ): void {
-    this.identities.set(id, this.applyUpdateKey(entity, dto));
-  }
-
-  validateUnique(
-    field: string,
-    rootErrMap: ValidationErrorMap,
-    errMsg: string,
-  ): void {
-    // mappping of key to id.
-    const seen = new Map<string, string | number>();
-    for (const [id, key] of this.identities) {
-      if (seen.has(key)) {
-        // add id of duplicate
-        rootErrMap.addChild(field, new ValidationErrorMap(id, errMsg));
-        // add id of first seen duplicate
-        const firstSeenId = seen.get(key);
-        if (firstSeenId) {
-          rootErrMap.addChild(
-            field,
-            new ValidationErrorMap(firstSeenId, errMsg),
-          );
+        for (const identity of identities) {
+            if (identity.createId) {
+                this.applyCreate(identity.createId, identity);
+            } else {
+                if (!identity.id) {
+                    throw new Error('identity id is required');
+                }
+                const entity = entities?.find((e) => e.id === identity.id);
+                if (!entity) {
+                    throw new Error('entity not found');
+                }
+                this.applyUpdate(identity.id, entity, identity);
+            }
         }
-      }
-      seen.set(key, id);
     }
-  }
+
+    seed(entities: TEntity['__Entity'][]): void {
+        for (const entity of entities) {
+            this.identities.set((entity as any).id, this.entityKey(entity));
+        }
+    }
+
+    applyCreate(createId: string, identity: TIdentity): void {
+        this.identities.set(createId, this.createIdentityKey(identity));
+    }
+
+    applyUpdate(
+        id: number,
+        entity: TEntity['__Entity'],
+        identity: TIdentity,
+    ): void {
+        this.identities.set(id, this.applyUpdateKey(entity, identity));
+    }
+
+    validateUnique(
+        field: string,
+        rootErrMap: ValidationErrorMap,
+    ): void {
+        // mappping of key to id.
+        const seen = new Map<string, (string | number)[]>();
+        for (const [id, key] of this.identities) {
+            const existingIds = seen.get(key) || [];
+            existingIds.push(id);
+            seen.set(key, existingIds);
+        }
+        for (const [key, ids] of seen) {
+            if (ids.length > 1) {
+                rootErrMap.addError('DUPLICATE_ITEMS', ids, [field]);
+            }
+        }
+    }
 }

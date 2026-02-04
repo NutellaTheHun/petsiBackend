@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { EntityBase } from '../../../common/base/entity.base';
+import { NestedEntityBase } from '../../../common/base/entity.base';
 import { inventoryAreaCountExample } from '../../../common/swagger/examples/inventory-areas/inventory-area-count.example';
 import { inventoryItemSizeExample } from '../../../common/swagger/examples/inventory-items/inventory-item-size.example';
 import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
@@ -14,12 +14,12 @@ import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nes
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from './inventory-area-count.entity';
 
-export type InventoryAreaItemEntity = EntityBase<
-  InventoryAreaItem,
-  CreateInventoryAreaItemDto,
-  UpdateInventoryAreaItemDto,
-  NestedCreateInventoryAreaItemDto,
-  NestedUpdateInventoryAreaItemDto
+export type InventoryAreaItemEntity = NestedEntityBase<
+    InventoryAreaItem,
+    CreateInventoryAreaItemDto,
+    UpdateInventoryAreaItemDto,
+    NestedCreateInventoryAreaItemDto,
+    NestedUpdateInventoryAreaItemDto
 >;
 /**
  * A single item within the process of an {@link InventoryAreaCount},
@@ -29,70 +29,70 @@ export type InventoryAreaItemEntity = EntityBase<
  */
 @Entity('inventory_area_items')
 export class InventoryAreaItem {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The {@link InventoryItem} being counted during the {@link InventoryAreaCount}.
-   * - example: 6 pack of 28oz can of evaporated milk(countedItem.name)
-   * - example: 10 lb flour(countedItem.name)
-   */
-  @ApiProperty({
-    example: inventoryItemExample(new Set<string>(), true),
-    description: 'The inventory item that was recorded',
-    type: InventoryItem,
-  })
-  @ManyToOne(() => InventoryItem, { onDelete: 'CASCADE' })
-  countedInventoryItem: InventoryItem;
+    /**
+     * The {@link InventoryItem} being counted during the {@link InventoryAreaCount}.
+     * - example: 6 pack of 28oz can of evaporated milk(countedItem.name)
+     * - example: 10 lb flour(countedItem.name)
+     */
+    @ApiProperty({
+        example: inventoryItemExample(new Set<string>(), true),
+        description: 'The inventory item that was recorded',
+        type: InventoryItem,
+    })
+    @ManyToOne(() => InventoryItem, { onDelete: 'CASCADE' })
+    countedInventoryItem: InventoryItem;
 
-  /**
-   * Represents the amount of units per size.measuredQuantity by size.measureUnit, for instances of multi pack items.
-   * - Default value of 1. Shouldn't be 0.
-   * - example: 6(unitAmount) pack of 28oz can of evaporated milk
-   * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
-   */
-  @ApiProperty({
-    example: 1,
-    description:
-      'The unit amount of the recorded inventory item / size combination',
-  })
-  @Column({ type: 'int' })
-  amount: number;
+    /**
+     * Represents the amount of units per size.measuredQuantity by size.measureUnit, for instances of multi pack items.
+     * - Default value of 1. Shouldn't be 0.
+     * - example: 6(unitAmount) pack of 28oz can of evaporated milk
+     * - example: 10 lb flour (unit quantity is irrelevant here, technically is value 1)
+     */
+    @ApiProperty({
+        example: 1,
+        description:
+            'The unit amount of the recorded inventory item / size combination',
+    })
+    @Column({ type: 'int' })
+    amount: number;
 
-  /**
-   * The size of the {@link InventoryItem } counted.
-   *
-   * A size consists of a {@link InventoryItemPackage}, ("box", "bag")
-   * and a {@link UnitOfMeasure} ("lbs", "oz", "liters")
-   *
-   * Creating new InventoryItemSizes is permitted during the creation of {@link InventoryAreaCount} (selects package and unit type on the fly)
-   */
-  @ApiProperty({
-    example: inventoryItemSizeExample(new Set<string>(), true),
-    description: 'The size of the inventory item recorded',
-    type: InventoryItemSize,
-  })
-  @ManyToOne(() => InventoryItemSize, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  countedItemSize: InventoryItemSize;
+    /**
+     * The size of the {@link InventoryItem } counted.
+     *
+     * A size consists of a {@link InventoryItemPackage}, ("box", "bag")
+     * and a {@link UnitOfMeasure} ("lbs", "oz", "liters")
+     *
+     * Creating new InventoryItemSizes is permitted during the creation of {@link InventoryAreaCount} (selects package and unit type on the fly)
+     */
+    @ApiProperty({
+        example: inventoryItemSizeExample(new Set<string>(), true),
+        description: 'The size of the inventory item recorded',
+        type: InventoryItemSize,
+    })
+    @ManyToOne(() => InventoryItemSize, {
+        cascade: true,
+        onDelete: 'CASCADE',
+    })
+    countedItemSize: InventoryItemSize;
 
-  /**
-   * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
-   */
-  @ApiProperty({
-    example: inventoryAreaCountExample(new Set<string>(), true),
-    description: 'The inventory count this item was recorded',
-    type: () => InventoryAreaCount,
-  })
-  @ManyToOne(() => InventoryAreaCount, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentInventoryCount: InventoryAreaCount;
+    /**
+     * The parent {@link InventoryAreaCount}, the context of which this item is recorded.
+     */
+    @ApiProperty({
+        example: inventoryAreaCountExample(new Set<string>(), true),
+        description: 'The inventory count this item was recorded',
+        type: () => InventoryAreaCount,
+    })
+    @ManyToOne(() => InventoryAreaCount, {
+        onDelete: 'CASCADE',
+        orphanedRowAction: 'delete',
+    })
+    parentInventoryCount: InventoryAreaCount;
 }

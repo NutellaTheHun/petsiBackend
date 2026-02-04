@@ -1,23 +1,23 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
-  Body,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Inject,
-  NotFoundException,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  Query,
+    Body,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Inject,
+    NotFoundException,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Query,
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
 import {
-  invalidateFindAllCache,
-  trackFindAllKey,
+    invalidateFindAllCache,
+    trackFindAllKey,
 } from '../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
@@ -25,311 +25,311 @@ import { EntityBase } from './entity.base';
 import { ServiceBase } from './service.base';
 
 export class ControllerBase<
-  TEntity extends EntityBase<any, any, any, any, any>,
+    TEntity extends EntityBase<any, any, any>,
 > {
-  constructor(
-    protected readonly entityService: ServiceBase<TEntity>,
-    @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
-    public controllerPrefix: string,
-    private readonly requestContextService: RequestContextService,
-    private readonly logger: AppLogger,
-  ) {}
+    constructor(
+        protected readonly entityService: ServiceBase<TEntity>,
+        @Inject(CACHE_MANAGER) protected readonly cacheManager: Cache,
+        public controllerPrefix: string,
+        private readonly requestContextService: RequestContextService,
+        private readonly logger: AppLogger,
+    ) { }
 
-  @Post()
-  async create(@Body() createDto: any): Promise<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'CREATE',
-      'REQUEST',
-      { requestId },
-    );
+    @Post()
+    async create(@Body() createDto: any): Promise<TEntity['__Entity']> {
+        const requestId = this.requestContextService.getRequestId();
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'CREATE',
+            'REQUEST',
+            { requestId },
+        );
 
-    const result = await this.entityService.create(createDto);
+        const result = await this.entityService.create(createDto);
 
-    // Invalidate findAll cache
-    await invalidateFindAllCache(
-      this.entityService.servicePrefix,
-      this.cacheManager,
-    );
+        // Invalidate findAll cache
+        await invalidateFindAllCache(
+            this.entityService.servicePrefix,
+            this.cacheManager,
+        );
 
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'CREATE',
-      'SUCCESS',
-      { requestId },
-    );
-    return result;
-  }
-
-  @Get()
-  async findAll(
-    @Query('relations') rawRelations?: string | string[],
-    @Query('limit') limit?: number,
-    @Query('offset') cursor?: string,
-    @Query('sortBy') sortBy?: string,
-    @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
-    @Query('search') search?: string,
-    @Query('filters') filters?: string[],
-    @Query('dateBy') dateBy?: string,
-    @Query('startDate') startDate?: string, // ISO format string
-    @Query('endDate') endDate?: string, // ISO format string
-  ): Promise<{ items: TEntity['__Entity'][]; nextCursor?: string }> {
-    const requestId = this.requestContextService.getRequestId();
-
-    let relations: string[] = [];
-    if (rawRelations) {
-      relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
-
-      relations = relations.filter(
-        (r) => r !== undefined && r !== 'undefined',
-      ) as string[];
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'CREATE',
+            'SUCCESS',
+            { requestId },
+        );
+        return result;
     }
 
-    const filterArray = Array.isArray(filters)
-      ? filters
-      : filters
-        ? [filters]
-        : [];
+    @Get()
+    async findAll(
+        @Query('relations') rawRelations?: string | string[],
+        @Query('limit') limit?: number,
+        @Query('offset') cursor?: string,
+        @Query('sortBy') sortBy?: string,
+        @Query('sortOrder') sortOrder?: 'ASC' | 'DESC',
+        @Query('search') search?: string,
+        @Query('filters') filters?: string[],
+        @Query('dateBy') dateBy?: string,
+        @Query('startDate') startDate?: string, // ISO format string
+        @Query('endDate') endDate?: string, // ISO format string
+    ): Promise<{ items: TEntity['__Entity'][]; nextCursor?: string }> {
+        const requestId = this.requestContextService.getRequestId();
 
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'FIND_ALL',
-      'REQUEST',
-      {
-        requestId,
-        options: {
-          relations,
-          limit,
-          cursor,
-          sortBy,
-          sortOrder,
-          search,
-          filters: filterArray,
-          startDate,
-          endDate,
-        },
-      },
-    );
+        let relations: string[] = [];
+        if (rawRelations) {
+            relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
 
-    // Build cache key
-    const cacheKey = `${this.entityService.servicePrefix}-findAll-${JSON.stringify(
-      {
-        relations,
-        limit,
-        cursor,
-        sortBy,
-        sortOrder,
-        search,
-        filters: filterArray,
-        dateBy,
-        startDate,
-        endDate,
-      },
-    )}`;
+            relations = relations.filter(
+                (r) => r !== undefined && r !== 'undefined',
+            ) as string[];
+        }
 
-    // Check cache
-    const cached = await this.cacheManager.get<string>(cacheKey);
-    if (cached) {
-      this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'FIND_ALL',
-        'CACHE HIT',
-        { requestId },
-      );
-      return parse(cached);
+        const filterArray = Array.isArray(filters)
+            ? filters
+            : filters
+                ? [filters]
+                : [];
+
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'FIND_ALL',
+            'REQUEST',
+            {
+                requestId,
+                options: {
+                    relations,
+                    limit,
+                    cursor,
+                    sortBy,
+                    sortOrder,
+                    search,
+                    filters: filterArray,
+                    startDate,
+                    endDate,
+                },
+            },
+        );
+
+        // Build cache key
+        const cacheKey = `${this.entityService.servicePrefix}-findAll-${JSON.stringify(
+            {
+                relations,
+                limit,
+                cursor,
+                sortBy,
+                sortOrder,
+                search,
+                filters: filterArray,
+                dateBy,
+                startDate,
+                endDate,
+            },
+        )}`;
+
+        // Check cache
+        const cached = await this.cacheManager.get<string>(cacheKey);
+        if (cached) {
+            this.logger.logAction(
+                this.controllerPrefix,
+                requestId,
+                'FIND_ALL',
+                'CACHE HIT',
+                { requestId },
+            );
+            return parse(cached);
+        }
+
+        // Query DB
+        const result = await this.entityService.findAll({
+            relations,
+            limit,
+            cursor,
+            sortBy,
+            sortOrder,
+            search,
+            filters: filterArray,
+            dateBy,
+            startDate,
+            endDate,
+        });
+
+        // Add key for invalidation
+        await trackFindAllKey(
+            this.entityService.servicePrefix,
+            cacheKey,
+            this.cacheManager,
+            60_000,
+        );
+
+        // Cache Result
+        if (result) {
+            this.logger.logAction(
+                this.controllerPrefix,
+                requestId,
+                'FIND_ALL',
+                'RESULT CACHED',
+                { requestId },
+            );
+            await this.cacheManager.set(cacheKey, stringify(result), 60_000);
+        }
+
+        // Return result
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'FIND_ALL',
+            'SUCCESS',
+            { requestId },
+        );
+        return result;
     }
 
-    // Query DB
-    const result = await this.entityService.findAll({
-      relations,
-      limit,
-      cursor,
-      sortBy,
-      sortOrder,
-      search,
-      filters: filterArray,
-      dateBy,
-      startDate,
-      endDate,
-    });
+    @Get(':id')
+    async findOne(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<TEntity['__Entity']> {
+        const requestId = this.requestContextService.getRequestId();
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'FIND_ONE',
+            'REQUEST',
+            { requestId, id },
+        );
 
-    // Add key for invalidation
-    await trackFindAllKey(
-      this.entityService.servicePrefix,
-      cacheKey,
-      this.cacheManager,
-      60_000,
-    );
+        // Build cache key
+        const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
 
-    // Cache Result
-    if (result) {
-      this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'FIND_ALL',
-        'RESULT CACHED',
-        { requestId },
-      );
-      await this.cacheManager.set(cacheKey, stringify(result), 60_000);
+        // Check cache
+        const cached = await this.cacheManager.get<string>(cacheKey);
+        if (cached) {
+            this.logger.logAction(
+                this.controllerPrefix,
+                requestId,
+                'FIND_ONE',
+                'CACHE HIT',
+                { requestId },
+            );
+
+            // return if cache hit
+            return parse(cached);
+        }
+
+        // Query DB
+        const result = await this.entityService.findOne(id);
+
+        // Cache result
+        await this.cacheManager.set(cacheKey, stringify(result), 60_000);
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'FIND_ONE',
+            'RESULT CACHED',
+            { requestId },
+        );
+
+        // Return result
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'FIND_ONE',
+            'SUCCESS',
+            { requestId },
+        );
+        return result;
     }
 
-    // Return result
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'FIND_ALL',
-      'SUCCESS',
-      { requestId },
-    );
-    return result;
-  }
+    @Patch(':id')
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() updateDto: any,
+    ): Promise<TEntity['__Entity']> {
+        const requestId = this.requestContextService.getRequestId();
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'UPDATE',
+            'REQUEST',
+            { requestId, id },
+        );
 
-  @Get(':id')
-  async findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'FIND_ONE',
-      'REQUEST',
-      { requestId, id },
-    );
+        // Update
+        const updated = await this.entityService.update(id, updateDto);
 
-    // Build cache key
-    const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
+        const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
 
-    // Check cache
-    const cached = await this.cacheManager.get<string>(cacheKey);
-    if (cached) {
-      this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'FIND_ONE',
-        'CACHE HIT',
-        { requestId },
-      );
+        // Cache result
+        await this.cacheManager.set(cacheKey, stringify(updated), 60_000);
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'UPDATE',
+            'RESULT CACHED',
+            { requestId },
+        );
 
-      // return if cache hit
-      return parse(cached);
+        // Invalidate findAll cache
+        await invalidateFindAllCache(
+            this.entityService.servicePrefix,
+            this.cacheManager,
+        );
+
+        // Return result
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'UPDATE',
+            'SUCCESS',
+            { requestId },
+        );
+        return updated;
     }
 
-    // Query DB
-    const result = await this.entityService.findOne(id);
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
+        const requestId = this.requestContextService.getRequestId();
+        this.logger.logAction(
+            this.controllerPrefix,
+            requestId,
+            'REMOVE',
+            'REQUEST',
+            { requestId },
+        );
 
-    // Cache result
-    await this.cacheManager.set(cacheKey, stringify(result), 60_000);
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'FIND_ONE',
-      'RESULT CACHED',
-      { requestId },
-    );
+        // Remove from db
+        const removal = await this.entityService.remove(id);
+        if (removal) {
+            this.logger.logAction(
+                this.controllerPrefix,
+                requestId,
+                'REMOVE',
+                'CACHE INVALIDATED',
+            );
 
-    // Return result
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'FIND_ONE',
-      'SUCCESS',
-      { requestId },
-    );
-    return result;
-  }
+            // invalidate findOne and findAll cache
+            const singleCacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
+            await this.cacheManager.del(singleCacheKey);
+            await invalidateFindAllCache(
+                this.entityService.servicePrefix,
+                this.cacheManager,
+            );
 
-  @Patch(':id')
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateDto: any,
-  ): Promise<TEntity['__Entity']> {
-    const requestId = this.requestContextService.getRequestId();
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'UPDATE',
-      'REQUEST',
-      { requestId, id },
-    );
-
-    // Update
-    const updated = await this.entityService.update(id, updateDto);
-
-    const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
-
-    // Cache result
-    await this.cacheManager.set(cacheKey, stringify(updated), 60_000);
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'UPDATE',
-      'RESULT CACHED',
-      { requestId },
-    );
-
-    // Invalidate findAll cache
-    await invalidateFindAllCache(
-      this.entityService.servicePrefix,
-      this.cacheManager,
-    );
-
-    // Return result
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'UPDATE',
-      'SUCCESS',
-      { requestId },
-    );
-    return updated;
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    const requestId = this.requestContextService.getRequestId();
-    this.logger.logAction(
-      this.controllerPrefix,
-      requestId,
-      'REMOVE',
-      'REQUEST',
-      { requestId },
-    );
-
-    // Remove from db
-    const removal = await this.entityService.remove(id);
-    if (removal) {
-      this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'REMOVE',
-        'CACHE INVALIDATED',
-      );
-
-      // invalidate findOne and findAll cache
-      const singleCacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
-      await this.cacheManager.del(singleCacheKey);
-      await invalidateFindAllCache(
-        this.entityService.servicePrefix,
-        this.cacheManager,
-      );
-
-      // Log result
-      this.logger.logAction(
-        this.controllerPrefix,
-        requestId,
-        'REMOVE',
-        'SUCCESS',
-      );
-    } else {
-      this.logger.logAction(this.controllerPrefix, requestId, 'REMOVE', 'FAIL');
-      throw new NotFoundException();
+            // Log result
+            this.logger.logAction(
+                this.controllerPrefix,
+                requestId,
+                'REMOVE',
+                'SUCCESS',
+            );
+        } else {
+            this.logger.logAction(this.controllerPrefix, requestId, 'REMOVE', 'FAIL');
+            throw new NotFoundException();
+        }
     }
-  }
 }

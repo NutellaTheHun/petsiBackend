@@ -8,57 +8,77 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import {
-  InventoryItemVendor,
-  InventoryItemVendorEntity,
+    InventoryItemVendor,
+    InventoryItemVendorEntity,
 } from '../entities/inventory-item-vendor.entity';
+import { InventoryItemVendorValidatorIdentity } from './identities/inventory-item-vendor.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVendorEntity> {
-  constructor(
-    @InjectRepository(InventoryItemVendor)
-    private readonly repo: Repository<InventoryItemVendor>,
+export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVendorEntity, InventoryItemVendorValidatorIdentity> {
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'InventoryItemVendor', requestContextService, logger);
-  }
+    constructor(
+        @InjectRepository(InventoryItemVendor)
+        private readonly repo: Repository<InventoryItemVendor>,
 
-  protected async doValidateCreateNode(
-    dto: CreateInventoryItemVendorDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Vendor name exists
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Vendor name already exists',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateInventoryItemVendorDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Vendor name exists
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Vendor name already exists',
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'InventoryItemVendor', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: InventoryItemVendorValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
+    public async resolveIdentity(dto: CreateInventoryItemVendorDto | UpdateInventoryItemVendorDto, id: number | string): Promise<InventoryItemVendorValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as InventoryItemVendorValidatorIdentity;
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateInventoryItemVendorDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // Vendor name exists
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateInventoryItemVendorDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // Vendor name exists
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

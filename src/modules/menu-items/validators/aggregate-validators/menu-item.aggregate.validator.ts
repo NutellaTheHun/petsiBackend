@@ -1,38 +1,41 @@
 import { AggregateValidatorBase } from '../../../../common/base/aggregate-validator.base';
 import { MenuItemContainerItemEntity } from '../../entities/menu-item-container-item.entity';
+import { MenuItemContainerItemValidatorIdentity } from '../identities/menu-item-container-item.validator.identity.interface';
 
-export class MenuItemContainerItemAggregateValidator extends AggregateValidatorBase<MenuItemContainerItemEntity> {
-  protected entityKey(entity: MenuItemContainerItemEntity['__Entity']): string {
-    return this.entityContainerItemKey(entity);
-  }
-  protected createDtoKey(dto: MenuItemContainerItemEntity['__NcDto']): string {
-    return this.dtoContainerItemKey(dto);
-  }
-  protected applyUpdateKey(
-    entity: MenuItemContainerItemEntity['__Entity'],
-    dto: MenuItemContainerItemEntity['__NuDto'],
-  ): string {
-    return this.entityContainerItemKey({
-      containedMenuItem: dto.containedMenuItemId
-        ? { id: dto.containedMenuItemId }
-        : entity.containedMenuItem,
-      containedItemSize: dto.containedItemSizeId
-        ? { id: dto.containedItemSizeId }
-        : entity.containedItemSize,
-    } as any);
-  }
+export class MenuItemContainerItemAggregateValidator extends AggregateValidatorBase<MenuItemContainerItemEntity, MenuItemContainerItemValidatorIdentity> {
+    protected applyUpdateKey(
+        entity: MenuItemContainerItemEntity['__Entity'],
+        identity: MenuItemContainerItemValidatorIdentity,
+    ): string {
+        return this.entityContainerItemKey({
+            containedMenuItem: identity.containedMenuItemId
+                ? { id: identity.containedMenuItemId }
+                : entity.containedMenuItem,
+            containedItemSize: identity.containedItemSizeId
+                ? { id: identity.containedItemSizeId }
+                : entity.containedItemSize,
+        } as any);
+    }
 
-  // Helpers
+    protected createIdentityKey(identity: MenuItemContainerItemValidatorIdentity): string {
+        return this.identityContainerItemKey(identity);
+    }
 
-  private entityContainerItemKey(
-    entity: MenuItemContainerItemEntity['__Entity'],
-  ): string {
-    return `${entity.containedMenuItem.id}:${entity.containedItemSize.id}`;
-  }
+    protected entityKey(entity: MenuItemContainerItemEntity['__Entity']): string {
+        return this.entityContainerItemKey(entity);
+    }
 
-  private dtoContainerItemKey(
-    dto: MenuItemContainerItemEntity['__NcDto'],
-  ): string {
-    return `${dto.containedMenuItemId}:${dto.containedItemSizeId}`;
-  }
+    // Helpers
+
+    private entityContainerItemKey(
+        entity: MenuItemContainerItemEntity['__Entity'],
+    ): string {
+        return `${entity.containedMenuItem.id}:${entity.containedItemSize.id}`;
+    }
+
+    private identityContainerItemKey(
+        identity: MenuItemContainerItemValidatorIdentity,
+    ): string {
+        return `${identity.containedMenuItemId}:${identity.containedItemSizeId}`;
+    }
 }

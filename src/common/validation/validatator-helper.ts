@@ -1,10 +1,13 @@
+import { NotFoundException } from '@nestjs/common';
 import { FindOptionsWhere, ObjectLiteral, Repository } from 'typeorm';
+import { ValidatorIdentityBaseInterface } from '../base/validator-identity.base.interface';
 import { ArrayKeys, NumericKeys } from '../types';
 import { ValidationErrorMap } from './validation-error';
 
 export class ValidatorHelper<
     TEntity extends ObjectLiteral,
     TDto extends ObjectLiteral,
+    TIdentity extends ValidatorIdentityBaseInterface,
 > {
     /**
      * Array must not be empty
@@ -23,6 +26,41 @@ export class ValidatorHelper<
     ): void {
         if (!arrayVal || arrayVal.length === 0) {
             rootErrMap.addError('MISSING_PROPERTY', undefined, [String(field)]);
+        }
+    }
+
+    public async enforceExists<Entity extends ObjectLiteral, Prop extends keyof TEntity>(
+        id: number,
+        repo: Repository<Entity>,
+        field: Prop,
+        rootErrMap: ValidationErrorMap,
+    ): Promise<void> {
+        const exists = await repo.findOne({
+            where: { id } as unknown as FindOptionsWhere<Entity>,
+        });
+        if (!exists) {
+            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
+        }
+    }
+
+    public async enforcePropertyState<Entity extends ObjectLiteral, Prop extends keyof Entity>(
+        id: number,
+        field: Prop,
+        targetValue: string | number | null | undefined,
+        repo: Repository<Entity>,
+        rootErrMap: ValidationErrorMap,
+    ): Promise<void> {
+        if (id == null) return;
+
+        const entity = await repo.findOne({
+            where: { id } as unknown as FindOptionsWhere<Entity>,
+        });
+        if (!entity) {
+            throw new NotFoundException();
+        }
+
+        if (entity[field] !== targetValue) {
+            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
         }
     }
 
@@ -119,7 +157,7 @@ export class ValidatorHelper<
         ForeignEntity extends ObjectLiteral & { id: number },
     >(
         sizeId: number | null | undefined,
-        foreignEntityId: number,
+        foreignEntityId: number | null | undefined,
         foreignRepo: Repository<ForeignEntity>,
         foreignEntitySizeArrayProp: ArrayKeys<ForeignEntity>,
         field: Prop,
@@ -291,16 +329,19 @@ export class ValidatorHelper<
      * @param errMsgMissing description of error when both properties are missing
      * @param errMsgPopulated description of error when both props are populated
      */
-    public enforceOnlyOne<Prop extends keyof TDto>(
-        dto: TDto,
+    public enforceOnlyOne<Prop extends keyof TIdentity>(
+        identity: TIdentity,
         firstfield: Prop,
         secondfield: Prop,
         rootErrMap: ValidationErrorMap,
     ): void {
-        const firstVal = dto[firstfield];
-        const secondVal = dto[secondfield];
+        const firstVal = identity[firstfield];
+        const secondVal = identity[secondfield];
 
         if (firstVal && secondVal) {
+            rootErrMap.addError('ONLY_ONE', undefined, [String(firstfield), String(secondfield)]);
+        }
+        if (!firstVal && !secondVal) {
             rootErrMap.addError('ONLY_ONE', undefined, [String(firstfield), String(secondfield)]);
         }
     }

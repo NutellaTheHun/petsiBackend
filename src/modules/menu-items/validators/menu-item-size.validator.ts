@@ -8,56 +8,76 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
 import {
-  MenuItemSize,
-  MenuItemSizeEntity,
+    MenuItemSize,
+    MenuItemSizeEntity,
 } from '../entities/menu-item-size.entity';
+import { MenuItemSizeValidatorIdentity } from './identities/menu-item-size.validator.identity.interface';
 
 @Injectable()
-export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity> {
-  constructor(
-    @InjectRepository(MenuItemSize)
-    private readonly repo: Repository<MenuItemSize>,
+export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, MenuItemSizeValidatorIdentity> {
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'MenuItemSize', requestContextService, logger);
-  }
+    constructor(
+        @InjectRepository(MenuItemSize)
+        private readonly repo: Repository<MenuItemSize>,
 
-  protected async doValidateCreateNode(
-    dto: CreateMenuItemSizeDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // exists
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Menu item size already exists.',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateMenuItemSizeDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Menu item size already exists.',
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'MenuItemSize', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: MenuItemSizeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
+    public async resolveIdentity(dto: CreateMenuItemSizeDto | UpdateMenuItemSizeDto, id: number | string): Promise<MenuItemSizeValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as MenuItemSizeValidatorIdentity;
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateMenuItemSizeDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // exists
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateMenuItemSizeDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

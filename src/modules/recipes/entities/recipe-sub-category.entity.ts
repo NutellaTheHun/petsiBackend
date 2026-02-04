@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
+    Column,
+    Entity,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../common/base/entity.base';
+import { NestedEntityBase } from '../../../common/base/entity.base';
 import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
 import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -16,12 +16,12 @@ import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-re
 import { RecipeCategory } from './recipe-category.entity';
 import { Recipe } from './recipe.entity';
 
-export type RecipeSubCategoryEntity = EntityBase<
-  RecipeSubCategory,
-  CreateRecipeSubCategoryDto,
-  UpdateRecipeSubCategoryDto,
-  NestedCreateRecipeSubCategoryDto,
-  NestedUpdateRecipeSubCategoryDto
+export type RecipeSubCategoryEntity = NestedEntityBase<
+    RecipeSubCategory,
+    CreateRecipeSubCategoryDto,
+    UpdateRecipeSubCategoryDto,
+    NestedCreateRecipeSubCategoryDto,
+    NestedUpdateRecipeSubCategoryDto
 >;
 
 /**
@@ -31,45 +31,45 @@ export type RecipeSubCategoryEntity = EntityBase<
  */
 @Entity()
 export class RecipeSubCategory {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @ApiProperty({
-    example: 'Savory Pie',
-    description: 'Name of the subcategory',
-  })
-  @Column()
-  name: string;
+    @ApiProperty({
+        example: 'Savory Pie',
+        description: 'Name of the subcategory',
+    })
+    @Column()
+    name: string;
 
-  /**
-   * Recipes belonging to the sub-category.
-   */
-  @ApiProperty({
-    example: [recipeExample(new Set<string>(), true)],
-    description: 'List of Recipes under the subcategory',
-    type: () => Recipe,
-    isArray: true,
-  })
-  @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
-  recipes: Recipe[];
+    /**
+     * Recipes belonging to the sub-category.
+     */
+    @ApiProperty({
+        example: [recipeExample(new Set<string>(), true)],
+        description: 'List of Recipes under the subcategory',
+        type: () => Recipe,
+        isArray: true,
+    })
+    @OneToMany(() => Recipe, (recipe) => recipe.subCategory)
+    recipes: Recipe[];
 
-  /**
-   * The owning category
-   *
-   * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
-   */
-  @ApiProperty({
-    example: recipeCategoryExample(new Set<string>(), true),
-    description: 'Category this subcategory is for',
-    type: () => RecipeCategory,
-  })
-  @ManyToOne(() => RecipeCategory, {
-    onDelete: 'CASCADE',
-    orphanedRowAction: 'delete',
-  })
-  parentCategory: RecipeCategory;
+    /**
+     * The owning category
+     *
+     * For sub-categories "Sweet Pie" and "Savory Pie", "Pie" would be the parent {@link RecipeCategory}.
+     */
+    @ApiProperty({
+        example: recipeCategoryExample(new Set<string>(), true),
+        description: 'Category this subcategory is for',
+        type: () => RecipeCategory,
+    })
+    @ManyToOne(() => RecipeCategory, {
+        onDelete: 'CASCADE',
+        orphanedRowAction: 'delete',
+    })
+    parentCategory: RecipeCategory;
 }

@@ -10,11 +10,13 @@ import { ValidationExceptionHandler } from '../validation/validation-exception.h
 import { EntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
 import { NestedUpdateDto } from './nested-update-dto.base';
+import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 
 export abstract class ValidatorBase<
-    T extends EntityBase<any, any, any, any, any>,
+    T extends EntityBase<any, any, any>,
+    I extends ValidatorIdentityBaseInterface,
 > {
-    protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto']>;
+    protected helper: ValidatorHelper<T['__Entity'], T['__CDto'] | T['__UDto'], I>;
     private exceptionHandler: ValidationExceptionHandler;
 
     constructor(
@@ -26,9 +28,39 @@ export abstract class ValidatorBase<
         this.exceptionHandler = new ValidationExceptionHandler(logger);
         this.helper = new ValidatorHelper<
             T['__Entity'],
-            T['__CDto'] | T['__UDto']
+            T['__CDto'] | T['__UDto'],
+            I
         >();
     }
+
+    /** NEW STRATEGY, NOT DONE YET */
+    public async validateDto(
+        dto: T['__CDto'] | T['__UDto'],
+        id: number | string,
+    ): Promise<ValidationErrorResponse | null> {
+        const resolvedIdentity = await this.resolveIdentity(dto, id);
+
+        const result = await this.validateIdentity(resolvedIdentity);
+        return this.getValidateResponse(result);
+    }
+
+    /** NEW STRATEGY, NOT DONE YET */
+    protected abstract validateIdentity(
+        identity: I,
+        id?: number | string,
+    ): Promise<ValidationErrorMap>;
+
+    public async validateNestedIdentity(field: string, nestedIdentity: I, rootErrorMap: ValidationErrorMap, id?: number | string): Promise<void> {
+        const valErrs = await this.validateIdentity(nestedIdentity, id);
+        if (!valErrs.isEmpty()) {
+            rootErrorMap.addChild(field, valErrs);
+        }
+    }
+
+    public abstract resolveIdentity(
+        dto: T['__CDto'] | T['__UDto'],
+        id: number | string,
+    ): Promise<I>;
 
     /**
      * Entity implementation of buisness logic validation.
@@ -50,20 +82,21 @@ export abstract class ValidatorBase<
         id: number,
     ): Promise<ValidationErrorMap>;
 
-    protected doValidateNestedCreateNode(
-        dto: T['__NcDto'],
-        id: string,
-    ): Promise<ValidationErrorMap> {
-        throw new Error('nested validation not supported for this entity');
-    }
-
-    protected doValidateNestedUpdateNode(
-        dto: T['__NuDto'],
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        throw new Error('nested validation not supported for this entity');
-    }
-
+    /*
+        protected doValidateNestedCreateNode(
+            dto: T['__NcDto'],
+            id: string,
+        ): Promise<ValidationErrorMap> {
+            throw new Error('nested validation not supported for this entity');
+        }
+    
+        protected doValidateNestedUpdateNode(
+            dto: T['__NuDto'],
+            id: number,
+        ): Promise<ValidationErrorMap> {
+            throw new Error('nested validation not supported for this entity');
+        }
+    */
     /**
      * If the resulting error map is not empty, returns the result as a ValidationErrorResponse, otherwise returns null
      * @param result error map to validate
@@ -110,7 +143,7 @@ export abstract class ValidatorBase<
      * @param dto nested DTO to validate
      * @param rootErrorMap error map that validation errors will be added to under the given field
      */
-    public async validateNestedNode(
+    /*public async validateNestedNode(
         field: string,
         dto: unknown,
         rootErrorMap: ValidationErrorMap,
@@ -128,7 +161,7 @@ export abstract class ValidatorBase<
         } else {
             throw new Error('validateNestedNode received invalid nested DTO');
         }
-    }
+    }*/
 
     /**
      * Wrapper function to parse multiple nested DTOs. Adds validation errors to the given rootErrorMap under the given field.
@@ -136,30 +169,30 @@ export abstract class ValidatorBase<
      * @param dtos array of nested DTOs to validate
      * @param rootErrorMap error map that validation errors will be added to under the given field
      */
-    public async validateManyNestedNode(
-        field: string,
-        dtos: unknown[],
-        rootErrorMap: ValidationErrorMap,
-    ): Promise<void> {
-        for (const dto of dtos) {
-            if (this.isNestedCreateDto(dto)) {
-                const valErrs = await this.doValidateNestedCreateNode(
-                    dto,
-                    dto.createId,
-                );
-                if (!valErrs.isEmpty()) {
-                    rootErrorMap.addChild(field, valErrs);
-                }
-            } else if (this.isNestedUpdateDto(dto)) {
-                const valErrs = await this.doValidateNestedUpdateNode(dto, dto.id);
-                if (!valErrs.isEmpty()) {
-                    rootErrorMap.addChild(field, valErrs);
-                }
-            } else {
-                throw new Error('validateNestedNode received invalid nested DTO');
-            }
-        }
-    }
+    /* public async validateManyNestedNode(
+         field: string,
+         dtos: unknown[],
+         rootErrorMap: ValidationErrorMap,
+     ): Promise<void> {
+         for (const dto of dtos) {
+             if (this.isNestedCreateDto(dto)) {
+                 const valErrs = await this.doValidateNestedCreateNode(
+                     dto,
+                     dto.createId,
+                 );
+                 if (!valErrs.isEmpty()) {
+                     rootErrorMap.addChild(field, valErrs);
+                 }
+             } else if (this.isNestedUpdateDto(dto)) {
+                 const valErrs = await this.doValidateNestedUpdateNode(dto, dto.id);
+                 if (!valErrs.isEmpty()) {
+                     rootErrorMap.addChild(field, valErrs);
+                 }
+             } else {
+                 throw new Error('validateNestedNode received invalid nested DTO');
+             }
+         }
+     }*/
 
     private isNestedCreateDto(dto: unknown): dto is NestedCreateDto {
         return (

@@ -26,7 +26,7 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         manager: EntityManager,
     ): Promise<OrderMenuItem> {
         const entity = manager.create(OrderMenuItem, {
-            ...(dto.parentOrderId && { order: { id: dto.parentOrderId } }),
+            parentOrder: { id: dto.parentOrderId },
             menuItem: { id: dto.menuItemId },
             quantity: dto.quantity,
             size: { id: dto.sizeId },

@@ -8,55 +8,74 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
 import {
-  InventoryArea,
-  InventoryAreaEntity,
+    InventoryArea,
+    InventoryAreaEntity,
 } from '../entities/inventory-area.entity';
+import { InventoryAreaValidatorIdentity } from './identities/inventory-area.validator.identity.interface';
 
 @Injectable()
-export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity> {
-  constructor(
-    @InjectRepository(InventoryArea)
-    private readonly repo: Repository<InventoryArea>,
+export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, InventoryAreaValidatorIdentity> {
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'InventoryArea', requestContextService, logger);
-  }
+    constructor(
+        @InjectRepository(InventoryArea)
+        private readonly repo: Repository<InventoryArea>,
 
-  protected async doValidateCreateNode(
-    dto: CreateInventoryAreaDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Inventory area name already exists.',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateInventoryAreaDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Inventory area name already exists.',
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'InventoryArea', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: InventoryAreaValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        await this.helper.enforceUnique(
+            identity.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    public async resolveIdentity(dto: UpdateInventoryAreaDto | CreateInventoryAreaDto, id: number | string): Promise<InventoryAreaValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as InventoryAreaValidatorIdentity;
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateInventoryAreaDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateInventoryAreaDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

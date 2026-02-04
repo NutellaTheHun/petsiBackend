@@ -7,146 +7,228 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemAggregateValidator } from './aggregate-validators/menu-item.aggregate.validator';
+import { MenuItemValidatorIdentity } from './identities/menu-item.validator.identity.interface';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
 
 @Injectable()
-export class MenuItemValidator extends ValidatorBase<MenuItemEntity> {
-  constructor(
-    @InjectRepository(MenuItem)
-    private readonly repo: Repository<MenuItem>,
+export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemValidatorIdentity> {
 
-    private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
+    constructor(
+        @InjectRepository(MenuItem)
+        private readonly repo: Repository<MenuItem>,
 
-    @InjectRepository(MenuItemContainerItem)
-    private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
+        private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'MenuItem', requestContextService, logger);
-  }
+        @InjectRepository(MenuItemContainerItem)
+        private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
-  protected async doValidateCreateNode(
-    dto: CreateMenuItemDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        @InjectRepository(MenuItemSize)
+        private readonly menuItemSizeRepo: Repository<MenuItemSize>,
 
-    // name must be unique
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Menu item already exists.',
-    );
+        @InjectRepository(MenuItemCategory)
+        private readonly categoryRepo: Repository<MenuItemCategory>,
 
-    if (dto.containerMenuItems && dto.containerMenuItems?.length) {
-      if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
-        errorMap.addChild(
-          'type',
-          new ValidationErrorMap(
-            undefined,
-            'item has contained items but is not set to type container',
-          ),
-        );
-      }
-
-      // validate no duplicates
-      const miciValidator = new MenuItemContainerItemAggregateValidator(
-        dto.containerMenuItems,
-      );
-
-      miciValidator.validateUnique(
-        'containerMenuItems',
-        errorMap,
-        'duplicate container item',
-      );
-
-      // nested validator call
-      await this.menuItemContainerValidator.validateManyNestedNode(
-        'containerMenuItems',
-        dto.containerMenuItems,
-        errorMap,
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'MenuItem', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: MenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-  protected async doValidateUpdateNode(
-    dto: UpdateMenuItemDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // exists
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Menu item already exists.',
-      );
-    }
-
-    // containerItem dtos
-    if (dto.containerMenuItems && dto.containerMenuItems?.length) {
-      let type = dto.type;
-      if (!dto.type) {
-        const currentEntity = await this.repo.findOne({
-          where: { id },
-        });
-        if (!currentEntity) {
-          throw new NotFoundException();
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
         }
-        type = currentEntity.type;
-      }
 
-      if (type !== MENU_ITEM_TYPES.CONTAINER) {
-        // dto.type?
-        errorMap.addChild(
-          'type',
-          new ValidationErrorMap(
-            undefined,
-            'item has contained items but is not set to type container',
-          ),
-        );
-      }
+        if (identity.categoryId) {
+            await this.helper.enforceExists(
+                identity.categoryId,
+                this.categoryRepo,
+                'category',
+                errorMap,
+            );
+        }
 
-      // Get current container items
-      const currentContainerItems = await this.menuItemContainerItemRepo.find({
-        where: { parentMenuItem: { id } },
-        relations: ['containedMenuItem', 'containedItemSize'],
-      });
-      if (!currentContainerItems) {
-        throw new NotFoundException();
-      }
+        if (identity.sizeIds && identity.sizeIds.length) {
+            for (const sizeId of identity.sizeIds) {
+                await this.helper.enforceExists(
+                    sizeId,
+                    this.menuItemSizeRepo,
+                    'sizes',
+                    errorMap,
+                );
+            }
+        }
 
-      const miciValidator = new MenuItemContainerItemAggregateValidator(
-        dto.containerMenuItems,
-        currentContainerItems,
-      );
+        if (identity.containerMenuItems && identity.containerMenuItems.length) {
+            if (identity.type !== MENU_ITEM_TYPES.CONTAINER) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['type']);
+            }
 
-      miciValidator.validateUnique(
-        'containerMenuItems',
-        errorMap,
-        'duplicate container item',
-      );
+            // validate no duplicates
+            const miciValidator = new MenuItemContainerItemAggregateValidator(
+                identity.containerMenuItems,
+            );
 
-      // nested validator call
-      await this.menuItemContainerValidator.validateManyNestedNode(
-        'containerMenuItems',
-        dto.containerMenuItems,
-        errorMap,
-      );
+            miciValidator.validateUnique(
+                'containerMenuItems',
+                errorMap,
+            );
+
+            if (identity.variableMaxAmount) {
+                for (const containerItem of identity.containerMenuItems) {
+                    if (containerItem.quantity && containerItem.quantity !== identity.variableMaxAmount) {
+                        errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
+                    }
+                }
+            }
+
+            // nested validator call
+            for (const containerItem of identity.containerMenuItems) {
+                await this.menuItemContainerValidator.validateNestedIdentity(
+                    'containerMenuItems',
+                    containerItem,
+                    errorMap,
+                );
+            }
+        }
+
+        return errorMap;
     }
 
-    return errorMap;
-  }
+    public async resolveIdentity(dto: CreateMenuItemDto | UpdateMenuItemDto, id: number | string): Promise<MenuItemValidatorIdentity> {
+        // if dto has containerMenuItems and is an update, will need to fetch current container items and convert to identities,
+        // can then most likely simplify/get rid of aggregate validators and merge into validator helper
+        throw new Error('Method not implemented.');
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateMenuItemDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // name must be unique
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        if (dto.containerMenuItems && dto.containerMenuItems?.length) {
+            if (dto.type !== MENU_ITEM_TYPES.CONTAINER) {
+                errorMap.addChild(
+                    'type',
+                    new ValidationErrorMap(
+                        undefined,
+                        'item has contained items but is not set to type container',
+                    ),
+                );
+            }
+
+            // validate no duplicates
+            const miciValidator = new MenuItemContainerItemAggregateValidator(
+                dto.containerMenuItems,
+            );
+
+            miciValidator.validateUnique(
+                'containerMenuItems',
+                errorMap,
+                'duplicate container item',
+            );
+
+            // nested validator call
+            await this.menuItemContainerValidator.validateManyNestedNode(
+                'containerMenuItems',
+                dto.containerMenuItems,
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateMenuItemDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // exists
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        // containerItem dtos
+        if (dto.containerMenuItems && dto.containerMenuItems?.length) {
+            let type = dto.type;
+            if (!dto.type) {
+                const currentEntity = await this.repo.findOne({
+                    where: { id },
+                });
+                if (!currentEntity) {
+                    throw new NotFoundException();
+                }
+                type = currentEntity.type;
+            }
+
+            if (type !== MENU_ITEM_TYPES.CONTAINER) {
+                // dto.type?
+                errorMap.addChild(
+                    'type',
+                    new ValidationErrorMap(
+                        undefined,
+                        'item has contained items but is not set to type container',
+                    ),
+                );
+            }
+
+            // Get current container items
+            const currentContainerItems = await this.menuItemContainerItemRepo.find({
+                where: { parentMenuItem: { id } },
+                relations: ['containedMenuItem', 'containedItemSize'],
+            });
+            if (!currentContainerItems) {
+                throw new NotFoundException();
+            }
+
+            const miciValidator = new MenuItemContainerItemAggregateValidator(
+                dto.containerMenuItems,
+                currentContainerItems,
+            );
+
+            miciValidator.validateUnique(
+                'containerMenuItems',
+                errorMap,
+                'duplicate container item',
+            );
+
+            // nested validator call
+            await this.menuItemContainerValidator.validateManyNestedNode(
+                'containerMenuItems',
+                dto.containerMenuItems,
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

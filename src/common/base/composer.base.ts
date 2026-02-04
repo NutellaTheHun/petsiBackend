@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager, EntityTarget } from 'typeorm';
 import { ResolverContext } from '../types/resolver-context.type';
-import { EntityBase } from './entity.base';
+import { NestedEntityBase } from './entity.base';
+import { NestedCreateDto } from './nested-create-dto.base';
+import { NestedUpdateDto } from './nested-update-dto.base';
 
 /**
  * ComposerBase is a base class for composing entities.
@@ -18,7 +20,7 @@ import { EntityBase } from './entity.base';
  */
 @Injectable()
 export abstract class ComposerBase<
-    T extends EntityBase<any, any, any, any, any>,
+    T extends NestedEntityBase<any, any, any, NestedCreateDto, NestedUpdateDto>,
 > {
     protected abstract readonly entityClass: EntityTarget<T['__Entity']>;
 

@@ -8,57 +8,76 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
 import {
-  InventoryItemCategory,
-  InventoryItemCategoryEntity,
+    InventoryItemCategory,
+    InventoryItemCategoryEntity,
 } from '../entities/inventory-item-category.entity';
+import { InventoryItemCategoryValidatorIdentity } from './identities/inventory-item-category.validator.identity.interface';
 
 @Injectable()
-export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategoryEntity> {
-  constructor(
-    @InjectRepository(InventoryItemCategory)
-    private readonly repo: Repository<InventoryItemCategory>,
+export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemCategoryEntity, InventoryItemCategoryValidatorIdentity> {
+    constructor(
+        @InjectRepository(InventoryItemCategory)
+        private readonly repo: Repository<InventoryItemCategory>,
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'InventoryItemCategory', requestContextService, logger);
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateInventoryItemCategoryDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Already exists check
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Inventory category name already exists',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateInventoryItemCategoryDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Already exists check
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Inventory category name already exists',
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'InventoryItemCategory', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: InventoryItemCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
+    public async resolveIdentity(dto: CreateInventoryItemCategoryDto | UpdateInventoryItemCategoryDto, id: number | string): Promise<InventoryItemCategoryValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as InventoryItemCategoryValidatorIdentity;
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateInventoryItemCategoryDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // Already exists check
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateInventoryItemCategoryDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // Already exists check
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }

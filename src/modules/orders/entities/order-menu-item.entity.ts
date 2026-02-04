@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
+    Column,
+    Entity,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
 } from 'typeorm';
-import { EntityBase } from '../../../common/base/entity.base';
+import { NestedEntityBase } from '../../../common/base/entity.base';
 import { menuItemSizeExample } from '../../../common/swagger/examples/menu-items/menu-item-size.example';
 import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { orderContainerItemExample } from '../../../common/swagger/examples/orders/order-container-item.example';
@@ -20,12 +20,12 @@ import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu
 import { OrderContainerItem } from './order-container-item.entity';
 import { Order } from './order.entity';
 
-export type OrderMenuItemEntity = EntityBase<
-  OrderMenuItem,
-  CreateOrderMenuItemDto,
-  UpdateOrderMenuItemDto,
-  NestedCreateOrderMenuItemDto,
-  NestedUpdateOrderMenuItemDto
+export type OrderMenuItemEntity = NestedEntityBase<
+    OrderMenuItem,
+    CreateOrderMenuItemDto,
+    UpdateOrderMenuItemDto,
+    NestedCreateOrderMenuItemDto,
+    NestedUpdateOrderMenuItemDto
 >;
 
 /**
@@ -33,76 +33,76 @@ export type OrderMenuItemEntity = EntityBase<
  */
 @Entity()
 export class OrderMenuItem {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * The {@link MenuItem} being bought.
-   * - Example: "Classic Apple", "Blueberry Muffin", "Large T-shirt", "Box of 6 Scones"
-   */
-  @ApiProperty({
-    example: menuItemExample(new Set<string>(), true),
-    description: 'The MenuItem being ordered',
-    type: MenuItem,
-  })
-  @ManyToOne(() => MenuItem, {
-    onDelete: 'CASCADE',
-    eager: true,
-  })
-  menuItem: MenuItem;
+    /**
+     * The {@link MenuItem} being bought.
+     * - Example: "Classic Apple", "Blueberry Muffin", "Large T-shirt", "Box of 6 Scones"
+     */
+    @ApiProperty({
+        example: menuItemExample(new Set<string>(), true),
+        description: 'The MenuItem being ordered',
+        type: MenuItem,
+    })
+    @ManyToOne(() => MenuItem, {
+        onDelete: 'CASCADE',
+        eager: true,
+    })
+    menuItem: MenuItem;
 
-  /**
-   * The {@link MenuItemSize} of the {@link MenuItem} being bought,
-   * - Example: "small", "medium", "large", "cold", "hot", "regular"
-   */
-  @ApiProperty({
-    example: menuItemSizeExample(new Set<string>(), false),
-    description: 'The size of the ordered MenuItem',
-    type: MenuItemSize,
-  })
-  @ManyToOne(() => MenuItemSize, { eager: true })
-  size: MenuItemSize;
+    /**
+     * The {@link MenuItemSize} of the {@link MenuItem} being bought,
+     * - Example: "small", "medium", "large", "cold", "hot", "regular"
+     */
+    @ApiProperty({
+        example: menuItemSizeExample(new Set<string>(), false),
+        description: 'The size of the ordered MenuItem',
+        type: MenuItemSize,
+    })
+    @ManyToOne(() => MenuItemSize, { eager: true })
+    size: MenuItemSize;
 
-  /**
-   * The amount of the {@link MenuItem} / {@link MenuItemSize} combination being bought.
-   */
-  @ApiProperty({
-    example: 3,
-    description: 'The amount of the MenuItem being ordered',
-  })
-  @Column()
-  quantity: number;
+    /**
+     * The amount of the {@link MenuItem} / {@link MenuItemSize} combination being bought.
+     */
+    @ApiProperty({
+        example: 3,
+        description: 'The amount of the MenuItem being ordered',
+    })
+    @Column()
+    quantity: number;
 
-  @ApiProperty({
-    example: [orderContainerItemExample(new Set<string>(), false)],
-    description:
-      'If the ordered MenuItem is a container, the contained items will be listed here',
-    type: () => OrderContainerItem,
-    isArray: true,
-  })
-  @OneToMany(
-    () => OrderContainerItem,
-    (orderItem) => orderItem.parentOrderMenuItem,
-    { cascade: true, eager: true },
-  )
-  containerOrderMenuItems: OrderContainerItem[];
+    @ApiProperty({
+        example: [orderContainerItemExample(new Set<string>(), false)],
+        description:
+            'If the ordered MenuItem is a container, the contained items will be listed here',
+        type: () => OrderContainerItem,
+        isArray: true,
+    })
+    @OneToMany(
+        () => OrderContainerItem,
+        (orderItem) => orderItem.parentOrderMenuItem,
+        { cascade: true, eager: true },
+    )
+    containerOrderMenuItems: OrderContainerItem[];
 
-  /**
-   * The parent {@link Order} of the item.
-   */
-  @ApiProperty({
-    example: orderExample(new Set<string>(), true),
-    description: 'The Order this ordered item is on',
-    type: () => Order,
-  })
-  @ManyToOne(() => Order, (order) => order.orderedItems, {
-    orphanedRowAction: 'delete',
+    /**
+     * The parent {@link Order} of the item.
+     */
+    @ApiProperty({
+        example: orderExample(new Set<string>(), true),
+        description: 'The Order this ordered item is on',
+        type: () => Order,
+    })
+    @ManyToOne(() => Order, (order) => order.orderedItems, {
+        orphanedRowAction: 'delete',
 
-    onDelete: 'CASCADE',
-  })
-  parentOrder: Order;
+        onDelete: 'CASCADE',
+    })
+    parentOrder: Order;
 }

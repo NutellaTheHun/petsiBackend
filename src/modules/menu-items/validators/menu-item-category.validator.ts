@@ -8,55 +8,76 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import {
-  MenuItemCategory,
-  MenuItemCategoryEntity,
+    MenuItemCategory,
+    MenuItemCategoryEntity,
 } from '../entities/menu-item-category.entity';
+import { MenuItemCategoryValidatorIdentity } from './identities/menu-item-category.validator.identity.interface';
 
 @Injectable()
-export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEntity> {
-  constructor(
-    @InjectRepository(MenuItemCategory)
-    private readonly repo: Repository<MenuItemCategory>,
+export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEntity, MenuItemCategoryValidatorIdentity> {
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'MenuItemCategory', requestContextService, logger);
-  }
+    constructor(
+        @InjectRepository(MenuItemCategory)
+        private readonly repo: Repository<MenuItemCategory>,
 
-  protected async doValidateCreateNode(
-    dto: CreateMenuItemCategoryDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Item with this name already exists',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateMenuItemCategoryDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Item with this name already exists',
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'MenuItemCategory', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
+
+    public async resolveIdentity(dto: CreateMenuItemCategoryDto | UpdateMenuItemCategoryDto, id: number | string): Promise<MenuItemCategoryValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as MenuItemCategoryValidatorIdentity;
+    }
+
+    protected async doValidateCreateNode(
+        dto: CreateMenuItemCategoryDto,
+        id?: string,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        await this.helper.enforceUnique(
+            dto.name,
+            this.repo,
+            'name',
+            errorMap,
+        );
+
+        return errorMap;
+    }
+
+    protected async doValidateUpdateNode(
+        dto: UpdateMenuItemCategoryDto,
+        id: number,
+    ): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (dto.name) {
+            await this.helper.enforceUnique(
+                dto.name,
+                this.repo,
+                'name',
+                errorMap,
+            );
+        }
+
+        return errorMap;
+    }
 }
