@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidatorBase } from '../../../common/base/validator.base';
+import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -17,9 +17,10 @@ import {
     OrderMenuItemEntity,
 } from '../entities/order-menu-item.entity';
 import { OrderContainerItemValidator } from './order-container-item.validator';
+import { OrderMenuItemValidatorIdentity } from './validation-identities/order-menu-item.validator.identity.interface';
 
 @Injectable()
-export class OrderMenuItemValidator extends ValidatorBase<OrderMenuItemEntity> {
+export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEntity, OrderMenuItemValidatorIdentity> {
     constructor(
         @InjectRepository(OrderMenuItem)
         private readonly repo: Repository<OrderMenuItem>,

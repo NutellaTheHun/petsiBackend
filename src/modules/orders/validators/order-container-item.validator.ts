@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidatorBase } from '../../../common/base/validator.base';
+import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -16,15 +18,23 @@ import {
     OrderContainerItemEntity,
 } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
+import { OrderContainerItemValidatorIdentity } from './validation-identities/order-container-item.validator.identity.interface';
 
 @Injectable()
-export class OrderContainerItemValidator extends ValidatorBase<OrderContainerItemEntity> {
+export class OrderContainerItemValidator extends NestedValidatorBase<OrderContainerItemEntity, OrderContainerItemValidatorIdentity> {
+
     constructor(
         @InjectRepository(OrderContainerItem)
         private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
+
+        @InjectRepository(MenuItemSize)
+        private readonly menuItemSizeRepo: Repository<MenuItemSize>,
+
+        @InjectRepository(MenuItemContainerItem)
+        private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
         @InjectRepository(OrderMenuItem)
         private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
@@ -39,6 +49,92 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             logger,
         );
     }
+
+    public async resolveIdentity(dto: CreateOrderContainerItemDto | UpdateOrderContainerItemDto | NestedCreateOrderContainerItemDto | NestedUpdateOrderContainerItemDto, id: number | string): Promise<OrderContainerItemValidatorIdentity> {
+
+        if (dto instanceof CreateOrderContainerItemDto) {
+            const parentMenuItem = await this.orderMenuItemRepo.findOne({
+                where: { id: dto.parentOrderMenuItemId },
+                relations: ['menuItem', 'size'],
+            });
+            if (!parentMenuItem) {
+                throw new NotFoundException();
+            }
+
+            const containedItem = await this.menuItemRepo.findOne({
+                where: { id: dto.containedMenuItemId },
+            });
+            if (!containedItem) {
+                throw new NotFoundException();
+            }
+
+            return {
+                containedMenuItemId: dto.containedMenuItemId,
+                containedItemSizeId: dto.containedItemSizeId,
+                containedItemType: containedItem.type,
+                quantity: dto.quantity,
+                parentOrderMenuItemId: dto.parentOrderMenuItemId,
+                parentMenuItemType: MENU_ITEM_TYPES.CONTAINER,
+                parentMenuItemId: parentMenuItem.menuItem.id,
+                parentMenuItemSizeId: parentMenuItem.size.id,
+                variableMaxAmount: parentMenuItem.menuItem.variableMaxAmount ?? null,
+            };
+        }
+    }
+
+    protected async validateIdentity(identity: OrderContainerItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        // validate parent order menu item exists
+        if (identity.parentOrderMenuItemId) {
+            this.helper.enforceExists(
+                identity.parentOrderMenuItemId,
+                this.orderMenuItemRepo,
+                'parentOrderMenuItem',
+                errorMap,
+            );
+        }
+
+        // validate quantity is positive
+        if (identity.quantity) {
+            this.helper.enforcePositive(
+                identity.quantity,
+                'quantity',
+                errorMap,
+            );
+        }
+
+        // validate contained item is type single
+        if (identity.containedItemType) {
+            if (identity.containedItemType !== MENU_ITEM_TYPES.SINGLE) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
+            }
+        }
+
+        // validate quantity is less than or equal to variable max amount
+        if (identity.variableMaxAmount) {
+            if (identity.quantity > identity.variableMaxAmount) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
+            }
+        }
+
+        // validate containedItem and size is valid in parent container
+        if (identity.parentMenuItemId && identity.parentMenuItemSizeId) {
+            const validContainerItems = await this.menuItemContainerItemRepo.find({
+                where: { parentMenuItem: { id: identity.parentMenuItemId }, parentItemSize: { id: identity.parentMenuItemSizeId } },
+                relations: ['containedMenuItem', 'containedItemSize'],
+            });
+
+            const exists = validContainerItems.find(x => x.containedMenuItem.id === identity.containedMenuItemId && x.containedItemSize.id === identity.containedItemSizeId);
+            if (!exists) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize', 'containedMenuItem']);
+            }
+        }
+
+        return errorMap;
+    }
+
+
 
     protected async doValidateCreateNode(
         dto: CreateOrderContainerItemDto,
@@ -60,7 +156,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
                 'type',
                 new ValidationErrorMap(
                     undefined,
-                    'Only items of type single can be in a container',
                 ),
             );
         }
@@ -71,7 +166,6 @@ export class OrderContainerItemValidator extends ValidatorBase<OrderContainerIte
             containedItem.sizes.map((x) => x.id),
             'containedItemSize',
             errorMap,
-            'Invalid size',
         );
 
         const parentOrderMenuItem = await this.orderMenuItemRepo.findOne({

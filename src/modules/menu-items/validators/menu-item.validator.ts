@@ -13,6 +13,7 @@ import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemContainerItemAggregateValidator } from './aggregate-validators/menu-item.aggregate.validator';
+import { MenuItemContainerItemValidatorIdentity } from './identities/menu-item-container-item.validator.identity.interface';
 import { MenuItemValidatorIdentity } from './identities/menu-item.validator.identity.interface';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
 
@@ -87,6 +88,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
                 errorMap,
             );
 
+            // if variable max amount is set, validate container item quantities match variable max amount
             if (identity.variableMaxAmount) {
                 for (const containerItem of identity.containerMenuItems) {
                     if (containerItem.quantity && containerItem.quantity !== identity.variableMaxAmount) {
@@ -111,7 +113,47 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
     public async resolveIdentity(dto: CreateMenuItemDto | UpdateMenuItemDto, id: number | string): Promise<MenuItemValidatorIdentity> {
         // if dto has containerMenuItems and is an update, will need to fetch current container items and convert to identities,
         // can then most likely simplify/get rid of aggregate validators and merge into validator helper
-        throw new Error('Method not implemented.');
+        if (dto instanceof CreateMenuItemDto) {
+            return {
+                name: dto.name,
+                type: dto.type,
+                categoryId: dto.categoryId,
+                sizeIds: dto.sizeIds,
+                containerMenuItems: dto.containerMenuItems?.map(async (containerItem) => await this.menuItemContainerValidator.resolveIdentity(containerItem, id)) ?? undefined,
+                variableMaxAmount: dto.variableMaxAmount,
+            } as MenuItemValidatorIdentity;
+        }
+
+        let containerItemIdentities: MenuItemContainerItemValidatorIdentity[] = [];
+        if (dto.containerMenuItems && dto.containerMenuItems.length) {
+            // get current container items
+            const currentContainerItems = await this.menuItemContainerItemRepo.find({
+                where: { parentMenuItem: { id: Number(id) } },
+                relations: ['containedMenuItem', 'containedItemSize'],
+            });
+            if (!currentContainerItems) {
+                throw new NotFoundException();
+            }
+
+            // convert to identities
+            const currentItemIdentities = await Promise.all(currentContainerItems.map(async (containerItem) => this.menuItemContainerValidator.resolveIdentity(containerItem, id)));
+
+            // convert new items to identities
+            const newItemIdentities = await Promise.all(dto.containerMenuItems.map(async (containerItem) => this.menuItemContainerValidator.resolveIdentity(containerItem, id)));
+
+            // merge identities
+            containerItemIdentities = [...currentItemIdentities, ...newItemIdentities];
+        }
+        return {
+            name: dto.name,
+            type: dto.type,
+            categoryId: dto.categoryId,
+            sizeIds: dto.sizeIds,
+            containerMenuItems: containerItemIdentities.length ? containerItemIdentities : undefined,
+            variableMaxAmount: dto.variableMaxAmount,
+        } as MenuItemValidatorIdentity;
+
+
     }
 
     protected async doValidateCreateNode(
