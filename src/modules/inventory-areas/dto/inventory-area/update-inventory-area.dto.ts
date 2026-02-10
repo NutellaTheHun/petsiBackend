@@ -1,12 +1,12 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateInventoryAreaDto {
-  @ApiPropertyOptional({
-    description: 'Name of the inventory area.',
-    example: 'Dry Storage',
-  })
-  @IsString()
-  @IsOptional()
-  readonly name?: string;
+    @ApiProperty({
+        description: 'Name of the inventory area.',
+        example: 'Dry Storage',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
 }

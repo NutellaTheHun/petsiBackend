@@ -1,12 +1,11 @@
-import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  ValidateNested,
+    IsArray,
+    IsNotEmpty,
+    IsNumber,
+    IsPositive,
+    IsString,
+    ValidateNested
 } from 'class-validator';
 
 import { EntityId } from '../../../../common/types';
@@ -16,88 +15,88 @@ import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-ite
 import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
 
 export class UpdateMenuItemDto {
-  @ApiPropertyOptional({
-    description: 'Name of MenuItem entity.',
-    example: 'box of 6 muffins',
-    type: 'string',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  readonly name?: string;
+    @ApiProperty({
+        description: 'Name of MenuItem entity.',
+        example: 'box of 6 muffins',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    @IsNotEmpty()
+    readonly name: string;
 
-  @ApiPropertyOptional({
-    description: 'Can be single, fixed_container, or variable_container',
-    example: 'fixed_container',
-    type: 'string',
-  })
-  @IsNotEmpty()
-  @IsString()
-  readonly type?: string;
+    @ApiProperty({
+        description: 'Can be single, fixed_container, or variable_container',
+        example: 'fixed_container',
+        type: 'string',
+    })
+    @IsNotEmpty()
+    @IsString()
+    readonly type: string;
 
-  @ApiPropertyOptional({
-    description:
-      'Id of MenuItemCategory entity. Pass a null value to remove category',
-    example: 1,
-    type: 'number',
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly categoryId?: EntityId<MenuItemCategory> | null;
+    @ApiProperty({
+        description:
+            'Id of MenuItemCategory entity. Pass a null value to remove category',
+        example: 1,
+        type: 'number',
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    readonly categoryId: EntityId<MenuItemCategory> | null;
 
-  @ApiPropertyOptional({
-    description:
-      'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
-    example: [5, 6],
-    type: () => [Number],
-  })
-  @IsArray()
-  @IsNumber({}, { each: true })
-  @IsPositive({ each: true })
-  @IsOptional()
-  readonly sizeIds?: EntityId<MenuItemSize>[];
+    @ApiProperty({
+        description:
+            'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
+        example: [5, 6],
+        type: () => [Number],
+    })
+    @IsArray()
+    @IsNumber({}, { each: true })
+    @IsPositive({ each: true })
+    @IsNotEmpty()
+    readonly sizeIds: EntityId<MenuItemSize>[];
 
-  @ApiPropertyOptional({
-    description: 'TODO',
-    type: 'array',
-    oneOf: [
-      { $ref: getSchemaPath(NestedCreateMenuItemContainerItemDto) },
-      { $ref: getSchemaPath(NestedUpdateMenuItemContainerItemDto) },
-    ],
-    example: [
-      {
-        id: 1,
-        containedMenuItemId: 2,
-        containedMenuItemSizeId: 3,
-        quantity: 4,
-      },
-      {
-        createId: 'c5',
-        containedMenuItemId: 6,
-        containedMenuItemSizeId: 7,
-        quantity: 8,
-        parentMenuItemId: 9,
-        parentItemSizeId: 10,
-      },
-    ],
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  readonly containerMenuItems?: (
-    | NestedCreateMenuItemContainerItemDto
-    | NestedUpdateMenuItemContainerItemDto
-  )[];
+    @ApiProperty({
+        description: 'TODO',
+        type: 'array',
+        oneOf: [
+            { $ref: getSchemaPath(NestedCreateMenuItemContainerItemDto) },
+            { $ref: getSchemaPath(NestedUpdateMenuItemContainerItemDto) },
+        ],
+        example: [
+            {
+                id: 1,
+                containedMenuItemId: 2,
+                containedMenuItemSizeId: 3,
+                quantity: 4,
+            },
+            {
+                createId: 'c5',
+                containedMenuItemId: 6,
+                containedMenuItemSizeId: 7,
+                quantity: 8,
+                parentMenuItemId: 9,
+                parentItemSizeId: 10,
+            },
+        ],
+    })
+    @IsNotEmpty()
+    @IsArray()
+    @ValidateNested({ each: true })
+    readonly containerMenuItems: (
+        | NestedCreateMenuItemContainerItemDto
+        | NestedUpdateMenuItemContainerItemDto
+    )[];
 
-  @ApiPropertyOptional({
-    description:
-      'Total size limit of item, when item is of type fixed_container or variable_container',
-    type: 'number',
-    example: 6,
-  })
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  readonly variableMaxAmount?: number;
+    @ApiProperty({
+        description:
+            'Total size limit of item, when item is of type fixed_container or variable_container',
+        type: 'number',
+        example: 6,
+    })
+    @IsNotEmpty()
+    @IsNumber()
+    @IsPositive()
+    readonly variableMaxAmount: number;
 }

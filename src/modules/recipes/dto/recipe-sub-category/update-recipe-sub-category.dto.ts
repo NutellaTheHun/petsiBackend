@@ -1,12 +1,12 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateRecipeSubCategoryDto {
-  @ApiPropertyOptional({
-    description: 'Name of the RecipeSubCategory entity.',
-    example: 'name',
-  })
-  @IsString()
-  @IsOptional()
-  readonly name?: string;
+    @ApiProperty({
+        description: 'Name of the RecipeSubCategory entity.',
+        example: 'name',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
 }

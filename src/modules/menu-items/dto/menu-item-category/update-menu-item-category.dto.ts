@@ -1,13 +1,12 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateMenuItemCategoryDto {
-  @ApiPropertyOptional({
-    example: 'Pie',
-    description: 'Name of the MenuItemCategory.',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  readonly name?: string;
+    @ApiProperty({
+        example: 'Pie',
+        description: 'Name of the MenuItemCategory.',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
 }

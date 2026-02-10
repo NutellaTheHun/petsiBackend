@@ -1,5 +1,5 @@
-import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
 import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
@@ -8,53 +8,53 @@ import { InventoryItemSize } from '../../../inventory-items/entities/inventory-i
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 
 export class NestedUpdateInventoryAreaItemDto extends NestedUpdateDto {
-  @ApiPropertyOptional({
-    description: 'Id for InventoryItem entity.',
-    example: 1,
-    type: Number,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly countedInventoryItemId?: EntityId<InventoryItem>;
+    @ApiProperty({
+        description: 'Id for InventoryItem entity.',
+        example: 1,
+        type: Number,
+    })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly countedInventoryItemId: EntityId<InventoryItem>;
 
-  @ApiPropertyOptional({
-    description: 'The amount of InventoryItem per unit.',
-    example: 6,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly amount?: number;
+    @ApiProperty({
+        description: 'The amount of InventoryItem per unit.',
+        example: 6,
+    })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly amount: number;
 
-  @ApiPropertyOptional({
-    description:
-      'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
-    example: 2,
-    type: Number,
-  })
-  @IsNumber()
-  @IsPositive()
-  @IsOptional()
-  readonly countedItemSizeId?: EntityId<InventoryItemSize>;
+    @ApiProperty({
+        description:
+            'Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.',
+        example: 2,
+        type: Number,
+    })
+    @IsNumber()
+    @IsPositive()
+    @IsNotEmpty()
+    readonly countedItemSizeId: EntityId<InventoryItemSize>;
 
-  @ApiPropertyOptional({
-    description:
-      'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
-    oneOf: [
-      { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto) },
-      { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto) },
-    ],
-    example: {
-      id: 5,
-      measureTypeId: 1,
-      measureAmount: 2,
-      packageId: 3,
-      cost: 4,
-    },
-  })
-  @IsOptional()
-  readonly countedItemSize?:
-    | NestedCreateInventoryItemSizeDto
-    | NestedUpdateInventoryItemSizeDto;
+    @ApiProperty({
+        description:
+            'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
+        oneOf: [
+            { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto) },
+            { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto) },
+        ],
+        example: {
+            id: 5,
+            measureTypeId: 1,
+            measureAmount: 2,
+            packageId: 3,
+            cost: 4,
+        },
+    })
+    @IsNotEmpty()
+    readonly countedItemSize:
+        | NestedCreateInventoryItemSizeDto
+        | NestedUpdateInventoryItemSizeDto;
 }

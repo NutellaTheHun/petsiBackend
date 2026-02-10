@@ -1,13 +1,13 @@
-import { ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsBoolean,
-  IsDate,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  ValidateNested,
+    IsArray,
+    IsBoolean,
+    IsDate,
+    IsNotEmpty,
+    IsNumber,
+    IsPositive,
+    IsString,
+    ValidateNested
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
@@ -15,144 +15,144 @@ import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-o
 import { NestedUpdateOrderMenuItemDto } from '../order-menu-item/nested-update-order-menu-item.dto';
 
 export class UpdateOrderDto {
-  @ApiPropertyOptional({
-    description: 'Name of the owner of the order',
-    example: 'John Smith',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly recipient?: string;
+    @ApiProperty({
+        description: 'Name of the owner of the order',
+        example: 'John Smith',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly recipient: string;
 
-  @ApiPropertyOptional({
-    description: 'Date the order is to be available or delivered.',
-    example: '2025-06-08T20:26:45.883Z',
-    type: 'string',
-  })
-  @IsDate()
-  @IsOptional()
-  readonly fulfillmentDate?: Date;
+    @ApiProperty({
+        description: 'Date the order is to be available or delivered.',
+        example: '2025-06-08T20:26:45.883Z',
+        type: 'string',
+    })
+    @IsDate()
+    @IsNotEmpty()
+    readonly fulfillmentDate: Date;
 
-  @ApiPropertyOptional({
-    description: "Method of Order's dispersal.",
-    example: 'delivery',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly fulfillmentType?: string;
+    @ApiProperty({
+        description: "Method of Order's dispersal.",
+        example: 'delivery',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly fulfillmentType: string;
 
-  @ApiPropertyOptional({
-    description: 'Name of who is picking up the order or reciving the delivery',
-    example: 'Jane Doe',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly fulfillmentContactName?: string;
+    @ApiProperty({
+        description: 'Name of who is picking up the order or reciving the delivery',
+        example: 'Jane Doe',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly fulfillmentContactName: string;
 
-  @ApiPropertyOptional({
-    description: 'for delivery contact information',
-    example: '123 main st',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly deliveryAddress?: string;
+    @ApiProperty({
+        description: 'for delivery contact information',
+        example: '123 main st',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly deliveryAddress: string;
 
-  @ApiPropertyOptional({
-    description: 'for delivery contact information',
-    example: '1234568',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly phoneNumber?: string;
+    @ApiProperty({
+        description: 'for delivery contact information',
+        example: '1234568',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly phoneNumber: string;
 
-  @ApiPropertyOptional({
-    description: 'for delivery contact information',
-    example: 'email@email.com',
-    type: 'string',
-    format: 'email',
-  })
-  @IsString()
-  @IsOptional()
-  readonly email?: string;
+    @ApiProperty({
+        description: 'for delivery contact information',
+        example: 'email@email.com',
+        type: 'string',
+        format: 'email',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly email: string;
 
-  @ApiPropertyOptional({
-    description: 'special instruction for order',
-    example: 'note information',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly note?: string;
+    @ApiProperty({
+        description: 'special instruction for order',
+        example: 'note information',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly note: string;
 
-  @ApiPropertyOptional({
-    description:
-      'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
-    example: false,
-    type: 'boolean',
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly isFrozen?: boolean;
+    @ApiProperty({
+        description:
+            'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
+        example: false,
+        type: 'boolean',
+    })
+    @IsBoolean()
+    @IsNotEmpty()
+    readonly isFrozen: boolean;
 
-  @ApiPropertyOptional({
-    description: 'Is true if the order occurs on a weekly basis.',
-    example: true,
-    type: 'boolean',
-  })
-  @IsBoolean()
-  @IsOptional()
-  readonly isWeekly?: boolean;
+    @ApiProperty({
+        description: 'Is true if the order occurs on a weekly basis.',
+        example: true,
+        type: 'boolean',
+    })
+    @IsBoolean()
+    @IsNotEmpty()
+    readonly isWeekly: boolean;
 
-  @ApiPropertyOptional({
-    description: 'If is weekly, is the day of the week the order is fulfilled',
-    example: 'sunday',
-    type: 'string',
-  })
-  @IsString()
-  @IsOptional()
-  readonly weeklyFulfillment?: string;
+    @ApiProperty({
+        description: 'If is weekly, is the day of the week the order is fulfilled',
+        example: 'sunday',
+        type: 'string',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly weeklyFulfillment: string;
 
-  @ApiPropertyOptional({
-    description: 'Id of OrderType entity.',
-    example: 1,
-    type: 'number',
-  })
-  @IsNumber()
-  @IsOptional()
-  @IsPositive()
-  readonly categoryId?: EntityId<OrderCategory>;
+    @ApiProperty({
+        description: 'Id of OrderType entity.',
+        example: 1,
+        type: 'number',
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    readonly categoryId: EntityId<OrderCategory>;
 
-  @ApiPropertyOptional({
-    description: 'TODO',
-    type: 'array',
-    oneOf: [
-      { $ref: getSchemaPath(NestedCreateOrderMenuItemDto) },
-      { $ref: getSchemaPath(NestedUpdateOrderMenuItemDto) },
-    ],
-    example: [
-      {
-        createId: 'c1',
-        menuItemId: 2,
-        sizeId: 3,
-        quantity: 4,
-      },
-      {
-        id: 5,
-        menuItemId: 6,
-        sizeId: 7,
-        quantity: 8,
-      },
-    ],
-  })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  readonly orderedItems?: (
-    | NestedCreateOrderMenuItemDto
-    | NestedUpdateOrderMenuItemDto
-  )[];
+    @ApiProperty({
+        description: 'TODO',
+        type: 'array',
+        oneOf: [
+            { $ref: getSchemaPath(NestedCreateOrderMenuItemDto) },
+            { $ref: getSchemaPath(NestedUpdateOrderMenuItemDto) },
+        ],
+        example: [
+            {
+                createId: 'c1',
+                menuItemId: 2,
+                sizeId: 3,
+                quantity: 4,
+            },
+            {
+                id: 5,
+                menuItemId: 6,
+                sizeId: 7,
+                quantity: 8,
+            },
+        ],
+    })
+    @IsNotEmpty()
+    @IsArray()
+    @ValidateNested({ each: true })
+    readonly orderedItems: (
+        | NestedCreateOrderMenuItemDto
+        | NestedUpdateOrderMenuItemDto
+    )[];
 }

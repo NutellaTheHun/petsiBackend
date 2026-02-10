@@ -153,13 +153,14 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
                 'orderedItems',
                 'orderedItems.menuItem',
                 'orderedItems.size',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
             ],
         });
         if (!currentOrder) {
             throw new Error('Order not found');
         }
-        // merge current items and orderItemDtos to identities.... create and update items
-
     }
 
     protected async doValidateCreateNode(
