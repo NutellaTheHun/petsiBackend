@@ -55,7 +55,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         if (dto instanceof CreateOrderContainerItemDto) {
             const parentMenuItem = await this.orderMenuItemRepo.findOne({
                 where: { id: dto.parentOrderMenuItemId },
-                relations: ['menuItem', 'size'],
+                relations: ['menuItem', 'size', 'menuItem.containerMenuItems', 'menuItem.containerMenuItems.containedItem', 'menuItem.containerMenuItems.containedItemSize'],
             });
             if (!parentMenuItem) {
                 throw new NotFoundException();
@@ -112,7 +112,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         // validate quantity is less than or equal to variable max amount
-        if (identity.variableMaxAmount) {
+        if (identity.variableMaxAmount && identity.quantity) {
             if (identity.quantity > identity.variableMaxAmount) {
                 errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
             }

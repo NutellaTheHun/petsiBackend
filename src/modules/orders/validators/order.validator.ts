@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemAggregateValidator } from './aggregate-validators/order-menu-item.aggregate.validator';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
+import { OrderMenuItemValidatorIdentity } from './validation-identities/order-menu-item.validator.identity.interface';
+import { OrderValidatorIdentity } from './validation-identities/order.validator.identity.interface';
 
 @Injectable()
-export class OrderValidator extends ValidatorBase<OrderEntity> {
+export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIdentity> {
+
     constructor(
         @InjectRepository(Order)
         private readonly repo: Repository<Order>,
@@ -23,10 +27,139 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
         @InjectRepository(OrderMenuItem)
         private readonly orderMenuItemRepo: Repository<OrderMenuItem>,
 
+        @InjectRepository(OrderCategory)
+        private readonly orderCategoryRepo: Repository<OrderCategory>,
+
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(repo, 'Order', requestContextService, logger);
+    }
+
+    protected async validateIdentity(identity: OrderValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.categoryId) {
+            await this.helper.enforceExists(
+                identity.categoryId,
+                this.orderCategoryRepo,
+                'category',
+                errorMap,
+            );
+        }
+
+        if (identity.deliveryAddress) { }
+
+        if (identity.email) { }
+
+        if (identity.fulfillmentContactName) { }
+
+        if (identity.fulfillmentDate) { }
+
+        if (identity.fulfillmentType) {
+            const validFulfillmentType = ['pickup', 'delivery'];
+            if (!validFulfillmentType.includes(identity.fulfillmentType)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['fulfillmentType']);
+            }
+            this.helper.enforceConditionalRequired(
+                identity,
+                'fulfillmentType',
+                'delivery',
+                ['deliveryAddress', 'phoneNumber'],
+                errorMap,
+            );
+        }
+
+        if (identity.isFrozen) { }
+
+        if (identity.isWeekly) {
+            this.helper.enforceConditionalRequired(
+                identity,
+                'isWeekly',
+                true,
+                ['weeklyFulfillment'],
+                errorMap,
+            );
+        }
+
+        if (identity.note) { }
+
+        if (identity.phoneNumber) { }
+
+        if (identity.recipient) { }
+
+        if (identity.weeklyFulfillment) {
+            const validDays = [
+                'sunday',
+                'monday',
+                'tuesday',
+                'wednesday',
+                'thursday',
+                'friday',
+                'saturday',
+            ];
+            if (!validDays.includes(identity.weeklyFulfillment)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['weeklyFulfillment']);
+            }
+        }
+
+        if (identity.orderedItems && identity.orderedItems.length > 0) {
+            // Check Duplicates
+
+
+            // Nested Validator Call
+            for (const item of identity.orderedItems) {
+                await this.orderItemValidator.validateNestedIdentity(
+                    'orderedItems',
+                    item,
+                    errorMap,
+                );
+            }
+        }
+
+        return errorMap;
+    }
+
+    public async resolveIdentity(dto: CreateOrderDto | UpdateOrderDto, id: number | string): Promise<OrderValidatorIdentity> {
+        let itemIdentities: OrderMenuItemValidatorIdentity[] = [];
+
+        if (dto instanceof CreateOrderDto) {
+            if (dto.orderedItems && dto.orderedItems.length > 0) {
+                for (const item of dto.orderedItems) {
+                    itemIdentities.push(await this.orderItemValidator.resolveIdentity(item, item.createId));
+                }
+            }
+            return {
+                categoryId: dto.categoryId,
+                deliveryAddress: dto.deliveryAddress,
+                email: dto.email,
+                fulfillmentContactName: dto.fulfillmentContactName,
+                fulfillmentDate: dto.fulfillmentDate,
+                fulfillmentType: dto.fulfillmentType,
+                isFrozen: dto.isFrozen,
+                isWeekly: dto.isWeekly,
+                note: dto.note,
+                phoneNumber: dto.phoneNumber,
+                recipient: dto.recipient,
+                weeklyFulfillment: dto.weeklyFulfillment,
+                orderedItems: itemIdentities.length > 0 ? itemIdentities : undefined,
+            } as OrderValidatorIdentity;
+        }
+
+
+        const currentOrder = await this.repo.findOne({
+            where: { id: id as number } as FindOptionsWhere<Order>,
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.size',
+            ],
+        });
+        if (!currentOrder) {
+            throw new Error('Order not found');
+        }
+        // merge current items and orderItemDtos to identities.... create and update items
+
     }
 
     protected async doValidateCreateNode(
@@ -39,7 +172,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
             dto.orderedItems,
             'orderedItems',
             errorMap,
-            'Order has no items',
         );
 
         //valid fulfillment type value
@@ -57,7 +189,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
             'delivery',
             ['deliveryAddress', 'phoneNumber'],
             errorMap,
-            'Order for delivery must have a delivery address',
         );
 
         this.helper.enforceConditionalRequired(
@@ -66,7 +197,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
             true,
             ['weeklyFulfillment'],
             errorMap,
-            'Order must have a day of the week selected for fulfillment',
         );
 
         // valid day of the week value
@@ -149,7 +279,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
                 'delivery',
                 ['deliveryAddress', 'phoneNumber'],
                 errorMap,
-                'Order for delivery must have a delivery address',
             );
         }
 
@@ -160,7 +289,6 @@ export class OrderValidator extends ValidatorBase<OrderEntity> {
                 true,
                 ['weeklyFulfillment'],
                 errorMap,
-                'Order must have a day of the week selected for fulfillment',
             );
         }
 

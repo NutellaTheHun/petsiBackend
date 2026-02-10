@@ -17,14 +17,14 @@ export class ValidatorHelper<
      * @param errMsg description of error
      */
     public enforceArrayNotEmpty<
-        DtoProp extends ArrayKeys<TDto>,
+        DtoProp extends ArrayKeys<TIdentity>,
         EntityProp extends ArrayKeys<TEntity>,
     >(
-        arrayVal: TDto[DtoProp] | null | undefined,
+        arrayVal: TIdentity[DtoProp] | null | undefined,
         field: EntityProp,
         rootErrMap: ValidationErrorMap,
     ): void {
-        if (!arrayVal || arrayVal.length === 0) {
+        if (!arrayVal || (Array.isArray(arrayVal) && arrayVal.length === 0)) {
             rootErrMap.addError('MISSING_PROPERTY', undefined, [String(field)]);
         }
     }
@@ -75,10 +75,10 @@ export class ValidatorHelper<
      * @param errMsg message detailing the error
      */
     public enforcePositive<
-        DtoProp extends NumericKeys<TDto>,
+        DtoProp extends NumericKeys<TIdentity>,
         EntityProp extends keyof TEntity,
     >(
-        val: TDto[DtoProp] | null | undefined,
+        val: TIdentity[DtoProp] | null | undefined,
         field: EntityProp,
         rootErrMap: ValidationErrorMap,
     ): void {
@@ -99,10 +99,10 @@ export class ValidatorHelper<
      * @param errMsg message detailing the error
      */
     public enforceNonNegative<
-        DtoProp extends NumericKeys<TDto>,
+        DtoProp extends NumericKeys<TIdentity>,
         EntityProp extends NumericKeys<TEntity>,
     >(
-        val: TDto[DtoProp],
+        val: TIdentity[DtoProp],
         field: EntityProp,
         rootErrMap: ValidationErrorMap,
     ): void {
@@ -266,7 +266,7 @@ export class ValidatorHelper<
 
     /**
      * if the hinge property is set to the given hingeValue, dependents must be populated
-     * @param dto source DTO
+     * @param identity source DTO
      * @param hinge property of Dto whos state determines the required dependents
      * @param hingeValue the state of the hinge property that requires the dependents
      * @param dependents the properties that must be populated if the hinge is set to the hingeValue
@@ -274,22 +274,22 @@ export class ValidatorHelper<
      * @param errMsg description of error
      */
     public enforceConditionalRequired<
-        Prop extends keyof TDto,
-        Dep extends readonly (keyof TDto)[],
+        Prop extends keyof TIdentity,
+        Dep extends readonly (keyof TIdentity)[],
     >(
-        dto: TDto,
+        identity: TIdentity,
         hinge: Prop,
-        hingeValue: TDto[Prop],
+        hingeValue: TIdentity[Prop],
         dependents: Dep,
         rootErrMap: ValidationErrorMap,
     ): void {
-        const currentVal = dto[hinge];
+        const currentVal = identity[hinge];
 
         if (hingeValue === undefined) return;
 
         if (currentVal === hingeValue) {
             for (const dep of dependents) {
-                const val = dto[dep];
+                const val = identity[dep];
                 if (val == null || (Array.isArray(val) && val.length === 0)) {
                     // Should probably pass the dependent Props, or both, not just hinge
                     rootErrMap.addError('MISSING_PROPERTY', undefined, [String(dep)]);
@@ -305,8 +305,8 @@ export class ValidatorHelper<
      * @param rootErrMap error map to add error to
      * @param errMsg description of error
      */
-    public enforceMutualRequired<Dep extends readonly (keyof TDto)[]>(
-        dto: TDto,
+    public enforceMutualRequired<Dep extends readonly (keyof TIdentity)[]>(
+        dto: TIdentity,
         mutuals: Dep,
         rootErrMap: ValidationErrorMap,
     ): void {

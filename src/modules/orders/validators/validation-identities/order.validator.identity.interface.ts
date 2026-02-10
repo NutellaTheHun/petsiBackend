@@ -13,6 +13,6 @@ export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly isFrozen?: boolean;
     readonly isWeekly?: boolean;
     readonly weeklyFulfillment?: string;
-    readonly categoryId: number;
-    readonly orderedItems: OrderMenuItemValidatorIdentity[];
+    readonly categoryId?: number;
+    readonly orderedItems?: OrderMenuItemValidatorIdentity[];
 }

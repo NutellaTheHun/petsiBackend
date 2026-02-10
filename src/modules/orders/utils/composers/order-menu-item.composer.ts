@@ -34,7 +34,7 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
 
         const savedResult = await manager.save(entity);
 
-        if (dto.containerOrderMenuItems) {
+        if (dto.containerOrderMenuItems && dto.containerOrderMenuItems.length > 0) {
             savedResult.containerOrderMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
