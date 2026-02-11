@@ -11,6 +11,7 @@ import {
     InventoryItem,
     InventoryItemEntity,
 } from '../entities/inventory-item.entity';
+import { InventoryItemSizeValidatorIdentity } from './identities/inventory-item-size.validator.identity.interface';
 import { InventoryItemValidatorIdentity } from './identities/inventory-item.validator.identity.interface';
 import { InventoryItemSizeValidator } from './inventory-item-size.validator';
 
@@ -39,6 +40,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -61,77 +63,34 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         }
 
         if (identity.sizes && identity.sizes?.length) {
-            identity.sizes.forEach(size => {
-                this.itemSizeValidator.validateNestedIdentity(
+            for (const size of identity.sizes) {
+                await this.itemSizeValidator.validateNestedIdentity(
                     'sizes',
                     size,
                     errorMap,
                 );
-            });
+            }
         }
 
         return errorMap;
     }
 
     public async resolveIdentity(dto: CreateInventoryItemDto | UpdateInventoryItemDto, id: number | string): Promise<InventoryItemValidatorIdentity> {
+        const sizeIdentities: InventoryItemSizeValidatorIdentity[] = [];
+        if (dto.sizes && dto.sizes.length) {
+            for (const size of dto.sizes) {
+                sizeIdentities.push(await this.itemSizeValidator.resolveIdentity(
+                    size,
+                    id,
+                ));
+            }
+        }
+
         return {
             name: dto.name,
             categoryId: dto.categoryId,
             vendorId: dto.vendorId,
-            sizes: dto.sizes,
+            sizes: sizeIdentities,
         } as InventoryItemValidatorIdentity;
-    }
-
-    public async doValidateCreateNode(
-        dto: CreateInventoryItemDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // name
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        if (dto.sizes && dto.sizes?.length) {
-            // inventoryItemSizeValidator Call
-            await this.itemSizeValidator.validateManyNestedNode(
-                'sizes',
-                dto.sizes,
-                errorMap,
-            );
-        }
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryItemDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        if (dto.sizes && dto.sizes?.length) {
-            // nested inventoryItemSizeValidator Call
-            await this.itemSizeValidator.validateManyNestedNode(
-                'sizes',
-                dto.sizes,
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

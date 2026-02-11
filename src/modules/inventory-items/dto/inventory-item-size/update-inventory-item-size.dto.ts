@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
@@ -37,7 +37,7 @@ export class UpdateInventoryItemSizeDto {
         example: 3.99,
     })
     @IsNumber({ maxDecimalPlaces: 2 })
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
-    readonly cost: number;
+    readonly cost?: number;
 }

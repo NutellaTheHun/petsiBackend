@@ -32,6 +32,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -58,70 +59,5 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
             length: dto.length,
             width: dto.width,
         } as LabelTypeValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateLabelTypeDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // name
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        // length
-        this.helper.enforcePositive(
-            dto.length,
-            'length',
-            errorMap,
-        );
-
-        // width
-        this.helper.enforcePositive(
-            dto.width,
-            'width',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateLabelTypeDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        if (dto.length) {
-            this.helper.enforcePositive(
-                dto.length,
-                'length',
-                errorMap,
-            );
-        }
-
-        if (dto.width) {
-            this.helper.enforcePositive(
-                dto.width,
-                'width',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

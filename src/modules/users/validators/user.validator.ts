@@ -8,52 +8,65 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
+import { UserValidatorIdentity } from './identities/user.valdiator.identity.interface';
 
 @Injectable()
-export class UserValidator extends ValidatorBase<UserEntity> {
-  constructor(
-    @InjectRepository(User)
-    private readonly repo: Repository<User>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'User', requestContextService, logger);
-  }
+export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdentity> {
+    constructor(
+        @InjectRepository(User)
+        private readonly repo: Repository<User>,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'User', requestContextService, logger);
+    }
+    protected async validateIdentity(identity: UserValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-  protected async doValidateCreateNode(
-    dto: CreateUserDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        if (identity.email) {
+            await this.helper.enforceUnique(
+                identity.email,
+                this.repo,
+                'email',
+                errorMap,
+                id,
+            );
+        }
 
-    // username exists
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'username name already exists.',
-    );
+        if (identity.password) {
 
-    return errorMap;
-  }
+        }
 
-  protected async doValidateUpdateNode(
-    dto: UpdateUserDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        if (identity.roleIds) {
+            for (const roleId of identity.roleIds) {
+                await this.helper.enforceExists(
+                    roleId,
+                    this.repo,
+                    'roles',
+                    errorMap,
+                );
+            }
+        }
 
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'username name already exists.',
-      );
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+                id,
+            );
+        }
+
+        return errorMap;
     }
 
-    return errorMap;
-  }
+    public async resolveIdentity(dto: CreateUserDto | UpdateUserDto, id: number | string): Promise<UserValidatorIdentity> {
+        return {
+            email: dto.email,
+            password: dto.password,
+            roleIds: dto.roleIds,
+            name: dto.name,
+        } as UserValidatorIdentity;
+    }
 }

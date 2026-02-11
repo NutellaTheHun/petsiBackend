@@ -35,6 +35,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -45,40 +46,5 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
         return {
             name: dto.name,
         } as InventoryItemPackageValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryItemPackageDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // Already exists check
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryItemPackageDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

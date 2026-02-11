@@ -1,33 +1,39 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { CreateOrderMenuItemDto } from '../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../dto/order-menu-item/update-order-menu-item.dto';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import {
     OrderMenuItem,
     OrderMenuItemEntity,
 } from '../entities/order-menu-item.entity';
+import { Order } from '../entities/order.entity';
+import { OrderContainerItemValidatorIdentity } from './identities/order-container-item.validator.identity.interface';
+import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderContainerItemValidator } from './order-container-item.validator';
-import { OrderMenuItemValidatorIdentity } from './validation-identities/order-menu-item.validator.identity.interface';
 
 @Injectable()
 export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEntity, OrderMenuItemValidatorIdentity> {
+
     constructor(
         @InjectRepository(OrderMenuItem)
         private readonly repo: Repository<OrderMenuItem>,
-        @InjectRepository(OrderContainerItem)
-        private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
+        @InjectRepository(MenuItemSize)
+        private readonly menuItemSizeRepo: Repository<MenuItemSize>,
+        @InjectRepository(Order)
+        private readonly orderRepo: Repository<Order>,
 
         private readonly orderContainerItemValidator: OrderContainerItemValidator,
 
@@ -37,237 +43,128 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         super(repo, 'OrderMenuItem', requestContextService, logger);
     }
 
-    protected async doValidateCreateNode(
-        dto: CreateOrderMenuItemDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
+    public async resolveIdentity(dto: CreateOrderMenuItemDto | UpdateOrderMenuItemDto | NestedCreateOrderMenuItemDto | NestedUpdateOrderMenuItemDto, id: number | string): Promise<OrderMenuItemValidatorIdentity> {
+        const containerItemIdentities: OrderContainerItemValidatorIdentity[] = [];
+        if (dto.containerOrderMenuItems && dto.containerOrderMenuItems.length) {
+            for (const containerItem of dto.containerOrderMenuItems) {
+                const itemId = containerItem instanceof NestedCreateOrderContainerItemDto ? containerItem.createId : containerItem.id;
+                containerItemIdentities.push(await this.orderContainerItemValidator.resolveIdentity(containerItem, itemId));
+            }
+        }
 
         const menuItem = await this.menuItemRepo.findOne({
             where: { id: dto.menuItemId },
-            relations: ['sizes'],
         });
         if (!menuItem) {
-            throw new NotFoundException();
+            throw new Error('MenuItem not found');
         }
 
-        // validate item / size
-        await this.helper.enforceValidSize(
-            dto.sizeId,
-            menuItem.id,
-            this.menuItemRepo,
-            'sizes',
-            'size',
-            errorMap,
-            'Invalid size',
-        );
-
-        if (menuItem.type === MENU_ITEM_TYPES.CONTAINER) {
-            // must have container items
-            this.helper.enforceArrayNotEmpty(
-                dto.containerOrderMenuItems,
-                'containerOrderMenuItems',
-                errorMap,
-                'container must have at least one item',
-            );
-        }
-
-        if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
-            // validate no duplicates
-            this.helper.enforceNoDuplicateElements(
-                dto.containerOrderMenuItems,
-                (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
-                'containerOrderMenuItems',
-                errorMap,
-                'duplicate container item',
-            );
-
-            // validate container quantity based on variableMax
-            if (menuItem.variableMaxAmount) {
-                const totalQuantity = dto.containerOrderMenuItems.reduce(
-                    (acc, item) => acc + item.quantity,
-                    0,
-                );
-                if (totalQuantity !== menuItem.variableMaxAmount) {
-                    errorMap.addChild(
-                        'quantity',
-                        new ValidationErrorMap(
-                            undefined,
-                            'quantity must equal the variable max amount of the container',
-                        ),
-                    );
-                }
-            }
-
-            // Nested validator call
-            await this.orderContainerItemValidator.validateManyNestedNode(
-                'containerOrderMenuItems',
-                dto.containerOrderMenuItems,
-                errorMap,
-            );
-        }
-        return errorMap;
+        return {
+            id: dto instanceof NestedUpdateOrderMenuItemDto ? dto.id : undefined,
+            createId: dto instanceof NestedCreateOrderMenuItemDto ? dto.createId : undefined,
+            menuItemId: dto.menuItemId,
+            sizeId: dto.sizeId,
+            quantity: dto.quantity,
+            containerOrderMenuItems: containerItemIdentities,
+            parentOrderId: dto instanceof CreateOrderMenuItemDto ? dto.parentOrderId : undefined,
+            menuItemType: menuItem.type,
+            variableMaxAmount: menuItem.variableMaxAmount ? menuItem.variableMaxAmount : undefined,
+        } as OrderMenuItemValidatorIdentity;
     }
 
-    protected async doValidateNestedCreateNode(
-        dto: NestedCreateOrderMenuItemDto,
-        id: string,
-    ): Promise<ValidationErrorMap> {
-        // Currently no difference in validation between nested create and root create
-        return await this.doValidateCreateNode(
-            dto as unknown as CreateOrderMenuItemDto,
-            id,
-        );
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateOrderMenuItemDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: OrderMenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        const currentOrderItem = await this.repo.findOne({
-            where: { id },
-            relations: ['size', 'menuItem'],
-        });
-        if (!currentOrderItem) {
-            throw new NotFoundException();
+        if (identity.containerOrderMenuItems && identity.containerOrderMenuItems.length) {
+
+            // validate menu item is a container
+            if (identity.menuItemType !== MENU_ITEM_TYPES.CONTAINER) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['menuItemType']);
+            }
+
+            // validate no duplicates
+            this.helper.enforceNoDuplicateElements(
+                identity.containerOrderMenuItems,
+                (item) => ({ id: item.id ?? item.createId, identity: `${item.containedMenuItemId}:${item.containedItemSizeId}` }),
+                'containerOrderMenuItems',
+                errorMap,
+            );
+
+            // for variable max amount check
+            let containerQuantity = 0;
+
+            for (const item of identity.containerOrderMenuItems) {
+
+                // accumulate quantity to check against variable max amount
+                if (identity.variableMaxAmount && item.quantity) {
+                    containerQuantity += item.quantity;
+                }
+
+                // Nested validator call
+                await this.orderContainerItemValidator.validateNestedIdentity(
+                    'containerOrderMenuItems',
+                    item,
+                    errorMap,
+                    item.id ?? item.createId,
+                );
+            }
+
+            // if variable max amount is set, validate container quantity matches variable max amount
+            if (identity.variableMaxAmount) {
+                if (containerQuantity !== identity.variableMaxAmount) {
+                    errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']);
+                }
+            }
         }
 
-        // validate item / size
-        if (dto.menuItemId || dto.sizeId) {
-            const sizeId = dto.sizeId ?? currentOrderItem.size.id;
-            const itemId = dto.menuItemId ?? currentOrderItem.menuItem.id;
+        if (identity.menuItemId) {
+            this.helper.enforceExists(
+                identity.menuItemId,
+                this.menuItemRepo,
+                'menuItem',
+                errorMap,
+            );
+        }
 
-            await this.helper.enforceValidSize(
-                sizeId,
-                itemId,
+        if (identity.parentOrderId) {
+            this.helper.enforceExists(
+                identity.parentOrderId,
+                this.orderRepo,
+                'parentOrder',
+                errorMap,
+            );
+        }
+
+        if (identity.quantity) {
+            this.helper.enforcePositive(
+                identity.quantity,
+                'quantity',
+                errorMap,
+            );
+        }
+
+        if (identity.sizeId) {
+            this.helper.enforceExists(
+                identity.sizeId,
+                this.menuItemSizeRepo,
+                'size',
+                errorMap,
+            );
+        }
+
+        if (identity.sizeId && identity.menuItemId) {
+            this.helper.enforceValidSize(
+                identity.sizeId,
+                identity.menuItemId,
                 this.menuItemRepo,
                 'sizes',
                 'size',
                 errorMap,
-                'Invalid size',
-            );
-        }
-
-        if (dto.quantity) {
-            this.helper.enforcePositive(
-                dto.quantity,
-                'quantity',
-                errorMap,
-                'Invalid quantity',
-            );
-        }
-
-        if (dto.containerOrderMenuItems && dto.containerOrderMenuItems?.length) {
-            // validate menu item is a container
-            if (currentOrderItem.menuItem.type !== MENU_ITEM_TYPES.CONTAINER) {
-                errorMap.addChild(
-                    'menuItem',
-                    new ValidationErrorMap(undefined, 'menu item is not a container'),
-                );
-            }
-
-            // validate container items are not duplicates
-
-            // Get current container items
-            const currentContainerItems = await this.orderContainerItemRepo.find({
-                where: { parentOrderMenuItem: { id } },
-                relations: ['containedMenuItem', 'containedItemSize'],
-            });
-            if (!currentContainerItems) {
-                throw new NotFoundException();
-            }
-
-            // map to combine current contained items with items from DTO
-            const containerItemsMap = new Map<
-                string | number,
-                {
-                    containedMenuItemId: number;
-                    containedItemSizeId: number;
-                    quantity: number;
-                }
-            >();
-
-            // add current container items to map
-            for (const item of currentContainerItems) {
-                containerItemsMap.set(item.id, {
-                    containedMenuItemId: item.containedMenuItem.id,
-                    containedItemSizeId: item.containedItemSize.id,
-                    quantity: item.quantity,
-                });
-            }
-
-            // add items from DTO to map
-            for (const item of dto.containerOrderMenuItems) {
-                if ('id' in item) {
-                    const current = containerItemsMap.get(item.id);
-                    if (!current) {
-                        throw new NotFoundException();
-                    }
-                    // if update dto, set values from dto if present, otherwise use current values
-                    containerItemsMap.set(item.id, {
-                        containedMenuItemId:
-                            item.containedMenuItemId ?? current.containedMenuItemId,
-                        containedItemSizeId:
-                            item.containedItemSizeId ?? current.containedItemSizeId,
-                        quantity: item.quantity ?? current.quantity,
-                    });
-                } else if ('createId' in item) {
-                    // add create items to map
-                    containerItemsMap.set(item.createId, {
-                        containedMenuItemId: item.containedMenuItemId,
-                        containedItemSizeId: item.containedItemSizeId,
-                        quantity: item.quantity,
-                    });
-                }
-            }
-
-            // validate container quantity based on variableMax
-            if (currentOrderItem.menuItem.variableMaxAmount) {
-                const totalQuantity = Array.from(containerItemsMap.values()).reduce(
-                    (acc, item) => acc + item.quantity,
-                    0,
-                );
-                if (totalQuantity !== currentOrderItem.menuItem.variableMaxAmount) {
-                    errorMap.addChild(
-                        'quantity',
-                        new ValidationErrorMap(
-                            undefined,
-                            'quantity must equal the variable max amount of the container',
-                        ),
-                    );
-                }
-            }
-
-            // validate no duplicates from map values (with create dto items and updated dto items)
-            this.helper.enforceNoDuplicateElements(
-                Array.from(containerItemsMap.values()),
-                (item) => `${item.containedMenuItemId}:${item.containedItemSizeId}`,
-                'containerOrderMenuItems',
-                errorMap,
-                'duplicate container item',
             );
 
-            // nested validator call
-            await this.orderContainerItemValidator.validateManyNestedNode(
-                'containerOrderMenuItems',
-                dto.containerOrderMenuItems,
-                errorMap,
-            );
+            return errorMap;
         }
 
         return errorMap;
-    }
-
-    protected async doValidateNestedUpdateNode(
-        dto: NestedUpdateOrderMenuItemDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        // Currently no difference in validation between nested update and root update
-        return await this.doValidateUpdateNode(
-            dto as unknown as UpdateOrderMenuItemDto,
-            id,
-        );
     }
 }

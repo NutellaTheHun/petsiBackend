@@ -1,20 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
-import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
-import { RecipeIngredientAggregateValidator } from './aggregate-validators/recipe-ingredient.aggregate.validator';
+import { RecipeIngredientValidatorIdentity } from './identities/recipe-ingredient.validator.identity.interface';
+import { RecipeValidatorIdentity } from './identities/recipe.validator.identity.interface';
 import { RecipeIngredientValidator } from './recipe-ingredient.validator';
 
 @Injectable()
-export class RecipeValidator extends ValidatorBase<RecipeEntity> {
+export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidatorIdentity> {
     constructor(
         @InjectRepository(Recipe)
         private readonly repo: Repository<Recipe>,
@@ -23,8 +27,14 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
 
         private readonly ingredientValidator: RecipeIngredientValidator,
 
-        @InjectRepository(RecipeIngredient)
-        private readonly recipeIngredientRepo: Repository<RecipeIngredient>,
+        @InjectRepository(UnitOfMeasure)
+        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
+
+        @InjectRepository(MenuItem)
+        private readonly menuItemRepo: Repository<MenuItem>,
+
+        @InjectRepository(RecipeSubCategory)
+        private readonly recipeSubCategoryRepo: Repository<RecipeSubCategory>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -32,255 +42,149 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity> {
         super(repo, 'Recipe', requestContextService, logger);
     }
 
-    protected async doValidateCreateNode(
-        dto: CreateRecipeDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RecipeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        // Exists
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-            'Recipe with this name already exists.',
-        );
-
-        // subcategory with no category assignment
-        if (dto.subCategoryId && !dto.categoryId) {
-            errorMap.addChild(
-                'category',
-                new ValidationErrorMap(
-                    undefined,
-                    'Requires category if assigning sub-category',
-                ),
-            );
-        }
-
-        // Validate category / subcategory
-        if (dto.categoryId && dto.subCategoryId) {
-            const category = await this.recipeCategoryRepo.findOne({
-                where: { id: dto.categoryId },
-                relations: ['subCategories'],
-            });
-            if (!category) {
-                throw new NotFoundException();
-            }
-
-            this.helper.enforceValueInList(
-                dto.subCategoryId,
-                category.subCategories.map((cat) => cat.id),
-                'subCategory',
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
                 errorMap,
-                'Invalid category / subcategory combination',
+                id,
             );
         }
 
-        // batchResultUnitType and batchResultQuantity are coupled
-        this.helper.enforceMutualRequired(
-            dto,
-            ['batchResultUnitTypeId', 'batchResultQuantity'],
-            errorMap,
-            'batchResultUnitTypeId and batchResultQuantity must both be populated',
-        );
-
-        // if batchResultQuantity must be positive
-        if (dto.batchResultQuantity !== undefined) {
+        if (identity.batchResultQuantity) {
             this.helper.enforcePositive(
-                dto.batchResultQuantity,
+                identity.batchResultQuantity,
                 'batchResultQuantity',
                 errorMap,
-                'batch result quantity cannot be 0',
             );
         }
 
-        // if salesPrice is populated, it must be positive
-        if (dto.salesPrice !== undefined) {
+        if (identity.batchResultUnitTypeId) {
+            await this.helper.enforceExists(
+                identity.batchResultUnitTypeId,
+                this.unitOfMeasureRepo,
+                'batchResultUnitType',
+                errorMap,
+            );
+        }
+
+        if (identity.categoryId) {
+            await this.helper.enforceExists(
+                identity.categoryId,
+                this.recipeCategoryRepo,
+                'category',
+                errorMap,
+            );
+        }
+
+        if (identity.producedMenuItemId) {
+            await this.helper.enforceExists(
+                identity.producedMenuItemId,
+                this.menuItemRepo,
+                'producedMenuItem',
+                errorMap,
+            );
+        }
+
+        if (identity.salesPrice) {
             this.helper.enforcePositive(
-                dto.salesPrice,
+                identity.salesPrice,
                 'salesPrice',
                 errorMap,
-                'sales price cannot be 0',
             );
         }
 
-        // servingSizeQuantity and servingSizeUnitTypeId are coupled
-        this.helper.enforceMutualRequired(
-            dto,
-            ['servingSizeQuantity', 'servingSizeUnitTypeId'],
-            errorMap,
-            'servingSizeQuantity and servingSizeUnitTypeId must both be populated',
-        );
-
-        // if servingSizeQuantity must be positive
-        if (dto.servingSizeQuantity !== undefined) {
+        if (identity.servingSizeQuantity) {
             this.helper.enforcePositive(
-                dto.servingSizeQuantity,
+                identity.servingSizeQuantity,
                 'servingSizeQuantity',
                 errorMap,
-                'serving size quantity cannot be 0',
+            );
+        }
+        if (identity.servingSizeUnitTypeId) {
+            await this.helper.enforceExists(
+                identity.servingSizeUnitTypeId,
+                this.unitOfMeasureRepo,
+                'servingSizeUnitType',
+                errorMap,
             );
         }
 
-        if (dto.isIngredient && dto.ingredients?.length) {
-            //check dupliate ingredients
-            const riValidator = new RecipeIngredientAggregateValidator(
-                dto.ingredients,
+        if (identity.subCategoryId) {
+            await this.helper.enforceExists(
+                identity.subCategoryId,
+                this.recipeSubCategoryRepo,
+                'subCategory',
+                errorMap,
             );
-            riValidator.validateUnique(
+        }
+
+        if (identity.subCategoryId && !identity.categoryId) {
+            errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['subCategory']);
+        }
+
+        if (identity.batchResultQuantity || identity.batchResultUnitTypeId) {
+            this.helper.enforceMutualRequired(
+                identity,
+                ['batchResultQuantity', 'batchResultUnitTypeId'],
+                errorMap,
+            );
+        }
+
+        if (identity.servingSizeQuantity || identity.servingSizeUnitTypeId) {
+            this.helper.enforceMutualRequired(
+                identity,
+                ['servingSizeQuantity', 'servingSizeUnitTypeId'],
+                errorMap,
+            );
+        }
+
+        if (identity.ingredients && identity.ingredients.length) {
+
+            this.helper.enforceNoDuplicateElements(
+                identity.ingredients,
+                (ingredient) => ({ id: ingredient.id ?? ingredient.createId, identity: `${ingredient.ingredientInventoryItemId}:${ingredient.ingredientRecipeId}` }),
                 'ingredients',
                 errorMap,
-                'duplicate ingredient',
             );
 
-            //check if ingredient is a recipe and validate recipe.isIngredient is true. Else throw error.
-            for (const ingredient of dto.ingredients) {
-                if (ingredient.ingredientRecipeId) {
-                    const recipe = await this.repo.findOne({
-                        where: { id: ingredient.ingredientRecipeId },
-                    });
-                    if (!recipe) {
-                        throw new NotFoundException();
-                    }
-                    if (!recipe.isIngredient) {
-                        errorMap.addChild(
-                            'ingredients',
-                            new ValidationErrorMap(
-                                undefined,
-                                'this recipe is not set to be an ingredient',
-                            ),
-                        );
-                    }
-                }
+            for (const ingredient of identity.ingredients) {
+                await this.ingredientValidator.validateNestedIdentity(
+                    'ingredients',
+                    ingredient,
+                    errorMap,
+                );
             }
-
-            // nested validator call
-            await this.ingredientValidator.validateManyNestedNode(
-                'ingredients',
-                dto.ingredients,
-                errorMap,
-            );
         }
 
         return errorMap;
     }
 
-    protected async doValidateUpdateNode(
-        dto: UpdateRecipeDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name !== undefined) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-                'Recipe with this name already exists.',
-            );
-        }
-
-        // Validate category / subcategory
-        if (dto.categoryId && dto.subCategoryId) {
-            const category = await this.recipeCategoryRepo.findOne({
-                where: { id: dto.categoryId },
-                relations: ['subCategories'],
-            });
-            if (!category) {
-                throw new NotFoundException();
-            }
-
-            if (
-                !category.subCategories.find(
-                    (subCat) => subCat.id === dto.subCategoryId,
-                )
-            ) {
-                errorMap.addChild(
-                    'subCategory',
-                    new ValidationErrorMap(
-                        undefined,
-                        'Invalid category / subcategory combination',
-                    ),
-                );
-            }
-        } else if (dto.subCategoryId) {
-            const currentRecipe = await this.repo.findOne({
-                where: { id },
-                relations: ['category'],
-            });
-            if (!currentRecipe) {
-                throw new NotFoundException();
-            }
-            if (!currentRecipe.category) {
-                errorMap.addChild(
-                    'category',
-                    new ValidationErrorMap(
-                        undefined,
-                        'Requires category if assigning sub-category',
-                    ),
-                );
-            } else if (
-                !currentRecipe.category.subCategories.find(
-                    (subCat) => subCat.id === dto.subCategoryId,
-                )
-            ) {
-                errorMap.addChild(
-                    'subCategory',
-                    new ValidationErrorMap(
-                        undefined,
-                        'Invalid category / subcategory combination',
-                    ),
-                );
+    public async resolveIdentity(dto: CreateRecipeDto | UpdateRecipeDto, id: number | string): Promise<RecipeValidatorIdentity> {
+        const ingredientIdentities: RecipeIngredientValidatorIdentity[] = [];
+        if (dto.ingredients && dto.ingredients.length) {
+            for (const ingredient of dto.ingredients) {
+                const ingredientId = ingredient instanceof NestedCreateRecipeIngredientDto ? ingredient.createId : ingredient.id;
+                ingredientIdentities.push(await this.ingredientValidator.resolveIdentity(ingredient, ingredientId));
             }
         }
 
-        if (dto.batchResultQuantity !== undefined) {
-            this.helper.enforcePositive(
-                dto.batchResultQuantity,
-                'batchResultQuantity',
-                errorMap,
-                'batch result quantity cannot be 0',
-            );
-        }
-
-        if (dto.salesPrice !== undefined) {
-            this.helper.enforcePositive(
-                dto.salesPrice,
-                'salesPrice',
-                errorMap,
-                'sales price cannot be 0',
-            );
-        }
-
-        if (dto.ingredients && dto.ingredients?.length) {
-            // check duplicate ingredients
-            const currentIngredients = await this.recipeIngredientRepo.find({
-                where: { id },
-                relations: ['ingredientInventoryItem', 'ingredientRecipe'],
-            });
-            if (!currentIngredients) {
-                throw new NotFoundException();
-            }
-            const riValidator = new RecipeIngredientAggregateValidator(
-                dto.ingredients,
-                currentIngredients,
-            );
-            riValidator.validateUnique(
-                'ingredients',
-                errorMap,
-                'duplicate ingredient',
-            );
-
-            // nested validator call
-            await this.ingredientValidator.validateManyNestedNode(
-                'ingredients',
-                dto.ingredients,
-                errorMap,
-            );
-        }
-
-        return errorMap;
+        return {
+            name: dto.name,
+            producedMenuItemId: dto.producedMenuItemId,
+            batchResultQuantity: dto.batchResultQuantity,
+            batchResultUnitTypeId: dto.batchResultUnitTypeId,
+            servingSizeQuantity: dto.servingSizeQuantity,
+            servingSizeUnitTypeId: dto.servingSizeUnitTypeId,
+            salesPrice: dto.salesPrice,
+            isIngredient: dto.isIngredient,
+            categoryId: dto.categoryId,
+            subCategoryId: dto.subCategoryId,
+            ingredients: ingredientIdentities,
+        } as RecipeValidatorIdentity;
     }
 }

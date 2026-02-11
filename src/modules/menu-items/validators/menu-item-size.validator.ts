@@ -35,6 +35,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -44,40 +45,5 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
         return {
             name: dto.name,
         } as MenuItemSizeValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateMenuItemSizeDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // exists
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateMenuItemSizeDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

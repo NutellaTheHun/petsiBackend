@@ -34,6 +34,7 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -43,41 +44,5 @@ export class InventoryItemCategoryValidator extends ValidatorBase<InventoryItemC
         return {
             name: dto.name,
         } as InventoryItemCategoryValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryItemCategoryDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // Already exists check
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryItemCategoryDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // Already exists check
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

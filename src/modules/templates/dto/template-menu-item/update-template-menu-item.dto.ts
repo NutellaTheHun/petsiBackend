@@ -31,13 +31,4 @@ export class UpdateTemplateMenuItemDto {
     @IsNotEmpty()
     @IsPositive()
     readonly menuItemId: EntityId<MenuItem>;
-
-    /*@ApiPropertyOptional({
-      description: 'Id of the parent Template entity.',
-      example: 3,
-    })
-    @IsNumber()
-    @IsOptional()
-    @IsPositive()
-    readonly parentTemplateId?: EntityId<Template>;*/
 }

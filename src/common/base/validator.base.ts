@@ -8,8 +8,6 @@ import {
 } from '../validation/validation-error';
 import { ValidationExceptionHandler } from '../validation/validation-exception.handler';
 import { EntityBase } from './entity.base';
-import { NestedCreateDto } from './nested-create-dto.base';
-import { NestedUpdateDto } from './nested-update-dto.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 
 export abstract class ValidatorBase<
@@ -67,20 +65,20 @@ export abstract class ValidatorBase<
      * @param result
      * @param dto
      */
-    protected abstract doValidateCreateNode(
+    /*protected abstract doValidateCreateNode(
         dto: T['__CDto'],
         id?: string,
-    ): Promise<ValidationErrorMap>;
+    ): Promise<ValidationErrorMap>;*/
 
     /**
      * Entity implementation of buisness logic validation
      * @param result
      * @param dto
      */
-    protected abstract doValidateUpdateNode(
+    /*protected abstract doValidateUpdateNode(
         dto: T['__UDto'],
         id: number,
-    ): Promise<ValidationErrorMap>;
+    ): Promise<ValidationErrorMap>;*/
 
     /*
         protected doValidateNestedCreateNode(
@@ -115,12 +113,12 @@ export abstract class ValidatorBase<
      * @param dto root DTO to validate
      * @returns ValidationErrorResponse if validation errors are found, otherwise null
      */
-    public async validateCreateNode(
+    /*public async validateCreateNode(
         dto: T['__CDto'],
     ): Promise<ValidationErrorResponse | null> {
         const result = await this.doValidateCreateNode(dto);
         return this.getValidateResponse(result);
-    }
+    }*/
 
     /**
      * root level validation function of DTOs, only called by service.base.update.
@@ -128,14 +126,14 @@ export abstract class ValidatorBase<
      * @param dto
      * @returns
      */
-    public async validateUpdateNode(
+    /*public async validateUpdateNode(
         dto: T['__UDto'],
         id: number,
     ): Promise<ValidationErrorResponse | null> {
         const result = await this.doValidateUpdateNode(dto, id);
 
         return this.getValidateResponse(result);
-    }
+    }*/
 
     /**
      * Wrapper function to parse nested DTOs. Adds validation errors to the given rootErrorMap under the given field.
@@ -194,7 +192,7 @@ export abstract class ValidatorBase<
          }
      }*/
 
-    private isNestedCreateDto(dto: unknown): dto is NestedCreateDto {
+    /*private isNestedCreateDto(dto: unknown): dto is NestedCreateDto {
         return (
             typeof dto === 'object' &&
             dto !== null &&
@@ -210,5 +208,5 @@ export abstract class ValidatorBase<
             'id' in dto &&
             typeof (dto as any).id === 'number'
         );
-    }
+    }*/
 }

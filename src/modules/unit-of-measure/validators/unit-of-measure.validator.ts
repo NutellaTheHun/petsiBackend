@@ -8,94 +8,71 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
 import {
-  UnitOfMeasure,
-  UnitOfMeasureEntity,
+    UnitOfMeasure,
+    UnitOfMeasureEntity,
 } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureValidatorIdentity } from './identities/unit-of-measure.validator.identity.interface';
 
 @Injectable()
-export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity> {
-  constructor(
-    @InjectRepository(UnitOfMeasure)
-    private readonly repo: Repository<UnitOfMeasure>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'UnitOfMeasure', requestContextService, logger);
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateUnitOfMeasureDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // name exists
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Unit of measure with this name already exists.',
-    );
-
-    // abbreviation exists
-    await this.helper.enforceUnique(
-      dto.abbreviation,
-      this.repo,
-      'abbreviation',
-      errorMap,
-      'abbreviation with this name already exists.',
-    );
-
-    if (dto.conversionFactorToBase) {
-      this.helper.enforcePositive(
-        dto.conversionFactorToBase,
-        'conversionFactorToBase',
-        errorMap,
-        'conversion factor cannot be 0',
-      );
+export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity, UnitOfMeasureValidatorIdentity> {
+    constructor(
+        @InjectRepository(UnitOfMeasure)
+        private readonly repo: Repository<UnitOfMeasure>,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'UnitOfMeasure', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: UnitOfMeasureValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-  protected async doValidateUpdateNode(
-    dto: UpdateUnitOfMeasureDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+                id,
+            );
+        }
 
-    // name exists
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Unit of measure with this name already exists.',
-      );
+        if (identity.abbreviation) {
+            await this.helper.enforceUnique(
+                identity.abbreviation,
+                this.repo,
+                'abbreviation',
+                errorMap,
+                id,
+            );
+        }
+
+        if (identity.conversionFactorToBase) {
+            this.helper.enforcePositive(
+                identity.conversionFactorToBase,
+                'conversionFactorToBase',
+                errorMap,
+            );
+        }
+
+        if (identity.categoryId) {
+            await this.helper.enforceExists(
+                identity.categoryId,
+                this.repo,
+                'category',
+                errorMap,
+            );
+        }
+
+        return errorMap;
     }
 
-    // abbreviation exists
-    if (dto.abbreviation) {
-      await this.helper.enforceUnique(
-        dto.abbreviation,
-        this.repo,
-        'abbreviation',
-        errorMap,
-        'abbreviation with this name already exists.',
-      );
+    public async resolveIdentity(dto: CreateUnitOfMeasureDto | UpdateUnitOfMeasureDto, id: number | string): Promise<UnitOfMeasureValidatorIdentity> {
+        return {
+            name: dto.name,
+            abbreviation: dto.abbreviation,
+            categoryId: dto.categoryId,
+            conversionFactorToBase: dto.conversionFactorToBase,
+        } as UnitOfMeasureValidatorIdentity;
     }
-
-    if (dto.conversionFactorToBase) {
-      this.helper.enforcePositive(
-        dto.conversionFactorToBase,
-        'conversionFactorToBase',
-        errorMap,
-        'conversion factor must be greater than 0',
-      );
-    }
-
-    return errorMap;
-  }
 }

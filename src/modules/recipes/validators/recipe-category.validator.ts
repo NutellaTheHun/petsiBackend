@@ -7,97 +7,73 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
 import {
-  RecipeCategory,
-  RecipeCategoryEntity,
+    RecipeCategory,
+    RecipeCategoryEntity,
 } from '../entities/recipe-category.entity';
+import { RecipeCategoryValidatorIdentity } from './identities/recipe-category.validator.identity.interface';
+import { RecipeSubCategoryValidatorIdentity } from './identities/recipe-sub-category.validator.identity.interface';
 import { RecipeSubCategoryValidator } from './recipe-sub-category.validator';
-
 @Injectable()
-export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity> {
-  constructor(
-    @InjectRepository(RecipeCategory)
-    private readonly repo: Repository<RecipeCategory>,
+export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity, RecipeCategoryValidatorIdentity> {
+    constructor(
+        @InjectRepository(RecipeCategory)
+        private readonly repo: Repository<RecipeCategory>,
 
-    private readonly subCategoryValidator: RecipeSubCategoryValidator,
+        private readonly subCategoryValidator: RecipeSubCategoryValidator,
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'RecipeCategory', requestContextService, logger);
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateRecipeCategoryDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Exists
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Recipe category already exists.',
-    );
-
-    if (dto.subCategories?.length) {
-      // No duplicate sub categories
-      this.helper.enforceNoDuplicateElements(
-        dto.subCategories,
-        (item) => `${item.name}`,
-        'subCategories',
-        errorMap,
-        'duplicate sub category',
-      );
-
-      // nested validator call
-      await this.subCategoryValidator.validateManyNestedNode(
-        'subCategories',
-        dto.subCategories,
-        errorMap,
-      );
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'RecipeCategory', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: RecipeCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-  protected async doValidateUpdateNode(
-    dto: UpdateRecipeCategoryDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+                id,
+            );
+        }
 
-    // Exists
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Recipe category already exists.',
-      );
+        if (identity.subCategories && identity.subCategories.length) {
+
+            this.helper.enforceNoDuplicateElements(
+                identity.subCategories,
+                (item) => ({ id: item.id ?? item.createId, identity: item.name ?? '' }),
+                'subCategories',
+                errorMap,
+            );
+
+            for (const subCategory of identity.subCategories) {
+                await this.subCategoryValidator.validateNestedIdentity(
+                    'subCategories',
+                    subCategory,
+                    errorMap,
+                );
+            }
+        }
+
+        return errorMap;
     }
 
-    if (dto.subCategories && dto.subCategories?.length) {
-      // No duplicate sub categories
-      this.helper.enforceNoDuplicateElements(
-        dto.subCategories,
-        (item) => `${item.name}`,
-        'subCategories',
-        errorMap,
-        'duplicate sub category',
-      );
-
-      // nested validator call
-      await this.subCategoryValidator.validateManyNestedNode(
-        'subCategories',
-        dto.subCategories,
-        errorMap,
-      );
+    public async resolveIdentity(dto: CreateRecipeCategoryDto | UpdateRecipeCategoryDto, id: number | string): Promise<RecipeCategoryValidatorIdentity> {
+        const subCategories: RecipeSubCategoryValidatorIdentity[] = [];
+        if (dto.subCategories && dto.subCategories.length) {
+            for (const subCategory of dto.subCategories) {
+                const subCategoryId = subCategory instanceof NestedCreateRecipeSubCategoryDto ? subCategory.createId : subCategory.id;
+                subCategories.push(await this.subCategoryValidator.resolveIdentity(subCategory, subCategoryId));
+            }
+        }
+        return {
+            name: dto.name,
+            subCategories: subCategories,
+        } as RecipeCategoryValidatorIdentity;
     }
-
-    return errorMap;
-  }
 }

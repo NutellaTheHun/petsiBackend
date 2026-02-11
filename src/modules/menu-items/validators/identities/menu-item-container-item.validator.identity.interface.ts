@@ -6,5 +6,4 @@ export interface MenuItemContainerItemValidatorIdentity extends ValidatorIdentit
     readonly quantity?: number;
     readonly parentMenuItemId?: number;
     readonly parentItemSizeId?: number;
-    readonly parentVariableMaxAmount?: number | null;
 }

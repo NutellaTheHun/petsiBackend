@@ -78,13 +78,13 @@ export class ValidatorHelper<
         DtoProp extends NumericKeys<TIdentity>,
         EntityProp extends keyof TEntity,
     >(
-        val: TIdentity[DtoProp] | null | undefined,
+        val: TIdentity[DtoProp],
         field: EntityProp,
         rootErrMap: ValidationErrorMap,
     ): void {
         if (val == null) return;
 
-        if (val <= 0) {
+        if ((val as number) <= 0) {
             rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
         }
     }
@@ -107,7 +107,7 @@ export class ValidatorHelper<
         rootErrMap: ValidationErrorMap,
     ): void {
         if (val == null) return;
-        if (val < 0) {
+        if ((val as number) < 0) {
             rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(field)]);
         }
     }
@@ -198,6 +198,7 @@ export class ValidatorHelper<
         repo: Repository<Entity>,
         field: Prop,
         rootErrMap: ValidationErrorMap,
+        id?: number | string,
     ): Promise<void> {
         if (val == null) return;
 
@@ -205,6 +206,8 @@ export class ValidatorHelper<
             where: { [field]: val } as FindOptionsWhere<Entity>,
         });
         if (exists) {
+            // if the id is the same as the existing id, not a validation error, createIds are strings and will always fail this check.
+            if (id && exists.id === id) return;
             rootErrMap.addError('ALREADY_EXISTS', undefined, [String(field)]);
         }
     }
@@ -241,7 +244,7 @@ export class ValidatorHelper<
      */
     public enforceNoDuplicateElements<TItem>(
         items: TItem[] | null | undefined,
-        keyExtractor: (item: TItem) => { id: string | number, identity: string | number },
+        keyExtractor: (item: TItem) => { id: string | number | undefined, identity: string | number },
         field: keyof TEntity,
         rootErrMap: ValidationErrorMap,
     ): void {
@@ -252,9 +255,10 @@ export class ValidatorHelper<
 
         items.forEach((item) => {
             const { id, identity } = keyExtractor(item);
-            const currentCount = identityCount.get(identity) || [];
-            currentCount.push(id);
-            identityCount.set(identity, currentCount);
+            if (id == null) throw new Error('id is required');
+            const duplicatesOfIds = identityCount.get(identity) || [];
+            duplicatesOfIds.push(id);
+            identityCount.set(identity, duplicatesOfIds);
         });
 
         for (const ids of identityCount.values()) {

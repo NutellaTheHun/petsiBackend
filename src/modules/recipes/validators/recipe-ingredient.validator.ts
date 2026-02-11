@@ -1,160 +1,119 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ValidatorBase } from '../../../common/base/validator.base';
+import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import {
-  RecipeIngredient,
-  RecipeIngredientEntity,
+    RecipeIngredient,
+    RecipeIngredientEntity,
 } from '../entities/recipe-ingredient.entity';
+import { Recipe } from '../entities/recipe.entity';
+import { RecipeIngredientValidatorIdentity } from './identities/recipe-ingredient.validator.identity.interface';
 
 @Injectable()
-export class RecipeIngredientValidator extends ValidatorBase<RecipeIngredientEntity> {
-  constructor(
-    @InjectRepository(RecipeIngredient)
-    private readonly repo: Repository<RecipeIngredient>,
+export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredientEntity, RecipeIngredientValidatorIdentity> {
 
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'RecipeIngredient', requestContextService, logger);
-  }
+    constructor(
+        @InjectRepository(RecipeIngredient)
+        private readonly repo: Repository<RecipeIngredient>,
 
-  protected async doValidateNestedCreateNode(
-    dto: NestedCreateRecipeIngredientDto,
-    id: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        @InjectRepository(InventoryItem)
+        private readonly inventoryItemRepo: Repository<InventoryItem>,
 
-    // Validate only ingredientInventoryItemId or ingredientRecipeId is populated
-    this.helper.enforceOnlyOne(
-      dto,
-      'ingredientInventoryItemId',
-      'ingredientRecipeId',
-      errorMap,
-      'missing reference for ingredient',
-      'cannot provide both an inventory item and a recipe as an ingredient',
-    );
+        @InjectRepository(Recipe)
+        private readonly recipeRepo: Repository<Recipe>,
 
-    // quantity cant be less than equal 0
-    this.helper.enforcePositive(
-      dto.quantity,
-      'quantity',
-      errorMap,
-      'quantity cannot be 0',
-    );
+        @InjectRepository(UnitOfMeasure)
+        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
 
-    return errorMap;
-  }
-
-  protected async doValidateCreateNode(
-    dto: CreateRecipeIngredientDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    // Validate only ingredientInventoryItemId or ingredientRecipeId is populated
-    this.helper.enforceOnlyOne(
-      dto,
-      'ingredientInventoryItemId',
-      'ingredientRecipeId',
-      errorMap,
-      'missing reference for ingredient',
-      'cannot provide both an inventory item and a recipe as an ingredient',
-    );
-
-    // if ingredient recipe, cannot equal parent
-    if (
-      dto.ingredientRecipeId &&
-      dto.ingredientRecipeId === dto.parentRecipeId
+        logger: AppLogger,
+        requestContextService: RequestContextService,
     ) {
-      errorMap.addChild(
-        'ingredientRecipe',
-        new ValidationErrorMap(
-          undefined,
-          'recipe cannot add itself as an ingredient',
-        ),
-      );
+        super(repo, 'RecipeIngredient', requestContextService, logger);
     }
 
-    // quantity cant be less than equal 0
-    this.helper.enforcePositive(
-      dto.quantity,
-      'quantity',
-      errorMap,
-      'quantity cannot be 0',
-    );
+    protected async validateIdentity(identity: RecipeIngredientValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
 
-    return errorMap;
-  }
+        if (identity.ingredientInventoryItemId) {
+            await this.helper.enforceExists(
+                identity.ingredientInventoryItemId,
+                this.inventoryItemRepo,
+                'ingredientInventoryItem',
+                errorMap,
+            );
+        }
 
-  protected async doValidateNestedUpdateNode(
-    dto: NestedUpdateRecipeIngredientDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    // Currently no difference in validation between nested update and root update
-    return await this.doValidateUpdateNode(
-      dto as unknown as UpdateRecipeIngredientDto,
-      id,
-    );
-  }
+        if (identity.ingredientRecipeId) {
+            await this.helper.enforceExists(
+                identity.ingredientRecipeId,
+                this.repo,
+                'ingredientRecipe',
+                errorMap,
+            );
+        }
 
-  protected async doValidateUpdateNode(
-    dto: UpdateRecipeIngredientDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
+        if (identity.parentRecipeId) {
+            await this.helper.enforceExists(
+                identity.parentRecipeId,
+                this.recipeRepo,
+                'parentRecipe',
+                errorMap,
+            );
+        }
 
-    // Validate only one of the two properties are populated
-    if (dto.ingredientInventoryItemId && dto.ingredientRecipeId) {
-      errorMap.addChild(
-        'ingredientInventoryItemId',
-        new ValidationErrorMap(
-          undefined,
-          'cannot provide both an inventory item and a recipe as an ingredient',
-        ),
-      );
+        if (identity.quantity) {
+            this.helper.enforcePositive(
+                identity.quantity,
+                'quantity',
+                errorMap,
+            );
+        }
+
+        if (identity.quantityUnitTypeId) {
+            await this.helper.enforceExists(
+                identity.quantityUnitTypeId,
+                this.unitOfMeasureRepo,
+                'quantityUnitType',
+                errorMap,
+            );
+        }
+
+        if (identity.ingredientInventoryItemId || identity.ingredientRecipeId) {
+            this.helper.enforceOnlyOne(
+                identity,
+                'ingredientInventoryItemId',
+                'ingredientRecipeId',
+                errorMap,
+            );
+        }
+
+        if (identity.parentRecipeId && identity.ingredientRecipeId) {
+            if (identity.ingredientRecipeId === identity.parentRecipeId) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe', 'parentRecipe']);
+            }
+        }
+
+        return errorMap;
     }
 
-    // if ingredient recipe, cannot equal parent
-    if (dto.ingredientRecipeId) {
-      const currentRecipe = await this.repo.findOne({
-        where: { id },
-        relations: ['parentRecipe'],
-      });
-      if (!currentRecipe) {
-        throw new Error(
-          `recipe ingredient update: ingredient being updated with id ${id} was not found`,
-        );
-      }
-
-      if (currentRecipe.parentRecipe.id === dto.ingredientRecipeId) {
-        errorMap.addChild(
-          'ingredientRecipe',
-          new ValidationErrorMap(
-            undefined,
-            'recipe cannot add itself as an ingredient',
-          ),
-        );
-      }
+    public async resolveIdentity(dto: CreateRecipeIngredientDto | UpdateRecipeIngredientDto | NestedCreateRecipeIngredientDto | NestedUpdateRecipeIngredientDto, id: number | string): Promise<RecipeIngredientValidatorIdentity> {
+        return {
+            id: dto instanceof NestedUpdateRecipeIngredientDto ? dto.id : undefined,
+            createId: dto instanceof NestedCreateRecipeIngredientDto ? dto.createId : undefined,
+            ingredientInventoryItemId: dto.ingredientInventoryItemId,
+            ingredientRecipeId: dto.ingredientRecipeId,
+            quantity: dto.quantity,
+            quantityUnitTypeId: dto.quantityUnitTypeId,
+            parentRecipeId: dto instanceof CreateRecipeIngredientDto ? dto.parentRecipeId : undefined,
+        } as RecipeIngredientValidatorIdentity;
     }
-
-    // quantity cant be less than equal 0
-    if (dto.quantity) {
-      this.helper.enforcePositive(
-        dto.quantity,
-        'quantity',
-        errorMap,
-        'quantity cannot be 0',
-      );
-    }
-
-    return errorMap;
-  }
 }

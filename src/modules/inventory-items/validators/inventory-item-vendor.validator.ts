@@ -35,6 +35,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -44,41 +45,5 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         return {
             name: dto.name,
         } as InventoryItemVendorValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryItemVendorDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // Vendor name exists
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryItemVendorDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // Vendor name exists
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

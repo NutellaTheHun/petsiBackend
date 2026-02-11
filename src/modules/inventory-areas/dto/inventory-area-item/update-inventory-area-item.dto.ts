@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
@@ -34,8 +34,8 @@ export class UpdateInventoryAreaItemDto {
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly countedItemSizeId: EntityId<InventoryItemSize>;
+    @IsOptional()
+    readonly countedItemSizeId?: EntityId<InventoryItemSize>;
 
     @ApiProperty({
         description:
@@ -52,8 +52,8 @@ export class UpdateInventoryAreaItemDto {
             cost: 4,
         },
     })
-    @IsNotEmpty()
-    readonly countedItemSize:
+    @IsOptional()
+    readonly countedItemSize?:
         | NestedCreateInventoryItemSizeDto
         | NestedUpdateInventoryItemSizeDto;
 }

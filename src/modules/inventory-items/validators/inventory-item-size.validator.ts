@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
@@ -74,7 +74,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureAmount || identity.packageId || identity.measureTypeId) {
+        if (identity.measureAmount && identity.packageId && identity.measureTypeId && identity.inventoryItemId) {
             const exists = await this.repo.findOne({
                 where: {
                     measureType: { id: identity.measureTypeId },
@@ -104,176 +104,12 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             } as InventoryItemSizeValidatorIdentity;
         }
 
-        const entity = await this.repo.findOne({
-            where: {
-                id: id as number,
-            },
-            relations: ['inventoryItem', 'measureType', 'package'],
-        });
-        if (!entity) {
-            throw new NotFoundException();
-        }
-
-        let measureTypeId: number | null = null;
-        let packageId: number | null = null;
-        let measureAmount: number | null = null;
-        let inventoryItemId: number | null = null;
-        if (dto.measureTypeId || dto.packageId || dto.measureAmount
-        ) {
-            measureTypeId = dto.measureTypeId ?? entity.measureType.id;
-            packageId = dto.packageId ?? entity.package.id;
-            measureAmount = dto.measureAmount ?? entity.measureAmount;
-            inventoryItemId = entity.inventoryItem.id;
-        }
-
         return {
-            id: entity.id,
+            id: dto instanceof NestedUpdateInventoryItemSizeDto ? dto.id : undefined,
             cost: dto.cost,
-            measureAmount: measureAmount ?? undefined,
-            inventoryItemId: inventoryItemId ?? undefined,
-            packageId: packageId ?? undefined,
-            measureTypeId: measureTypeId ?? undefined,
+            measureAmount: dto.measureAmount,
+            packageId: dto.packageId,
+            measureTypeId: dto.measureTypeId,
         } as InventoryItemSizeValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryItemSizeDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // measureAmount
-        this.helper.enforcePositive(
-            dto.measureAmount,
-            'measureAmount',
-            errorMap,
-        );
-
-        // cost
-        this.helper.enforcePositive(
-            dto.cost,
-            'cost',
-            errorMap,
-        );
-
-        // check for current package / unit of measure / cost already exists?
-        const exists = await this.repo.findOne({
-            where: {
-                measureType: { id: dto.measureTypeId },
-                package: {
-                    id: dto.packageId,
-                },
-                inventoryItem: { id: dto.inventoryItemId },
-                measureAmount: dto.measureAmount,
-            },
-        });
-        if (exists) {
-            // Most relevant conflict signal for FE is the measure type selection.
-            errorMap.addChild(
-                'measureType',
-                new ValidationErrorMap(undefined, 'item size already exists'),
-            );
-            errorMap.addChild(
-                'package',
-                new ValidationErrorMap(undefined, 'item size already exists'),
-            );
-            errorMap.addChild(
-                'measureAmount',
-                new ValidationErrorMap(undefined, 'item size already exists'),
-            );
-        }
-
-        return errorMap;
-    }
-
-    protected async doValidateNestedCreateNode(
-        dto: NestedCreateInventoryItemSizeDto,
-        id: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // measureAmount
-        this.helper.enforcePositive(
-            dto.measureAmount,
-            'measureAmount',
-            errorMap,
-        );
-
-        // cost
-        this.helper.enforcePositive(
-            dto.cost,
-            'cost',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryItemSizeDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // measureAmount cannot be less than or equal to 0
-        if (dto.measureAmount) {
-            this.helper.enforcePositive(
-                dto.measureAmount,
-                'measureAmount',
-                errorMap,
-            );
-        }
-
-        // cost cannot be less than or equal to 0
-        if (dto.cost) {
-            this.helper.enforcePositive(
-                dto.cost,
-                'cost',
-                errorMap,
-            );
-        }
-
-        // Cant update a item size to a already existing combination of packageType and measure unit size.
-        if (dto.measureTypeId || dto.packageId) {
-            const currentSize = await this.repo.findOne({
-                where: { id },
-                relations: ['inventoryItem', 'measureType', 'package'],
-            });
-            if (!currentSize) {
-                throw new NotFoundException();
-            }
-            const exists = await this.repo.findOne({
-                where: {
-                    measureType: { id: dto.measureTypeId ?? currentSize.measureType.id },
-                    package: {
-                        id: dto.packageId ?? currentSize.package.id,
-                    },
-                    inventoryItem: { id: currentSize.inventoryItem.id },
-                },
-            });
-            if (exists) {
-                const prop = dto.measureTypeId ? 'measureType' : 'package';
-                errorMap.addChild(
-                    prop,
-                    new ValidationErrorMap(
-                        undefined,
-                        'Inventory item size already exists',
-                    ),
-                );
-            }
-        }
-
-        return errorMap;
-    }
-
-    protected async doValidateNestedUpdateNode(
-        dto: NestedUpdateInventoryItemSizeDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        // Currently no difference in validation between nested update and root update
-        return await this.doValidateUpdateNode(
-            dto as unknown as UpdateInventoryItemSizeDto,
-            id,
-        );
     }
 }

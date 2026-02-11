@@ -8,51 +8,39 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role, RoleEntity } from '../entities/role.entity';
+import { RoleValidatorIdentity } from './validation-identities/role.validator.identity.interface';
 
 @Injectable()
-export class RoleValidator extends ValidatorBase<RoleEntity> {
-  constructor(
-    @InjectRepository(Role)
-    private readonly repo: Repository<Role>,
-    logger: AppLogger,
-    requestContextService: RequestContextService,
-  ) {
-    super(repo, 'Role', requestContextService, logger);
-  }
+export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdentity> {
 
-  protected async doValidateCreateNode(
-    dto: CreateRoleDto,
-    id?: string,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    await this.helper.enforceUnique(
-      dto.name,
-      this.repo,
-      'name',
-      errorMap,
-      'Role with this name already exists.',
-    );
-
-    return errorMap;
-  }
-
-  protected async doValidateUpdateNode(
-    dto: UpdateRoleDto,
-    id: number,
-  ): Promise<ValidationErrorMap> {
-    const errorMap = new ValidationErrorMap(id);
-
-    if (dto.name) {
-      await this.helper.enforceUnique(
-        dto.name,
-        this.repo,
-        'name',
-        errorMap,
-        'Role with this name already exists.',
-      );
+    constructor(
+        @InjectRepository(Role)
+        private readonly repo: Repository<Role>,
+        logger: AppLogger,
+        requestContextService: RequestContextService,
+    ) {
+        super(repo, 'Role', requestContextService, logger);
     }
 
-    return errorMap;
-  }
+    protected async validateIdentity(identity: RoleValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+        const errorMap = new ValidationErrorMap(id);
+
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+                id,
+            );
+        }
+
+        return errorMap;
+    }
+
+    public async resolveIdentity(dto: CreateRoleDto | UpdateRoleDto, id: number | string): Promise<RoleValidatorIdentity> {
+        return {
+            name: dto.name,
+        } as RoleValidatorIdentity;
+    }
 }

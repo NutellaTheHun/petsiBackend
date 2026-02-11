@@ -11,7 +11,7 @@ import {
     OrderCategory,
     OrderCategoryEntity,
 } from '../entities/order-category.entity';
-import { OrderCategoryValidatorIdentity } from './validation-identities/order-category.validator.identity.interface';
+import { OrderCategoryValidatorIdentity } from './identities/order-category.validator.identity.interface';
 
 @Injectable()
 export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, OrderCategoryValidatorIdentity> {
@@ -34,6 +34,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -44,41 +45,5 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
         return {
             name: dto.name,
         } as OrderCategoryValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateOrderCategoryDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // name exists
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateOrderCategoryDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        // name exists
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

@@ -29,12 +29,15 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
     protected async validateIdentity(identity: InventoryAreaValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        await this.helper.enforceUnique(
-            identity.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
+        if (identity.name) {
+            await this.helper.enforceUnique(
+                identity.name,
+                this.repo,
+                'name',
+                errorMap,
+                id,
+            );
+        }
 
         return errorMap;
     }
@@ -43,39 +46,5 @@ export class InventoryAreaValidator extends ValidatorBase<InventoryAreaEntity, I
         return {
             name: dto.name,
         } as InventoryAreaValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryAreaDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryAreaDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }

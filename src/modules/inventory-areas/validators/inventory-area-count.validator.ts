@@ -38,6 +38,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
     protected async validateIdentity(identity: InventoryAreaCountValidatorIdentity, id?: number): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
+
         if (identity.inventoryAreaId) {
             // enforce exists
             await this.helper.enforceExists(
@@ -47,11 +48,13 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
                 errorMap,
             );
         }
+
         if (identity.countedInventoryItems && identity.countedInventoryItems.length > 0) {
             for (const item of identity.countedInventoryItems) {
                 await this.areaItemValidator.validateNestedIdentity('countedInventoryItems', item, errorMap, item.id);
             }
         }
+
         return errorMap;
     }
 
@@ -66,51 +69,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
         return {
             inventoryAreaId: dto.inventoryAreaId,
-            countedInventoryItems: countedItemIdentities.length > 0 ? countedItemIdentities : undefined,
+            countedInventoryItems: countedItemIdentities,
         } as InventoryAreaCountValidatorIdentity
     }
-
-    protected async doValidateCreateNode(
-        dto: CreateInventoryAreaCountDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        this.helper.enforceArrayNotEmpty(
-            dto.countedInventoryItems,
-            'countedInventoryItems',
-            errorMap,
-        );
-
-        // Nested Validator Call
-        if (dto.countedInventoryItems?.length) {
-            await this.areaItemValidator.validateManyNestedNode(
-                'countedInventoryItems',
-                dto.countedInventoryItems,
-                errorMap,
-            );
-        }
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateInventoryAreaCountDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.inventoryAreaId && dto.countedInventoryItems?.length) {
-
-            // Nested Validator Call
-            await this.areaItemValidator.validateManyNestedNode(
-                'countedInventoryItems',
-                dto.countedInventoryItems,
-                errorMap,
-            );
-        }
-
-        return errorMap;
-    }
-
 }

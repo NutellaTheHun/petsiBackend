@@ -35,6 +35,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
                 this.repo,
                 'name',
                 errorMap,
+                id,
             );
         }
 
@@ -45,39 +46,5 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
         return {
             name: dto.name,
         } as MenuItemCategoryValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateMenuItemCategoryDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateMenuItemCategoryDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-            );
-        }
-
-        return errorMap;
     }
 }
