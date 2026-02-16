@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -62,7 +62,7 @@ describe('template menu item validator', () => {
             parentTemplateId: template.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root')
         expect(errors).toBeNull();
     });
 
@@ -83,11 +83,11 @@ describe('template menu item validator', () => {
             parentTemplateId: template.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root')
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'tablePosIndex' }],
-            'positional index cannot be less than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
         );
     });
 
@@ -108,7 +108,7 @@ describe('template menu item validator', () => {
             displayName: 'Updated Display Name',
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             templateMenuItemToUpdate.id,
         );
@@ -116,23 +116,25 @@ describe('template menu item validator', () => {
     });
 
     it('fail validate update: positional index cannot be less than 0', async () => {
-        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
+        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ relations: ['menuItem'] });
         if (!templateMenuItemToUpdate) {
             throw new Error('template menu item not found');
         }
 
         const dto: UpdateTemplateMenuItemDto = {
             tablePosIndex: -1,
+            displayName: 'Updated Display Name',
+            menuItemId: templateMenuItemToUpdate.menuItem.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             templateMenuItemToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'tablePosIndex' }],
-            'positional index cannot be less than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
         );
     });
 });

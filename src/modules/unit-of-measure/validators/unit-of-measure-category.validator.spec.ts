@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
@@ -47,7 +47,7 @@ describe('unit of measure category validator', () => {
             name: 'New Category',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -56,11 +56,11 @@ describe('unit of measure category validator', () => {
             name: UNIT,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Category with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -68,16 +68,21 @@ describe('unit of measure category validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const categoryToUpdate = await categoryRepo.findOne({
             where: { name: UNIT },
+            relations: ['baseConversionUnit'],
         });
         if (!categoryToUpdate) {
             throw new Error('category not found');
         }
+        if (!categoryToUpdate.baseConversionUnit) {
+            throw new Error('base conversion unit not found');
+        }
 
         const dto: UpdateUnitOfMeasureCategoryDto = {
             name: 'Updated Category',
+            baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             categoryToUpdate.id,
         );
@@ -85,26 +90,31 @@ describe('unit of measure category validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const categories = await categoryRepo.find();
+        const categories = await categoryRepo.find({ relations: ['baseConversionUnit'] });
         if (categories.length < 2) {
             throw new Error('Not enough categories for test');
         }
 
+
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
+        if (!categoryToUpdate.baseConversionUnit) {
+            throw new Error('base conversion unit not found');
+        }
 
         const dto: UpdateUnitOfMeasureCategoryDto = {
             name: existingCategory.name,
+            baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             categoryToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
             [{ prop: 'name' }],
-            'Category with this name already exists.',
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 });

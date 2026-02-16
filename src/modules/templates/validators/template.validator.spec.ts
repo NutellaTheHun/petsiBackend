@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
@@ -68,7 +68,7 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -77,11 +77,11 @@ describe('template validator', () => {
             name: template_a,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Template with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -109,11 +109,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems' }],
-            'duplicate menu item on template',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
         );
     });
 
@@ -141,11 +141,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems' }],
-            'duplicate table position on template',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
         );
     });
 
@@ -167,11 +167,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }, { prop: 'tablePosIndex' }],
-            'positional index cannot be less than 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
         );
     });
 
@@ -193,31 +193,23 @@ describe('template validator', () => {
         const dto: UpdateTemplateDto = {
             name: 'Updated Template',
             templateMenuItems:
-                templateToUpdate.templateMenuItems &&
-                    templateToUpdate.templateMenuItems.length > 0
-                    ? [
-                        {
-                            id: templateToUpdate.templateMenuItems[0].id,
-                            tablePosIndex: 5,
-                        },
-                        {
-                            createId: 'c1',
-                            displayName: 'New Item',
-                            menuItemId: menuItems[0].id,
-                            tablePosIndex: 6,
-                        },
-                    ]
-                    : [
-                        {
-                            createId: 'c1',
-                            displayName: 'New Item',
-                            menuItemId: menuItems[0].id,
-                            tablePosIndex: 0,
-                        },
-                    ],
+                [
+                    {
+                        id: templateToUpdate.templateMenuItems[0].id,
+                        tablePosIndex: 5,
+                        displayName: 'Updated Item',
+                        menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
+                    },
+                    {
+                        createId: 'c1',
+                        displayName: 'New Item',
+                        menuItemId: menuItems[0].id,
+                        tablePosIndex: 6,
+                    },
+                ]
         };
 
-        const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templateToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -232,13 +224,14 @@ describe('template validator', () => {
 
         const dto: UpdateTemplateDto = {
             name: existingTemplate.name,
+            templateMenuItems: [],
         };
 
-        const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templateToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Template with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -256,6 +249,7 @@ describe('template validator', () => {
         }
 
         const dto: UpdateTemplateDto = {
+            name: templateToUpdate.name,
             templateMenuItems: [
                 {
                     createId: 'c1',
@@ -272,11 +266,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templateToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems', id: 'c1' }],
-            'duplicate menu item on template',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
         );
     });
 
@@ -294,6 +288,7 @@ describe('template validator', () => {
         }
 
         const dto: UpdateTemplateDto = {
+            name: templateToUpdate.name,
             templateMenuItems: [
                 {
                     createId: 'c1',
@@ -310,16 +305,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templateToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems', id: 'c1' }],
-            'duplicate table position on template',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'templateMenuItems', id: 'c2' }],
-            'duplicate table position on template',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['templateMenuItems']),
         );
     });
 
@@ -337,6 +327,7 @@ describe('template validator', () => {
         }
 
         const dto: UpdateTemplateDto = {
+            name: templateToUpdate.name,
             templateMenuItems: [
                 {
                     createId: 'c1',
@@ -347,11 +338,11 @@ describe('template validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, templateToUpdate.id);
+        const errors = await validator.validateDto(dto, templateToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems', id: 'c1' }, { prop: 'tablePosIndex' }],
-            'positional index cannot be less than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
         );
     });
 });

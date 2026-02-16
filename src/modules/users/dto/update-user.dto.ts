@@ -29,8 +29,8 @@ export class UpdateUserDto {
         format: 'email',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly email: string;
+    @IsOptional()
+    readonly email?: string;
 
     @ApiProperty({
         description: 'Id of roles the user has.',

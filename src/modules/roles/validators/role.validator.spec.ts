@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -43,7 +43,7 @@ describe('role validator', () => {
             name: 'New Role Name',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root')
         expect(errors).toBeNull();
     });
 
@@ -52,11 +52,11 @@ describe('role validator', () => {
             name: ROLE_ADMIN,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root')
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Role with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -71,7 +71,7 @@ describe('role validator', () => {
             name: 'Updated Role Name',
         };
 
-        const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
+        const errors = await validator.validateDto(dto, roleToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -88,11 +88,11 @@ describe('role validator', () => {
             name: existingRole.name,
         };
 
-        const errors = await validator.validateUpdateNode(dto, roleToUpdate.id);
+        const errors = await validator.validateDto(dto, roleToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Role with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 });

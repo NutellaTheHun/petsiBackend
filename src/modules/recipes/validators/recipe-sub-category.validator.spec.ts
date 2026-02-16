@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -56,7 +56,7 @@ describe('recipe sub category validator', () => {
             parentCategoryId: parentCategory.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -81,8 +81,12 @@ describe('recipe sub category validator', () => {
         // only that name != parent name. The database has a unique constraint, but the validator
         // doesn't enforce it. This test verifies current behavior - it should pass validation
         // at the validator level (database constraint would catch it on save).
-        const errors = await validator.validateCreateNode(dto);
-        expect(errors).toBeNull();
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+        );
     });
 
     it('fail validate create: name cannot be the same as the parent category name', async () => {
@@ -98,11 +102,11 @@ describe('recipe sub category validator', () => {
             parentCategoryId: parentCategory.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Recipe subcategory name cannot be the same as the parent category name',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['name']),
         );
     });
 
@@ -119,7 +123,7 @@ describe('recipe sub category validator', () => {
             name: 'Updated Sub Category Name',
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             subCategoryToUpdate.id,
         );
@@ -148,14 +152,14 @@ describe('recipe sub category validator', () => {
             name: existingSubCategory.name,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             subCategoryToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Recipe subcategory already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -171,14 +175,14 @@ describe('recipe sub category validator', () => {
             name: subCategoryToUpdate.parentCategory.name,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             subCategoryToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Recipe subcategory name cannot be the same as the parent category name',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['name']),
         );
     });
 });

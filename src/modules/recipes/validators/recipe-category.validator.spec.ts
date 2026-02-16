@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
@@ -53,7 +53,7 @@ describe('recipe category validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -62,11 +62,11 @@ describe('recipe category validator', () => {
             name: REC_CAT_A,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Recipe category already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -85,11 +85,11 @@ describe('recipe category validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'subCategories' }],
-            'duplicate sub category',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['subCategories']),
         );
     });
 
@@ -116,11 +116,11 @@ describe('recipe category validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'subCategories', id: 'c1' }, { prop: 'name' }],
-            'Recipe subcategory already exists.',
+            [{ prop: 'subCategories', id: 'c1' },],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -157,7 +157,7 @@ describe('recipe category validator', () => {
                     ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
+        const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -172,13 +172,14 @@ describe('recipe category validator', () => {
 
         const dto: UpdateRecipeCategoryDto = {
             name: existingCategory.name,
+            subCategories: [],
         };
 
-        const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
+        const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Recipe category already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -191,6 +192,7 @@ describe('recipe category validator', () => {
         }
 
         const dto: UpdateRecipeCategoryDto = {
+            name: categoryToUpdate.name,
             subCategories: [
                 {
                     createId: 'c1',
@@ -203,11 +205,11 @@ describe('recipe category validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
+        const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'subCategories' }],
-            'duplicate sub category',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['subCategories']),
         );
     });
 
@@ -228,6 +230,7 @@ describe('recipe category validator', () => {
 
         const existingSubCategory = categoryToUpdate.subCategories[0];
         const dto: UpdateRecipeCategoryDto = {
+            name: categoryToUpdate.name,
             subCategories: [
                 {
                     createId: 'c1',
@@ -236,7 +239,7 @@ describe('recipe category validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, categoryToUpdate.id);
+        const errors = await validator.validateDto(dto, categoryToUpdate.id);
         // The nested validator should catch this
         expect(errors).not.toBeNull();
     });

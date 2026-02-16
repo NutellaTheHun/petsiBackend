@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_A } from '../../inventory-items/utils/constants';
@@ -75,7 +75,7 @@ describe('recipe ingredient validator', () => {
             quantityUnitTypeId: uom.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -95,11 +95,11 @@ describe('recipe ingredient validator', () => {
             quantityUnitTypeId: uom.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'ingredientInventoryItemId' }],
-            'missing reference for ingredient',
+            [],
+            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -133,11 +133,11 @@ describe('recipe ingredient validator', () => {
             quantityUnitTypeId: uom.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'ingredientInventoryItemId' }],
-            'cannot provide both an inventory item and a recipe as an ingredient',
+            [],
+            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -164,11 +164,11 @@ describe('recipe ingredient validator', () => {
             quantityUnitTypeId: uom.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'quantity' }],
-            'quantity cannot be 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -199,7 +199,7 @@ describe('recipe ingredient validator', () => {
             quantityUnitTypeId: newBatchUom.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             ingredientToUpdate.id,
         );
@@ -207,14 +207,28 @@ describe('recipe ingredient validator', () => {
     });
 
     it('fail validate update: missing reference for ingredient', async () => {
-        const ingredientToUpdate = await ingredientRepo.findOne({});
+        const ingredientToUpdate = await ingredientRepo.findOne({
+            relations: [
+                'quantityUnitType',
+                'ingredientInventoryItem',
+                'ingredientRecipe'
+            ]
+        });
         if (!ingredientToUpdate) {
             throw new Error('ingredient not found');
         }
+        if (!ingredientToUpdate.ingredientInventoryItem) {
+            throw new Error('ingredient inventory item not found');
+        }
+        if (!ingredientToUpdate.ingredientRecipe) {
+            throw new Error('ingredient recipe not found');
+        }
 
         const dto: UpdateRecipeIngredientDto = {
-            ingredientInventoryItemId: undefined,
-            ingredientRecipeId: undefined,
+            ingredientInventoryItemId: ingredientToUpdate.ingredientInventoryItem.id ?? undefined,
+            ingredientRecipeId: ingredientToUpdate.ingredientRecipe.id ?? undefined,
+            quantity: 1,
+            quantityUnitTypeId: ingredientToUpdate.quantityUnitType.id,
         };
 
         // Note: Update validator doesn't enforce "only one" - it only checks if both are provided
@@ -222,16 +236,24 @@ describe('recipe ingredient validator', () => {
         // Actually, looking at the validator, it only checks if both are provided, not if neither is provided.
         // So this test might need adjustment or the validator needs updating.
         // For now, testing the "both provided" case.
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             ingredientToUpdate.id,
         );
         // This should pass since update doesn't require either to be provided
-        expect(errors).toBeNull();
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
+        );
     });
 
     it('fail validate update: cannot provide both an inventory item and a recipe as an ingredient', async () => {
-        const ingredientToUpdate = await ingredientRepo.findOne({});
+        const ingredientToUpdate = await ingredientRepo.findOne({
+            relations: [
+                'quantityUnitType'
+            ]
+        });
         if (!ingredientToUpdate) {
             throw new Error('ingredient not found');
         }
@@ -249,37 +271,54 @@ describe('recipe ingredient validator', () => {
         const dto: UpdateRecipeIngredientDto = {
             ingredientInventoryItemId: inventoryItem.id,
             ingredientRecipeId: recipe.id,
+            quantity: 1,
+            quantityUnitTypeId: ingredientToUpdate.quantityUnitType.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             ingredientToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'ingredientInventoryItemId' }],
-            'cannot provide both an inventory item and a recipe as an ingredient',
+            [],
+            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
     it('fail validate update: quantity cannot be 0', async () => {
-        const ingredientToUpdate = await ingredientRepo.findOne({});
+        const ingredientToUpdate = await ingredientRepo.findOne({
+            relations: [
+                'quantityUnitType',
+                'ingredientInventoryItem',
+                'ingredientRecipe'
+            ]
+        });
         if (!ingredientToUpdate) {
             throw new Error('ingredient not found');
+        }
+        if (!ingredientToUpdate.ingredientInventoryItem) {
+            throw new Error('ingredient inventory item not found');
+        }
+        if (!ingredientToUpdate.ingredientRecipe) {
+            throw new Error('ingredient recipe not found');
         }
 
         const dto: UpdateRecipeIngredientDto = {
             quantity: 0,
+            quantityUnitTypeId: ingredientToUpdate.quantityUnitType.id,
+            ingredientInventoryItemId: ingredientToUpdate.ingredientInventoryItem.id ?? undefined,
+            ingredientRecipeId: ingredientToUpdate.ingredientRecipe.id ?? undefined,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             ingredientToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'quantity' }],
-            'quantity cannot be 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -293,16 +332,18 @@ describe('recipe ingredient validator', () => {
 
         const dto: UpdateRecipeIngredientDto = {
             ingredientRecipeId: ingredientToUpdate.parentRecipe.id,
+            quantity: 1,
+            quantityUnitTypeId: ingredientToUpdate.quantityUnitType.id,
         };
 
-        const errors = await validator.validateUpdateNode(
+        const errors = await validator.validateDto(
             dto,
             ingredientToUpdate.id,
         );
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'ingredientRecipe' }],
-            'recipe cannot add itself as an ingredient',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['ingredientRecipeId']),
         );
     });
 });

@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -44,7 +44,7 @@ describe('user validator', () => {
             password: 'password123',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -54,11 +54,11 @@ describe('user validator', () => {
             password: 'password123',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'username name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -71,9 +71,11 @@ describe('user validator', () => {
 
         const dto: UpdateUserDto = {
             name: 'Updated User Name',
+            email: userToUpdate.email ?? undefined,
+            roleIds: userToUpdate.roles.map(role => role.id),
         };
 
-        const errors = await validator.validateUpdateNode(dto, userToUpdate.id);
+        const errors = await validator.validateDto(dto, userToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -88,13 +90,15 @@ describe('user validator', () => {
 
         const dto: UpdateUserDto = {
             name: existingUser.name,
+            roleIds: userToUpdate.roles.map(role => role.id),
+            email: userToUpdate.email ?? undefined,
         };
 
-        const errors = await validator.validateUpdateNode(dto, userToUpdate.id);
+        const errors = await validator.validateDto(dto, userToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'username name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 });
