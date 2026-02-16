@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
@@ -42,7 +42,7 @@ describe('menu item size validator', () => {
             name: 'New Size Name',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -51,11 +51,11 @@ describe('menu item size validator', () => {
             name: SIZE_ONE,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Menu item size already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -70,7 +70,7 @@ describe('menu item size validator', () => {
             name: 'Updated Size Name',
         };
 
-        const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -87,11 +87,11 @@ describe('menu item size validator', () => {
             name: existingSize.name,
         };
 
-        const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Menu item size already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 });

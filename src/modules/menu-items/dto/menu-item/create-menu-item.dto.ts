@@ -80,9 +80,10 @@ export class CreateMenuItemDto {
             'Total size limit of item, when item is of type fixed_container or variable_container',
         type: 'number',
         example: 7,
+        nullable: true,
     })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly variableMaxAmount?: number;
+    readonly variableMaxAmount?: number | null;
 }

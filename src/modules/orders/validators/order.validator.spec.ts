@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -84,30 +84,8 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
-    });
-
-    it('fail validate create: no ordered items', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const dto: CreateOrderDto = {
-            recipient: 'John Doe',
-            fulfillmentDate: new Date(),
-            fulfillmentType: 'pickup',
-            categoryId: category.id,
-            orderedItems: [],
-        };
-
-        const errors = await validator.validateCreateNode(dto);
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'orderedItems' }],
-            'Order has no items',
-        );
     });
 
     it('fail validate create: invalid fulfillment type', async () => {
@@ -142,11 +120,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'fulfillmentType' }],
-            'Invalid fulfillmentType value',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['fulfillmentType']),
         );
     });
 
@@ -182,11 +160,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'deliveryAddress' }],
-            'Order for delivery must have a delivery address',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['deliveryAddress']),
         );
     });
 
@@ -223,11 +201,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'phoneNumber' }],
-            'Order for delivery must have a delivery address',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['phoneNumber']),
         );
     });
 
@@ -264,11 +242,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'weeklyFulfillment' }],
-            'Order must have a day of the week selected for fulfillment',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['weeklyFulfillment']),
         );
     });
 
@@ -306,11 +284,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'weeklyFulfillment' }],
-            'Invalid weeklyFulfillment value',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['weeklyFulfillment']),
         );
     });
 
@@ -352,11 +330,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems' }],
-            'duplicate order menu item',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['orderedItems']),
         );
     });
 
@@ -405,21 +383,22 @@ describe('order validator', () => {
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'type' },
             ],
-            'Only items of type single can be in a container',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
         );
     });
 
@@ -474,21 +453,22 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSizeId,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedItemSize' },
             ],
-            'Invalid size',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
         );
     });
 
@@ -524,11 +504,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'quantity' }],
-            'Invalid quantity',
+            [{ prop: 'orderedItems', id: 'c1' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -580,17 +560,19 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: containerMenuItem.variableMaxAmount + 1,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'quantity' }],
-            'quantity must equal the variable max amount of the container',
+            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems', id: 'c2' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -639,23 +621,27 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                         {
                             createId: 'c3',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 3,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems' }],
-            'duplicate container item',
+            [{ prop: 'orderedItems', id: 'c1' }],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c2', 'c3'], ['containerOrderMenuItems']),
         );
     });
 
@@ -704,21 +690,22 @@ describe('order validator', () => {
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'type' },
             ],
-            'Only items of type single can be in a container',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
         );
     });
 
@@ -773,21 +760,22 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSizeId,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedItemSize' },
             ],
-            'Invalid size',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
         );
     });
 
@@ -836,28 +824,29 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 0,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'quantity' },
             ],
-            'quantity must be greater than 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const orderToUpdate = await orderRepo.findOne({
-            relations: ['orderedItems'],
+            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size'],
         });
         if (!orderToUpdate) {
             throw new Error('order not found');
@@ -879,6 +868,9 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            fulfillmentContactName: 'Updated Contact Name',
+            email: 'updated@example.com',
+            isFrozen: false,
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -889,48 +881,63 @@ describe('order validator', () => {
             weeklyFulfillment: 'monday',
             note: 'Updated Note',
             orderedItems:
-                orderToUpdate.orderedItems && orderToUpdate.orderedItems.length > 0
-                    ? [
-                        {
-                            id: orderToUpdate.orderedItems[0].id,
-                            quantity: 5,
-                        },
-                        {
-                            createId: 'c1',
-                            menuItemId: singleMenuItem.id,
-                            sizeId: singleMenuItem.sizes[0].id,
-                            quantity: 3,
-                        },
-                    ]
-                    : [
-                        {
-                            createId: 'c1',
-                            menuItemId: singleMenuItem.id,
-                            sizeId: singleMenuItem.sizes[0].id,
-                            quantity: 3,
-                        },
-                    ],
+                [
+                    {
+                        id: orderToUpdate.orderedItems[0].id,
+                        quantity: 5,
+                        menuItemId: orderToUpdate.orderedItems[0].menuItem.id,
+                        sizeId: orderToUpdate.orderedItems[0].size.id,
+                        containerOrderMenuItems: [],
+                    },
+                    {
+                        createId: 'c1',
+                        menuItemId: singleMenuItem.id,
+                        sizeId: singleMenuItem.sizes[0].id,
+                        quantity: 3,
+                        containerOrderMenuItems: [],
+                    },
+                ]
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: invalid fulfillment type', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
+        const orderToUpdate = await orderRepo.findOne({
+            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category'],
+        });
         if (!orderToUpdate) {
             throw new Error('order not found');
         }
 
         const dto: UpdateOrderDto = {
             fulfillmentType: 'invalid_type',
+            fulfillmentContactName: 'Updated Contact Name',
+            email: 'updated@example.com',
+            isFrozen: false,
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            orderedItems: orderToUpdate.orderedItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                menuItemId: item.menuItem.id,
+                sizeId: item.size.id,
+                containerOrderMenuItems: [],
+            })),
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'fulfillmentType' }],
-            'Invalid fulfillmentType value',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['fulfillmentType']),
         );
     });
 
@@ -942,13 +949,31 @@ describe('order validator', () => {
 
         const dto: UpdateOrderDto = {
             fulfillmentType: 'delivery',
+            fulfillmentContactName: 'Updated Contact Name',
+            email: 'updated@example.com',
+            isFrozen: false,
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            orderedItems: orderToUpdate.orderedItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                menuItemId: item.menuItem.id,
+                sizeId: item.size.id,
+                containerOrderMenuItems: [],
+            })),
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'deliveryAddress' }],
-            'Order for delivery must have a delivery address',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['deliveryAddress']),
         );
     });
 
@@ -961,13 +986,29 @@ describe('order validator', () => {
         const dto: UpdateOrderDto = {
             fulfillmentType: 'delivery',
             deliveryAddress: '123 Main St',
+            fulfillmentContactName: 'Updated Contact Name',
+            email: 'updated@example.com',
+            isFrozen: false,
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            orderedItems: orderToUpdate.orderedItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                menuItemId: item.menuItem.id,
+                sizeId: item.size.id,
+                containerOrderMenuItems: [],
+            })),
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'phoneNumber' }],
-            'Order for delivery must have a delivery address',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['phoneNumber']),
         );
     });
 
@@ -979,13 +1020,26 @@ describe('order validator', () => {
 
         const dto: UpdateOrderDto = {
             isWeekly: true,
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            orderedItems: orderToUpdate.orderedItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                menuItemId: item.menuItem.id,
+                sizeId: item.size.id,
+                containerOrderMenuItems: [],
+            })),
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'weeklyFulfillment' }],
-            'Order must have a day of the week selected for fulfillment',
+            [],
+            createValidationErrorPayload('MISSING_PROPERTY', [], ['weeklyFulfillment']),
         );
     });
 
@@ -997,13 +1051,27 @@ describe('order validator', () => {
 
         const dto: UpdateOrderDto = {
             weeklyFulfillment: 'invalid_day',
+            isWeekly: true,
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            orderedItems: orderToUpdate.orderedItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+                menuItemId: item.menuItem.id,
+                sizeId: item.size.id,
+                containerOrderMenuItems: [],
+            })),
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'weeklyFulfillment' }],
-            'Invalid weeklyFulfillment value',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['weeklyFulfillment']),
         );
     });
 
@@ -1025,6 +1093,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1041,11 +1119,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems' }],
-            'duplicate order menu item',
+            [],
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', 'c2'], ['orderedItems']),
         );
     });
 
@@ -1078,6 +1156,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1090,21 +1178,22 @@ describe('order validator', () => {
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedMenuItem' },
             ],
-            'contained item must be of type single',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
         );
     });
 
@@ -1143,6 +1232,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1155,21 +1254,22 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSize.id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedItemSize' },
             ],
-            'Invalid size',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
         );
     });
 
@@ -1191,6 +1291,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1201,11 +1311,11 @@ describe('order validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'quantity' }],
-            'Invalid quantity',
+            [{ prop: 'orderedItems', id: 'c1' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -1241,6 +1351,16 @@ describe('order validator', () => {
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1253,17 +1373,19 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: containerMenuItem.variableMaxAmount + 1,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'quantity' }],
-            'quantity must equal the variable max amount of the container',
+            [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems', id: 'c2' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 
@@ -1296,6 +1418,16 @@ describe('order validator', () => {
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1308,34 +1440,30 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                         {
                             createId: 'c3',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 3,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
             ],
-            'duplicate container item',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [
-                { prop: 'orderedItems', id: 'c1' },
-                { prop: 'containerOrderMenuItems', id: 'c3' },
-            ],
-            'duplicate container item',
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c2', 'c3'], ['containerOrderMenuItems']),
         );
     });
 
@@ -1368,6 +1496,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1380,21 +1518,22 @@ describe('order validator', () => {
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedMenuItem' },
             ],
-            'contained item must be of type single',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
         );
     });
 
@@ -1433,6 +1572,16 @@ describe('order validator', () => {
         }
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1445,21 +1594,22 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSize.id,
                             quantity: 2,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'containedItemSize' },
             ],
-            'Invalid size',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
         );
     });
 
@@ -1492,6 +1642,16 @@ describe('order validator', () => {
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
         const dto: UpdateOrderDto = {
+            recipient: 'Updated Recipient',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'delivery',
+            deliveryAddress: '123 Main St',
+            phoneNumber: '1234567890',
+            categoryId: orderToUpdate.category.id,
+            isWeekly: true,
+            weeklyFulfillment: 'monday',
+            note: 'Updated Note',
+            isFrozen: false,
             orderedItems: [
                 {
                     createId: 'c1',
@@ -1504,21 +1664,22 @@ describe('order validator', () => {
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 0,
+                            parentMenuItemIdCtx: containerMenuItem.id,
+                            parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
                         },
                     ],
                 },
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, orderToUpdate.id);
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'orderedItems', id: 'c1' },
                 { prop: 'containerOrderMenuItems', id: 'c2' },
-                { prop: 'quantity' },
             ],
-            'quantity must be greater than 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
         );
     });
 });

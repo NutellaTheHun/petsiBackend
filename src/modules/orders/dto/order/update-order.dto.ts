@@ -5,6 +5,7 @@ import {
     IsDate,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
     ValidateNested
@@ -48,8 +49,8 @@ export class UpdateOrderDto {
         type: 'string',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly fulfillmentContactName: string;
+    @IsOptional()
+    readonly fulfillmentContactName?: string;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -57,8 +58,8 @@ export class UpdateOrderDto {
         type: 'string',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly deliveryAddress: string;
+    @IsOptional()
+    readonly deliveryAddress?: string;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -66,8 +67,8 @@ export class UpdateOrderDto {
         type: 'string',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly phoneNumber: string;
+    @IsOptional()
+    readonly phoneNumber?: string;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -76,8 +77,8 @@ export class UpdateOrderDto {
         format: 'email',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly email: string;
+    @IsOptional()
+    readonly email?: string;
 
     @ApiProperty({
         description: 'special instruction for order',
@@ -85,8 +86,8 @@ export class UpdateOrderDto {
         type: 'string',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly note: string;
+    @IsOptional()
+    readonly note?: string;
 
     @ApiProperty({
         description:
@@ -95,8 +96,8 @@ export class UpdateOrderDto {
         type: 'boolean',
     })
     @IsBoolean()
-    @IsNotEmpty()
-    readonly isFrozen: boolean;
+    @IsOptional()
+    readonly isFrozen?: boolean;
 
     @ApiProperty({
         description: 'Is true if the order occurs on a weekly basis.',
@@ -104,8 +105,8 @@ export class UpdateOrderDto {
         type: 'boolean',
     })
     @IsBoolean()
-    @IsNotEmpty()
-    readonly isWeekly: boolean;
+    @IsOptional()
+    readonly isWeekly?: boolean;
 
     @ApiProperty({
         description: 'If is weekly, is the day of the week the order is fulfilled',
@@ -113,8 +114,8 @@ export class UpdateOrderDto {
         type: 'string',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly weeklyFulfillment: string;
+    @IsOptional()
+    readonly weeklyFulfillment?: string;
 
     @ApiProperty({
         description: 'Id of OrderType entity.',

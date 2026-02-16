@@ -94,9 +94,10 @@ export class UpdateMenuItemDto {
             'Total size limit of item, when item is of type fixed_container or variable_container',
         type: 'number',
         example: 6,
+        nullable: true,
     })
     @IsNotEmpty()
     @IsNumber()
     @IsPositive()
-    readonly variableMaxAmount: number;
+    readonly variableMaxAmount: number | null;
 }

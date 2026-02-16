@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { NestedValidatorBase } from '../../../common/base/nested-validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
@@ -32,6 +33,8 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         private readonly menuItemRepo: Repository<MenuItem>,
         @InjectRepository(MenuItemSize)
         private readonly menuItemSizeRepo: Repository<MenuItemSize>,
+        @InjectRepository(MenuItemContainerItem)
+        private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
 
@@ -74,48 +77,6 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
 
     protected async validateIdentity(identity: OrderMenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
-
-        if (identity.containerOrderMenuItems && identity.containerOrderMenuItems.length) {
-
-            // validate menu item is a container
-            if (identity.menuItemType !== MENU_ITEM_TYPES.CONTAINER) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['menuItemType']);
-            }
-
-            // validate no duplicates
-            this.helper.enforceNoDuplicateElements(
-                identity.containerOrderMenuItems,
-                (item) => ({ id: item.id ?? item.createId, identity: `${item.containedMenuItemId}:${item.containedItemSizeId}` }),
-                'containerOrderMenuItems',
-                errorMap,
-            );
-
-            // for variable max amount check
-            let containerQuantity = 0;
-
-            for (const item of identity.containerOrderMenuItems) {
-
-                // accumulate quantity to check against variable max amount
-                if (identity.variableMaxAmount && item.quantity) {
-                    containerQuantity += item.quantity;
-                }
-
-                // Nested validator call
-                await this.orderContainerItemValidator.validateNestedIdentity(
-                    'containerOrderMenuItems',
-                    item,
-                    errorMap,
-                    item.id ?? item.createId,
-                );
-            }
-
-            // if variable max amount is set, validate container quantity matches variable max amount
-            if (identity.variableMaxAmount) {
-                if (containerQuantity !== identity.variableMaxAmount) {
-                    errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']);
-                }
-            }
-        }
 
         if (identity.menuItemId) {
             this.helper.enforceExists(
@@ -161,8 +122,74 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
                 'size',
                 errorMap,
             );
+        }
 
-            return errorMap;
+        if (identity.containerOrderMenuItems && identity.containerOrderMenuItems.length) {
+
+            // validate menu item is a container
+            if (identity.menuItemType !== MENU_ITEM_TYPES.CONTAINER) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['menuItemType']);
+            }
+
+            // validate no duplicates
+            this.helper.enforceNoDuplicateElements(
+                identity.containerOrderMenuItems,
+                (item) => ({ id: item.id ?? item.createId, identity: `${item.containedMenuItemId}:${item.containedItemSizeId}` }),
+                'containerOrderMenuItems',
+                errorMap,
+            );
+
+            // for variable max amount check
+            let containerQuantity = 0;
+
+            for (const item of identity.containerOrderMenuItems) {
+
+                // accumulate quantity to check against variable max amount
+                if (identity.variableMaxAmount && item.quantity) {
+                    containerQuantity += item.quantity;
+                }
+
+                // contained item cannot equal parent menu item
+                if (item.containedMenuItemId === identity.menuItemId) {
+                    const id = item.id?.toString() ?? item.createId;
+                    if (!id) {
+                        throw new Error('Invalid container item id');
+                    }
+                    errorMap.addError('INVALID_PROPERTY_VALUE', [id], ['containerOrderMenuItems']);
+                }
+
+                // contained item and size must be valid in parent container
+                const validMenuItemContainerItem = await this.menuItemContainerItemRepo.findOne({
+                    where: {
+                        containedMenuItem: { id: item.containedMenuItemId },
+                        containedItemSize: { id: item.containedItemSizeId },
+                        parentMenuItem: { id: identity.menuItemId },
+                        parentItemSize: { id: identity.sizeId }
+                    },
+                });
+                if (!validMenuItemContainerItem) {
+                    const id = item.id?.toString() ?? item.createId;
+                    if (!id) {
+                        throw new Error('Invalid container item id');
+                    }
+                    errorMap.addError('INVALID_PROPERTY_VALUE', [id], ['containerOrderMenuItems']);
+                }
+
+                // Nested validator call
+                await this.orderContainerItemValidator.validateNestedIdentity(
+                    'containerOrderMenuItems',
+                    item,
+                    errorMap,
+                    item.id ?? item.createId,
+                );
+            }
+
+            // if variable max amount is set, validate container quantity matches variable max amount
+            if (identity.variableMaxAmount) {
+                if (containerQuantity !== identity.variableMaxAmount) {
+                    errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']);
+                }
+            }
         }
 
         return errorMap;

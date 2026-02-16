@@ -1,53 +1,5 @@
 import { ValidationErrorCode } from "./validation-error-codes";
 
-export class ValidationErrorNode {
-    constructor(
-        field: string,
-        id?: string | number,
-        message?: string,
-        children: ValidationErrorNode[] = [],
-    ) {
-        this.field = field;
-        this.id = id;
-        this.message = message;
-        this.children = children;
-    }
-
-    field: string;
-
-    id?: string | number;
-
-    message?: string;
-
-    children: ValidationErrorNode[];
-
-    public addChild(err: ValidationErrorNode) {
-        this.children.push(err);
-    }
-
-    public addChildren(errs: ValidationErrorNode[]) {
-        if (!errs || errs.length === 0) return;
-        this.children.push(...errs);
-    }
-
-    public addFieldError(field: string, message: string, id?: string | number) {
-        this.addChild(new ValidationErrorNode(field, id, message));
-    }
-
-    /**
-     * Returns true if ValidationErrorNode has no message, and no children.
-     *
-     * validationErrorNode with only a field is considered empty.
-     *
-     * Id is not considered for empty or not.
-     */
-    public isEmpty(): boolean {
-        const noMessage = !this.message;
-        const noChildren = this.children?.length === 0;
-        return noMessage && noChildren;
-    }
-}
-
 /**
  * Response object to be returned to the client. A translated version of ValidationErrorMap.
  */
@@ -230,14 +182,6 @@ export function expectValidationNestedErrorsSize(
 }
 
 // Even Lazier functions
-
-export function expectZeroValidationError(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-) {
-    expectValidationErrorSize(root, path, 0);
-}
-
 export function expectOneValidationError(
     root: ValidationErrorResponse | null,
     path: ErrorSelector[],

@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { POUND } from '../../unit-of-measure/utils/constants';
@@ -74,7 +74,7 @@ describe('inventory item size validator', () => {
             cost: 10.99,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -100,11 +100,11 @@ describe('inventory item size validator', () => {
             cost: 10.99,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'measureAmount' }],
-            'cannot be less than or equal to 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
         );
     });
 
@@ -130,11 +130,11 @@ describe('inventory item size validator', () => {
             cost: -1,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'cost' }],
-            'cannot be less than or equal to 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
         );
     });
 
@@ -160,21 +160,11 @@ describe('inventory item size validator', () => {
             cost: 10.99,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'measureType' }],
-            'item size already exists',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'package' }],
-            'item size already exists',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'measureAmount' }],
-            'item size already exists',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['measureType', 'package', 'measureAmount']),
         );
     });
 
@@ -206,43 +196,48 @@ describe('inventory item size validator', () => {
             cost: 15.99,
         };
 
-        const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: measureAmount with value 0', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({});
+        const sizeToUpdate = await sizeRepo.findOne({ relations: ['package', 'measureType'] });
         if (!sizeToUpdate) {
             throw new Error('size not found');
         }
 
         const dto: UpdateInventoryItemSizeDto = {
             measureAmount: 0,
+            packageId: sizeToUpdate.package.id,
+            measureTypeId: sizeToUpdate.measureType.id,
         };
 
-        const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'measureAmount' }],
-            'cannot be less than or equal to 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
         );
     });
 
     it('fail validate update: cost with value 0', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({});
+        const sizeToUpdate = await sizeRepo.findOne({ relations: ['package', 'measureType'] });
         if (!sizeToUpdate) {
             throw new Error('size not found');
         }
 
         const dto: UpdateInventoryItemSizeDto = {
             cost: -1,
+            packageId: sizeToUpdate.package.id,
+            measureTypeId: sizeToUpdate.measureType.id,
+            measureAmount: 1,
         };
 
-        const errors = await validator.validateUpdateNode(dto, sizeToUpdate.id);
+        const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'cost' }],
-            'cannot be less than or equal to 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
         );
     });
 
@@ -271,21 +266,11 @@ describe('inventory item size validator', () => {
             measureAmount: size2.measureAmount,
         };
 
-        const errors = await validator.validateUpdateNode(dto, size1.id);
+        const errors = await validator.validateDto(dto, size1.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'package' }],
-            'Inventory item size already exists',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'measureType' }],
-            'Inventory item size already exists',
-        );
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'measureAmount' }],
-            'Inventory item size already exists',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['measureType', 'package', 'measureAmount']),
         );
     });
 });

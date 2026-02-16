@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -43,7 +43,7 @@ describe('inventory area validator', () => {
             name: 'New Area Name',
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -53,11 +53,11 @@ describe('inventory area validator', () => {
             name: AREA_A,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Inventory area name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -72,7 +72,7 @@ describe('inventory area validator', () => {
             name: 'Updated Area Name',
         };
 
-        const errors = await validator.validateUpdateNode(dto, areaToUpdate.id);
+        const errors = await validator.validateDto(dto, areaToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -87,11 +87,11 @@ describe('inventory area validator', () => {
             name: AREA_B,
         };
 
-        const errors = await validator.validateUpdateNode(dto, areaToUpdate.id);
+        const errors = await validator.validateDto(dto, areaToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Inventory area name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 });

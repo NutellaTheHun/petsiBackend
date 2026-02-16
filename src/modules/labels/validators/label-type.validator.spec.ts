@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
@@ -45,7 +45,7 @@ describe('label type validator', () => {
             width: 200,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -56,11 +56,11 @@ describe('label type validator', () => {
             width: 200,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Item with this name already exists',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -71,11 +71,11 @@ describe('label type validator', () => {
             width: 200,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'length' }],
-            'Must be greater than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['length']),
         );
     });
 
@@ -86,11 +86,11 @@ describe('label type validator', () => {
             width: 0,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'width' }],
-            'Must be greater than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['width']),
         );
     });
 
@@ -107,7 +107,7 @@ describe('label type validator', () => {
             width: 300,
         };
 
-        const errors = await validator.validateUpdateNode(dto, typeToUpdate.id);
+        const errors = await validator.validateDto(dto, typeToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -122,13 +122,15 @@ describe('label type validator', () => {
 
         const dto: UpdateLabelTypeDto = {
             name: existingType.name,
+            length: typeToUpdate.length,
+            width: typeToUpdate.width,
         };
 
-        const errors = await validator.validateUpdateNode(dto, typeToUpdate.id);
+        const errors = await validator.validateDto(dto, typeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Item with this name already exists',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
         );
     });
 
@@ -140,13 +142,15 @@ describe('label type validator', () => {
 
         const dto: UpdateLabelTypeDto = {
             length: 0,
+            width: typeToUpdate.width,
+            name: typeToUpdate.name,
         };
 
-        const errors = await validator.validateUpdateNode(dto, typeToUpdate.id);
+        const errors = await validator.validateDto(dto, typeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'length' }],
-            'Must be greater than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['length']),
         );
     });
 
@@ -158,13 +162,15 @@ describe('label type validator', () => {
 
         const dto: UpdateLabelTypeDto = {
             width: 0,
+            length: typeToUpdate.length,
+            name: typeToUpdate.name,
         };
 
-        const errors = await validator.validateUpdateNode(dto, typeToUpdate.id);
+        const errors = await validator.validateDto(dto, typeToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'width' }],
-            'Must be greater than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['width']),
         );
     });
 });

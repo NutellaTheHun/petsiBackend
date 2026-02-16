@@ -13,7 +13,6 @@ import { MenuItemContainerItem } from '../entities/menu-item-container-item.enti
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
-import { MenuItemContainerItemAggregateValidator } from './aggregate-validators/menu-item.aggregate.validator';
 import { MenuItemContainerItemValidatorIdentity } from './identities/menu-item-container-item.validator.identity.interface';
 import { MenuItemValidatorIdentity } from './identities/menu-item.validator.identity.interface';
 import { MenuItemContainerItemValidator } from './menu-item-container-item.validator';
@@ -81,11 +80,9 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             }
 
             // validate no duplicates
-            const miciValidator = new MenuItemContainerItemAggregateValidator(
+            this.helper.enforceNoDuplicateElements(
                 identity.containerMenuItems,
-            );
-
-            miciValidator.validateUnique(
+                (item) => ({ id: item.id ?? item.createId, identity: `${item.containedMenuItemId}:${item.containedItemSizeId}:${item.parentItemSizeId}` }),
                 'containerMenuItems',
                 errorMap,
             );

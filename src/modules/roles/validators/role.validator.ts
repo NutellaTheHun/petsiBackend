@@ -8,7 +8,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role, RoleEntity } from '../entities/role.entity';
-import { RoleValidatorIdentity } from './validation-identities/role.validator.identity.interface';
+import { RoleValidatorIdentity } from './identities/role.validator.identity.interface';
 
 @Injectable()
 export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdentity> {

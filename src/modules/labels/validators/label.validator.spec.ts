@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -83,7 +83,7 @@ describe('label validator', () => {
             labelTypeId: labelType.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -101,11 +101,11 @@ describe('label validator', () => {
             labelTypeId: existingLabel.labelType.id,
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'labelType' }],
-            'Label type already exists for this item.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['labelType']),
         );
     });
 
@@ -144,7 +144,7 @@ describe('label validator', () => {
             labelTypeId: newLabelType.id,
         };
 
-        const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
+        const errors = await validator.validateDto(dto, labelToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -162,13 +162,14 @@ describe('label validator', () => {
         const dto: UpdateLabelDto = {
             menuItemId: existingLabel.menuItem.id,
             labelTypeId: existingLabel.labelType.id,
+            imageUrl: labelToUpdate.imageUrl,
         };
 
-        const errors = await validator.validateUpdateNode(dto, labelToUpdate.id);
+        const errors = await validator.validateDto(dto, labelToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'labelType' }],
-            'Label type already exists for this item.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['labelType']),
         );
     });
 });

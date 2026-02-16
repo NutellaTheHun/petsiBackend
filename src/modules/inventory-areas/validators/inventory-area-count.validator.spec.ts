@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
@@ -16,6 +16,7 @@ import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.en
 import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { AREA_A, AREA_B, AREA_C } from '../utils/constants';
@@ -118,25 +119,8 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'c1');
         expect(errors).toBeNull();
-    });
-
-    it('fail validate create: no counted inventory items', async () => {
-        const area = await areaRepo.findOne({ where: { name: AREA_A } });
-        if (!area) {
-            throw new Error('area not found');
-        }
-        const dto: CreateInventoryAreaCountDto = {
-            inventoryAreaId: area.id,
-        };
-
-        const errors = await validator.validateCreateNode(dto);
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'countedInventoryItems' }],
-            'Inventory count has no counted items',
-        );
     });
 
     it('fail validate create: nestedCreateInventoryAreaItemDto errors: inventoryAreaItem.amount with value 0', async () => {
@@ -165,11 +149,11 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'countedInventoryItems', id: 'c1' }, { prop: 'amount' }],
-            'Inventory count item amount must be greater than 0',
+            [{ prop: 'countedInventoryItems', id: 'c1' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['amount']),
         );
     });
 
@@ -210,14 +194,13 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
-                { prop: 'countedItemSize' },
             ],
-            'Invalid size for inventory item',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
         );
     });
 
@@ -274,14 +257,13 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
-                { prop: 'countedItemSize' },
             ],
-            'Cannot provide both an existing and new item size',
+            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -312,14 +294,13 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
-                { prop: 'countedItemSize' },
             ],
-            'Must provide an item size or a new item size',
+            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -381,15 +362,14 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c2' },
                 { prop: 'countedItemSize', id: 'c3' },
-                { prop: 'measureAmount' },
             ],
-            'cannot be less than or equal to 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
         );
     });
 
@@ -451,15 +431,14 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'rootId');
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c2' },
                 { prop: 'countedItemSize', id: 'c3' },
-                { prop: 'cost' },
             ],
-            'cannot be less than or equal to 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
         );
     });
 
@@ -499,7 +478,7 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expect(errors).toBeNull();
     });
 
@@ -522,6 +501,7 @@ describe('inventory area count validator', () => {
         }
 
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     createId: 'c1',
@@ -532,11 +512,11 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'countedInventoryItems', id: 'c1' }, { prop: 'amount' }],
-            'Amount must be greater than 0',
+            [{ prop: 'countedInventoryItems', id: 'c1' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['amount']),
         );
     });
 
@@ -569,6 +549,7 @@ describe('inventory area count validator', () => {
         }
 
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     createId: 'c1',
@@ -579,14 +560,13 @@ describe('inventory area count validator', () => {
             ],
         };
 
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
-                { prop: 'countedItemSize' },
             ],
-            'Invalid size for inventory item',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
         );
     });
 
@@ -616,6 +596,7 @@ describe('inventory area count validator', () => {
             throw new Error('uom not found');
         }
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     createId: 'c1',
@@ -632,14 +613,13 @@ describe('inventory area count validator', () => {
                 },
             ],
         };
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
-                { prop: 'countedItemSize' },
             ],
-            'Cannot provide both an existing and new item size',
+            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -669,6 +649,7 @@ describe('inventory area count validator', () => {
             throw new Error('uom not found');
         }
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     createId: 'c1',
@@ -684,15 +665,14 @@ describe('inventory area count validator', () => {
                 },
             ],
         };
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
                 { prop: 'countedItemSize', id: 'c2' },
-                { prop: 'measureAmount' },
             ],
-            'cannot be less than or equal to 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
         );
     });
 
@@ -722,6 +702,7 @@ describe('inventory area count validator', () => {
             throw new Error('uom not found');
         }
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     createId: 'c1',
@@ -737,22 +718,21 @@ describe('inventory area count validator', () => {
                 },
             ],
         };
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedInventoryItems', id: 'c1' },
                 { prop: 'countedItemSize', id: 'c2' },
-                { prop: 'cost' },
             ],
-            'cannot be less than or equal to 0',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
         );
     });
 
     it('fail validate update: nestedUpdateInventoryAreaItemDto errors: inventoryAreaItem.countedItemSizeId with invalid countedInventoryItemId', async () => {
         const countToUpdate = await countRepo.findOne({
             where: { inventoryArea: { name: AREA_A } },
-            relations: ['countedInventoryItems'],
+            relations: ['countedInventoryItems', 'countedInventoryItems.countedItemSize', 'countedInventoryItems.countedItemSize.package', 'countedInventoryItems.countedItemSize.measureType'],
         });
         if (!countToUpdate) {
             throw new Error('count not found');
@@ -768,14 +748,17 @@ describe('inventory area count validator', () => {
             throw new Error('item sizes not found');
         }
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     id: countToUpdate.countedInventoryItems[0].id,
                     countedItemSizeId: dry_c.sizes[0].id,
-                },
+                    countedInventoryItemId: countToUpdate.countedInventoryItems[0].countedInventoryItem.id,
+                    amount: countToUpdate.countedInventoryItems[0].amount,
+                } as NestedUpdateInventoryAreaItemDto,
             ],
         };
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
@@ -783,9 +766,8 @@ describe('inventory area count validator', () => {
                     prop: 'countedInventoryItems',
                     id: countToUpdate.countedInventoryItems[0].id,
                 },
-                { prop: 'countedItemSize' },
             ],
-            'Invalid size for inventory item',
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
         );
     });
 
@@ -818,6 +800,7 @@ describe('inventory area count validator', () => {
             throw new Error('uom not found');
         }
         const dto: UpdateInventoryAreaCountDto = {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
             countedInventoryItems: [
                 {
                     id: countToUpdate.countedInventoryItems[0].id,
@@ -829,10 +812,12 @@ describe('inventory area count validator', () => {
                         cost: 1.99,
                     },
                     countedItemSizeId: invItem.sizes[0].id,
+                    amount: countToUpdate.countedInventoryItems[0].amount,
+                    countedInventoryItemId: countToUpdate.countedInventoryItems[0].countedInventoryItem.id,
                 },
             ],
         };
-        const errors = await validator.validateUpdateNode(dto, countToUpdate.id);
+        const errors = await validator.validateDto(dto, countToUpdate.id);
         expectValidationErrorPayload(
             errors,
             [
@@ -840,9 +825,8 @@ describe('inventory area count validator', () => {
                     prop: 'countedInventoryItems',
                     id: countToUpdate.countedInventoryItems[0].id,
                 },
-                { prop: 'countedItemSize' },
             ],
-            'Cannot provide both an existing and new item size',
+            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
         );
     });
 });

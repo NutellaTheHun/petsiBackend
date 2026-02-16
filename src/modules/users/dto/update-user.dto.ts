@@ -4,6 +4,7 @@ import {
     IsArray,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
 } from 'class-validator';
@@ -18,8 +19,8 @@ export class UpdateUserDto {
 
     @ApiProperty({ description: '', example: 'strongPassword1234' })
     @IsString()
-    @IsNotEmpty()
-    readonly password: string;
+    @IsOptional()
+    readonly password?: string;
 
     @ApiProperty({
         description: '',

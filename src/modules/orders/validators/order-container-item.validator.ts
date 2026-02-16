@@ -6,6 +6,7 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
@@ -46,6 +47,13 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
     }
 
     public async resolveIdentity(dto: CreateOrderContainerItemDto | UpdateOrderContainerItemDto | NestedCreateOrderContainerItemDto | NestedUpdateOrderContainerItemDto, id: number | string): Promise<OrderContainerItemValidatorIdentity> {
+        const containedMenuItem = await this.menuItemRepo.findOne({
+            where: { id: dto.containedMenuItemId },
+        });
+        if (!containedMenuItem) {
+            throw new Error('Contained menu item not found');
+        }
+
         return {
             id: dto instanceof NestedUpdateOrderContainerItemDto ? dto.id : undefined,
             createId: dto instanceof NestedCreateOrderContainerItemDto ? dto.createId : undefined,
@@ -53,6 +61,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
             containedItemSizeId: dto.containedItemSizeId,
             quantity: dto.quantity,
             parentOrderMenuItemId: dto instanceof CreateOrderContainerItemDto ? dto.parentOrderMenuItemId : undefined,
+            containedMenuItemType: containedMenuItem.type,
         } as OrderContainerItemValidatorIdentity;
     }
 
@@ -99,6 +108,12 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
                 'containedMenuItem',
                 errorMap,
             );
+        }
+
+        // validate contained item is single
+        if (identity.containedMenuItemType === MENU_ITEM_TYPES.SINGLE) {
+            errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
+            return errorMap;
         }
 
         return errorMap;
