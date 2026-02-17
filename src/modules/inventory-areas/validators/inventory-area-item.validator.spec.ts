@@ -38,6 +38,32 @@ describe('inventory area item validator', () => {
     let measureRepo: Repository<UnitOfMeasure>;
     let packageRepo: Repository<InventoryItemPackage>;
 
+    const findAreaItem = async (name: string) => {
+        return await areaItemRepo.findOneOrFail({ where: { parentInventoryCount: { inventoryArea: { name } } }, relations: ['countedItem', 'countedItemSize'] });
+    }
+
+    const findInventoryItem = async (name: string) => {
+        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes'] });
+    }
+
+    const findPackage = async (name: string) => {
+        return await packageRepo.findOneOrFail({ where: { name } });
+    }
+
+    const findUom = async (name: string) => {
+        return await measureRepo.findOneOrFail({ where: { name } });
+    }
+
+    const findCount = async (name: string) => {
+        return await areaCountRepo.findOneOrFail({
+            where: { inventoryArea: { name } },
+            relations: [
+                'countedInventoryItems',
+                'countedInventoryItems.countedItemSize',
+                'countedInventoryItems.countedInventoryItem']
+        });
+    }
+
     beforeAll(async () => {
         const module: TestingModule = await getInventoryAreasTestingModule();
         dbTestContext = new DatabaseTestContext();
@@ -66,59 +92,32 @@ describe('inventory area item validator', () => {
 
     // Create Validation Tests
     it('successfully validate create with no validation errors', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-            relations: ['sizes'],
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        if (!food_a.sizes || food_a.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
             amount: 2,
-            countedItemSizeId: food_a.sizes[0].id,
+            countedItemSize: {
+                createId: 'c1',
+                packageId: pkg.id,
+                measureTypeId: uom.id,
+                measureAmount: 1,
+                cost: 1.99,
+            },
             parentInventoryCountId: count.id,
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expect(errors).toBeNull();
     });
 
     it('fail validate create: amount with value 0', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-            relations: ['sizes'],
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        if (!food_a.sizes || food_a.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -128,6 +127,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -136,30 +136,10 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate create: inventoryItemSizeId and countedItemSize both provided', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-            relations: ['sizes'],
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        if (!food_a.sizes || food_a.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -176,6 +156,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -184,18 +165,8 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate create: neither inventoryItemSizeId nor countedItemSize provided', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -204,6 +175,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -212,28 +184,9 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate create: countedInventoryItemId with invalid countedItemSizeId', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_C } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_c = await itemRepo.findOne({
-            where: { name: FOOD_C },
-        });
-        if (!food_c) {
-            throw new Error('item not found');
-        }
-        const food_b = await itemRepo.findOne({
-            where: { name: FOOD_B },
-            relations: ['sizes'],
-        });
-        if (!food_b) {
-            throw new Error('item not found');
-        }
-        if (!food_b.sizes || food_b.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
+        const count = await findCount(AREA_C);
+        const food_c = await findInventoryItem(FOOD_C);
+        const food_b = await findInventoryItem(FOOD_B);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_c.id,
@@ -243,6 +196,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -251,26 +205,10 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -286,6 +224,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
+
         expectValidationErrorPayload(
             errors,
             [{ prop: 'countedItemSize', id: 'c1' }],
@@ -294,26 +233,10 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
-        const count = await areaCountRepo.findOne({
-            where: { inventoryArea: { name: AREA_A } },
-        });
-        if (!count) {
-            throw new Error('count not found');
-        }
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const count = await findCount(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -338,24 +261,8 @@ describe('inventory area item validator', () => {
 
     // Update Validation Tests
     it('successfully validate update with no validation errors', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItem', 'countedItemSize'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-            relations: ['sizes'],
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
-        if (!food_a.sizes || food_a.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -364,16 +271,12 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expect(errors).toBeNull();
     });
 
     it('fail validate update: amount with value 0', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -382,6 +285,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -390,24 +294,9 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: countedItemSizeId with invalid for existing countedInventoryItem', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItem'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
 
-        const dry_c = await itemRepo.findOne({
-            where: { name: DRY_C },
-            relations: ['sizes'],
-        });
-        if (!dry_c) {
-            throw new Error('item not found');
-        }
-        if (!dry_c.sizes || dry_c.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
+        const dry_c = await findInventoryItem(DRY_C);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -424,29 +313,10 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: countedInventoryItemId with invalid countedItemSizeId', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
 
-        const food_c = await itemRepo.findOne({
-            where: { name: FOOD_C },
-        });
-        if (!food_c) {
-            throw new Error('item not found');
-        }
-        const food_b = await itemRepo.findOne({
-            where: { name: FOOD_B },
-            relations: ['sizes'],
-        });
-        if (!food_b) {
-            throw new Error('item not found');
-        }
-        if (!food_b.sizes || food_b.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
+        const food_c = await findInventoryItem(FOOD_C);
+        const food_b = await findInventoryItem(FOOD_B);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: food_c.id,
@@ -455,6 +325,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -463,25 +334,9 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: countedItemSizeId and countedItemSize both provided', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItem', 'countedItemSize'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-        if (!itemToUpdate.countedItemSize) {
-            throw new Error('item size not found');
-        }
-
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -497,6 +352,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -505,19 +361,8 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: countedInventoryItemId with no sizeId or sizeDto', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-
-        const food_a = await itemRepo.findOne({
-            where: { name: FOOD_A },
-        });
-        if (!food_a) {
-            throw new Error('item not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
+        const food_a = await findInventoryItem(FOOD_A);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: food_a.id,
@@ -525,6 +370,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [],
@@ -533,25 +379,9 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: nestedUpdateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItemSize'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-        if (!itemToUpdate.countedItemSize) {
-            throw new Error('item size not found');
-        }
-
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -561,10 +391,12 @@ describe('inventory area item validator', () => {
                 measureAmount: 0,
                 packageId: pkg.id,
                 measureTypeId: uom.id,
+                cost: null
             },
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [
@@ -575,24 +407,9 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: nestedUpdateInventoryItemSizeDto errors: cost with value 0', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItemSize'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-        if (!itemToUpdate.countedItemSize) {
-            throw new Error('item size not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await measureRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
+        const pkg = await findPackage(PACKAGE_PKG);
+        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -607,6 +424,7 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [
@@ -617,16 +435,7 @@ describe('inventory area item validator', () => {
     });
 
     it('fail validate update: nestedUpdateInventoryItemSizeDto errors: already exists', async () => {
-        const itemToUpdate = await areaItemRepo.findOne({
-            where: { parentInventoryCount: { inventoryArea: { name: AREA_A } } },
-            relations: ['countedItem', 'countedItemSize'],
-        });
-        if (!itemToUpdate) {
-            throw new Error('item not found');
-        }
-        if (!itemToUpdate.countedItemSize) {
-            throw new Error('item size not found');
-        }
+        const itemToUpdate = await findAreaItem(AREA_A);
 
         // Find another size with the same item that has different package/measureType
         const existingSizes = await itemSizeRepo.find({
@@ -651,16 +460,18 @@ describe('inventory area item validator', () => {
                 packageId: targetSize.package.id,
                 measureTypeId: targetSize.measureType.id,
                 measureAmount: 1,
+                cost: null
             },
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+
         expectValidationErrorPayload(
             errors,
             [
                 { prop: 'countedItemSize', id: itemToUpdate.countedItemSize.id },
             ],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['measureType', 'package']),
+            createValidationErrorPayload('ALREADY_EXISTS', [], ['measureType', 'package', 'measureAmount']),
         );
     });
 });
