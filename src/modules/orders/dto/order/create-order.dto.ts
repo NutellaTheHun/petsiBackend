@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
     IsArray,
     IsBoolean,
@@ -8,6 +8,7 @@ import {
     IsOptional,
     IsPositive,
     IsString,
+    ValidateNested,
 } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
@@ -38,79 +39,85 @@ export class CreateOrderDto {
     @IsNotEmpty()
     readonly fulfillmentType: string;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Name of who is picking up the order or reciving the delivery',
         example: 'Jane Doe',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly fulfillmentContactName?: string;
+    readonly fulfillmentContactName: string | null;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'for delivery contact information',
         example: '123 main st',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly deliveryAddress?: string;
+    readonly deliveryAddress: string | null;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'for delivery contact information',
         example: '1234568',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly phoneNumber?: string;
+    readonly phoneNumber: string | null;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'for delivery contact information',
         example: 'email@email.com',
         type: 'string',
         format: 'email',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly email?: string;
+    readonly email: string | null;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'special instruction for order',
         example: 'note information',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly note?: string;
+    readonly note: string | null;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description:
             'A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.',
         example: false,
         type: 'boolean',
     })
     @IsBoolean()
-    @IsOptional()
-    readonly isFrozen?: boolean;
+    @IsNotEmpty()
+    readonly isFrozen: boolean;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Is true if the order occurs on a weekly basis.',
         example: true,
         type: 'boolean',
     })
     @IsBoolean()
-    @IsOptional()
-    readonly isWeekly?: boolean;
+    @IsNotEmpty()
+    readonly isWeekly: boolean;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'If is weekly, is the day of the week the order is fulfilled',
         example: 'sunday',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly weeklyFulfillment?: string;
+    readonly weeklyFulfillment: string | null;
 
     @ApiProperty({
         example: 1,
@@ -148,5 +155,7 @@ export class CreateOrderDto {
         ],
     })
     @IsArray()
+    @IsNotEmpty()
+    @ValidateNested({ each: true })
     readonly orderedItems: NestedCreateOrderMenuItemDto[];
 }

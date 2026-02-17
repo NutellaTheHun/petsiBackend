@@ -2,8 +2,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
     IsArray,
     IsNotEmpty,
-    IsOptional,
-    IsString
+    IsString,
+    ValidateNested
 } from 'class-validator';
 import { NestedCreateTemplateMenuItemDto } from '../template-menu-item/nested-create-template-menu-item.dto';
 
@@ -34,7 +34,8 @@ export class CreateTemplateDto {
             },
         ],
     })
-    @IsOptional()
     @IsArray()
-    readonly templateMenuItems?: NestedCreateTemplateMenuItemDto[];
+    @IsNotEmpty()
+    @ValidateNested({ each: true })
+    readonly templateMenuItems: NestedCreateTemplateMenuItemDto[];
 }

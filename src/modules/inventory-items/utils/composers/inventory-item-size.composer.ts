@@ -25,7 +25,7 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
             measureType: { id: dto.measureTypeId },
             package: { id: dto.packageId },
             inventoryItem: { id: dto.inventoryItemId },
-            cost: dto.cost.toString(),
+            cost: dto.cost ? dto.cost.toString() : null,
         });
         return result;
     }
@@ -35,8 +35,8 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
         manager: EntityManager,
         entity: InventoryItemSize,
     ): Promise<void> {
-        if (dto.cost) {
-            entity.cost = dto.cost.toString();
+        if (dto.cost !== undefined) {
+            entity.cost = dto.cost ? dto.cost.toString() : null;
         }
 
         if (dto.packageId !== undefined) {

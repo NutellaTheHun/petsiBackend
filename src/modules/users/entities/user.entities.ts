@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { roleExample } from '../../../common/swagger/examples/roles/role.example';
@@ -21,54 +21,54 @@ export type UserEntity = EntityBase<User, CreateUserDto, UpdateUserDto>;
  */
 @Entity({ name: 'app_users' })
 export class User {
-  @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({ example: 1, description: 'The unique identifier of the user' })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @ApiProperty({
-    example: '2025-06-05T23:00:17.814Z',
-    description: 'date the user was created',
-  })
-  @CreateDateColumn()
-  createdAt: Date;
+    @ApiProperty({
+        example: '2025-06-05T23:00:17.814Z',
+        description: 'date the user was created',
+    })
+    @CreateDateColumn()
+    createdAt: Date;
 
-  @ApiProperty({
-    example: '2025-06-05T23:00:17.814Z',
-    description: 'date the user was most recently updated',
-  })
-  @UpdateDateColumn()
-  updatedAt: Date;
+    @ApiProperty({
+        example: '2025-06-05T23:00:17.814Z',
+        description: 'date the user was most recently updated',
+    })
+    @UpdateDateColumn()
+    updatedAt: Date;
 
-  @ApiProperty({ example: 'johndoe', description: 'Username of the user' })
-  @Column({ unique: true })
-  name: string;
+    @ApiProperty({ example: 'johndoe', description: 'Username of the user' })
+    @Column({ unique: true })
+    name: string;
 
-  @ApiProperty({
-    example: '1234abc',
-    description:
-      'Only used when creating or updating a user, not returned in responses',
-    type: 'string',
-  })
-  @Column()
-  password: string;
+    @ApiProperty({
+        example: '1234abc',
+        description:
+            'Only used when creating or updating a user, not returned in responses',
+        type: 'string',
+    })
+    @Column()
+    password: string;
 
-  @ApiProperty({
-    example: 'john@example.com',
-    description: 'Email address',
-    type: 'string',
-    format: 'email',
-    nullable: true,
-  })
-  @Column({ nullable: true, type: 'varchar' })
-  email: string | null = null;
+    @ApiProperty({
+        example: 'john@example.com',
+        description: 'Email address',
+        type: 'string',
+        format: 'email',
+        nullable: true,
+    })
+    @Column({ nullable: true, type: 'varchar' })
+    email: string | null = null;
 
-  @ApiProperty({
-    example: [roleExample(new Set<string>(), true)],
-    description: 'list of roles the user possess to determine feature access',
-    type: () => Role,
-    isArray: true,
-  })
-  @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
-  @JoinTable()
-  roles: Role[];
+    @ApiProperty({
+        example: [roleExample(new Set<string>(), true)],
+        description: 'list of roles the user possess to determine feature access',
+        type: () => Role,
+        isArray: true,
+    })
+    @ManyToMany(() => Role, (role) => role.users, { onDelete: 'CASCADE' })
+    @JoinTable()
+    roles: Role[];
 }

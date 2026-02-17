@@ -4,6 +4,7 @@ import {
     IsBoolean,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
     Min,
@@ -30,10 +31,11 @@ export class UpdateRecipeDto {
         description: 'Id of the MenuItem that the recipe produces.',
         example: 'Blueberry Pie',
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
+    @IsOptional()
     readonly producedMenuItemId: EntityId<MenuItem> | null;
 
     @ApiProperty({
@@ -41,54 +43,59 @@ export class UpdateRecipeDto {
             'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
         example: 1,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly batchResultQuantity: number;
+    @IsOptional()
+    readonly batchResultQuantity: number | null;
 
     @ApiProperty({
         description:
             'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
         example: 2,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly batchResultUnitTypeId: EntityId<UnitOfMeasure>;
+    @IsOptional()
+    readonly batchResultUnitTypeId: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description:
             'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
         example: 3,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly servingSizeQuantity: number;
+    @IsOptional()
+    readonly servingSizeQuantity: number | null;
 
     @ApiProperty({
         description:
             'Id of the UnitofMeasure used to represent the unit size of what is sold.',
         example: 4,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
-    readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure>;
+    @IsOptional()
+    readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description: 'The price of purchasing the serving size amount.',
         example: 5.99,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Min(0)
-    readonly salesPrice: number;
+    readonly salesPrice: number | null;
 
     @ApiProperty({
         description: 'If the recipe is used as an ingredient.(Not sold directly)',
@@ -102,9 +109,10 @@ export class UpdateRecipeDto {
         description: 'Id of the RecipeCategory entity',
         example: 6,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
     readonly categoryId: EntityId<RecipeCategory> | null;
 
@@ -113,9 +121,10 @@ export class UpdateRecipeDto {
             'Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory',
         example: 7,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @IsPositive()
     readonly subCategoryId: EntityId<RecipeSubCategory> | null;
 

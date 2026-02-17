@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import {
     IsArray,
     IsNotEmpty,
@@ -33,15 +33,16 @@ export class CreateMenuItemDto {
     @IsString()
     readonly type: string;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Id of MenuItemCategory entity.',
         example: 1,
         type: 'number',
+        nullable: true,
     })
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly categoryId?: EntityId<MenuItemCategory>;
+    readonly categoryId: EntityId<MenuItemCategory> | null;
 
     @ApiProperty({
         description:
@@ -56,9 +57,10 @@ export class CreateMenuItemDto {
     @IsNotEmpty()
     readonly sizeIds: EntityId<MenuItemSize>[];
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description: 'Array of CreateMenutItemContainerItemDtos',
         type: () => [NestedCreateMenuItemContainerItemDto],
+        required: false,
         example: [
             {
                 createId: 'c1',
@@ -75,12 +77,13 @@ export class CreateMenuItemDto {
     @ValidateNested({ each: true })
     readonly containerMenuItems?: NestedCreateMenuItemContainerItemDto[];
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description:
             'Total size limit of item, when item is of type fixed_container or variable_container',
         type: 'number',
         example: 7,
         nullable: true,
+        required: false,
     })
     @IsOptional()
     @IsNumber()

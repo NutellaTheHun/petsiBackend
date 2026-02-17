@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsPositive } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
@@ -58,10 +58,12 @@ export class UpdateOrderMenuItemDto {
                 parentMenuItemSizeIdCtx: 12,
             },
         ],
+        required: false,
     })
     @IsArray()
-    @IsNotEmpty()
-    readonly containerOrderMenuItems: (
+    @IsOptional()
+    @ValidateNested({ each: true })
+    readonly containerOrderMenuItems?: (
         | NestedCreateOrderContainerItemDto
         | NestedUpdateOrderContainerItemDto
     )[];

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import {
     Column,
     Entity,
@@ -83,13 +84,17 @@ export class OrderMenuItem {
             'If the ordered MenuItem is a container, the contained items will be listed here',
         type: () => OrderContainerItem,
         isArray: true,
+        required: false,
     })
     @OneToMany(
         () => OrderContainerItem,
         (orderItem) => orderItem.parentOrderMenuItem,
         { cascade: true, eager: true },
     )
-    containerOrderMenuItems: OrderContainerItem[];
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    containerOrderMenuItems?: OrderContainerItem[];
 
     /**
      * The parent {@link Order} of the item.

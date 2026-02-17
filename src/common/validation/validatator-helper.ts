@@ -10,7 +10,7 @@ export class ValidatorHelper<
     TIdentity extends ValidatorIdentityBaseInterface,
 > {
     /**
-     * Array must not be empty
+     * Array must not be empty. Returns 'MISSING_PROPERTY' error.
      * @param arrayVal any array
      * @param field array property of entity
      * @param rootErrMap error map to add error to
@@ -29,6 +29,14 @@ export class ValidatorHelper<
         }
     }
 
+    /**
+     * Entity with provided id must exist in the database. Returns 'NOT_FOUND' error if not found.
+     * @param id id of the entity
+     * @param repo repository of the entity
+     * @param field property of the entity
+     * @param rootErrMap error map to add error to
+     * @param errMsg description of error
+     */
     public async enforceExists<Entity extends ObjectLiteral, Prop extends keyof TEntity>(
         id: number,
         repo: Repository<Entity>,
@@ -43,6 +51,15 @@ export class ValidatorHelper<
         }
     }
 
+    /**
+     * Property must be equal to the target value. Returns 'INVALID_PROPERTY_VALUE' error if not equal.
+     * @param id id of the entity
+     * @param field property of the entity
+     * @param targetValue target value of the property
+     * @param repo repository of the entity
+     * @param rootErrMap error map to add error to
+     * @param errMsg description of error
+     */
     public async enforcePropertyState<Entity extends ObjectLiteral, Prop extends keyof Entity>(
         id: number,
         field: Prop,
@@ -65,7 +82,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must be greater than 0,
+     * Value must be greater than 0. Returns 'INVALID_PROPERTY_VALUE' error if not greater than 0.
      * Fails if value is less than or equal to 0,
      * VALUE CANNOT EQUAL 0
      * ignores validation if value is null or undefined
@@ -90,7 +107,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must be equal to or greater than 0,
+     * Value must be equal to or greater than 0. Returns 'INVALID_PROPERTY_VALUE' error if not greater than 0.
      * Fails if value is less than 0,
      * VALUE CAN BE 0
      * @param val Value being evaluated
@@ -113,7 +130,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must be found in array
+     * Value must be found in array. Returns 'INVALID_PROPERTY_VALUE' error if not found.
      * @param val value to be found in array
      * @param list array to be searched
      * @param prop property the value represents
@@ -135,6 +152,7 @@ export class ValidatorHelper<
 
     /**
      * Given size ID must be found within the entities list of valid sizes.
+     * Returns 'INVALID_PROPERTY_VALUE' error if not found.
      *
      * List of sizes to validate from will come from a foreign entity
      *
@@ -183,7 +201,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Entity with provided value for property must not be found in the database.
+     * Entity with provided value for property must not be found in the database. Returns 'ALREADY_EXISTS' error.
      * @param repo repo that is being checked for uniqueness
      * @param field Name of property being checked for uniqueness
      * @param val value being checked against prop for uniqueness
@@ -213,7 +231,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Value must not be found within the provided array
+     * Value must not be found within the provided array. Returns 'INVALID_PROPERTY_VALUE' error if found.
      * @param list list of strings being checked against
      * @param prop property being checked for uniqueness
      * @param val value being checked against list for uniqueness
@@ -234,7 +252,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Ensures there are no duplicate elements in an array based on a key extractor.
+     * Ensures there are no duplicate elements in an array based on a key extractor. Returns 'DUPLICATE_ITEMS' error.
      * A duplicate is determined if the same key is generated for more than one element.
      * @param items Array of items to check for duplicates
      * @param keyExtractor Function that extracts a unique key from each item
@@ -269,7 +287,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * if the hinge property is set to the given hingeValue, dependents must be populated
+     * if the hinge property is set to the given hingeValue, dependents must be populated. Returns 'MISSING_PROPERTY' error if dependents are not populated.
      * @param identity source DTO
      * @param hinge property of Dto whos state determines the required dependents
      * @param hingeValue the state of the hinge property that requires the dependents
@@ -303,7 +321,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * All properties within mutuals array must all be the same state, either undefined/null or populated.
+     * All properties within mutuals array must all be the same state, either undefined/null or populated. Returns 'INVALID_PROPERTY_VALUE' error.
      * @param dto source DTO
      * @param mutuals array of properties that are grouped together
      * @param rootErrMap error map to add error to
@@ -325,7 +343,7 @@ export class ValidatorHelper<
     }
 
     /**
-     * Only one of the two given properties must be populated.
+     * Only one of the two given properties must be populated. Returns 'ONLY_ONE' error.
      * Cannot both be populated or both be vacant.
      * @param firstProp any prop of dto, must match entity property name (the nested dto)
      * @param secondProp any prop of dto, the (id property)

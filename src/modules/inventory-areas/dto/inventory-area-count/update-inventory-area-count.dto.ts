@@ -38,7 +38,6 @@ export class UpdateInventoryAreaCountDto {
                 countedItemSizeId: 9,
             },
         ],
-        required: false,
     })
     @IsNotEmpty()
     @IsArray()

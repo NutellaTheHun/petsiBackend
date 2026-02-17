@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    Unique,
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { unitOfMeasureCategoryExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure-category.example';
@@ -13,9 +13,9 @@ import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-me
 import { UnitOfMeasureCategory } from './unit-of-measure-category.entity';
 
 export type UnitOfMeasureEntity = EntityBase<
-  UnitOfMeasure,
-  CreateUnitOfMeasureDto,
-  UpdateUnitOfMeasureDto
+    UnitOfMeasure,
+    CreateUnitOfMeasureDto,
+    UpdateUnitOfMeasureDto
 >;
 
 /**
@@ -28,51 +28,52 @@ export type UnitOfMeasureEntity = EntityBase<
 @Entity()
 @Unique(['name', 'abbreviation'])
 export class UnitOfMeasure {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  /**
-   * "Cup", "Teaspoon", "Fluid ouce"
-   */
-  @ApiProperty({ example: '', description: '' })
-  @Column({ unique: true })
-  name: string;
+    /**
+     * "Cup", "Teaspoon", "Fluid ouce"
+     */
+    @ApiProperty({ example: '', description: '' })
+    @Column({ unique: true })
+    name: string;
 
-  /**
-   * "Cup": "c", "Teaspoon": "tsp", "Fluid ouce": "fl oz"
-   */
-  @ApiProperty({ example: '', description: '' })
-  @Column({ unique: true })
-  abbreviation: string;
+    /**
+     * "Cup": "c", "Teaspoon": "tsp", "Fluid ouce": "fl oz"
+     */
+    @ApiProperty({ example: '', description: '' })
+    @Column({ unique: true })
+    abbreviation: string;
 
-  /**
-   * The conversion value to the specified category property's baseUnit.
-   *
-   * - Example: UnitCategory: Volume, baseUnit is milliliter
-   * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
-   */
-  @ApiProperty({ example: '', description: '' })
-  @Column({ type: 'decimal', precision: 18, scale: 10 })
-  conversionFactorToBase: string | null;
+    /**
+     * The conversion value to the specified category property's baseUnit.
+     *
+     * - Example: UnitCategory: Volume, baseUnit is milliliter
+     * - converting Gallon to Liter would be Gallon.conversionFactorToBase -> Liter.conversionFactorToBase
+     */
+    @ApiProperty({ example: '', description: '', nullable: true })
+    @Column({ type: 'decimal', precision: 18, scale: 10, nullable: true })
+    conversionFactorToBase: string | null = null;
 
-  /**
-   * The {@link UnitOfMeasureCategory} of the unit of measurement, such as "Weight", "Volume", "unit"
-   *
-   * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
-   */
-  @ApiProperty({
-    example: unitOfMeasureCategoryExample(new Set<string>(), true),
-    description: '',
-    type: () => UnitOfMeasureCategory,
-  })
-  @ManyToOne(() => UnitOfMeasureCategory, (category) => category.units, {
-    nullable: true,
-    onDelete: 'SET NULL',
-    cascade: true,
-  })
-  category: UnitOfMeasureCategory | null = null;
+    /**
+     * The {@link UnitOfMeasureCategory} of the unit of measurement, such as "Weight", "Volume", "unit"
+     *
+     * Units within the same category can convert to each other. (Cant convert from weight to volume. or weight to unit)
+     */
+    @ApiProperty({
+        example: unitOfMeasureCategoryExample(new Set<string>(), true),
+        description: '',
+        type: () => UnitOfMeasureCategory,
+        nullable: true,
+    })
+    @ManyToOne(() => UnitOfMeasureCategory, (category) => category.units, {
+        nullable: true,
+        onDelete: 'SET NULL',
+        cascade: true,
+    })
+    category: UnitOfMeasureCategory | null = null;
 }

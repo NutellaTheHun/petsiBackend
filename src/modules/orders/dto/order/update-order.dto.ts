@@ -47,47 +47,52 @@ export class UpdateOrderDto {
         description: 'Name of who is picking up the order or reciving the delivery',
         example: 'Jane Doe',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly fulfillmentContactName?: string;
+    readonly fulfillmentContactName: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
         example: '123 main st',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly deliveryAddress?: string;
+    readonly deliveryAddress: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
         example: '1234568',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly phoneNumber?: string;
+    readonly phoneNumber: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
         example: 'email@email.com',
         type: 'string',
         format: 'email',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly email?: string;
+    readonly email: string | null;
 
     @ApiProperty({
         description: 'special instruction for order',
         example: 'note information',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly note?: string;
+    readonly note: string | null;
 
     @ApiProperty({
         description:
@@ -96,8 +101,8 @@ export class UpdateOrderDto {
         type: 'boolean',
     })
     @IsBoolean()
-    @IsOptional()
-    readonly isFrozen?: boolean;
+    @IsNotEmpty()
+    readonly isFrozen: boolean;
 
     @ApiProperty({
         description: 'Is true if the order occurs on a weekly basis.',
@@ -105,17 +110,18 @@ export class UpdateOrderDto {
         type: 'boolean',
     })
     @IsBoolean()
-    @IsOptional()
-    readonly isWeekly?: boolean;
+    @IsNotEmpty()
+    readonly isWeekly: boolean;
 
     @ApiProperty({
         description: 'If is weekly, is the day of the week the order is fulfilled',
         example: 'sunday',
         type: 'string',
+        nullable: true,
     })
     @IsString()
     @IsOptional()
-    readonly weeklyFulfillment?: string;
+    readonly weeklyFulfillment: string | null;
 
     @ApiProperty({
         description: 'Id of OrderType entity.',

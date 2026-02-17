@@ -4,20 +4,20 @@ import { EntityId } from '../../../../common/types';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 
 export class CreateRecipeSubCategoryDto {
-  @ApiProperty({
-    description: 'Name of the RecipeSubCategory entity.',
-    example: 'Sweet Pie',
-  })
-  @IsString()
-  @IsNotEmpty()
-  readonly name: string;
+    @ApiProperty({
+        description: 'Name of the RecipeSubCategory entity.',
+        example: 'Sweet Pie',
+    })
+    @IsString()
+    @IsNotEmpty()
+    readonly name: string;
 
-  @ApiProperty({
-    description: 'Id of the RecipeCategory parent entity.',
-    example: 1,
-  })
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-  readonly parentCategoryId: EntityId<RecipeCategory>;
+    @ApiProperty({
+        description: 'Id of the RecipeCategory parent entity.',
+        example: 1,
+    })
+    @IsNumber()
+    @IsNotEmpty()
+    @IsPositive()
+    readonly parentCategoryId: EntityId<RecipeCategory>;
 }

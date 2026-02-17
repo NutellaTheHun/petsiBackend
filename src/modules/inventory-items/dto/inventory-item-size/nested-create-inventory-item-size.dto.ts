@@ -36,9 +36,10 @@ export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
     @ApiProperty({
         description: 'Price paid for the InventoryItem entity.',
         example: 4.99,
+        nullable: true,
     })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
-    readonly cost?: number;
+    readonly cost: number | null;
 }

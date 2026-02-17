@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager, EntityTarget, FindOptionsWhere } from 'typeorm';
 import { ResolverContext } from '../types/resolver-context.type';
 import { NestedEntityBase } from './entity.base';
 import { NestedCreateDto } from './nested-create-dto.base';
@@ -111,7 +111,7 @@ export abstract class ComposerBase<
             return this.createInTransaction(fullDto, manager);
         } else {
             const entity = await manager.findOneOrFail(this.entityClass, {
-                where: { id: (dto as T['__NuDto']).id },
+                where: { id: (dto as T['__NuDto']).id } as unknown as FindOptionsWhere<T['__Entity']>,
             });
             await this.updateInTransaction(
                 dto as T['__NuDto'],

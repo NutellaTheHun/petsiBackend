@@ -3,6 +3,7 @@ import {
     IsArray,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
     ValidateNested
@@ -39,6 +40,7 @@ export class UpdateMenuItemDto {
             'Id of MenuItemCategory entity. Pass a null value to remove category',
         example: 1,
         type: 'number',
+        nullable: true,
     })
     @IsNotEmpty()
     @IsNumber()
@@ -80,11 +82,12 @@ export class UpdateMenuItemDto {
                 parentItemSizeId: 10,
             },
         ],
+        required: false,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    readonly containerMenuItems: (
+    readonly containerMenuItems?: (
         | NestedCreateMenuItemContainerItemDto
         | NestedUpdateMenuItemContainerItemDto
     )[];
@@ -95,9 +98,10 @@ export class UpdateMenuItemDto {
         type: 'number',
         example: 6,
         nullable: true,
+        required: false,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly variableMaxAmount: number | null;
+    readonly variableMaxAmount?: number | null;
 }

@@ -3,6 +3,7 @@ import {
     IsArray,
     IsNotEmpty,
     IsNumber,
+    IsOptional,
     IsPositive,
     IsString,
     ValidateNested
@@ -26,20 +27,22 @@ export class UpdateInventoryItemDto {
         description: 'Id of InventoryItemCategory entity.',
         example: 1,
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
+    @IsOptional()
     readonly categoryId: EntityId<InventoryItemCategory> | null;
 
     @ApiProperty({
         example: 2,
         description: 'Id of InventoryItemVendor entity.',
         type: 'number',
+        nullable: true,
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
+    @IsOptional()
     readonly vendorId: EntityId<InventoryItemVendor> | null;
 
     @ApiProperty({

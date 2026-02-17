@@ -1,5 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedUpdateRecipeSubCategoryDto } from '../recipe-sub-category/nested-update-recipe-sub-category.dto';
 
@@ -30,10 +30,12 @@ export class UpdateRecipeCategoryDto {
                 name: 'sweet pies',
             },
         ],
+        required: false,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
-    readonly subCategories: (
+    @ValidateNested({ each: true })
+    readonly subCategories?: (
         | NestedCreateRecipeSubCategoryDto
         | NestedUpdateRecipeSubCategoryDto
     )[];

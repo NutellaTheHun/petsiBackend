@@ -44,6 +44,7 @@ export class RecipeIngredient {
         description:
             'The InventoryItem this ingredient uses, if this property is referenced, ingredientRecipe property must be null.',
         type: InventoryItem,
+        nullable: true,
     })
     @ManyToOne(() => InventoryItem, { nullable: true, onDelete: 'CASCADE' })
     ingredientInventoryItem: InventoryItem | null = null;
@@ -62,6 +63,7 @@ export class RecipeIngredient {
         description:
             'The Recipe this ingredient uses, if this property is referenced, ingredientInventoryItem must be null.',
         type: () => Recipe,
+        nullable: true,
     })
     @ManyToOne(() => Recipe, { nullable: true, onDelete: 'CASCADE' })
     ingredientRecipe: Recipe | null = null;

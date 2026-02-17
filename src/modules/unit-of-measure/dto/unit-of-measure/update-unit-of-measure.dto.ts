@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { UnitOfMeasureCategory } from '../../entities/unit-of-measure-category.entity';
 
@@ -26,8 +26,8 @@ export class UpdateUnitOfMeasureDto {
         example: '3785.4080001023799014',
     })
     @IsString()
-    @IsNotEmpty()
-    readonly conversionFactorToBase: string;
+    @IsOptional()
+    readonly conversionFactorToBase: string | null;
 
     @ApiProperty({
         description:
@@ -37,6 +37,6 @@ export class UpdateUnitOfMeasureDto {
     })
     @IsNumber()
     @IsPositive()
-    @IsNotEmpty()
+    @IsOptional()
     readonly categoryId: EntityId<UnitOfMeasureCategory> | null;
 }

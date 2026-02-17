@@ -36,9 +36,10 @@ export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
     @ApiProperty({
         description: 'Prsice paid for the InventoryItem entity.',
         example: 3.99,
+        nullable: true,
     })
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
-    readonly cost?: number;
+    readonly cost: number | null;
 }

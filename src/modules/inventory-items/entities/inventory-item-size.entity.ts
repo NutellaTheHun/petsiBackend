@@ -104,8 +104,9 @@ export class InventoryItemSize {
     @ApiProperty({
         example: '8.49',
         description: 'The cost for this inventory item / size combination',
+        nullable: true,
     })
-    @Column({ type: 'decimal', precision: 10, scale: 2 })
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
     @Check(`"cost" >= 0`)
-    cost: string;
+    cost: string | null;
 }
