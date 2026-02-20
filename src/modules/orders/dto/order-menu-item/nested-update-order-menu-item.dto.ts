@@ -1,4 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
 import { EntityId } from '../../../../common/types';
@@ -64,6 +65,14 @@ export class NestedUpdateOrderMenuItemDto extends NestedUpdateDto {
     @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateOrderContainerItemDto, item)
+                : plainToInstance(NestedUpdateOrderContainerItemDto, item)
+        );
+    })
     readonly containerOrderMenuItems?: (
         | NestedCreateOrderContainerItemDto
         | NestedUpdateOrderContainerItemDto

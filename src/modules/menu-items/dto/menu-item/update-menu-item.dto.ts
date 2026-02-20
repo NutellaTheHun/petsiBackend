@@ -9,6 +9,7 @@ import {
     ValidateNested
 } from 'class-validator';
 
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
@@ -83,14 +84,23 @@ export class UpdateMenuItemDto {
             },
         ],
         required: false,
+        nullable: true,
     })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateMenuItemContainerItemDto, item)
+                : plainToInstance(NestedUpdateMenuItemContainerItemDto, item)
+        );
+    })
     readonly containerMenuItems?: (
         | NestedCreateMenuItemContainerItemDto
         | NestedUpdateMenuItemContainerItemDto
-    )[];
+    )[] | null;
 
     @ApiProperty({
         description:

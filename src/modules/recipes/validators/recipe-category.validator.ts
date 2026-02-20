@@ -29,7 +29,7 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         super(repo, 'RecipeCategory', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: RecipeCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RecipeCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

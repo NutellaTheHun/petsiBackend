@@ -26,14 +26,14 @@ export class CreateUnitOfMeasureDto {
     @IsNotEmpty()
     readonly abbreviation: string;
 
-    @ApiPropertyOptional({
+    @ApiProperty({
         description:
             'The conversion factor stored as a string to prevent rounding errors, to the base amount.',
         example: '3785.4080001023799014',
     })
     @IsString()
     @IsOptional()
-    readonly conversionFactorToBase: string | null;
+    readonly conversionFactorToBase?: string | null;
 
     @ApiPropertyOptional({
         description:

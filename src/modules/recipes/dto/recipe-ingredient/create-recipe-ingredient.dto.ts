@@ -16,7 +16,7 @@ export class CreateRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientInventoryItemId: EntityId<InventoryItem> | null;
+    readonly ingredientInventoryItemId?: EntityId<InventoryItem> | null;
 
     @ApiProperty({
         description:
@@ -28,7 +28,7 @@ export class CreateRecipeIngredientDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly ingredientRecipeId: EntityId<Recipe> | null;
+    readonly ingredientRecipeId?: EntityId<Recipe> | null;
 
     @ApiProperty({
         description: 'The unit amount of the UnitofMeasure of the InventoryItem',

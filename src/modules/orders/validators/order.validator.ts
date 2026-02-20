@@ -32,10 +32,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
         super(repo, 'Order', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: OrderValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: OrderValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.categoryId) {
+        if (identity.categoryId !== undefined) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.orderCategoryRepo,

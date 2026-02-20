@@ -25,6 +25,22 @@ describe('inventory item size validator', () => {
     let unitRepo: Repository<UnitOfMeasure>;
     let packageRepo: Repository<InventoryItemPackage>;
 
+    const findInventoryItem = async (name: string) => {
+        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'sizes.measureType'] });
+    }
+
+    const findInventoryItemSize = async () => {
+        return await sizeRepo.findOneOrFail({ relations: ['inventoryItem', 'package', 'measureType'] });
+    }
+
+    const findUnitOfMeasure = async (name: string) => {
+        return await unitRepo.findOneOrFail({ where: { name } });
+    }
+
+    const findInventoryItemPackage = async (name: string) => {
+        return await packageRepo.findOneOrFail({ where: { name } });
+    }
+
     beforeAll(async () => {
         const module: TestingModule = await getInventoryItemTestingModule();
         dbTestContext = new DatabaseTestContext();
@@ -53,18 +69,9 @@ describe('inventory item size validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const item = await itemRepo.findOne({ where: { name: FOOD_A } });
-        if (!item) {
-            throw new Error('item not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await unitRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const item = await findInventoryItem(FOOD_A);
+        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
+        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = {
             inventoryItemId: item.id,
@@ -79,18 +86,9 @@ describe('inventory item size validator', () => {
     });
 
     it('fail validate create: measureAmount with value 0', async () => {
-        const item = await itemRepo.findOne({ where: { name: FOOD_A } });
-        if (!item) {
-            throw new Error('item not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await unitRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const item = await findInventoryItem(FOOD_A);
+        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
+        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = {
             inventoryItemId: item.id,
@@ -109,18 +107,9 @@ describe('inventory item size validator', () => {
     });
 
     it('fail validate create: cost with value 0', async () => {
-        const item = await itemRepo.findOne({ where: { name: FOOD_A } });
-        if (!item) {
-            throw new Error('item not found');
-        }
-        const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        if (!pkg) {
-            throw new Error('package not found');
-        }
-        const uom = await unitRepo.findOne({ where: { name: POUND } });
-        if (!uom) {
-            throw new Error('uom not found');
-        }
+        const item = await findInventoryItem(FOOD_A);
+        const pkg = await findInventoryItemPackage(PACKAGE_PKG);
+        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = {
             inventoryItemId: item.id,
@@ -139,17 +128,7 @@ describe('inventory item size validator', () => {
     });
 
     it('fail validate create: itemSize already exists for inventory item.', async () => {
-        const item = await itemRepo.findOne({
-            where: { name: FOOD_A },
-            relations: ['sizes', 'sizes.package', 'sizes.measureType'],
-        });
-        if (!item) {
-            throw new Error('item not found');
-        }
-        if (!item.sizes || item.sizes.length === 0) {
-            throw new Error('item sizes not found');
-        }
-
+        const item = await findInventoryItem(FOOD_A);
         const existingSize = item.sizes[0];
 
         const dto: CreateInventoryItemSizeDto = {
@@ -170,12 +149,7 @@ describe('inventory item size validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({
-            relations: ['inventoryItem', 'package', 'measureType'],
-        });
-        if (!sizeToUpdate) {
-            throw new Error('size not found');
-        }
+        const sizeToUpdate = await findInventoryItemSize();
 
         const pkgs = await packageRepo.find();
         const newPkg = pkgs.find((pkg) => pkg.id !== sizeToUpdate.package.id);
@@ -201,15 +175,13 @@ describe('inventory item size validator', () => {
     });
 
     it('fail validate update: measureAmount with value 0', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({ relations: ['package', 'measureType'] });
-        if (!sizeToUpdate) {
-            throw new Error('size not found');
-        }
+        const sizeToUpdate = await findInventoryItemSize();
 
         const dto: UpdateInventoryItemSizeDto = {
             measureAmount: 0,
             packageId: sizeToUpdate.package.id,
             measureTypeId: sizeToUpdate.measureType.id,
+            cost: null,
         };
 
         const errors = await validator.validateDto(dto, sizeToUpdate.id);
@@ -221,10 +193,7 @@ describe('inventory item size validator', () => {
     });
 
     it('fail validate update: cost with value 0', async () => {
-        const sizeToUpdate = await sizeRepo.findOne({ relations: ['package', 'measureType'] });
-        if (!sizeToUpdate) {
-            throw new Error('size not found');
-        }
+        const sizeToUpdate = await findInventoryItemSize();
 
         const dto: UpdateInventoryItemSizeDto = {
             cost: -1,
@@ -264,6 +233,7 @@ describe('inventory item size validator', () => {
             packageId: size2.package.id,
             measureTypeId: size2.measureType.id,
             measureAmount: size2.measureAmount,
+            cost: null,
         };
 
         const errors = await validator.validateDto(dto, size1.id);

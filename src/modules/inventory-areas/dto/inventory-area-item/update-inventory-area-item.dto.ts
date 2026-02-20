@@ -1,8 +1,8 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { NestedCreateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
-import { NestedUpdateInventoryItemSizeDto } from '../../../inventory-items/dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { InventoryItemSize } from '../../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 
@@ -40,10 +40,8 @@ export class UpdateInventoryAreaItemDto {
     @ApiProperty({
         description:
             'If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.',
-        oneOf: [
-            { $ref: getSchemaPath(NestedCreateInventoryItemSizeDto) },
-            { $ref: getSchemaPath(NestedUpdateInventoryItemSizeDto) },
-        ],
+        type: NestedCreateInventoryItemSizeDto,
+        required: false,
         example: {
             id: 5,
             measureTypeId: 1,
@@ -53,7 +51,7 @@ export class UpdateInventoryAreaItemDto {
         },
     })
     @IsOptional()
-    readonly countedItemSize?:
-        | NestedCreateInventoryItemSizeDto
-        | NestedUpdateInventoryItemSizeDto;
+    @ValidateNested()
+    @Type(() => NestedCreateInventoryItemSizeDto)
+    readonly countedItemSize?: NestedCreateInventoryItemSizeDto
 }

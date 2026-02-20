@@ -1,4 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -36,7 +37,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly producedMenuItemId: EntityId<MenuItem> | null;
+    readonly producedMenuItemId?: EntityId<MenuItem> | null;
 
     @ApiProperty({
         description:
@@ -48,7 +49,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultQuantity: number | null;
+    readonly batchResultQuantity?: number | null;
 
     @ApiProperty({
         description:
@@ -60,7 +61,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultUnitTypeId: EntityId<UnitOfMeasure> | null;
+    readonly batchResultUnitTypeId?: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description:
@@ -72,7 +73,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly servingSizeQuantity: number | null;
+    readonly servingSizeQuantity?: number | null;
 
     @ApiProperty({
         description:
@@ -84,7 +85,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure> | null;
+    readonly servingSizeUnitTypeId?: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description: 'The price of purchasing the serving size amount.',
@@ -95,7 +96,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsOptional()
     @Min(0)
-    readonly salesPrice: number | null;
+    readonly salesPrice?: number | null;
 
     @ApiProperty({
         description: 'If the recipe is used as an ingredient.(Not sold directly)',
@@ -114,7 +115,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly categoryId: EntityId<RecipeCategory> | null;
+    readonly categoryId?: EntityId<RecipeCategory> | null;
 
     @ApiProperty({
         description:
@@ -126,7 +127,7 @@ export class UpdateRecipeDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly subCategoryId: EntityId<RecipeSubCategory> | null;
+    readonly subCategoryId?: EntityId<RecipeSubCategory> | null;
 
     @ApiProperty({
         description: 'TODO',
@@ -153,6 +154,14 @@ export class UpdateRecipeDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateRecipeIngredientDto, item)
+                : plainToInstance(NestedUpdateRecipeIngredientDto, item)
+        );
+    })
     readonly ingredients: (
         | NestedCreateRecipeIngredientDto
         | NestedUpdateRecipeIngredientDto

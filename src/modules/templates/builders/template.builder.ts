@@ -12,60 +12,50 @@ import { TemplateMenuItemBuilder } from './template-menu-item.builder';
 
 @Injectable()
 export class TemplateBuilder extends BuilderBase<Template> {
-  constructor(
-    @Inject(forwardRef(() => TemplateMenuItemBuilder))
-    private readonly itemBuilder: TemplateMenuItemBuilder,
+    constructor(
+        @Inject(forwardRef(() => TemplateMenuItemBuilder))
+        private readonly itemBuilder: TemplateMenuItemBuilder,
 
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(Template, 'TemplateBuilder', requestContextService, logger);
-  }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) {
+        super(Template, 'TemplateBuilder', requestContextService, logger);
+    }
 
-  protected createEntity(dto: CreateTemplateDto): void {
-    if (dto.isPie !== undefined) {
-      this.isPie(dto.isPie);
+    protected createEntity(dto: CreateTemplateDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.templateMenuItems !== undefined) {
+            this.itemsByBuilder(dto.templateMenuItems);
+        }
     }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
-    }
-    if (dto.templateMenuItems !== undefined) {
-      this.itemsByBuilder(dto.templateMenuItems);
-    }
-  }
 
-  protected updateEntity(dto: UpdateTemplateDto): void {
-    if (dto.isPie !== undefined) {
-      this.isPie(dto.isPie);
+    protected updateEntity(dto: UpdateTemplateDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.templateMenuItems !== undefined) {
+            this.itemsByBuilder(dto.templateMenuItems);
+        }
     }
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-    if (dto.templateMenuItems !== undefined) {
-      this.itemsByBuilder(dto.templateMenuItems);
+
+    public itemsByBuilder(
+        dtos: (
+            | CreateTemplateMenuItemDto
+            | NestedCreateTemplateMenuItemDto
+            | NestedUpdateTemplateMenuItemDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.itemBuilder.buildMany.bind(this.itemBuilder),
+            'templateMenuItems',
+            this.entity,
+            dtos,
+        );
     }
-  }
-
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public isPie(val: boolean): this {
-    return this.setPropByVal('isPie', val);
-  }
-
-  public itemsByBuilder(
-    dtos: (
-      | CreateTemplateMenuItemDto
-      | NestedCreateTemplateMenuItemDto
-      | NestedUpdateTemplateMenuItemDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.itemBuilder.buildMany.bind(this.itemBuilder),
-      'templateMenuItems',
-      this.entity,
-      dtos,
-    );
-  }
 }

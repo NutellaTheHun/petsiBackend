@@ -293,6 +293,7 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupInventoryItemCategoryTestDatabase(),
         );
+
         await this.categoryRepo.insert(
             await this.getTestInventoryItemCategoryEntities(testContext),
         );
@@ -304,6 +305,7 @@ export class InventoryItemTestingUtil {
         if (this.initItem) {
             return;
         }
+
         this.initItem = true;
 
         testContext.addCleanupFunction(() =>
@@ -332,23 +334,28 @@ export class InventoryItemTestingUtil {
     }
 
     public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
-        await this.vendorRepo.delete({});
+        //await this.vendorRepo.delete({});
+        await this.vendorRepo.deleteAll();
     }
 
     public async cleanupInventoryItemPackageTestDatabase(): Promise<void> {
-        await this.packageRepo.delete({});
+        //await this.packageRepo.delete({});
+        await this.packageRepo.deleteAll();
     }
 
     public async cleanupInventoryItemCategoryTestDatabase(): Promise<void> {
-        await this.categoryRepo.delete({});
+        //await this.categoryRepo.delete({});
+        await this.categoryRepo.deleteAll();
     }
 
     public async cleanupInventoryItemSizeTestDatabase(): Promise<void> {
-        await this.sizeRepo.delete({});
+        //await this.sizeRepo.delete({});
+        await this.sizeRepo.deleteAll();
     }
 
     public async cleanupInventoryItemTestDatabase(): Promise<void> {
-        await this.itemRepo.delete({});
+        //await this.itemRepo.delete({});
+        await this.itemRepo.deleteAll();
     }
 
     /**

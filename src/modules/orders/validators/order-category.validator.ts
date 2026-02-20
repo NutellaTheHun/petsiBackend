@@ -25,7 +25,7 @@ export class OrderCategoryValidator extends ValidatorBase<OrderCategoryEntity, O
         super(repo, 'OrderCategory', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: OrderCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: OrderCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

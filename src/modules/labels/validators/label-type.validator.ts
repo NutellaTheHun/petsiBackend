@@ -23,7 +23,7 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
         super(repo, 'LabelType', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: LabelTypeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: LabelTypeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -36,14 +36,14 @@ export class LabelTypeValidator extends ValidatorBase<LabelTypeEntity, LabelType
             );
         }
 
-        if (identity.length) {
+        if (identity.length !== undefined) {
             this.helper.enforcePositive(
                 identity.length,
                 'length',
                 errorMap,
             );
         }
-        if (identity.width) {
+        if (identity.width !== undefined) {
             this.helper.enforcePositive(
                 identity.width,
                 'width',

@@ -24,7 +24,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
         super(repo, 'UnitOfMeasureCategory', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: UnitOfMeasureCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: UnitOfMeasureCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -37,7 +37,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
             );
         }
 
-        if (identity.baseConversionUnitId) {
+        if (identity.baseConversionUnitId !== undefined) {
             await this.helper.enforceExists(
                 identity.baseConversionUnitId,
                 this.repo,
@@ -54,41 +54,5 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
             name: dto.name,
             baseConversionUnitId: dto.baseConversionUnitId,
         } as UnitOfMeasureCategoryValidatorIdentity;
-    }
-
-    protected async doValidateCreateNode(
-        dto: CreateUnitOfMeasureCategoryDto,
-        id?: string,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        await this.helper.enforceUnique(
-            dto.name,
-            this.repo,
-            'name',
-            errorMap,
-            'Category with this name already exists.',
-        );
-
-        return errorMap;
-    }
-
-    protected async doValidateUpdateNode(
-        dto: UpdateUnitOfMeasureCategoryDto,
-        id: number,
-    ): Promise<ValidationErrorMap> {
-        const errorMap = new ValidationErrorMap(id);
-
-        if (dto.name) {
-            await this.helper.enforceUnique(
-                dto.name,
-                this.repo,
-                'name',
-                errorMap,
-                'Category with this name already exists.',
-            );
-        }
-
-        return errorMap;
     }
 }

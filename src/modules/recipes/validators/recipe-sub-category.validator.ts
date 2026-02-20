@@ -31,7 +31,7 @@ export class RecipeSubCategoryValidator extends NestedValidatorBase<RecipeSubCat
         super(repo, 'RecipeSubCategory', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: RecipeSubCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RecipeSubCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -44,7 +44,7 @@ export class RecipeSubCategoryValidator extends NestedValidatorBase<RecipeSubCat
             );
         }
 
-        if (identity.parentCategoryId) {
+        if (identity.parentCategoryId !== undefined) {
             await this.helper.enforceExists(
                 identity.parentCategoryId,
                 this.recipeCategoryRepo,

@@ -1,4 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -32,7 +33,7 @@ export class UpdateInventoryItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly categoryId: EntityId<InventoryItemCategory> | null;
+    readonly categoryId?: EntityId<InventoryItemCategory> | null;
 
     @ApiProperty({
         example: 2,
@@ -43,7 +44,7 @@ export class UpdateInventoryItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly vendorId: EntityId<InventoryItemVendor> | null;
+    readonly vendorId?: EntityId<InventoryItemVendor> | null;
 
     @ApiProperty({
         description: 'TODO',
@@ -74,6 +75,14 @@ export class UpdateInventoryItemDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateInventoryItemSizeDto, item)
+                : plainToInstance(NestedUpdateInventoryItemSizeDto, item)
+        );
+    })
     readonly sizes: (
         | NestedCreateInventoryItemSizeDto
         | NestedUpdateInventoryItemSizeDto

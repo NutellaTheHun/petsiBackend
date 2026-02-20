@@ -42,7 +42,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         super(repo, 'Recipe', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: RecipeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RecipeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -55,7 +55,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.batchResultQuantity) {
+        if (identity.batchResultQuantity !== undefined && identity.batchResultQuantity !== null) {
             this.helper.enforcePositive(
                 identity.batchResultQuantity,
                 'batchResultQuantity',
@@ -63,7 +63,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.batchResultUnitTypeId) {
+        if (identity.batchResultUnitTypeId !== undefined && identity.batchResultUnitTypeId !== null) {
             await this.helper.enforceExists(
                 identity.batchResultUnitTypeId,
                 this.unitOfMeasureRepo,
@@ -72,7 +72,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.categoryId) {
+        if (identity.categoryId !== undefined && identity.categoryId !== null) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.recipeCategoryRepo,
@@ -81,7 +81,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.producedMenuItemId) {
+        if (identity.producedMenuItemId !== undefined && identity.producedMenuItemId !== null) {
             await this.helper.enforceExists(
                 identity.producedMenuItemId,
                 this.menuItemRepo,
@@ -90,7 +90,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.salesPrice) {
+        if (identity.salesPrice !== undefined && identity.salesPrice !== null) {
             this.helper.enforcePositive(
                 identity.salesPrice,
                 'salesPrice',
@@ -98,14 +98,14 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.servingSizeQuantity) {
+        if (identity.servingSizeQuantity !== undefined && identity.servingSizeQuantity !== null) {
             this.helper.enforcePositive(
                 identity.servingSizeQuantity,
                 'servingSizeQuantity',
                 errorMap,
             );
         }
-        if (identity.servingSizeUnitTypeId) {
+        if (identity.servingSizeUnitTypeId !== undefined && identity.servingSizeUnitTypeId !== null) {
             await this.helper.enforceExists(
                 identity.servingSizeUnitTypeId,
                 this.unitOfMeasureRepo,
@@ -114,7 +114,7 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.subCategoryId) {
+        if (identity.subCategoryId !== undefined && identity.subCategoryId !== null) {
             await this.helper.enforceExists(
                 identity.subCategoryId,
                 this.recipeSubCategoryRepo,

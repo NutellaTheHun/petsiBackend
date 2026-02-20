@@ -6,7 +6,6 @@ import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { CreateOrderMenuItemDto } from '../../dto/order-menu-item/create-order-menu-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { UpdateOrderMenuItemDto } from '../../dto/order-menu-item/update-order-menu-item.dto';
-import { OrderContainerItem } from '../../entities/order-container-item.entity';
 import {
     OrderMenuItem,
     OrderMenuItemEntity,
@@ -73,15 +72,15 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         }
 
         if (dto.containerOrderMenuItems) {
-            const existingItems = await manager.find(OrderContainerItem, {
+            /*const existingItems = await manager.find(OrderContainerItem, {
                 where: { parentOrderMenuItem: { id: entity.id } },
-            });
+            });*/
 
             entity.containerOrderMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
                     manager,
-                    existingItems,
+                    /*existingItems,*/[],
                     {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,

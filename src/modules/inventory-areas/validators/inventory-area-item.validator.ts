@@ -37,20 +37,18 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
         super(repo, 'InventoryAreaItem', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryAreaItemValidatorIdentity, id?: number): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryAreaItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.countedItemSizeId || identity.countedItemSize) {
-            // Enforce only one of countedItemSizeId or countedItemSize
-            this.helper.enforceOnlyOne(
-                identity,
-                'countedItemSize',
-                'countedItemSizeId',
-                errorMap,
-            );
-        }
+        // Enforce only one of countedItemSizeId or countedItemSize
+        this.helper.enforceOnlyOne(
+            identity,
+            'countedItemSize',
+            'countedItemSizeId',
+            errorMap,
+        );
 
-        if (identity.countedInventoryItemId) {
+        if (identity.countedInventoryItemId !== undefined) {
             // Enforce exists
             await this.helper.enforceExists(
                 identity.countedInventoryItemId,
@@ -81,7 +79,7 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
             );
         }
 
-        if (identity.amount) {
+        if (identity.amount !== undefined) {
             // Enforce positive amount
             this.helper.enforcePositive(
                 identity.amount,

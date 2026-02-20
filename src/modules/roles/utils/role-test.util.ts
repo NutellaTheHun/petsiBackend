@@ -8,38 +8,39 @@ import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from './constants';
 
 @Injectable()
 export class RoleTestUtil {
-  private initRoles = false;
+    private initRoles = false;
 
-  constructor(
-    @InjectRepository(Role)
-    private readonly roleRepo: Repository<Role>,
-    private readonly roleBuilder: RoleBuilder,
-  ) {}
+    constructor(
+        @InjectRepository(Role)
+        private readonly roleRepo: Repository<Role>,
+        private readonly roleBuilder: RoleBuilder,
+    ) { }
 
-  public async getTestRoleEntities(
-    testContext: DatabaseTestContext,
-  ): Promise<Role[]> {
-    return [
-      await this.roleBuilder.reset().roleName(ROLE_ADMIN).build(),
-      await this.roleBuilder.reset().roleName(ROLE_MANAGER).build(),
-      await this.roleBuilder.reset().roleName(ROLE_STAFF).build(),
-    ];
-  }
-
-  public async initRoleTestingDatabase(
-    testContext: DatabaseTestContext,
-  ): Promise<void> {
-    if (this.initRoles) {
-      return;
+    public async getTestRoleEntities(
+        testContext: DatabaseTestContext,
+    ): Promise<Role[]> {
+        return [
+            await this.roleBuilder.reset().roleName(ROLE_ADMIN).build(),
+            await this.roleBuilder.reset().roleName(ROLE_MANAGER).build(),
+            await this.roleBuilder.reset().roleName(ROLE_STAFF).build(),
+        ];
     }
-    this.initRoles = true;
 
-    testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
+    public async initRoleTestingDatabase(
+        testContext: DatabaseTestContext,
+    ): Promise<void> {
+        if (this.initRoles) {
+            return;
+        }
+        this.initRoles = true;
 
-    await this.roleRepo.insert(await this.getTestRoleEntities(testContext));
-  }
+        testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-  public async cleanupRoleTestingDatabase(): Promise<void> {
-    await this.roleRepo.delete({});
-  }
+        await this.roleRepo.insert(await this.getTestRoleEntities(testContext));
+    }
+
+    public async cleanupRoleTestingDatabase(): Promise<void> {
+        //await this.roleRepo.delete({});
+        await this.roleRepo.deleteAll();
+    }
 }

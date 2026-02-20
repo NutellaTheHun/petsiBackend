@@ -14,7 +14,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
-import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
@@ -109,15 +108,15 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             // handle currently ordered items with now invalid sizes?
         }
 
-        if (dto.containerMenuItems && dto.containerMenuItems?.length) {
-            const existingItems = await manager.find(MenuItemContainerItem, {
+        if (dto.containerMenuItems) {
+            /*const existingItems = await manager.find(MenuItemContainerItem, {
                 where: { parentMenuItem: { id: entity.id } },
-            });
+            });*/
             entity.containerMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerMenuItems,
                     manager,
-                    existingItems,
+                    /*existingItems,*/[],
                     {
                         parentMenuItemId: entity.id /*, parentItemSizeId: entity.sizes[0]*/,
                     },

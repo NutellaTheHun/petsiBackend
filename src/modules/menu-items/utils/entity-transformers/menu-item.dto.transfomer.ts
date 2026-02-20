@@ -8,7 +8,7 @@ export function menuItemToUpdateDto(menuItem: MenuItem): UpdateMenuItemDto {
         type: menuItem.type,
         categoryId: menuItem.category?.id ?? null,
         sizeIds: menuItem.sizes.map(size => size.id),
-        containerMenuItems: menuItem.containerMenuItems.map(containerItem => menuItemContainerItemToNestedUpdateDto(containerItem)),
+        containerMenuItems: menuItem.containerMenuItems?.map(containerItem => menuItemContainerItemToNestedUpdateDto(containerItem)) ?? [],
         variableMaxAmount: menuItem.variableMaxAmount ?? null,
     };
 }

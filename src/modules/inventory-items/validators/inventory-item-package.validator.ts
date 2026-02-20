@@ -26,7 +26,7 @@ export class InventoryItemPackageValidator extends ValidatorBase<InventoryItemPa
         super(repo, 'InventoryItemPackage', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryItemPackageValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryItemPackageValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

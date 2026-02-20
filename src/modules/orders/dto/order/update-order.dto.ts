@@ -1,4 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -51,7 +52,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly fulfillmentContactName: string | null;
+    readonly fulfillmentContactName?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -61,7 +62,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly deliveryAddress: string | null;
+    readonly deliveryAddress?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -71,7 +72,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly phoneNumber: string | null;
+    readonly phoneNumber?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -82,7 +83,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly email: string | null;
+    readonly email?: string | null;
 
     @ApiProperty({
         description: 'special instruction for order',
@@ -92,7 +93,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly note: string | null;
+    readonly note?: string | null;
 
     @ApiProperty({
         description:
@@ -121,7 +122,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly weeklyFulfillment: string | null;
+    readonly weeklyFulfillment?: string | null;
 
     @ApiProperty({
         description: 'Id of OrderType entity.',
@@ -158,6 +159,14 @@ export class UpdateOrderDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateOrderMenuItemDto, item)
+                : plainToInstance(NestedUpdateOrderMenuItemDto, item)
+        );
+    })
     readonly orderedItems: (
         | NestedCreateOrderMenuItemDto
         | NestedUpdateOrderMenuItemDto

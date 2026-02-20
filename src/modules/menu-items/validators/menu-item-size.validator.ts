@@ -26,7 +26,7 @@ export class MenuItemSizeValidator extends ValidatorBase<MenuItemSizeEntity, Men
         super(repo, 'MenuItemSize', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: MenuItemSizeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: MenuItemSizeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

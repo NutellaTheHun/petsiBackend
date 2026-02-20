@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -66,5 +67,6 @@ export class NestedCreateOrderMenuItemDto extends NestedCreateDto {
     @IsArray()
     @IsOptional()
     @ValidateNested({ each: true })
+    @Type(() => NestedCreateOrderContainerItemDto)
     readonly containerOrderMenuItems?: NestedCreateOrderContainerItemDto[];
 }

@@ -41,5 +41,5 @@ export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
-    readonly cost: number | null;
+    readonly cost?: number | null;
 }

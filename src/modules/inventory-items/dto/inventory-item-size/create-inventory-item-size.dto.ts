@@ -52,5 +52,5 @@ export class CreateInventoryItemSizeDto {
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
-    readonly cost: number | null;
+    readonly cost?: number | null;
 }

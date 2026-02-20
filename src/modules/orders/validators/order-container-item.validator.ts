@@ -68,11 +68,11 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
     /**
      * OrderMenuItem validator checks that contained item and size is valid in parent container, and checks that variable max amount is respected
      */
-    protected async validateIdentity(identity: OrderContainerItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: OrderContainerItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         // validate parent order menu item exists
-        if (identity.parentOrderMenuItemId) {
+        if (identity.parentOrderMenuItemId !== undefined) {
             this.helper.enforceExists(
                 identity.parentOrderMenuItemId,
                 this.orderMenuItemRepo,
@@ -82,7 +82,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         // validate quantity is positive
-        if (identity.quantity) {
+        if (identity.quantity !== undefined) {
             this.helper.enforcePositive(
                 identity.quantity,
                 'quantity',
@@ -91,7 +91,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         // validate contained item size exists
-        if (identity.containedItemSizeId) {
+        if (identity.containedItemSizeId !== undefined) {
             this.helper.enforceExists(
                 identity.containedItemSizeId,
                 this.menuItemSizeRepo,
@@ -101,7 +101,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         // validate contained item exists
-        if (identity.containedMenuItemId) {
+        if (identity.containedMenuItemId !== undefined) {
             this.helper.enforceExists(
                 identity.containedMenuItemId,
                 this.menuItemRepo,

@@ -163,6 +163,29 @@ export function expectValidationErrorCode(
 
 export function expectValidationErrorSize(
     root: ValidationErrorResponse | null,
+    size: number,
+) {
+    const result = getValidationErrorSize(root);
+    expect(result).toBe(size);
+}
+
+function getValidationErrorSize(root: ValidationErrorResponse | null): number {
+    let count = 0;
+    if (root?.errorPayload?.length) {
+        count += root.errorPayload.length;
+    }
+    if (root?.nestedErrors) {
+        for (const errResponseArray of Object.values(root.nestedErrors)) {
+            for (const errResponse of errResponseArray) {
+                count += getValidationErrorSize(errResponse);
+            }
+        }
+    }
+    return count;
+}
+
+/*export function expectValidationErrorSize(
+    root: ValidationErrorResponse | null,
     path: ErrorSelector[],
     size: number,
 ) {
@@ -179,10 +202,10 @@ export function expectValidationNestedErrorsSize(
     const errResponse = findValidationErrorResponseByPath(root, path);
     expect(errResponse?.nestedErrors).toBeTruthy();
     expect(Object.keys(errResponse?.nestedErrors ?? {}).length).toBe(size);
-}
+}*/
 
 // Even Lazier functions
-export function expectOneValidationError(
+/*export function expectOneValidationError(
     root: ValidationErrorResponse | null,
     path: ErrorSelector[],
 ) {
@@ -201,4 +224,4 @@ export function expectOneValidationNestedError(
     path: ErrorSelector[],
 ) {
     expectValidationNestedErrorsSize(root, path, 1);
-}
+}*/

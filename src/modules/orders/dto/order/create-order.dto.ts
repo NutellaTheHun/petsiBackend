@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -47,7 +48,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly fulfillmentContactName: string | null;
+    readonly fulfillmentContactName?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -57,7 +58,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly deliveryAddress: string | null;
+    readonly deliveryAddress?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -67,7 +68,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly phoneNumber: string | null;
+    readonly phoneNumber?: string | null;
 
     @ApiProperty({
         description: 'for delivery contact information',
@@ -78,7 +79,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly email: string | null;
+    readonly email?: string | null;
 
     @ApiProperty({
         description: 'special instruction for order',
@@ -88,7 +89,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly note: string | null;
+    readonly note?: string | null;
 
     @ApiProperty({
         description:
@@ -98,7 +99,7 @@ export class CreateOrderDto {
     })
     @IsBoolean()
     @IsNotEmpty()
-    readonly isFrozen: boolean;
+    readonly isFrozen?: boolean;
 
     @ApiProperty({
         description: 'Is true if the order occurs on a weekly basis.',
@@ -107,7 +108,7 @@ export class CreateOrderDto {
     })
     @IsBoolean()
     @IsNotEmpty()
-    readonly isWeekly: boolean;
+    readonly isWeekly?: boolean;
 
     @ApiProperty({
         description: 'If is weekly, is the day of the week the order is fulfilled',
@@ -117,7 +118,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly weeklyFulfillment: string | null;
+    readonly weeklyFulfillment?: string | null;
 
     @ApiProperty({
         example: 1,
@@ -157,5 +158,6 @@ export class CreateOrderDto {
     @IsArray()
     @IsNotEmpty()
     @ValidateNested({ each: true })
+    @Type(() => NestedCreateOrderMenuItemDto)
     readonly orderedItems: NestedCreateOrderMenuItemDto[];
 }

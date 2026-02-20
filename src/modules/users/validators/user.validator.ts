@@ -20,7 +20,7 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
     ) {
         super(repo, 'User', requestContextService, logger);
     }
-    protected async validateIdentity(identity: UserValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: UserValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.email) {

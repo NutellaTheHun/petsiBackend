@@ -36,10 +36,10 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
         super(repo, 'InventoryAreaCount', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryAreaCountValidatorIdentity, id?: number): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryAreaCountValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.inventoryAreaId) {
+        if (identity.inventoryAreaId !== undefined) {
             // enforce exists
             await this.helper.enforceExists(
                 identity.inventoryAreaId,
@@ -51,7 +51,7 @@ export class InventoryAreaCountValidator extends ValidatorBase<InventoryAreaCoun
 
         if (identity.countedInventoryItems && identity.countedInventoryItems.length > 0) {
             for (const item of identity.countedInventoryItems) {
-                await this.areaItemValidator.validateNestedIdentity('countedInventoryItems', item, errorMap, item.id);
+                await this.areaItemValidator.validateNestedIdentity('countedInventoryItems', item, errorMap);
             }
         }
 

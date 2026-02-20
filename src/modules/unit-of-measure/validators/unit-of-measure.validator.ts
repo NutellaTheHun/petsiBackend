@@ -24,7 +24,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity, U
         super(repo, 'UnitOfMeasure', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: UnitOfMeasureValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: UnitOfMeasureValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -55,7 +55,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity, U
             );
         }
 
-        if (identity.categoryId) {
+        if (identity.categoryId !== undefined) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.repo,

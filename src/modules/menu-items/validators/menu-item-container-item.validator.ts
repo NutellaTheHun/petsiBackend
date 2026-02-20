@@ -52,10 +52,10 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
         } as MenuItemContainerItemValidatorIdentity;
     }
 
-    protected async validateIdentity(identity: MenuItemContainerItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: MenuItemContainerItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.containedItemSizeId) {
+        if (identity.containedItemSizeId !== undefined) {
             // validate exists
             await this.helper.enforceExists(
                 identity.containedItemSizeId,
@@ -65,7 +65,7 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
             );
         }
 
-        if (identity.containedMenuItemId) {
+        if (identity.containedMenuItemId !== undefined) {
             // validate exists
             await this.helper.enforceExists(
                 identity.containedMenuItemId,
@@ -84,7 +84,7 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
             );
         }
 
-        if (identity.parentItemSizeId) {
+        if (identity.parentItemSizeId !== undefined) {
             // validate exists
             await this.helper.enforceExists(
                 identity.parentItemSizeId,
@@ -94,7 +94,7 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
             );
         }
 
-        if (identity.parentMenuItemId) {
+        if (identity.parentMenuItemId !== undefined) {
             // validate exists
             await this.helper.enforceExists(
                 identity.parentMenuItemId,
@@ -112,7 +112,7 @@ export class MenuItemContainerItemValidator extends NestedValidatorBase<MenuItem
             );
         }
 
-        if (identity.quantity) {
+        if (identity.quantity !== undefined) {
             // must be greater than 0
             this.helper.enforcePositive(
                 identity.quantity,

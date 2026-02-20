@@ -42,7 +42,7 @@ export abstract class ServiceBase<
 
         if (this.validator) {
             const validationErrors =
-                await this.validator.validateCreateNode(createDto);
+                await this.validator.validateDto(createDto, 'root');
             if (validationErrors) {
                 throw new ValidationException(validationErrors); // logging?
             }
@@ -87,7 +87,7 @@ export abstract class ServiceBase<
         const requestId = this.requestContextService.getRequestId();
 
         if (this.validator) {
-            const validationErrors = await this.validator.validateUpdateNode(
+            const validationErrors = await this.validator.validateDto(
                 updateDto,
                 id,
             );

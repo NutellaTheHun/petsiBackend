@@ -1,4 +1,5 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -42,6 +43,14 @@ export class UpdateTemplateDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateTemplateMenuItemDto, item)
+                : plainToInstance(NestedUpdateTemplateMenuItemDto, item)
+        );
+    })
     readonly templateMenuItems: (
         | NestedCreateTemplateMenuItemDto
         | NestedUpdateTemplateMenuItemDto

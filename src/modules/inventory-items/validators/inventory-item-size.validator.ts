@@ -28,10 +28,10 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         super(repo, 'InventoryItemSize', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryItemSizeValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryItemSizeValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.inventoryItemId) {
+        if (identity.inventoryItemId !== undefined) {
             this.helper.enforceExists(
                 identity.inventoryItemId,
                 this.repo,
@@ -40,7 +40,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.packageId) {
+        if (identity.packageId !== undefined) {
             this.helper.enforceExists(
                 identity.packageId,
                 this.repo,
@@ -49,7 +49,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureTypeId) {
+        if (identity.measureTypeId !== undefined) {
             this.helper.enforceExists(
                 identity.measureTypeId,
                 this.repo,
@@ -58,15 +58,15 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.cost) {
+        if (identity.cost !== undefined && identity.cost !== null) {
             this.helper.enforcePositive(
                 identity.cost,
-                'measureAmount',
+                'cost',
                 errorMap,
             );
         }
 
-        if (identity.measureAmount) {
+        if (identity.measureAmount !== undefined) {
             this.helper.enforcePositive(
                 identity.measureAmount,
                 'measureAmount',
@@ -74,7 +74,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureAmount && identity.packageId && identity.measureTypeId && identity.inventoryItemId) {
+        if (identity.measureAmount !== undefined && identity.packageId && identity.measureTypeId && identity.inventoryItemId) {
             const exists = await this.repo.findOne({
                 where: {
                     measureType: { id: identity.measureTypeId },

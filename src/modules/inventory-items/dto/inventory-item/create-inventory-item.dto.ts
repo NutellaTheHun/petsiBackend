@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -31,7 +32,7 @@ export class CreateInventoryItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly categoryId: EntityId<InventoryItemCategory> | null;
+    readonly categoryId?: EntityId<InventoryItemCategory> | null;
 
     @ApiPropertyOptional({
         description: 'Id of InventoryItemVendor entity.',
@@ -42,7 +43,7 @@ export class CreateInventoryItemDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly vendorId: EntityId<InventoryItemVendor> | null;
+    readonly vendorId?: EntityId<InventoryItemVendor> | null;
 
     @ApiPropertyOptional({
         description:
@@ -61,5 +62,6 @@ export class CreateInventoryItemDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Type(() => NestedCreateInventoryItemSizeDto)
     readonly sizes: NestedCreateInventoryItemSizeDto[];
 }

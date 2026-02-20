@@ -11,75 +11,75 @@ import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 
 @Injectable()
 export class UnitOfMeasureBuilder extends BuilderBase<UnitOfMeasure> {
-  constructor(
-    @InjectRepository(UnitOfMeasureCategory)
-    private readonly categoryRepo: Repository<UnitOfMeasureCategory>,
+    constructor(
+        @InjectRepository(UnitOfMeasureCategory)
+        private readonly categoryRepo: Repository<UnitOfMeasureCategory>,
 
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger);
-  }
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) {
+        super(UnitOfMeasure, 'UnitOfMeasureBuilder', requestContextService, logger);
+    }
 
-  protected createEntity(dto: CreateUnitOfMeasureDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected createEntity(dto: CreateUnitOfMeasureDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.abbreviation !== undefined) {
+            this.abbreviation(dto.abbreviation);
+        }
+        if (dto.conversionFactorToBase !== undefined) {
+            this.conversionFactor(dto.conversionFactorToBase);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
     }
-    if (dto.abbreviation !== undefined) {
-      this.abbreviation(dto.abbreviation);
-    }
-    if (dto.conversionFactorToBase !== undefined) {
-      this.conversionFactor(dto.conversionFactorToBase);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
-    }
-  }
 
-  protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    protected updateEntity(dto: UpdateUnitOfMeasureDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+        if (dto.abbreviation !== undefined) {
+            this.abbreviation(dto.abbreviation);
+        }
+        if (dto.conversionFactorToBase !== undefined) {
+            this.conversionFactor(dto.conversionFactorToBase);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
     }
-    if (dto.abbreviation !== undefined) {
-      this.abbreviation(dto.abbreviation);
+
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
-    if (dto.conversionFactorToBase !== undefined) {
-      this.conversionFactor(dto.conversionFactorToBase);
+
+    public abbreviation(abr: string): this {
+        return this.setPropByVal('abbreviation', abr);
     }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
+
+    public categoryById(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('category', null);
+        }
+        return this.setPropById(
+            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            'category',
+            id,
+        );
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public abbreviation(abr: string): this {
-    return this.setPropByVal('abbreviation', abr);
-  }
-
-  public categoryById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('category', null);
+    public categoryByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.categoryRepo.findOne({ where: { name } }),
+            'category',
+            name,
+        );
     }
-    return this.setPropById(
-      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
-      'category',
-      id,
-    );
-  }
 
-  public categoryByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.categoryRepo.findOne({ where: { name } }),
-      'category',
-      name,
-    );
-  }
-
-  public conversionFactor(value: string): this {
-    return this.setPropByVal('conversionFactorToBase', value);
-  }
+    public conversionFactor(value: string | null): this {
+        return this.setPropByVal('conversionFactorToBase', value);
+    }
 }

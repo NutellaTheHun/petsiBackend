@@ -44,7 +44,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
         } as TemplateMenuItemValidatorIdentity;
     }
 
-    protected async validateIdentity(identity: TemplateMenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: TemplateMenuItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.displayName) {
@@ -56,7 +56,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
             );
         }
 
-        if (identity.menuItemId) {
+        if (identity.menuItemId !== undefined) {
             await this.helper.enforceExists(
                 identity.menuItemId,
                 this.menuItemRepo,
@@ -65,7 +65,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
             );
         }
 
-        if (identity.tablePosIndex) {
+        if (identity.tablePosIndex !== undefined) {
             this.helper.enforcePositive(
                 identity.tablePosIndex,
                 'tablePosIndex',
@@ -73,7 +73,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
             );
         }
 
-        if (identity.parentTemplateId) {
+        if (identity.parentTemplateId !== undefined) {
             await this.helper.enforceExists(
                 identity.parentTemplateId,
                 this.templateRepo,

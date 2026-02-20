@@ -5,7 +5,7 @@ import { createValidationErrorPayload, expectValidationErrorPayload } from '../.
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_a, item_f } from '../../menu-items/utils/constants';
+import { item_a, item_f, item_g } from '../../menu-items/utils/constants';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -27,6 +27,18 @@ describe('order validator', () => {
     let orderItemRepo: Repository<OrderMenuItem>;
     let menuItemRepo: Repository<MenuItem>;
     let sizeRepo: Repository<MenuItemSize>;
+
+    const findCategory = async (name: string) => {
+        return await categoryRepo.findOneOrFail({ where: { name } });
+    }
+
+    const findMenuItem = async (name: string) => {
+        return await menuItemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'containerMenuItems'] });
+    }
+
+    const findOrder = async () => {
+        return await orderRepo.findOneOrFail({ relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category'] });
+    }
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule();
@@ -53,21 +65,8 @@ describe('order validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -89,21 +88,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: invalid fulfillment type', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -129,21 +115,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: order for delivery must have a delivery address', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -169,21 +142,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: order for delivery must have a phone number', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -210,21 +170,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: order must have a day of the week selected for fulfillment', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -251,21 +198,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: invalid weekly fulfillment', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -293,21 +227,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: duplicate ordered items', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -339,32 +260,9 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: contained item not of type single', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-
-        const anotherContainer = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!anotherContainer) {
-            throw new Error('another container not found');
-        }
-        if (!anotherContainer.sizes || anotherContainer.sizes.length === 0) {
-            throw new Error('another container sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
+        const anotherContainer = await findMenuItem(item_g);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -403,27 +301,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: contained item size not valid', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -473,21 +352,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: quantity with value 0', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -513,29 +379,10 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
         if (!containerMenuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
         }
 
         const containedItem =
@@ -577,27 +424,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: duplicate container item', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -646,32 +474,9 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item not of type single', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-
-        const anotherContainer = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!anotherContainer) {
-            throw new Error('another container not found');
-        }
-        if (!anotherContainer.sizes || anotherContainer.sizes.length === 0) {
-            throw new Error('another container sizes not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
+        const anotherContainer = await findMenuItem(item_g);
 
         const dto: CreateOrderDto = {
             recipient: 'John Doe',
@@ -710,27 +515,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item size not valid', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -780,27 +566,8 @@ describe('order validator', () => {
     });
 
     it('fail validate create: nested orderedItems validator errors: nested orderContainerItem validator errors: quantity with value 0', async () => {
-        const category = await categoryRepo.findOne({ where: { name: TYPE_A } });
-        if (!category) {
-            throw new Error('category not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const category = await findCategory(TYPE_A);
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -904,12 +671,7 @@ describe('order validator', () => {
     });
 
     it('fail validate update: invalid fulfillment type', async () => {
-        const orderToUpdate = await orderRepo.findOne({
-            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category'],
-        });
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
         const dto: UpdateOrderDto = {
             fulfillmentType: 'invalid_type',
@@ -942,10 +704,7 @@ describe('order validator', () => {
     });
 
     it('fail validate update: order for delivery must have a delivery address', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
         const dto: UpdateOrderDto = {
             fulfillmentType: 'delivery',
@@ -978,10 +737,7 @@ describe('order validator', () => {
     });
 
     it('fail validate update: order for delivery must have a phone number', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
         const dto: UpdateOrderDto = {
             fulfillmentType: 'delivery',
@@ -1013,12 +769,10 @@ describe('order validator', () => {
     });
 
     it('fail validate update: order must have a day of the week selected for fulfillment', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
         const dto: UpdateOrderDto = {
+            isFrozen: false,
             isWeekly: true,
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
@@ -1044,12 +798,10 @@ describe('order validator', () => {
     });
 
     it('fail validate update: invalid weekly fulfillment', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
         const dto: UpdateOrderDto = {
+            isFrozen: false,
             weeklyFulfillment: 'invalid_day',
             isWeekly: true,
             recipient: 'Updated Recipient',
@@ -1076,21 +828,10 @@ describe('order validator', () => {
     });
 
     it('fail validate update: duplicate ordered items', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: UpdateOrderDto = {
             recipient: 'Updated Recipient',
@@ -1128,32 +869,12 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: contained item not of type single', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
+        const orderToUpdate = await findOrder();
 
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
 
-        const anotherContainer = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!anotherContainer) {
-            throw new Error('another container not found');
-        }
-        if (!anotherContainer.sizes || anotherContainer.sizes.length === 0) {
-            throw new Error('another container sizes not found');
-        }
+        const containerMenuItem = await findMenuItem(item_f);
+
+        const anotherContainer = await findMenuItem(item_g);
 
         const dto: UpdateOrderDto = {
             recipient: 'Updated Recipient',
@@ -1198,27 +919,8 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: contained item size not valid', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -1274,21 +976,8 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: quantity with value 0', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const singleMenuItem = await menuItemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!singleMenuItem) {
-            throw new Error('single menu item not found');
-        }
-        if (!singleMenuItem.sizes || singleMenuItem.sizes.length === 0) {
-            throw new Error('single menu item sizes not found');
-        }
+        const orderToUpdate = await findOrder();
+        const singleMenuItem = await findMenuItem(item_a);
 
         const dto: UpdateOrderDto = {
             recipient: 'Updated Recipient',
@@ -1320,29 +1009,10 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
         if (!containerMenuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
         }
 
         const containedItem =
@@ -1390,27 +1060,8 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: duplicate container item', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -1468,32 +1119,9 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item not of type single', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-
-        const anotherContainer = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!anotherContainer) {
-            throw new Error('another container not found');
-        }
-        if (!anotherContainer.sizes || anotherContainer.sizes.length === 0) {
-            throw new Error('another container sizes not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
+        const anotherContainer = await findMenuItem(item_g);
 
         const dto: UpdateOrderDto = {
             recipient: 'Updated Recipient',
@@ -1538,27 +1166,8 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: contained item size not valid', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -1614,27 +1223,8 @@ describe('order validator', () => {
     });
 
     it('fail validate update: nested orderedItems validator errors: nested orderContainerItem validator errors: quantity with value 0', async () => {
-        const orderToUpdate = await orderRepo.findOne({});
-        if (!orderToUpdate) {
-            throw new Error('order not found');
-        }
-
-        const containerMenuItem = await menuItemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes', 'containerMenuItems'],
-        });
-        if (!containerMenuItem) {
-            throw new Error('container menu item not found');
-        }
-        if (!containerMenuItem.sizes || containerMenuItem.sizes.length === 0) {
-            throw new Error('container menu item sizes not found');
-        }
-        if (
-            !containerMenuItem.containerMenuItems ||
-            containerMenuItem.containerMenuItems.length === 0
-        ) {
-            throw new Error('container menu items not found');
-        }
+        const orderToUpdate = await findOrder();
+        const containerMenuItem = await findMenuItem(item_f);
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;

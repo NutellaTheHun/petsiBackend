@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItemContainerItem } from '../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
@@ -31,53 +32,54 @@ import { OrderMenuItemValidator } from './validators/order-menu-item.validator';
 import { OrderValidator } from './validators/order.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      Order,
-      OrderCategory,
-      OrderMenuItem,
-      OrderContainerItem,
-      MenuItem,
-      MenuItemSize,
-    ]),
-    MenuItemsModule,
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
-  controllers: [
-    OrderController,
-    OrderCategoryController,
-    OrderMenuItemController,
-    OrderContainerItemController,
-  ],
-  providers: [
-    OrderService,
-    OrderCategoryService,
-    OrderMenuItemService,
-    OrderContainerItemService,
+    imports: [
+        TypeOrmModule.forFeature([
+            Order,
+            OrderCategory,
+            OrderMenuItem,
+            OrderContainerItem,
+            MenuItem,
+            MenuItemSize,
+            MenuItemContainerItem
+        ]),
+        MenuItemsModule,
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
+    controllers: [
+        OrderController,
+        OrderCategoryController,
+        OrderMenuItemController,
+        OrderContainerItemController,
+    ],
+    providers: [
+        OrderService,
+        OrderCategoryService,
+        OrderMenuItemService,
+        OrderContainerItemService,
 
-    OrderBuilder,
-    OrderCategoryBuilder,
-    OrderMenuItemBuilder,
-    OrderContainerItemBuilder,
+        OrderBuilder,
+        OrderCategoryBuilder,
+        OrderMenuItemBuilder,
+        OrderContainerItemBuilder,
 
-    OrderValidator,
-    OrderCategoryValidator,
-    OrderMenuItemValidator,
-    OrderContainerItemValidator,
+        OrderValidator,
+        OrderCategoryValidator,
+        OrderMenuItemValidator,
+        OrderContainerItemValidator,
 
-    OrderMenuItemComposer,
-    OrderContainerItemComposer,
+        OrderMenuItemComposer,
+        OrderContainerItemComposer,
 
-    OrderTestingUtil,
-  ],
-  exports: [
-    OrderService,
-    OrderCategoryService,
-    OrderMenuItemService,
-    OrderContainerItemService,
-    OrderTestingUtil,
-  ],
+        OrderTestingUtil,
+    ],
+    exports: [
+        OrderService,
+        OrderCategoryService,
+        OrderMenuItemService,
+        OrderContainerItemService,
+        OrderTestingUtil,
+    ],
 })
-export class OrdersModule {}
+export class OrdersModule { }

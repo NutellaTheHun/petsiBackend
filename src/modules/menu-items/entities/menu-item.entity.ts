@@ -85,6 +85,7 @@ export class MenuItem {
         description: 'The sizes the item is available in',
         type: () => MenuItemSize,
         isArray: true,
+        nullable: true,
     })
     @ManyToMany(() => MenuItemSize)
     @JoinTable()
@@ -93,8 +94,9 @@ export class MenuItem {
     // API PROPERTY HERE
     @OneToMany(() => MenuItemContainerItem, (ci) => ci.parentMenuItem, {
         cascade: true,
+        nullable: true,
     })
-    containerMenuItems: MenuItemContainerItem[];
+    containerMenuItems: MenuItemContainerItem[] | null;
 
     // API PROPERTY HERE
     /**

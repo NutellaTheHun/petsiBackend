@@ -9,7 +9,6 @@ import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.en
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
-import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
@@ -17,206 +16,228 @@ import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
 export class RecipeService extends ServiceBase<RecipeEntity> {
-  constructor(
-    @InjectRepository(Recipe)
-    repo: Repository<Recipe>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: RecipeValidator,
+    constructor(
+        @InjectRepository(Recipe)
+        repo: Repository<Recipe>,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+        validator: RecipeValidator,
 
-    private readonly ingredientComposer: RecipeIngredientComposer,
-  ) {
-    super(repo, 'RecipeService', requestContextService, logger, validator);
-  }
-
-  protected async createEntity(
-    dto: CreateRecipeDto,
-    manager: EntityManager,
-  ): Promise<Recipe> {
-    const result = manager.create(Recipe, {
-      name: dto.name,
-
-      isIngredient: dto.isIngredient,
-
-      producedMenuItem: dto.producedMenuItemId
-        ? { id: dto.producedMenuItemId }
-        : null,
-
-      batchResultQuantity: dto.batchResultQuantity
-        ? dto.batchResultQuantity
-        : null,
-
-      batchResultUnitType: dto.batchResultUnitTypeId
-        ? { id: dto.batchResultUnitTypeId }
-        : null,
-
-      servingSizeQuantity: dto.servingSizeQuantity
-        ? dto.servingSizeQuantity
-        : null,
-
-      servingSizeUnitType: dto.servingSizeUnitTypeId
-        ? { id: dto.servingSizeUnitTypeId }
-        : null,
-
-      salesPrice: dto.salesPrice ? dto.salesPrice.toString() : null,
-
-      category: dto.categoryId ? { id: dto.categoryId } : null,
-
-      subCategory: dto.subCategoryId ? { id: dto.subCategoryId } : null,
-    });
-
-    const savedResult = await manager.save(result);
-
-    if (dto.ingredients?.length) {
-      savedResult.ingredients =
-        await this.ingredientComposer.composeManyNestedEntity(
-          dto.ingredients,
-          manager,
-          [],
-          { parentRecipeId: savedResult.id },
-        );
-      await manager.save(result);
+        private readonly ingredientComposer: RecipeIngredientComposer,
+    ) {
+        super(repo, 'RecipeService', requestContextService, logger, validator);
     }
 
-    return savedResult;
-  }
+    protected async createEntity(
+        dto: CreateRecipeDto,
+        manager: EntityManager,
+    ): Promise<Recipe> {
+        const result = manager.create(Recipe, {
+            name: dto.name,
 
-  protected async updateEntity(
-    dto: UpdateRecipeDto,
-    manager: EntityManager,
-    entity: Recipe,
-  ): Promise<void> {
-    if (dto.batchResultUnitTypeId !== undefined) {
-      entity.batchResultUnitType = manager.create(UnitOfMeasure, {
-        id: dto.batchResultUnitTypeId,
-      });
-    }
+            isIngredient: dto.isIngredient,
 
-    if (dto.batchResultQuantity !== undefined) {
-      entity.batchResultQuantity = dto.batchResultQuantity;
-    }
+            producedMenuItem: dto.producedMenuItemId
+                ? { id: dto.producedMenuItemId }
+                : null,
 
-    if (dto.categoryId !== undefined) {
-      if (dto.categoryId === null) {
-        entity.category = null;
-      } else {
-        entity.category = manager.create(RecipeCategory, {
-          id: dto.categoryId,
+            batchResultQuantity: dto.batchResultQuantity
+                ? dto.batchResultQuantity
+                : null,
+
+            batchResultUnitType: dto.batchResultUnitTypeId
+                ? { id: dto.batchResultUnitTypeId }
+                : null,
+
+            servingSizeQuantity: dto.servingSizeQuantity
+                ? dto.servingSizeQuantity
+                : null,
+
+            servingSizeUnitType: dto.servingSizeUnitTypeId
+                ? { id: dto.servingSizeUnitTypeId }
+                : null,
+
+            salesPrice: dto.salesPrice ? dto.salesPrice.toString() : null,
+
+            category: dto.categoryId ? { id: dto.categoryId } : null,
+
+            subCategory: dto.subCategoryId ? { id: dto.subCategoryId } : null,
         });
 
-        if (dto.subCategoryId === undefined) {
-          entity.subCategory = null;
+        const savedResult = await manager.save(result);
+
+        if (dto.ingredients?.length) {
+            savedResult.ingredients =
+                await this.ingredientComposer.composeManyNestedEntity(
+                    dto.ingredients,
+                    manager,
+                    [],
+                    { parentRecipeId: savedResult.id },
+                );
+            await manager.save(result);
         }
-      }
+
+        return savedResult;
     }
 
-    if (dto.isIngredient !== undefined) {
-      entity.isIngredient = dto.isIngredient;
+    protected async updateEntity(
+        dto: UpdateRecipeDto,
+        manager: EntityManager,
+        entity: Recipe,
+    ): Promise<void> {
+        if (dto.batchResultUnitTypeId !== undefined) {
+            if (dto.batchResultUnitTypeId === null) {
+                entity.batchResultUnitType = null;
+            } else {
+                entity.batchResultUnitType = manager.create(UnitOfMeasure, {
+                    id: dto.batchResultUnitTypeId,
+                });
+            }
+        }
+
+        if (dto.batchResultQuantity !== undefined) {
+            if (dto.batchResultQuantity === null) {
+                entity.batchResultQuantity = null;
+            } else {
+                entity.batchResultQuantity = dto.batchResultQuantity;
+            }
+        }
+
+        if (dto.categoryId !== undefined) {
+            if (dto.categoryId === null) {
+                entity.category = null;
+            } else {
+                entity.category = manager.create(RecipeCategory, {
+                    id: dto.categoryId,
+                });
+
+                if (dto.subCategoryId === undefined) {
+                    entity.subCategory = null;
+                }
+            }
+        }
+
+        if (dto.isIngredient !== undefined) {
+            entity.isIngredient = dto.isIngredient;
+        }
+
+        if (dto.producedMenuItemId !== undefined) {
+            if (dto.producedMenuItemId === null) {
+                entity.producedMenuItem = null;
+                // TODO: clear sales price?
+            } else {
+                entity.producedMenuItem = manager.create(MenuItem, {
+                    id: dto.producedMenuItemId,
+                });
+            }
+        }
+
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+
+        if (dto.salesPrice !== undefined) {
+            if (dto.salesPrice === null) {
+                entity.salesPrice = null;
+            } else {
+                entity.salesPrice = dto.salesPrice.toString();
+            }
+        }
+
+        if (dto.servingSizeUnitTypeId !== undefined) {
+            if (dto.servingSizeUnitTypeId === null) {
+                entity.servingSizeUnitType = null;
+            } else {
+                entity.servingSizeUnitType = manager.create(UnitOfMeasure, {
+                    id: dto.servingSizeUnitTypeId,
+                });
+            }
+        }
+
+        if (dto.servingSizeQuantity !== undefined) {
+            if (dto.servingSizeQuantity === null) {
+                entity.servingSizeQuantity = null;
+            } else {
+                entity.servingSizeQuantity = dto.servingSizeQuantity;
+            }
+        }
+
+        if (dto.subCategoryId !== undefined) {
+            if (dto.subCategoryId === null) {
+                entity.subCategory = null;
+            } else {
+                entity.subCategory = manager.create(RecipeSubCategory, {
+                    id: dto.subCategoryId,
+                });
+            }
+        }
+
+        if (dto.ingredients) {
+            /*const existingIngreds = await manager.find(RecipeIngredient, {
+                where: { parentRecipe: { id: entity.id } },
+            });*/
+
+            entity.ingredients =
+                await this.ingredientComposer.composeManyNestedEntity(
+                    dto.ingredients,
+                    manager,
+                    /*existingIngreds,*/[],
+                    { parentRecipeId: entity.id },
+                );
+        }
+
+        await manager.save(entity);
     }
 
-    if (dto.producedMenuItemId !== undefined) {
-      if (dto.producedMenuItemId === null) {
-        entity.producedMenuItem = null;
-        // TODO: clear sales price?
-      } else {
-        entity.producedMenuItem = manager.create(MenuItem, {
-          id: dto.producedMenuItemId,
-        });
-      }
-    }
 
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
-    }
 
-    if (dto.salesPrice !== undefined) {
-      entity.salesPrice = dto.salesPrice.toString();
-    }
-
-    if (dto.servingSizeUnitTypeId !== undefined) {
-      entity.servingSizeUnitType = manager.create(UnitOfMeasure, {
-        id: dto.servingSizeUnitTypeId,
-      });
-    }
-
-    if (dto.servingSizeQuantity !== undefined) {
-      entity.servingSizeQuantity = dto.servingSizeQuantity;
-    }
-
-    if (dto.subCategoryId !== undefined) {
-      if (dto.subCategoryId === null) {
-        entity.subCategory = null;
-      } else {
-        entity.subCategory = manager.create(RecipeSubCategory, {
-          id: dto.subCategoryId,
-        });
-      }
-    }
-
-    if (dto.ingredients?.length) {
-      const existingIngreds = await manager.find(RecipeIngredient, {
-        where: { parentRecipe: { id: entity.id } },
-      });
-
-      entity.ingredients =
-        await this.ingredientComposer.composeManyNestedEntity(
-          dto.ingredients,
-          manager,
-          existingIngreds,
-          { parentRecipeId: entity.id },
-        );
-    }
-
-    await manager.save(entity);
-  }
-
-  protected applySearch(
-    query: SelectQueryBuilder<Recipe>,
-    search: string,
-  ): void {
-    query
-      .leftJoin('entity.ingredients', 'ingredient')
-      .leftJoin('ingredient.ingredientInventoryItem', 'inventoryItem')
-      .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
-      .andWhere(
-        `
+    protected applySearch(
+        query: SelectQueryBuilder<Recipe>,
+        search: string,
+    ): void {
+        query
+            .leftJoin('entity.ingredients', 'ingredient')
+            .leftJoin('ingredient.ingredientInventoryItem', 'inventoryItem')
+            .leftJoin('ingredient.ingredientRecipe', 'subRecipe')
+            .andWhere(
+                `
             LOWER(entity.name) LIKE :search
             OR LOWER(inventoryItem.name) LIKE :search
             OR LOWER(subRecipe.name) LIKE :search
         `,
-        { search: `%${search.toLowerCase()}%` },
-      );
-  }
+                { search: `%${search.toLowerCase()}%` },
+            );
+    }
 
-  protected applyFilters(
-    query: SelectQueryBuilder<Recipe>,
-    filters: Record<string, string[]>,
-  ): void {
-    if (filters.category && filters.category.length > 0) {
-      query.andWhere('entity.category IN (:...categories)', {
-        categories: filters.category,
-      });
+    protected applyFilters(
+        query: SelectQueryBuilder<Recipe>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.category && filters.category.length > 0) {
+            query.andWhere('entity.category IN (:...categories)', {
+                categories: filters.category,
+            });
+        }
+        if (filters.subCategory && filters.subCategory.length > 0) {
+            query.andWhere('entity.subCategory IN (:...subCategories)', {
+                subCategories: filters.subCategory,
+            });
+        }
     }
-    if (filters.subCategory && filters.subCategory.length > 0) {
-      query.andWhere('entity.subCategory IN (:...subCategories)', {
-        subCategories: filters.subCategory,
-      });
-    }
-  }
 
-  protected applySortBy(
-    query: SelectQueryBuilder<Recipe>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
-    } else if (sortBy === 'category') {
-      query.leftJoinAndSelect('entity.category', 'category');
-      query.orderBy(`category.name`, sortOrder, 'NULLS LAST');
-    } else if (sortBy === 'subCategory') {
-      query.leftJoinAndSelect('entity.subCategory', 'subCategory');
-      query.orderBy(`subCategory.name`, sortOrder, 'NULLS LAST');
+    protected applySortBy(
+        query: SelectQueryBuilder<Recipe>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        } else if (sortBy === 'category') {
+            query.leftJoinAndSelect('entity.category', 'category');
+            query.orderBy(`category.name`, sortOrder, 'NULLS LAST');
+        } else if (sortBy === 'subCategory') {
+            query.leftJoinAndSelect('entity.subCategory', 'subCategory');
+            query.orderBy(`subCategory.name`, sortOrder, 'NULLS LAST');
+        }
     }
-  }
 }

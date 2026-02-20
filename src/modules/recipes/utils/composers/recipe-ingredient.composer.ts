@@ -44,25 +44,34 @@ export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntit
         entity: RecipeIngredient,
     ): Promise<void> {
         if (dto.ingredientInventoryItemId !== undefined) {
-            entity.ingredientInventoryItem = manager.create(InventoryItem, {
-                id: dto.ingredientInventoryItemId,
-            });
-            entity.ingredientRecipe = null;
-        } else if (dto.ingredientRecipeId) {
-            entity.ingredientRecipe = manager.create(Recipe, {
-                id: dto.ingredientRecipeId,
-            });
-            entity.ingredientInventoryItem = null;
+            if (dto.ingredientInventoryItemId === null) {
+                entity.ingredientInventoryItem = null;
+            } else {
+                entity.ingredientInventoryItem = manager.create(InventoryItem, {
+                    id: dto.ingredientInventoryItemId,
+                });
+                entity.ingredientRecipe = null;
+            }
         }
+        if (dto.ingredientRecipeId !== undefined) {
+            if (dto.ingredientRecipeId === null) {
+                entity.ingredientRecipe = null;
+            } else {
+                entity.ingredientRecipe = manager.create(Recipe, {
+                    id: dto.ingredientRecipeId,
+                });
+                entity.ingredientInventoryItem = null;
+            }
 
-        if (dto.quantity !== undefined) {
-            entity.quantity = dto.quantity;
-        }
+            if (dto.quantity !== undefined) {
+                entity.quantity = dto.quantity;
+            }
 
-        if (dto.quantityUnitTypeId !== undefined) {
-            entity.quantityUnitType = manager.create(UnitOfMeasure, {
-                id: dto.quantityUnitTypeId,
-            });
+            if (dto.quantityUnitTypeId !== undefined) {
+                entity.quantityUnitType = manager.create(UnitOfMeasure, {
+                    id: dto.quantityUnitTypeId,
+                });
+            }
         }
     }
 

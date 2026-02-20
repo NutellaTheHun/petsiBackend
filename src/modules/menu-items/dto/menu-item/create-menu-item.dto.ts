@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -42,7 +43,7 @@ export class CreateMenuItemDto {
     @IsOptional()
     @IsNumber()
     @IsPositive()
-    readonly categoryId: EntityId<MenuItemCategory> | null;
+    readonly categoryId?: EntityId<MenuItemCategory> | null;
 
     @ApiProperty({
         description:
@@ -61,6 +62,7 @@ export class CreateMenuItemDto {
         description: 'Array of CreateMenutItemContainerItemDtos',
         type: () => [NestedCreateMenuItemContainerItemDto],
         required: false,
+        nullable: true,
         example: [
             {
                 createId: 'c1',
@@ -75,7 +77,8 @@ export class CreateMenuItemDto {
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
-    readonly containerMenuItems?: NestedCreateMenuItemContainerItemDto[];
+    @Type(() => NestedCreateMenuItemContainerItemDto)
+    readonly containerMenuItems?: NestedCreateMenuItemContainerItemDto[] | null;
 
     @ApiProperty({
         description:

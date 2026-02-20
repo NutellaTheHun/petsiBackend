@@ -31,7 +31,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         super(repo, 'InventoryItem', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -44,7 +44,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
             );
         }
 
-        if (identity.categoryId) {
+        if (identity.categoryId !== undefined && identity.categoryId !== null) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.repo,
@@ -53,7 +53,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
             );
         }
 
-        if (identity.vendorId) {
+        if (identity.vendorId !== undefined && identity.vendorId !== null) {
             await this.helper.enforceExists(
                 identity.vendorId,
                 this.repo,

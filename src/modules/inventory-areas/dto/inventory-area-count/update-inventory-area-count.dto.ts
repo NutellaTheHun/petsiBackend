@@ -2,6 +2,7 @@ import {
     ApiProperty,
     getSchemaPath
 } from '@nestjs/swagger';
+import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
 import { InventoryArea } from '../../entities/inventory-area.entity';
@@ -42,6 +43,14 @@ export class UpdateInventoryAreaCountDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Transform(({ value }: TransformFnParams) => {
+        if (!Array.isArray(value)) return value;
+        return value.map((item: any) =>
+            'createId' in item && item.createId !== undefined
+                ? plainToInstance(NestedCreateInventoryAreaItemDto, item)
+                : plainToInstance(NestedUpdateInventoryAreaItemDto, item)
+        );
+    })
     readonly countedInventoryItems: (
         | NestedCreateInventoryAreaItemDto
         | NestedUpdateInventoryAreaItemDto

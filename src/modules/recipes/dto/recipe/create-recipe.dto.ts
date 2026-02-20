@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -35,7 +36,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly producedMenuItemId: EntityId<MenuItem> | null;
+    readonly producedMenuItemId?: EntityId<MenuItem> | null;
 
     @ApiPropertyOptional({
         description:
@@ -48,7 +49,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultQuantity: number | null;
+    readonly batchResultQuantity?: number | null;
 
     @ApiProperty({
         description:
@@ -59,7 +60,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly batchResultUnitTypeId: EntityId<UnitOfMeasure> | null;
+    readonly batchResultUnitTypeId?: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description:
@@ -71,7 +72,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly servingSizeQuantity: number | null;
+    readonly servingSizeQuantity?: number | null;
 
     @ApiProperty({
         description:
@@ -82,7 +83,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsPositive()
     @IsOptional()
-    readonly servingSizeUnitTypeId: EntityId<UnitOfMeasure> | null;
+    readonly servingSizeUnitTypeId?: EntityId<UnitOfMeasure> | null;
 
     @ApiProperty({
         description: 'The price of purchasing the serving size amount.',
@@ -94,7 +95,7 @@ export class CreateRecipeDto {
     @IsNumber({ maxDecimalPlaces: 2 })
     @IsOptional()
     @Min(0)
-    readonly salesPrice: number | null;
+    readonly salesPrice?: number | null;
 
     @ApiProperty({
         description: 'If the recipe is used as an ingredient.(Not sold directly)',
@@ -113,7 +114,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly categoryId: EntityId<RecipeCategory> | null;
+    readonly categoryId?: EntityId<RecipeCategory> | null;
 
     @ApiProperty({
         description:
@@ -125,7 +126,7 @@ export class CreateRecipeDto {
     @IsNumber()
     @IsOptional()
     @IsPositive()
-    readonly subCategoryId: EntityId<RecipeSubCategory> | null;
+    readonly subCategoryId?: EntityId<RecipeSubCategory> | null;
 
     @ApiProperty({
         description: 'Array of CreateRecipeIngredientDto.',
@@ -148,5 +149,6 @@ export class CreateRecipeDto {
     @IsNotEmpty()
     @IsArray()
     @ValidateNested({ each: true })
+    @Type(() => NestedCreateRecipeIngredientDto)
     readonly ingredients: NestedCreateRecipeIngredientDto[];
 }

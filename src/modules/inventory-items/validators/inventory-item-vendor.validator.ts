@@ -26,7 +26,7 @@ export class InventoryItemVendorValidator extends ValidatorBase<InventoryItemVen
         super(repo, 'InventoryItemVendor', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: InventoryItemVendorValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: InventoryItemVendorValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

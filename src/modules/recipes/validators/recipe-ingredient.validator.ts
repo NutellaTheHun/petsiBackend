@@ -40,10 +40,10 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
         super(repo, 'RecipeIngredient', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: RecipeIngredientValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RecipeIngredientValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.ingredientInventoryItemId) {
+        if (identity.ingredientInventoryItemId !== undefined) {
             await this.helper.enforceExists(
                 identity.ingredientInventoryItemId,
                 this.inventoryItemRepo,
@@ -52,7 +52,7 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.ingredientRecipeId) {
+        if (identity.ingredientRecipeId !== undefined) {
             await this.helper.enforceExists(
                 identity.ingredientRecipeId,
                 this.repo,
@@ -61,7 +61,7 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.parentRecipeId) {
+        if (identity.parentRecipeId !== undefined) {
             await this.helper.enforceExists(
                 identity.parentRecipeId,
                 this.recipeRepo,
@@ -70,7 +70,7 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.quantity) {
+        if (identity.quantity !== undefined) {
             this.helper.enforcePositive(
                 identity.quantity,
                 'quantity',
@@ -78,7 +78,7 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.quantityUnitTypeId) {
+        if (identity.quantityUnitTypeId !== undefined) {
             await this.helper.enforceExists(
                 identity.quantityUnitTypeId,
                 this.unitOfMeasureRepo,

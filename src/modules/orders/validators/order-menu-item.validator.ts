@@ -75,10 +75,10 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         } as OrderMenuItemValidatorIdentity;
     }
 
-    protected async validateIdentity(identity: OrderMenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: OrderMenuItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.menuItemId) {
+        if (identity.menuItemId !== undefined) {
             this.helper.enforceExists(
                 identity.menuItemId,
                 this.menuItemRepo,
@@ -87,7 +87,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
             );
         }
 
-        if (identity.parentOrderId) {
+        if (identity.parentOrderId !== undefined) {
             this.helper.enforceExists(
                 identity.parentOrderId,
                 this.orderRepo,
@@ -96,7 +96,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
             );
         }
 
-        if (identity.quantity) {
+        if (identity.quantity !== undefined) {
             this.helper.enforcePositive(
                 identity.quantity,
                 'quantity',
@@ -104,7 +104,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
             );
         }
 
-        if (identity.sizeId) {
+        if (identity.sizeId !== undefined) {
             this.helper.enforceExists(
                 identity.sizeId,
                 this.menuItemSizeRepo,

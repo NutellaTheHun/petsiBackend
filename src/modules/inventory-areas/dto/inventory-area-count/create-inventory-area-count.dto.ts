@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -40,6 +41,7 @@ export class CreateInventoryAreaCountDto {
     })
     @IsNotEmpty()
     @IsArray()
+    @Type(() => NestedCreateInventoryAreaItemDto)
     @ValidateNested({ each: true })
     readonly countedInventoryItems: NestedCreateInventoryAreaItemDto[];
 }

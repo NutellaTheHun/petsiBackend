@@ -7,7 +7,6 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { OrderValidator } from '../validators/order.validator';
@@ -41,8 +40,8 @@ export class OrderService extends ServiceBase<OrderEntity> {
             email: dto.email ?? null,
             note: dto.note ?? null,
             weeklyFulfillment: dto.weeklyFulfillment ?? null,
-            isFrozen: dto.isFrozen,
-            isWeekly: dto.isWeekly,
+            isFrozen: dto.isFrozen ?? false,
+            isWeekly: dto.isWeekly ?? false,
         });
 
         const savedResult = await manager.save(result);
@@ -120,14 +119,14 @@ export class OrderService extends ServiceBase<OrderEntity> {
         }
 
         if (dto.orderedItems) {
-            const existingItems = await manager.find(OrderMenuItem, {
+            /*const existingItems = await manager.find(OrderMenuItem, {
                 where: { parentOrder: { id: entity.id } },
-            });
+            });*/
             entity.orderedItems =
                 await this.orderMenuItemComposer.composeManyNestedEntity(
                     dto.orderedItems,
                     manager,
-                    existingItems,
+                    /*existingItems,*/[],
                     {
                         parentOrderId: entity.id,
                     },

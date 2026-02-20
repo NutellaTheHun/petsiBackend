@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
     IsArray,
     IsNotEmpty,
@@ -37,5 +38,6 @@ export class CreateTemplateDto {
     @IsArray()
     @IsNotEmpty()
     @ValidateNested({ each: true })
+    @Type(() => NestedCreateTemplateMenuItemDto)
     readonly templateMenuItems: NestedCreateTemplateMenuItemDto[];
 }

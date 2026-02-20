@@ -6,6 +6,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
+import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
@@ -25,57 +27,62 @@ import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderService } from '../services/order.service';
 
 export async function getOrdersTestingModule(opts?: {
-  orderMenuItemServiceClass?: new (...args: any[]) => OrderMenuItemService;
-  orderCategoryServiceClass?: new (...args: any[]) => OrderCategoryService;
-  orderServiceClass?: new (...args: any[]) => OrderService;
-  orderContainerItemServiceClass?: new (
-    ...args: any[]
-  ) => OrderContainerItemService;
+    orderMenuItemServiceClass?: new (...args: any[]) => OrderMenuItemService;
+    orderCategoryServiceClass?: new (...args: any[]) => OrderCategoryService;
+    orderServiceClass?: new (...args: any[]) => OrderService;
+    orderContainerItemServiceClass?: new (
+        ...args: any[]
+    ) => OrderContainerItemService;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([
-        OrderMenuItem,
-        OrderCategory,
-        Order,
-        OrderContainerItem,
-        MenuItem,
-      ]),
-      TypeOrmModule.forFeature([
-        OrderMenuItem,
-        OrderCategory,
-        Order,
-        OrderContainerItem,
-      ]),
-      MenuItemsModule,
-      OrdersModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-      AppLoggingModule,
-      RequestContextModule,
-    ],
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                OrderMenuItem,
+                OrderCategory,
+                Order,
+                OrderContainerItem,
+                MenuItem,
+                MenuItemSize,
+                MenuItemContainerItem,
+            ]),
+            TypeOrmModule.forFeature([
+                OrderMenuItem,
+                OrderCategory,
+                Order,
+                OrderContainerItem,
+                MenuItem,
+                MenuItemSize,
+                MenuItemContainerItem,
+            ]),
+            MenuItemsModule,
+            OrdersModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } },
+            }),
+            AppLoggingModule,
+            RequestContextModule,
+        ],
 
-    controllers: [
-      OrderMenuItemController,
-      OrderCategoryController,
-      OrderController,
-      OrderContainerItemController,
-    ],
+        controllers: [
+            OrderMenuItemController,
+            OrderCategoryController,
+            OrderController,
+            OrderContainerItemController,
+        ],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(OrderMenuItemService)
-    .useClass(opts?.orderMenuItemServiceClass || OrderMenuItemService)
-    .overrideProvider(OrderCategoryService)
-    .useClass(opts?.orderCategoryServiceClass || OrderCategoryService)
-    .overrideProvider(OrderService)
-    .useClass(opts?.orderServiceClass || OrderService)
-    .overrideProvider(OrderContainerItemService)
-    .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(OrderMenuItemService)
+        .useClass(opts?.orderMenuItemServiceClass || OrderMenuItemService)
+        .overrideProvider(OrderCategoryService)
+        .useClass(opts?.orderCategoryServiceClass || OrderCategoryService)
+        .overrideProvider(OrderService)
+        .useClass(opts?.orderServiceClass || OrderService)
+        .overrideProvider(OrderContainerItemService)
+        .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
+        .compile();
 }

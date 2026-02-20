@@ -25,7 +25,7 @@ export class TemplateValidator extends ValidatorBase<TemplateEntity, TemplateVal
         super(repo, 'Template', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: TemplateValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: TemplateValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

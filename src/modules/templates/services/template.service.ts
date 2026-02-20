@@ -6,95 +6,89 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
-import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { Template, TemplateEntity } from '../entities/template.entity';
 import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.composer';
 import { TemplateValidator } from '../validators/template.validator';
 
 @Injectable()
 export class TemplateService extends ServiceBase<TemplateEntity> {
-  constructor(
-    @InjectRepository(Template)
-    repo: Repository<Template>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: TemplateValidator,
+    constructor(
+        @InjectRepository(Template)
+        repo: Repository<Template>,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+        validator: TemplateValidator,
 
-    private readonly tempalateItemComposer: TemplateMenuItemComposer,
-  ) {
-    super(repo, 'TemplateService', requestContextService, logger, validator);
-  }
-
-  protected async createEntity(
-    dto: CreateTemplateDto,
-    manager: EntityManager,
-  ): Promise<Template> {
-    const entity = manager.create(Template, {
-      name: dto.name,
-      isPie: dto.isPie,
-    });
-
-    const savedEntity = await manager.save(entity);
-
-    if (dto.templateMenuItems?.length) {
-      savedEntity.templateMenuItems =
-        await this.tempalateItemComposer.composeManyNestedEntity(
-          dto.templateMenuItems,
-          manager,
-          [],
-          { parentTemplateId: savedEntity.id },
-        );
-      await manager.save(savedEntity);
+        private readonly tempalateItemComposer: TemplateMenuItemComposer,
+    ) {
+        super(repo, 'TemplateService', requestContextService, logger, validator);
     }
 
-    return savedEntity;
-  }
+    protected async createEntity(
+        dto: CreateTemplateDto,
+        manager: EntityManager,
+    ): Promise<Template> {
+        const entity = manager.create(Template, {
+            name: dto.name,
+        });
 
-  protected async updateEntity(
-    dto: UpdateTemplateDto,
-    manager: EntityManager,
-    entity: Template,
-  ): Promise<void> {
-    if (dto.isPie !== undefined) {
-      entity.isPie = dto.isPie;
+        const savedEntity = await manager.save(entity);
+
+        if (dto.templateMenuItems?.length) {
+            savedEntity.templateMenuItems =
+                await this.tempalateItemComposer.composeManyNestedEntity(
+                    dto.templateMenuItems,
+                    manager,
+                    [],
+                    { parentTemplateId: savedEntity.id },
+                );
+            await manager.save(savedEntity);
+        }
+
+        return savedEntity;
     }
 
-    if (dto.name !== undefined) {
-      entity.name = dto.name;
+    protected async updateEntity(
+        dto: UpdateTemplateDto,
+        manager: EntityManager,
+        entity: Template,
+    ): Promise<void> {
+        if (dto.name !== undefined) {
+            entity.name = dto.name;
+        }
+
+        if (dto.templateMenuItems) {
+            /*const existingItems = await manager.find(TemplateMenuItem, {
+                where: { parentTemplate: { id: entity.id } },
+            });*/
+            entity.templateMenuItems =
+                await this.tempalateItemComposer.composeManyNestedEntity(
+                    dto.templateMenuItems,
+                    manager,
+                    /*existingItems,*/[],
+                    { parentTemplateId: entity.id },
+                );
+        }
+
+        await manager.save(entity);
     }
 
-    if (dto.templateMenuItems) {
-      const existingItems = await manager.find(TemplateMenuItem, {
-        where: { parentTemplate: { id: entity.id } },
-      });
-      entity.templateMenuItems =
-        await this.tempalateItemComposer.composeManyNestedEntity(
-          dto.templateMenuItems,
-          manager,
-          existingItems,
-          { parentTemplateId: entity.id },
-        );
+    protected applySearch(
+        query: SelectQueryBuilder<Template>,
+        search: string,
+    ): void {
+        query.andWhere('(LOWER(entity.name) LIKE :search)', {
+            search: `%${search.toLowerCase()}%`,
+        });
     }
 
-    await manager.save(entity);
-  }
-
-  protected applySearch(
-    query: SelectQueryBuilder<Template>,
-    search: string,
-  ): void {
-    query.andWhere('(LOWER(entity.name) LIKE :search)', {
-      search: `%${search.toLowerCase()}%`,
-    });
-  }
-
-  protected applySortBy(
-    query: SelectQueryBuilder<Template>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'name') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+    protected applySortBy(
+        query: SelectQueryBuilder<Template>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'name') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
     }
-  }
 }

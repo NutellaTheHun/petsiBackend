@@ -22,7 +22,7 @@ export class RoleValidator extends ValidatorBase<RoleEntity, RoleValidatorIdenti
         super(repo, 'Role', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: RoleValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: RoleValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

@@ -111,7 +111,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expect(errors).toBeNull();
     });
 
@@ -127,7 +126,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -156,7 +154,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -175,7 +172,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -196,7 +192,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -224,7 +219,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-
         expectValidationErrorPayload(
             errors,
             [{ prop: 'countedItemSize', id: 'c1' }],
@@ -271,7 +265,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expect(errors).toBeNull();
     });
 
@@ -285,7 +278,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -325,7 +317,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -352,7 +343,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -370,7 +360,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [],
@@ -396,7 +385,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [
@@ -424,7 +412,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [
@@ -465,7 +452,6 @@ describe('inventory area item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
-
         expectValidationErrorPayload(
             errors,
             [

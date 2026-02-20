@@ -8,7 +8,7 @@ export function orderMenuItemToUpdateDto(orderMenuItem: OrderMenuItem): UpdateOr
         menuItemId: orderMenuItem.menuItem.id,
         sizeId: orderMenuItem.size.id,
         quantity: orderMenuItem.quantity,
-        containerOrderMenuItems: orderMenuItem.containerOrderMenuItems.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)),
+        containerOrderMenuItems: orderMenuItem.containerOrderMenuItems?.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)) ?? [],
     };
 }
 
@@ -18,6 +18,6 @@ export function orderMenuItemToNestedUpdateDto(orderMenuItem: OrderMenuItem): Ne
         menuItemId: orderMenuItem.menuItem.id,
         sizeId: orderMenuItem.size.id,
         quantity: orderMenuItem.quantity,
-        containerOrderMenuItems: orderMenuItem.containerOrderMenuItems.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)),
+        containerOrderMenuItems: orderMenuItem.containerOrderMenuItems?.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)) ?? [],
     };
 }

@@ -23,10 +23,10 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         super(repo, 'Label', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: LabelValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: LabelValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.labelTypeId) {
+        if (identity.labelTypeId !== undefined) {
             this.helper.enforceExists(
                 identity.labelTypeId,
                 this.repo,
@@ -35,7 +35,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
             );
         }
 
-        if (identity.menuItemId) {
+        if (identity.menuItemId !== undefined) {
             this.helper.enforceExists(
                 identity.menuItemId,
                 this.repo,

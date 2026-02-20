@@ -26,7 +26,7 @@ export class MenuItemCategoryValidator extends ValidatorBase<MenuItemCategoryEnt
         super(repo, 'MenuItemCategory', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: MenuItemCategoryValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {

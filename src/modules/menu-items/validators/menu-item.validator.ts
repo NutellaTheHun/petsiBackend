@@ -9,7 +9,6 @@ import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
-import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
@@ -26,9 +25,6 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
 
         private readonly menuItemContainerValidator: MenuItemContainerItemValidator,
 
-        @InjectRepository(MenuItemContainerItem)
-        private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
-
         @InjectRepository(MenuItemSize)
         private readonly menuItemSizeRepo: Repository<MenuItemSize>,
 
@@ -41,7 +37,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
         super(repo, 'MenuItem', requestContextService, logger);
     }
 
-    protected async validateIdentity(identity: MenuItemValidatorIdentity, id?: number | string): Promise<ValidationErrorMap> {
+    protected async validateIdentity(identity: MenuItemValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
@@ -54,7 +50,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             );
         }
 
-        if (identity.categoryId) {
+        if (identity.categoryId !== undefined && identity.categoryId !== null) {
             await this.helper.enforceExists(
                 identity.categoryId,
                 this.categoryRepo,
@@ -88,7 +84,7 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             );
 
             // if variable max amount is set, validate container item quantities match variable max amount
-            if (identity.variableMaxAmount) {
+            if (identity.variableMaxAmount !== undefined && identity.variableMaxAmount !== null) {
                 for (const containerItem of identity.containerMenuItems) {
                     if (containerItem.quantity && containerItem.quantity !== identity.variableMaxAmount) {
                         errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
