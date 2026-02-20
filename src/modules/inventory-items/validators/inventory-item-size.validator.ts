@@ -5,14 +5,17 @@ import { NestedValidatorBase } from '../../../common/base/nested-validator.base'
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
+import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import {
     InventoryItemSize,
     InventoryItemSizeEntity,
 } from '../entities/inventory-item-size.entity';
+import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryItemSizeValidatorIdentity } from './identities/inventory-item-size.validator.identity.interface';
 
 @Injectable()
@@ -21,6 +24,15 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
     constructor(
         @InjectRepository(InventoryItemSize)
         private readonly repo: Repository<InventoryItemSize>,
+
+        @InjectRepository(InventoryItem)
+        private readonly inventoryItemRepo: Repository<InventoryItem>,
+
+        @InjectRepository(InventoryItemPackage)
+        private readonly packageRepo: Repository<InventoryItemPackage>,
+
+        @InjectRepository(UnitOfMeasure)
+        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -34,7 +46,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         if (identity.inventoryItemId !== undefined) {
             this.helper.enforceExists(
                 identity.inventoryItemId,
-                this.repo,
+                this.inventoryItemRepo,
                 'inventoryItem',
                 errorMap,
             );
@@ -43,7 +55,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         if (identity.packageId !== undefined) {
             this.helper.enforceExists(
                 identity.packageId,
-                this.repo,
+                this.packageRepo,
                 'package',
                 errorMap,
             );
@@ -52,7 +64,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
         if (identity.measureTypeId !== undefined) {
             this.helper.enforceExists(
                 identity.measureTypeId,
-                this.repo,
+                this.unitOfMeasureRepo,
                 'measureType',
                 errorMap,
             );
@@ -86,8 +98,10 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
                 },
             });
             if (exists) {
-                errorMap.addError('ALREADY_EXISTS', undefined, ['inventoryItem', 'measureType', 'package', 'measureAmount']);
+                errorMap.addError('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']);
+                console.log("ALREADY EXISTS");
             }
+
         }
 
         return errorMap;

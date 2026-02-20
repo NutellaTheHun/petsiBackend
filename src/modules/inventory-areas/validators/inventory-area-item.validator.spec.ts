@@ -1,8 +1,10 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
@@ -39,7 +41,7 @@ describe('inventory area item validator', () => {
     let packageRepo: Repository<InventoryItemPackage>;
 
     const findAreaItem = async (name: string) => {
-        return await areaItemRepo.findOneOrFail({ where: { parentInventoryCount: { inventoryArea: { name } } }, relations: ['countedItem', 'countedItemSize'] });
+        return await areaItemRepo.findOneOrFail({ where: { parentInventoryCount: { inventoryArea: { name } } }, relations: ['countedInventoryItem', 'countedItemSize'] });
     }
 
     const findInventoryItem = async (name: string) => {
@@ -97,18 +99,18 @@ describe('inventory area item validator', () => {
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 2,
-            countedItemSize: {
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 1,
                 cost: 1.99,
-            },
+            }),
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -118,18 +120,19 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 0,
             countedItemSizeId: food_a.sizes[0].id,
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['amount']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['amount']),
         );
     });
 
@@ -139,25 +142,26 @@ describe('inventory area item validator', () => {
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 2,
             countedItemSizeId: food_a.sizes[0].id,
-            countedItemSize: {
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 1,
                 cost: 1.99,
-            },
+            }),
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -165,17 +169,18 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 2,
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -184,18 +189,19 @@ describe('inventory area item validator', () => {
         const food_c = await findInventoryItem(FOOD_C);
         const food_b = await findInventoryItem(FOOD_B);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_c.id,
             amount: 1,
             countedItemSizeId: food_b.sizes[0].id,
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
         );
     });
 
@@ -205,24 +211,25 @@ describe('inventory area item validator', () => {
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 2,
-            countedItemSize: {
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 0,
                 cost: 1.99,
-            },
+            }),
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'countedItemSize', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['measureAmount']),
         );
     });
 
@@ -232,24 +239,25 @@ describe('inventory area item validator', () => {
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: CreateInventoryAreaItemDto = {
+        const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 2,
-            countedItemSize: {
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 1,
                 cost: -1,
-            },
+            }),
             parentInventoryCountId: count.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'countedItemSize', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['cost']),
         );
     });
 
@@ -258,11 +266,11 @@ describe('inventory area item validator', () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: 5,
             countedItemSizeId: food_a.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
         expect(errors).toBeNull();
@@ -271,17 +279,18 @@ describe('inventory area item validator', () => {
     it('fail validate update: amount with value 0', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: 0,
             countedItemSizeId: itemToUpdate.countedItemSize.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['amount']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['amount']),
         );
     });
 
@@ -290,17 +299,18 @@ describe('inventory area item validator', () => {
 
         const dry_c = await findInventoryItem(DRY_C);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: itemToUpdate.amount,
             countedItemSizeId: dry_c.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
         );
     });
 
@@ -310,17 +320,18 @@ describe('inventory area item validator', () => {
         const food_c = await findInventoryItem(FOOD_C);
         const food_b = await findInventoryItem(FOOD_B);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: food_c.id,
             amount: itemToUpdate.amount,
             countedItemSizeId: food_b.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['countedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['countedItemSize']),
         );
     });
 
@@ -329,24 +340,25 @@ describe('inventory area item validator', () => {
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: itemToUpdate.amount,
             countedItemSizeId: itemToUpdate.countedItemSize.id,
-            countedItemSize: {
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 1,
                 cost: 1.99,
-            },
-        };
+            }),
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
@@ -354,74 +366,77 @@ describe('inventory area item validator', () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
             amount: itemToUpdate.amount,
-        };
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['countedItemSize', 'countedItemSizeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['countedItemSize', 'countedItemSizeId']),
         );
     });
 
-    it('fail validate update: nestedUpdateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
+    it('fail validate update: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: itemToUpdate.amount,
-            countedItemSize: {
-                id: itemToUpdate.countedItemSize.id,
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                createId: 'c1',
                 measureAmount: 0,
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 cost: null
-            },
-        };
+            }),
+        });
 
-        const errors = await validator.validateDto(dto, itemToUpdate.id);
+        const errors = await validator.validateDto(dto, 'c1');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
-                { prop: 'countedItemSize', id: itemToUpdate.countedItemSize.id },
+                { prop: 'countedItemSize', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['measureAmount']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['measureAmount']),
         );
     });
 
-    it('fail validate update: nestedUpdateInventoryItemSizeDto errors: cost with value 0', async () => {
+    it('fail validate update: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const pkg = await findPackage(PACKAGE_PKG);
         const uom = await findUom(POUND);
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: itemToUpdate.amount,
-            countedItemSize: {
-                id: itemToUpdate.countedItemSize.id,
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                createId: 'c1',
                 cost: -1,
                 packageId: pkg.id,
                 measureTypeId: uom.id,
                 measureAmount: 1,
-            },
-        };
+            }),
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
-                { prop: 'countedItemSize', id: itemToUpdate.countedItemSize.id },
+                { prop: 'countedItemSize', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['cost']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['cost']),
         );
     });
 
-    it('fail validate update: nestedUpdateInventoryItemSizeDto errors: already exists', async () => {
+    it('fail validate update: nestedCreateInventoryItemSizeDto errors: already exists', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
 
         // Find another size with the same item that has different package/measureType
@@ -439,25 +454,26 @@ describe('inventory area item validator', () => {
             throw new Error('target size not found');
         }
 
-        const dto: UpdateInventoryAreaItemDto = {
+        const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
             amount: itemToUpdate.amount,
-            countedItemSize: {
-                id: itemToUpdate.countedItemSize.id,
+            countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                createId: 'c1',
                 packageId: targetSize.package.id,
                 measureTypeId: targetSize.measureType.id,
-                measureAmount: 1,
+                measureAmount: targetSize.measureAmount,
                 cost: null
-            },
-        };
+            }),
+        });
 
         const errors = await validator.validateDto(dto, itemToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
-                { prop: 'countedItemSize', id: itemToUpdate.countedItemSize.id },
+                { prop: 'countedItemSize', id: 'c1' },
             ],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['measureType', 'package', 'measureAmount']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']),
         );
     });
 });

@@ -560,5 +560,3 @@ describe('inventory area count validator', () => {
         );
     });
 });
-
-

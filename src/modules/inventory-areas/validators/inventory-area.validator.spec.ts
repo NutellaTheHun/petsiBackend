@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
@@ -39,9 +40,9 @@ describe('inventory area validator', () => {
 
     // successfully validate createDto with no validation errors
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateInventoryAreaDto = {
+        const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
             name: 'New Area Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -49,15 +50,16 @@ describe('inventory area validator', () => {
 
     // fail to validate create: name already exists
     it('fail validate create: name already exists', async () => {
-        const dto: CreateInventoryAreaDto = {
+        const dto: CreateInventoryAreaDto = plainToInstance(CreateInventoryAreaDto, {
             name: AREA_A,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -68,9 +70,9 @@ describe('inventory area validator', () => {
             throw new Error('area not found');
         }
 
-        const dto: UpdateInventoryAreaDto = {
+        const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
             name: 'Updated Area Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, areaToUpdate.id);
         expect(errors).toBeNull();
@@ -83,15 +85,16 @@ describe('inventory area validator', () => {
             throw new Error('area not found');
         }
 
-        const dto: UpdateInventoryAreaDto = {
+        const dto: UpdateInventoryAreaDto = plainToInstance(UpdateInventoryAreaDto, {
             name: AREA_B,
-        };
+        });
 
         const errors = await validator.validateDto(dto, areaToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });

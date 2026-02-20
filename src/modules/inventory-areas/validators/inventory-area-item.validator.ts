@@ -6,6 +6,7 @@ import { ValidatorIdentityBaseInterface } from '../../../common/base/validator-i
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { InventoryItemSizeValidatorIdentity } from '../../inventory-items/validators/identities/inventory-item-size.validator.identity.interface';
 import { InventoryItemSizeValidator } from '../../inventory-items/validators/inventory-item-size.validator';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
@@ -71,10 +72,15 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
         }
 
         if (identity.countedItemSize) {
-            // Nested validator call
+            // Nested validator call, must include inventoryItemId to check if it exists already.
+            let resolvedIdentity: InventoryItemSizeValidatorIdentity = identity.countedItemSize;
+            if (identity.countedInventoryItemId) {
+                resolvedIdentity = { ...resolvedIdentity, inventoryItemId: identity.countedInventoryItemId };
+            }
+
             await this.itemSizeValidator.validateNestedIdentity(
                 'countedItemSize',
-                identity.countedItemSize,
+                resolvedIdentity,
                 errorMap,
             );
         }
@@ -98,7 +104,7 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
                 countedInventoryItemId: dto.countedInventoryItemId,
                 amount: dto.amount,
                 countedItemSizeId: dto.countedItemSizeId,
-                countedItemSize: dto.countedItemSize,
+                countedItemSize: dto.countedItemSize ? await this.itemSizeValidator.resolveIdentity(dto.countedItemSize, dto.countedItemSize.createId) : undefined,
                 parentInventoryCountId: dto instanceof CreateInventoryAreaItemDto ? dto.parentInventoryCountId : undefined,
             } as InventoryAreaItemValidatorIdentity;
         }
@@ -108,7 +114,7 @@ export class InventoryAreaItemValidator extends NestedValidatorBase<InventoryAre
             countedInventoryItemId: dto.countedInventoryItemId,
             amount: dto.amount,
             countedItemSizeId: dto.countedItemSizeId,
-            countedItemSize: dto.countedItemSize,
+            countedItemSize: dto.countedItemSize ? await this.itemSizeValidator.resolveIdentity(dto.countedItemSize, dto.countedItemSize.createId) : undefined,
         } as InventoryAreaItemValidatorIdentity
     }
 }
