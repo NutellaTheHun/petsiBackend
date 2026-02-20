@@ -82,6 +82,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
 
         const dto: CreateOrderMenuItemDto = {
             menuItemId: containerMenuItem.id,
@@ -142,7 +145,7 @@ describe('order menu item validator', () => {
         };
 
         const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['size']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['size']));
     });
 
     it('fail validate create: duplicate container item', async () => {
@@ -152,6 +155,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -198,7 +204,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
-
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
         if (!containerMenuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
         }
@@ -229,7 +237,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' },],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -264,7 +272,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
@@ -275,7 +283,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
-
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
         const allSizes = await sizeRepo.find();
@@ -307,7 +317,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
         );
     });
 
@@ -318,6 +328,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
 
         const containedItem =
             containerMenuItem.containerMenuItems[0].containedMenuItem;
@@ -345,7 +358,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -356,6 +369,9 @@ describe('order menu item validator', () => {
         }
 
         const containerMenuItem = await findMenuItem(item_f);
+        if (!containerMenuItem.containerMenuItems) {
+            throw new Error('container menu item container menu items not found');
+        }
         if (!containerMenuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
         }
@@ -386,7 +402,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -395,6 +411,9 @@ describe('order menu item validator', () => {
         const orderMenuItemToUpdate = await findOrderMenuItem();
 
         const newContainerItem = await findContainerMenuItem();
+        if (!newContainerItem.containerMenuItems) {
+            throw new Error('new container item container menu items not found');
+        }
 
         let newQuantity = 5;
         if (newContainerItem.variableMaxAmount) {
@@ -459,11 +478,14 @@ describe('order menu item validator', () => {
             dto,
             orderMenuItemToUpdate.id,
         );
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['size']));
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['size']));
     });
 
     it('fail validate update: duplicate container item', async () => {
         const containerOrderMenuItem = await findContainerOrderMenuItem();
+        if (!containerOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('container order menu item container menu items not found');
+        }
 
         const containedItem =
             containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
@@ -507,6 +529,9 @@ describe('order menu item validator', () => {
 
     it('fail validate update: container quantity not equal to variable max amount', async () => {
         const containerOrderMenuItem = await findContainerOrderMenuItem();
+        if (!containerOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('container order menu item container menu items not found');
+        }
         if (!containerOrderMenuItem.menuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
         }
@@ -539,7 +564,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containerOrderMenuItems']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containerOrderMenuItems']),
         );
     });
 
@@ -573,12 +598,15 @@ describe('order menu item validator', () => {
             [
                 { prop: 'containerOrderMenuItems', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
     it('fail validate update: nested containerOrderMenuItems validator errors: contained item size not valid', async () => {
         const containerOrderMenuItem = await findContainerOrderMenuItem();
+        if (!containerOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('container order menu item container menu items not found');
+        }
 
         const containedItem =
             containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
@@ -615,12 +643,15 @@ describe('order menu item validator', () => {
             [
                 { prop: 'containerOrderMenuItems', id: 'c1' },
             ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
         );
     });
 
     it('fail validate update: nested containerOrderMenuItems validator errors: quantity with value 0', async () => {
         const containerOrderMenuItem = await findContainerOrderMenuItem();
+        if (!containerOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('container order menu item container menu items not found');
+        }
 
         const containedItem =
             containerOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
@@ -650,12 +681,15 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
     it('fail validate update: nested containerOrderMenuItems validator errors: parent with variable max amount and quantity not equal to variable max amount', async () => {
         const containerOrderMenuItem = await findContainerOrderMenuItem();
+        if (!containerOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('container order menu item container menu items not found');
+        }
         if (!containerOrderMenuItem.menuItem.variableMaxAmount) {
             throw new Error('container menu item does not have variableMaxAmount');
         }
@@ -688,7 +722,7 @@ describe('order menu item validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'containerOrderMenuItems', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 });

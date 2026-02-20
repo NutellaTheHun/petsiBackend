@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { IsNull, Not, Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
@@ -66,13 +67,13 @@ describe('menu item container item validator', () => {
         const parentContainer = await findMenuItem(item_f);
         const containedItem = await findMenuItem(item_a);
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItem.sizes[0].id,
             quantity: 2,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: parentContainer.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -82,19 +83,20 @@ describe('menu item container item validator', () => {
         const parentContainer = await findMenuItem(item_f);
         const containedContainer = await findMenuItem(item_g);
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedContainer.id,
             containedItemSizeId: containedContainer.sizes[0].id,
             quantity: 2,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: parentContainer.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -110,19 +112,20 @@ describe('menu item container item validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: invalidSize.id,
             quantity: 2,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: parentContainer.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
         );
     });
 
@@ -130,35 +133,37 @@ describe('menu item container item validator', () => {
         const parentContainer = await findMenuItem(item_f);
         const containedItem = await findMenuItem(item_a);
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItem.sizes[0].id,
             quantity: 0,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: parentContainer.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']));
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']));
     });
 
     it('fail validate create: parent item not of type container', async () => {
         const singleItem = await findMenuItem(item_a);
         const containedItem = await findMenuItem(item_b);
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItem.sizes[0].id,
             quantity: 2,
             parentMenuItemId: singleItem.id,
             parentItemSizeId: singleItem.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['parentMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['parentMenuItem']),
         );
     });
 
@@ -174,19 +179,20 @@ describe('menu item container item validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItem.sizes[0].id,
             quantity: 2,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: invalidSize.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['parentItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['parentItemSize']),
         );
     });
 
@@ -213,19 +219,20 @@ describe('menu item container item validator', () => {
 
         const containedItem = await findMenuItem(item_a);
 
-        const dto: CreateMenuItemContainerItemDto = {
+        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItem.sizes[0].id,
             quantity: parentContainer.variableMaxAmount + 1,
             parentMenuItemId: parentContainer.id,
             parentItemSizeId: parentContainer.sizes[0].id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -234,11 +241,11 @@ describe('menu item container item validator', () => {
         const containerItemToUpdate = await findContainerItem();
         const newItem = await findMenuItem(item_a);
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: newItem.id,
             containedItemSizeId: newItem.sizes[0].id,
             quantity: 5,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -254,20 +261,21 @@ describe('menu item container item validator', () => {
             where: { type: MENU_ITEM_TYPES.CONTAINER },
         });
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: containerItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
             quantity: containerItemToUpdate.quantity
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -284,20 +292,21 @@ describe('menu item container item validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedItemSizeId: invalidSize.id,
             quantity: containerItemToUpdate.quantity,
             containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
         );
     });
 
@@ -312,56 +321,59 @@ describe('menu item container item validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: newContainedItem.id,
             containedItemSizeId: invalidSize.id,
             quantity: containerItemToUpdate.quantity,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedItemSize']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
         );
     });
 
     it('fail validate update: quantity with value 0', async () => {
         const containerItemToUpdate = await findContainerItem();
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             quantity: 0,
             containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
-        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']));
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']));
     });
 
     it('fail validate update: parent menu item cannot be equal to contained menu item', async () => {
         const containerItemToUpdate = await findContainerItem();
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: containerItemToUpdate.parentMenuItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
             quantity: containerItemToUpdate.quantity,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -374,20 +386,21 @@ describe('menu item container item validator', () => {
             throw new Error('container item not found');
         }
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: containerItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
             quantity: containerItemToUpdate.quantity,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -397,20 +410,21 @@ describe('menu item container item validator', () => {
             throw new Error('parent does not have variableMaxAmount');
         }
 
-        const dto: UpdateMenuItemContainerItemDto = {
+        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             quantity: containerItemToUpdate.parentMenuItem.variableMaxAmount + 1,
             containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 });

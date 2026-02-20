@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
@@ -44,24 +45,25 @@ describe('inventory item package validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateInventoryItemPackageDto = {
+        const dto: CreateInventoryItemPackageDto = plainToInstance(CreateInventoryItemPackageDto, {
             name: 'New Package Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateInventoryItemPackageDto = {
+        const dto: CreateInventoryItemPackageDto = plainToInstance(CreateInventoryItemPackageDto, {
             name: PACKAGE_PKG,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -74,9 +76,9 @@ describe('inventory item package validator', () => {
             throw new Error('package not found');
         }
 
-        const dto: UpdateInventoryItemPackageDto = {
+        const dto: UpdateInventoryItemPackageDto = plainToInstance(UpdateInventoryItemPackageDto, {
             name: 'Updated Package Name',
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -94,18 +96,19 @@ describe('inventory item package validator', () => {
         const packageToUpdate = packages[0];
         const existingPackage = packages[1];
 
-        const dto: UpdateInventoryItemPackageDto = {
+        const dto: UpdateInventoryItemPackageDto = plainToInstance(UpdateInventoryItemPackageDto, {
             name: existingPackage.name,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             packageToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });

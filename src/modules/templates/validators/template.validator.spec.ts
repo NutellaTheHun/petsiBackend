@@ -75,13 +75,14 @@ describe('template validator', () => {
     it('fail validate create: name already exists', async () => {
         const dto: CreateTemplateDto = {
             name: template_a,
+            templateMenuItems: [],
         };
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -171,7 +172,7 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'templateMenuItems', id: 'c1' }, { prop: 'tablePosIndex' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
         );
     });
 
@@ -231,7 +232,7 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -342,7 +343,7 @@ describe('template validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['tablePosIndex']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
         );
     });
 });

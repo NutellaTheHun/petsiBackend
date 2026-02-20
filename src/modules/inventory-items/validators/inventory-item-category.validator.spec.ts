@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemCategoryDto } from '../dto/inventory-item-category/create-inventory-item-category.dto';
 import { UpdateInventoryItemCategoryDto } from '../dto/inventory-item-category/update-inventory-item-category.dto';
@@ -43,24 +44,25 @@ describe('inventory item category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateInventoryItemCategoryDto = {
+        const dto: CreateInventoryItemCategoryDto = plainToInstance(CreateInventoryItemCategoryDto, {
             name: 'New Category Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateInventoryItemCategoryDto = {
+        const dto: CreateInventoryItemCategoryDto = plainToInstance(CreateInventoryItemCategoryDto, {
             name: FOOD_CAT,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -73,9 +75,9 @@ describe('inventory item category validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: UpdateInventoryItemCategoryDto = {
+        const dto: UpdateInventoryItemCategoryDto = plainToInstance(UpdateInventoryItemCategoryDto, {
             name: 'Updated Category Name',
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -93,18 +95,19 @@ describe('inventory item category validator', () => {
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
 
-        const dto: UpdateInventoryItemCategoryDto = {
+        const dto: UpdateInventoryItemCategoryDto = plainToInstance(UpdateInventoryItemCategoryDto, {
             name: existingCategory.name,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             categoryToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });

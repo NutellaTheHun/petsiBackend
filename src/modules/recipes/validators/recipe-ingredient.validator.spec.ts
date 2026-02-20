@@ -98,7 +98,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -120,7 +120,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -140,7 +140,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -184,7 +184,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -207,7 +207,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', [], ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
         );
     });
 
@@ -228,7 +228,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -248,7 +248,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['ingredientRecipeId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipeId']),
         );
     });
 });

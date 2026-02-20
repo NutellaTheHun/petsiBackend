@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
@@ -77,11 +78,11 @@ describe('label validator', () => {
             }
         }
 
-        const dto: CreateLabelDto = {
+        const dto: CreateLabelDto = plainToInstance(CreateLabelDto, {
             imageUrl: url_red,
             menuItemId: menuItem.id,
             labelTypeId: labelType.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -95,17 +96,18 @@ describe('label validator', () => {
             throw new Error('existing label not found');
         }
 
-        const dto: CreateLabelDto = {
+        const dto: CreateLabelDto = plainToInstance(CreateLabelDto, {
             imageUrl: url_red,
             menuItemId: existingLabel.menuItem.id,
             labelTypeId: existingLabel.labelType.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['labelType']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['labelType']),
         );
     });
 
@@ -138,11 +140,11 @@ describe('label validator', () => {
             throw new Error('new label type not found');
         }
 
-        const dto: UpdateLabelDto = {
+        const dto: UpdateLabelDto = plainToInstance(UpdateLabelDto, {
             imageUrl: 'new-url',
             menuItemId: newMenuItem.id,
             labelTypeId: newLabelType.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, labelToUpdate.id);
         expect(errors).toBeNull();
@@ -159,17 +161,18 @@ describe('label validator', () => {
         const labelToUpdate = labels[0];
         const existingLabel = labels[1];
 
-        const dto: UpdateLabelDto = {
+        const dto: UpdateLabelDto = plainToInstance(UpdateLabelDto, {
             menuItemId: existingLabel.menuItem.id,
             labelTypeId: existingLabel.labelType.id,
             imageUrl: labelToUpdate.imageUrl,
-        };
+        });
 
         const errors = await validator.validateDto(dto, labelToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['labelType']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['labelType']),
         );
     });
 });

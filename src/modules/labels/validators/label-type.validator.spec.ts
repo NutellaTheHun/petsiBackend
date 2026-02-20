@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
@@ -39,58 +40,61 @@ describe('label type validator', () => {
 
     // Create Validation Tests
     it('successfully validate create with no validation errors', async () => {
-        const dto: CreateLabelTypeDto = {
+        const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
             name: 'New Label Type',
             length: 400,
             width: 200,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateLabelTypeDto = {
+        const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
             name: type_a,
             length: 400,
             width: 200,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
     it('fail validate create: length with value 0', async () => {
-        const dto: CreateLabelTypeDto = {
+        const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
             name: 'New Label Type',
             length: 0,
             width: 200,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['length']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['length']),
         );
     });
 
     it('fail validate create: width with value 0', async () => {
-        const dto: CreateLabelTypeDto = {
+        const dto: CreateLabelTypeDto = plainToInstance(CreateLabelTypeDto, {
             name: 'New Label Type',
             length: 400,
             width: 0,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['width']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['width']),
         );
     });
 
@@ -101,11 +105,11 @@ describe('label type validator', () => {
             throw new Error('type not found');
         }
 
-        const dto: UpdateLabelTypeDto = {
+        const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             name: 'Updated Label Type',
             length: 500,
             width: 300,
-        };
+        });
 
         const errors = await validator.validateDto(dto, typeToUpdate.id);
         expect(errors).toBeNull();
@@ -120,17 +124,18 @@ describe('label type validator', () => {
         const typeToUpdate = types[0];
         const existingType = types[1];
 
-        const dto: UpdateLabelTypeDto = {
+        const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             name: existingType.name,
             length: typeToUpdate.length,
             width: typeToUpdate.width,
-        };
+        });
 
         const errors = await validator.validateDto(dto, typeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -140,17 +145,18 @@ describe('label type validator', () => {
             throw new Error('type not found');
         }
 
-        const dto: UpdateLabelTypeDto = {
+        const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             length: 0,
             width: typeToUpdate.width,
             name: typeToUpdate.name,
-        };
+        });
 
         const errors = await validator.validateDto(dto, typeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['length']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['length']),
         );
     });
 
@@ -160,17 +166,18 @@ describe('label type validator', () => {
             throw new Error('type not found');
         }
 
-        const dto: UpdateLabelTypeDto = {
+        const dto: UpdateLabelTypeDto = plainToInstance(UpdateLabelTypeDto, {
             width: 0,
             length: typeToUpdate.length,
             name: typeToUpdate.name,
-        };
+        });
 
         const errors = await validator.validateDto(dto, typeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['width']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['width']),
         );
     });
 });

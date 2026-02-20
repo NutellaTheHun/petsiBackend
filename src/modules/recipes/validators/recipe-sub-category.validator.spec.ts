@@ -85,7 +85,7 @@ describe('recipe sub category validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -106,7 +106,7 @@ describe('recipe sub category validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['name']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
         );
     });
 
@@ -159,7 +159,7 @@ describe('recipe sub category validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -182,7 +182,7 @@ describe('recipe sub category validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['name']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['name']),
         );
     });
 });

@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemSizeDto } from '../dto/menu-item-size/create-menu-item-size.dto';
 import { UpdateMenuItemSizeDto } from '../dto/menu-item-size/update-menu-item-size.dto';
@@ -38,24 +39,25 @@ describe('menu item size validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateMenuItemSizeDto = {
+        const dto: CreateMenuItemSizeDto = plainToInstance(CreateMenuItemSizeDto, {
             name: 'New Size Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateMenuItemSizeDto = {
+        const dto: CreateMenuItemSizeDto = plainToInstance(CreateMenuItemSizeDto, {
             name: SIZE_ONE,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -66,9 +68,9 @@ describe('menu item size validator', () => {
             throw new Error('size not found');
         }
 
-        const dto: UpdateMenuItemSizeDto = {
+        const dto: UpdateMenuItemSizeDto = plainToInstance(UpdateMenuItemSizeDto, {
             name: 'Updated Size Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, sizeToUpdate.id);
         expect(errors).toBeNull();
@@ -83,15 +85,16 @@ describe('menu item size validator', () => {
         const sizeToUpdate = sizes[0];
         const existingSize = sizes[1];
 
-        const dto: UpdateMenuItemSizeDto = {
+        const dto: UpdateMenuItemSizeDto = plainToInstance(UpdateMenuItemSizeDto, {
             name: existingSize.name,
-        };
+        });
 
         const errors = await validator.validateDto(dto, sizeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });

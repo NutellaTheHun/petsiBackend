@@ -67,6 +67,9 @@ describe('order container item validator', () => {
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
         const parentOrderMenuItem = await findOrderMenuItem(item_a);
+        if (!parentOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('parent order menu item container menu items not found');
+        }
 
         const containedItem =
             parentOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
@@ -103,7 +106,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
@@ -114,6 +117,9 @@ describe('order container item validator', () => {
     // TODO create fail: Invalid parent order menu item
     it('fail validate create: quantity with value 0', async () => {
         const parentOrderMenuItem = await findOrderMenuItem(item_a);
+        if (!parentOrderMenuItem.menuItem.containerMenuItems) {
+            throw new Error('parent order menu item container menu items not found');
+        }
 
         const containedItem =
             parentOrderMenuItem.menuItem.containerMenuItems[0].containedMenuItem;
@@ -131,7 +137,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 
@@ -187,7 +193,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['type']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
@@ -216,7 +222,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', [], ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
         );
     });
 });

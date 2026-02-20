@@ -60,7 +60,7 @@ describe('unit of measure category validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -114,7 +114,7 @@ describe('unit of measure category validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'name' }],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });

@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
@@ -42,24 +43,25 @@ describe('inventory item vendor validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateInventoryItemVendorDto = {
+        const dto: CreateInventoryItemVendorDto = plainToInstance(CreateInventoryItemVendorDto, {
             name: 'New Vendor Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateInventoryItemVendorDto = {
+        const dto: CreateInventoryItemVendorDto = plainToInstance(CreateInventoryItemVendorDto, {
             name: VENDOR_A,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -72,9 +74,9 @@ describe('inventory item vendor validator', () => {
             throw new Error('vendor not found');
         }
 
-        const dto: UpdateInventoryItemVendorDto = {
+        const dto: UpdateInventoryItemVendorDto = plainToInstance(UpdateInventoryItemVendorDto, {
             name: 'Updated Vendor Name',
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -92,18 +94,19 @@ describe('inventory item vendor validator', () => {
         const vendorToUpdate = vendors[0];
         const existingVendor = vendors[1];
 
-        const dto: UpdateInventoryItemVendorDto = {
+        const dto: UpdateInventoryItemVendorDto = plainToInstance(UpdateInventoryItemVendorDto, {
             name: existingVendor.name,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             vendorToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', [], ['name']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 });
