@@ -7,6 +7,7 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
+import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import {
     UnitOfMeasure,
     UnitOfMeasureEntity,
@@ -18,6 +19,10 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity, U
     constructor(
         @InjectRepository(UnitOfMeasure)
         private readonly repo: Repository<UnitOfMeasure>,
+
+        @InjectRepository(UnitOfMeasureCategory)
+        private readonly unitOfMeasureCategoryRepo: Repository<UnitOfMeasureCategory>,
+
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
@@ -58,7 +63,7 @@ export class UnitOfMeasureValidator extends ValidatorBase<UnitOfMeasureEntity, U
         if (identity.categoryId !== undefined) {
             await this.helper.enforceExists(
                 identity.categoryId,
-                this.repo,
+                this.unitOfMeasureCategoryRepo,
                 'category',
                 errorMap,
             );

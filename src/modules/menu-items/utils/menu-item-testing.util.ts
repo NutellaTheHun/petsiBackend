@@ -186,7 +186,7 @@ export class MenuItemTestingUtil {
         this.menuItemInit = true;
 
         testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
-        await this.itemRepo.insert(await this.getTestMenuItemEntities(testContext));
+        await this.itemRepo.save(await this.getTestMenuItemEntities(testContext));
     }
 
     public async cleanupMenuItemTestDatabase(): Promise<void> {

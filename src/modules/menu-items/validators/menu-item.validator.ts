@@ -92,8 +92,13 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
                 }
             }
 
-            // nested validator call
             for (const containerItem of identity.containerMenuItems) {
+                // validate contained menu item is not the same as the parent menu item
+                if (containerItem.containedMenuItemId === identity.id) {
+                    errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
+                }
+
+                // nested validator call
                 await this.menuItemContainerValidator.validateNestedIdentity(
                     'containerMenuItems',
                     containerItem,

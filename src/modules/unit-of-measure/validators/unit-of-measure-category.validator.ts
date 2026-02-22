@@ -11,6 +11,7 @@ import {
     UnitOfMeasureCategory,
     UnitOfMeasureCategoryEntity,
 } from '../entities/unit-of-measure-category.entity';
+import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureCategoryValidatorIdentity } from './identities/unit-of-measure-category.validator.identity.interface';
 
 @Injectable()
@@ -18,6 +19,10 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
     constructor(
         @InjectRepository(UnitOfMeasureCategory)
         private readonly repo: Repository<UnitOfMeasureCategory>,
+
+        @InjectRepository(UnitOfMeasure)
+        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
+
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
@@ -40,7 +45,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
         if (identity.baseConversionUnitId !== undefined) {
             await this.helper.enforceExists(
                 identity.baseConversionUnitId,
-                this.repo,
+                this.unitOfMeasureRepo,
                 'baseConversionUnit',
                 errorMap,
             );

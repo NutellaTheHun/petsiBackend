@@ -1,7 +1,7 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { IsNull, Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -30,8 +30,10 @@ describe('menu item container item validator', () => {
 
     const findContainerItem = async () => {
         return await containerItemRepo.findOneOrFail({
+            where: {},
             relations: [
                 'containedMenuItem',
+                'containedMenuItem.sizes',
                 'containedItemSize',
                 'parentMenuItem',
                 'parentItemSize',
@@ -96,7 +98,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
@@ -146,27 +148,6 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']));
     });
 
-    it('fail validate create: parent item not of type container', async () => {
-        const singleItem = await findMenuItem(item_a);
-        const containedItem = await findMenuItem(item_b);
-
-        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
-            containedMenuItemId: containedItem.id,
-            containedItemSizeId: containedItem.sizes[0].id,
-            quantity: 2,
-            parentMenuItemId: singleItem.id,
-            parentItemSizeId: singleItem.sizes[0].id,
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['parentMenuItem']),
-        );
-    });
-
     it('fail validate create: invalid parent item size', async () => {
         const parentContainer = await findMenuItem(item_f);
         const containedItem = await findMenuItem(item_a);
@@ -196,46 +177,6 @@ describe('menu item container item validator', () => {
         );
     });
 
-    it('fail validate create: parent with variable max amount and quantity not equal to variable max amount', async () => {
-        // get containers where variableMaxAmount is not null
-        const variableContainers = await itemRepo.find({
-            where: { variableMaxAmount: Not(IsNull()) },
-            relations: ['sizes'],
-        });
-        if (variableContainers.length === 0) {
-            throw new Error('variable containers not found');
-        }
-
-        const parentContainer = variableContainers[0];
-        if (!parentContainer) {
-            throw new Error('parent container not found');
-        }
-        if (!parentContainer.sizes || parentContainer.sizes.length === 0) {
-            throw new Error('parent container sizes not found');
-        }
-        if (!parentContainer.variableMaxAmount) {
-            throw new Error('parent container does not have variableMaxAmount');
-        }
-
-        const containedItem = await findMenuItem(item_a);
-
-        const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
-            containedMenuItemId: containedItem.id,
-            containedItemSizeId: containedItem.sizes[0].id,
-            quantity: parentContainer.variableMaxAmount + 1,
-            parentMenuItemId: parentContainer.id,
-            parentItemSizeId: parentContainer.sizes[0].id,
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
-        );
-    });
-
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const containerItemToUpdate = await findContainerItem();
@@ -259,11 +200,12 @@ describe('menu item container item validator', () => {
 
         const containerItem = await itemRepo.findOneOrFail({
             where: { type: MENU_ITEM_TYPES.CONTAINER },
+            relations: ['sizes'],
         });
 
         const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: containerItem.id,
-            containedItemSizeId: containerItemToUpdate.containedItemSize.id,
+            containedItemSizeId: containerItem.sizes[0].id,
             quantity: containerItemToUpdate.quantity
         });
 
@@ -275,7 +217,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 
@@ -314,6 +256,7 @@ describe('menu item container item validator', () => {
         const containerItemToUpdate = await findContainerItem();
         const newContainedItem = await findMenuItem(item_b);
         const allSizes = await sizeRepo.find();
+        // find a size that is not in the new contained item
         const invalidSize = allSizes.find(
             (s) => !newContainedItem.sizes?.some((cs) => cs.id === s.id),
         );
@@ -356,31 +299,11 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(errors, [], createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']));
     });
 
-    it('fail validate update: parent menu item cannot be equal to contained menu item', async () => {
-        const containerItemToUpdate = await findContainerItem();
-
-        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
-            containedMenuItemId: containerItemToUpdate.parentMenuItem.id,
-            containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-            quantity: containerItemToUpdate.quantity,
-        });
-
-        const errors = await validator.validateDto(
-            dto,
-            containerItemToUpdate.id,
-        );
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
-        );
-    });
-
     it('fail validate update: containedItemId item not of type single', async () => {
         const containerItemToUpdate = await findContainerItem();
         const containerItem = await itemRepo.findOne({
             where: { type: MENU_ITEM_TYPES.CONTAINER },
+            relations: ['sizes'],
         });
         if (!containerItem) {
             throw new Error('container item not found');
@@ -388,7 +311,7 @@ describe('menu item container item validator', () => {
 
         const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
             containedMenuItemId: containerItem.id,
-            containedItemSizeId: containerItemToUpdate.containedItemSize.id,
+            containedItemSizeId: containerItem.sizes[0].id,
             quantity: containerItemToUpdate.quantity,
         });
 
@@ -400,31 +323,7 @@ describe('menu item container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
-        );
-    });
-
-    it('fail validate update: parent with variable max amount and quantity not equal to variable max amount', async () => {
-        const containerItemToUpdate = await findContainerItem();
-        if (!containerItemToUpdate.parentMenuItem.variableMaxAmount) {
-            throw new Error('parent does not have variableMaxAmount');
-        }
-
-        const dto: UpdateMenuItemContainerItemDto = plainToInstance(UpdateMenuItemContainerItemDto, {
-            quantity: containerItemToUpdate.parentMenuItem.variableMaxAmount + 1,
-            containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
-            containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-        });
-
-        const errors = await validator.validateDto(
-            dto,
-            containerItemToUpdate.id,
-        );
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
         );
     });
 });

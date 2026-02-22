@@ -180,7 +180,6 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
                     'containerOrderMenuItems',
                     item,
                     errorMap,
-                    item.id ?? item.createId,
                 );
             }
 

@@ -5,6 +5,7 @@ import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
+import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
@@ -15,6 +16,8 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
     constructor(
         @InjectRepository(User)
         private readonly repo: Repository<User>,
+        @InjectRepository(Role)
+        private readonly roleRepo: Repository<Role>,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
@@ -41,7 +44,7 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
             for (const roleId of identity.roleIds) {
                 await this.helper.enforceExists(
                     roleId,
-                    this.repo,
+                    this.roleRepo,
                     'roles',
                     errorMap,
                 );
