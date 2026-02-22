@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -76,12 +77,12 @@ describe('order container item validator', () => {
         const containedItemSize =
             parentOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: CreateOrderContainerItemDto = {
+        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItemSize.id,
             quantity: 2,
             parentOrderMenuItemId: parentOrderMenuItem.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -95,14 +96,15 @@ describe('order container item validator', () => {
             relations: ['sizes'],
         });
 
-        const dto: CreateOrderContainerItemDto = {
+        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
             containedMenuItemId: containerItem.id,
             containedItemSizeId: containerItem.sizes[0].id,
             quantity: 2,
             parentOrderMenuItemId: parentOrderMenuItem.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -126,14 +128,15 @@ describe('order container item validator', () => {
         const containedItemSize =
             parentOrderMenuItem.menuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: CreateOrderContainerItemDto = {
+        const dto: CreateOrderContainerItemDto = plainToInstance(CreateOrderContainerItemDto, {
             containedMenuItemId: containedItem.id,
             containedItemSizeId: containedItemSize.id,
             quantity: 0,
             parentOrderMenuItemId: parentOrderMenuItem.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -153,11 +156,11 @@ describe('order container item validator', () => {
             throw new Error('new item not found');
         }
 
-        const dto: UpdateOrderContainerItemDto = {
+        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
             containedMenuItemId: newItem.id,
             containedItemSizeId: newItem.sizes[0].id,
             quantity: 5,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -180,16 +183,17 @@ describe('order container item validator', () => {
             throw new Error('container item sizes not found');
         }
 
-        const dto: UpdateOrderContainerItemDto = {
+        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
             containedMenuItemId: containerItem.id,
             containedItemSizeId: containerItem.sizes[0].id,
             quantity: 2,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -209,16 +213,17 @@ describe('order container item validator', () => {
             throw new Error('container item not found');
         }
 
-        const dto: UpdateOrderContainerItemDto = {
+        const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
             quantity: 0,
             containedMenuItemId: containerItemToUpdate.containedMenuItem.id,
             containedItemSizeId: containerItemToUpdate.containedItemSize.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             containerItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],

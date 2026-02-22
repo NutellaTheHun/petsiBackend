@@ -1,9 +1,10 @@
+import { plainToInstance } from "class-transformer";
 import { UpdateRecipeDto } from "../../dto/recipe/update-recipe-dto";
 import { Recipe } from "../../entities/recipe.entity";
 import { recipeIngredientToNestedUpdateDto } from "./recipe-ingredient.dto.transformer";
 
 export function recipeToUpdateDto(recipe: Recipe): UpdateRecipeDto {
-    return {
+    return plainToInstance(UpdateRecipeDto, {
         name: recipe.name,
         producedMenuItemId: recipe.producedMenuItem?.id ?? null,
         batchResultQuantity: recipe.batchResultQuantity ?? null,
@@ -15,5 +16,5 @@ export function recipeToUpdateDto(recipe: Recipe): UpdateRecipeDto {
         categoryId: recipe.category?.id ?? null,
         subCategoryId: recipe.subCategory?.id ?? null,
         ingredients: recipe.ingredients.map(ingredient => recipeIngredientToNestedUpdateDto(ingredient)),
-    };
+    });
 }

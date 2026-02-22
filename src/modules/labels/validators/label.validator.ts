@@ -4,9 +4,11 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
+import { LabelType } from '../entities/label-type.entity';
 import { Label, LabelEntity } from '../entities/label.entity';
 import { LabelValidatorIdentity } from './identities/label.validator.identity.interface';
 
@@ -16,6 +18,12 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
     constructor(
         @InjectRepository(Label)
         private readonly repo: Repository<Label>,
+
+        @InjectRepository(LabelType)
+        private readonly labelTypeRepo: Repository<LabelType>,
+
+        @InjectRepository(MenuItem)
+        private readonly menuItemRepo: Repository<MenuItem>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -29,7 +37,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         if (identity.labelTypeId !== undefined) {
             this.helper.enforceExists(
                 identity.labelTypeId,
-                this.repo,
+                this.labelTypeRepo,
                 'labelType',
                 errorMap,
             );
@@ -38,7 +46,7 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
         if (identity.menuItemId !== undefined) {
             this.helper.enforceExists(
                 identity.menuItemId,
-                this.repo,
+                this.menuItemRepo,
                 'menuItem',
                 errorMap,
             );
@@ -51,8 +59,8 @@ export class LabelValidator extends ValidatorBase<LabelEntity, LabelValidatorIde
                     labelType: { id: identity.labelTypeId },
                 },
             });
-            if (exists) {
-                errorMap.addError('ALREADY_EXISTS', undefined, ['labelType', 'menuItem']);
+            if (exists && exists.id !== id) {
+                errorMap.addError('ALREADY_EXISTS', undefined, ['labelType']);
             }
         }
 

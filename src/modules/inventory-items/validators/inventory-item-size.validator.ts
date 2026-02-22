@@ -97,7 +97,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
                     measureAmount: identity.measureAmount,
                 },
             });
-            if (exists) {
+            if (exists && exists.id !== id) {
                 errorMap.addError('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']);
                 console.log("ALREADY EXISTS");
             }
@@ -118,12 +118,23 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             } as InventoryItemSizeValidatorIdentity;
         }
 
+        const currentSize = await this.repo.findOne({
+            where: {
+                id: id as number,
+            },
+            relations: ['inventoryItem'],
+        });
+        if (!currentSize) {
+            throw new Error('Cant find current size');
+        }
+
         return {
             id: dto instanceof NestedUpdateInventoryItemSizeDto ? dto.id : undefined,
             cost: dto.cost,
             measureAmount: dto.measureAmount,
             packageId: dto.packageId,
             measureTypeId: dto.measureTypeId,
+            inventoryItemId: currentSize.inventoryItem.id,
         } as InventoryItemSizeValidatorIdentity;
     }
 }

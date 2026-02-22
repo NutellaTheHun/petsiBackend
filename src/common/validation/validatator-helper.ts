@@ -220,13 +220,17 @@ export class ValidatorHelper<
     ): Promise<void> {
         if (val == null) return;
 
-        const exists = await repo.findOne({
+        const exists = await repo.find({
             where: { [field]: val } as FindOptionsWhere<Entity>,
         });
-        if (exists) {
+        if (exists && exists.length > 0) {
             // if the id is the same as the existing id, not a validation error, createIds are strings and will always fail this check.
-            if (id && exists.id === id) return;
-            rootErrMap.addError('ALREADY_EXISTS', undefined, [String(field)]);
+            for (const exist of exists as Entity[]) {
+                if (exist.id !== id) {
+                    rootErrMap.addError('ALREADY_EXISTS', undefined, [String(field)]);
+                    break;
+                }
+            }
         }
     }
 

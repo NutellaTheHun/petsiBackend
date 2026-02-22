@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
@@ -39,20 +40,21 @@ describe('role validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateRoleDto = {
+        const dto: CreateRoleDto = plainToInstance(CreateRoleDto, {
             name: 'New Role Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root')
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateRoleDto = {
+        const dto: CreateRoleDto = plainToInstance(CreateRoleDto, {
             name: ROLE_ADMIN,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root')
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -67,9 +69,9 @@ describe('role validator', () => {
             throw new Error('role not found');
         }
 
-        const dto: UpdateRoleDto = {
+        const dto: UpdateRoleDto = plainToInstance(UpdateRoleDto, {
             name: 'Updated Role Name',
-        };
+        });
 
         const errors = await validator.validateDto(dto, roleToUpdate.id);
         expect(errors).toBeNull();
@@ -84,11 +86,12 @@ describe('role validator', () => {
         const roleToUpdate = roles[0];
         const existingRole = roles[1];
 
-        const dto: UpdateRoleDto = {
+        const dto: UpdateRoleDto = plainToInstance(UpdateRoleDto, {
             name: existingRole.name,
-        };
+        });
 
         const errors = await validator.validateDto(dto, roleToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],

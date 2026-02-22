@@ -2,8 +2,10 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { OrderCategory } from '../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
+import { Order } from '../orders/entities/order.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
 import { MenuItemContainerItemBuilder } from './builders/menu-item-container-item.builder';
@@ -29,57 +31,59 @@ import { MenuItemSizeValidator } from './validators/menu-item-size.validator';
 import { MenuItemValidator } from './validators/menu-item.validator';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      MenuItemCategory,
-      MenuItemSize,
-      MenuItem,
-      MenuItemContainerItem,
-      OrderMenuItem,
-      OrderContainerItem,
-    ]),
-    CacheModule.register(),
-    AppLoggingModule,
-    RequestContextModule,
-  ],
+    imports: [
+        TypeOrmModule.forFeature([
+            MenuItemCategory,
+            MenuItemSize,
+            MenuItem,
+            MenuItemContainerItem,
+            Order,
+            OrderCategory,
+            OrderMenuItem,
+            OrderContainerItem,
+        ]),
+        CacheModule.register(),
+        AppLoggingModule,
+        RequestContextModule,
+    ],
 
-  controllers: [
-    MenuItemCategoryController,
-    MenuItemSizeController,
-    MenuItemController,
-    MenuItemContainerItemController,
-  ],
+    controllers: [
+        MenuItemCategoryController,
+        MenuItemSizeController,
+        MenuItemController,
+        MenuItemContainerItemController,
+    ],
 
-  providers: [
-    MenuItemCategoryService,
-    MenuItemSizeService,
-    MenuItemService,
-    MenuItemContainerItemService,
+    providers: [
+        MenuItemCategoryService,
+        MenuItemSizeService,
+        MenuItemService,
+        MenuItemContainerItemService,
 
-    MenuItemCategoryBuilder,
-    MenuItemSizeBuilder,
-    MenuItemBuilder,
-    MenuItemContainerItemBuilder,
+        MenuItemCategoryBuilder,
+        MenuItemSizeBuilder,
+        MenuItemBuilder,
+        MenuItemContainerItemBuilder,
 
-    MenuItemCategoryValidator,
-    MenuItemContainerItemValidator,
-    MenuItemSizeValidator,
-    MenuItemValidator,
+        MenuItemCategoryValidator,
+        MenuItemContainerItemValidator,
+        MenuItemSizeValidator,
+        MenuItemValidator,
 
-    MenuItemContainerItemComposer,
+        MenuItemContainerItemComposer,
 
-    MenuItemTestingUtil,
-  ],
+        MenuItemTestingUtil,
+    ],
 
-  exports: [
-    MenuItemCategoryService,
-    MenuItemSizeService,
-    MenuItemService,
-    MenuItemContainerItemService,
+    exports: [
+        MenuItemCategoryService,
+        MenuItemSizeService,
+        MenuItemService,
+        MenuItemContainerItemService,
 
-    MenuItemTestingUtil,
-  ],
+        MenuItemTestingUtil,
+    ],
 })
-export class MenuItemsModule {}
+export class MenuItemsModule { }
 
 //export { MenuItem };

@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { CreateTemplateMenuItemDto } from '../dto/template-menu-item/create-template-menu-item.dto';
@@ -55,12 +56,12 @@ describe('template menu item validator', () => {
             throw new Error('menu item not found');
         }
 
-        const dto: CreateTemplateMenuItemDto = {
+        const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
             displayName: 'Display Name',
             tablePosIndex: 0,
             menuItemId: menuItem.id,
             parentTemplateId: template.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root')
         expect(errors).toBeNull();
@@ -76,14 +77,15 @@ describe('template menu item validator', () => {
             throw new Error('menu item not found');
         }
 
-        const dto: CreateTemplateMenuItemDto = {
+        const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
             displayName: 'Display Name',
             tablePosIndex: -1,
             menuItemId: menuItem.id,
             parentTemplateId: template.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root')
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -102,11 +104,11 @@ describe('template menu item validator', () => {
             throw new Error('new menu item not found');
         }
 
-        const dto: UpdateTemplateMenuItemDto = {
+        const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
             tablePosIndex: 5,
             menuItemId: newMenuItem.id,
             displayName: 'Updated Display Name',
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -121,16 +123,17 @@ describe('template menu item validator', () => {
             throw new Error('template menu item not found');
         }
 
-        const dto: UpdateTemplateMenuItemDto = {
+        const dto: UpdateTemplateMenuItemDto = plainToInstance(UpdateTemplateMenuItemDto, {
             tablePosIndex: -1,
             displayName: 'Updated Display Name',
             menuItemId: templateMenuItemToUpdate.menuItem.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             templateMenuItemToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],

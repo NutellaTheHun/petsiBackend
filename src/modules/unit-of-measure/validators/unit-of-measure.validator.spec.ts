@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureDto } from '../dto/unit-of-measure/create-unit-of-measure.dto';
 import { UpdateUnitOfMeasureDto } from '../dto/unit-of-measure/update-unit-of-measure.dto';
@@ -49,14 +50,14 @@ describe('unit of measure validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: CreateUnitOfMeasureDto = {
+        const dto: CreateUnitOfMeasureDto = plainToInstance(CreateUnitOfMeasureDto, {
             name: 'New Unit',
             abbreviation: 'nu',
             conversionFactorToBase: '1.5',
             categoryId: category.id,
-        };
+        });
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
@@ -66,17 +67,18 @@ describe('unit of measure validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: CreateUnitOfMeasureDto = {
+        const dto: CreateUnitOfMeasureDto = plainToInstance(CreateUnitOfMeasureDto, {
             name: POUND,
             abbreviation: 'new',
             categoryId: category.id,
-        };
+        });
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Unit of measure with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
@@ -86,17 +88,18 @@ describe('unit of measure validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: CreateUnitOfMeasureDto = {
+        const dto: CreateUnitOfMeasureDto = plainToInstance(CreateUnitOfMeasureDto, {
             name: 'New Unit',
             abbreviation: POUND_ABBREV,
             categoryId: category.id,
-        };
+        });
 
-        const errors = await validator.validateCreateNode(dto);
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'abbreviation' }],
-            'abbreviation with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['abbreviation']),
         );
     });
 
@@ -106,96 +109,119 @@ describe('unit of measure validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: CreateUnitOfMeasureDto = {
+        const dto: CreateUnitOfMeasureDto = plainToInstance(CreateUnitOfMeasureDto, {
             name: 'New Unit',
             abbreviation: 'nu',
             conversionFactorToBase: '0',
             categoryId: category.id,
-        };
+        });
 
-        const errors = await validator.validateCreateNode(dto);
-        // Note: enforcePositive may convert string to number, testing with "0" string
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'conversionFactorToBase' }],
-            'conversion factor cannot be 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['conversionFactorToBase']),
         );
     });
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const unitToUpdate = await unitRepo.findOne({ where: { name: POUND } });
+        const unitToUpdate = await unitRepo.findOne({ where: { name: POUND }, relations: ['category'] });
         if (!unitToUpdate) {
             throw new Error('unit not found');
         }
+        if (!unitToUpdate.category) {
+            throw new Error('category not found');
+        }
 
-        const dto: UpdateUnitOfMeasureDto = {
+        const dto: UpdateUnitOfMeasureDto = plainToInstance(UpdateUnitOfMeasureDto, {
             name: 'Updated Unit',
             abbreviation: 'uu',
             conversionFactorToBase: '2.5',
-        };
+            categoryId: unitToUpdate.category.id,
+        });
 
-        const errors = await validator.validateUpdateNode(dto, unitToUpdate.id);
+        const errors = await validator.validateDto(dto, unitToUpdate.id);
         expect(errors).toBeNull();
     });
 
     it('fail validate update: name already exists', async () => {
-        const units = await unitRepo.find();
+        const units = await unitRepo.find({ relations: ['category'] });
         if (units.length < 2) {
             throw new Error('Not enough units for test');
         }
 
         const unitToUpdate = units[0];
+        if (!unitToUpdate.category) {
+            throw new Error('category not found');
+        }
         const existingUnit = units[1];
 
-        const dto: UpdateUnitOfMeasureDto = {
+        const dto: UpdateUnitOfMeasureDto = plainToInstance(UpdateUnitOfMeasureDto, {
             name: existingUnit.name,
-        };
+            abbreviation: unitToUpdate.abbreviation,
+            conversionFactorToBase: unitToUpdate.conversionFactorToBase,
+            categoryId: unitToUpdate.category.id,
+        });
 
-        const errors = await validator.validateUpdateNode(dto, unitToUpdate.id);
+        const errors = await validator.validateDto(dto, unitToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
-            'Unit of measure with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
 
     it('fail validate update: abbreviation already exists', async () => {
-        const units = await unitRepo.find();
+        const units = await unitRepo.find({ relations: ['category'] });
         if (units.length < 2) {
             throw new Error('Not enough units for test');
         }
 
         const unitToUpdate = units[0];
+        if (!unitToUpdate.category) {
+            throw new Error('category not found');
+        }
         const existingUnit = units[1];
 
-        const dto: UpdateUnitOfMeasureDto = {
+        const dto: UpdateUnitOfMeasureDto = plainToInstance(UpdateUnitOfMeasureDto, {
             abbreviation: existingUnit.abbreviation,
-        };
+            name: unitToUpdate.name,
+            conversionFactorToBase: unitToUpdate.conversionFactorToBase,
+            categoryId: unitToUpdate.category.id,
+        });
 
-        const errors = await validator.validateUpdateNode(dto, unitToUpdate.id);
+        const errors = await validator.validateDto(dto, unitToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'abbreviation' }],
-            'abbreviation with this name already exists.',
+            [],
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['abbreviation']),
         );
     });
 
     it('fail validate update: conversion factor cannot be 0', async () => {
-        const unitToUpdate = await unitRepo.findOne({ where: { name: POUND } });
+        const unitToUpdate = await unitRepo.findOne({ where: { name: POUND }, relations: ['category'] });
         if (!unitToUpdate) {
             throw new Error('unit not found');
         }
+        if (!unitToUpdate.category) {
+            throw new Error('category not found');
+        }
 
-        const dto: UpdateUnitOfMeasureDto = {
+        const dto: UpdateUnitOfMeasureDto = plainToInstance(UpdateUnitOfMeasureDto, {
             conversionFactorToBase: '0',
-        };
+            name: unitToUpdate.name,
+            abbreviation: unitToUpdate.abbreviation,
+            categoryId: unitToUpdate.category.id,
+        });
 
-        const errors = await validator.validateUpdateNode(dto, unitToUpdate.id);
+        const errors = await validator.validateDto(dto, unitToUpdate.id);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'conversionFactorToBase' }],
-            'conversion factor must be greater than 0',
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['conversionFactorToBase']),
         );
     });
 });

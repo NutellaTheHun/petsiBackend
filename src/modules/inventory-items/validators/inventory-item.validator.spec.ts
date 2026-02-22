@@ -14,7 +14,7 @@ import { InventoryItemCategory } from '../entities/inventory-item-category.entit
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../entities/inventory-item.entity';
-import { FOOD_A, FOOD_CAT, PACKAGE_PKG } from '../utils/constants';
+import { FOOD_A, FOOD_CAT, PACKAGE_PKG, VENDOR_A } from '../utils/constants';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
 import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
 import { InventoryItemValidator } from './inventory-item.validator';
@@ -39,8 +39,8 @@ describe('inventory item validator', () => {
         return await categoryRepo.findOneOrFail({ where: { name } });
     }
 
-    const findInventoryItemVendor = async () => {
-        return await vendorRepo.findOneOrFail({});
+    const findInventoryItemVendor = async (name: string) => {
+        return await vendorRepo.findOneOrFail({ where: { name } });
     }
 
     const findInventoryItemPackage = async (name: string) => {
@@ -79,7 +79,7 @@ describe('inventory item validator', () => {
     // Create Validation Tests
     it('successfully validate create with no validation errors', async () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor();
+        const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
         const uom = await findUnitOfMeasure(POUND);
 
@@ -111,7 +111,7 @@ describe('inventory item validator', () => {
 
     it('fail validate create: name already exists', async () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor();
+        const vendor = await findInventoryItemVendor(VENDOR_A);
 
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
             name: FOOD_A,
@@ -131,7 +131,7 @@ describe('inventory item validator', () => {
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor();
+        const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
         const uom = await findUnitOfMeasure(POUND);
 
@@ -160,7 +160,7 @@ describe('inventory item validator', () => {
 
     it('fail validate create: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
-        const vendor = await findInventoryItemVendor();
+        const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
         const uom = await findUnitOfMeasure(POUND);
 
@@ -207,17 +207,17 @@ describe('inventory item validator', () => {
             throw new Error('new vendor not found');
         }
 
-        const existingSizes = await findInventoryItem(FOOD_A);
-
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: 'Updated Item Name',
             categoryId: newCategory.id,
             vendorId: newVendor.id,
             sizes: [
                 plainToInstance(NestedUpdateInventoryItemSizeDto, {
-                    id: existingSizes.sizes[0].id,
-                    measureAmount: 15,
-                    cost: 25.99,
+                    id: itemToUpdate.sizes[0].id,
+                    packageId: itemToUpdate.sizes[0].package.id,
+                    measureTypeId: itemToUpdate.sizes[0].measureType.id,
+                    measureAmount: itemToUpdate.sizes[0].measureAmount,
+                    cost: itemToUpdate.sizes[0].cost,
                 }),
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',

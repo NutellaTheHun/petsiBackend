@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
@@ -9,6 +10,8 @@ import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a } from '../../menu-items/utils/constants';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { GRAM, OUNCE, POUND } from '../../unit-of-measure/utils/constants';
+import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
+import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -91,7 +94,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -102,20 +105,20 @@ describe('recipe validator', () => {
             subCategoryId: category.subCategories[0].id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: food_a.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
-                {
+                }),
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: food_b.id,
                     quantity: 4,
                     quantityUnitTypeId: servingUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -125,7 +128,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: REC_A,
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -133,9 +136,10 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: false,
             ingredients: [],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'name' }],
@@ -148,7 +152,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -157,9 +161,10 @@ describe('recipe validator', () => {
             subCategoryId: subCategory.id,
             isIngredient: false,
             ingredients: [],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -184,7 +189,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
@@ -194,9 +199,10 @@ describe('recipe validator', () => {
             categoryId: category1.id,
             subCategoryId: category2.subCategories[0].id,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -208,16 +214,17 @@ describe('recipe validator', () => {
         const servingUom = await findUnitOfMeasure(OUNCE);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultUnitTypeId: batchUom.id,
             servingSizeQuantity: 2,
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -228,16 +235,17 @@ describe('recipe validator', () => {
     it('fail validate create: servingSizeQuantity and servingSizeUnitTypeId must both be populated', async () => {
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
             servingSizeQuantity: 2,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'servingSizeUnitTypeId' }],
@@ -249,7 +257,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
@@ -257,9 +265,10 @@ describe('recipe validator', () => {
             servingSizeQuantity: 0,
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'servingSizeQuantity' }],
@@ -271,7 +280,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 0,
@@ -279,9 +288,10 @@ describe('recipe validator', () => {
             servingSizeQuantity: 2,
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -293,7 +303,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
@@ -302,9 +312,10 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             salesPrice: -1,
             isIngredient: false,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -317,7 +328,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -325,22 +336,23 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
-                {
+                }),
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 4,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -352,7 +364,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -360,15 +372,16 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -384,7 +397,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -392,15 +405,15 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
@@ -415,7 +428,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -423,16 +436,17 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
@@ -445,7 +459,7 @@ describe('recipe validator', () => {
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
-        const dto: CreateRecipeDto = {
+        const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
             batchResultUnitTypeId: batchUom.id,
@@ -453,16 +467,17 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: servingUom.id,
             isIngredient: true,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 0,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
@@ -480,7 +495,7 @@ describe('recipe validator', () => {
         const newServingUom = await findUnitOfMeasure(OUNCE);
         const newCategory = await findCategory(REC_CAT_A);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: 'Updated Recipe Name',
             batchResultQuantity: 10,
             batchResultUnitTypeId: newBatchUom.id,
@@ -493,19 +508,19 @@ describe('recipe validator', () => {
             subCategoryId: newCategory.subCategories[0].id,
             ingredients:
                 [
-                    {
+                    plainToInstance(UpdateRecipeIngredientDto, {
                         id: recipeToUpdate.ingredients[0].id,
                         quantity: 8,
                         quantityUnitTypeId: recipeToUpdate.ingredients[0].quantityUnitType.id,
-                    },
-                    {
+                    }),
+                    plainToInstance(CreateRecipeIngredientDto, {
                         createId: 'c1',
                         ingredientInventoryItemId: inventoryItem.id,
                         quantity: 5,
                         quantityUnitTypeId: batchUom.id,
-                    },
+                    }),
                 ]
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expect(errors).toBeNull();
@@ -518,7 +533,7 @@ describe('recipe validator', () => {
         }
         const existingRecipe = await findRecipe(REC_B);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: existingRecipe.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -526,7 +541,7 @@ describe('recipe validator', () => {
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
             servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
             isIngredient: recipeToUpdate.isIngredient,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => ({
+            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
                 quantityUnitTypeId: ingredient.quantityUnitType.id,
@@ -536,9 +551,10 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -553,7 +569,7 @@ describe('recipe validator', () => {
         }
         const subCategory = await findSubCategory(REC_SUBCAT_1);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             subCategoryId: subCategory.id,
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
@@ -564,16 +580,17 @@ describe('recipe validator', () => {
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: null,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => ({
+            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
                 quantityUnitTypeId: ingredient.quantityUnitType.id,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -589,7 +606,7 @@ describe('recipe validator', () => {
             throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
         }
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: category1.id,
             subCategoryId: category2.subCategories[0].id,
             name: recipeToUpdate.name,
@@ -600,16 +617,17 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => ({
+            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
                 quantityUnitTypeId: ingredient.quantityUnitType.id,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -623,7 +641,7 @@ describe('recipe validator', () => {
             throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
         }
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             batchResultQuantity: 0,
@@ -634,16 +652,17 @@ describe('recipe validator', () => {
             servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => ({
+            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
                 quantityUnitTypeId: ingredient.quantityUnitType.id,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -657,7 +676,7 @@ describe('recipe validator', () => {
             throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
         }
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             salesPrice: -1,
@@ -668,16 +687,17 @@ describe('recipe validator', () => {
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
             servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
             isIngredient: recipeToUpdate.isIngredient,
-            ingredients: recipeToUpdate.ingredients.map(ingredient => ({
+            ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
                 quantityUnitTypeId: ingredient.quantityUnitType.id,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -693,7 +713,7 @@ describe('recipe validator', () => {
         const inventoryItem = await findInventoryItem(FOOD_A);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -705,22 +725,23 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
-                {
+                }),
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 4,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -736,7 +757,7 @@ describe('recipe validator', () => {
 
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -748,15 +769,16 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -775,7 +797,7 @@ describe('recipe validator', () => {
         const ingredientRecipe = await findRecipe(REC_B);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -787,17 +809,18 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     ingredientRecipeId: ingredientRecipe.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -813,7 +836,7 @@ describe('recipe validator', () => {
         const inventoryItem = await findInventoryItem(FOOD_A);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             subCategoryId: recipeToUpdate.subCategory.id,
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
@@ -825,16 +848,17 @@ describe('recipe validator', () => {
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 0,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
@@ -853,7 +877,7 @@ describe('recipe validator', () => {
         }
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -865,16 +889,17 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -890,7 +915,7 @@ describe('recipe validator', () => {
 
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = {
+        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -902,16 +927,17 @@ describe('recipe validator', () => {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             ingredients: [
-                {
+                plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientRecipeId: recipeToUpdate.id,
                     quantity: 3,
                     quantityUnitTypeId: batchUom.id,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],

@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -39,22 +40,25 @@ describe('user validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateUserDto = {
+        const dto: CreateUserDto = plainToInstance(CreateUserDto, {
             name: 'New User Name',
             password: 'password123',
-        };
+            email: null,
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateUserDto = {
+        const dto: CreateUserDto = plainToInstance(CreateUserDto, {
             name: USER_A,
             password: 'password123',
-        };
+            email: null,
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -69,11 +73,11 @@ describe('user validator', () => {
             throw new Error('user not found');
         }
 
-        const dto: UpdateUserDto = {
+        const dto: UpdateUserDto = plainToInstance(UpdateUserDto, {
             name: 'Updated User Name',
-            email: userToUpdate.email ?? undefined,
+            email: userToUpdate.email ?? null,
             roleIds: userToUpdate.roles.map(role => role.id),
-        };
+        });
 
         const errors = await validator.validateDto(dto, userToUpdate.id);
         expect(errors).toBeNull();
@@ -88,13 +92,14 @@ describe('user validator', () => {
         const userToUpdate = users[0];
         const existingUser = users[1];
 
-        const dto: UpdateUserDto = {
+        const dto: UpdateUserDto = plainToInstance(UpdateUserDto, {
             name: existingUser.name,
             roleIds: userToUpdate.roles.map(role => role.id),
-            email: userToUpdate.email ?? undefined,
-        };
+            email: userToUpdate.email ?? null,
+        });
 
         const errors = await validator.validateDto(dto, userToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],

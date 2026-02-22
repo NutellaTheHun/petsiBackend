@@ -90,6 +90,7 @@ describe('label validator', () => {
 
     it('fail validate create: labelType and menuItemalready exists for this item.', async () => {
         const existingLabel = await labelRepo.findOne({
+            where: {},
             relations: ['menuItem', 'labelType'],
         });
         if (!existingLabel) {
@@ -114,30 +115,43 @@ describe('label validator', () => {
     // Update Validation Tests
     it('successfully validate update with no validation errors', async () => {
         const labelToUpdate = await labelRepo.findOne({
+            where: {},
             relations: ['menuItem', 'labelType'],
         });
         if (!labelToUpdate) {
             throw new Error('label not found');
         }
+
         const menuItems = await itemRepo.find();
         if (menuItems.length === 0) {
             throw new Error('menu items not found');
         }
+        let newMenuItem = menuItems[0]
+
         const labelTypes = await labelTypeRepo.find();
         if (labelTypes.length === 0) {
             throw new Error('label types not found');
         }
-        const newMenuItem = menuItems.find(
-            (m) => m.id !== labelToUpdate.menuItem.id,
-        );
-        if (!newMenuItem) {
-            throw new Error('new menu item not found');
-        }
-        const newLabelType = labelTypes.find(
-            (t) => t.id !== labelToUpdate.labelType.id,
-        );
-        if (!newLabelType) {
-            throw new Error('new label type not found');
+        let newLabelType = labelTypes[0];
+
+        for (const item of menuItems) {
+            let exists: Label | null = null;
+            for (const type of labelTypes) {
+                exists = await labelRepo.findOne({
+                    where: {
+                        menuItem: { id: newMenuItem.id },
+                        labelType: { id: newLabelType.id },
+                    },
+                });
+                if (!exists) {
+                    newMenuItem = item;
+                    newLabelType = type;
+                    break;
+                }
+            }
+            if (!exists) {
+                break;
+            }
         }
 
         const dto: UpdateLabelDto = plainToInstance(UpdateLabelDto, {

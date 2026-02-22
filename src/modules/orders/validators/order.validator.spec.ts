@@ -1,11 +1,15 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { item_a, item_f, item_g } from '../../menu-items/utils/constants';
+import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
+import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
+import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
@@ -68,20 +72,20 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -91,22 +95,23 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'invalid_type',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -118,22 +123,23 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -145,23 +151,24 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
             deliveryAddress: '123 Main St',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -173,23 +180,24 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             isWeekly: true,
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -201,7 +209,7 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
@@ -209,16 +217,17 @@ describe('order validator', () => {
             weeklyFulfillment: 'invalid_day',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -230,28 +239,29 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
-                {
+                }),
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c2',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 3,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -264,32 +274,33 @@ describe('order validator', () => {
         const containerMenuItem = await findMenuItem(item_f);
         const anotherContainer = await findMenuItem(item_g);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -318,32 +329,33 @@ describe('order validator', () => {
         }
         const invalidSizeId = invalidSize.id;
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSizeId,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -358,22 +370,23 @@ describe('order validator', () => {
         const category = await findCategory(TYPE_A);
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 0,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'orderedItems', id: 'c1' }],
@@ -396,32 +409,33 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: containerMenuItem.variableMaxAmount + 1,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems', id: 'c2' }],
@@ -441,40 +455,41 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
-                        {
+                        }),
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c3',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 3,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'orderedItems', id: 'c1' }],
@@ -487,32 +502,33 @@ describe('order validator', () => {
         const containerMenuItem = await findMenuItem(item_f);
         const anotherContainer = await findMenuItem(item_g);
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -541,32 +557,33 @@ describe('order validator', () => {
         }
         const invalidSizeId = invalidSize.id;
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSizeId,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -589,32 +606,33 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: CreateOrderDto = {
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
             recipient: 'John Doe',
             fulfillmentDate: new Date(),
             fulfillmentType: 'pickup',
             categoryId: category.id,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 0,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -649,7 +667,7 @@ describe('order validator', () => {
             throw new Error('new category not found');
         }
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             fulfillmentContactName: 'Updated Contact Name',
             email: 'updated@example.com',
             isFrozen: false,
@@ -664,22 +682,22 @@ describe('order validator', () => {
             note: 'Updated Note',
             orderedItems:
                 [
-                    {
+                    plainToInstance(NestedUpdateOrderMenuItemDto, {
                         id: orderToUpdate.orderedItems[0].id,
                         quantity: 5,
                         menuItemId: orderToUpdate.orderedItems[0].menuItem.id,
                         sizeId: orderToUpdate.orderedItems[0].size.id,
                         containerOrderMenuItems: [],
-                    },
-                    {
+                    }),
+                    plainToInstance(NestedCreateOrderMenuItemDto, {
                         createId: 'c1',
                         menuItemId: singleMenuItem.id,
                         sizeId: singleMenuItem.sizes[0].id,
                         quantity: 3,
                         containerOrderMenuItems: [],
-                    },
+                    }),
                 ]
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
         expect(errors).toBeNull();
@@ -688,7 +706,7 @@ describe('order validator', () => {
     it('fail validate update: invalid fulfillment type', async () => {
         const orderToUpdate = await findOrder();
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             fulfillmentType: 'invalid_type',
             fulfillmentContactName: 'Updated Contact Name',
             email: 'updated@example.com',
@@ -701,16 +719,17 @@ describe('order validator', () => {
             isWeekly: true,
             weeklyFulfillment: 'monday',
             note: 'Updated Note',
-            orderedItems: orderToUpdate.orderedItems.map(item => ({
+            orderedItems: orderToUpdate.orderedItems.map(item => plainToInstance(NestedUpdateOrderMenuItemDto, {
                 id: item.id,
                 quantity: item.quantity,
                 menuItemId: item.menuItem.id,
                 sizeId: item.size.id,
                 containerOrderMenuItems: [],
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -721,7 +740,7 @@ describe('order validator', () => {
     it('fail validate update: order for delivery must have a delivery address', async () => {
         const orderToUpdate = await findOrder();
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             fulfillmentType: 'delivery',
             fulfillmentContactName: 'Updated Contact Name',
             email: 'updated@example.com',
@@ -734,16 +753,17 @@ describe('order validator', () => {
             isWeekly: true,
             weeklyFulfillment: 'monday',
             note: 'Updated Note',
-            orderedItems: orderToUpdate.orderedItems.map(item => ({
+            orderedItems: orderToUpdate.orderedItems.map(item => plainToInstance(NestedUpdateOrderMenuItemDto, {
                 id: item.id,
                 quantity: item.quantity,
                 menuItemId: item.menuItem.id,
                 sizeId: item.size.id,
                 containerOrderMenuItems: [],
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -754,7 +774,7 @@ describe('order validator', () => {
     it('fail validate update: order for delivery must have a phone number', async () => {
         const orderToUpdate = await findOrder();
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             fulfillmentType: 'delivery',
             deliveryAddress: '123 Main St',
             fulfillmentContactName: 'Updated Contact Name',
@@ -766,16 +786,17 @@ describe('order validator', () => {
             isWeekly: true,
             weeklyFulfillment: 'monday',
             note: 'Updated Note',
-            orderedItems: orderToUpdate.orderedItems.map(item => ({
+            orderedItems: orderToUpdate.orderedItems.map(item => plainToInstance(NestedUpdateOrderMenuItemDto, {
                 id: item.id,
                 quantity: item.quantity,
                 menuItemId: item.menuItem.id,
                 sizeId: item.size.id,
                 containerOrderMenuItems: [],
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -786,7 +807,7 @@ describe('order validator', () => {
     it('fail validate update: order must have a day of the week selected for fulfillment', async () => {
         const orderToUpdate = await findOrder();
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             isFrozen: false,
             isWeekly: true,
             recipient: 'Updated Recipient',
@@ -795,16 +816,17 @@ describe('order validator', () => {
             deliveryAddress: '123 Main St',
             phoneNumber: '1234567890',
             categoryId: orderToUpdate.category.id,
-            orderedItems: orderToUpdate.orderedItems.map(item => ({
+            orderedItems: orderToUpdate.orderedItems.map(item => plainToInstance(NestedUpdateOrderMenuItemDto, {
                 id: item.id,
                 quantity: item.quantity,
                 menuItemId: item.menuItem.id,
                 sizeId: item.size.id,
                 containerOrderMenuItems: [],
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -815,7 +837,7 @@ describe('order validator', () => {
     it('fail validate update: invalid weekly fulfillment', async () => {
         const orderToUpdate = await findOrder();
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             isFrozen: false,
             weeklyFulfillment: 'invalid_day',
             isWeekly: true,
@@ -825,16 +847,17 @@ describe('order validator', () => {
             deliveryAddress: '123 Main St',
             phoneNumber: '1234567890',
             categoryId: orderToUpdate.category.id,
-            orderedItems: orderToUpdate.orderedItems.map(item => ({
+            orderedItems: orderToUpdate.orderedItems.map(item => plainToInstance(NestedUpdateOrderMenuItemDto, {
                 id: item.id,
                 quantity: item.quantity,
                 menuItemId: item.menuItem.id,
                 sizeId: item.size.id,
                 containerOrderMenuItems: [],
             })),
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -848,7 +871,7 @@ describe('order validator', () => {
 
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -860,22 +883,23 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 2,
-                },
-                {
+                }),
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c2',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 3,
-                },
-            ],
-        };
+                }),
+            ]
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -891,7 +915,7 @@ describe('order validator', () => {
 
         const anotherContainer = await findMenuItem(item_g);
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -903,26 +927,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedUpdateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -951,7 +976,7 @@ describe('order validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -963,26 +988,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedUpdateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSize.id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -997,7 +1023,7 @@ describe('order validator', () => {
         const orderToUpdate = await findOrder();
         const singleMenuItem = await findMenuItem(item_a);
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1009,16 +1035,17 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: singleMenuItem.id,
                     sizeId: singleMenuItem.sizes[0].id,
                     quantity: 0,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'orderedItems', id: 'c1' }],
@@ -1041,7 +1068,7 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1053,26 +1080,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: containerMenuItem.variableMaxAmount + 1,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'orderedItems', id: 'c1' }, { prop: 'containerOrderMenuItems', id: 'c2' }],
@@ -1092,7 +1120,7 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1104,34 +1132,35 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
-                        {
+                        }),
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c3',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 3,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -1147,7 +1176,7 @@ describe('order validator', () => {
         const containerMenuItem = await findMenuItem(item_f);
         const anotherContainer = await findMenuItem(item_g);
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1159,26 +1188,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: anotherContainer.id,
                             containedItemSizeId: anotherContainer.sizes[0].id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -1207,7 +1237,7 @@ describe('order validator', () => {
             throw new Error('invalid size not found');
         }
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1219,26 +1249,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: invalidSize.id,
                             quantity: 2,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [
@@ -1261,7 +1292,7 @@ describe('order validator', () => {
         const containedItemSize =
             containerMenuItem.containerMenuItems[0].containedItemSize;
 
-        const dto: UpdateOrderDto = {
+        const dto: UpdateOrderDto = plainToInstance(UpdateOrderDto, {
             recipient: 'Updated Recipient',
             fulfillmentDate: new Date(),
             fulfillmentType: 'delivery',
@@ -1273,26 +1304,27 @@ describe('order validator', () => {
             note: 'Updated Note',
             isFrozen: false,
             orderedItems: [
-                {
+                plainToInstance(NestedCreateOrderMenuItemDto, {
                     createId: 'c1',
                     menuItemId: containerMenuItem.id,
                     sizeId: containerMenuItem.sizes[0].id,
                     quantity: 1,
                     containerOrderMenuItems: [
-                        {
+                        plainToInstance(NestedCreateOrderContainerItemDto, {
                             createId: 'c2',
                             containedMenuItemId: containedItem.id,
                             containedItemSizeId: containedItemSize.id,
                             quantity: 0,
                             parentMenuItemIdCtx: containerMenuItem.id,
                             parentMenuItemSizeIdCtx: containerMenuItem.sizes[0].id,
-                        },
+                        }),
                     ],
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [

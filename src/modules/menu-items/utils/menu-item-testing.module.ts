@@ -6,6 +6,10 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { OrderCategory } from '../../orders/entities/order-category.entity';
+import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
+import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
+import { Order } from '../../orders/entities/order.entity';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryController } from '../controllers/menu-item-category.controller';
@@ -23,59 +27,67 @@ import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
 
 export async function getMenuItemTestingModule(opts?: {
-  menuItemCategoryServiceClass?: new (
-    ...args: any[]
-  ) => MenuItemCategoryService;
-  menuItemSizeServiceClass?: new (...args: any[]) => MenuItemSizeService;
-  menuItemServiceClass?: new (...args: any[]) => MenuItemService;
-  menuItemContainerItemServiceClass?: new (
-    ...args: any[]
-  ) => MenuItemContainerItemService;
+    menuItemCategoryServiceClass?: new (
+        ...args: any[]
+    ) => MenuItemCategoryService;
+    menuItemSizeServiceClass?: new (...args: any[]) => MenuItemSizeService;
+    menuItemServiceClass?: new (...args: any[]) => MenuItemService;
+    menuItemContainerItemServiceClass?: new (
+        ...args: any[]
+    ) => MenuItemContainerItemService;
 }): Promise<TestingModule> {
-  return await Test.createTestingModule({
-    imports: [
-      ConfigModule.forRoot({ isGlobal: true }),
-      TypeORMPostgresTestingModule([
-        MenuItemCategory,
-        MenuItemSize,
-        MenuItem,
-        MenuItemContainerItem,
-      ]),
-      TypeOrmModule.forFeature([
-        MenuItemCategory,
-        MenuItemSize,
-        MenuItem,
-        MenuItemContainerItem,
-      ]),
-      MenuItemsModule,
-      CacheModule.register(),
-      LoggerModule.forRoot({
-        pinoHttp: { transport: { target: 'pino-pretty' } },
-      }),
-      AppLoggingModule,
-      RequestContextModule,
-    ],
+    return await Test.createTestingModule({
+        imports: [
+            ConfigModule.forRoot({ isGlobal: true }),
+            TypeORMPostgresTestingModule([
+                MenuItemCategory,
+                MenuItemSize,
+                MenuItem,
+                MenuItemContainerItem,
+                Order,
+                OrderCategory,
+                OrderMenuItem,
+                OrderContainerItem,
+            ]),
+            TypeOrmModule.forFeature([
+                MenuItemCategory,
+                MenuItemSize,
+                MenuItem,
+                MenuItemContainerItem,
+                Order,
+                OrderCategory,
+                OrderMenuItem,
+                OrderContainerItem,
+            ]),
+            MenuItemsModule,
+            CacheModule.register(),
+            LoggerModule.forRoot({
+                pinoHttp: { transport: { target: 'pino-pretty' } },
+            }),
+            AppLoggingModule,
+            RequestContextModule,
+        ],
 
-    controllers: [
-      MenuItemCategoryController,
-      MenuItemSizeController,
-      MenuItemController,
-      MenuItemContainerItemController,
-    ],
+        controllers: [
+            MenuItemCategoryController,
+            MenuItemSizeController,
+            MenuItemController,
+            MenuItemContainerItemController,
+        ],
 
-    providers: [],
-  })
-    .overrideProvider(RequestContextService)
-    .useClass(TestRequestContextService)
-    .overrideProvider(MenuItemCategoryService)
-    .useClass(opts?.menuItemCategoryServiceClass || MenuItemCategoryService)
-    .overrideProvider(MenuItemSizeService)
-    .useClass(opts?.menuItemSizeServiceClass || MenuItemSizeService)
-    .overrideProvider(MenuItemService)
-    .useClass(opts?.menuItemServiceClass || MenuItemService)
-    .overrideProvider(MenuItemContainerItemService)
-    .useClass(
-      opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
-    )
-    .compile();
+        providers: [],
+    })
+        .overrideProvider(RequestContextService)
+        .useClass(TestRequestContextService)
+        .overrideProvider(MenuItemCategoryService)
+        .useClass(opts?.menuItemCategoryServiceClass || MenuItemCategoryService)
+        .overrideProvider(MenuItemSizeService)
+        .useClass(opts?.menuItemSizeServiceClass || MenuItemSizeService)
+        .overrideProvider(MenuItemService)
+        .useClass(opts?.menuItemServiceClass || MenuItemService)
+        .overrideProvider(MenuItemContainerItemService)
+        .useClass(
+            opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
+        )
+        .compile();
 }

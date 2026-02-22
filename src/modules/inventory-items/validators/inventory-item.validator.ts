@@ -7,6 +7,8 @@ import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
+import { InventoryItemCategory } from '../entities/inventory-item-category.entity';
+import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
 import {
     InventoryItem,
     InventoryItemEntity,
@@ -24,6 +26,12 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
 
         @Inject(forwardRef(() => InventoryItemSizeValidator))
         private readonly itemSizeValidator: InventoryItemSizeValidator,
+
+        @InjectRepository(InventoryItemCategory)
+        private readonly categoryRepo: Repository<InventoryItemCategory>,
+
+        @InjectRepository(InventoryItemVendor)
+        private readonly vendorRepo: Repository<InventoryItemVendor>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -47,7 +55,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         if (identity.categoryId !== undefined && identity.categoryId !== null) {
             await this.helper.enforceExists(
                 identity.categoryId,
-                this.repo,
+                this.categoryRepo,
                 'category',
                 errorMap,
             );
@@ -56,7 +64,7 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         if (identity.vendorId !== undefined && identity.vendorId !== null) {
             await this.helper.enforceExists(
                 identity.vendorId,
-                this.repo,
+                this.vendorRepo,
                 'vendor',
                 errorMap,
             );
@@ -79,9 +87,10 @@ export class InventoryItemValidator extends ValidatorBase<InventoryItemEntity, I
         const sizeIdentities: InventoryItemSizeValidatorIdentity[] = [];
         if (dto.sizes && dto.sizes.length) {
             for (const size of dto.sizes) {
+                const sizeId = 'id' in size ? size.id : size.createId;
                 sizeIdentities.push(await this.itemSizeValidator.resolveIdentity(
                     size,
-                    id,
+                    sizeId,
                 ));
             }
         }

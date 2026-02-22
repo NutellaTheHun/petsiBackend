@@ -124,14 +124,25 @@ export class OrderTestingUtil {
             ],
         });
         const containerItems = items.filter(
-            (item) => item.containerMenuItems.length > 0,
+            (item) => item.containerMenuItems && item.containerMenuItems.length > 0,
         );
         if (containerItems.length === 0) {
             throw new Error();
         }
-        if (containerItems[0].containerMenuItems.length < 2) {
+
+        const containerItem = containerItems[0];
+        if (!containerItem.containerMenuItems) {
             throw new Error();
         }
+        const containedItem_a = containerItem.containerMenuItems[0];
+        if (!containedItem_a) {
+            throw new Error();
+        }
+        const containedItem_b = containerItem.containerMenuItems[1];
+        if (!containedItem_a || !containedItem_b) {
+            throw new Error();
+        }
+
 
         const parentOrderItem = {
             parentOrder: orders[0],
@@ -143,9 +154,9 @@ export class OrderTestingUtil {
         const containerItem_a = {
             parentOrderMenuItem: parentOrderItem,
             containedMenuItem:
-                containerItems[0].containerMenuItems[0].containedMenuItem,
+                containedItem_a.containedMenuItem,
             containedItemSize:
-                containerItems[0].containerMenuItems[0].containedItemSize,
+                containedItem_a.containedItemSize,
             quantity: 1,
         } as OrderContainerItem;
 
@@ -155,9 +166,9 @@ export class OrderTestingUtil {
         const containerItem_b = {
             parentOrderMenuItem: parentOrderItem,
             containedMenuItem:
-                containerItems[0].containerMenuItems[1].containedMenuItem,
+                containedItem_b.containedMenuItem,
             containedItemSize:
-                containerItems[0].containerMenuItems[1].containedItemSize,
+                containedItem_b.containedItemSize,
             quantity: 1,
         } as OrderContainerItem;
 

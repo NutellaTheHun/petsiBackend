@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
 import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
@@ -51,10 +52,10 @@ describe('recipe sub category validator', () => {
             throw new Error('parent category not found');
         }
 
-        const dto: CreateRecipeSubCategoryDto = {
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
             name: 'New Sub Category',
             parentCategoryId: parentCategory.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
@@ -72,16 +73,13 @@ describe('recipe sub category validator', () => {
             throw new Error('subcategories not found');
         }
 
-        const dto: CreateRecipeSubCategoryDto = {
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
             name: parentCategory.subCategories[0].name,
             parentCategoryId: parentCategory.id,
-        };
+        });
 
-        // Note: The create validator currently doesn't check for uniqueness within parent category,
-        // only that name != parent name. The database has a unique constraint, but the validator
-        // doesn't enforce it. This test verifies current behavior - it should pass validation
-        // at the validator level (database constraint would catch it on save).
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -97,12 +95,13 @@ describe('recipe sub category validator', () => {
             throw new Error('parent category not found');
         }
 
-        const dto: CreateRecipeSubCategoryDto = {
+        const dto: CreateRecipeSubCategoryDto = plainToInstance(CreateRecipeSubCategoryDto, {
             name: parentCategory.name,
             parentCategoryId: parentCategory.id,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -119,9 +118,9 @@ describe('recipe sub category validator', () => {
             throw new Error('subcategory not found');
         }
 
-        const dto: UpdateRecipeSubCategoryDto = {
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
             name: 'Updated Sub Category Name',
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -148,14 +147,15 @@ describe('recipe sub category validator', () => {
             throw new Error('existing subcategory not found');
         }
 
-        const dto: UpdateRecipeSubCategoryDto = {
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
             name: existingSubCategory.name,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             subCategoryToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -171,14 +171,15 @@ describe('recipe sub category validator', () => {
             throw new Error('subcategory not found');
         }
 
-        const dto: UpdateRecipeSubCategoryDto = {
+        const dto: UpdateRecipeSubCategoryDto = plainToInstance(UpdateRecipeSubCategoryDto, {
             name: subCategoryToUpdate.parentCategory.name,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             subCategoryToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],

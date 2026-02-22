@@ -1,9 +1,10 @@
+import { plainToInstance } from "class-transformer";
 import { UpdateOrderDto } from "../../dto/order/update-order.dto";
 import { Order } from "../../entities/order.entity";
 import { orderMenuItemToNestedUpdateDto } from "./order-menu-item.dto.transformer";
 
 export function orderToUpdateDto(order: Order): UpdateOrderDto {
-    return {
+    return plainToInstance(UpdateOrderDto, {
         recipient: order.recipient,
         fulfillmentDate: order.fulfillmentDate,
         fulfillmentType: order.fulfillmentType,
@@ -17,5 +18,5 @@ export function orderToUpdateDto(order: Order): UpdateOrderDto {
         weeklyFulfillment: order.weeklyFulfillment ?? undefined,
         categoryId: order.category.id,
         orderedItems: order.orderedItems.map(item => orderMenuItemToNestedUpdateDto(item)),
-    };
+    });
 }

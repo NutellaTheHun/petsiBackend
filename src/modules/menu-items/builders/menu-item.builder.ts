@@ -17,132 +17,132 @@ import { MenuItemContainerItemBuilder } from './menu-item-container-item.builder
 
 @Injectable()
 export class MenuItemBuilder extends BuilderBase<MenuItem> {
-  constructor(
-    @InjectRepository(MenuItemCategory)
-    private readonly categoryRepo: Repository<MenuItemCategory>,
+    constructor(
+        @InjectRepository(MenuItemCategory)
+        private readonly categoryRepo: Repository<MenuItemCategory>,
 
-    @InjectRepository(MenuItemContainerItem)
-    private readonly containerItemRepo: Repository<MenuItemContainerItem>,
+        @InjectRepository(MenuItemContainerItem)
+        private readonly containerItemRepo: Repository<MenuItemContainerItem>,
 
-    @InjectRepository(MenuItemSize)
-    private readonly sizeRepo: Repository<MenuItemSize>,
+        @InjectRepository(MenuItemSize)
+        private readonly sizeRepo: Repository<MenuItemSize>,
 
-    @Inject(forwardRef(() => MenuItemContainerItemBuilder))
-    private readonly containerItemBuilder: MenuItemContainerItemBuilder,
+        @Inject(forwardRef(() => MenuItemContainerItemBuilder))
+        private readonly containerItemBuilder: MenuItemContainerItemBuilder,
 
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(MenuItem, 'MenuItemBuilder', requestContextService, logger);
-  }
-
-  protected createEntity(dto: CreateMenuItemDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) {
+        super(MenuItem, 'MenuItemBuilder', requestContextService, logger);
     }
 
-    if (dto.type !== undefined) {
-      this.type(dto.type);
+    protected createEntity(dto: CreateMenuItemDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+
+        if (dto.type !== undefined) {
+            this.type(dto.type);
+        }
+
+        if (dto.variableMaxAmount !== undefined) {
+            this.variableMaxAmount(dto.variableMaxAmount);
+        }
+
+        // Entities
+        if (dto.sizeIds !== undefined) {
+            this.validSizesById(dto.sizeIds);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categorybyId(dto.categoryId);
+        }
+        if (dto.containerMenuItems !== undefined) {
+            this.containerMenuItemsByBuilder(dto.containerMenuItems || []);
+        }
     }
 
-    if (dto.variableMaxAmount !== undefined) {
-      this.variableMaxAmount(dto.variableMaxAmount);
+    protected updateEntity(dto: UpdateMenuItemDto): void {
+        if (dto.name !== undefined) {
+            this.name(dto.name);
+        }
+
+        if (dto.type !== undefined) {
+            this.type(dto.type);
+        }
+
+        if (dto.variableMaxAmount !== undefined) {
+            this.variableMaxAmount(dto.variableMaxAmount);
+        }
+
+        // Entities
+        if (dto.sizeIds !== undefined) {
+            this.validSizesById(dto.sizeIds);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categorybyId(dto.categoryId);
+        }
+        if (dto.containerMenuItems !== undefined) {
+            this.containerMenuItemsByBuilder(dto.containerMenuItems || []);
+        }
     }
 
-    // Entities
-    if (dto.sizeIds !== undefined) {
-      this.validSizesById(dto.sizeIds);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categorybyId(dto.categoryId);
-    }
-    if (dto.containerMenuItems !== undefined) {
-      this.containerMenuItemsByBuilder(dto.containerMenuItems);
-    }
-  }
-
-  protected updateEntity(dto: UpdateMenuItemDto): void {
-    if (dto.name !== undefined) {
-      this.name(dto.name);
+    public name(name: string): this {
+        return this.setPropByVal('name', name);
     }
 
-    if (dto.type !== undefined) {
-      this.type(dto.type);
+    public type(type: string): this {
+        return this.setPropByVal('type', type);
     }
 
-    if (dto.variableMaxAmount !== undefined) {
-      this.variableMaxAmount(dto.variableMaxAmount);
+    public variableMaxAmount(val: number | null): this {
+        return this.setPropByVal('variableMaxAmount', val);
     }
 
-    // Entities
-    if (dto.sizeIds !== undefined) {
-      this.validSizesById(dto.sizeIds);
+    public containerMenuItems(val: MenuItemContainerItem[]): this {
+        return this.setPropByVal('containerMenuItems', val);
     }
-    if (dto.categoryId !== undefined) {
-      this.categorybyId(dto.categoryId);
+
+    public validSizesById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.sizeRepo.find({ where: { id: In(ids) } }),
+            'sizes',
+            ids,
+        );
     }
-    if (dto.containerMenuItems !== undefined) {
-      this.containerMenuItemsByBuilder(dto.containerMenuItems);
+
+    public categorybyId(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('category', null);
+        }
+        return this.setPropById(
+            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            'category',
+            id,
+        );
     }
-  }
 
-  public name(name: string): this {
-    return this.setPropByVal('name', name);
-  }
-
-  public type(type: string): this {
-    return this.setPropByVal('type', type);
-  }
-
-  public variableMaxAmount(val: number | null): this {
-    return this.setPropByVal('variableMaxAmount', val);
-  }
-
-  public containerMenuItems(val: MenuItemContainerItem[]): this {
-    return this.setPropByVal('containerMenuItems', val);
-  }
-
-  public validSizesById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.sizeRepo.find({ where: { id: In(ids) } }),
-      'sizes',
-      ids,
-    );
-  }
-
-  public categorybyId(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('category', null);
+    public categorybyName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.categoryRepo.findOne({ where: { name } }),
+            'category',
+            name,
+        );
     }
-    return this.setPropById(
-      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
-      'category',
-      id,
-    );
-  }
 
-  public categorybyName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.categoryRepo.findOne({ where: { name } }),
-      'category',
-      name,
-    );
-  }
-
-  public containerMenuItemsByBuilder(
-    dtos: (
-      | CreateMenuItemContainerItemDto
-      | NestedCreateMenuItemContainerItemDto
-      | NestedUpdateMenuItemContainerItemDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.containerItemBuilder.buildMany.bind(this.containerItemBuilder),
-      'containerMenuItems',
-      this.entity,
-      dtos,
-    );
-  }
+    public containerMenuItemsByBuilder(
+        dtos: (
+            | CreateMenuItemContainerItemDto
+            | NestedCreateMenuItemContainerItemDto
+            | NestedUpdateMenuItemContainerItemDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.containerItemBuilder.buildMany.bind(this.containerItemBuilder),
+            'containerMenuItems',
+            this.entity,
+            dtos,
+        );
+    }
 }

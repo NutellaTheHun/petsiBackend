@@ -31,7 +31,7 @@ describe('inventory item size validator', () => {
     }
 
     const findInventoryItemSize = async () => {
-        return await sizeRepo.findOneOrFail({ relations: ['inventoryItem', 'package', 'measureType'] });
+        return await sizeRepo.findOneOrFail({ where: {}, relations: ['inventoryItem', 'package', 'measureType'] });
     }
 
     const findUnitOfMeasure = async (name: string) => {
@@ -138,7 +138,7 @@ describe('inventory item size validator', () => {
             inventoryItemId: item.id,
             packageId: existingSize.package.id,
             measureTypeId: existingSize.measureType.id,
-            measureAmount: 5,
+            measureAmount: existingSize.measureAmount,
             cost: 10.99,
         });
 

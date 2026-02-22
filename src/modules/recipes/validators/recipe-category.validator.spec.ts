@@ -1,10 +1,13 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRecipeCategoryDto } from '../dto/recipe-category/create-recipe-category.dto';
 import { UpdateRecipeCategoryDto } from '../dto/recipe-category/update-recipe-category.dto';
+import { NestedCreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-create-recipe-sub-category.dto';
+import { NestedUpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/nested-update-recipe-sub-category.dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { REC_CAT_A } from '../utils/constants';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
@@ -39,30 +42,31 @@ describe('recipe category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateRecipeCategoryDto = {
+        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
             name: 'New Recipe Category',
             subCategories: [
-                {
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c1',
                     name: 'Sub Category 1',
-                },
-                {
+                }),
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c2',
                     name: 'Sub Category 2',
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateRecipeCategoryDto = {
+        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
             name: REC_CAT_A,
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -71,21 +75,22 @@ describe('recipe category validator', () => {
     });
 
     it('fail validate create: duplicate sub categories', async () => {
-        const dto: CreateRecipeCategoryDto = {
+        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
             name: 'New Recipe Category',
             subCategories: [
-                {
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c1',
                     name: 'Duplicate Name',
-                },
-                {
+                }),
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c2',
                     name: 'Duplicate Name',
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -106,17 +111,18 @@ describe('recipe category validator', () => {
             throw new Error('existing category with subcategories not found');
         }
 
-        const dto: CreateRecipeCategoryDto = {
+        const dto: CreateRecipeCategoryDto = plainToInstance(CreateRecipeCategoryDto, {
             name: 'New Recipe Category',
             subCategories: [
-                {
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c1',
                     name: existingCategory.subCategories[0].name,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'subCategories', id: 'c1' },],
@@ -134,28 +140,28 @@ describe('recipe category validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: UpdateRecipeCategoryDto = {
+        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
             name: 'Updated Recipe Category',
             subCategories:
                 categoryToUpdate.subCategories &&
                     categoryToUpdate.subCategories.length > 0
                     ? [
-                        {
+                        plainToInstance(NestedUpdateRecipeSubCategoryDto, {
                             id: categoryToUpdate.subCategories[0].id,
                             name: 'Updated Sub Category',
-                        },
-                        {
+                        }),
+                        plainToInstance(NestedCreateRecipeSubCategoryDto, {
                             createId: 'c1',
                             name: 'New Sub Category',
-                        },
+                        }),
                     ]
                     : [
-                        {
+                        plainToInstance(NestedCreateRecipeSubCategoryDto, {
                             createId: 'c1',
                             name: 'New Sub Category',
-                        },
+                        }),
                     ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
         expect(errors).toBeNull();
@@ -170,12 +176,13 @@ describe('recipe category validator', () => {
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
 
-        const dto: UpdateRecipeCategoryDto = {
+        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
             name: existingCategory.name,
             subCategories: [],
-        };
+        });
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -191,21 +198,22 @@ describe('recipe category validator', () => {
             throw new Error('category not found');
         }
 
-        const dto: UpdateRecipeCategoryDto = {
+        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
             name: categoryToUpdate.name,
             subCategories: [
-                {
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c1',
                     name: 'Duplicate Name',
-                },
-                {
+                }),
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c2',
                     name: 'Duplicate Name',
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -229,18 +237,18 @@ describe('recipe category validator', () => {
         }
 
         const existingSubCategory = categoryToUpdate.subCategories[0];
-        const dto: UpdateRecipeCategoryDto = {
+        const dto: UpdateRecipeCategoryDto = plainToInstance(UpdateRecipeCategoryDto, {
             name: categoryToUpdate.name,
             subCategories: [
-                {
+                plainToInstance(NestedCreateRecipeSubCategoryDto, {
                     createId: 'c1',
                     name: existingSubCategory.name,
-                },
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, categoryToUpdate.id);
-        // The nested validator should catch this
+        expectValidationErrorSize(errors, 1);
         expect(errors).not.toBeNull();
     });
 });

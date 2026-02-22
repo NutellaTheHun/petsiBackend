@@ -1,7 +1,8 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
@@ -43,20 +44,23 @@ describe('unit of measure category validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const dto: CreateUnitOfMeasureCategoryDto = {
+        const dto: CreateUnitOfMeasureCategoryDto = plainToInstance(CreateUnitOfMeasureCategoryDto, {
             name: 'New Category',
-        };
+            baseConversionUnitId: null,
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateUnitOfMeasureCategoryDto = {
+        const dto: CreateUnitOfMeasureCategoryDto = plainToInstance(CreateUnitOfMeasureCategoryDto, {
             name: UNIT,
-        };
+            baseConversionUnitId: null,
+        });
 
         const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
@@ -77,10 +81,10 @@ describe('unit of measure category validator', () => {
             throw new Error('base conversion unit not found');
         }
 
-        const dto: UpdateUnitOfMeasureCategoryDto = {
+        const dto: UpdateUnitOfMeasureCategoryDto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
             name: 'Updated Category',
             baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
@@ -102,15 +106,16 @@ describe('unit of measure category validator', () => {
             throw new Error('base conversion unit not found');
         }
 
-        const dto: UpdateUnitOfMeasureCategoryDto = {
+        const dto: UpdateUnitOfMeasureCategoryDto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
             name: existingCategory.name,
             baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
-        };
+        });
 
         const errors = await validator.validateDto(
             dto,
             categoryToUpdate.id,
         );
+        expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'name' }],
