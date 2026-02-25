@@ -3,21 +3,23 @@ import { NestedUpdateRecipeIngredientDto } from "../../dto/recipe-ingredient/nes
 import { UpdateRecipeIngredientDto } from "../../dto/recipe-ingredient/update-recipe-ingedient.dto";
 import { RecipeIngredient } from "../../entities/recipe-ingredient.entity";
 
-export function recipeIngredientToUpdateDto(recipeIngredient: RecipeIngredient): UpdateRecipeIngredientDto {
+export function recipeIngredientToUpdateDto(recipeIngredient: RecipeIngredient, merge: Partial<UpdateRecipeIngredientDto> = {}): UpdateRecipeIngredientDto {
     return plainToInstance(UpdateRecipeIngredientDto, {
         ingredientInventoryItemId: recipeIngredient.ingredientInventoryItem?.id ?? undefined,
         ingredientRecipeId: recipeIngredient.ingredientRecipe?.id ?? undefined,
         quantity: recipeIngredient.quantity,
         quantityUnitTypeId: recipeIngredient.quantityUnitType.id,
+        ...merge,
     });
 }
 
-export function recipeIngredientToNestedUpdateDto(recipeIngredient: RecipeIngredient): NestedUpdateRecipeIngredientDto {
+export function recipeIngredientToNestedUpdateDto(recipeIngredient: RecipeIngredient, merge: Partial<NestedUpdateRecipeIngredientDto> = {}): NestedUpdateRecipeIngredientDto {
     return plainToInstance(NestedUpdateRecipeIngredientDto, {
         id: recipeIngredient.id,
         ingredientInventoryItemId: recipeIngredient.ingredientInventoryItem?.id ?? undefined,
         ingredientRecipeId: recipeIngredient.ingredientRecipe?.id ?? undefined,
         quantity: recipeIngredient.quantity,
         quantityUnitTypeId: recipeIngredient.quantityUnitType.id,
+        ...merge,
     });
 }

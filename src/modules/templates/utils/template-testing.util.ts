@@ -48,11 +48,18 @@ export class TemplateTestingUtil {
         this.initTemplates = true;
 
         testContext.addCleanupFunction(() => this.cleanupTemplateTestDatabase());
-        await this.templateRepo.insert(await this.getTemplateEntities(testContext));
+        const templates = await this.getTemplateEntities(testContext);
+        for (const template of templates) {
+            const exists = await this.templateRepo.findOne({
+                where: { name: template.name },
+            });
+            if (!exists) {
+                await this.templateRepo.save(template);
+            }
+        }
     }
 
     public async cleanupTemplateTestDatabase(): Promise<void> {
-        //await this.templateRepo.delete({});
         await this.templateRepo.deleteAll();
     }
 
@@ -100,13 +107,18 @@ export class TemplateTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupTemplateMenuItemTestDatabase(),
         );
-        await this.templateItemRepo.insert(
-            await this.getTemplateMenuItemEntities(testContext),
-        );
+        const templateItems = await this.getTemplateMenuItemEntities(testContext);
+        for (const templateItem of templateItems) {
+            const exists = await this.templateItemRepo.findOne({
+                where: { menuItem: { id: templateItem.menuItem.id }, parentTemplate: { id: templateItem.parentTemplate.id } },
+            });
+            if (!exists) {
+                await this.templateItemRepo.save(templateItem);
+            }
+        }
     }
 
     public async cleanupTemplateMenuItemTestDatabase(): Promise<void> {
-        //await this.templateItemRepo.delete({});
         await this.templateItemRepo.deleteAll();
     }
 }

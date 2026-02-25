@@ -64,13 +64,16 @@ export class LabelTestingUtil {
 
         testContext.addCleanupFunction(() => this.cleanupLabelTypeTestDatabase());
 
-        await this.typeRepo.insert(
-            await this.getTestLabelTypeEntities(testContext),
-        );
+        const types = await this.getTestLabelTypeEntities(testContext);
+        for (const type of types) {
+            if (await this.typeRepo.findOne({ where: { name: type.name, length: type.length, width: type.width } })) {
+                continue;
+            }
+            await this.typeRepo.save(type);
+        }
     }
 
     public async cleanupLabelTypeTestDatabase(): Promise<void> {
-        //await this.typeRepo.delete({});
         await this.typeRepo.deleteAll();
     }
 
@@ -119,11 +122,16 @@ export class LabelTestingUtil {
 
         testContext.addCleanupFunction(() => this.cleanupLabelTestDatabase());
 
-        await this.labelRepo.insert(await this.getTestLabelEntities(testContext));
+        const labels = await this.getTestLabelEntities(testContext);
+        for (const label of labels) {
+            if (await this.labelRepo.findOne({ where: { menuItem: { id: label.menuItem.id }, imageUrl: label.imageUrl, labelType: { id: label.labelType.id } } })) {
+                continue;
+            }
+            await this.labelRepo.save(label);
+        }
     }
 
     public async cleanupLabelTestDatabase(): Promise<void> {
-        //await this.labelRepo.delete({});
         await this.labelRepo.deleteAll();
     }
 }

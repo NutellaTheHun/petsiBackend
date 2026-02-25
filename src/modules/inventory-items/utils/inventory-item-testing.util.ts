@@ -20,11 +20,7 @@ import * as CONSTANT from './constants';
 
 @Injectable()
 export class InventoryItemTestingUtil {
-    private readonly vendorNames: string[] = [
-        CONSTANT.VENDOR_A,
-        CONSTANT.VENDOR_B,
-        CONSTANT.VENDOR_C,
-    ];
+    private readonly vendorNames: string[] = CONSTANT.getInventoryVendorNames();
 
     private readonly categoryNames: string[] = [
         CONSTANT.OTHER_CAT,
@@ -33,58 +29,15 @@ export class InventoryItemTestingUtil {
         CONSTANT.FOOD_CAT,
     ];
 
-    private readonly packageNames: string[] = [
-        CONSTANT.BAG_PKG,
-        CONSTANT.PACKAGE_PKG,
-        CONSTANT.BOX_PKG,
-        CONSTANT.OTHER_PKG,
-        CONSTANT.CAN_PKG,
-        CONSTANT.CONTAINER_PKG,
-    ];
+    private readonly packageNames: string[] = CONSTANT.getInventoryPackageNames();
 
-    private readonly itemNames: string[] = [
-        CONSTANT.FOOD_A,
-        CONSTANT.DRY_A,
-        CONSTANT.OTHER_A,
-        CONSTANT.FOOD_B,
-        CONSTANT.DRY_B,
-        CONSTANT.OTHER_B,
-        CONSTANT.FOOD_C,
-        CONSTANT.DRY_C,
-        CONSTANT.OTHER_C,
-    ];
+    private readonly itemNames: string[] = CONSTANT.getInventoryItemNames();
 
-    private readonly foodItemNames: string[] = [
-        CONSTANT.FOOD_A,
-        CONSTANT.FOOD_B,
-        CONSTANT.FOOD_C,
-    ];
-    private readonly dryItemNames: string[] = [
-        CONSTANT.DRY_A,
-        CONSTANT.DRY_B,
-        CONSTANT.DRY_C,
-    ];
-    private readonly otherItemNames: string[] = [
-        CONSTANT.OTHER_A,
-        CONSTANT.OTHER_B,
-        CONSTANT.OTHER_C,
-    ];
+    private readonly foodItemNames: string[] = CONSTANT.getInventoryFoodItemNames();
+    private readonly dryItemNames: string[] = CONSTANT.getInventoryDryItemNames();
+    private readonly otherItemNames: string[] = CONSTANT.getInventoryOtherItemNames();
 
-    private readonly measureNames: string[] = [
-        UNIT_CONSTANT.GALLON,
-        UNIT_CONSTANT.MILLILITER,
-        UNIT_CONSTANT.PINT,
-        UNIT_CONSTANT.FL_OUNCE,
-        UNIT_CONSTANT.LITER,
-
-        UNIT_CONSTANT.OUNCE,
-        UNIT_CONSTANT.GRAM,
-        UNIT_CONSTANT.POUND,
-        UNIT_CONSTANT.KILOGRAM,
-
-        UNIT_CONSTANT.UNIT,
-        UNIT_CONSTANT.EACH,
-    ];
+    private readonly measureNames: string[] = UNIT_CONSTANT.getUnitOfMeasureNames();
 
     private initCategory = false;
     private initPackage = false;
@@ -261,9 +214,14 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupInventoryItemVendorTestDatabase(),
         );
-        await this.vendorRepo.insert(
-            await this.getTestInventoryItemVendorEntities(testContext),
-        );
+
+        const vendors = await this.getTestInventoryItemVendorEntities(testContext);
+        for (const vendor of vendors) {
+            if (await this.vendorRepo.findOne({ where: { name: vendor.name } })) {
+                continue;
+            }
+            await this.vendorRepo.save(vendor);
+        }
     }
 
     public async initInventoryItemPackageTestDatabase(
@@ -277,9 +235,14 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupInventoryItemPackageTestDatabase(),
         );
-        await this.packageRepo.insert(
-            await this.getTestInventoryItemPackageEntities(testContext),
-        );
+
+        const packages = await this.getTestInventoryItemPackageEntities(testContext);
+        for (const pkg of packages) {
+            if (await this.packageRepo.findOne({ where: { name: pkg.name } })) {
+                continue;
+            }
+            await this.packageRepo.save(pkg);
+        }
     }
 
     public async initInventoryItemCategoryTestDatabase(
@@ -294,9 +257,13 @@ export class InventoryItemTestingUtil {
             this.cleanupInventoryItemCategoryTestDatabase(),
         );
 
-        await this.categoryRepo.insert(
-            await this.getTestInventoryItemCategoryEntities(testContext),
-        );
+        const categories = await this.getTestInventoryItemCategoryEntities(testContext);
+        for (const category of categories) {
+            if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
+                continue;
+            }
+            await this.categoryRepo.save(category);
+        }
     }
 
     public async initInventoryItemTestDatabase(
@@ -311,9 +278,13 @@ export class InventoryItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupInventoryItemTestDatabase(),
         );
-        await this.itemRepo.insert(
-            await this.getTestInventoryItemEntities(testContext),
-        );
+        const items = await this.getTestInventoryItemEntities(testContext);
+        for (const item of items) {
+            if (await this.itemRepo.findOne({ where: { name: item.name } })) {
+                continue;
+            }
+            await this.itemRepo.save(item);
+        }
     }
 
     public async initInventoryItemSizeTestDatabase(
@@ -334,27 +305,22 @@ export class InventoryItemTestingUtil {
     }
 
     public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
-        //await this.vendorRepo.delete({});
         await this.vendorRepo.deleteAll();
     }
 
     public async cleanupInventoryItemPackageTestDatabase(): Promise<void> {
-        //await this.packageRepo.delete({});
         await this.packageRepo.deleteAll();
     }
 
     public async cleanupInventoryItemCategoryTestDatabase(): Promise<void> {
-        //await this.categoryRepo.delete({});
         await this.categoryRepo.deleteAll();
     }
 
     public async cleanupInventoryItemSizeTestDatabase(): Promise<void> {
-        //await this.sizeRepo.delete({});
         await this.sizeRepo.deleteAll();
     }
 
     public async cleanupInventoryItemTestDatabase(): Promise<void> {
-        //await this.itemRepo.delete({});
         await this.itemRepo.deleteAll();
     }
 

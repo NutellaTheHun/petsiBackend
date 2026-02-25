@@ -3,11 +3,15 @@ import { UpdateInventoryItemDto } from "../../dto/inventory-item/update-inventor
 import { InventoryItem } from "../../entities/inventory-item.entity";
 import { inventoryItemSizeToNestedUpdateDto } from "./inventory-item-size.dto.transformer";
 
-export function inventoryItemToUpdateDto(inventoryItem: InventoryItem): UpdateInventoryItemDto {
+export function inventoryItemToUpdateDto(inventoryItem: InventoryItem, merge: Partial<UpdateInventoryItemDto> = {}): UpdateInventoryItemDto {
+    const existingSizes = inventoryItem.sizes.map(size => inventoryItemSizeToNestedUpdateDto(size)) ?? [];
+    const mergedSizes = merge.sizes ? [...existingSizes, ...merge.sizes] : existingSizes;
+
     return plainToInstance(UpdateInventoryItemDto, {
         name: inventoryItem.name,
         categoryId: inventoryItem.category?.id ?? null,
         vendorId: inventoryItem.vendor?.id ?? null,
-        sizes: inventoryItem.sizes.map(size => inventoryItemSizeToNestedUpdateDto(size)),
+        ...merge,
+        sizes: mergedSizes,
     });
 }

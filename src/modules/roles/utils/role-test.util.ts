@@ -36,11 +36,18 @@ export class RoleTestUtil {
 
         testContext.addCleanupFunction(() => this.cleanupRoleTestingDatabase());
 
-        await this.roleRepo.insert(await this.getTestRoleEntities(testContext));
+        const roles = await this.getTestRoleEntities(testContext);
+        for (const role of roles) {
+            const exists = await this.roleRepo.findOne({
+                where: { name: role.name },
+            });
+            if (!exists) {
+                await this.roleRepo.save(role);
+            }
+        }
     }
 
     public async cleanupRoleTestingDatabase(): Promise<void> {
-        //await this.roleRepo.delete({});
         await this.roleRepo.deleteAll();
     }
 }

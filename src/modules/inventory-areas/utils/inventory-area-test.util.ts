@@ -155,9 +155,13 @@ export class InventoryAreaTestUtil {
             this.cleanupInventoryAreaTestDatabase(),
         );
 
-        await this.areaRepo.insert(
-            await this.getTestInventoryAreaEntities(testContext),
-        );
+        const areas = await this.getTestInventoryAreaEntities(testContext);
+        for (const area of areas) {
+            if (await this.areaRepo.findOne({ where: { name: area.name } })) {
+                continue;
+            }
+            await this.areaRepo.save(area);
+        }
     }
 
     /**
@@ -211,7 +215,6 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryArea table
      */
     public async cleanupInventoryAreaTestDatabase(): Promise<void> {
-        //await this.areaRepo.delete({});
         await this.areaRepo.deleteAll();
     }
 
@@ -219,7 +222,6 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryAreaCount table
      */
     public async cleanupInventoryAreaCountTestDatabase(): Promise<void> {
-        //await this.areaCountRepo.delete({});
         await this.areaCountRepo.deleteAll();
     }
 
@@ -227,7 +229,6 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryAreaItemCount table
      */
     public async cleanupInventoryAreaItemCountTestDatabase(): Promise<void> {
-        //await this.areaItemRepo.delete({});
         await this.areaItemRepo.deleteAll();
     }
 

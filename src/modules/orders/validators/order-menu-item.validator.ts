@@ -79,7 +79,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.menuItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.menuItemId,
                 this.menuItemRepo,
                 'menuItem',
@@ -88,7 +88,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         }
 
         if (identity.parentOrderId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.parentOrderId,
                 this.orderRepo,
                 'parentOrder',
@@ -105,7 +105,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         }
 
         if (identity.sizeId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.sizeId,
                 this.menuItemSizeRepo,
                 'size',
@@ -114,7 +114,7 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
         }
 
         if (identity.sizeId && identity.menuItemId) {
-            this.helper.enforceValidSize(
+            await this.helper.enforceValidSize(
                 identity.sizeId,
                 identity.menuItemId,
                 this.menuItemRepo,
@@ -168,11 +168,29 @@ export class OrderMenuItemValidator extends NestedValidatorBase<OrderMenuItemEnt
                     },
                 });
                 if (!validMenuItemContainerItem) {
-                    const id = item.id?.toString() ?? item.createId;
-                    if (!id) {
+                    const childId = item.id?.toString() ?? item.createId;
+                    if (!childId) {
                         throw new Error('Invalid container item id');
                     }
-                    errorMap.addError('INVALID_PROPERTY_VALUE', [id], ['containerOrderMenuItems']);
+                    const validItemCheck = await this.menuItemContainerItemRepo.findOne({
+                        where: {
+                            containedMenuItem: { id: item.containedMenuItemId },
+                            parentMenuItem: { id: identity.menuItemId },
+                            parentItemSize: { id: identity.sizeId }
+                        },
+                    });
+                    if (validItemCheck) {
+                        // invalid size
+                        const childErrorMap = new ValidationErrorMap(childId);
+                        childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']);
+                        errorMap.addChild('containerOrderMenuItems', childErrorMap);
+                    }
+                    else {
+                        // invalid item
+                        const childErrorMap = new ValidationErrorMap(childId);
+                        childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
+                        errorMap.addChild('containerOrderMenuItems', childErrorMap);
+                    }
                 }
 
                 // Nested validator call

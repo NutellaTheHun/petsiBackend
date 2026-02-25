@@ -329,9 +329,19 @@ export class RecipeTestUtil {
             this.cleanupRecipeIngredientTestingDatabase(),
         );
 
-        await this.ingredientRepo.insert(
-            await this.getTestRecipeIngredientEntities(testContext),
-        );
+        const ingredients = await this.getTestRecipeIngredientEntities(testContext);
+        for (const ingredient of ingredients) {
+            const exists = await this.ingredientRepo.findOne({
+                where: {
+                    ingredientInventoryItem: ingredient.ingredientInventoryItem ? { id: ingredient.ingredientInventoryItem.id } : undefined,
+                    ingredientRecipe: ingredient.ingredientRecipe ? { id: ingredient.ingredientRecipe.id } : undefined,
+                    parentRecipe: { id: ingredient.parentRecipe.id }
+                },
+            });
+            if (!exists) {
+                await this.ingredientRepo.save(ingredient);
+            }
+        }
     }
 
     /**
@@ -431,22 +441,18 @@ export class RecipeTestUtil {
     }
 
     public async cleanupRecipeIngredientTestingDatabase(): Promise<void> {
-        //await this.ingredientRepo.delete({});
         await this.ingredientRepo.deleteAll();
     }
 
     public async cleanupRecipeCategoryTestingDatabase(): Promise<void> {
-        //await this.categoryRepo.delete({});
         await this.categoryRepo.deleteAll();
     }
 
     public async cleanupRecipeSubCategoryTestingDatabase(): Promise<void> {
-        //await this.subCategoryRepo.delete({});
         await this.subCategoryRepo.deleteAll();
     }
 
     public async cleanupRecipeTestingDatabase(): Promise<void> {
-        //await this.recipeRepo.delete({});
         await this.recipeRepo.deleteAll();
     }
 

@@ -3,7 +3,10 @@ import { UpdateOrderDto } from "../../dto/order/update-order.dto";
 import { Order } from "../../entities/order.entity";
 import { orderMenuItemToNestedUpdateDto } from "./order-menu-item.dto.transformer";
 
-export function orderToUpdateDto(order: Order): UpdateOrderDto {
+export function orderToUpdateDto(order: Order, merge: Partial<UpdateOrderDto> = {}): UpdateOrderDto {
+    const existingOrderedItems = order.orderedItems.map(item => orderMenuItemToNestedUpdateDto(item)) ?? [];
+    const mergedOrderedItems = merge.orderedItems ? [...existingOrderedItems, ...merge.orderedItems] : existingOrderedItems;
+
     return plainToInstance(UpdateOrderDto, {
         recipient: order.recipient,
         fulfillmentDate: order.fulfillmentDate,
@@ -16,7 +19,8 @@ export function orderToUpdateDto(order: Order): UpdateOrderDto {
         isFrozen: order.isFrozen ?? undefined,
         isWeekly: order.isWeekly ?? undefined,
         weeklyFulfillment: order.weeklyFulfillment ?? undefined,
-        categoryId: order.category.id,
-        orderedItems: order.orderedItems.map(item => orderMenuItemToNestedUpdateDto(item)),
+        categoryId: order.category?.id ?? null,
+        ...merge,
+        orderedItems: mergedOrderedItems,
     });
 }

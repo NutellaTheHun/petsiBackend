@@ -9,7 +9,7 @@ import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
-import { item_a, item_b, item_f, item_g } from '../utils/constants';
+import { item_a, item_b, item_container_a, item_container_b } from '../utils/constants';
 import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
 import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
@@ -66,7 +66,7 @@ describe('menu item container item validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const parentContainer = await findMenuItem(item_f);
+        const parentContainer = await findMenuItem(item_container_a);
         const containedItem = await findMenuItem(item_a);
 
         const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
@@ -82,8 +82,8 @@ describe('menu item container item validator', () => {
     });
 
     it('fail validate create: contained item not of type single', async () => {
-        const parentContainer = await findMenuItem(item_f);
-        const containedContainer = await findMenuItem(item_g);
+        const parentContainer = await findMenuItem(item_container_a);
+        const containedContainer = await findMenuItem(item_container_b);
 
         const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
             containedMenuItemId: containedContainer.id,
@@ -103,7 +103,7 @@ describe('menu item container item validator', () => {
     });
 
     it('fail validate create: invalid contained item size', async () => {
-        const parentContainer = await findMenuItem(item_f);
+        const parentContainer = await findMenuItem(item_container_b);
         const containedItem = await findMenuItem(item_a);
 
         const allSizes = await sizeRepo.find();
@@ -132,7 +132,7 @@ describe('menu item container item validator', () => {
     });
 
     it('fail validate create: quantity with value 0', async () => {
-        const parentContainer = await findMenuItem(item_f);
+        const parentContainer = await findMenuItem(item_container_b);
         const containedItem = await findMenuItem(item_a);
 
         const dto: CreateMenuItemContainerItemDto = plainToInstance(CreateMenuItemContainerItemDto, {
@@ -149,7 +149,7 @@ describe('menu item container item validator', () => {
     });
 
     it('fail validate create: invalid parent item size', async () => {
-        const parentContainer = await findMenuItem(item_f);
+        const parentContainer = await findMenuItem(item_container_b);
         const containedItem = await findMenuItem(item_a);
 
         const allSizes = await sizeRepo.find();

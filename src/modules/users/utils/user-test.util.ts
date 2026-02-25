@@ -61,15 +61,23 @@ export class UserTestUtil {
         }
         this.initUsers = true;
 
-        const users = await this.getTestUserEntities(testContext);
-
         testContext.addCleanupFunction(() => this.cleanupUserTestingDatabase());
+
+        const users = await this.getTestUserEntities(testContext);
+        for (const user of users) {
+            const exists = await this.userRepo.findOne({
+                where: { name: user.name },
+            });
+            if (!exists) {
+                await this.userRepo.save(user);
+            }
+        }
+
 
         await this.userRepo.insert(users);
     }
 
     public async cleanupUserTestingDatabase(): Promise<void> {
-        //await this.userRepo.delete({});
         await this.userRepo.deleteAll();
     }
 }

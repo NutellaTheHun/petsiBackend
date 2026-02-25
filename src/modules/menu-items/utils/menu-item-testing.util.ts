@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemCategoryBuilder } from '../builders/menu-item-category.builder';
+import { MenuItemContainerItemBuilder } from '../builders/menu-item-container-item.builder';
 import { MenuItemSizeBuilder } from '../builders/menu-item-size.builder';
 import { MenuItemBuilder } from '../builders/menu-item.builder';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
@@ -10,15 +11,11 @@ import { MenuItemContainerItem } from '../entities/menu-item-container-item.enti
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import {
+    getNonVarMaxItemContainerTestNames,
     getTestCategoryNames,
     getTestItemNames,
     getTestSizeNames,
-    item_a,
-    item_b,
-    item_c,
-    item_d,
-    item_f,
-    item_g,
+    getVarMaxItemContainerTestNames
 } from './constants';
 import { MENU_ITEM_TYPES } from './menu-item-type';
 
@@ -42,6 +39,7 @@ export class MenuItemTestingUtil {
         private readonly itemBuilder: MenuItemBuilder,
         private readonly sizeBuilder: MenuItemSizeBuilder,
         private readonly categoryBuilder: MenuItemCategoryBuilder,
+        private readonly containerItemBuilder: MenuItemContainerItemBuilder,
     ) { }
 
     // Menu Item Size
@@ -73,13 +71,16 @@ export class MenuItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupMenuItemSizeTestDatabase(),
         );
-        await this.sizeRepo.insert(
-            await this.getTestMenuItemSizeEntities(testContext),
-        );
+        const sizes = await this.getTestMenuItemSizeEntities(testContext);
+        for (const size of sizes) {
+            if (await this.sizeRepo.findOne({ where: { name: size.name } })) {
+                continue;
+            }
+            await this.sizeRepo.save(size);
+        }
     }
 
     public async cleanupMenuItemSizeTestDatabase(): Promise<void> {
-        //await this.sizeRepo.delete({});
         await this.sizeRepo.deleteAll();
     }
 
@@ -112,20 +113,23 @@ export class MenuItemTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupMenuItemCategoryTestDatabase(),
         );
-        await this.categoryRepo.insert(
-            await this.getTestMenuItemCategoryEntities(testContext),
-        );
+        const categories = await this.getTestMenuItemCategoryEntities(testContext);
+        for (const category of categories) {
+            if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
+                continue;
+            }
+            await this.categoryRepo.save(category);
+        }
     }
 
     public async cleanupMenuItemCategoryTestDatabase(): Promise<void> {
-        //await this.categoryRepo.delete({});
         await this.categoryRepo.deleteAll();
     }
 
     // Menu Item
 
     /**
-     * Creates Menu Item entities, entities with name ItemF and ItemG are of type container, with itemG having a variableMaxAmount of 3, all other entities are of type single
+     * Creates Menu Item entities of type single and container
      * @param testContext
      */
     public async getTestMenuItemEntities(
@@ -134,13 +138,15 @@ export class MenuItemTestingUtil {
         await this.initMenuItemSizeTestDatabase(testContext);
         await this.initMenuItemCategoryTestDatabase(testContext);
 
-        const itemNames = getTestItemNames();
+
         const categoryIds = (await this.categoryRepo.find()).map((cat) => cat.id);
         let catIdx = 0;
         const sizeIds = (await this.sizeRepo.find()).map((size) => size.id);
         let sizeIdx = 0;
         const results: MenuItem[] = [];
 
+        // Type Single Items
+        const itemNames = getTestItemNames();
         for (const itemName of itemNames) {
             const exists = await this.itemRepo.findOne({ where: { name: itemName } });
             if (exists) {
@@ -148,13 +154,6 @@ export class MenuItemTestingUtil {
             }
 
             let type = MENU_ITEM_TYPES.SINGLE;
-            let variableMaxAmount: number | null = null;
-            if (itemName === item_f || itemName === item_g) {
-                type = MENU_ITEM_TYPES.CONTAINER;
-                if (itemName === item_g) {
-                    variableMaxAmount = 3;
-                }
-            }
 
             results.push(
                 await this.itemBuilder
@@ -166,12 +165,50 @@ export class MenuItemTestingUtil {
                         sizeIds[sizeIdx++ % sizeIds.length],
                     ])
                     .type(type)
-                    .variableMaxAmount(variableMaxAmount)
                     .build(),
             );
 
-            variableMaxAmount = null;
-            type = MENU_ITEM_TYPES.SINGLE;
+        }
+
+        // Type Fixed Container Items
+        const nonVarcontainerNames = getNonVarMaxItemContainerTestNames();
+        for (const containerName of nonVarcontainerNames) {
+            const exists = await this.itemRepo.findOne({ where: { name: containerName } });
+            if (exists) {
+                continue;
+            }
+
+            results.push(
+                await this.itemBuilder.reset()
+                    .name(containerName)
+                    .type(MENU_ITEM_TYPES.CONTAINER)
+                    .categorybyId(categoryIds[catIdx++ % categoryIds.length])
+                    .validSizesById([
+                        sizeIds[sizeIdx++ % sizeIds.length],
+                        sizeIds[sizeIdx++ % sizeIds.length],
+                    ])
+                    .build());
+        }
+
+        // Type Variable Container Items
+        const varMaxContainerNames = getVarMaxItemContainerTestNames();
+        for (const containerName of varMaxContainerNames) {
+            const exists = await this.itemRepo.findOne({ where: { name: containerName } });
+            if (exists) {
+                continue;
+            }
+
+            results.push(
+                await this.itemBuilder.reset()
+                    .name(containerName)
+                    .type(MENU_ITEM_TYPES.CONTAINER)
+                    .variableMaxAmount(6)
+                    .categorybyId(categoryIds[catIdx++ % categoryIds.length])
+                    .validSizesById([
+                        sizeIds[sizeIdx++ % sizeIds.length],
+                    ])
+                    .build());
+
         }
 
         return results;
@@ -186,15 +223,19 @@ export class MenuItemTestingUtil {
         this.menuItemInit = true;
 
         testContext.addCleanupFunction(() => this.cleanupMenuItemTestDatabase());
-        await this.itemRepo.save(await this.getTestMenuItemEntities(testContext));
+        const items = await this.getTestMenuItemEntities(testContext)
+        for (const item of items) {
+            if (await this.itemRepo.findOne({ where: { name: item.name } })) {
+                continue;
+            }
+            await this.itemRepo.save(item);
+        }
     }
 
     public async cleanupMenuItemTestDatabase(): Promise<void> {
-        //await this.itemRepo.delete({});
         await this.itemRepo.deleteAll();
     }
 
-    // Menu Item Component
 
     /**
      * Returns MenuItemComponents where ItemF is a container of items A and B, and itemG is a container of items C and D.
@@ -206,109 +247,44 @@ export class MenuItemTestingUtil {
     ): Promise<MenuItemContainerItem[]> {
         await this.initMenuItemTestDatabase(testContext);
 
-        // Parent
-        const itemF = await this.itemRepo.findOne({
-            where: { name: item_f },
-            relations: ['sizes'],
-        });
-        if (!itemF) {
-            throw new NotFoundException();
-        }
-        if (!itemF.sizes) {
-            throw new Error();
-        }
+        const singleItems = await this.itemRepo.find({ where: { type: MENU_ITEM_TYPES.SINGLE }, relations: ['sizes'] });
+        let singleItemIdx = 0;
+        const singleItemMax = 3;
+        let singleItemSizeIdx = 0;
 
-        // Child to F
-        const itemA = await this.itemRepo.findOne({
-            where: { name: item_a },
-            relations: ['sizes'],
-        });
-        if (!itemA) {
-            throw new NotFoundException();
-        }
-        if (!itemA.sizes) {
-            throw new Error();
-        }
+        const containerItems = await this.itemRepo.find({ where: { type: MENU_ITEM_TYPES.CONTAINER }, relations: ['sizes'] });
 
-        // Child to F
-        const itemB = await this.itemRepo.findOne({
-            where: { name: item_b },
-            relations: ['sizes'],
-        });
-        if (!itemB) {
-            throw new NotFoundException();
-        }
-        if (!itemB.sizes) {
-            throw new Error();
-        }
+        const results: MenuItemContainerItem[] = [];
 
-        // Parent
-        const itemG = await this.itemRepo.findOne({
-            where: { name: item_g },
-            relations: ['sizes'],
-        });
-        if (!itemG) {
-            throw new NotFoundException();
+        for (const container of containerItems) {
+            if (container.variableMaxAmount) {
+                for (let i = 0; i < singleItemMax; i++) {
+                    const containedItem = singleItems[singleItemIdx++ % singleItems.length];
+                    const containedItemSize = containedItem.sizes[singleItemSizeIdx++ % containedItem.sizes.length];
+                    results.push(await this.containerItemBuilder.reset()
+                        .parentContainerById(container.id)
+                        .parentContainerSizeById(container.sizes[0].id)
+                        .containedItemById(containedItem.id)
+                        .containedItemSizeById(containedItemSize.id)
+                        .quantity(container.variableMaxAmount)
+                        .build());
+                }
+            } else {
+                for (const containerSize of container.sizes) {
+                    for (let i = 0; i < singleItemMax; i++) {
+                        const containedItem = singleItems[singleItemIdx++ % singleItems.length];
+                        const containedItemSize = containedItem.sizes[singleItemSizeIdx++ % containedItem.sizes.length];
+                        results.push(await this.containerItemBuilder.reset()
+                            .parentContainerById(container.id)
+                            .parentContainerSizeById(containerSize.id)
+                            .containedItemById(containedItem.id)
+                            .containedItemSizeById(containedItemSize.id)
+                            .quantity(1)
+                            .build());
+                    }
+                }
+            }
         }
-        if (!itemG.sizes) {
-            throw new Error();
-        }
-
-        // Child to G
-        const itemC = await this.itemRepo.findOne({
-            where: { name: item_c },
-            relations: ['sizes'],
-        });
-        if (!itemC) {
-            throw new NotFoundException();
-        }
-        if (!itemC.sizes) {
-            throw new Error();
-        }
-
-        // Child to G
-        const itemD = await this.itemRepo.findOne({
-            where: { name: item_d },
-            relations: ['sizes'],
-        });
-        if (!itemD) {
-            throw new NotFoundException();
-        }
-        if (!itemD.sizes) {
-            throw new Error();
-        }
-
-        const results = [
-            {
-                parentMenuItem: itemF,
-                parentItemSize: itemF.sizes[0],
-                containedMenuItem: itemA,
-                containedItemSize: itemA.sizes[0],
-                quantity: 3,
-            },
-            {
-                parentMenuItem: itemF,
-                parentItemSize: itemF.sizes[0],
-                containedMenuItem: itemB,
-                containedItemSize: itemB.sizes[0],
-                quantity: 3,
-            },
-
-            {
-                parentMenuItem: itemG,
-                parentItemSize: itemG.sizes[0],
-                containedMenuItem: itemC,
-                containedItemSize: itemC.sizes[0],
-                quantity: 3,
-            },
-            {
-                parentMenuItem: itemG,
-                parentItemSize: itemG.sizes[0],
-                containedMenuItem: itemD,
-                containedItemSize: itemD.sizes[0],
-                quantity: 3,
-            },
-        ] as MenuItemContainerItem[];
 
         return results;
     }
@@ -332,13 +308,17 @@ export class MenuItemTestingUtil {
             this.cleanupMenuItemContainerItemTestDatabase(),
         );
 
-        await this.containerItemRepo.insert(
-            await this.getTestMenuItemContainerItemEntities(testContext),
-        );
+        const containerItems = await this.getTestMenuItemContainerItemEntities(testContext);
+        for (const containerItem of containerItems) {
+            // if containerItem is not already in the database, save it
+            if (await this.containerItemRepo.findOne({ where: { parentMenuItem: { id: containerItem.parentMenuItem.id }, parentItemSize: { id: containerItem.parentItemSize.id }, containedMenuItem: { id: containerItem.containedMenuItem.id }, containedItemSize: { id: containerItem.containedItemSize.id } } })) {
+                continue;
+            }
+            await this.containerItemRepo.save(containerItem);
+        }
     }
 
     public async cleanupMenuItemContainerItemTestDatabase(): Promise<void> {
-        //await this.containerItemRepo.delete({});
         await this.containerItemRepo.deleteAll();
     }
 }

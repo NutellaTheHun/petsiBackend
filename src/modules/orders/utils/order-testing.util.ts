@@ -5,9 +5,9 @@ import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { getTestOrderCategoryNames } from './constants';
@@ -59,15 +59,17 @@ export class OrderTestingUtil {
         }
         this.orderTypeInit = true;
 
-        testContext.addCleanupFunction(() => this.cleanupOrderTypeTestDatabase());
-
-        await this.categoryRepo.insert(
-            await this.getTestOrderTypeEntities(testContext),
-        );
+        testContext.addCleanupFunction(() => this.cleanupOrderCategoryTestDatabase());
+        const categories = await this.getTestOrderTypeEntities(testContext);
+        for (const category of categories) {
+            if (await this.categoryRepo.findOne({ where: { name: category.name } })) {
+                continue;
+            }
+            await this.categoryRepo.save(category);
+        }
     }
 
-    public async cleanupOrderTypeTestDatabase(): Promise<void> {
-        //await this.categoryRepo.delete({});
+    public async cleanupOrderCategoryTestDatabase(): Promise<void> {
         await this.categoryRepo.deleteAll();
     }
 
@@ -87,6 +89,7 @@ export class OrderTestingUtil {
 
         const menuItems = await this.menuItemRepo.find({
             relations: ['sizes'],
+            where: { type: MENU_ITEM_TYPES.SINGLE },
         });
         if (!menuItems) {
             throw new Error();
@@ -95,10 +98,11 @@ export class OrderTestingUtil {
         let menuItemIdx = 0;
         let quantity = 1;
         let sizeIdx = 0;
+        let orderItemMax = 4;
         const results: OrderMenuItem[] = [];
 
         for (const order of orders) {
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < orderItemMax; i++) {
                 const menuItem = menuItems[menuItemIdx++ % menuItems.length];
                 if (!menuItem.sizes) {
                     throw new Error();
@@ -116,67 +120,61 @@ export class OrderTestingUtil {
         }
 
         //Order Menu Item Container Items
-        const items = await this.menuItemRepo.find({
+        const containerMenuItems = await this.menuItemRepo.find({
             relations: [
+                'sizes',
                 'containerMenuItems',
                 'containerMenuItems.containedMenuItem',
                 'containerMenuItems.containedItemSize',
             ],
+            where: { type: MENU_ITEM_TYPES.CONTAINER },
         });
-        const containerItems = items.filter(
-            (item) => item.containerMenuItems && item.containerMenuItems.length > 0,
-        );
-        if (containerItems.length === 0) {
-            throw new Error();
+
+        let containerItemIdx = 0;
+
+        for (const order of orders) {
+            const containerMenuItem = containerMenuItems[containerItemIdx++ % containerMenuItems.length];
+            if (!containerMenuItem.containerMenuItems) {
+                throw new Error();
+            }
+
+            if (containerMenuItem.variableMaxAmount) {
+                const containerOrderItem = ({
+                    parentOrder: order,
+                    menuItem: containerMenuItem,
+                    quantity: 1,
+                    size: containerMenuItem.sizes[0],
+                    containerOrderMenuItems: [] as any,
+                });
+                for (const containedMenuItem of containerMenuItem.containerMenuItems) {
+                    containerOrderItem.containerOrderMenuItems.push({
+                        parentOrderMenuItem: containerOrderItem,
+                        containedMenuItem: containedMenuItem.containedMenuItem,
+                        containedItemSize: containedMenuItem.containedItemSize,
+                        quantity: containerMenuItem.variableMaxAmount,
+                    });
+                }
+                results.push(containerOrderItem as OrderMenuItem);
+            }
+            else {
+                const containerOrderItem = ({
+                    parentOrder: order,
+                    menuItem: containerMenuItem,
+                    quantity: 1,
+                    size: containerMenuItem.sizes[0],
+                    containerOrderMenuItems: [] as any,
+                });
+                for (const containedMenuItem of containerMenuItem.containerMenuItems) {
+                    containerOrderItem.containerOrderMenuItems.push({
+                        parentOrderMenuItem: containerOrderItem,
+                        containedMenuItem: containedMenuItem.containedMenuItem,
+                        containedItemSize: containedMenuItem.containedItemSize,
+                        quantity: containedMenuItem.quantity,
+                    });
+                }
+                results.push(containerOrderItem as OrderMenuItem);
+            }
         }
-
-        const containerItem = containerItems[0];
-        if (!containerItem.containerMenuItems) {
-            throw new Error();
-        }
-        const containedItem_a = containerItem.containerMenuItems[0];
-        if (!containedItem_a) {
-            throw new Error();
-        }
-        const containedItem_b = containerItem.containerMenuItems[1];
-        if (!containedItem_a || !containedItem_b) {
-            throw new Error();
-        }
-
-
-        const parentOrderItem = {
-            parentOrder: orders[0],
-            menuItem: containerItems[0],
-            quantity: 1,
-            size: menuItems[0].sizes[0],
-        } as OrderMenuItem;
-
-        const containerItem_a = {
-            parentOrderMenuItem: parentOrderItem,
-            containedMenuItem:
-                containedItem_a.containedMenuItem,
-            containedItemSize:
-                containedItem_a.containedItemSize,
-            quantity: 1,
-        } as OrderContainerItem;
-
-        if (!menuItems[2].sizes) {
-            throw new Error();
-        }
-        const containerItem_b = {
-            parentOrderMenuItem: parentOrderItem,
-            containedMenuItem:
-                containedItem_b.containedMenuItem,
-            containedItemSize:
-                containedItem_b.containedItemSize,
-            quantity: 1,
-        } as OrderContainerItem;
-
-        parentOrderItem.containerOrderMenuItems = [
-            containerItem_a,
-            containerItem_b,
-        ];
-        results.push(parentOrderItem);
 
         return results;
     }
@@ -192,13 +190,12 @@ export class OrderTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupOrderMenuItemTestDatabase(),
         );
-        await this.orderMenuItemRepo.insert(
+        await this.orderMenuItemRepo.save(
             await this.getTestOrderMenuItemEntities(testContext),
         );
     }
 
     public async cleanupOrderMenuItemTestDatabase(): Promise<void> {
-        //await this.orderMenuItemRepo.delete({});
         await this.orderMenuItemRepo.deleteAll();
     }
 
@@ -260,11 +257,10 @@ export class OrderTestingUtil {
         this.orderInit = true;
 
         testContext.addCleanupFunction(() => this.cleanupOrderTestDatabase());
-        await this.orderRepo.insert(await this.getTestOrderEntities(testContext));
+        await this.orderRepo.save(await this.getTestOrderEntities(testContext));
     }
 
     public async cleanupOrderTestDatabase(): Promise<void> {
-        //await this.orderRepo.delete({});
         await this.orderRepo.deleteAll();
     }
 

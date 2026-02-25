@@ -24,14 +24,23 @@ export const item_e = "item e"
 export const item_f = "item f"
 export const item_g = "item g"
 
+export const container_a = "container a";
+export const container_b = "container b";
+export const container_c = "container c";
+
 export function getTestItemNames(): string[] {
     return [item_a, item_b, item_c, item_d, item_e, item_f, item_g];
 }
 
 export const item_container_a = "container a";
 export const item_container_b = "container b";
-export const item_container_c = "container c";
+export const item_var_max_container_c = "container c";
+export const item_var_max_container_d = "container d";
 
-export function getItemContainerTestNames(): string[] {
-    return [item_container_a, item_container_b, item_container_c];
+export function getNonVarMaxItemContainerTestNames(): string[] {
+    return [container_a, container_b];
+}
+
+export function getVarMaxItemContainerTestNames(): string[] {
+    return [item_var_max_container_c, item_var_max_container_d];
 }

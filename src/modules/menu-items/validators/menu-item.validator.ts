@@ -86,8 +86,12 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             // if variable max amount is set, validate container item quantities match variable max amount
             if (identity.variableMaxAmount !== undefined && identity.variableMaxAmount !== null) {
                 for (const containerItem of identity.containerMenuItems) {
-                    if (containerItem.quantity && containerItem.quantity !== identity.variableMaxAmount) {
-                        errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
+                    if (containerItem.quantity !== identity.variableMaxAmount) {
+                        const id = containerItem.id ?? containerItem.createId;
+                        if (id == null) throw new Error('id is required');
+                        const childErrorMap = new ValidationErrorMap(id);
+                        childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['quantity']);
+                        errorMap.addChild('containerMenuItems', childErrorMap);
                     }
                 }
             }

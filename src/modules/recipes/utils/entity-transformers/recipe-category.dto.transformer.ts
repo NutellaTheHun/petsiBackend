@@ -3,9 +3,13 @@ import { UpdateRecipeCategoryDto } from "../../dto/recipe-category/update-recipe
 import { RecipeCategory } from "../../entities/recipe-category.entity";
 import { recipeSubCategoryToNestedUpdateDto } from "./recipe-sub-category.dto.transformer";
 
-export function recipeCategoryToUpdateDto(recipeCategory: RecipeCategory): UpdateRecipeCategoryDto {
+export function recipeCategoryToUpdateDto(recipeCategory: RecipeCategory, merge: Partial<UpdateRecipeCategoryDto> = {}): UpdateRecipeCategoryDto {
+    const existingSubCategories = recipeCategory.subCategories.map(subCategory => recipeSubCategoryToNestedUpdateDto(subCategory)) ?? [];
+    const mergedSubCategories = merge.subCategories ? [...existingSubCategories, ...merge.subCategories] : existingSubCategories;
+
     return plainToInstance(UpdateRecipeCategoryDto, {
         name: recipeCategory.name,
-        subCategories: recipeCategory.subCategories.map(subCategory => recipeSubCategoryToNestedUpdateDto(subCategory)),
+        ...merge,
+        subCategories: mergedSubCategories,
     });
 }

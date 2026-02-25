@@ -73,7 +73,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
 
         // validate parent order menu item exists
         if (identity.parentOrderMenuItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.parentOrderMenuItemId,
                 this.orderMenuItemRepo,
                 'parentOrderMenuItem',
@@ -92,7 +92,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
 
         // validate contained item size exists
         if (identity.containedItemSizeId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.containedItemSizeId,
                 this.menuItemSizeRepo,
                 'containedItemSize',
@@ -102,7 +102,7 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
 
         // validate contained item exists
         if (identity.containedMenuItemId !== undefined) {
-            this.helper.enforceExists(
+            await this.helper.enforceExists(
                 identity.containedMenuItemId,
                 this.menuItemRepo,
                 'containedMenuItem',
@@ -111,9 +111,8 @@ export class OrderContainerItemValidator extends NestedValidatorBase<OrderContai
         }
 
         // validate contained item is single
-        if (identity.containedMenuItemType === MENU_ITEM_TYPES.SINGLE) {
+        if (identity.containedMenuItemType !== MENU_ITEM_TYPES.SINGLE) {
             errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']);
-            return errorMap;
         }
 
         return errorMap;

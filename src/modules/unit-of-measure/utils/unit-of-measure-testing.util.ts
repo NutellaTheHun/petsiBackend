@@ -167,7 +167,15 @@ export class UnitOfMeasureTestingUtil {
         testContext.addCleanupFunction(() =>
             this.cleanupUnitCategoryTestDatabase(),
         );
-        await this.categoryRepo.insert(await this.getCategoryEntities(testContext));
+        const categories = await this.getCategoryEntities(testContext);
+        for (const category of categories) {
+            const exists = await this.categoryRepo.findOne({
+                where: { name: category.name },
+            });
+            if (!exists) {
+                await this.categoryRepo.save(category);
+            }
+        }
     }
 
     public async initUnitOfMeasureTestDatabase(
@@ -182,18 +190,22 @@ export class UnitOfMeasureTestingUtil {
             this.cleanupUnitOfMeasureTestDatabase(),
         );
 
-        await this.unitRepo.insert(
-            await this.getUnitsOfMeasureEntities(testContext),
-        );
+        const units = await this.getUnitsOfMeasureEntities(testContext);
+        for (const unit of units) {
+            const exists = await this.unitRepo.findOne({
+                where: { name: unit.name },
+            });
+            if (!exists) {
+                await this.unitRepo.save(unit);
+            }
+        }
     }
 
     private async cleanupUnitCategoryTestDatabase(): Promise<void> {
-        //await this.categoryRepo.delete({});
         await this.categoryRepo.deleteAll();
     }
 
     private async cleanupUnitOfMeasureTestDatabase(): Promise<void> {
-        //await this.unitRepo.delete({});
         await this.unitRepo.deleteAll();
     }
 

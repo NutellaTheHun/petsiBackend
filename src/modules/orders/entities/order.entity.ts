@@ -190,8 +190,8 @@ export class Order {
         description: 'The assigned category of the order',
         type: () => OrderCategory,
     })
-    @ManyToOne(() => OrderCategory)
-    category: OrderCategory;
+    @ManyToOne(() => OrderCategory, { nullable: true, onDelete: 'SET NULL' })
+    category: OrderCategory | null = null;
 
     /**
      * The list of {@link OrderMenuItem} that are being purchased.

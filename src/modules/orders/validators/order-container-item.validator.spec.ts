@@ -6,7 +6,7 @@ import { createValidationErrorPayload, expectValidationErrorPayload, expectValid
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_a } from '../../menu-items/utils/constants';
+import { item_container_a, item_container_b } from '../../menu-items/utils/constants';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { CreateOrderContainerItemDto } from '../dto/order-container-item/create-order-container-item.dto';
 import { UpdateOrderContainerItemDto } from '../dto/order-container-item/update-order-container-item.dto';
@@ -27,18 +27,23 @@ describe('order container item validator', () => {
     let sizeRepo: Repository<MenuItemSize>;
 
     const findOrderMenuItem = async (name: string) => {
-        return await orderItemRepo.findOneOrFail({ where: { menuItem: { name } }, relations: ['menuItem', 'size', 'menuItem.containerMenuItems', 'menuItem.sizes'] });
+        return await orderItemRepo.findOneOrFail({ where: { menuItem: { name } }, relations: ['menuItem', 'size', 'menuItem.containerMenuItems', 'menuItem.sizes', 'menuItem.containerMenuItems.containedMenuItem', 'menuItem.containerMenuItems.containedItemSize'] });
     }
 
     const findContainerItem = async () => {
         return await containerItemRepo.findOneOrFail({
+            where: {},
             relations: [
-                'containedItem',
+                'containedMenuItem',
                 'containedItemSize',
                 'parentOrderMenuItem',
                 'parentOrderMenuItem.menuItem',
             ],
         });
+    }
+
+    const findMenuItem = async (name: string) => {
+        return await menuItemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'containerMenuItems'] });
     }
 
     beforeAll(async () => {
@@ -67,7 +72,7 @@ describe('order container item validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const parentOrderMenuItem = await findOrderMenuItem(item_a);
+        const parentOrderMenuItem = await findOrderMenuItem(item_container_a);
         if (!parentOrderMenuItem.menuItem.containerMenuItems) {
             throw new Error('parent order menu item container menu items not found');
         }
@@ -89,10 +94,10 @@ describe('order container item validator', () => {
     });
 
     it('fail validate create: contained item not of type single', async () => {
-        const parentOrderMenuItem = await findOrderMenuItem(item_a);
+        const parentOrderMenuItem = await findOrderMenuItem(item_container_b);
 
         const containerItem = await menuItemRepo.findOneOrFail({
-            where: { type: MENU_ITEM_TYPES.CONTAINER },
+            where: { name: item_container_a },
             relations: ['sizes'],
         });
 
@@ -108,7 +113,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -118,7 +123,7 @@ describe('order container item validator', () => {
 
     // TODO create fail: Invalid parent order menu item
     it('fail validate create: quantity with value 0', async () => {
-        const parentOrderMenuItem = await findOrderMenuItem(item_a);
+        const parentOrderMenuItem = await findOrderMenuItem(item_container_a);
         if (!parentOrderMenuItem.menuItem.containerMenuItems) {
             throw new Error('parent order menu item container menu items not found');
         }
@@ -147,19 +152,23 @@ describe('order container item validator', () => {
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const containerItemToUpdate = await findContainerItem();
-
-        const newItem = await menuItemRepo.findOne({
-            where: { type: MENU_ITEM_TYPES.SINGLE },
-            relations: ['sizes'],
+        const parentMenuItem = await menuItemRepo.findOne({
+            where: { id: containerItemToUpdate.parentOrderMenuItem.menuItem.id },
+            relations: ['sizes', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'],
         });
+        if (!parentMenuItem) {
+            throw new Error('parent menu item not found');
+        }
+
+        const newItem = parentMenuItem.containerMenuItems?.find(item => item.id !== containerItemToUpdate.containedMenuItem.id);
         if (!newItem) {
             throw new Error('new item not found');
         }
 
         const dto: UpdateOrderContainerItemDto = plainToInstance(UpdateOrderContainerItemDto, {
-            containedMenuItemId: newItem.id,
-            containedItemSizeId: newItem.sizes[0].id,
-            quantity: 5,
+            containedMenuItemId: newItem.containedMenuItem.id,
+            containedItemSizeId: newItem.containedItemSize.id,
+            quantity: containerItemToUpdate.quantity,
         });
 
         const errors = await validator.validateDto(
@@ -197,7 +206,7 @@ describe('order container item validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['type']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedMenuItem']),
         );
     });
 
@@ -208,7 +217,7 @@ describe('order container item validator', () => {
     // TODO update fail: Invalid parent order menu item
 
     it('fail validate update: quantity with value 0', async () => {
-        const containerItemToUpdate = await containerItemRepo.findOne({});
+        const containerItemToUpdate = await containerItemRepo.findOne({ where: {} });
         if (!containerItemToUpdate) {
             throw new Error('container item not found');
         }

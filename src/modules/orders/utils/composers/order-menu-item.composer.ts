@@ -42,7 +42,7 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                     {
                         parentOrderMenuItemId: savedResult.id,
                         parentMenuItemId: savedResult.menuItem.id,
-                        parentMenuItemSizeId: savedResult.size.id,
+                        parentMenuItemSizeId: savedResult.size?.id,
                     },
                 );
             await manager.save(savedResult);
@@ -84,7 +84,7 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                     {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,
-                        parentMenuItemSizeId: entity.size.id,
+                        parentMenuItemSizeId: entity.size?.id,
                     },
                 );
         }

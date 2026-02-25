@@ -3,9 +3,13 @@ import { UpdateInventoryAreaCountDto } from "../../dto/inventory-area-count/upda
 import { InventoryAreaCount } from "../../entities/inventory-area-count.entity";
 import { inventoryAreaItemToNestedUpdateDto } from "./inventory-area-item.dto.transformer";
 
-export function inventoryAreaCountToUpdateDto(inventoryAreaCount: InventoryAreaCount): UpdateInventoryAreaCountDto {
+export function inventoryAreaCountToUpdateDto(inventoryAreaCount: InventoryAreaCount, merge: Partial<UpdateInventoryAreaCountDto> = {}): UpdateInventoryAreaCountDto {
+    const existingInventoryItems = inventoryAreaCount.countedInventoryItems.map(inventoryAreaItem => inventoryAreaItemToNestedUpdateDto(inventoryAreaItem)) ?? [];
+
+    const mergedInventoryItems = merge.countedInventoryItems ? [...existingInventoryItems, ...merge.countedInventoryItems] : existingInventoryItems;
     return plainToInstance(UpdateInventoryAreaCountDto, {
         inventoryAreaId: inventoryAreaCount.inventoryArea.id,
-        countedInventoryItems: inventoryAreaCount.countedInventoryItems.map(inventoryAreaItem => inventoryAreaItemToNestedUpdateDto(inventoryAreaItem)),
+        ...merge,
+        countedInventoryItems: mergedInventoryItems,
     });
 }
