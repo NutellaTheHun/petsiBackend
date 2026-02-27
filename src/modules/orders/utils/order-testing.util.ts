@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
 import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
@@ -27,6 +28,9 @@ export class OrderTestingUtil {
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
+
+        @InjectRepository(MenuItemContainerItem)
+        private readonly menuItemContainerItemRepo: Repository<MenuItemContainerItem>,
 
         private readonly menuItemTestUtil: MenuItemTestingUtil,
     ) {
@@ -123,9 +127,6 @@ export class OrderTestingUtil {
         const containerMenuItems = await this.menuItemRepo.find({
             relations: [
                 'sizes',
-                'containerMenuItems',
-                'containerMenuItems.containedMenuItem',
-                'containerMenuItems.containedItemSize',
             ],
             where: { type: MENU_ITEM_TYPES.CONTAINER },
         });
@@ -134,9 +135,11 @@ export class OrderTestingUtil {
 
         for (const order of orders) {
             const containerMenuItem = containerMenuItems[containerItemIdx++ % containerMenuItems.length];
-            if (!containerMenuItem.containerMenuItems) {
-                throw new Error();
-            }
+
+            const validContainerMenuItems = await this.menuItemContainerItemRepo.find({
+                where: { parentMenuItem: { id: containerMenuItem.id }, parentItemSize: { id: containerMenuItem.sizes[0].id } },
+                relations: ['containedMenuItem', 'containedItemSize', 'parentMenuItem', 'parentItemSize']
+            });
 
             if (containerMenuItem.variableMaxAmount) {
                 const containerOrderItem = ({
@@ -146,13 +149,16 @@ export class OrderTestingUtil {
                     size: containerMenuItem.sizes[0],
                     containerOrderMenuItems: [] as any,
                 });
-                for (const containedMenuItem of containerMenuItem.containerMenuItems) {
-                    containerOrderItem.containerOrderMenuItems.push({
-                        parentOrderMenuItem: containerOrderItem,
-                        containedMenuItem: containedMenuItem.containedMenuItem,
-                        containedItemSize: containedMenuItem.containedItemSize,
-                        quantity: containerMenuItem.variableMaxAmount,
-                    });
+                for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
+                    if (validItem.parentItemSize.id === containerMenuItem.sizes[0].id) {
+                        containerOrderItem.containerOrderMenuItems.push({
+                            parentOrderMenuItem: containerOrderItem,
+                            containedMenuItem: validItem.containedMenuItem,
+                            containedItemSize: validItem.containedItemSize,
+                            quantity: containerMenuItem.variableMaxAmount,
+                        });
+                    }
+
                 }
                 results.push(containerOrderItem as OrderMenuItem);
             }
@@ -164,13 +170,15 @@ export class OrderTestingUtil {
                     size: containerMenuItem.sizes[0],
                     containerOrderMenuItems: [] as any,
                 });
-                for (const containedMenuItem of containerMenuItem.containerMenuItems) {
-                    containerOrderItem.containerOrderMenuItems.push({
-                        parentOrderMenuItem: containerOrderItem,
-                        containedMenuItem: containedMenuItem.containedMenuItem,
-                        containedItemSize: containedMenuItem.containedItemSize,
-                        quantity: containedMenuItem.quantity,
-                    });
+                for (const validItem of validContainerMenuItems) { // factor in container size with valid container menu items
+                    if (validItem.parentItemSize.id === containerMenuItem.sizes[0].id) {
+                        containerOrderItem.containerOrderMenuItems.push({
+                            parentOrderMenuItem: containerOrderItem,
+                            containedMenuItem: validItem.containedMenuItem,
+                            containedItemSize: validItem.containedItemSize,
+                            quantity: validItem.quantity,
+                        });
+                    }
                 }
                 results.push(containerOrderItem as OrderMenuItem);
             }
@@ -215,7 +223,7 @@ export class OrderTestingUtil {
             'recipient_g',
         ];
 
-        const fulfilltype: string[] = ['fulfilltype_a', 'fulfilltype_b'];
+        const fulfilltype: string[] = ['pickup', 'delivery'];
         let fIdx = 0;
 
         const orderTypes = await this.categoryRepo.find();

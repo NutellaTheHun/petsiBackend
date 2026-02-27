@@ -166,7 +166,11 @@ export function expectValidationErrorSize(
     size: number,
 ) {
     const result = getValidationErrorSize(root);
+    /*if (result !== size) {
+        console.log(`Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`);
+    }*/
     expect(result).toBe(size);
+
 }
 
 function getValidationErrorSize(root: ValidationErrorResponse | null): number {
@@ -183,45 +187,3 @@ function getValidationErrorSize(root: ValidationErrorResponse | null): number {
     }
     return count;
 }
-
-/*export function expectValidationErrorSize(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-    size: number,
-) {
-    const errors = findValidationErrors(root, path);
-    expect(errors).toBeTruthy();
-    expect(errors!.length).toBe(size);
-}
-
-export function expectValidationNestedErrorsSize(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-    size: number,
-) {
-    const errResponse = findValidationErrorResponseByPath(root, path);
-    expect(errResponse?.nestedErrors).toBeTruthy();
-    expect(Object.keys(errResponse?.nestedErrors ?? {}).length).toBe(size);
-}*/
-
-// Even Lazier functions
-/*export function expectOneValidationError(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-) {
-    expectValidationErrorSize(root, path, 1);
-}
-
-export function expectZeroValidationNestedErrors(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-) {
-    expectValidationNestedErrorsSize(root, path, 0);
-}
-
-export function expectOneValidationNestedError(
-    root: ValidationErrorResponse | null,
-    path: ErrorSelector[],
-) {
-    expectValidationNestedErrorsSize(root, path, 1);
-}*/

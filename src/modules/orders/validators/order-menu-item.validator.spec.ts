@@ -60,7 +60,8 @@ describe('order menu item validator', () => {
     }
 
     const findContainerOrderMenuItem = async () => {
-        return await orderItemRepo
+        return await orderItemRepo.findOneOrFail({ where: { menuItem: { type: MENU_ITEM_TYPES.CONTAINER } }, relations: ['menuItem', 'size', 'menuItem.containerMenuItems', 'menuItem.sizes'] });
+        /*return await orderItemRepos
             .createQueryBuilder('orderItem')
             .innerJoinAndSelect('orderItem.menuItem', 'menuItem')
             .innerJoinAndSelect('menuItem.containerMenuItems', 'containerMenuItems')
@@ -68,7 +69,7 @@ describe('order menu item validator', () => {
             .leftJoinAndSelect('containerMenuItems.containedItemSize', 'containedItemSize')
             .leftJoinAndSelect('orderItem.size', 'size')
             .where('menuItem.type = :type', { type: MENU_ITEM_TYPES.CONTAINER })
-            .getOneOrFail();
+            .getOneOrFail();*/
     }
 
     beforeAll(async () => {
