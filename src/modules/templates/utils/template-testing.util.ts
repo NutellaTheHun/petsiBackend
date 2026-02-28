@@ -73,7 +73,7 @@ export class TemplateTestingUtil {
         if (!items) {
             throw new Error();
         }
-        let itemIdx = 0;
+        let itemIdx = 1;
 
         const templates = await this.templateRepo.find();
         if (!templates) {

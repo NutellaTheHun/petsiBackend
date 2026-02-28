@@ -1,24 +1,23 @@
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { FOOD_A, FOOD_B } from '../../inventory-items/utils/constants';
+import { FOOD_A, FOOD_B, OTHER_B, OTHER_C } from '../../inventory-items/utils/constants';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { item_a } from '../../menu-items/utils/constants';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { GRAM, OUNCE, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
-import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
+import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
-import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
 import { REC_A, REC_B, REC_CAT_A, REC_CAT_B, REC_SUBCAT_1 } from '../utils/constants';
+import { recipeToUpdateDto } from '../utils/entity-transformers/recipe.dto.transformer';
 import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
 import { RecipeValidator } from './recipe.valdiator';
@@ -38,7 +37,7 @@ describe('recipe validator', () => {
     let menuItemRepo: Repository<MenuItem>;
 
     const findRecipe = async (name: string) => {
-        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['producedMenuItem', 'batchResultUnitType', 'servingSizeUnitType', 'ingredients', 'category', 'subCategory'] });
+        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['producedMenuItem', 'batchResultUnitType', 'servingSizeUnitType', 'ingredients', 'category', 'subCategory', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe', 'ingredients.quantityUnitType'] });
     }
     const findCategory = async (name: string) => {
         return await categoryRepo.findOneOrFail({ where: { name }, relations: ['subCategories'] });
@@ -142,7 +141,7 @@ describe('recipe validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
+            [],
             createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });
@@ -168,7 +167,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['categoryId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
         );
     });
 
@@ -206,7 +205,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategoryId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
         );
     });
 
@@ -228,7 +227,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('MISSING_PROPERTY', undefined, ['batchResultUnitTypeId', 'batchResultQuantity']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity', 'batchResultUnitType']),
         );
     });
 
@@ -248,8 +247,8 @@ describe('recipe validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'servingSizeUnitTypeId' }],
-            createValidationErrorPayload('MISSING_PROPERTY', undefined, ['servingSizeQuantity', 'servingSizeUnitTypeId']),
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity', 'servingSizeUnitType']),
         );
     });
 
@@ -271,7 +270,7 @@ describe('recipe validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'servingSizeQuantity' }],
+            [],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity']),
         );
     });
@@ -387,7 +386,7 @@ describe('recipe validator', () => {
             [
                 { prop: 'ingredients', id: 'c1' },
             ],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
@@ -419,12 +418,15 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
     it('fail validate create: recipeIngredient isIngredient is false', async () => {
-        const recipe = await findRecipe(REC_A);
+        const recipe = await recipeRepo.findOne({ where: { isIngredient: false } });
+        if (!recipe) {
+            throw new Error('recipe not found');
+        }
         const batchUom = await findUnitOfMeasure(POUND);
         const servingUom = await findUnitOfMeasure(OUNCE);
 
@@ -450,7 +452,7 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipeId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
         );
     });
 
@@ -488,14 +490,34 @@ describe('recipe validator', () => {
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        const inventoryItem = await findInventoryItem(FOOD_A);
+        const inventoryItem = await findInventoryItem(OTHER_B);
         const batchUom = await findUnitOfMeasure(POUND);
-        const newProducedMenuItem = await findMenuItem(item_a);
         const newBatchUom = await findUnitOfMeasure(GRAM);
         const newServingUom = await findUnitOfMeasure(OUNCE);
         const newCategory = await findCategory(REC_CAT_A);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            name: 'Updated Recipe Name',
+            batchResultQuantity: 10,
+            batchResultUnitTypeId: newBatchUom.id,
+            servingSizeQuantity: 2,
+            servingSizeUnitTypeId: newServingUom.id,
+            isIngredient: false,
+            salesPrice: 15.99,
+            categoryId: newCategory.id,
+            subCategoryId: newCategory.subCategories[0].id,
+            ingredients:
+                [
+                    plainToInstance(NestedCreateRecipeIngredientDto, {
+                        createId: 'c1',
+                        ingredientInventoryItemId: inventoryItem.id,
+                        quantity: 5,
+                        quantityUnitTypeId: batchUom.id,
+                    }),
+                ]
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: 'Updated Recipe Name',
             batchResultQuantity: 10,
             batchResultUnitTypeId: newBatchUom.id,
@@ -520,7 +542,7 @@ describe('recipe validator', () => {
                         quantityUnitTypeId: batchUom.id,
                     }),
                 ]
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expect(errors).toBeNull();
@@ -528,18 +550,20 @@ describe('recipe validator', () => {
 
     it('fail validate update: name already exists', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe not found');
-        }
+
         const existingRecipe = await findRecipe(REC_B);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
             name: existingRecipe.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+            name: existingRecipe.name,
+            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
@@ -548,10 +572,10 @@ describe('recipe validator', () => {
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-            categoryId: recipeToUpdate.category.id,
-            subCategoryId: recipeToUpdate.subCategory.id,
+            categoryId: recipeToUpdate?.category?.id ?? undefined,
+            subCategoryId: recipeToUpdate?.subCategory?.id ?? undefined,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -564,19 +588,22 @@ describe('recipe validator', () => {
 
     it('fail validate update: requires category if assigning sub-category', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
+
         const subCategory = await findSubCategory(REC_SUBCAT_1);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            categoryId: null,
+            subCategoryId: subCategory.id,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             subCategoryId: subCategory.id,
             name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
+            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: null,
@@ -587,7 +614,7 @@ describe('recipe validator', () => {
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -599,22 +626,24 @@ describe('recipe validator', () => {
     });
 
     it('fail validate update: invalid category / subcategory combination', async () => {
+        const recipeToUpdate = await findRecipe(REC_A);
         const category1 = await findCategory(REC_CAT_A);
         const category2 = await findCategory(REC_CAT_B);
-        const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            categoryId: category1.id,
+            subCategoryId: category2.subCategories[0].id,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: category1.id,
             subCategoryId: category2.subCategories[0].id,
             name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
+            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
@@ -624,24 +653,25 @@ describe('recipe validator', () => {
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategoryId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['subCategory']),
         );
     });
 
     it('fail validate update: batch result quantity cannot be 0', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            batchResultQuantity: 0,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             batchResultQuantity: 0,
@@ -659,7 +689,7 @@ describe('recipe validator', () => {
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -672,11 +702,12 @@ describe('recipe validator', () => {
 
     it('fail validate update: sales price cannot be 0', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            salesPrice: -1,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             categoryId: recipeToUpdate.category.id,
             subCategoryId: recipeToUpdate.subCategory.id,
             salesPrice: -1,
@@ -694,7 +725,7 @@ describe('recipe validator', () => {
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -707,13 +738,28 @@ describe('recipe validator', () => {
 
     it('fail validate update: duplicate ingredients', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
-        const inventoryItem = await findInventoryItem(FOOD_A);
+
+        const inventoryItem = await findInventoryItem(OTHER_C);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientInventoryItemId: inventoryItem.id,
+                    quantity: 3,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c2',
+                    ingredientInventoryItemId: inventoryItem.id,
+                    quantity: 4,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -738,7 +784,7 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -751,13 +797,19 @@ describe('recipe validator', () => {
 
     it('fail validate update: nested ingredients validator errors: missing reference for ingredient', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
-
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    quantity: 3,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -775,7 +827,7 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -784,20 +836,30 @@ describe('recipe validator', () => {
             [
                 { prop: 'ingredients', id: 'c1' },
             ],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: cannot provide both an inventory item and a recipe as an ingredient', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
+
         const inventoryItem = await findInventoryItem(FOOD_A);
         const ingredientRecipe = await findRecipe(REC_B);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientInventoryItemId: inventoryItem.id,
+                    ingredientRecipeId: ingredientRecipe.id,
+                    quantity: 3,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -817,36 +879,44 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            [{ prop: 'ingredients', id: 'c1' }],
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: quantity cannot be 0', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
-        const inventoryItem = await findInventoryItem(FOOD_A);
+        const inventoryItem = await findInventoryItem(OTHER_B);
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
-            subCategoryId: recipeToUpdate.subCategory.id,
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientInventoryItemId: inventoryItem.id,
+                    quantity: 0,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+            subCategoryId: recipeToUpdate?.subCategory?.id ?? undefined,
             name: recipeToUpdate.name,
-            producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
+            producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
-            categoryId: recipeToUpdate.category.id,
+            categoryId: recipeToUpdate?.category?.id ?? undefined,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
@@ -855,7 +925,7 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
@@ -868,16 +938,26 @@ describe('recipe validator', () => {
 
     it('fail validate update: recipeIngredient isIngredient is false', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
+
+        const recipe = await recipeRepo.findOne({ where: { isIngredient: false, id: Not(recipeToUpdate.id) } });
+        if (!recipe) {
+            throw new Error('recipe not found');
         }
-        const recipe = await findRecipe(REC_B);
-        if (recipe.isIngredient) {
-            throw new Error('recipe is already an ingredient, need one that is not');
-        }
+
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientRecipeId: recipe.id,
+                    quantity: 3,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -896,26 +976,35 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipeId']),
+            [{ prop: 'ingredients', id: 'c1' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
         );
     });
 
     it('fail validate update: nested ingredients validator errors: recipe cannot add itself as an ingredient', async () => {
-        const recipeToUpdate = await findRecipe(REC_A);
-        if (!recipeToUpdate.producedMenuItem || !recipeToUpdate.batchResultUnitType || !recipeToUpdate.servingSizeUnitType || !recipeToUpdate.category || !recipeToUpdate.subCategory) {
-            throw new Error('recipe produced menu item, batch result unit type, or serving size unit type not found');
-        }
+        const recipeToUpdate = await findRecipe(REC_B);
 
         const batchUom = await findUnitOfMeasure(POUND);
 
-        const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
+        const dto = recipeToUpdateDto(recipeToUpdate, {
+            ingredients: [
+                plainToInstance(NestedCreateRecipeIngredientDto, {
+                    createId: 'c1',
+                    ingredientRecipeId: recipeToUpdate.id,
+                    quantity: 3,
+                    quantityUnitTypeId: batchUom.id,
+                }),
+            ],
+            isIngredient: true,
+        });
+
+        /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
@@ -934,14 +1023,14 @@ describe('recipe validator', () => {
                     quantityUnitTypeId: batchUom.id,
                 }),
             ],
-        });
+        });*/
 
         const errors = await validator.validateDto(dto, recipeToUpdate.id);
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
             [{ prop: 'ingredients', id: 'c1' }],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipeId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
         );
     });
 });

@@ -68,7 +68,7 @@ describe('user validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const userToUpdate = await userRepo.findOne({ where: { name: USER_A } });
+        const userToUpdate = await userRepo.findOne({ where: { name: USER_A }, relations: ['roles'] });
         if (!userToUpdate) {
             throw new Error('user not found');
         }
@@ -84,7 +84,7 @@ describe('user validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const users = await userRepo.find();
+        const users = await userRepo.find({ where: {}, relations: ['roles'] });
         if (users.length < 2) {
             throw new Error('Not enough users for test');
         }

@@ -42,7 +42,7 @@ export class UnitOfMeasureCategoryValidator extends ValidatorBase<UnitOfMeasureC
             );
         }
 
-        if (identity.baseConversionUnitId !== undefined) {
+        if (identity.baseConversionUnitId !== undefined && identity.baseConversionUnitId !== null) {
             await this.helper.enforceExists(
                 identity.baseConversionUnitId,
                 this.unitOfMeasureRepo,

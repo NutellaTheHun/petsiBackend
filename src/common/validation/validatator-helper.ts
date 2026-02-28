@@ -342,7 +342,7 @@ export class ValidatorHelper<
         const hasMissing = mutuals.some((field) => dto[field] == undefined);
 
         if (hasAny && hasMissing) {
-            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [String(mutuals)]);
+            rootErrMap.addError('INVALID_PROPERTY_VALUE', undefined, [...mutuals.map((field) => String(field))]);
         }
     }
 

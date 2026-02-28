@@ -166,9 +166,9 @@ export function expectValidationErrorSize(
     size: number,
 ) {
     const result = getValidationErrorSize(root);
-    /*if (result !== size) {
+    if (result !== size) {
         console.log(`Validation error size mismatch: Error Tree: ${JSON.stringify(root)}`);
-    }*/
+    }
     expect(result).toBe(size);
 
 }

@@ -47,18 +47,18 @@ describe('template menu item validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const template = await templateRepo.findOne({});
+        const template = await templateRepo.findOne({ where: {} });
         if (!template) {
             throw new Error('template not found');
         }
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
 
         const dto: CreateTemplateMenuItemDto = plainToInstance(CreateTemplateMenuItemDto, {
             displayName: 'Display Name',
-            tablePosIndex: 0,
+            tablePosIndex: 1,
             menuItemId: menuItem.id,
             parentTemplateId: template.id,
         });
@@ -68,11 +68,11 @@ describe('template menu item validator', () => {
     });
 
     it('fail validate create: positional index cannot be less than 0', async () => {
-        const template = await templateRepo.findOne({});
+        const template = await templateRepo.findOne({ where: {} });
         if (!template) {
             throw new Error('template not found');
         }
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
@@ -95,11 +95,11 @@ describe('template menu item validator', () => {
 
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
-        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({});
+        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ where: {} });
         if (!templateMenuItemToUpdate) {
             throw new Error('template menu item not found');
         }
-        const newMenuItem = await menuItemRepo.findOne({});
+        const newMenuItem = await menuItemRepo.findOne({ where: {} });
         if (!newMenuItem) {
             throw new Error('new menu item not found');
         }
@@ -118,7 +118,7 @@ describe('template menu item validator', () => {
     });
 
     it('fail validate update: positional index cannot be less than 0', async () => {
-        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ relations: ['menuItem'] });
+        const templateMenuItemToUpdate = await templateMenuItemRepo.findOne({ where: {}, relations: ['menuItem'] });
         if (!templateMenuItemToUpdate) {
             throw new Error('template menu item not found');
         }

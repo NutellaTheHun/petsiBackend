@@ -43,22 +43,26 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
     protected async validateIdentity(identity: RecipeIngredientValidatorIdentity, id: number | string): Promise<ValidationErrorMap> {
         const errorMap = new ValidationErrorMap(id);
 
-        if (identity.ingredientInventoryItemId !== undefined) {
+        if (identity.ingredientInventoryItem !== undefined) {
             await this.helper.enforceExists(
-                identity.ingredientInventoryItemId,
+                identity.ingredientInventoryItem,
                 this.inventoryItemRepo,
                 'ingredientInventoryItem',
                 errorMap,
             );
         }
 
-        if (identity.ingredientRecipeId !== undefined) {
+        if (identity.ingredientRecipe !== undefined) {
             await this.helper.enforceExists(
-                identity.ingredientRecipeId,
-                this.repo,
+                identity.ingredientRecipe,
+                this.recipeRepo,
                 'ingredientRecipe',
                 errorMap,
             );
+            const ingredientRecipe = await this.recipeRepo.findOne({ where: { id: identity.ingredientRecipe } });
+            if (ingredientRecipe && !ingredientRecipe.isIngredient) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']);
+            }
         }
 
         if (identity.parentRecipeId !== undefined) {
@@ -87,33 +91,38 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.ingredientInventoryItemId || identity.ingredientRecipeId) {
-            this.helper.enforceOnlyOne(
-                identity,
-                'ingredientInventoryItemId',
-                'ingredientRecipeId',
-                errorMap,
-            );
-        }
-
-        if (identity.parentRecipeId && identity.ingredientRecipeId) {
-            if (identity.ingredientRecipeId === identity.parentRecipeId) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe', 'parentRecipe']);
-            }
-        }
+        this.helper.enforceOnlyOne(
+            identity,
+            'ingredientInventoryItem',
+            'ingredientRecipe',
+            errorMap,
+        );
 
         return errorMap;
     }
 
     public async resolveIdentity(dto: CreateRecipeIngredientDto | UpdateRecipeIngredientDto | NestedCreateRecipeIngredientDto | NestedUpdateRecipeIngredientDto, id: number | string): Promise<RecipeIngredientValidatorIdentity> {
+        let parentRecipeId: number | undefined;
+        if (dto instanceof CreateRecipeIngredientDto) {
+            parentRecipeId = dto.parentRecipeId;
+        } else if (dto instanceof NestedCreateRecipeIngredientDto) {
+            parentRecipeId = undefined;
+        } else { // If an update, we need to get the parent recipe id from the current ingredient
+            const currentIngredient = await this.repo.findOne({ where: { id: id as number }, relations: ['parentRecipe'] });
+            if (!currentIngredient) {
+                throw new Error('Ingredient not found');
+            }
+            parentRecipeId = currentIngredient.parentRecipe.id;
+        }
+
         return {
             id: dto instanceof NestedUpdateRecipeIngredientDto ? dto.id : undefined,
             createId: dto instanceof NestedCreateRecipeIngredientDto ? dto.createId : undefined,
-            ingredientInventoryItemId: dto.ingredientInventoryItemId,
-            ingredientRecipeId: dto.ingredientRecipeId,
+            ingredientInventoryItem: dto.ingredientInventoryItemId,
+            ingredientRecipe: dto.ingredientRecipeId,
             quantity: dto.quantity,
             quantityUnitTypeId: dto.quantityUnitTypeId,
-            parentRecipeId: dto instanceof CreateRecipeIngredientDto ? dto.parentRecipeId : undefined,
+            parentRecipeId: parentRecipeId,
         } as RecipeIngredientValidatorIdentity;
     }
 }

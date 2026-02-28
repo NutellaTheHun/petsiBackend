@@ -17,26 +17,26 @@ export type RoleEntity = EntityBase<Role, CreateRoleDto, UpdateRoleDto>;
  */
 @Entity()
 export class Role {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the entity',
-  })
-  @PrimaryGeneratedColumn()
-  id: number;
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the entity',
+    })
+    @PrimaryGeneratedColumn()
+    id: number;
 
-  @ApiProperty({ example: 'Staff', description: 'Name of the role' })
-  @Column({ unique: true })
-  name: string;
+    @ApiProperty({ example: 'Staff', description: 'Name of the role' })
+    @Column({ unique: true })
+    name: string;
 
-  /**
-   * List of users who hold that role.
-   */
-  @ApiProperty({
-    example: [userExample(new Set<string>(), true)],
-    description: 'List of users who possess this role',
-    type: () => User,
-    isArray: true,
-  })
-  @ManyToMany(() => User, (user) => user.roles)
-  users: User[];
+    /**
+     * List of users who hold that role.
+     */
+    @ApiProperty({
+        example: [userExample(new Set<string>(), true)],
+        description: 'List of users who possess this role',
+        type: () => User,
+        isArray: true,
+    })
+    @ManyToMany(() => User, (user) => user.roles)
+    users: User[];
 }

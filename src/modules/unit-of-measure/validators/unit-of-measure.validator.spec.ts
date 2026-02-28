@@ -45,7 +45,7 @@ describe('unit of measure validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const category = await categoryRepo.findOne({});
+        const category = await categoryRepo.findOne({ where: {} });
         if (!category) {
             throw new Error('category not found');
         }
@@ -62,7 +62,7 @@ describe('unit of measure validator', () => {
     });
 
     it('fail validate create: name already exists', async () => {
-        const category = await categoryRepo.findOne({});
+        const category = await categoryRepo.findOne({ where: {} });
         if (!category) {
             throw new Error('category not found');
         }
@@ -83,7 +83,7 @@ describe('unit of measure validator', () => {
     });
 
     it('fail validate create: abbreviation already exists', async () => {
-        const category = await categoryRepo.findOne({});
+        const category = await categoryRepo.findOne({ where: {} });
         if (!category) {
             throw new Error('category not found');
         }
@@ -104,7 +104,7 @@ describe('unit of measure validator', () => {
     });
 
     it('fail validate create: conversion factor cannot be 0', async () => {
-        const category = await categoryRepo.findOne({});
+        const category = await categoryRepo.findOne({ where: {} });
         if (!category) {
             throw new Error('category not found');
         }
@@ -147,7 +147,7 @@ describe('unit of measure validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const units = await unitRepo.find({ relations: ['category'] });
+        const units = await unitRepo.find({ where: {}, relations: ['category'] });
         if (units.length < 2) {
             throw new Error('Not enough units for test');
         }
@@ -175,7 +175,7 @@ describe('unit of measure validator', () => {
     });
 
     it('fail validate update: abbreviation already exists', async () => {
-        const units = await unitRepo.find({ relations: ['category'] });
+        const units = await unitRepo.find({ where: {}, relations: ['category'] });
         if (units.length < 2) {
             throw new Error('Not enough units for test');
         }

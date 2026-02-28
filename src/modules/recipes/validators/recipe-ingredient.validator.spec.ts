@@ -29,11 +29,11 @@ describe('recipe ingredient validator', () => {
     let unitOfMeasureRepo: Repository<UnitOfMeasure>;
 
     const findRecipe = async (name: string) => {
-        return await recipeRepo.findOneOrFail({ where: { name } });
+        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['ingredients'] });
     }
 
     const findInventoryItem = async (name: string) => {
-        return await inventoryItemRepo.findOneOrFail({ where: { name } });
+        return await inventoryItemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'sizes.measureType'] });
     }
 
     const findUnitOfMeasure = async (name: string) => {
@@ -41,7 +41,7 @@ describe('recipe ingredient validator', () => {
     }
 
     const findIngredient = async () => {
-        return await ingredientRepo.findOneOrFail({ relations: ['parentRecipe', 'quantityUnitType', 'ingredientInventoryItem', 'ingredientRecipe'] });
+        return await ingredientRepo.findOneOrFail({ where: {}, relations: ['parentRecipe', 'quantityUnitType', 'ingredientInventoryItem', 'ingredientRecipe'] });
     }
 
     beforeAll(async () => {
@@ -190,7 +190,7 @@ describe('recipe ingredient validator', () => {
     it('fail validate update: cannot provide both an inventory item and a recipe as an ingredient', async () => {
         const ingredientToUpdate = await findIngredient();
         const inventoryItem = await findInventoryItem(FOOD_A);
-        const recipe = await findRecipe(REC_A);
+        const recipe = await findRecipe(REC_B);
 
         const dto: UpdateRecipeIngredientDto = plainToInstance(UpdateRecipeIngredientDto, {
             ingredientInventoryItemId: inventoryItem.id,
@@ -250,7 +250,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipeId']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']),
         );
     });
 });

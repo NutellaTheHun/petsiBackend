@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
-import { ValidationErrorMap } from '../../../common/validation/validation-error';
+import { createValidationErrorPayload, ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -63,9 +63,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.batchResultUnitTypeId !== undefined && identity.batchResultUnitTypeId !== null) {
+        if (identity.batchResultUnitType !== undefined && identity.batchResultUnitType !== null) {
             await this.helper.enforceExists(
-                identity.batchResultUnitTypeId,
+                identity.batchResultUnitType,
                 this.unitOfMeasureRepo,
                 'batchResultUnitType',
                 errorMap,
@@ -105,9 +105,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
                 errorMap,
             );
         }
-        if (identity.servingSizeUnitTypeId !== undefined && identity.servingSizeUnitTypeId !== null) {
+        if (identity.servingSizeUnitType !== undefined && identity.servingSizeUnitType !== null) {
             await this.helper.enforceExists(
-                identity.servingSizeUnitTypeId,
+                identity.servingSizeUnitType,
                 this.unitOfMeasureRepo,
                 'servingSizeUnitType',
                 errorMap,
@@ -127,18 +127,29 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['subCategory']);
         }
 
-        if (identity.batchResultQuantity || identity.batchResultUnitTypeId) {
-            this.helper.enforceMutualRequired(
-                identity,
-                ['batchResultQuantity', 'batchResultUnitTypeId'],
+        if (identity.subCategoryId && identity.categoryId) {
+            await this.helper.enforceValidSize(
+                identity.subCategoryId,
+                identity.categoryId,
+                this.recipeCategoryRepo,
+                'subCategories',
+                'subCategory',
                 errorMap,
             );
         }
 
-        if (identity.servingSizeQuantity || identity.servingSizeUnitTypeId) {
+        if (identity.batchResultQuantity || identity.batchResultUnitType) {
             this.helper.enforceMutualRequired(
                 identity,
-                ['servingSizeQuantity', 'servingSizeUnitTypeId'],
+                ['batchResultQuantity', 'batchResultUnitType'],
+                errorMap,
+            );
+        }
+
+        if (identity.servingSizeQuantity || identity.servingSizeUnitType) {
+            this.helper.enforceMutualRequired(
+                identity,
+                ['servingSizeQuantity', 'servingSizeUnitType'],
                 errorMap,
             );
         }
@@ -147,12 +158,18 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
 
             this.helper.enforceNoDuplicateElements(
                 identity.ingredients,
-                (ingredient) => ({ id: ingredient.id ?? ingredient.createId, identity: `${ingredient.ingredientInventoryItemId}:${ingredient.ingredientRecipeId}` }),
+                (ingredient) => ({ id: ingredient.id ?? ingredient.createId, identity: `${ingredient.ingredientInventoryItem}:${ingredient.ingredientRecipe}` }),
                 'ingredients',
                 errorMap,
             );
 
             for (const ingredient of identity.ingredients) {
+                // An ingredient cannot be added to itself
+                if (ingredient.ingredientRecipe === id) {
+                    const errorPayload = createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['ingredientRecipe']);
+                    errorMap.addChild('ingredients', new ValidationErrorMap(ingredient.id ?? ingredient.createId, [errorPayload]));
+                }
+
                 await this.ingredientValidator.validateNestedIdentity(
                     'ingredients',
                     ingredient,
@@ -177,9 +194,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             name: dto.name,
             producedMenuItemId: dto.producedMenuItemId,
             batchResultQuantity: dto.batchResultQuantity,
-            batchResultUnitTypeId: dto.batchResultUnitTypeId,
+            batchResultUnitType: dto.batchResultUnitTypeId,
             servingSizeQuantity: dto.servingSizeQuantity,
-            servingSizeUnitTypeId: dto.servingSizeUnitTypeId,
+            servingSizeUnitType: dto.servingSizeUnitTypeId,
             salesPrice: dto.salesPrice,
             isIngredient: dto.isIngredient,
             categoryId: dto.categoryId,

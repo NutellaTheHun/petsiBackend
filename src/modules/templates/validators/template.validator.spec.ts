@@ -48,38 +48,38 @@ describe('template validator', () => {
 
     // Create Validation Tests
     it('successfully validate create: no validation errors', async () => {
-        const menuItems = await menuItemRepo.find();
+        const menuItems = await menuItemRepo.find({ where: {} });
         if (menuItems.length < 2) {
             throw new Error('not enough menu items for test');
         }
 
-        const dto: CreateTemplateDto = {
+        const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
             name: 'New Template',
             templateMenuItems: [
-                {
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c1',
                     displayName: 'Item 1',
                     menuItemId: menuItems[0].id,
-                    tablePosIndex: 0,
-                },
-                {
+                    tablePosIndex: 1,
+                }),
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
                     displayName: 'Item 2',
                     menuItemId: menuItems[1].id,
-                    tablePosIndex: 1,
-                },
+                    tablePosIndex: 2,
+                }),
             ],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expect(errors).toBeNull();
     });
 
     it('fail validate create: name already exists', async () => {
-        const dto: CreateTemplateDto = {
+        const dto: CreateTemplateDto = plainToInstance(CreateTemplateDto, {
             name: template_a,
             templateMenuItems: [],
-        };
+        });
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorPayload(
@@ -90,7 +90,7 @@ describe('template validator', () => {
     });
 
     it('fail validate create: duplicate menu items on template menu items', async () => {
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
@@ -102,13 +102,13 @@ describe('template validator', () => {
                     createId: 'c1',
                     displayName: 'Item 1',
                     menuItemId: menuItem.id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
                     displayName: 'Item 2',
                     menuItemId: menuItem.id,
-                    tablePosIndex: 1,
+                    tablePosIndex: 2,
                 }),
             ],
         });
@@ -123,7 +123,7 @@ describe('template validator', () => {
     });
 
     it('fail validate create: duplicate table position on template items', async () => {
-        const menuItems = await menuItemRepo.find();
+        const menuItems = await menuItemRepo.find({ where: {} });
         if (menuItems.length < 2) {
             throw new Error('not enough menu items for test');
         }
@@ -135,13 +135,13 @@ describe('template validator', () => {
                     createId: 'c1',
                     displayName: 'Item 1',
                     menuItemId: menuItems[0].id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
                     displayName: 'Item 2',
                     menuItemId: menuItems[1].id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
             ],
         });
@@ -156,7 +156,7 @@ describe('template validator', () => {
     });
 
     it('fail validate create: nested template menu items validator errors: positional index cannot be less than 0', async () => {
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
@@ -177,7 +177,7 @@ describe('template validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'templateMenuItems', id: 'c1' }, { prop: 'tablePosIndex' }],
+            [{ prop: 'templateMenuItems', id: 'c1' }],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
         );
     });
@@ -186,7 +186,7 @@ describe('template validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const templateToUpdate = await templateRepo.findOne({
             where: { name: template_a },
-            relations: ['templateMenuItems'],
+            relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
         });
         if (!templateToUpdate) {
             throw new Error('template not found');
@@ -207,7 +207,7 @@ describe('template validator', () => {
                         displayName: 'Updated Item',
                         menuItemId: templateToUpdate.templateMenuItems[0].menuItem.id,
                     }),
-                    plainToInstance(NestedUpdateTemplateMenuItemDto, {
+                    plainToInstance(NestedCreateTemplateMenuItemDto, {
                         createId: 'c1',
                         displayName: 'New Item',
                         menuItemId: menuItems[0].id,
@@ -221,7 +221,7 @@ describe('template validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const templates = await templateRepo.find();
+        const templates = await templateRepo.find({ where: {} });
         if (templates.length < 2) {
             throw new Error('Not enough templates for test');
         }
@@ -251,7 +251,7 @@ describe('template validator', () => {
             throw new Error('template not found');
         }
 
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
@@ -263,13 +263,13 @@ describe('template validator', () => {
                     createId: 'c1',
                     displayName: 'Item 1',
                     menuItemId: menuItem.id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
                     displayName: 'Item 2',
                     menuItemId: menuItem.id,
-                    tablePosIndex: 1,
+                    tablePosIndex: 2,
                 }),
             ],
         });
@@ -291,7 +291,7 @@ describe('template validator', () => {
             throw new Error('template not found');
         }
 
-        const menuItems = await menuItemRepo.find();
+        const menuItems = await menuItemRepo.find({ where: {} });
         if (menuItems.length < 2) {
             throw new Error('not enough menu items for test');
         }
@@ -303,13 +303,13 @@ describe('template validator', () => {
                     createId: 'c1',
                     displayName: 'Item 1',
                     menuItemId: menuItems[0].id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
                 plainToInstance(NestedCreateTemplateMenuItemDto, {
                     createId: 'c2',
                     displayName: 'Item 2',
                     menuItemId: menuItems[1].id,
-                    tablePosIndex: 0,
+                    tablePosIndex: 1,
                 }),
             ],
         });
@@ -331,7 +331,7 @@ describe('template validator', () => {
             throw new Error('template not found');
         }
 
-        const menuItem = await menuItemRepo.findOne({});
+        const menuItem = await menuItemRepo.findOne({ where: {} });
         if (!menuItem) {
             throw new Error('menu item not found');
         }
@@ -352,7 +352,7 @@ describe('template validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [],
+            [{ prop: 'templateMenuItems', id: 'c1' }],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['tablePosIndex']),
         );
     });

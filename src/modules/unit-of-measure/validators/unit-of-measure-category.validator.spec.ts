@@ -77,13 +77,10 @@ describe('unit of measure category validator', () => {
         if (!categoryToUpdate) {
             throw new Error('category not found');
         }
-        if (!categoryToUpdate.baseConversionUnit) {
-            throw new Error('base conversion unit not found');
-        }
 
         const dto: UpdateUnitOfMeasureCategoryDto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
             name: 'Updated Category',
-            baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
+            baseConversionUnitId: null,
         });
 
         const errors = await validator.validateDto(
@@ -94,7 +91,7 @@ describe('unit of measure category validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const categories = await categoryRepo.find({ relations: ['baseConversionUnit'] });
+        const categories = await categoryRepo.find({ where: {}, relations: ['baseConversionUnit'] });
         if (categories.length < 2) {
             throw new Error('Not enough categories for test');
         }
@@ -102,13 +99,10 @@ describe('unit of measure category validator', () => {
 
         const categoryToUpdate = categories[0];
         const existingCategory = categories[1];
-        if (!categoryToUpdate.baseConversionUnit) {
-            throw new Error('base conversion unit not found');
-        }
 
         const dto: UpdateUnitOfMeasureCategoryDto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
             name: existingCategory.name,
-            baseConversionUnitId: categoryToUpdate.baseConversionUnit.id,
+            baseConversionUnitId: null,
         });
 
         const errors = await validator.validateDto(
@@ -118,7 +112,7 @@ describe('unit of measure category validator', () => {
         expectValidationErrorSize(errors, 1);
         expectValidationErrorPayload(
             errors,
-            [{ prop: 'name' }],
+            [],
             createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
         );
     });

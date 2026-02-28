@@ -35,13 +35,13 @@ export class RecipeSubCategoryValidator extends NestedValidatorBase<RecipeSubCat
         const errorMap = new ValidationErrorMap(id);
 
         if (identity.name) {
-            await this.helper.enforceUnique(
+            /*await this.helper.enforceUnique(
                 identity.name,
                 this.repo,
                 'name',
                 errorMap,
                 id,
-            );
+            );*/
         }
 
         if (identity.parentCategoryId !== undefined) {
@@ -53,15 +53,44 @@ export class RecipeSubCategoryValidator extends NestedValidatorBase<RecipeSubCat
             );
         }
 
+        if (identity.name && identity.parentCategoryId) {
+            const parentCategory = await this.recipeCategoryRepo.findOne({ where: { id: identity.parentCategoryId }, relations: ['subCategories'] });
+            if (!parentCategory) {
+                throw new Error('Parent category not found');
+            }
+            if (identity.name === parentCategory.name) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['name']);
+            }
+            const duplicateSubCategories = parentCategory.subCategories.filter(sc => sc.name === identity.name);
+            for (const duplicateSubCategory of duplicateSubCategories) {
+                if (duplicateSubCategory.id !== id) {
+                    errorMap.addError('ALREADY_EXISTS', undefined, ['name']);
+                }
+            }
+        }
+
         return errorMap;
     }
 
     public async resolveIdentity(dto: CreateRecipeSubCategoryDto | UpdateRecipeSubCategoryDto | NestedCreateRecipeSubCategoryDto | NestedUpdateRecipeSubCategoryDto, id: number | string): Promise<RecipeSubCategoryValidatorIdentity> {
+
+        let parentCategoryId: number | undefined;
+        if (dto instanceof CreateRecipeSubCategoryDto) {
+            parentCategoryId = dto.parentCategoryId;
+        } else if (dto instanceof NestedCreateRecipeSubCategoryDto) {
+            parentCategoryId = undefined;
+        } else {
+            const currentSubCategory = await this.repo.findOne({ where: { id: id as number }, relations: ['parentCategory'] });
+            if (!currentSubCategory) {
+                throw new Error('Sub category not found');
+            }
+            parentCategoryId = currentSubCategory.parentCategory.id;
+        }
         return {
             id: dto instanceof NestedUpdateRecipeSubCategoryDto ? dto.id : undefined,
             createId: dto instanceof NestedCreateRecipeSubCategoryDto ? dto.createId : undefined,
             name: dto.name,
-            parentCategoryId: dto instanceof CreateRecipeSubCategoryDto ? dto.parentCategoryId : undefined,
+            parentCategoryId: parentCategoryId,
         } as RecipeSubCategoryValidatorIdentity;
     }
 }

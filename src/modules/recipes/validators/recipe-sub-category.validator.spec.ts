@@ -112,6 +112,7 @@ describe('recipe sub category validator', () => {
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const subCategoryToUpdate = await subCategoryRepo.findOne({
+            where: {},
             relations: ['parentCategory'],
         });
         if (!subCategoryToUpdate) {
@@ -131,6 +132,7 @@ describe('recipe sub category validator', () => {
 
     it('fail validate update: name already exists within parent category', async () => {
         const subCategoryToUpdate = await subCategoryRepo.findOne({
+            where: {},
             relations: ['parentCategory', 'parentCategory.subCategories'],
         });
         if (!subCategoryToUpdate) {
@@ -165,6 +167,7 @@ describe('recipe sub category validator', () => {
 
     it('fail validate update: name cannot be the same as the parent category name', async () => {
         const subCategoryToUpdate = await subCategoryRepo.findOne({
+            where: {},
             relations: ['parentCategory'],
         });
         if (!subCategoryToUpdate) {

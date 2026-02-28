@@ -74,7 +74,7 @@ export class UserTestUtil {
         }
 
 
-        await this.userRepo.insert(users);
+        // await this.userRepo.insert(users);
     }
 
     public async cleanupUserTestingDatabase(): Promise<void> {

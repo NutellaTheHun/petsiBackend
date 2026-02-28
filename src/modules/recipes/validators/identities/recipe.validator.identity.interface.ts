@@ -5,9 +5,9 @@ export interface RecipeValidatorIdentity extends ValidatorIdentityBaseInterface 
     readonly name?: string;
     readonly producedMenuItemId?: number;
     readonly batchResultQuantity?: number;
-    readonly batchResultUnitTypeId?: number;
+    readonly batchResultUnitType?: number; // id ommited to make identity -> entity mapping easier
     readonly servingSizeQuantity?: number;
-    readonly servingSizeUnitTypeId?: number;
+    readonly servingSizeUnitType?: number; // id ommited to make identity -> entity mapping easier
     readonly salesPrice?: number;
     readonly isIngredient?: boolean;
     readonly categoryId?: number;
