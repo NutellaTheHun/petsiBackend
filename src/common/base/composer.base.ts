@@ -151,10 +151,18 @@ export abstract class ComposerBase<
                 const created = await this.createInTransaction(fullDto, manager);
                 map.set((dto as T['__NcDto']).createId, created);
             } else {
-                const entity = map.get((dto as any).id);
+                let entity = map.get((dto as any).id);
                 if (!entity) {
-                    throw new Error(`Entity with id ${(dto as any).id} not found`);
+                    //throw new Error(`Entity with id ${(dto as any).id} not found`);
+                    entity = await manager.findOneOrFail(this.entityClass, {
+                        where: { id: (dto as T['__NuDto']).id } as unknown as FindOptionsWhere<T['__Entity']>,
+                    });
+                    if (!entity) {
+                        throw new Error(`Entity with id ${(dto as T['__NuDto']).id} not found`);
+                    }
+                    map.set((dto as T['__NuDto']).id, entity);
                 }
+
                 await this.updateInTransaction(dto as T['__NuDto'], manager, entity);
             }
         }

@@ -238,12 +238,11 @@ export abstract class ServiceBase<
 
         // handle cursor
         let nextCursor: string | undefined;
-        if (options.limit) {
+        if (options.limit) { // doesnt handle if sortByValue has duplicates
             if (results.length > options.limit) {
-                const nextEntity = results.pop();
-                if (!nextEntity) {
-                    nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
-                }
+                const nextEntity = results.pop()!;
+                const cursorCol = options.sortBy ?? 'id';
+                nextCursor = (nextEntity as any)[cursorCol].toString();
             }
         }
 
@@ -255,6 +254,12 @@ export abstract class ServiceBase<
             'REQUEST',
             { requestId, message: `${results.length} entities queried` },
         );
+
+        // temporary
+        /*if (options.search) {
+            console.log("**************")
+            console.log(query.getSql())
+        }*/
 
         // return result and cursor
         return {

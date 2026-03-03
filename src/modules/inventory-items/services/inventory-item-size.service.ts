@@ -7,59 +7,58 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import {
-  InventoryItemSize,
-  InventoryItemSizeEntity,
+    InventoryItemSize,
+    InventoryItemSizeEntity,
 } from '../entities/inventory-item-size.entity';
 import { InventoryItemSizeComposer } from '../utils/composers/inventory-item-size.composer';
 import { InventoryItemSizeValidator } from '../validators/inventory-item-size.validator';
 
 @Injectable()
 export class InventoryItemSizeService extends ServiceBase<InventoryItemSizeEntity> {
-  constructor(
-    @InjectRepository(InventoryItemSize)
-    repo: Repository<InventoryItemSize>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    @Inject(forwardRef(() => InventoryItemSizeValidator))
-    validator: InventoryItemSizeValidator,
+    constructor(
+        @InjectRepository(InventoryItemSize)
+        repo: Repository<InventoryItemSize>,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+        @Inject(forwardRef(() => InventoryItemSizeValidator))
+        validator: InventoryItemSizeValidator,
 
-    private readonly itemSizeComposer: InventoryItemSizeComposer,
-  ) {
-    super(
-      repo,
-      'InventoryItemSizeService',
-      requestContextService,
-      logger,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateInventoryItemSizeDto,
-    manager: EntityManager,
-  ): Promise<InventoryItemSize> {
-    return await manager.save(
-      await this.itemSizeComposer.composeCreate(dto, manager),
-    );
-  }
-
-  protected async updateEntity(
-    dto: UpdateInventoryItemSizeDto,
-    manager: EntityManager,
-    entity: InventoryItemSize,
-  ): Promise<void> {
-    await manager.save(
-      await this.itemSizeComposer.composeUpdate(dto, manager, entity),
-    );
-  }
-
-  protected applySortBy(
-    query: SelectQueryBuilder<InventoryItemSize>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'cost') {
-      query.orderBy(`entity.${sortBy}`, sortOrder);
+        private readonly itemSizeComposer: InventoryItemSizeComposer,
+    ) {
+        super(
+            repo,
+            'InventoryItemSizeService',
+            requestContextService,
+            logger,
+            validator,
+        );
     }
-  }
+
+    protected async createEntity(
+        dto: CreateInventoryItemSizeDto,
+        manager: EntityManager,
+    ): Promise<InventoryItemSize> {
+        return await manager.save(
+            await this.itemSizeComposer.composeCreate(dto, manager),
+        );
+    }
+
+    protected async updateEntity(
+        dto: UpdateInventoryItemSizeDto,
+        manager: EntityManager,
+        entity: InventoryItemSize,
+    ): Promise<void> {
+        await this.itemSizeComposer.composeUpdate(dto, manager, entity)
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<InventoryItemSize>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'cost') {
+            query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
 }
