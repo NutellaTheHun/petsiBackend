@@ -341,7 +341,8 @@ export abstract class ServiceBase<
     async remove(id: number): Promise<Boolean> {
         const requestId = this.requestContextService.getRequestId();
         try {
-            return (await this.entityRepo.delete(id)).affected !== 0;
+            //return (await this.entityRepo.delete(id)).affected !== 0;
+            return (await this.entityRepo.remove(await this.entityRepo.findOne({ where: { id } as unknown as FindOptionsWhere<TEntity> }))).affected !== 0;
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
                 err,

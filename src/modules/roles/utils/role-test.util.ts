@@ -48,6 +48,7 @@ export class RoleTestUtil {
     }
 
     public async cleanupRoleTestingDatabase(): Promise<void> {
-        await this.roleRepo.deleteAll();
+        //await this.roleRepo.deleteAll();
+        await this.roleRepo.query(`TRUNCATE TABLE role CASCADE`);
     }
 }

@@ -62,16 +62,15 @@ export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntit
                 });
                 entity.ingredientInventoryItem = null;
             }
+        }
+        if (dto.quantity !== undefined) {
+            entity.quantity = dto.quantity;
+        }
 
-            if (dto.quantity !== undefined) {
-                entity.quantity = dto.quantity;
-            }
-
-            if (dto.quantityUnitTypeId !== undefined) {
-                entity.quantityUnitType = manager.create(UnitOfMeasure, {
-                    id: dto.quantityUnitTypeId,
-                });
-            }
+        if (dto.quantityUnitTypeId !== undefined) {
+            entity.quantityUnitType = manager.create(UnitOfMeasure, {
+                id: dto.quantityUnitTypeId,
+            });
         }
     }
 
