@@ -7,62 +7,61 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import {
-  RecipeIngredient,
-  RecipeIngredientEntity,
+    RecipeIngredient,
+    RecipeIngredientEntity,
 } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 
 @Injectable()
 export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity> {
-  constructor(
-    @InjectRepository(RecipeIngredient)
-    repo: Repository<RecipeIngredient>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: RecipeIngredientValidator,
+    constructor(
+        @InjectRepository(RecipeIngredient)
+        repo: Repository<RecipeIngredient>,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+        validator: RecipeIngredientValidator,
 
-    private readonly ingredientComposer: RecipeIngredientComposer,
-  ) {
-    super(
-      repo,
-      'RecipeIngredientService',
-      requestContextService,
-      logger,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateRecipeIngredientDto,
-    manager: EntityManager,
-  ): Promise<RecipeIngredient> {
-    return await manager.save(
-      await this.ingredientComposer.composeCreate(dto, manager),
-    );
-  }
-
-  protected async updateEntity(
-    dto: UpdateRecipeIngredientDto,
-    manager: EntityManager,
-    entity: RecipeIngredient,
-  ): Promise<void> {
-    await manager.save(
-      await this.ingredientComposer.composeUpdate(dto, manager, entity),
-    );
-  }
-
-  protected applySortBy(
-    query: SelectQueryBuilder<RecipeIngredient>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'ingredient') {
-      query
-        .leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
-        .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
-
-      query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
+        private readonly ingredientComposer: RecipeIngredientComposer,
+    ) {
+        super(
+            repo,
+            'RecipeIngredientService',
+            requestContextService,
+            logger,
+            validator,
+        );
     }
-  }
+
+    protected async createEntity(
+        dto: CreateRecipeIngredientDto,
+        manager: EntityManager,
+    ): Promise<RecipeIngredient> {
+        return await manager.save(
+            await this.ingredientComposer.composeCreate(dto, manager),
+        );
+    }
+
+    protected async updateEntity(
+        dto: UpdateRecipeIngredientDto,
+        manager: EntityManager,
+        entity: RecipeIngredient,
+    ): Promise<void> {
+        await this.ingredientComposer.composeUpdate(dto, manager, entity)
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<RecipeIngredient>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'ingredient') {
+            query
+                .leftJoinAndSelect('entity.ingredientInventoryItem', 'inventoryItem')
+                .leftJoinAndSelect('entity.ingredientRecipe', 'recipe');
+
+            query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
+        }
+    }
 }

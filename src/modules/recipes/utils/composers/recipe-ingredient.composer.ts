@@ -1,4 +1,4 @@
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
@@ -13,7 +13,7 @@ import {
 import { Recipe } from '../../entities/recipe.entity';
 
 export class RecipeIngredientComposer extends ComposerBase<RecipeIngredientEntity> {
-    protected entityClass: EntityTarget<RecipeIngredient>;
+    protected readonly entityClass = RecipeIngredient;
 
     protected async createInTransaction(
         dto: CreateRecipeIngredientDto,

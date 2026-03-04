@@ -5,7 +5,7 @@ import { orderMenuItemToNestedUpdateDto } from "./order-menu-item.dto.transforme
 
 export function orderToUpdateDto(order: Order, merge: Partial<UpdateOrderDto> = {}): UpdateOrderDto {
     const existingOrderedItems = order.orderedItems.map(item => orderMenuItemToNestedUpdateDto(item)) ?? [];
-    const mergedOrderedItems = merge.orderedItems ? [...existingOrderedItems, ...merge.orderedItems] : existingOrderedItems;
+    const mergedOrderedItems = merge.orderedItems ? [...merge.orderedItems, ...existingOrderedItems] : existingOrderedItems;
 
     return plainToInstance(UpdateOrderDto, {
         recipient: order.recipient,

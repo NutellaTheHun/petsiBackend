@@ -1,4 +1,4 @@
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
@@ -12,7 +12,7 @@ import {
 } from '../../entities/order-container-item.entity';
 
 export class OrderContainerItemComposer extends ComposerBase<OrderContainerItemEntity> {
-    protected entityClass: EntityTarget<OrderContainerItem>;
+    protected readonly entityClass = OrderContainerItem;
 
     protected async createInTransaction(
         dto: CreateOrderContainerItemDto,

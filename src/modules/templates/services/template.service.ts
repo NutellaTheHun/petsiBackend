@@ -58,14 +58,11 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
         }
 
         if (dto.templateMenuItems) {
-            /*const existingItems = await manager.find(TemplateMenuItem, {
-                where: { parentTemplate: { id: entity.id } },
-            });*/
             entity.templateMenuItems =
                 await this.tempalateItemComposer.composeManyNestedEntity(
                     dto.templateMenuItems,
                     manager,
-                    /*existingItems,*/[],
+                    [],
                     { parentTemplateId: entity.id },
                 );
         }

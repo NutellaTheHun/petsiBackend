@@ -5,7 +5,7 @@ import { recipeSubCategoryToNestedUpdateDto } from "./recipe-sub-category.dto.tr
 
 export function recipeCategoryToUpdateDto(recipeCategory: RecipeCategory, merge: Partial<UpdateRecipeCategoryDto> = {}): UpdateRecipeCategoryDto {
     const existingSubCategories = recipeCategory.subCategories.map(subCategory => recipeSubCategoryToNestedUpdateDto(subCategory)) ?? [];
-    const mergedSubCategories = merge.subCategories ? [...existingSubCategories, ...merge.subCategories] : existingSubCategories;
+    const mergedSubCategories = merge.subCategories ? [...merge.subCategories, ...existingSubCategories] : existingSubCategories;
 
     return plainToInstance(UpdateRecipeCategoryDto, {
         name: recipeCategory.name,

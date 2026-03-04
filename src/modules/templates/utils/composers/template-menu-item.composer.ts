@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
@@ -13,7 +13,7 @@ import {
 
 @Injectable()
 export class TemplateMenuItemComposer extends ComposerBase<TemplateMenuItemEntity> {
-    protected entityClass: EntityTarget<TemplateMenuItem>;
+    protected readonly entityClass = TemplateMenuItem;
 
     protected async createInTransaction(
         dto: CreateTemplateMenuItemDto,

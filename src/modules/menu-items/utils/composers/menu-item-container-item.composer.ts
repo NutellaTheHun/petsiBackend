@@ -14,7 +14,6 @@ import { MenuItem } from '../../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContainerItemEntity> {
-    //protected entityClass: EntityTarget<MenuItemContainerItem>;
     protected readonly entityClass = MenuItemContainerItem;
 
     protected async createInTransaction(

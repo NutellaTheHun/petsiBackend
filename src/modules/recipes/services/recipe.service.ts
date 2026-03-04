@@ -172,7 +172,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
             }
         }
 
-        if (dto.ingredients) {
+        if (dto.ingredients && dto.ingredients.length > 0) {
             /*const existingIngreds = await manager.find(RecipeIngredient, {
                 where: { parentRecipe: { id: entity.id } },
             });*/

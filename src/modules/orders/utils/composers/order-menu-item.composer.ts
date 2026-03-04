@@ -1,4 +1,4 @@
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { MenuItemSize } from '../../../menu-items/entities/menu-item-size.entity';
@@ -13,12 +13,14 @@ import {
 import { OrderContainerItemComposer } from './order-container-item.composer';
 
 export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
+    protected readonly entityClass = OrderMenuItem;
+
     constructor(
         private readonly containerItemComposer: OrderContainerItemComposer,
     ) {
+        containerItemComposer = new OrderContainerItemComposer();
         super();
     }
-    protected entityClass: EntityTarget<OrderMenuItem>;
 
     protected async createInTransaction(
         dto: CreateOrderMenuItemDto,
@@ -32,8 +34,8 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         });
 
         const savedResult = await manager.save(entity);
-
         if (dto.containerOrderMenuItems && dto.containerOrderMenuItems.length > 0) {
+            savedResult.containerOrderMenuItems = [];
             savedResult.containerOrderMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
