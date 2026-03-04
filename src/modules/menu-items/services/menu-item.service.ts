@@ -60,7 +60,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                     [],
                     {
                         parentMenuItemId:
-                            savedResult.id /*, parentItemSizeId: savedResult.sizes[0]*/,
+                            savedResult.id,
                     },
                 );
         }
@@ -93,7 +93,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             if (dto.type === MENU_ITEM_TYPES.SINGLE) {
                 entity.containerMenuItems = [];
                 entity.variableMaxAmount = null;
-                await this.syncOrderMenuItems(entity.id);
+                await this.syncOrderMenuItems(entity.id); // this triggers every time?
             }
         }
 
@@ -109,19 +109,17 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         }
 
         if (dto.containerMenuItems) {
-            /*const existingItems = await manager.find(MenuItemContainerItem, {
-                where: { parentMenuItem: { id: entity.id } },
-            });*/
             entity.containerMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerMenuItems,
                     manager,
-                    /*existingItems,*/[],
+                    [],
                     {
-                        parentMenuItemId: entity.id /*, parentItemSizeId: entity.sizes[0]*/,
+                        parentMenuItemId: entity.id,
                     },
                 );
         }
+
         await manager.save(entity);
     }
 

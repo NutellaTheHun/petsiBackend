@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { CreateMenuItemContainerItemDto } from '../../dto/menu-item-container-item/create-menu-item-container-item.dto';
@@ -14,7 +14,8 @@ import { MenuItem } from '../../entities/menu-item.entity';
 
 @Injectable()
 export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContainerItemEntity> {
-    protected entityClass: EntityTarget<MenuItemContainerItem>;
+    //protected entityClass: EntityTarget<MenuItemContainerItem>;
+    protected readonly entityClass = MenuItemContainerItem;
 
     protected async createInTransaction(
         dto: CreateMenuItemContainerItemDto,
@@ -58,15 +59,12 @@ export class MenuItemContainerItemComposer extends ComposerBase<MenuItemContaine
         if (!context?.parentMenuItemId) {
             throw new Error('Parent menu item id is required');
         }
-        if (!context?.parentItemSizeId) {
-            throw new Error('Parent item size id is required');
-        }
         return {
             containedMenuItemId: dto.containedMenuItemId,
             containedItemSizeId: dto.containedItemSizeId,
             quantity: dto.quantity,
             parentMenuItemId: context.parentMenuItemId,
-            parentItemSizeId: context.parentItemSizeId,
+            parentItemSizeId: dto.parentItemSizeId,
         };
     }
 }

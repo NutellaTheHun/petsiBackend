@@ -10,7 +10,7 @@ export function menuItemToUpdateDto(menuItem: MenuItem, merge: Partial<UpdateMen
         ) ?? [];
 
     const mergedContainerItems = merge.containerMenuItems
-        ? [...existingContainerItems, ...merge.containerMenuItems]
+        ? [...merge.containerMenuItems, ...existingContainerItems]
         : existingContainerItems;
 
     return plainToInstance(UpdateMenuItemDto, {
