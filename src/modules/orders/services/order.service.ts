@@ -141,10 +141,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
         search: string,
     ): void {
         query
-            .leftJoin('entity.orderedItems', 'orderedItem')
-            .leftJoin('orderedItem.menuItem', 'menuItem')
+            .leftJoin('entity.orderedItems', 'searchOrderedItem')
+            .leftJoin('searchOrderedItem.menuItem', 'searchMenuItem')
             .andWhere(
-                `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.name) LIKE :search)`,
+                `(LOWER(entity.recipient) LIKE :search OR LOWER(searchMenuItem.name) LIKE :search)`,
                 { search: `%${search.toLowerCase()}%` },
             );
     }
@@ -161,7 +161,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
 
         if (filters.isFrozen && filters.isFrozen.length > 0) {
             query.andWhere('entity.isFrozen IN (:...isFrozen)', {
-                isFrozens: filters.isFrozen,
+                isFrozen: filters.isFrozen,
             });
         }
 

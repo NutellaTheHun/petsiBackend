@@ -175,9 +175,21 @@ export abstract class ServiceBase<
         // Start query with query builder
         const query = this.entityRepo.createQueryBuilder('entity');
 
-        if (options.relations) {
+        if (options.relations && options.relations.length > 0) {
+            const relations: { property: string, alias: string }[] = [];
             for (const relation of options.relations) {
-                query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+                //query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+                const string = relation.split('.');
+                if (string.length === 1) {
+                    relations.push({ property: `entity.${string[0]}`, alias: string[0] });
+                } else {
+                    const rel = string.at(-1)!;
+                    const alias = string.at(-2)!;
+                    relations.push({ property: `${alias}.${rel}`, alias: rel });
+                }
+            }
+            for (const relation of relations) {
+                query.leftJoinAndSelect(relation.property, relation.alias);
             }
         }
 
@@ -208,7 +220,7 @@ export abstract class ServiceBase<
 
         if (options.filters) {
             // options.filters is always an array of strings here
-            // e.g. ['inventoryArea,1', 'inventoryArea,2']
+            // e.g. ['inventoryArea=1', 'inventoryArea=2']
             const filterMap: Record<string, string[]> = {};
             for (const filter of options.filters) {
                 const [key, value] = filter.split('=');

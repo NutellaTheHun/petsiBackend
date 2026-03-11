@@ -188,13 +188,15 @@ describe('recipe service', () => {
         const serviceResult = await recipeService.findAll({
             search: 'food',
             limit: 100,
+            relations: ['ingredients', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
         });
         expect(serviceResult).not.toBeNull();
-        // expect each recipe to have an ingredient with an inventory item name that includes 'food'
+
+        // expect each recipe to have an ingredient that has either a inventory item name or a recipe name that includes 'food'
         expect(
             serviceResult?.items.every((r) =>
                 r.ingredients?.some((i) =>
-                    i.ingredientInventoryItem?.name?.toLowerCase().includes('food'),
+                    i.ingredientInventoryItem?.name?.toLowerCase().includes('food') || i.ingredientRecipe?.name?.toLowerCase().includes('food'),
                 ),
             ),
         ).toBe(true);

@@ -70,15 +70,11 @@ export class RecipeCategoryService extends ServiceBase<RecipeCategoryEntity> {
         }
 
         if (dto.subCategories) {
-            /*const existingSubCats = await manager.find(RecipeSubCategory, {
-              where: { parentCategory: { id: entity.id } },
-            });*/
-
             entity.subCategories =
                 await this.subCategoryComposer.composeManyNestedEntity(
                     dto.subCategories,
                     manager,
-          /*existingSubCats,*/[],
+                    [],
                     {
                         parentCategoryId: entity.id,
                     },

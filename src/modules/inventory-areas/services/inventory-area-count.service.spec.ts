@@ -695,10 +695,14 @@ describe('Inventory area count service', () => {
         const repoResult = await inventoryAreaCountRepo.find({
             where: { inventoryArea: areaB },
         });
+        if (repoResult.length === 0) {
+            throw new Error('no area counts found');
+        }
 
         const serviceResult = await countService.findAll({
             filters: [`inventoryArea=${areaB.id}`],
         });
+
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.items.length).toEqual(repoResult.length);
     });

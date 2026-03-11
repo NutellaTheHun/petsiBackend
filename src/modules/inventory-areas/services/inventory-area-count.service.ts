@@ -91,7 +91,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         query: SelectQueryBuilder<InventoryAreaCount>,
         search: string,
     ): void {
-        //query.distinct(true);
+        query.distinct(true);
 
         query
             .leftJoin('entity.countedInventoryItems', 'areaItem')

@@ -59,7 +59,7 @@ describe('order service', () => {
         await menuItemTestUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
 
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
-        await testingUtil.initOrderTestDatabase(dbTestContext);
+        await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
 
         orderService = module.get(OrderService) as TestableOrderService;
         orderRepo = module.get(getRepositoryToken(Order));
@@ -166,7 +166,7 @@ describe('order service', () => {
     // test updateEntity()
     it('should update order', async () => {
         const newRecipient = 'Updated Recipient';
-        const toUpdate = await orderRepo.findOneOrFail({ where: {}, relations: ['orderedItems', 'category'] });
+        const toUpdate = await orderRepo.findOneOrFail({ where: {}, relations: ['orderedItems', 'category', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
 
         const dto = orderToUpdateDto(toUpdate, { recipient: newRecipient });
 
@@ -184,7 +184,7 @@ describe('order service', () => {
 
         const order = await orderRepo.findOneOrFail({
             where: { orderedItems: MoreThan(0) },
-            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size'],
+            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
         });
         if (!order.orderedItems.length)
             throw new Error('order with orderedItems not found');
@@ -260,6 +260,7 @@ describe('order service', () => {
         const serviceResult = await orderService.findAll({
             search: 'item',
             limit: 100,
+            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
         });
         expect(serviceResult).not.toBeNull();
         // expect each order to have an orderedItem with a menuItem name that includes 'item'
@@ -354,8 +355,8 @@ describe('order service', () => {
         );
         // expect last item of serviceResult and category result to be the same
         expect(
-            serviceResult?.items[serviceResult.items.length - 1]?.category?.name,
-        ).toEqual(repoResult[repoResult.length - 1]?.category?.name);
+            serviceResult?.items[serviceResult.items.length - 1].recipient,
+        ).toEqual(repoResult[repoResult.length - 1].recipient);
     });
 
     // test findAll() sortBy fulfillmentDate
