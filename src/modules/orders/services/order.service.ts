@@ -29,6 +29,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
         dto: CreateOrderDto,
         manager: EntityManager,
     ): Promise<Order> {
+
         const result = manager.create(Order, {
             orderCategory: { id: dto.categoryId },
             recipient: dto.recipient,

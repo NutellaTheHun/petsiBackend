@@ -9,9 +9,9 @@ import {
     NotFoundException,
     Param,
     ParseIntPipe,
-    Patch,
     Post,
-    Query,
+    Put,
+    Query
 } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import { parse, stringify } from 'flatted';
@@ -244,7 +244,7 @@ export class ControllerBase<
         return result;
     }
 
-    @Patch(':id')
+    @Put(':id')
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() updateDto: any,
