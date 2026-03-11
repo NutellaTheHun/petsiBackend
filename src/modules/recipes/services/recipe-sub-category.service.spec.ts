@@ -161,4 +161,17 @@ describe('recipe sub category service', () => {
             NotFoundException,
         );
     });
+
+    // test findAll() with filter by category
+    it('should find all recipe sub categories with filter by category', async () => {
+        const category = await categoryRepo.findOneOrFail({ where: { name: REC_CAT_A }, relations: ['subCategories'] });
+        if (!category.subCategories) throw new Error('sub categories not found');
+        const serviceResult = await subCategoryService.findAll({
+            filters: [`parentCategory=${category.id}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toEqual(category.subCategories.length);
+    });
+
 });

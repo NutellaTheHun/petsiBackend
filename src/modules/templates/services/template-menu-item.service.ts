@@ -60,4 +60,16 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
     }
+
+    // filter by template
+    protected applyFilters(
+        query: SelectQueryBuilder<TemplateMenuItem>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentTemplate && filters.parentTemplate.length > 0) {
+            query.andWhere('entity.parentTemplate IN (:...parentTemplates)', {
+                parentTemplates: filters.parentTemplate,
+            });
+        }
+    }
 }

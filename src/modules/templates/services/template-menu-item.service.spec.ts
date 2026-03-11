@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
@@ -174,5 +174,17 @@ describe('Template menu item service', () => {
         const deleteResult = await templateItemService.remove(id);
         expect(deleteResult).toBe(true);
         await expect(templateItemService.findOne(id)).rejects.toThrow(NotFoundException);
+    });
+
+    // test findAll() with filter by template
+    it('should find all template menu items with filter by template', async () => {
+        const template = await templateRepo.findOneOrFail({ where: { templateMenuItems: MoreThan(0) }, relations: ['templateMenuItems'] });
+        if (!template.templateMenuItems) throw new Error('template menu items not found');
+        const serviceResult = await templateItemService.findAll({
+            filters: [`parentTemplate=${template.id}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toEqual(template.templateMenuItems.length);
     });
 });

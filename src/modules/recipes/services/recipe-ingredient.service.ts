@@ -64,4 +64,16 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
             query.orderBy(`COALESCE(inventoryItem.name, recipe.name)`, sortOrder);
         }
     }
+
+    // filter by recipe
+    protected applyFilters(
+        query: SelectQueryBuilder<RecipeIngredient>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentRecipe && filters.parentRecipe.length > 0) {
+            query.andWhere('entity.parentRecipe IN (:...parentRecipes)', {
+                parentRecipes: filters.parentRecipe,
+            });
+        }
+    }
 }

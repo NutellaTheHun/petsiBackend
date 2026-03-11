@@ -61,4 +61,16 @@ export class OrderContainerItemService extends ServiceBase<OrderContainerItemEnt
             query.orderBy(`menuItem.name`, sortOrder);
         }
     }
+
+    // filter by parentOrderMenuItem
+    protected applyFilters(
+        query: SelectQueryBuilder<OrderContainerItem>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentOrderMenuItem && filters.parentOrderMenuItem.length > 0) {
+            query.andWhere('entity.parentOrderMenuItem IN (:...parentOrderMenuItems)', {
+                parentOrderMenuItems: filters.parentOrderMenuItem,
+            });
+        }
+    }
 }

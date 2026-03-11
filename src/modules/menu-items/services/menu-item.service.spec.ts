@@ -309,4 +309,15 @@ describe('menu item service', () => {
         expect(deleteResult).toBe(true);
         await expect(itemService.findOne(id)).rejects.toThrow(NotFoundException);
     });
+
+    // test findAll() with filter by type
+    it('should find all items with filter by type', async () => {
+        const serviceResult = await itemService.findAll({
+            filters: [`type=${MENU_ITEM_TYPES.SINGLE}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toBeGreaterThan(0);
+        expect(serviceResult?.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE)).toBe(true);
+    });
 });

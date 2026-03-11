@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
@@ -169,4 +169,17 @@ describe('menu item container item service', () => {
         expect(deleteResult).toBe(true);
         await expect(containerItemService.findOne(id)).rejects.toThrow(NotFoundException);
     });
+
+    // test findAll() with filter by parentMenuItem
+    it('should find all container items with filter by parentMenuItem', async () => {
+        const parent = await menuItemRepo.findOneOrFail({ where: { containerMenuItems: MoreThan(0) }, relations: ['containerMenuItems'] });
+        if (!parent.containerMenuItems) throw new Error('container menu items not found');
+        const serviceResult = await containerItemService.findAll({
+            filters: [`parentMenuItem=${parent.id}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toEqual(parent.containerMenuItems.length);
+    });
 });
+

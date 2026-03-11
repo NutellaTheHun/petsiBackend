@@ -320,4 +320,16 @@ describe('order menu item service', () => {
             NotFoundException,
         );
     });
+
+    // test findAll() with filter by parentOrder
+    it('should find all order menu items with filter by parentOrder', async () => {
+        const order = await orderRepo.findOneOrFail({ where: { orderedItems: MoreThan(0) }, relations: ['orderedItems'] });
+
+        const serviceResult = await orderItemService.findAll({
+            filters: [`parentOrder=${order.id}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toEqual(order.orderedItems.length);
+    });
 });

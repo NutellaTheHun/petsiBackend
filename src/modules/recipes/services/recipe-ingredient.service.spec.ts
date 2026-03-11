@@ -2,7 +2,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
@@ -227,4 +227,17 @@ describe('recipe ingredient service', () => {
         expect(deleteResult).toBe(true);
         await expect(ingredientService.findOne(id)).rejects.toThrow(NotFoundException);
     });
+
+    // test findAll() with filter by recipe
+    it('should find all recipe ingredients with filter by recipe', async () => {
+        const recipe = await recipeRepo.findOneOrFail({ where: { ingredients: MoreThan(0) }, relations: ['ingredients'] });
+        if (!recipe.ingredients) throw new Error('ingredients not found');
+        const serviceResult = await ingredientService.findAll({
+            filters: [`parentRecipe=${recipe.id}`],
+            limit: 100,
+        });
+        expect(serviceResult).not.toBeNull();
+        expect(serviceResult?.items.length).toEqual(recipe.ingredients.length);
+    });
+
 });

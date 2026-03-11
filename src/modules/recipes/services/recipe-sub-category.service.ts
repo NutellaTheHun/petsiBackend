@@ -60,4 +60,16 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
     }
+
+    // filter by category
+    protected applyFilters(
+        query: SelectQueryBuilder<RecipeSubCategory>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentCategory && filters.parentCategory.length > 0) {
+            query.andWhere('entity.parentCategory IN (:...parentCategories)', {
+                parentCategories: filters.parentCategory,
+            });
+        }
+    }
 }

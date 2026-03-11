@@ -64,4 +64,15 @@ export class OrderMenuItemService extends ServiceBase<OrderMenuItemEntity> {
             query.orderBy(`menuItem.name`, sortOrder);
         }
     }
+
+    protected applyFilters(
+        query: SelectQueryBuilder<OrderMenuItem>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentOrder && filters.parentOrder.length > 0) {
+            query.andWhere('entity.parentOrder IN (:...parentOrders)', {
+                parentOrders: filters.parentOrder,
+            });
+        }
+    }
 }

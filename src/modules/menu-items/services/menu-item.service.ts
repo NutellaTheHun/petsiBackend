@@ -141,6 +141,12 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 categories: filters.category,
             });
         }
+        // filter by type
+        if (filters.type && filters.type.length > 0) {
+            query.andWhere('entity.type IN (:...types)', {
+                types: filters.type,
+            });
+        }
     }
 
     protected applySortBy(
