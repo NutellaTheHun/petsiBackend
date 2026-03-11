@@ -284,19 +284,23 @@ describe('menu item service', () => {
 
     // test findOne() with relations
     it('should find one item with relations', async () => {
-        const [item] = await itemRepo.find({ take: 1 });
-        if (!item) throw new Error('item not found');
+        const item = await itemRepo.findOneOrFail({ where: { containerMenuItems: MoreThan(0) }, relations: ['category', 'sizes', 'containerMenuItems', 'containerMenuItems.containedMenuItem', 'containerMenuItems.containedItemSize'] });
+        if (!item.containerMenuItems) { throw new Error('conatiner items not found') }
 
         const serviceResult = await itemService.findOne(item.id, [
             'category',
             'sizes',
             'containerMenuItems',
+            'containerMenuItems.containedMenuItem',
+            'containerMenuItems.containedItemSize',
         ]);
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.id).toEqual(item.id);
         expect(serviceResult?.category).toBeDefined();
         expect(serviceResult?.sizes).toBeDefined();
         expect(Array.isArray(serviceResult?.containerMenuItems)).toBe(true);
+        expect(serviceResult?.containerMenuItems?.[0].containedMenuItem).toBeDefined();
+        expect(serviceResult?.containerMenuItems?.[0].containedItemSize).toBeDefined();
     });
 
     // test remove()

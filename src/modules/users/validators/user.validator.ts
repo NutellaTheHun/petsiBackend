@@ -37,7 +37,7 @@ export class UserValidator extends ValidatorBase<UserEntity, UserValidatorIdenti
         }
 
         if (identity.password) {
-
+            // password requirements?
         }
 
         if (identity.roleIds) {
