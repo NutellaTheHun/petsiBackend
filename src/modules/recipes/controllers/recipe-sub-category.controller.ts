@@ -9,15 +9,10 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Post,
-    Put,
-    Query,
+    Query
 } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -25,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath,
+    getSchemaPath
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -64,7 +59,7 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
         );
     }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Recipe Sub Category' })
     @ApiCreatedResponse({
@@ -72,18 +67,19 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
         type: RecipeSubCategory,
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateRecipeSubCategoryDto })
+    @ApiBody({ type: CreateRecipeSubCategoryDto })*/
     async create(
         @Body() dto: CreateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
-        const result = await super.create(dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.create(dto);
 
         await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
-    @Put(':id')
+    /*@Put(':id')
     @ApiOperation({ summary: 'Updates a Recipe Sub Category' })
     @ApiOkResponse({
         description: 'Recipe Sub Category successfully updated',
@@ -93,16 +89,17 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     @ApiNotFoundResponse({
         description: 'Recipe Sub Category to update not found.',
     })
-    @ApiBody({ type: UpdateRecipeSubCategoryDto })
+    @ApiBody({ type: UpdateRecipeSubCategoryDto })*/
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateRecipeSubCategoryDto,
     ): Promise<RecipeSubCategory> {
-        const result = super.update(id, dto);
+        throw new Error('Endpoint not available');
+        /*const result = super.update(id, dto);
 
         await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
     @Delete(':id')

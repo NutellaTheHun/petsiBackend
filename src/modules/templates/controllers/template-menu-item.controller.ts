@@ -9,15 +9,10 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Post,
-    Put,
-    Query,
+    Query
 } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -25,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath,
+    getSchemaPath
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -68,7 +63,7 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
         );
     }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Template Menu Item' })
     @ApiCreatedResponse({
@@ -76,18 +71,19 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
         type: TemplateMenuItem,
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateTemplateMenuItemDto })
+    @ApiBody({ type: CreateTemplateMenuItemDto })*/
     async create(
         @Body() dto: CreateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
-        const result = await super.create(dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.create(dto);
 
         await invalidateFindAllCache('TemplateService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
-    @Put(':id')
+    /*@Put(':id')
     @ApiOperation({ summary: 'Updates a Template Menu Item' })
     @ApiOkResponse({
         description: 'Template Menu Item successfully updated',
@@ -97,16 +93,17 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
     @ApiNotFoundResponse({
         description: 'Template Menu Item to update not found.',
     })
-    @ApiBody({ type: UpdateTemplateMenuItemDto })
+    @ApiBody({ type: UpdateTemplateMenuItemDto })*/
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateTemplateMenuItemDto,
     ): Promise<TemplateMenuItem> {
-        const result = await super.update(id, dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.update(id, dto);
 
         await invalidateFindAllCache('TemplateService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
     @Delete(':id')

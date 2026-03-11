@@ -9,15 +9,10 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Post,
-    Put,
-    Query,
+    Query
 } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -25,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath,
+    getSchemaPath
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -64,7 +59,7 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
         );
     }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Recipe Ingredient' })
     @ApiCreatedResponse({
@@ -72,18 +67,19 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
         type: RecipeIngredient,
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateRecipeIngredientDto })
+    @ApiBody({ type: CreateRecipeIngredientDto })*/
     async create(
         @Body() dto: CreateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
-        const result = await super.create(dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.create(dto);
 
         await invalidateFindAllCache('RecipeService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
-    @Put(':id')
+    /*@Put(':id')
     @ApiOperation({ summary: 'Updates a Recipe Ingredient' })
     @ApiOkResponse({
         description: 'Recipe Ingredient successfully updated',
@@ -93,16 +89,17 @@ export class RecipeIngredientController extends ControllerBase<RecipeIngredientE
     @ApiNotFoundResponse({
         description: 'Recipe Ingredient to update not found.',
     })
-    @ApiBody({ type: UpdateRecipeIngredientDto })
+    @ApiBody({ type: UpdateRecipeIngredientDto })*/
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateRecipeIngredientDto,
     ): Promise<RecipeIngredient> {
-        const result = await super.update(id, dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.update(id, dto);
 
         await invalidateFindAllCache('RecipeService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
     @Delete(':id')

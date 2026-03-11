@@ -9,15 +9,10 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Post,
-    Put,
     Query
 } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -25,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath,
+    getSchemaPath
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -64,7 +59,7 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
         );
     }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Inventory Area Item' })
     @ApiCreatedResponse({
@@ -74,21 +69,22 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     @ApiBadRequestResponse({
         description: 'Bad request: ValidationException or DatabaseException',
     })
-    @ApiBody({ type: CreateInventoryAreaItemDto })
+    @ApiBody({ type: CreateInventoryAreaItemDto })*/
     async create(
         @Body() dto: CreateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
-        const result = await super.create(dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.create(dto);
 
         await invalidateFindAllCache(
             'InventoryAreaCountService',
             this.cacheManager,
         );
 
-        return result;
+        return result;*/
     }
 
-    @Put(':id')
+    /*@Put(':id')
     @ApiOperation({ summary: 'Updates a Inventory Area Item' })
     @ApiOkResponse({
         description: 'Inventory Area Item successfully updated',
@@ -100,19 +96,20 @@ export class InventoryAreaItemController extends ControllerBase<InventoryAreaIte
     @ApiNotFoundResponse({
         description: 'Inventory Area Item to update not found.',
     })
-    @ApiBody({ type: UpdateInventoryAreaItemDto })
+    @ApiBody({ type: UpdateInventoryAreaItemDto })*/
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateInventoryAreaItemDto,
     ): Promise<InventoryAreaItem> {
-        const result = await super.update(id, dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.update(id, dto);
 
         await invalidateFindAllCache(
             'InventoryAreaCountService',
             this.cacheManager,
         );
 
-        return result;
+        return result;*/
     }
 
     @Delete(':id')

@@ -9,15 +9,10 @@ import {
     Inject,
     Param,
     ParseIntPipe,
-    Post,
-    Put,
     Query
 } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
     ApiBearerAuth,
-    ApiBody,
-    ApiCreatedResponse,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiNotFoundResponse,
@@ -25,7 +20,7 @@ import {
     ApiOperation,
     ApiQuery,
     ApiTags,
-    getSchemaPath,
+    getSchemaPath
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 import { ControllerBase } from '../../../common/base/controller.base';
@@ -33,7 +28,6 @@ import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
 import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { AppLogger } from '../../app-logging/app-logger';
-import { UpdateMenuItemSizeDto } from '../../menu-items/dto/menu-item-size/update-menu-item-size.dto';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { ROLE_ADMIN, ROLE_MANAGER } from '../../roles/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
@@ -65,7 +59,7 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
         );
     }
 
-    @Post()
+    /*@Post()
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Creates a Inventory Item Size' })
     @ApiCreatedResponse({
@@ -73,19 +67,20 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
         type: InventoryItemSize,
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
-    @ApiBody({ type: CreateInventoryItemSizeDto })
+    @ApiBody({ type: CreateInventoryItemSizeDto })*/
     async create(
         @Body() dto: CreateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
-        const result = await super.create(dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.create(dto);
 
         await invalidateFindAllCache('InventoryItemService', this.cacheManager);
         await invalidateFindAllCache('InventoryAreaItemService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
-    @Put(':id')
+    /*@Put(':id')
     @ApiOperation({ summary: 'Updates a Inventory Item Size' })
     @ApiOkResponse({
         description: 'Inventory Item Size successfully updated',
@@ -95,17 +90,18 @@ export class InventoryItemSizeController extends ControllerBase<InventoryItemSiz
     @ApiNotFoundResponse({
         description: 'Inventory Item Size to update not found.',
     })
-    @ApiBody({ type: UpdateMenuItemSizeDto })
+    @ApiBody({ type: UpdateMenuItemSizeDto })*/
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateInventoryItemSizeDto,
     ): Promise<InventoryItemSize> {
-        const result = await super.update(id, dto);
+        throw new Error('Endpoint not available');
+        /*const result = await super.update(id, dto);
 
         await invalidateFindAllCache('InventoryItemService', this.cacheManager);
         await invalidateFindAllCache('InventoryAreaItemService', this.cacheManager);
 
-        return result;
+        return result;*/
     }
 
     @Delete(':id')
