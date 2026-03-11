@@ -176,7 +176,7 @@ export abstract class ServiceBase<
         const query = this.entityRepo.createQueryBuilder('entity');
 
         if (options.relations && options.relations.length > 0) {
-            const relations: { property: string, alias: string }[] = [];
+            /*const relations: { property: string, alias: string }[] = [];
             for (const relation of options.relations) {
                 //query.leftJoinAndSelect(`entity.${relation}`, relation as string);
                 const string = relation.split('.');
@@ -187,7 +187,8 @@ export abstract class ServiceBase<
                     const alias = string.at(-2)!;
                     relations.push({ property: `${alias}.${rel}`, alias: rel });
                 }
-            }
+            }*/
+            const relations = this.buildRelationStatements(options.relations)
             for (const relation of relations) {
                 query.leftJoinAndSelect(relation.property, relation.alias);
             }
@@ -285,23 +286,17 @@ export abstract class ServiceBase<
      */
     async findOne(
         id: number,
-        relations?: Array<keyof TEntity['__Entity']>,
-        childRelations?: string[],
+        relations?: string[],
     ): Promise<TEntity['__Entity']> {
         // Get requestId
         const requestId = this.requestContextService.getRequestId();
 
-        const combinedRelations = [
-            ...(relations?.map((r) => r.toString()) ?? []),
-            ...(childRelations ?? []),
-        ];
-
         // run query and return
-        let result;
+        let result: TEntity['__Entity'] | null;
         try {
             result = await this.entityRepo.findOne({
                 where: { id } as unknown as FindOptionsWhere<TEntity>,
-                relations: combinedRelations,
+                relations: relations,
             });
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
@@ -439,4 +434,20 @@ export abstract class ServiceBase<
         manager: EntityManager,
         entity: TEntity['__Entity'],
     ): Promise<void>;
+
+    buildRelationStatements(relations: string[]): { property: string, alias: string }[] {
+        const result: { property: string, alias: string }[] = [];
+        for (const relation of relations) {
+            //query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+            const string = relation.split('.');
+            if (string.length === 1) {
+                result.push({ property: `entity.${string[0]}`, alias: string[0] });
+            } else {
+                const rel = string.at(-1)!;
+                const alias = string.at(-2)!;
+                result.push({ property: `${alias}.${rel}`, alias: rel });
+            }
+        }
+        return result;
+    }
 }

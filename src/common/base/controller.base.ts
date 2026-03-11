@@ -192,6 +192,7 @@ export class ControllerBase<
     @Get(':id')
     async findOne(
         @Param('id', ParseIntPipe) id: number,
+        @Query('relations') rawRelations?: string | string[],
     ): Promise<TEntity['__Entity']> {
         const requestId = this.requestContextService.getRequestId();
         this.logger.logAction(
@@ -201,6 +202,15 @@ export class ControllerBase<
             'REQUEST',
             { requestId, id },
         );
+
+        let relations: string[] = [];
+        if (rawRelations) {
+            relations = Array.isArray(rawRelations) ? rawRelations : [rawRelations];
+
+            relations = relations.filter(
+                (r) => r !== undefined && r !== 'undefined',
+            ) as string[];
+        }
 
         // Build cache key
         const cacheKey = `${this.entityService.servicePrefix}-findOne-${id}`;
@@ -221,7 +231,7 @@ export class ControllerBase<
         }
 
         // Query DB
-        const result = await this.entityService.findOne(id);
+        const result = await this.entityService.findOne(id, relations);
 
         // Cache result
         await this.cacheManager.set(cacheKey, stringify(result), 60_000);
