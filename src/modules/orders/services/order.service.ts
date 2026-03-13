@@ -120,14 +120,11 @@ export class OrderService extends ServiceBase<OrderEntity> {
         }
 
         if (dto.orderedItems) {
-            /*const existingItems = await manager.find(OrderMenuItem, {
-                where: { parentOrder: { id: entity.id } },
-            });*/
             entity.orderedItems =
                 await this.orderMenuItemComposer.composeManyNestedEntity(
                     dto.orderedItems,
                     manager,
-                    /*existingItems,*/[],
+                    [],
                     {
                         parentOrderId: entity.id,
                     },

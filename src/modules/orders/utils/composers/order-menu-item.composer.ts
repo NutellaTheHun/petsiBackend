@@ -74,15 +74,11 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
         }
 
         if (dto.containerOrderMenuItems) {
-            /*const existingItems = await manager.find(OrderContainerItem, {
-                where: { parentOrderMenuItem: { id: entity.id } },
-            });*/
-
             entity.containerOrderMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
                     manager,
-                    /*existingItems,*/[],
+                    [],
                     {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,

@@ -15,6 +15,8 @@ import { EntityId } from '../../../../common/types';
 import { OrderCategory } from '../../entities/order-category.entity';
 import { NestedCreateOrderMenuItemDto } from '../order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../order-menu-item/nested-update-order-menu-item.dto';
+import { NestedCreateRecurringOrderScheduleDto } from '../recurring-order-schedule/nested-create-recurring-order-schedule.dto';
+import { NestedUpdateRecurringOrderScheduleDto } from '../recurring-order-schedule/nested-update-recurring-order-schedule.dto';
 
 export class UpdateOrderDto {
     @ApiProperty({
@@ -171,4 +173,49 @@ export class UpdateOrderDto {
         | NestedCreateOrderMenuItemDto
         | NestedUpdateOrderMenuItemDto
     )[];
+
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the template order that this occurence is based on',
+        type: 'number',
+        nullable: true,
+    })
+    @IsNumber()
+    @IsOptional()
+    readonly templateOrderId?: number | null;
+
+    @ApiProperty({
+        example: 'TEMPLATE',
+        description: 'The type of the occurence',
+        type: 'string',
+        nullable: true,
+    })
+    @IsString()
+    @IsOptional()
+    readonly occurenceType?: string | null;
+
+    @ApiProperty({
+        example: 'GENERATED',
+        description: 'The state of the occurence',
+        type: 'string',
+        nullable: true,
+    })
+    @IsString()
+    @IsOptional()
+    readonly occurenceState?: string | null;
+
+    @ApiProperty({
+        example: {
+            rrule: 'RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR',
+            startDate: '2025-01-01',
+            endDate: '2025-01-01',
+        },
+        description: 'The schedule of the recurring order',
+        type: () => [NestedCreateRecurringOrderScheduleDto, NestedUpdateRecurringOrderScheduleDto],
+    })
+    @Transform(({ value }: TransformFnParams) => {
+        if ('createId' in value && value.createId !== undefined) return plainToInstance(NestedCreateRecurringOrderScheduleDto, value)
+        return plainToInstance(NestedUpdateRecurringOrderScheduleDto, value)
+    })
+    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto;
 }
