@@ -193,6 +193,14 @@ export class CreateOrderDto {
     readonly occurenceState?: string | null;
 
     @ApiProperty({
+        example: '2025-01-01',
+        description: 'The original of the occurence, used to properly regenerated orders',
+    })
+    @IsDate()
+    @IsOptional()
+    readonly reccurenceDate?: Date | null;
+
+    @ApiProperty({
         example: {
             rrule: 'RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR',
             startDate: '2025-01-01',

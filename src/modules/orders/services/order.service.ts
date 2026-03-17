@@ -5,10 +5,14 @@ import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
+import { OrderResponseDto } from '../dto/order/order-response.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
+import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
+import { orderToResponseDto } from '../utils/entity-transformers/order.dto.transformer';
+import { OccurenceState, OccurenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
 
 @Injectable()
@@ -21,8 +25,19 @@ export class OrderService extends ServiceBase<OrderEntity> {
         validator: OrderValidator,
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
+        private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
     ) {
         super(repo, 'OrderService', requestContextService, logger, validator);
+    }
+
+    public async createOrderResponse(createDto: CreateOrderDto): Promise<OrderResponseDto> {
+        const result = await super.create(createDto);
+        return orderToResponseDto(result);
+    }
+
+    public async updateOrderResponse(id: number, updateDto: UpdateOrderDto): Promise<OrderResponseDto> {
+        const result = await super.update(id, updateDto);
+        return orderToResponseDto(result);
     }
 
     protected async createEntity(
@@ -43,6 +58,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
             weeklyFulfillment: dto.weeklyFulfillment ?? null,
             isFrozen: dto.isFrozen ?? false,
             isWeekly: dto.isWeekly ?? false,
+            occurenceType: dto.occurenceType as OccurenceType,
+            occurenceState: dto.occurenceState as OccurenceState,
+            reccurenceDate: dto.reccurenceDate ?? null,
+            templateOrderId: dto.templateOrderId ?? null,
         });
 
         const savedResult = await manager.save(result);
@@ -57,6 +76,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
                         parentOrderId: savedResult.id,
                     },
                 );
+
+            await manager.save(savedResult);
+        }
+
+        if (dto.recurrenceSchedule) {
+            savedResult.reccurenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                dto.recurrenceSchedule,
+                manager,
+                {
+                    orderId: savedResult.id,
+                },
+            );
 
             await manager.save(savedResult);
         }
@@ -105,18 +136,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
             entity.isFrozen = dto.isFrozen;
         }
 
-        if (dto.isWeekly !== undefined) {
-            entity.isWeekly = dto.isWeekly;
-        }
-
-        if (dto.weeklyFulfillment !== undefined) {
-            entity.weeklyFulfillment = dto.weeklyFulfillment;
-        }
-
         if (dto.categoryId !== undefined) {
             entity.category = manager.create(OrderCategory, {
                 id: dto.categoryId,
             });
+        }
+
+        if (dto.occurenceType !== undefined) {
+            entity.occurenceType = dto.occurenceType as OccurenceType;
+        }
+
+        if (dto.occurenceState !== undefined) {
+            entity.occurenceState = dto.occurenceState as OccurenceState;
         }
 
         if (dto.orderedItems) {
@@ -130,6 +161,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
                     },
                 );
         }
+
+        if (dto.recurrenceSchedule) {
+            entity.reccurenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                dto.recurrenceSchedule,
+                manager,
+                {
+                    parentOrderId: entity.id,
+                },
+            );
+        }
+
+
 
         await manager.save(entity);
     }

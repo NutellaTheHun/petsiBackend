@@ -175,16 +175,6 @@ export class UpdateOrderDto {
     )[];
 
     @ApiProperty({
-        example: 1,
-        description: 'The unique identifier of the template order that this occurence is based on',
-        type: 'number',
-        nullable: true,
-    })
-    @IsNumber()
-    @IsOptional()
-    readonly templateOrderId?: number | null;
-
-    @ApiProperty({
         example: 'TEMPLATE',
         description: 'The type of the occurence',
         type: 'string',
@@ -206,9 +196,14 @@ export class UpdateOrderDto {
 
     @ApiProperty({
         example: {
-            rrule: 'RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR',
-            startDate: '2025-01-01',
-            endDate: '2025-01-01',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek: [0, 1, 2, 3, 4],
+            dayOfMonth: 1,
+            monthOfYear: 1,
+            startDate: new Date('2025-01-01'),
+            endDate: new Date('2025-01-01'),
+            timezone: 'America/New_York',
         },
         description: 'The schedule of the recurring order',
         type: () => [NestedCreateRecurringOrderScheduleDto, NestedUpdateRecurringOrderScheduleDto],

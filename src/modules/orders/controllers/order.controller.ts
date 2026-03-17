@@ -39,6 +39,7 @@ import {
     ROLE_STAFF,
 } from '../../roles/utils/constants';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
+import { OrderResponseDto } from '../dto/order/order-response.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderService } from '../services/order.service';
@@ -50,7 +51,7 @@ import { OrderService } from '../services/order.service';
 @ApiExtraModels(Order)
 export class OrderController extends ControllerBase<OrderEntity> {
     constructor(
-        orderService: OrderService,
+        private readonly orderService: OrderService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -73,6 +74,11 @@ export class OrderController extends ControllerBase<OrderEntity> {
     })
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiBody({ type: CreateOrderDto })
+    async createOrderResponse(@Body() dto: CreateOrderDto): Promise<OrderResponseDto> {
+        return this.orderService.createOrderResponse(dto);
+    }
+
+    // Not used, but kept for reference
     async create(@Body() dto: CreateOrderDto): Promise<Order> {
         return super.create(dto);
     }
@@ -83,6 +89,11 @@ export class OrderController extends ControllerBase<OrderEntity> {
     @ApiBadRequestResponse({ description: 'Bad request (validation error)' })
     @ApiNotFoundResponse({ description: 'Order to update not found.' })
     @ApiBody({ type: UpdateOrderDto })
+    async updateOrderResponse(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateOrderDto): Promise<OrderResponseDto> {
+        return this.orderService.updateOrderResponse(id, dto);
+    }
+
+    // Not used, but kept for reference
     async update(
         @Param('id', ParseIntPipe) id: number,
         @Body() dto: UpdateOrderDto,

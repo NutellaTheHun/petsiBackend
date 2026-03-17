@@ -189,9 +189,10 @@ export class Order {
         example: recurringOrderScheduleExample(new Set<string>(), false),
         description: 'The schedule of the recurring order',
         type: () => RecurringOrderSchedule,
+        nullable: true,
     })
-    @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order)
-    reccurenceSchedule: RecurringOrderSchedule;
+    @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order, { nullable: true, onDelete: 'SET NULL' })
+    reccurenceSchedule?: RecurringOrderSchedule | null = null;
 
     @ApiProperty({
         example: 'TEMPLATE',
