@@ -1,5 +1,6 @@
 import { ValidatorIdentityBaseInterface } from "../../../../common/base/validator-identity.base.interface";
 import { OrderMenuItemValidatorIdentity } from "./order-menu-item.validator.identity.interface";
+import { RecurringOrderScheduleValidatorIdentity } from "./recurring-order-schedule.identity.interface";
 
 export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly recipient: string;
@@ -15,4 +16,9 @@ export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly weeklyFulfillment?: string;
     readonly categoryId?: number;
     readonly orderedItems?: OrderMenuItemValidatorIdentity[];
+    readonly reccurenceSchedule?: RecurringOrderScheduleValidatorIdentity;
+    readonly occurenceType?: string;
+    readonly occurenceState?: string;
+    readonly reccurenceDate?: Date;
+    readonly templateOrderId?: number;
 }

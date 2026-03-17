@@ -10,9 +10,12 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { OCCURENCE_STATES, OCCURENCE_TYPES } from '../utils/occurence-types';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
+import { RecurringOrderScheduleValidatorIdentity } from './identities/recurring-order-schedule.identity.interface';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
+import { RecurringOrderScheduleValidator } from './recurring-order-schedule.validator';
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIdentity> {
@@ -25,6 +28,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
 
         @InjectRepository(OrderCategory)
         private readonly orderCategoryRepo: Repository<OrderCategory>,
+
+        private readonly recurringOrderScheduleValidator: RecurringOrderScheduleValidator,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -118,6 +123,41 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             }
         }
 
+        if (identity.templateOrderId !== undefined) {
+            await this.helper.enforceExists(
+                identity.templateOrderId,
+                this.repo,
+                'templateOrderId',
+                errorMap,
+            );
+        }
+
+        if (identity.occurenceType !== undefined) {
+            // get occuren types as strings
+            const validOccurenceTypes = Object.values(OCCURENCE_TYPES).map(type => type.toString());
+            if (!validOccurenceTypes.includes(identity.occurenceType)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceType']);
+            }
+        }
+
+        if (identity.occurenceState !== undefined) {
+            const validOccurenceStates = Object.values(OCCURENCE_STATES).map(state => state.toString());
+            if (!validOccurenceStates.includes(identity.occurenceState)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceState']);
+            }
+        }
+
+        /*if (identity.reccurenceDate !== undefined) {
+        }*/
+
+        if (identity.reccurenceSchedule) {
+            await this.recurringOrderScheduleValidator.validateNestedIdentity(
+                'reccurenceSchedule',
+                identity.reccurenceSchedule,
+                errorMap,
+            );
+        }
+
         return errorMap;
     }
 
@@ -129,6 +169,13 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
                 orderedItems.push(await this.orderItemValidator.resolveIdentity(item, itemId));
             }
         }
+
+        let reccurenceSchedule: RecurringOrderScheduleValidatorIdentity | undefined;
+        if (dto.recurrenceSchedule) {
+            const id = 'id' in dto.recurrenceSchedule ? dto.recurrenceSchedule.id : dto.recurrenceSchedule.createId;
+            reccurenceSchedule = await this.recurringOrderScheduleValidator.resolveIdentity(dto.recurrenceSchedule, id);
+        }
+
         return {
             recipient: dto.recipient,
             fulfillmentDate: dto.fulfillmentDate,
@@ -143,6 +190,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             weeklyFulfillment: dto.weeklyFulfillment,
             categoryId: dto.categoryId,
             orderedItems: orderedItems,
+            templateOrderId: dto.templateOrderId,
+            occurenceType: dto.occurenceType,
+            occurenceState: dto.occurenceState,
+            reccurenceSchedule: reccurenceSchedule ?? undefined,
         } as OrderValidatorIdentity;
     }
 }
