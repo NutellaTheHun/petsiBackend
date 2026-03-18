@@ -95,15 +95,18 @@ export class RecurringOrderScheduleValidator extends NestedValidatorBase<Recurri
 
         }
 
-        if (identity.startDate !== undefined) {
-            // start date must be before end date
-            if (identity.endDate !== undefined && identity.startDate >= identity.endDate) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['startDate', 'endDate']);
-            }
-        }
+        /*if (identity.startDate !== undefined) {
+
+        }*/
 
         if (identity.endDate !== undefined) {
             if (identity.endDate <= new Date()) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['endDate']);
+            }
+
+            // start date must be before end date
+            if (identity.startDate !== undefined && identity.endDate !== undefined
+                && identity.startDate >= identity.endDate) {
                 errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['endDate']);
             }
         }
@@ -111,7 +114,6 @@ export class RecurringOrderScheduleValidator extends NestedValidatorBase<Recurri
         if (identity.timezone !== undefined) {
             const validTimezones = [
                 "America/New_York",
-                "UTC",
                 "Europe/London",
                 "Asia/Tokyo"
             ];

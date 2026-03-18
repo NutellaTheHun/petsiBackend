@@ -182,7 +182,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly occurenceType?: string | null;
+    readonly occurrenceType?: string | null;
 
     @ApiProperty({
         example: 'GENERATED',
@@ -192,7 +192,7 @@ export class UpdateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly occurenceState?: string | null;
+    readonly occurrenceState?: string | null;
 
     @ApiProperty({
         example: {
@@ -207,10 +207,16 @@ export class UpdateOrderDto {
         },
         description: 'The schedule of the recurring order',
         type: () => [NestedCreateRecurringOrderScheduleDto, NestedUpdateRecurringOrderScheduleDto],
+        nullable: true,
     })
     @Transform(({ value }: TransformFnParams) => {
-        if ('createId' in value && value.createId !== undefined) return plainToInstance(NestedCreateRecurringOrderScheduleDto, value)
-        return plainToInstance(NestedUpdateRecurringOrderScheduleDto, value)
+        if (value == null) return value; // handles null AND undefined
+
+        if (typeof value === 'object' && 'createId' in value) {
+            return plainToInstance(NestedCreateRecurringOrderScheduleDto, value);
+        }
+
+        return plainToInstance(NestedUpdateRecurringOrderScheduleDto, value);
     })
-    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto;
+    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto | null;
 }

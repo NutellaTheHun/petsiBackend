@@ -180,7 +180,7 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly occurenceType?: string | null;
+    readonly occurrenceType?: string | null;
 
     @ApiProperty({
         example: 'GENERATED',
@@ -190,15 +190,16 @@ export class CreateOrderDto {
     })
     @IsString()
     @IsOptional()
-    readonly occurenceState?: string | null;
+    readonly occurrenceState?: string | null;
 
     @ApiProperty({
         example: '2025-01-01',
         description: 'The original of the occurence, used to properly regenerated orders',
+        nullable: true,
     })
     @IsDate()
     @IsOptional()
-    readonly reccurenceDate?: Date | null;
+    readonly recurrenceDate?: Date | null;
 
     @ApiProperty({
         example: {
@@ -209,5 +210,5 @@ export class CreateOrderDto {
         description: 'The schedule of the recurring order',
         type: () => NestedCreateRecurringOrderScheduleDto,
     })
-    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto;
+    readonly recurrenceSchedule?: NestedCreateRecurringOrderScheduleDto | null;
 }

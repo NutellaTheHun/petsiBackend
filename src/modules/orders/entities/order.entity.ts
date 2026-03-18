@@ -16,7 +16,7 @@ import { orderMenuItemExample } from '../../../common/swagger/examples/orders/or
 import { recurringOrderScheduleExample } from '../../../common/swagger/examples/orders/recurring-order-schedule.example';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
-import { OCCURENCE_STATES, OCCURENCE_TYPES, OccurenceState, OccurenceType } from '../utils/occurence-types';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
 import { RecurringOrderSchedule } from './recurring-order-schedule.entity';
@@ -28,7 +28,7 @@ export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
  */
 @Entity('orders')
-@Unique(['templateOrderId', 'reccurenceDate'])
+@Unique(['templateOrderId', 'recurrenceDate'])
 export class Order {
     @ApiProperty({
         example: 1,
@@ -95,7 +95,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    fulfillmentContactName: string | null = null;
+    fulfillmentContactName: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -107,7 +107,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    deliveryAddress: string | null = null;
+    deliveryAddress: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -119,7 +119,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    phoneNumber: string | null = null;
+    phoneNumber: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -132,7 +132,7 @@ export class Order {
         format: 'email',
     })
     @Column({ nullable: true, type: 'varchar' })
-    email: string | null = null;
+    email: string | null;
 
     /**
      * Any additional information for the order.
@@ -144,7 +144,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    note: string | null = null;
+    note: string | null;
 
     /**
      * If an order is frozen, it is not an active order,
@@ -170,7 +170,7 @@ export class Order {
         type: () => OrderCategory,
     })
     @ManyToOne(() => OrderCategory, { nullable: true, onDelete: 'SET NULL' })
-    category: OrderCategory | null = null;
+    category: OrderCategory | null;
 
     /**
      * The list of {@link OrderMenuItem} that are being purchased.
@@ -191,31 +191,35 @@ export class Order {
         type: () => RecurringOrderSchedule,
         nullable: true,
     })
-    @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order, { nullable: true, onDelete: 'SET NULL' })
-    reccurenceSchedule?: RecurringOrderSchedule | null = null;
+    @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order, {
+        nullable: true,
+        cascade: true,
+        orphanedRowAction: 'delete',
+    })
+    recurrenceSchedule?: RecurringOrderSchedule | null;
 
     @ApiProperty({
         example: 'TEMPLATE',
         description: 'The type of the occurence',
         type: 'string',
     })
-    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURENCE_TYPES), default: null })
-    occurenceType?: OccurenceType | null = null;
+    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_TYPES), default: null })
+    occurrenceType?: OccurrenceType | null;
 
     @ApiProperty({
         example: 'GENERATED',
         description: 'The state of the occurence',
         type: 'string',
     })
-    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURENCE_STATES), default: null })
-    occurenceState?: OccurenceState | null = null;
+    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_STATES), default: null })
+    occurrenceState?: OccurrenceState | null;
 
     @ApiProperty({
         example: '2025-01-01',
         description: 'The original of the occurence, used to properly regenerated orders',
     })
-    @Column({ nullable: true })
-    reccurenceDate?: Date | null = null;
+    @Column({ type: 'timestamptz', nullable: true })
+    recurrenceDate?: Date | null;
 
     @ApiProperty({
         example: 1,
@@ -224,5 +228,5 @@ export class Order {
         nullable: true,
     })
     @Column({ nullable: true, type: 'int' })
-    templateOrderId?: number | null = null;
+    templateOrderId?: number | null;
 }

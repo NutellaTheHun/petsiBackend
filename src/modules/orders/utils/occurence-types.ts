@@ -1,12 +1,12 @@
-export const OCCURENCE_TYPES = {
+export const OCCURRENCE_TYPES = {
     TEMPLATE: 'TEMPLATE',
-    OCCURENCE: 'OCCURENCE',
+    OCCURRENCE: 'OCCURRENCE',
 } as const;
-export type OccurenceType = (typeof OCCURENCE_TYPES)[keyof typeof OCCURENCE_TYPES];
+export type OccurrenceType = (typeof OCCURRENCE_TYPES)[keyof typeof OCCURRENCE_TYPES];
 
-export const OCCURENCE_STATES = {
+export const OCCURRENCE_STATES = {
     GENERATED: 'GENERATED',
     MODIFIED: 'MODIFIED',
     CANCELLED: 'CANCELLED',
 } as const;
-export type OccurenceState = (typeof OCCURENCE_STATES)[keyof typeof OCCURENCE_STATES];
+export type OccurrenceState = (typeof OCCURRENCE_STATES)[keyof typeof OCCURRENCE_STATES];

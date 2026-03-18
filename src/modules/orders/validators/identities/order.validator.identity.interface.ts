@@ -12,13 +12,11 @@ export interface OrderValidatorIdentity extends ValidatorIdentityBaseInterface {
     readonly email?: string;
     readonly note?: string;
     readonly isFrozen?: boolean;
-    readonly isWeekly?: boolean;
-    readonly weeklyFulfillment?: string;
     readonly categoryId?: number;
     readonly orderedItems?: OrderMenuItemValidatorIdentity[];
-    readonly reccurenceSchedule?: RecurringOrderScheduleValidatorIdentity;
-    readonly occurenceType?: string;
-    readonly occurenceState?: string;
-    readonly reccurenceDate?: Date;
-    readonly templateOrderId?: number;
+    readonly recurrenceSchedule?: RecurringOrderScheduleValidatorIdentity | null;
+    readonly occurrenceType?: string | null;
+    readonly occurrenceState?: string | null;
+    readonly recurrenceDate?: Date | null;
+    readonly templateOrderId?: number | null;
 }

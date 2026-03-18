@@ -2,21 +2,27 @@ import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
-import { Between, DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
+import { Between, DataSource, EntityManager, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { container_a } from '../../menu-items/utils/constants';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { MENU_ITEM_TYPES } from '../../menu-items/utils/menu-item-type';
 import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/nested-create-order-container-item.dto';
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { NestedCreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto';
+import { NestedUpdateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-update-recurring-order-schedule.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
+import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
+import { recurringOrderScheduleToUpdateDto } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
+import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderService } from './order.service';
@@ -47,6 +53,23 @@ describe('order service', () => {
     let orderItemRepo: Repository<OrderMenuItem>;
     let menuItemRepo: Repository<MenuItem>;
     let menuItemTestUtil: MenuItemTestingUtil;
+    let recurringOrderScheduleRepo: Repository<RecurringOrderSchedule>;
+
+    const getOrder = async (): Promise<Order> => {
+        return await orderRepo.findOneOrFail({ where: {}, relations: ['recurrenceSchedule', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
+    }
+
+    const getOrderWithRecurrenceSchedule = async (): Promise<Order> => {
+        return await orderRepo.findOneOrFail({ where: { recurrenceSchedule: { id: Not(IsNull()) } }, relations: ['recurrenceSchedule', 'orderedItems', 'orderedItems.menuItem', 'orderedItems.size', 'category', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'] });
+    }
+
+    const getMenuItemTypeSingle = async (): Promise<MenuItem> => {
+        return await menuItemRepo.findOneOrFail({ where: { type: MENU_ITEM_TYPES.SINGLE }, relations: ['sizes'] });
+    }
+
+    const getCategory = async (): Promise<OrderCategory> => {
+        return await categoryRepo.findOneOrFail({ where: {} });
+    }
 
     beforeAll(async () => {
         const module: TestingModule = await getOrdersTestingModule({
@@ -55,8 +78,8 @@ describe('order service', () => {
 
         dbTestContext = new DatabaseTestContext();
 
-        menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
-        await menuItemTestUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+        //menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        //await menuItemTestUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
 
         testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
         await testingUtil.initOrderMenuItemTestDatabase(dbTestContext);
@@ -66,6 +89,7 @@ describe('order service', () => {
         categoryRepo = module.get(getRepositoryToken(OrderCategory));
         orderItemRepo = module.get(getRepositoryToken(OrderMenuItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
+        recurringOrderScheduleRepo = module.get(getRepositoryToken(RecurringOrderSchedule));
 
         dataSource = module.get(DataSource);
     });
@@ -443,5 +467,91 @@ describe('order service', () => {
         const deleteResult = await orderService.remove(id);
         expect(deleteResult).toBe(true);
         await expect(orderService.findOne(id)).rejects.toThrow(NotFoundException);
+    });
+
+    //  --- Test recurring order schedule service ---
+    it('should create a recurring order schedule', async () => {
+        // create an order with a recurring order schedule
+        const ros_dto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek: [1],
+            startDate: new Date(),
+        });
+
+        const menuItem = await getMenuItemTypeSingle();
+        const category = await getCategory();
+
+        const orderDto = plainToInstance(CreateOrderDto, {
+            recipient: 'John Doe',
+            fulfillmentDate: new Date(new Date().setDate(new Date().getDate() + 3)),
+            fulfillmentType: 'pickup',
+            categoryId: category.id,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'c1',
+                    menuItemId: menuItem.id,
+                    sizeId: menuItem.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+            recurrenceSchedule: ros_dto,
+            occurenceType: OCCURRENCE_TYPES.TEMPLATE,
+        });
+
+        await dataSource.transaction(async (manager) => {
+            const result = await orderService.createEntityForTest(orderDto, manager);
+            expect(result).not.toBeNull();
+            expect(result?.id).toBeDefined();
+            expect(result.recurrenceSchedule?.id).toBeDefined();
+        });
+    });
+
+    it('should update a recurring order schedule', async () => {
+        // should get order with recurring order schedule
+        const order = await getOrderWithRecurrenceSchedule();
+        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+
+        // update recurring order schedule
+        const ros_dto = plainToInstance(NestedUpdateRecurringOrderScheduleDto, {
+            id: order.recurrenceSchedule.id,
+            frequency: 'MONTHLY',
+            interval: 2,
+            daysOfWeek: [2],
+        });
+
+        const orderDto = orderToUpdateDto(order, { recurrenceSchedule: ros_dto });
+
+        await dataSource.transaction(async (manager) => {
+            await orderService.updateEntityForTest(orderDto, order, manager);
+        });
+
+        const reloaded = await orderRepo.findOne({ where: { id: order.id }, relations: ['recurrenceSchedule'] });
+        if (!reloaded) throw new Error('result not found');
+        if (!reloaded.recurrenceSchedule) throw new Error('recurrence schedule not found');
+        const reloated_ros_dto = recurringOrderScheduleToUpdateDto(reloaded.recurrenceSchedule);
+        expect(reloated_ros_dto.frequency).toEqual('MONTHLY');
+        expect(reloated_ros_dto.interval).toEqual(2);
+        expect(reloated_ros_dto.daysOfWeek).toEqual([2]);
+    });
+
+    it('should delete a recurring order schedule', async () => {
+        // should get order with recurring order schedule
+        const order = await getOrderWithRecurrenceSchedule();
+        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+
+        const savedRecurrenceId = order.recurrenceSchedule.id;
+
+        const orderDto = orderToUpdateDto(order, { recurrenceSchedule: null });
+        // should not find recurring order schedule
+        await dataSource.transaction(async (manager) => {
+            await orderService.updateEntityForTest(orderDto, order, manager);
+        });
+
+        const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
+        expect(result).toBeNull();
+        expect(order.recurrenceSchedule).toBeNull();
+        expect(order.occurrenceType).toBeNull();
     });
 });

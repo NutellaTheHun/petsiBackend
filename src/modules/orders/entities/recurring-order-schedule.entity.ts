@@ -24,7 +24,7 @@ export class RecurringOrderSchedule {
         example: 1,
         description: 'The unique identifier of the order that this schedule is for',
     })
-    @OneToOne(() => Order, (order) => order.reccurenceSchedule, { onDelete: 'CASCADE' })
+    @OneToOne(() => Order, (order) => order.recurrenceSchedule, { onDelete: 'CASCADE' })
     @JoinColumn()
     order: Order;
 
@@ -47,8 +47,8 @@ export class RecurringOrderSchedule {
         description: 'The end date of the schedule, maps to UNTIL in the rrule string',
         nullable: true,
     })
-    @Column({ nullable: true })
-    endDate?: Date | null = null;
+    @Column({ type: 'timestamptz', nullable: true })
+    endDate?: Date | null;
 
     @ApiProperty({
         example: 'America/New_York',

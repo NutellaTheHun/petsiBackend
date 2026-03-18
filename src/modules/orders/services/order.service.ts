@@ -10,7 +10,7 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
-import { OccurenceState, OccurenceType } from '../utils/occurence-types';
+import { OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
 
 @Injectable()
@@ -44,9 +44,9 @@ export class OrderService extends ServiceBase<OrderEntity> {
             email: dto.email ?? null,
             note: dto.note ?? null,
             isFrozen: dto.isFrozen ?? false,
-            occurenceType: dto.occurenceType as OccurenceType,
-            occurenceState: dto.occurenceState as OccurenceState,
-            reccurenceDate: dto.reccurenceDate ?? null,
+            occurenceType: dto.occurrenceType as OccurrenceType | null,
+            occurenceState: dto.occurrenceState as OccurrenceState | null,
+            reccurenceDate: dto.recurrenceDate ?? null,
             templateOrderId: dto.templateOrderId ?? null,
         });
 
@@ -66,14 +66,18 @@ export class OrderService extends ServiceBase<OrderEntity> {
             await manager.save(savedResult);
         }
 
-        if (dto.recurrenceSchedule) {
-            savedResult.reccurenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
-                dto.recurrenceSchedule,
-                manager,
-                {
-                    orderId: savedResult.id,
-                },
-            );
+        if (dto.recurrenceSchedule !== undefined) {
+            if (dto.recurrenceSchedule === null) {
+                savedResult.recurrenceSchedule = null;
+            } else {
+                savedResult.recurrenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                    dto.recurrenceSchedule,
+                    manager,
+                    {
+                        orderId: savedResult.id,
+                    },
+                );
+            }
 
             await manager.save(savedResult);
         }
@@ -128,15 +132,15 @@ export class OrderService extends ServiceBase<OrderEntity> {
             });
         }
 
-        if (dto.occurenceType !== undefined) {
-            entity.occurenceType = dto.occurenceType as OccurenceType;
+        if (dto.occurrenceType !== undefined) {
+            entity.occurrenceType = dto.occurrenceType as OccurrenceType | null;
         }
 
-        if (dto.occurenceState !== undefined) {
-            entity.occurenceState = dto.occurenceState as OccurenceState;
+        if (dto.occurrenceState !== undefined) {
+            entity.occurrenceState = dto.occurrenceState as OccurrenceState | null;
         }
 
-        if (dto.orderedItems) {
+        if (dto.orderedItems && dto.orderedItems.length > 0) {
             entity.orderedItems =
                 await this.orderMenuItemComposer.composeManyNestedEntity(
                     dto.orderedItems,
@@ -148,14 +152,19 @@ export class OrderService extends ServiceBase<OrderEntity> {
                 );
         }
 
-        if (dto.recurrenceSchedule) {
-            entity.reccurenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
-                dto.recurrenceSchedule,
-                manager,
-                {
-                    parentOrderId: entity.id,
-                },
-            );
+        if (dto.recurrenceSchedule !== undefined) {
+            if (dto.recurrenceSchedule === null) {
+                entity.recurrenceSchedule = null;
+                entity.occurrenceType = null;
+            } else {
+                entity.recurrenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                    dto.recurrenceSchedule,
+                    manager,
+                    {
+                        parentOrderId: entity.id,
+                    },
+                );
+            }
         }
 
         await manager.save(entity);

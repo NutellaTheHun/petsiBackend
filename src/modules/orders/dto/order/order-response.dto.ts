@@ -120,7 +120,7 @@ export class OrderResponseDto {
         type: 'string',
         nullable: true,
     })
-    readonly occurenceType?: string | null;
+    readonly occurrenceType?: string | null;
 
     @ApiProperty({
         example: 'GENERATED',
@@ -128,7 +128,7 @@ export class OrderResponseDto {
         type: 'string',
         nullable: true,
     })
-    readonly occurenceState?: string | null;
+    readonly occurrenceState?: string | null;
 
     @ApiProperty({
         example: {

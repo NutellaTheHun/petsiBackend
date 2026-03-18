@@ -10,7 +10,7 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
-import { OCCURENCE_STATES, OCCURENCE_TYPES } from '../utils/occurence-types';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
 import { RecurringOrderScheduleValidatorIdentity } from './identities/recurring-order-schedule.identity.interface';
@@ -73,36 +73,11 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
 
         //if (identity.isFrozen) { }
 
-        if (identity.isWeekly) {
-            this.helper.enforceConditionalRequired(
-                identity,
-                'isWeekly',
-                true,
-                ['weeklyFulfillment'],
-                errorMap,
-            );
-        }
-
         //if (identity.note) { }
 
         //if (identity.phoneNumber) { }
 
         //if (identity.recipient) { }
-
-        if (identity.weeklyFulfillment) {
-            const validDays = [
-                'sunday',
-                'monday',
-                'tuesday',
-                'wednesday',
-                'thursday',
-                'friday',
-                'saturday',
-            ];
-            if (!validDays.includes(identity.weeklyFulfillment)) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['weeklyFulfillment']);
-            }
-        }
 
         if (identity.orderedItems && identity.orderedItems.length > 0) {
             // Check Duplicates
@@ -123,24 +98,24 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             }
         }
 
-        if (identity.occurenceType !== undefined) {
-            const validOccurenceTypes = Object.values(OCCURENCE_TYPES).map(type => type.toString());
-            if (!validOccurenceTypes.includes(identity.occurenceType)) {
+        if (identity.occurrenceType !== null && identity.occurrenceType !== undefined) {
+            const validOccurenceTypes = Object.values(OCCURRENCE_TYPES).map(type => type.toString());
+            if (!validOccurenceTypes.includes(identity.occurrenceType)) {
                 errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceType']);
             }
         }
 
-        if (identity.occurenceState !== undefined) {
-            const validOccurenceStates = Object.values(OCCURENCE_STATES).map(state => state.toString());
-            if (!validOccurenceStates.includes(identity.occurenceState)) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceState']);
+        if (identity.occurrenceState !== null && identity.occurrenceState !== undefined) {
+            const validoccurrenceStates = Object.values(OCCURRENCE_STATES).map(state => state.toString());
+            if (!validoccurrenceStates.includes(identity.occurrenceState)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
             }
         }
 
         /*if (identity.reccurenceDate !== undefined) {
         }*/
 
-        if (identity.templateOrderId !== undefined) {
+        if (identity.templateOrderId !== null && identity.templateOrderId !== undefined) {
             await this.helper.enforceExists(
                 identity.templateOrderId,
                 this.repo,
@@ -148,30 +123,30 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
                 errorMap,
             );
             // occurence type must be set to OCCURENCE
-            if (identity.occurenceType !== OCCURENCE_TYPES.OCCURENCE) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceState']);
+            if (identity.occurrenceType !== OCCURRENCE_TYPES.OCCURRENCE) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
             }
             // must have a occurence state
-            if (identity.occurenceState === undefined) {
-                errorMap.addError('MISSING_PROPERTY', undefined, ['occurenceState']);
+            if (identity.occurrenceState === undefined) {
+                errorMap.addError('MISSING_PROPERTY', undefined, ['occurrenceState']);
             }
         }
 
-        if (identity.reccurenceSchedule) {
+        if (identity.recurrenceSchedule) {
             await this.recurringOrderScheduleValidator.validateNestedIdentity(
-                'reccurenceSchedule',
-                identity.reccurenceSchedule,
+                'recurrenceSchedule',
+                identity.recurrenceSchedule,
                 errorMap,
             );
 
             // occurence type must be set to TEMPLATE
-            if (identity.occurenceType !== OCCURENCE_TYPES.TEMPLATE) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceState']);
+            if (identity.occurrenceType !== OCCURRENCE_TYPES.TEMPLATE) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
             }
 
             // occurence state must be null or undefined
-            if (identity.occurenceState !== null && identity.occurenceState !== undefined) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceState']);
+            if (identity.occurrenceState !== null && identity.occurrenceState !== undefined) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
             }
         }
 
@@ -187,10 +162,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             }
         }
 
-        let reccurenceSchedule: RecurringOrderScheduleValidatorIdentity | undefined;
+        let recurrenceSchedule: RecurringOrderScheduleValidatorIdentity | undefined;
         if (dto.recurrenceSchedule) {
             const id = 'id' in dto.recurrenceSchedule ? dto.recurrenceSchedule.id : dto.recurrenceSchedule.createId;
-            reccurenceSchedule = await this.recurringOrderScheduleValidator.resolveIdentity(dto.recurrenceSchedule, id);
+            recurrenceSchedule = await this.recurringOrderScheduleValidator.resolveIdentity(dto.recurrenceSchedule, id);
         }
 
         return {
@@ -208,9 +183,9 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             categoryId: dto.categoryId,
             orderedItems: orderedItems,
             templateOrderId: 'templateOrderId' in dto ? dto.templateOrderId ?? undefined : undefined,
-            occurenceType: dto.occurenceType,
-            occurenceState: dto.occurenceState,
-            reccurenceSchedule,
+            occurrenceType: dto.occurrenceType,
+            occurrenceState: dto.occurrenceState,
+            recurrenceSchedule,
         } as OrderValidatorIdentity;
     }
 }

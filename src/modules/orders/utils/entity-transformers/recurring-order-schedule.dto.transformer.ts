@@ -4,11 +4,10 @@ import { UpdateRecurringOrderScheduleDto } from "../../dto/recurring-order-sched
 import { RecurringOrderSchedule } from "../../entities/recurring-order-schedule.entity";
 import { parseRruleString } from "../rrule.util";
 
-export function recurringOrderScheduleToCreateDto(recurringOrderSchedule: RecurringOrderSchedule, merge: Partial<UpdateRecurringOrderScheduleDto>): UpdateRecurringOrderScheduleDto {
+export function recurringOrderScheduleToUpdateDto(recurringOrderSchedule: RecurringOrderSchedule, merge?: Partial<UpdateRecurringOrderScheduleDto>): UpdateRecurringOrderScheduleDto {
     const { frequency, interval, daysOfWeek, dayOfMonth, monthOfYear, startDate, endDate, timezone } = parseRruleString(recurringOrderSchedule.rrule);
 
     return plainToInstance(UpdateRecurringOrderScheduleDto, {
-        orderId: recurringOrderSchedule.order.id,
         frequency,
         interval,
         daysOfWeek,

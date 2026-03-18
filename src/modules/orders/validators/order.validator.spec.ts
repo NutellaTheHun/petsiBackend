@@ -13,11 +13,13 @@ import { NestedCreateOrderContainerItemDto } from '../dto/order-container-item/n
 import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-create-order-menu-item.dto';
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
+import { NestedCreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
+import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderValidator } from './order.validator';
@@ -254,65 +256,6 @@ describe('order validator', () => {
             errors,
             [],
             createValidationErrorPayload('MISSING_PROPERTY', undefined, ['phoneNumber']),
-        );
-    });
-
-    it('fail validate create: order must have a day of the week selected for fulfillment', async () => {
-        const category = await findCategory(TYPE_A);
-        const singleMenuItem = await findMenuItem(item_a);
-
-        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
-            recipient: 'John Doe',
-            fulfillmentDate: new Date(),
-            fulfillmentType: 'pickup',
-            isWeekly: true,
-            categoryId: category.id,
-            orderedItems: [
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c1',
-                    menuItemId: singleMenuItem.id,
-                    sizeId: singleMenuItem.sizes[0].id,
-                    quantity: 2,
-                }),
-            ],
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('MISSING_PROPERTY', undefined, ['weeklyFulfillment']),
-        );
-    });
-
-    it('fail validate create: invalid weekly fulfillment', async () => {
-        const category = await findCategory(TYPE_A);
-        const singleMenuItem = await findMenuItem(item_a);
-
-        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
-            recipient: 'John Doe',
-            fulfillmentDate: new Date(),
-            fulfillmentType: 'pickup',
-            isWeekly: true,
-            weeklyFulfillment: 'invalid_day',
-            categoryId: category.id,
-            orderedItems: [
-                plainToInstance(NestedCreateOrderMenuItemDto, {
-                    createId: 'c1',
-                    menuItemId: singleMenuItem.id,
-                    sizeId: singleMenuItem.sizes[0].id,
-                    quantity: 2,
-                }),
-            ],
-        });
-
-        const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['weeklyFulfillment']),
         );
     });
 
@@ -593,6 +536,59 @@ describe('order validator', () => {
         );
     });
 
+    // Validate Create: Invalid recurrence schedule
+    it('fail validate create: invalid recurrence schedule, frequency is invalid', async () => {
+        const category = await findCategory(TYPE_A);
+        const singleMenuItem = await findMenuItem(item_a);
+        const anotherMenuItem = await findMenuItem(item_b);
+
+        const recurrenceSchedule = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'INVALID',
+            interval: 1,
+            daysOfWeek: [6],
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+        });
+
+        const dto: CreateOrderDto = plainToInstance(CreateOrderDto, {
+            recipient: 'John Doe',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'pickup',
+            categoryId: category.id,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'c1',
+                    menuItemId: singleMenuItem.id,
+                    sizeId: singleMenuItem.sizes[0].id,
+                    quantity: 2,
+                }),
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'c2',
+                    menuItemId: anotherMenuItem.id,
+                    sizeId: anotherMenuItem.sizes[0].id,
+                    quantity: 3,
+                }),
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'c3',
+                    menuItemId: anotherMenuItem.id,
+                    sizeId: anotherMenuItem.sizes[1].id,
+                    quantity: 4,
+                }),
+            ],
+            recurrenceSchedule: recurrenceSchedule,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'recurrenceSchedule' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['frequency']),
+        );
+    });
+
     // Update Validation Tests
     it('successfully validate update: no validation errors', async () => {
         const orderToUpdate = await findOrder();
@@ -627,8 +623,6 @@ describe('order validator', () => {
             deliveryAddress: '123 Main St',
             phoneNumber: '1234567890',
             categoryId: newCategory.id,
-            isWeekly: true,
-            weeklyFulfillment: 'monday',
             note: 'Updated Note',
             orderedItems:
                 [
@@ -721,40 +715,6 @@ describe('order validator', () => {
         );
     });
 
-    it('fail validate update: order must have a day of the week selected for fulfillment', async () => {
-        const orderToUpdate = await findOrder();
-        if (!orderToUpdate?.category) {
-            throw new Error('order category not found');
-        }
-
-        const dto = orderToUpdateDto(orderToUpdate, { isWeekly: true });
-
-        const errors = await validator.validateDto(dto, orderToUpdate.id);
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('MISSING_PROPERTY', undefined, ['weeklyFulfillment']),
-        );
-    });
-
-    it('fail validate update: invalid weekly fulfillment', async () => {
-        const orderToUpdate = await findOrder();
-        if (!orderToUpdate?.category) {
-            throw new Error('order category not found');
-        }
-
-        const dto = orderToUpdateDto(orderToUpdate, { weeklyFulfillment: 'invalid_day' });
-
-        const errors = await validator.validateDto(dto, orderToUpdate.id);
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['weeklyFulfillment']),
-        );
-    });
-
     it('fail validate update: duplicate ordered items', async () => {
         const orderToUpdate = await findOrder();
         if (!orderToUpdate?.category) {
@@ -778,7 +738,7 @@ describe('order validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('DUPLICATE_ITEMS', [duplicateItem.id, 'c1'], ['orderedItems']),
+            createValidationErrorPayload('DUPLICATE_ITEMS', ['c1', duplicateItem.id], ['orderedItems']),
         );
     });
 
@@ -1051,6 +1011,31 @@ describe('order validator', () => {
                 { prop: 'containerOrderMenuItems', id: 'c2' },
             ],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+        );
+    });
+
+    it('fail validate update: invalid recurrence schedule, frequency is invalid', async () => {
+        const orderToUpdate = await findOrder();
+        const recurrenceSchedule = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'c1',
+            frequency: 'INVALID',
+            interval: 1,
+            daysOfWeek: [6],
+            startDate: new Date(),
+            endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+        });
+
+        const dto = orderToUpdateDto(orderToUpdate, {
+            recurrenceSchedule: recurrenceSchedule,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+        });
+
+        const errors = await validator.validateDto(dto, orderToUpdate.id);
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'recurrenceSchedule' }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['frequency']),
         );
     });
 });

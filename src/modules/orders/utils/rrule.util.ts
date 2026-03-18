@@ -2,6 +2,7 @@ import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule
 import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
 
 export function parseRruleString(rruleString: string): { frequency: string; interval: number | undefined; daysOfWeek: number[] | undefined; dayOfMonth: number | undefined; monthOfYear: number | undefined; startDate: Date; endDate: Date | undefined; timezone: string | undefined; } {
+    //const parts = rruleString.split(':')[1].split(';');
     const parts = rruleString.split(';');
     const partsMap = new Map<string, string>();
     for (const part of parts) {
@@ -13,11 +14,7 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
     if (!frequency) {
         throw new Error('Frequency is required');
     }
-    const startDate = partsMap.get('DTSTART');
-    if (!startDate) {
-        throw new Error('Start date is required');
-    }
-
+    const startDate = partsMap.get('DTSTART')
     const interval = partsMap.get('INTERVAL');
     const daysOfWeek = partsMap.get('BYDAY');
     const dayOfMonth = partsMap.get('BYMONTHDAY');
@@ -27,7 +24,7 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
 
     return {
         frequency,
-        startDate: new Date(startDate),
+        startDate: startDate ? new Date(startDate) : new Date(),
         interval: interval ? parseInt(interval) : undefined,
         daysOfWeek: daysOfWeek ? parseDaysOfWeek(daysOfWeek) : undefined,
         dayOfMonth: dayOfMonth ? parseInt(dayOfMonth) : undefined,

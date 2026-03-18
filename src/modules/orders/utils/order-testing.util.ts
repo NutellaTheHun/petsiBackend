@@ -11,6 +11,7 @@ import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-crea
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
+import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { getTestOrderCategoryNames } from './constants';
 
 @Injectable()
@@ -39,7 +40,7 @@ export class OrderTestingUtil {
         this.orderMenuItemInit = false;
     }
 
-    // Order Type
+    // Order Category
     public async getTestOrderTypeEntities(
         testContext: DatabaseTestContext,
     ): Promise<OrderCategory[]> {
@@ -252,6 +253,20 @@ export class OrderTestingUtil {
             } as Order);
             idx++;
         }
+
+        // Recurring Order Schedule
+        results.push({
+            category: orderTypes[otIndex++ % orderTypes.length],
+            recipient: 'recipient_a',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'pickup',
+            isFrozen: false,
+            recurrenceSchedule: {
+                rrule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;DTSTART=2026-03-18;TZID=America/New_York;',
+                startDate: new Date(),
+                timezone: 'America/New_York',
+            } as RecurringOrderSchedule,
+        } as Order)
         return results;
     }
 
@@ -272,7 +287,6 @@ export class OrderTestingUtil {
     }
 
     // Dtos
-
     public async createNestedOrderMenuItemDtos(
         amount: number,
     ): Promise<NestedCreateOrderMenuItemDto[]> {

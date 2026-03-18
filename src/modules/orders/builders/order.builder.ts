@@ -15,7 +15,7 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
-import { OccurenceState, OccurenceType } from '../utils/occurence-types';
+import { OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderMenuItemBuilder } from './order-menu-item.builder';
 import { RecurringOrderScheduleBuilder } from './recurring-order-schedule.builder';
 
@@ -77,17 +77,17 @@ export class OrderBuilder extends BuilderBase<Order> {
         if (dto.fulfillmentContactName !== undefined) {
             this.fulfillmentContactName(dto.fulfillmentContactName);
         }
-        if (dto.reccurenceDate !== undefined) {
-            this.reccurenceDate(dto.reccurenceDate);
+        if (dto.recurrenceDate !== undefined) {
+            this.reccurenceDate(dto.recurrenceDate);
         }
         if (dto.templateOrderId !== undefined) {
             this.templateOrderId(dto.templateOrderId);
         }
-        if (dto.occurenceType !== undefined) {
-            this.occurenceType(dto.occurenceType as OccurenceType | null);
+        if (dto.occurrenceType !== undefined) {
+            this.occurrenceType(dto.occurrenceType as OccurrenceType | null);
         }
-        if (dto.occurenceState !== undefined) {
-            this.occurenceState(dto.occurenceState as OccurenceState | null);
+        if (dto.occurrenceState !== undefined) {
+            this.occurrenceState(dto.occurrenceState as OccurrenceState | null);
         }
         if (dto.recurrenceSchedule !== undefined) {
             this.recurrenceScheduleByBuilder(dto.recurrenceSchedule);
@@ -128,11 +128,11 @@ export class OrderBuilder extends BuilderBase<Order> {
         if (dto.fulfillmentContactName !== undefined) {
             this.fulfillmentContactName(dto.fulfillmentContactName);
         }
-        if (dto.occurenceType !== undefined) {
-            this.occurenceType(dto.occurenceType as OccurenceType | null);
+        if (dto.occurrenceType !== undefined) {
+            this.occurrenceType(dto.occurrenceType as OccurrenceType | null);
         }
-        if (dto.occurenceState !== undefined) {
-            this.occurenceState(dto.occurenceState as OccurenceState | null);
+        if (dto.occurrenceState !== undefined) {
+            this.occurrenceState(dto.occurrenceState as OccurrenceState | null);
         }
         if (dto.recurrenceSchedule !== undefined) {
             this.recurrenceScheduleByBuilder(dto.recurrenceSchedule);
@@ -224,10 +224,13 @@ export class OrderBuilder extends BuilderBase<Order> {
         );
     }
 
-    public recurrenceScheduleByBuilder(dto: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto): this {
+    public recurrenceScheduleByBuilder(dto: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto | null): this {
+        if (dto === null) {
+            return this.setPropByVal('recurrenceSchedule', null);
+        }
         return this.setPropByBuilder(
             this.recurrenceScheduleBuilder.build.bind(this.recurrenceScheduleBuilder),
-            'reccurenceSchedule',
+            'recurrenceSchedule',
             this.entity,
             dto,
         );
@@ -242,9 +245,9 @@ export class OrderBuilder extends BuilderBase<Order> {
 
     public reccurenceDate(date: Date | null): this {
         if (date === null) {
-            return this.setPropByVal('reccurenceDate', null);
+            return this.setPropByVal('recurrenceDate', null);
         }
-        return this.setPropByVal('reccurenceDate', date);
+        return this.setPropByVal('recurrenceDate', date);
     }
 
     public templateOrderId(id: number | null): this {
@@ -254,21 +257,21 @@ export class OrderBuilder extends BuilderBase<Order> {
         return this.setPropByVal('templateOrderId', id);
     }
 
-    public occurenceType(type: OccurenceType | null): this {
+    public occurrenceType(type: OccurrenceType | null): this {
         if (type === null) {
-            return this.setPropByVal('occurenceType', null);
+            return this.setPropByVal('occurrenceType', null);
         }
-        return this.setPropByVal('occurenceType', type);
+        return this.setPropByVal('occurrenceType', type);
     }
 
-    public occurenceState(state: OccurenceState | null): this {
+    public occurrenceState(state: OccurrenceState | null): this {
         if (state === null) {
-            return this.setPropByVal('occurenceState', null);
+            return this.setPropByVal('occurrenceState', null);
         }
-        return this.setPropByVal('occurenceState', state);
+        return this.setPropByVal('occurrenceState', state);
     }
 
-    public reccurenceSchedule(schedule: RecurringOrderSchedule): this {
-        return this.setPropByVal('reccurenceSchedule', schedule);
+    public recurrenceSchedule(schedule: RecurringOrderSchedule): this {
+        return this.setPropByVal('recurrenceSchedule', schedule);
     }
 }
