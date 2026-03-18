@@ -83,10 +83,7 @@ export class OrderController extends ControllerBase<OrderEntity> {
         return orderToResponseDto(result);
     }
 
-    // Not used, but kept for reference, 
-    async create(@Body() dto: CreateOrderDto): Promise<Order> {
-        return super.create(dto);
-    }
+
 
     /**
      * While majority of endpoints return the entity, this endpoint returns a response DTO. Due to the RecurringOrderSchedule entity DTO mapping not being direct to the object.
@@ -102,13 +99,6 @@ export class OrderController extends ControllerBase<OrderEntity> {
         return orderToResponseDto(result);
     }
 
-    // Not used, but kept for reference
-    async update(
-        @Param('id', ParseIntPipe) id: number,
-        @Body() dto: UpdateOrderDto,
-    ): Promise<Order> {
-        return super.update(id, dto);
-    }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -223,9 +213,33 @@ export class OrderController extends ControllerBase<OrderEntity> {
         } as PaginatedResult<OrderResponseDto>;
     }
 
+
+    /**
+     * While majority of endpoints return the entity, this endpoint returns a response DTO. Due to the RecurringOrderSchedule entity DTO mapping not being direct to the object.
+     */
+    @Get(':id')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Retrieves one Order' })
+    @ApiOkResponse({ description: 'Order found', type: OrderResponseDto })
+    @ApiNotFoundResponse({ description: 'Order not found' })
+    async findOneOrderResponse(@Param('id', ParseIntPipe) id: number): Promise<OrderResponseDto> {
+        const result = await super.findOne(id);
+        return orderToResponseDto(result);
+    }
+
+
+    /**  ---------------------------- Unused Service Base Methods, but kept for reference ---------------------------- */
+
     /**
      * Not used, but kept for reference, this endpoint returns the entity, which doesn't satisfy clients.
      */
+    async findOne(@Param('id', ParseIntPipe) id: number): Promise<Order> {
+        return super.findOne(id);
+    }
+
+    /**
+    * Not used, but kept for reference, this endpoint returns the entity, which doesn't satisfy clients.
+    */
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,
@@ -252,23 +266,16 @@ export class OrderController extends ControllerBase<OrderEntity> {
         );
     }
 
-    /**
-     * While majority of endpoints return the entity, this endpoint returns a response DTO. Due to the RecurringOrderSchedule entity DTO mapping not being direct to the object.
-     */
-    @Get(':id')
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Retrieves one Order' })
-    @ApiOkResponse({ description: 'Order found', type: OrderResponseDto })
-    @ApiNotFoundResponse({ description: 'Order not found' })
-    async findOneOrderResponse(@Param('id', ParseIntPipe) id: number): Promise<OrderResponseDto> {
-        const result = await super.findOne(id);
-        return orderToResponseDto(result);
+    // Not used, but kept for reference
+    async update(
+        @Param('id', ParseIntPipe) id: number,
+        @Body() dto: UpdateOrderDto,
+    ): Promise<Order> {
+        return super.update(id, dto);
     }
 
-    /**
-     * Not used, but kept for reference, this endpoint returns the entity, which doesn't satisfy clients.
-     */
-    async findOne(@Param('id', ParseIntPipe) id: number): Promise<Order> {
-        return super.findOne(id);
+    // Not used, but kept for reference, 
+    async create(@Body() dto: CreateOrderDto): Promise<Order> {
+        return super.create(dto);
     }
 }

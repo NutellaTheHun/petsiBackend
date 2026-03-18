@@ -5,6 +5,7 @@ import { CreateRecurringOrderScheduleDto } from "../../dto/recurring-order-sched
 import { NestedCreateRecurringOrderScheduleDto } from "../../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto";
 import { UpdateRecurringOrderScheduleDto } from "../../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
 import { RecurringOrderSchedule, RecurringOrderScheduleEntity } from "../../entities/recurring-order-schedule.entity";
+import { buildRruleString } from "../rrule.util";
 
 export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderScheduleEntity> {
 
@@ -16,7 +17,7 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
 
     protected async createInTransaction(dto: CreateRecurringOrderScheduleDto, manager: EntityManager): Promise<RecurringOrderSchedule> {
 
-        const rruleString = this.buildRruleString(dto);
+        const rruleString = buildRruleString(dto);
 
         const result = manager.create(RecurringOrderSchedule, {
             order: { id: dto.orderId },
@@ -30,7 +31,7 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
 
     protected async updateInTransaction(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<void> {
 
-        entity.rrule = this.buildRruleString(dto);
+        entity.rrule = buildRruleString(dto);
 
         if (dto.startDate !== undefined) {
             entity.startDate = dto.startDate;
@@ -59,52 +60,5 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
             endDate: dto.endDate,
             timezone: dto.timezone,
         };
-    }
-
-    private getDayOfWeekValue(daysOfWeek: number[]): string {
-        // convert dto number (0-6) to string (SU, MO, TU, WE, TH, FR, SA)
-        return daysOfWeek.map(day => {
-            switch (day) {
-                case 0: return 'SU';
-                case 1: return 'MO';
-                case 2: return 'TU';
-                case 3: return 'WE';
-                case 4: return 'TH';
-                case 5: return 'FR';
-                case 6: return 'SA';
-                default: throw new Error(`Invalid day of week: ${day}`);
-            }
-        }).join(',');
-    }
-
-    private buildRruleString(dto: CreateRecurringOrderScheduleDto | UpdateRecurringOrderScheduleDto): string {
-        const parts: string[] = [];
-        if (dto.frequency) {
-            parts.push(`FREQ=${dto.frequency.toUpperCase()}`);
-        }
-        if (dto.interval) {
-            parts.push(`INTERVAL=${dto.interval}`);
-        }
-        if (dto.daysOfWeek) {
-            const dayOfWeekVal = this.getDayOfWeekValue(dto.daysOfWeek);
-            parts.push(`BYDAY=${dayOfWeekVal}`);
-        }
-        if (dto.dayOfMonth) {
-            parts.push(`BYMONTHDAY=${dto.dayOfMonth}`);
-        }
-        if (dto.monthOfYear) {
-            parts.push(`BYMONTH=${dto.monthOfYear}`);
-        }
-        if (dto.startDate) {
-            parts.push(`DTSTART=${dto.startDate}`);
-        }
-        if (dto.endDate) {
-            parts.push(`UNTIL=${dto.endDate}`);
-        }
-        if (dto.timezone) {
-            parts.push(`TIMEZONE=${dto.timezone}`);
-        }
-
-        return parts.join(';');
     }
 }

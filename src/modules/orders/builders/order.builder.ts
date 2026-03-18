@@ -9,213 +9,266 @@ import { NestedCreateOrderMenuItemDto } from '../dto/order-menu-item/nested-crea
 import { NestedUpdateOrderMenuItemDto } from '../dto/order-menu-item/nested-update-order-menu-item.dto';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { NestedCreateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto';
+import { NestedUpdateRecurringOrderScheduleDto } from '../dto/recurring-order-schedule/nested-update-recurring-order-schedule.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
+import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
+import { OccurenceState, OccurenceType } from '../utils/occurence-types';
 import { OrderMenuItemBuilder } from './order-menu-item.builder';
+import { RecurringOrderScheduleBuilder } from './recurring-order-schedule.builder';
 
 @Injectable()
 export class OrderBuilder extends BuilderBase<Order> {
-  constructor(
-    @InjectRepository(OrderCategory)
-    private readonly categoryRepo: Repository<OrderCategory>,
+    constructor(
+        @InjectRepository(Order)
+        private readonly orderRepo: Repository<Order>,
 
-    @InjectRepository(OrderMenuItem)
-    private readonly orderItemRepo: Repository<OrderMenuItem>,
+        @InjectRepository(OrderCategory)
+        private readonly categoryRepo: Repository<OrderCategory>,
 
-    @Inject(forwardRef(() => OrderMenuItemBuilder))
-    private readonly itemBuilder: OrderMenuItemBuilder,
+        @InjectRepository(OrderMenuItem)
+        private readonly orderItemRepo: Repository<OrderMenuItem>,
 
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-  ) {
-    super(Order, 'OrderBuilder', requestContextService, logger);
-  }
+        @Inject(forwardRef(() => OrderMenuItemBuilder))
+        private readonly itemBuilder: OrderMenuItemBuilder,
 
-  protected createEntity(dto: CreateOrderDto): void {
-    if (dto.deliveryAddress !== undefined) {
-      this.deliveryAddress(dto.deliveryAddress);
-    }
-    if (dto.email !== undefined) {
-      this.email(dto.email);
-    }
-    if (dto.fulfillmentDate !== undefined) {
-      this.fulfillmentDate(dto.fulfillmentDate);
-    }
-    if (dto.fulfillmentType !== undefined) {
-      this.fulfillmentType(dto.fulfillmentType);
-    }
-    if (dto.isFrozen !== undefined) {
-      this.isFrozen(dto.isFrozen);
-    }
-    if (dto.isWeekly !== undefined) {
-      this.isWeekly(dto.isWeekly);
-    }
-    if (dto.note !== undefined) {
-      this.note(dto.note);
-    }
-    if (dto.orderedItems !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedItems);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
-    }
-    if (dto.phoneNumber !== undefined) {
-      this.phoneNumber(dto.phoneNumber);
-    }
-    if (dto.recipient !== undefined) {
-      this.recipient(dto.recipient);
-    }
-    if (dto.weeklyFulfillment !== undefined) {
-      this.weeklyFulfillment(dto.weeklyFulfillment);
-    }
-    if (dto.fulfillmentContactName !== undefined) {
-      this.fulfillmentContactName(dto.fulfillmentContactName);
-    }
-  }
+        @Inject(forwardRef(() => RecurringOrderScheduleBuilder))
+        private readonly recurrenceScheduleBuilder: RecurringOrderScheduleBuilder,
 
-  protected updateEntity(dto: UpdateOrderDto): void {
-    if (dto.deliveryAddress !== undefined) {
-      this.deliveryAddress(dto.deliveryAddress);
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+    ) {
+        super(Order, 'OrderBuilder', requestContextService, logger);
     }
-    if (dto.email !== undefined) {
-      this.email(dto.email);
-    }
-    if (dto.fulfillmentDate !== undefined) {
-      this.fulfillmentDate(dto.fulfillmentDate);
-    }
-    if (dto.fulfillmentType !== undefined) {
-      this.fulfillmentType(dto.fulfillmentType);
-    }
-    if (dto.isFrozen !== undefined) {
-      this.isFrozen(dto.isFrozen);
-    }
-    if (dto.isWeekly !== undefined) {
-      this.isWeekly(dto.isWeekly);
-    }
-    if (dto.note !== undefined) {
-      this.note(dto.note);
-    }
-    if (dto.orderedItems !== undefined) {
-      this.orderedItemsByBuilder(dto.orderedItems);
-    }
-    if (dto.categoryId !== undefined) {
-      this.categoryById(dto.categoryId);
-    }
-    if (dto.phoneNumber !== undefined) {
-      this.phoneNumber(dto.phoneNumber);
-    }
-    if (dto.recipient !== undefined) {
-      this.recipient(dto.recipient);
-    }
-    if (dto.weeklyFulfillment !== undefined) {
-      this.weeklyFulfillment(dto.weeklyFulfillment);
-    }
-    if (dto.fulfillmentContactName !== undefined) {
-      this.fulfillmentContactName(dto.fulfillmentContactName);
-    }
-  }
 
-  public categoryById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
-      'category',
-      id,
-    );
-  }
-
-  public categoryByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) =>
-        await this.categoryRepo.findOne({ where: { name } }),
-      'category',
-      name,
-    );
-  }
-
-  public recipient(name: string): this {
-    return this.setPropByVal('recipient', name);
-  }
-
-  public fulfillmentDate(date: Date): this {
-    return this.setPropByVal('fulfillmentDate', date);
-  }
-
-  public fulfillmentType(type: string): this {
-    return this.setPropByVal('fulfillmentType', type);
-  }
-
-  public deliveryAddress(address: string | null): this {
-    if (address === null) {
-      return this.setPropByVal('deliveryAddress', null);
+    protected createEntity(dto: CreateOrderDto): void {
+        if (dto.deliveryAddress !== undefined) {
+            this.deliveryAddress(dto.deliveryAddress);
+        }
+        if (dto.email !== undefined) {
+            this.email(dto.email);
+        }
+        if (dto.fulfillmentDate !== undefined) {
+            this.fulfillmentDate(dto.fulfillmentDate);
+        }
+        if (dto.fulfillmentType !== undefined) {
+            this.fulfillmentType(dto.fulfillmentType);
+        }
+        if (dto.isFrozen !== undefined) {
+            this.isFrozen(dto.isFrozen);
+        }
+        if (dto.note !== undefined) {
+            this.note(dto.note);
+        }
+        if (dto.orderedItems !== undefined) {
+            this.orderedItemsByBuilder(dto.orderedItems);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
+        if (dto.phoneNumber !== undefined) {
+            this.phoneNumber(dto.phoneNumber);
+        }
+        if (dto.recipient !== undefined) {
+            this.recipient(dto.recipient);
+        }
+        if (dto.fulfillmentContactName !== undefined) {
+            this.fulfillmentContactName(dto.fulfillmentContactName);
+        }
+        if (dto.reccurenceDate !== undefined) {
+            this.reccurenceDate(dto.reccurenceDate);
+        }
+        if (dto.templateOrderId !== undefined) {
+            this.templateOrderId(dto.templateOrderId);
+        }
+        if (dto.occurenceType !== undefined) {
+            this.occurenceType(dto.occurenceType as OccurenceType | null);
+        }
+        if (dto.occurenceState !== undefined) {
+            this.occurenceState(dto.occurenceState as OccurenceState | null);
+        }
+        if (dto.recurrenceSchedule !== undefined) {
+            this.recurrenceScheduleByBuilder(dto.recurrenceSchedule);
+        }
     }
-    return this.setPropByVal('deliveryAddress', address);
-  }
 
-  public phoneNumber(number: string | null): this {
-    if (number === null) {
-      return this.setPropByVal('phoneNumber', null);
+    protected updateEntity(dto: UpdateOrderDto): void {
+        if (dto.deliveryAddress !== undefined) {
+            this.deliveryAddress(dto.deliveryAddress);
+        }
+        if (dto.email !== undefined) {
+            this.email(dto.email);
+        }
+        if (dto.fulfillmentDate !== undefined) {
+            this.fulfillmentDate(dto.fulfillmentDate);
+        }
+        if (dto.fulfillmentType !== undefined) {
+            this.fulfillmentType(dto.fulfillmentType);
+        }
+        if (dto.isFrozen !== undefined) {
+            this.isFrozen(dto.isFrozen);
+        }
+        if (dto.note !== undefined) {
+            this.note(dto.note);
+        }
+        if (dto.orderedItems !== undefined) {
+            this.orderedItemsByBuilder(dto.orderedItems);
+        }
+        if (dto.categoryId !== undefined) {
+            this.categoryById(dto.categoryId);
+        }
+        if (dto.phoneNumber !== undefined) {
+            this.phoneNumber(dto.phoneNumber);
+        }
+        if (dto.recipient !== undefined) {
+            this.recipient(dto.recipient);
+        }
+        if (dto.fulfillmentContactName !== undefined) {
+            this.fulfillmentContactName(dto.fulfillmentContactName);
+        }
+        if (dto.occurenceType !== undefined) {
+            this.occurenceType(dto.occurenceType as OccurenceType | null);
+        }
+        if (dto.occurenceState !== undefined) {
+            this.occurenceState(dto.occurenceState as OccurenceState | null);
+        }
+        if (dto.recurrenceSchedule !== undefined) {
+            this.recurrenceScheduleByBuilder(dto.recurrenceSchedule);
+        }
     }
-    return this.setPropByVal('phoneNumber', number);
-  }
 
-  public email(email: string | null): this {
-    if (email === null) {
-      return this.setPropByVal('email', null);
+    public categoryById(id: number): this {
+        return this.setPropById(
+            async (id: number) => await this.categoryRepo.findOne({ where: { id } }),
+            'category',
+            id,
+        );
     }
-    return this.setPropByVal('email', email);
-  }
 
-  public note(note: string | null): this {
-    if (note === null) {
-      return this.setPropByVal('note', null);
+    public categoryByName(name: string): this {
+        return this.setPropByName(
+            async (name: string) =>
+                await this.categoryRepo.findOne({ where: { name } }),
+            'category',
+            name,
+        );
     }
-    return this.setPropByVal('note', note);
-  }
 
-  public isFrozen(val: boolean): this {
-    return this.setPropByVal('isFrozen', val);
-  }
-
-  public isWeekly(val: boolean): this {
-    return this.setPropByVal('isWeekly', val);
-  }
-
-  public orderedItemsById(ids: number[]): this {
-    return this.setPropsByIds(
-      async (ids: number[]) =>
-        await this.orderItemRepo.find({ where: { id: In(ids) } }),
-      'orderedItems',
-      ids,
-    );
-  }
-
-  public orderedItemsByBuilder(
-    dtos: (
-      | CreateOrderMenuItemDto
-      | NestedCreateOrderMenuItemDto
-      | NestedUpdateOrderMenuItemDto
-    )[],
-  ): this {
-    return this.setPropByBuilder(
-      this.itemBuilder.buildMany.bind(this.itemBuilder),
-      'orderedItems',
-      this.entity,
-      dtos,
-    );
-  }
-
-  public weeklyFulfillment(day: string | null): this {
-    if (day === null) {
-      return this.setPropByVal('weeklyFulfillment', null);
+    public recipient(name: string): this {
+        return this.setPropByVal('recipient', name);
     }
-    return this.setPropByVal('weeklyFulfillment', day);
-  }
 
-  public fulfillmentContactName(name: string | null): this {
-    if (name === null) {
-      return this.setPropByVal('fulfillmentContactName', null);
+    public fulfillmentDate(date: Date): this {
+        return this.setPropByVal('fulfillmentDate', date);
     }
-    return this.setPropByVal('fulfillmentContactName', name);
-  }
+
+    public fulfillmentType(type: string): this {
+        return this.setPropByVal('fulfillmentType', type);
+    }
+
+    public deliveryAddress(address: string | null): this {
+        if (address === null) {
+            return this.setPropByVal('deliveryAddress', null);
+        }
+        return this.setPropByVal('deliveryAddress', address);
+    }
+
+    public phoneNumber(number: string | null): this {
+        if (number === null) {
+            return this.setPropByVal('phoneNumber', null);
+        }
+        return this.setPropByVal('phoneNumber', number);
+    }
+
+    public email(email: string | null): this {
+        if (email === null) {
+            return this.setPropByVal('email', null);
+        }
+        return this.setPropByVal('email', email);
+    }
+
+    public note(note: string | null): this {
+        if (note === null) {
+            return this.setPropByVal('note', null);
+        }
+        return this.setPropByVal('note', note);
+    }
+
+    public isFrozen(val: boolean): this {
+        return this.setPropByVal('isFrozen', val);
+    }
+
+    public orderedItemsById(ids: number[]): this {
+        return this.setPropsByIds(
+            async (ids: number[]) =>
+                await this.orderItemRepo.find({ where: { id: In(ids) } }),
+            'orderedItems',
+            ids,
+        );
+    }
+
+    public orderedItemsByBuilder(
+        dtos: (
+            | CreateOrderMenuItemDto
+            | NestedCreateOrderMenuItemDto
+            | NestedUpdateOrderMenuItemDto
+        )[],
+    ): this {
+        return this.setPropByBuilder(
+            this.itemBuilder.buildMany.bind(this.itemBuilder),
+            'orderedItems',
+            this.entity,
+            dtos,
+        );
+    }
+
+    public recurrenceScheduleByBuilder(dto: NestedCreateRecurringOrderScheduleDto | NestedUpdateRecurringOrderScheduleDto): this {
+        return this.setPropByBuilder(
+            this.recurrenceScheduleBuilder.build.bind(this.recurrenceScheduleBuilder),
+            'reccurenceSchedule',
+            this.entity,
+            dto,
+        );
+    }
+
+    public fulfillmentContactName(name: string | null): this {
+        if (name === null) {
+            return this.setPropByVal('fulfillmentContactName', null);
+        }
+        return this.setPropByVal('fulfillmentContactName', name);
+    }
+
+    public reccurenceDate(date: Date | null): this {
+        if (date === null) {
+            return this.setPropByVal('reccurenceDate', null);
+        }
+        return this.setPropByVal('reccurenceDate', date);
+    }
+
+    public templateOrderId(id: number | null): this {
+        if (id === null) {
+            return this.setPropByVal('templateOrderId', null);
+        }
+        return this.setPropByVal('templateOrderId', id);
+    }
+
+    public occurenceType(type: OccurenceType | null): this {
+        if (type === null) {
+            return this.setPropByVal('occurenceType', null);
+        }
+        return this.setPropByVal('occurenceType', type);
+    }
+
+    public occurenceState(state: OccurenceState | null): this {
+        if (state === null) {
+            return this.setPropByVal('occurenceState', null);
+        }
+        return this.setPropByVal('occurenceState', state);
+    }
+
+    public reccurenceSchedule(schedule: RecurringOrderSchedule): this {
+        return this.setPropByVal('reccurenceSchedule', schedule);
+    }
 }

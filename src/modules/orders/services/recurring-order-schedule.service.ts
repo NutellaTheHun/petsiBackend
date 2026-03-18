@@ -31,12 +31,6 @@ export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderSch
         );
     }
 
-    protected async createEntity(dto: CreateRecurringOrderScheduleDto, manager: EntityManager): Promise<RecurringOrderSchedule> {
-        return await manager.save(
-            await this.recurringOrderScheduleComposer.composeCreate(dto, manager),
-        );
-    }
-
     /**
      * Method to create a recurring order schedule and return a response DTO. Required function for create endpoint. Service base only creates the entity, this method is responsible for returning the response DTO.
      */
@@ -46,11 +40,6 @@ export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderSch
         return recurringOrderScheduleToResponseDto(result);
     }
 
-    protected async updateEntity(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<void> {
-        await this.recurringOrderScheduleComposer.composeUpdate(dto, manager, entity)
-        await manager.save(entity);
-    }
-
     /**
      * Method to update a recurring order schedule and return a response DTO. Required function for update endpoint. Service base only updates the entity, this method is responsible for returning the response DTO.
      */
@@ -58,6 +47,20 @@ export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderSch
         await this.recurringOrderScheduleComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);
         return recurringOrderScheduleToResponseDto(entity);
+    }
+
+
+    /**  ---------------------------- Unused Service Base Methods, but kept for reference ---------------------------- */
+
+    protected async createEntity(dto: CreateRecurringOrderScheduleDto, manager: EntityManager): Promise<RecurringOrderSchedule> {
+        return await manager.save(
+            await this.recurringOrderScheduleComposer.composeCreate(dto, manager),
+        );
+    }
+
+    protected async updateEntity(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<void> {
+        await this.recurringOrderScheduleComposer.composeUpdate(dto, manager, entity)
+        await manager.save(entity);
     }
 
 }
