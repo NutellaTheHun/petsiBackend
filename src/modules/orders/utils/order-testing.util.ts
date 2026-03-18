@@ -249,7 +249,6 @@ export class OrderTestingUtil {
                 email: 'email' + idx,
                 note: 'note' + idx,
                 isFrozen: false,
-                isWeekly: false,
             } as Order);
             idx++;
         }
