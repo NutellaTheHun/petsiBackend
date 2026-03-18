@@ -37,6 +37,9 @@ export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderSch
         );
     }
 
+    /**
+     * Method to create a recurring order schedule and return a response DTO. Required function for create endpoint. Service base only creates the entity, this method is responsible for returning the response DTO.
+     */
     public async createRecurringOrderScheduleResponse(dto: CreateRecurringOrderScheduleDto, manager: EntityManager): Promise<RecurringOrderScheduleResponseDto> {
         const result = await this.recurringOrderScheduleComposer.composeCreate(dto, manager);
         await manager.save(result);
@@ -48,6 +51,9 @@ export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderSch
         await manager.save(entity);
     }
 
+    /**
+     * Method to update a recurring order schedule and return a response DTO. Required function for update endpoint. Service base only updates the entity, this method is responsible for returning the response DTO.
+     */
     public async updateRecurringOrderScheduleResponse(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<RecurringOrderScheduleResponseDto> {
         await this.recurringOrderScheduleComposer.composeUpdate(dto, manager, entity);
         await manager.save(entity);

@@ -30,11 +30,17 @@ export class OrderService extends ServiceBase<OrderEntity> {
         super(repo, 'OrderService', requestContextService, logger, validator);
     }
 
+    /**
+     * Method to create an order and return a response DTO. Required function for create endpoint. Service base only creates the entity, this method is responsible for returning the response DTO.
+     */
     public async createOrderResponse(createDto: CreateOrderDto): Promise<OrderResponseDto> {
         const result = await super.create(createDto);
         return orderToResponseDto(result);
     }
 
+    /**
+     * Method to update an order and return a response DTO. Required function for update endpoint. Service base only updates the entity, this method is responsible for returning the response DTO.
+     */
     public async updateOrderResponse(id: number, updateDto: UpdateOrderDto): Promise<OrderResponseDto> {
         const result = await super.update(id, updateDto);
         return orderToResponseDto(result);
@@ -55,9 +61,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
             phoneNumber: dto.phoneNumber ?? null,
             email: dto.email ?? null,
             note: dto.note ?? null,
-            weeklyFulfillment: dto.weeklyFulfillment ?? null,
             isFrozen: dto.isFrozen ?? false,
-            isWeekly: dto.isWeekly ?? false,
             occurenceType: dto.occurenceType as OccurenceType,
             occurenceState: dto.occurenceState as OccurenceState,
             reccurenceDate: dto.reccurenceDate ?? null,
@@ -171,8 +175,6 @@ export class OrderService extends ServiceBase<OrderEntity> {
                 },
             );
         }
-
-
 
         await manager.save(entity);
     }

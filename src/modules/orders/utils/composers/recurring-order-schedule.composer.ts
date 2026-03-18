@@ -25,7 +25,7 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
             endDate: dto.endDate,
             timezone: dto.timezone,
         });
-        return await manager.save(result);
+        return result;
     }
 
     protected async updateInTransaction(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<void> {
@@ -42,7 +42,6 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
             entity.timezone = dto.timezone;
         }
 
-        await manager.save(entity);
     }
 
     protected resolveCreateDto(dto: NestedCreateRecurringOrderScheduleDto, context?: ResolverContext): CreateRecurringOrderScheduleDto {

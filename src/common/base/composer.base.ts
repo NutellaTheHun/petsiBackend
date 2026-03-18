@@ -82,7 +82,7 @@ export abstract class ComposerBase<
      *
      * Manager is used to create child entities, and be passed to nested composers.
      *
-     * Entity is the entity to update.
+     * Entity is the mutated target.
      */
     public async composeUpdate(
         dto: T['__UDto'],

@@ -35,7 +35,6 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
 
         const savedResult = await manager.save(entity);
         if (dto.containerOrderMenuItems && dto.containerOrderMenuItems.length > 0) {
-            savedResult.containerOrderMenuItems = [];
             savedResult.containerOrderMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
@@ -47,7 +46,6 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                         parentMenuItemSizeId: savedResult.size?.id,
                     },
                 );
-            await manager.save(savedResult);
         }
 
         return savedResult;
