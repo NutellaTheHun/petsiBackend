@@ -71,15 +71,11 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         }
 
         if (dto.countedInventoryItems) {
-            /*const existingItems = await manager.find(InventoryAreaItem, {
-                where: { parentInventoryCount: { id: entity.id } },
-            });*/
-
             entity.countedInventoryItems =
                 await this.areaItemResolver.composeManyNestedEntity(
                     dto.countedInventoryItems,
                     manager,
-                    /*existingItems,*/[],
+                    [],
                     { parentInventoryCountId: entity.id },
                 );
         }

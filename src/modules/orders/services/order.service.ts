@@ -5,13 +5,11 @@ import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
-import { OrderResponseDto } from '../dto/order/order-response.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
-import { orderToResponseDto } from '../utils/entity-transformers/order.dto.transformer';
 import { OccurenceState, OccurenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
 
@@ -28,22 +26,6 @@ export class OrderService extends ServiceBase<OrderEntity> {
         private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
     ) {
         super(repo, 'OrderService', requestContextService, logger, validator);
-    }
-
-    /**
-     * Method to create an order and return a response DTO. Required function for create endpoint. Service base only creates the entity, this method is responsible for returning the response DTO.
-     */
-    public async createOrderResponse(createDto: CreateOrderDto): Promise<OrderResponseDto> {
-        const result = await super.create(createDto);
-        return orderToResponseDto(result);
-    }
-
-    /**
-     * Method to update an order and return a response DTO. Required function for update endpoint. Service base only updates the entity, this method is responsible for returning the response DTO.
-     */
-    public async updateOrderResponse(id: number, updateDto: UpdateOrderDto): Promise<OrderResponseDto> {
-        const result = await super.update(id, updateDto);
-        return orderToResponseDto(result);
     }
 
     protected async createEntity(
