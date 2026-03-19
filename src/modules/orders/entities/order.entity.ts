@@ -23,7 +23,6 @@ import { RecurringOrderSchedule } from './recurring-order-schedule.entity';
 
 export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
 
-
 /**
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
  */
@@ -195,7 +194,6 @@ export class Order {
         nullable: true,
         cascade: true,
     })
-    //@JoinColumn()
     recurrenceSchedule?: RecurringOrderSchedule | null;
 
     @ApiProperty({
