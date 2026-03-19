@@ -1,12 +1,11 @@
 import { NotFoundException } from '@nestjs/common';
 import {
-    DataSource,
     EntityManager,
     FindOptionsWhere,
     In,
     QueryBuilder,
     Repository,
-    SelectQueryBuilder,
+    SelectQueryBuilder
 } from 'typeorm';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
@@ -21,7 +20,7 @@ export abstract class ServiceBase<
     TEntity extends EntityBase<any, any, any>,
 > {
     private databaseExceptionHandler: DataBaseExceptionHandler;
-    private readonly dataSource: DataSource;
+    //private readonly dataSource: DataSource;
     constructor(
         private readonly entityRepo: Repository<TEntity['__Entity']>,
         //private readonly builder: BuilderBase<TEntity['__Entity']>,
@@ -32,6 +31,7 @@ export abstract class ServiceBase<
         private readonly validator?: ValidatorBase<TEntity, ValidatorIdentityBaseInterface>,
     ) {
         this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
+
     }
 
     /**
@@ -51,7 +51,7 @@ export abstract class ServiceBase<
         // create entity
         //const entity = await this.builder.buildCreateDto(createDto);
         //let newEntityId;
-        await this.dataSource.transaction(async (manager) => {
+        await this.entityRepo.manager.transaction(async (manager) => {
             //const entity = await this.createEntity(createDto, manager);
             try {
                 return await this.createEntity(createDto, manager);
@@ -124,7 +124,7 @@ export abstract class ServiceBase<
          *          - if always requery DB, where should it be called?
          *                  - if inside updateEntity
          */
-        await this.dataSource.transaction(async (manager) => {
+        await this.entityRepo.manager.transaction(async (manager) => {
             await this.updateEntity(toUpdate, updateDto, manager);
             try {
                 //Save in DB
@@ -268,12 +268,6 @@ export abstract class ServiceBase<
             { requestId, message: `${results.length} entities queried` },
         );
 
-        // temporary
-        /*if (options.search) {
-            console.log("**************")
-            console.log(query.getSql())
-        }*/
-
         // return result and cursor
         return {
             items: results,
@@ -346,10 +340,39 @@ export abstract class ServiceBase<
     }
 
     async remove(id: number): Promise<Boolean> {
+        /* const requestId = this.requestContextService.getRequestId();
+         try {
+             //return (await this.entityRepo.remove( }))).affected !== 0;
+             await this.dataSource.transaction(async (manager) => {
+                 await manager.remove(await this.entityRepo.findOne({ where: { id } as unknown as FindOptionsWhere<TEntity> }));
+             });
+             return true;
+         } catch (err) {
+             throw this.databaseExceptionHandler.handle(
+                 err,
+                 this.servicePrefix,
+                 requestId,
+                 'REMOVE',
+             );
+         }*/
         const requestId = this.requestContextService.getRequestId();
+
         try {
-            //return (await this.entityRepo.delete(id)).affected !== 0;
-            return (await this.entityRepo.remove(await this.entityRepo.findOne({ where: { id } as unknown as FindOptionsWhere<TEntity> }))).affected !== 0;
+            return await this.entityRepo.manager.transaction(async (manager) => {
+                const entity = await manager.findOne(this.entityRepo.target, {
+                    where: { id } as any,
+                });
+
+                if (!entity) return false;
+
+                await this.beforeRemove(entity, manager);
+
+                await manager.remove(entity);
+
+                await this.afterRemove(entity, manager);
+
+                return true;
+            });
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
                 err,
@@ -434,6 +457,16 @@ export abstract class ServiceBase<
         manager: EntityManager,
         entity: TEntity['__Entity'],
     ): Promise<void>;
+
+    protected async beforeRemove(
+        _entity: TEntity['__Entity'],
+        _manager: EntityManager
+    ): Promise<void> { }
+
+    protected async afterRemove(
+        _entity: TEntity['__Entity'],
+        _manager: EntityManager
+    ): Promise<void> { }
 
     buildRelationStatements(relations: string[]): { property: string, alias: string }[] {
         const result: { property: string, alias: string }[] = [];

@@ -3,6 +3,7 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
     ManyToOne,
     OneToMany,
     OneToOne,
@@ -194,8 +195,8 @@ export class Order {
     @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order, {
         nullable: true,
         cascade: true,
-        orphanedRowAction: 'delete',
     })
+    @JoinColumn()
     recurrenceSchedule?: RecurringOrderSchedule | null;
 
     @ApiProperty({

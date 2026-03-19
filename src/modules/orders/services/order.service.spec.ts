@@ -544,14 +544,27 @@ describe('order service', () => {
         const savedRecurrenceId = order.recurrenceSchedule.id;
 
         const orderDto = orderToUpdateDto(order, { recurrenceSchedule: null });
-        // should not find recurring order schedule
+
         await dataSource.transaction(async (manager) => {
             await orderService.updateEntityForTest(orderDto, order, manager);
         });
 
+        // should not find recurring order schedule
         const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
         expect(result).toBeNull();
         expect(order.recurrenceSchedule).toBeNull();
         expect(order.occurrenceType).toBeNull();
+    });
+
+    it('should delete a order and also delete the recurring order schedule', async () => {
+        const order = await getOrderWithRecurrenceSchedule();
+        if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
+
+        const savedRecurrenceId = order.recurrenceSchedule.id;
+
+        const removal = await orderService.remove(order.id);
+        expect(removal).toBe(true);
+        const result = await recurringOrderScheduleRepo.findOne({ where: { id: savedRecurrenceId } });
+        expect(result).toBeNull();
     });
 });

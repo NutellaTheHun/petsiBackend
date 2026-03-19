@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { NestedEntityBase } from "../../../common/base/entity.base";
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
 import { NestedCreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto";
@@ -24,8 +24,7 @@ export class RecurringOrderSchedule {
         example: 1,
         description: 'The unique identifier of the order that this schedule is for',
     })
-    @OneToOne(() => Order, (order) => order.recurrenceSchedule, { onDelete: 'CASCADE' })
-    @JoinColumn()
+    @OneToOne(() => Order, (order) => order.recurrenceSchedule)
     order: Order;
 
     @ApiProperty({

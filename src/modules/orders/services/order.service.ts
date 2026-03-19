@@ -154,8 +154,16 @@ export class OrderService extends ServiceBase<OrderEntity> {
 
         if (dto.recurrenceSchedule !== undefined) {
             if (dto.recurrenceSchedule === null) {
+                const existingSchedule = entity.recurrenceSchedule;
+
                 entity.recurrenceSchedule = null;
                 entity.occurrenceType = null;
+
+                await manager.save(entity);
+
+                if (existingSchedule) {
+                    await manager.remove(existingSchedule);
+                }
             } else {
                 entity.recurrenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
                     dto.recurrenceSchedule,
@@ -235,6 +243,20 @@ export class OrderService extends ServiceBase<OrderEntity> {
             query.orderBy(`entity.${sortBy}`, sortOrder);
         } else if (sortBy === 'createdAt') {
             query.orderBy(`entity.${sortBy}`, sortOrder);
+        }
+    }
+
+    protected async beforeRemove(
+        entity: Order,
+        manager: EntityManager
+    ): Promise<void> {
+        const orderWithRelations = await manager.findOne(Order, {
+            where: { id: entity.id },
+            relations: ['recurrenceSchedule'],
+        });
+
+        if (orderWithRelations?.recurrenceSchedule) {
+            await manager.remove(orderWithRelations.recurrenceSchedule);
         }
     }
 }
