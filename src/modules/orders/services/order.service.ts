@@ -250,13 +250,14 @@ export class OrderService extends ServiceBase<OrderEntity> {
         entity: Order,
         manager: EntityManager
     ): Promise<void> {
+        // load order with recurrence schedule for proper removal
         const orderWithRelations = await manager.findOne(Order, {
             where: { id: entity.id },
             relations: ['recurrenceSchedule'],
         });
 
-        if (orderWithRelations?.recurrenceSchedule) {
+        /*if (orderWithRelations?.recurrenceSchedule) {
             await manager.remove(orderWithRelations.recurrenceSchedule);
-        }
+        }*/
     }
 }

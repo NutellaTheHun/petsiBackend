@@ -3,13 +3,12 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    JoinColumn,
     ManyToOne,
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
     Unique,
-    UpdateDateColumn,
+    UpdateDateColumn
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { orderCategoryExample } from '../../../common/swagger/examples/orders/order-category.example';
@@ -196,7 +195,7 @@ export class Order {
         nullable: true,
         cascade: true,
     })
-    @JoinColumn()
+    //@JoinColumn()
     recurrenceSchedule?: RecurringOrderSchedule | null;
 
     @ApiProperty({
