@@ -28,7 +28,7 @@ export class OrderRecurrenceService {
      * Generates occurences for all template orders that have a recurrenceSchedule entity.
      */
     @Cron(CronExpression.EVERY_HOUR)
-    private generateRecurringOrders() {
+    protected generateRecurringOrders() {
         /**
          * Query all orders that are of occurenceType TEMPLATE, and have a recurrenceSchedule entity,
          * make sure all template Order fulfillmentDate are up to date
@@ -41,7 +41,7 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being generated from.
      * @param horizonDate The date to generate occurences up to.
      */
-    private async ensureGeneratedOrders(templateOrder: Order, horizonDate: Date): Promise<void> {
+    protected async ensureGeneratedOrders(templateOrder: Order, horizonDate: Date): Promise<void> {
         /**
          * Given a template order and a horizon date,
          * get all future occurence orders generated from that template order,
@@ -56,7 +56,7 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being removed from.
      * @param startDate The date to remove occurences after.
      */
-    private async removeFutureGeneratedOrders(templateOrder: Order, startDate: Date): Promise<void> {
+    protected async removeFutureGeneratedOrders(templateOrder: Order, startDate: Date): Promise<void> {
         /**
          * Given a template order and a start date,
          * get all occurence orders generated from that template order, that are of occurenceState GENERATED, (not MODIFIED or CANCELLED)
@@ -70,7 +70,7 @@ export class OrderRecurrenceService {
      * @param rrule The rrule string of the template order.
      * @param startDate The start date of the template order.
      */
-    private nextOccurence(rrule: string, startDate: Date): Date {
+    protected nextOccurence(rrule: string, startDate: Date): Date {
         throw new NotImplementedException
     }
 
@@ -79,7 +79,7 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being cloned.
      * @param occurenceDate The date to clone the template order to.
      */
-    private cloneTemplateToOccurence(templateOrder: Order, occurenceDate: Date): Order {
+    protected cloneTemplateToOccurence(templateOrder: Order, occurenceDate: Date): Order {
         throw new NotImplementedException
         /**
          * cloned order must be a deep copy of the template order, capturing its relations and properties. Especially orderMenuItem down to orderContainerItem.
@@ -110,7 +110,7 @@ export class OrderRecurrenceService {
      * If the template orders fulfillment date is before the current date, the templates fulfillment date is set to the next occurence date.
      * @param templateOrder 
      */
-    private handleTemplateFulfillmentDate(templateOrder: Order): void {
+    protected handleTemplateFulfillmentDate(templateOrder: Order): void {
         /**
          * Given a template order,
          * if the template orders fulfillment date is before the current date, set the templates fulfillment date to the next occurence date 

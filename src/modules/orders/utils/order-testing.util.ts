@@ -13,6 +13,7 @@ import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
 import { getTestOrderCategoryNames } from './constants';
+import { buildRRULEDateString } from './rrule.util';
 
 @Injectable()
 export class OrderTestingUtil {
@@ -255,6 +256,8 @@ export class OrderTestingUtil {
         }
 
         // Recurring Order Schedule
+        const dtstartDate = buildRRULEDateString(new Date());
+
         results.push({
             category: orderTypes[otIndex++ % orderTypes.length],
             recipient: 'recipient_a',
@@ -262,7 +265,7 @@ export class OrderTestingUtil {
             fulfillmentType: 'pickup',
             isFrozen: false,
             recurrenceSchedule: {
-                rrule: 'FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;DTSTART=2026-03-18;TZID=America/New_York;',
+                rrule: `${dtstartDate}\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=TU;TZID=America/New_York;`,
                 startDate: new Date(),
                 timezone: 'America/New_York',
             } as RecurringOrderSchedule,

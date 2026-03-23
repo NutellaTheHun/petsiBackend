@@ -25,6 +25,7 @@ import { OrdersModule } from '../orders.module';
 import { OrderCategoryService } from '../services/order-category.service';
 import { OrderContainerItemService } from '../services/order-container-item.service';
 import { OrderMenuItemService } from '../services/order-menu-item.service';
+import { OrderRecurrenceService } from '../services/order-recurrence.service';
 import { OrderService } from '../services/order.service';
 
 export async function getOrdersTestingModule(opts?: {
@@ -34,6 +35,7 @@ export async function getOrdersTestingModule(opts?: {
     orderContainerItemServiceClass?: new (
         ...args: any[]
     ) => OrderContainerItemService;
+    orderRecurrenceServiceClass?: new (...args: any[]) => OrderRecurrenceService;
 }): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
@@ -87,5 +89,7 @@ export async function getOrdersTestingModule(opts?: {
         .useClass(opts?.orderServiceClass || OrderService)
         .overrideProvider(OrderContainerItemService)
         .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
+        .overrideProvider(OrderRecurrenceService)
+        .useClass(opts?.orderRecurrenceServiceClass || OrderRecurrenceService)
         .compile();
 }

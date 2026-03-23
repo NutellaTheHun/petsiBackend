@@ -1,9 +1,22 @@
 import { CreateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/create-recurring-order-schedule.dto";
 import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
 
+/**
+ * Parse a rrule string with the following format:
+ * "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=5;UNTIL=20130130T230000Z;BYDAY=MO,FR"
+ * So there is the DTSTART:... and the RRULE:...
+ */
 export function parseRruleString(rruleString: string): { frequency: string; interval: number | undefined; daysOfWeek: number[] | undefined; dayOfMonth: number | undefined; monthOfYear: number | undefined; startDate: Date; endDate: Date | undefined; timezone: string | undefined; } {
-    //const parts = rruleString.split(':')[1].split(';');
-    const parts = rruleString.split(';');
+    // parse rruleString into DTSTART and RRULE parts
+    const dtstartPart = rruleString.split('\n')[0];
+    const rrulePart = rruleString.split('\n')[1];
+
+    // parse DTSTART part into startDate
+    const dtstartRaw = dtstartPart.split(':')[1]; // "20120201T093000Z"
+    const startDate = parseDtStart(dtstartRaw);
+
+    // parse RRULE part into partsMap
+    const parts = rrulePart.split(';');
     const partsMap = new Map<string, string>();
     for (const part of parts) {
         const [key, value] = part.split('=');
@@ -14,7 +27,6 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
     if (!frequency) {
         throw new Error('Frequency is required');
     }
-    const startDate = partsMap.get('DTSTART')
     const interval = partsMap.get('INTERVAL');
     const daysOfWeek = partsMap.get('BYDAY');
     const dayOfMonth = partsMap.get('BYMONTHDAY');
@@ -24,7 +36,7 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
 
     return {
         frequency,
-        startDate: startDate ? new Date(startDate) : new Date(),
+        startDate: startDate,
         interval: interval ? parseInt(interval) : undefined,
         daysOfWeek: daysOfWeek ? parseDaysOfWeek(daysOfWeek) : undefined,
         dayOfMonth: dayOfMonth ? parseInt(dayOfMonth) : undefined,
@@ -66,6 +78,9 @@ export function getDayOfWeekValue(daysOfWeek: number[]): string {
     }).join(',');
 }
 
+/**
+ * Build a rrule string from a DTO to be stored in a recurring order schedule entity.
+ */
 export function buildRruleString(dto: CreateRecurringOrderScheduleDto | UpdateRecurringOrderScheduleDto): string {
     const parts: string[] = [];
     if (dto.frequency) {
@@ -85,14 +100,41 @@ export function buildRruleString(dto: CreateRecurringOrderScheduleDto | UpdateRe
         parts.push(`BYMONTH=${dto.monthOfYear}`);
     }
     if (dto.startDate) {
-        parts.push(`DTSTART=${dto.startDate}`);
+        //parts.push(`DTSTART=${dto.startDate}`);
     }
     if (dto.endDate) {
-        parts.push(`UNTIL=${dto.endDate}`);
+        parts.push(`UNTIL=${buildRRULEDateString(dto.endDate)}`);
     }
     if (dto.timezone) {
         parts.push(`TIMEZONE=${dto.timezone}`);
     }
 
     return parts.join(';');
+}
+
+/**
+ * Build a DTSTART or UNTILstring from a date to be stored in a recurring order schedule entity.
+ * The date is expected to be in the UTC timezone.
+ */
+export function buildRRULEDateString(date: Date): string {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(date.getUTCSeconds()).padStart(2, '0');
+
+    return `DTSTART:${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+}
+
+function parseDtStart(value: string): Date {
+    // Example: 20120201T093000Z
+    const year = parseInt(value.slice(0, 4));
+    const month = parseInt(value.slice(4, 6)) - 1; // JS months are 0-based
+    const day = parseInt(value.slice(6, 8));
+    const hour = parseInt(value.slice(9, 11));
+    const minute = parseInt(value.slice(11, 13));
+    const second = parseInt(value.slice(13, 15));
+
+    return new Date(Date.UTC(year, month, day, hour, minute, second));
 }

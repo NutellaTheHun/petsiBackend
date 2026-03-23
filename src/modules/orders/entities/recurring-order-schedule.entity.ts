@@ -29,7 +29,7 @@ export class RecurringOrderSchedule {
     order: Order;
 
     @ApiProperty({
-        example: 'RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;DTSTART=2025-01-01;UNTIL=2025-01-01;TZID=America/New_York;',
+        example: 'DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;UNTIL=2025-01-01;TZID=America/New_York;',
         description: 'The rrule string for the schedule',
     })
     @Column({ type: 'varchar' })

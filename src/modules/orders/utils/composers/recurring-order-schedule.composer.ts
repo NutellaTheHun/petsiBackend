@@ -5,7 +5,7 @@ import { CreateRecurringOrderScheduleDto } from "../../dto/recurring-order-sched
 import { NestedCreateRecurringOrderScheduleDto } from "../../dto/recurring-order-schedule/nested-create-recurring-order-schedule.dto";
 import { UpdateRecurringOrderScheduleDto } from "../../dto/recurring-order-schedule/update-recurring-order-schedule.dto";
 import { RecurringOrderSchedule, RecurringOrderScheduleEntity } from "../../entities/recurring-order-schedule.entity";
-import { buildRruleString } from "../rrule.util";
+import { buildRRULEDateString, buildRruleString } from "../rrule.util";
 
 export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderScheduleEntity> {
 
@@ -17,7 +17,7 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
 
     protected async createInTransaction(dto: CreateRecurringOrderScheduleDto, manager: EntityManager): Promise<RecurringOrderSchedule> {
 
-        const rruleString = buildRruleString(dto);
+        const rruleString = `${buildRRULEDateString(dto.startDate)}\n${buildRruleString(dto)}`;
 
         const result = manager.create(RecurringOrderSchedule, {
             order: { id: dto.orderId },
@@ -31,7 +31,7 @@ export class RecurringOrderScheduleComposer extends ComposerBase<RecurringOrderS
 
     protected async updateInTransaction(dto: UpdateRecurringOrderScheduleDto, manager: EntityManager, entity: RecurringOrderSchedule): Promise<void> {
 
-        entity.rrule = buildRruleString(dto);
+        entity.rrule = `${buildRRULEDateString(dto.startDate)}\n${buildRruleString(dto)}`;
 
         if (dto.startDate !== undefined) {
             entity.startDate = dto.startDate;
