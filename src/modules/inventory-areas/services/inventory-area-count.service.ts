@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -12,6 +13,7 @@ import {
 } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaItemComposer } from '../utils/composers/inventory-area-item.composer';
+import { InventoryAreaCountChangeDetector } from '../utils/change-detectors/inventory-area-count.change-detector';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
 
 @Injectable()
@@ -25,6 +27,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
         validator: InventoryAreaCountValidator,
 
         private readonly areaItemResolver: InventoryAreaItemComposer,
+        private readonly areaCountChangeDetector: InventoryAreaCountChangeDetector,
     ) {
         super(
             repo,
@@ -75,7 +78,7 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
                 await this.areaItemResolver.composeManyNestedEntity(
                     dto.countedInventoryItems,
                     manager,
-                    [],
+                    entity.countedInventoryItems ?? [],
                     { parentInventoryCountId: entity.id },
                 );
         }
@@ -137,5 +140,20 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
             query.leftJoinAndSelect('entity.inventoryArea', 'area');
             query.orderBy(`area.name`, sortOrder);
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<InventoryAreaCount, UpdateInventoryAreaCountDto>
+        | undefined {
+        return this.areaCountChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'inventoryArea',
+            'countedInventoryItems',
+            'countedInventoryItems.countedInventoryItem',
+            'countedInventoryItems.countedItemSize',
+        ];
     }
 }

@@ -13,6 +13,8 @@ import { LabelType } from './entities/label-type.entity';
 import { Label } from './entities/label.entity';
 import { LabelTypeService } from './services/label-type.service';
 import { LabelService } from './services/label.service';
+import { LabelTypeChangeDetector } from './utils/change-detectors/label-type.change-detector';
+import { LabelChangeDetector } from './utils/change-detectors/label.change-detector';
 import { LabelTestingUtil } from './utils/label-testing.util';
 import { LabelTypeValidator } from './validators/label-type.validator';
 import { LabelValidator } from './validators/label.validator';
@@ -37,6 +39,8 @@ import { LabelValidator } from './validators/label.validator';
 
     LabelValidator,
     LabelTypeValidator,
+    LabelChangeDetector,
+    LabelTypeChangeDetector,
 
     LabelTestingUtil,
   ],

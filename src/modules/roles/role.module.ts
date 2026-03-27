@@ -8,6 +8,7 @@ import { RoleBuilder } from './builders/role.builder';
 import { RoleController } from './controllers/role.controller';
 import { Role } from './entities/role.entity';
 import { RoleService } from './services/role.service';
+import { RoleChangeDetector } from './utils/change-detectors/role.change-detector';
 import { RoleTestUtil } from './utils/role-test.util';
 import { RoleValidator } from './validators/role.validator';
 
@@ -20,7 +21,7 @@ import { RoleValidator } from './validators/role.validator';
         RequestContextModule,
     ],
     controllers: [RoleController,],
-    providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil],
+    providers: [RoleService, RoleBuilder, RoleValidator, RoleTestUtil, RoleChangeDetector],
     exports: [RoleService, RoleTestUtil],
 })
 export class RoleModule { }

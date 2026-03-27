@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -10,6 +11,7 @@ import {
   InventoryItemCategory,
   InventoryItemCategoryEntity,
 } from '../entities/inventory-item-category.entity';
+import { InventoryItemCategoryChangeDetector } from '../utils/change-detectors/inventory-item-category.change-detector';
 import { InventoryItemCategoryValidator } from '../validators/inventory-item-category.validator';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryItemCategoryValidator,
+    private readonly inventoryItemCategoryChangeDetector: InventoryItemCategoryChangeDetector,
   ) {
     super(
       repo,
@@ -59,5 +62,11 @@ export class InventoryItemCategoryService extends ServiceBase<InventoryItemCateg
     if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
+  }
+
+  protected getChangeDetector():
+    | ChangeDetectorBase<InventoryItemCategory, UpdateInventoryItemCategoryDto>
+    | undefined {
+    return this.inventoryItemCategoryChangeDetector;
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     RecipeSubCategoryEntity,
 } from '../entities/recipe-sub-category.entity';
 import { RecipeSubCategoryComposer } from '../utils/composers/recipe-sub-category.composer';
+import { RecipeSubCategoryChangeDetector } from '../utils/change-detectors/recipe-sub-category.change-detector';
 import { RecipeSubCategoryValidator } from '../validators/recipe-sub-category.validator';
 
 @Injectable()
@@ -23,6 +25,7 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
         validator: RecipeSubCategoryValidator,
 
         private readonly subCategoryComposer: RecipeSubCategoryComposer,
+        private readonly subCategoryChangeDetector: RecipeSubCategoryChangeDetector,
     ) {
         super(
             repo,
@@ -71,5 +74,14 @@ export class RecipeSubCategoryService extends ServiceBase<RecipeSubCategoryEntit
                 parentCategories: filters.parentCategory,
             });
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<RecipeSubCategory, UpdateRecipeSubCategoryDto>
+        | undefined {
+        return this.subCategoryChangeDetector as unknown as ChangeDetectorBase<
+            RecipeSubCategory,
+            UpdateRecipeSubCategoryDto
+        >;
     }
 }

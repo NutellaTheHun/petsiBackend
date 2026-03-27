@@ -25,6 +25,11 @@ import { InventoryItemPackageService } from './services/inventory-item-package.s
 import { InventoryItemSizeService } from './services/inventory-item-size.service';
 import { InventoryItemVendorService } from './services/inventory-item-vendor.service';
 import { InventoryItemService } from './services/inventory-item.service';
+import { InventoryItemCategoryChangeDetector } from './utils/change-detectors/inventory-item-category.change-detector';
+import { InventoryItemPackageChangeDetector } from './utils/change-detectors/inventory-item-package.change-detector';
+import { InventoryItemSizeChangeDetector } from './utils/change-detectors/inventory-item-size.change-detector';
+import { InventoryItemVendorChangeDetector } from './utils/change-detectors/inventory-item-vendor.change-detector';
+import { InventoryItemChangeDetector } from './utils/change-detectors/inventory-item.change-detector';
 import { InventoryItemSizeComposer } from './utils/composers/inventory-item-size.composer';
 import { InventoryItemTestingUtil } from './utils/inventory-item-testing.util';
 import { InventoryItemCategoryValidator } from './validators/inventory-item-category.validator';
@@ -78,6 +83,11 @@ import { InventoryItemValidator } from './validators/inventory-item.validator';
     InventoryItemVendorValidator,
 
     InventoryItemSizeComposer,
+    InventoryItemCategoryChangeDetector,
+    InventoryItemPackageChangeDetector,
+    InventoryItemVendorChangeDetector,
+    InventoryItemSizeChangeDetector,
+    InventoryItemChangeDetector,
 
     InventoryItemTestingUtil,
   ],

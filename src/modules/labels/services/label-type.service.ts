@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateLabelTypeDto } from '../dto/label-type/create-label-type.dto';
 import { UpdateLabelTypeDto } from '../dto/label-type/update-label-type.dto';
 import { LabelType, LabelTypeEntity } from '../entities/label-type.entity';
+import { LabelTypeChangeDetector } from '../utils/change-detectors/label-type.change-detector';
 import { LabelTypeValidator } from '../validators/label-type.validator';
 
 @Injectable()
@@ -17,6 +19,7 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: LabelTypeValidator,
+    private readonly labelTypeChangeDetector: LabelTypeChangeDetector,
   ) {
     super(repo, 'LabelTypeService', requestContextService, logger, validator);
   }
@@ -57,5 +60,9 @@ export class LabelTypeService extends ServiceBase<LabelTypeEntity> {
     if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
+  }
+
+  protected getChangeDetector(): ChangeDetectorBase<LabelType, UpdateLabelTypeDto> | undefined {
+    return this.labelTypeChangeDetector;
   }
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     UnitOfMeasureCategoryEntity,
 } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
+import { UnitOfMeasureCategoryChangeDetector } from '../utils/change-detectors/unit-of-measure-category.change-detector';
 import { UnitOfMeasureCategoryValidator } from '../validators/unit-of-measure-category.validator';
 
 @Injectable()
@@ -21,6 +23,7 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
         requestContextService: RequestContextService,
         logger: AppLogger,
         validator: UnitOfMeasureCategoryValidator,
+        private readonly unitOfMeasureCategoryChangeDetector: UnitOfMeasureCategoryChangeDetector,
     ) {
         super(
             repo,
@@ -73,5 +76,15 @@ export class UnitOfMeasureCategoryService extends ServiceBase<UnitOfMeasureCateg
         if (sortBy === 'name') {
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<UnitOfMeasureCategory, UpdateUnitOfMeasureCategoryDto>
+        | undefined {
+        return this.unitOfMeasureCategoryChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['baseConversionUnit'];
     }
 }

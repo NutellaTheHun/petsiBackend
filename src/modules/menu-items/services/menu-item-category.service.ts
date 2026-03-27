@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -10,6 +11,7 @@ import {
   MenuItemCategory,
   MenuItemCategoryEntity,
 } from '../entities/menu-item-category.entity';
+import { MenuItemCategoryChangeDetector } from '../utils/change-detectors/menu-item-category.change-detector';
 import { MenuItemCategoryValidator } from '../validators/menu-item-category.validator';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemCategoryValidator,
+    private readonly menuItemCategoryChangeDetector: MenuItemCategoryChangeDetector,
   ) {
     super(
       repo,
@@ -58,5 +61,11 @@ export class MenuItemCategoryService extends ServiceBase<MenuItemCategoryEntity>
     if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
+  }
+
+  protected getChangeDetector():
+    | ChangeDetectorBase<MenuItemCategory, UpdateMenuItemCategoryDto>
+    | undefined {
+    return this.menuItemCategoryChangeDetector;
   }
 }

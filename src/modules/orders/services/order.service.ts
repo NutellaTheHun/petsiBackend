@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -9,6 +10,7 @@ import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
+import { OrderChangeDetector } from '../utils/change-detectors/order.change-detector';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
 import { OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
@@ -25,7 +27,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
         private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
+
+        @Inject(OrderRecurrenceService)
         private readonly orderRecurrenceService: OrderRecurrenceService,
+        private readonly orderChangeDetector: OrderChangeDetector,
     ) {
         super(repo, 'OrderService', requestContextService, logger, validator);
     }
@@ -147,7 +152,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
                 await this.orderMenuItemComposer.composeManyNestedEntity(
                     dto.orderedItems,
                     manager,
-                    [],
+                    entity.orderedItems ?? [],
                     {
                         parentOrderId: entity.id,
                     },
@@ -182,6 +187,23 @@ export class OrderService extends ServiceBase<OrderEntity> {
         if (entity.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
             await this.orderRecurrenceService.handleTemplateOrderUpdate(entity.id);
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<Order, UpdateOrderDto> | undefined {
+        return this.orderChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'category',
+            'orderedItems',
+            'orderedItems.menuItem',
+            'orderedItems.size',
+            'orderedItems.containerOrderMenuItems',
+            'orderedItems.containerOrderMenuItems.containedMenuItem',
+            'orderedItems.containerOrderMenuItems.containedItemSize',
+            'recurrenceSchedule',
+        ];
     }
 
     protected applySearch(

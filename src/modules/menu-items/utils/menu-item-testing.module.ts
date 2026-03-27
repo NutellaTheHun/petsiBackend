@@ -25,6 +25,10 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
+import { MenuItemCategoryChangeDetector } from './change-detectors/menu-item-category.change-detector';
+import { MenuItemContainerItemChangeDetector } from './change-detectors/menu-item-container-item.change-detector';
+import { MenuItemSizeChangeDetector } from './change-detectors/menu-item-size.change-detector';
+import { MenuItemChangeDetector } from './change-detectors/menu-item.change-detector';
 
 export async function getMenuItemTestingModule(opts?: {
     menuItemCategoryServiceClass?: new (
@@ -35,6 +39,10 @@ export async function getMenuItemTestingModule(opts?: {
     menuItemContainerItemServiceClass?: new (
         ...args: any[]
     ) => MenuItemContainerItemService;
+    menuItemChangeDetectorClass?: new (...args: any[]) => MenuItemChangeDetector;
+    menuItemCategoryChangeDetectorClass?: new (...args: any[]) => MenuItemCategoryChangeDetector;
+    menuItemSizeChangeDetectorClass?: new (...args: any[]) => MenuItemSizeChangeDetector;
+    menuItemContainerItemChangeDetectorClass?: new (...args: any[]) => MenuItemContainerItemChangeDetector;
 }): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
@@ -89,5 +97,13 @@ export async function getMenuItemTestingModule(opts?: {
         .useClass(
             opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
         )
+        .overrideProvider(MenuItemChangeDetector)
+        .useClass(opts?.menuItemChangeDetectorClass || MenuItemChangeDetector)
+        .overrideProvider(MenuItemCategoryChangeDetector)
+        .useClass(opts?.menuItemCategoryChangeDetectorClass || MenuItemCategoryChangeDetector)
+        .overrideProvider(MenuItemSizeChangeDetector)
+        .useClass(opts?.menuItemSizeChangeDetectorClass || MenuItemSizeChangeDetector)
+        .overrideProvider(MenuItemContainerItemChangeDetector)
+        .useClass(opts?.menuItemContainerItemChangeDetectorClass || MenuItemContainerItemChangeDetector)
         .compile();
 }

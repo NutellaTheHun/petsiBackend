@@ -23,6 +23,10 @@ import { MenuItemCategoryService } from './services/menu-item-category.service';
 import { MenuItemContainerItemService } from './services/menu-item-container-item.service';
 import { MenuItemSizeService } from './services/menu-item-size.service';
 import { MenuItemService } from './services/menu-item.service';
+import { MenuItemCategoryChangeDetector } from './utils/change-detectors/menu-item-category.change-detector';
+import { MenuItemContainerItemChangeDetector } from './utils/change-detectors/menu-item-container-item.change-detector';
+import { MenuItemSizeChangeDetector } from './utils/change-detectors/menu-item-size.change-detector';
+import { MenuItemChangeDetector } from './utils/change-detectors/menu-item.change-detector';
 import { MenuItemContainerItemComposer } from './utils/composers/menu-item-container-item.composer';
 import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
 import { MenuItemCategoryValidator } from './validators/menu-item-category.validator';
@@ -71,6 +75,10 @@ import { MenuItemValidator } from './validators/menu-item.validator';
         MenuItemValidator,
 
         MenuItemContainerItemComposer,
+        MenuItemCategoryChangeDetector,
+        MenuItemSizeChangeDetector,
+        MenuItemContainerItemChangeDetector,
+        MenuItemChangeDetector,
 
         MenuItemTestingUtil,
     ],

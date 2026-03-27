@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     MenuItemContainerItemEntity,
 } from '../entities/menu-item-container-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
+import { MenuItemContainerItemChangeDetector } from '../utils/change-detectors/menu-item-container-item.change-detector';
 import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
@@ -23,6 +25,7 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
         validator: MenuItemContainerItemValidator,
 
         private readonly containerItemComposer: MenuItemContainerItemComposer,
+        private readonly containerItemChangeDetector: MenuItemContainerItemChangeDetector,
     ) {
         super(
             repo,
@@ -72,5 +75,14 @@ export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerI
                 parentMenuItems: filters.parentMenuItem,
             });
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<MenuItemContainerItem, UpdateMenuItemContainerItemDto>
+        | undefined {
+        return this.containerItemChangeDetector as unknown as ChangeDetectorBase<
+            MenuItemContainerItem,
+            UpdateMenuItemContainerItemDto
+        >;
     }
 }

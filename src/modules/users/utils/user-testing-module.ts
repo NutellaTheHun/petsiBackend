@@ -14,9 +14,11 @@ import { UserController } from '../controllers/user.controller';
 import { User } from '../entities/user.entities';
 import { UserService } from '../services/user.service';
 import { UserModule } from '../user.module';
+import { UserChangeDetector } from './change-detectors/user.change-detector';
 
 export async function getUserTestingModule(opts?: {
   userServiceClass?: new (...args: any[]) => UserService;
+  userChangeDetectorClass?: new (...args: any[]) => UserChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -39,5 +41,7 @@ export async function getUserTestingModule(opts?: {
     .useClass(TestRequestContextService)
     .overrideProvider(UserService)
     .useClass(opts?.userServiceClass || UserService)
+    .overrideProvider(UserChangeDetector)
+    .useClass(opts?.userChangeDetectorClass || UserChangeDetector)
     .compile();
 }

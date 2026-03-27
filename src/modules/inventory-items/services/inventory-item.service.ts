@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -14,6 +15,7 @@ import {
     InventoryItemEntity,
 } from '../entities/inventory-item.entity';
 import { InventoryItemSizeComposer } from '../utils/composers/inventory-item-size.composer';
+import { InventoryItemChangeDetector } from '../utils/change-detectors/inventory-item.change-detector';
 import { InventoryItemValidator } from '../validators/inventory-item.validator';
 
 @Injectable()
@@ -27,6 +29,7 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
         validator: InventoryItemValidator,
 
         private readonly itemSizeComposer: InventoryItemSizeComposer,
+        private readonly inventoryItemChangeDetector: InventoryItemChangeDetector,
     ) {
         super(
             repo,
@@ -151,5 +154,15 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
             query.leftJoinAndSelect('entity.category', 'category');
             query.orderBy('category.name', sortOrder, 'NULLS LAST');
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<InventoryItem, UpdateInventoryItemDto>
+        | undefined {
+        return this.inventoryItemChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['category', 'vendor', 'sizes', 'sizes.package', 'sizes.measureType'];
     }
 }

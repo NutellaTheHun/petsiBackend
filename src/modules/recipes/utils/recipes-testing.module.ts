@@ -20,6 +20,10 @@ import { RecipeCategoryService } from '../services/recipe-category.service';
 import { RecipeIngredientService } from '../services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
 import { RecipeService } from '../services/recipe.service';
+import { RecipeCategoryChangeDetector } from './change-detectors/recipe-category.change-detector';
+import { RecipeIngredientChangeDetector } from './change-detectors/recipe-ingredient.change-detector';
+import { RecipeSubCategoryChangeDetector } from './change-detectors/recipe-sub-category.change-detector';
+import { RecipeChangeDetector } from './change-detectors/recipe.change-detector';
 
 export async function getRecipeTestingModule(opts?: {
   recipeServiceClass?: new (...args: any[]) => RecipeService;
@@ -30,6 +34,10 @@ export async function getRecipeTestingModule(opts?: {
   recipeSubCategoryServiceClass?: new (
     ...args: any[]
   ) => RecipeSubCategoryService;
+  recipeChangeDetectorClass?: new (...args: any[]) => RecipeChangeDetector;
+  recipeIngredientChangeDetectorClass?: new (...args: any[]) => RecipeIngredientChangeDetector;
+  recipeCategoryChangeDetectorClass?: new (...args: any[]) => RecipeCategoryChangeDetector;
+  recipeSubCategoryChangeDetectorClass?: new (...args: any[]) => RecipeSubCategoryChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -70,5 +78,13 @@ export async function getRecipeTestingModule(opts?: {
     .useClass(opts?.recipeCategoryServiceClass || RecipeCategoryService)
     .overrideProvider(RecipeSubCategoryService)
     .useClass(opts?.recipeSubCategoryServiceClass || RecipeSubCategoryService)
+    .overrideProvider(RecipeChangeDetector)
+    .useClass(opts?.recipeChangeDetectorClass || RecipeChangeDetector)
+    .overrideProvider(RecipeIngredientChangeDetector)
+    .useClass(opts?.recipeIngredientChangeDetectorClass || RecipeIngredientChangeDetector)
+    .overrideProvider(RecipeCategoryChangeDetector)
+    .useClass(opts?.recipeCategoryChangeDetectorClass || RecipeCategoryChangeDetector)
+    .overrideProvider(RecipeSubCategoryChangeDetector)
+    .useClass(opts?.recipeSubCategoryChangeDetectorClass || RecipeSubCategoryChangeDetector)
     .compile();
 }

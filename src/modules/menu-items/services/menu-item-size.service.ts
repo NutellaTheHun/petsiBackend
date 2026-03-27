@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -10,6 +11,7 @@ import {
   MenuItemSize,
   MenuItemSizeEntity,
 } from '../entities/menu-item-size.entity';
+import { MenuItemSizeChangeDetector } from '../utils/change-detectors/menu-item-size.change-detector';
 import { MenuItemSizeValidator } from '../validators/menu-item-size.validator';
 
 @Injectable()
@@ -20,6 +22,7 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: MenuItemSizeValidator,
+    private readonly menuItemSizeChangeDetector: MenuItemSizeChangeDetector,
   ) {
     super(
       repo,
@@ -58,5 +61,11 @@ export class MenuItemSizeService extends ServiceBase<MenuItemSizeEntity> {
     if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
+  }
+
+  protected getChangeDetector():
+    | ChangeDetectorBase<MenuItemSize, UpdateMenuItemSizeDto>
+    | undefined {
+    return this.menuItemSizeChangeDetector;
   }
 }

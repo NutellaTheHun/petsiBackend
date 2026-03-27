@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -9,6 +10,7 @@ import { CreateLabelDto } from '../dto/label/create-label.dto';
 import { UpdateLabelDto } from '../dto/label/update-label.dto';
 import { LabelType } from '../entities/label-type.entity';
 import { Label, LabelEntity } from '../entities/label.entity';
+import { LabelChangeDetector } from '../utils/change-detectors/label.change-detector';
 import { LabelValidator } from '../validators/label.validator';
 
 @Injectable()
@@ -19,6 +21,7 @@ export class LabelService extends ServiceBase<LabelEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: LabelValidator,
+    private readonly labelChangeDetector: LabelChangeDetector,
   ) {
     super(repo, 'LabelService', requestContextService, logger, validator);
   }
@@ -90,5 +93,13 @@ export class LabelService extends ServiceBase<LabelEntity> {
       query.leftJoinAndSelect('entity.labelType', 'labelType');
       query.orderBy('labelType.name', sortOrder);
     }
+  }
+
+  protected getChangeDetector(): ChangeDetectorBase<Label, UpdateLabelDto> | undefined {
+    return this.labelChangeDetector;
+  }
+
+  protected getUpdateDiffRelations(): string[] {
+    return ['menuItem', 'labelType'];
   }
 }

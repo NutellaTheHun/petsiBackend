@@ -8,7 +8,8 @@ import { recurringOrderScheduleToResponseDto, recurringOrderScheduleToUpdateDto 
 export function orderToUpdateDto(order: Order, merge: Partial<UpdateOrderDto> = {}): UpdateOrderDto {
     const existingOrderedItems = order.orderedItems.map(item => orderMenuItemToNestedUpdateDto(item)) ?? [];
     const mergedOrderedItems = merge.orderedItems ? [...merge.orderedItems, ...existingOrderedItems] : existingOrderedItems;
-    const mergedRecurrenceSchedule = merge.recurrenceSchedule !== undefined ? merge.recurrenceSchedule : order.recurrenceSchedule ? recurringOrderScheduleToUpdateDto(order.recurrenceSchedule) : undefined;
+    const mergedRecurrenceSchedule = merge.recurrenceSchedule !== undefined ?
+        merge.recurrenceSchedule : order.recurrenceSchedule ? recurringOrderScheduleToUpdateDto(order.recurrenceSchedule) : undefined;
 
     return plainToInstance(UpdateOrderDto, {
         recipient: order.recipient,

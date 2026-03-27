@@ -15,12 +15,16 @@ import { UnitOfMeasure } from '../entities/unit-of-measure.entity';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from '../services/unit-of-measure.service';
 import { UnitOfMeasureModule } from '../unit-of-measure.module';
+import { UnitOfMeasureCategoryChangeDetector } from './change-detectors/unit-of-measure-category.change-detector';
+import { UnitOfMeasureChangeDetector } from './change-detectors/unit-of-measure.change-detector';
 
 export async function getUnitOfMeasureTestingModule(opts?: {
   unitOfMeasureServiceClass?: new (...args: any[]) => UnitOfMeasureService;
   unitOfMeasureCategoryServiceClass?: new (
     ...args: any[]
   ) => UnitOfMeasureCategoryService;
+  unitOfMeasureChangeDetectorClass?: new (...args: any[]) => UnitOfMeasureChangeDetector;
+  unitOfMeasureCategoryChangeDetectorClass?: new (...args: any[]) => UnitOfMeasureCategoryChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -51,5 +55,9 @@ export async function getUnitOfMeasureTestingModule(opts?: {
     .useClass(
       opts?.unitOfMeasureCategoryServiceClass || UnitOfMeasureCategoryService,
     )
+    .overrideProvider(UnitOfMeasureChangeDetector)
+    .useClass(opts?.unitOfMeasureChangeDetectorClass || UnitOfMeasureChangeDetector)
+    .overrideProvider(UnitOfMeasureCategoryChangeDetector)
+    .useClass(opts?.unitOfMeasureCategoryChangeDetectorClass || UnitOfMeasureCategoryChangeDetector)
     .compile();
 }

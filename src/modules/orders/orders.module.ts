@@ -24,11 +24,16 @@ import { RecurringOrderSchedule } from './entities/recurring-order-schedule.enti
 import { OrderCategoryService } from './services/order-category.service';
 import { OrderContainerItemService } from './services/order-container-item.service';
 import { OrderMenuItemService } from './services/order-menu-item.service';
+import { OrderRecurrenceService } from './services/order-recurrence.service';
 import { OrderService } from './services/order.service';
 import { RecurringOrderScheduleService } from './services/recurring-order-schedule.service';
 import { OrderContainerItemComposer } from './utils/composers/order-container-item.composer';
 import { OrderMenuItemComposer } from './utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from './utils/composers/recurring-order-schedule.composer';
+import { OrderContainerItemChangeDetector } from './utils/change-detectors/order-container-item.change-detector';
+import { OrderMenuItemChangeDetector } from './utils/change-detectors/order-menu-item.change-detector';
+import { OrderChangeDetector } from './utils/change-detectors/order.change-detector';
+import { RecurringOrderScheduleChangeDetector } from './utils/change-detectors/recurring-order-schedule.change-detector';
 import { OrderTestingUtil } from './utils/order-testing.util';
 import { OrderCategoryValidator } from './validators/order-category.validator';
 import { OrderContainerItemValidator } from './validators/order-container-item.validator';
@@ -66,6 +71,8 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         OrderContainerItemService,
         RecurringOrderScheduleService,
 
+        OrderRecurrenceService,
+
         OrderBuilder,
         OrderCategoryBuilder,
         OrderMenuItemBuilder,
@@ -81,6 +88,10 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
         OrderMenuItemComposer,
         OrderContainerItemComposer,
         RecurringOrderScheduleComposer,
+        OrderContainerItemChangeDetector,
+        OrderMenuItemChangeDetector,
+        RecurringOrderScheduleChangeDetector,
+        OrderChangeDetector,
 
         OrderTestingUtil,
     ],

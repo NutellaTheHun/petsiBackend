@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { hashPassword } from '../../auth/utils/hash';
@@ -9,6 +10,7 @@ import { Role } from '../../roles/entities/role.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { User, UserEntity } from '../entities/user.entities';
+import { UserChangeDetector } from '../utils/change-detectors/user.change-detector';
 import { UserValidator } from '../validators/user.validator';
 
 @Injectable()
@@ -19,6 +21,7 @@ export class UserService extends ServiceBase<UserEntity> {
         requestContextService: RequestContextService,
         logger: AppLogger,
         validator: UserValidator,
+        private readonly userChangeDetector: UserChangeDetector,
     ) {
         super(userRepo, 'UserService', requestContextService, logger, validator);
     }
@@ -97,5 +100,13 @@ export class UserService extends ServiceBase<UserEntity> {
         if (sortBy === 'name') {
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<User, UpdateUserDto> | undefined {
+        return this.userChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['roles'];
     }
 }

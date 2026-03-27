@@ -12,6 +12,7 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { PaginatedResult } from '../dto/paginated-result';
 import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
 import { ValidationException } from '../validation/validation-exception';
+import { ChangeDetectorBase } from './change-detector.base';
 import { EntityBase } from './entity.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 import { ValidatorBase } from './validator.base';
@@ -90,7 +91,7 @@ export abstract class ServiceBase<
         // retrieve entity from DB
         let toUpdate: TEntity['__Entity'];
         try {
-            toUpdate = await this.findOne(id);
+            toUpdate = await this.findOne(id, this.getUpdateDiffRelations());
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
                 err,
@@ -100,8 +101,26 @@ export abstract class ServiceBase<
             );
         }
 
+        let effectiveUpdateDto = updateDto as TEntity['__UDto'];
+        const changeDetector = this.getChangeDetector();
+        if (changeDetector) {
+            const detectionResult = changeDetector.detect(
+                toUpdate,
+                updateDto as TEntity['__UDto'],
+            );
+
+            if (!detectionResult.hasChanges) {
+                if (toUpdate && 'password' in toUpdate) {
+                    (toUpdate as any).password = undefined;
+                }
+                return toUpdate;
+            }
+
+            effectiveUpdateDto = detectionResult.patch as TEntity['__UDto'];
+        }
+
         await this.entityRepo.manager.transaction(async (manager) => {
-            await this.updateEntity(toUpdate, updateDto, manager);
+            await this.updateEntity(effectiveUpdateDto, manager, toUpdate);
             try {
                 //Save in DB
                 await manager.save(toUpdate);
@@ -414,6 +433,16 @@ export abstract class ServiceBase<
         manager: EntityManager,
         entity: TEntity['__Entity'],
     ): Promise<void>;
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<TEntity['__Entity'], TEntity['__UDto']>
+        | undefined {
+        return undefined;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [];
+    }
 
     protected async beforeRemove(
         _entity: TEntity['__Entity'],

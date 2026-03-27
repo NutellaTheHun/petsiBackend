@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -10,6 +11,7 @@ import {
   InventoryArea,
   InventoryAreaEntity,
 } from '../entities/inventory-area.entity';
+import { InventoryAreaChangeDetector } from '../utils/change-detectors/inventory-area.change-detector';
 import { InventoryAreaValidator } from '../validators/inventory-area.validator';
 
 @Injectable()
@@ -21,6 +23,7 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     requestContextService: RequestContextService,
     logger: AppLogger,
     validator: InventoryAreaValidator,
+    private readonly inventoryAreaChangeDetector: InventoryAreaChangeDetector,
   ) {
     super(
       repo,
@@ -59,5 +62,11 @@ export class InventoryAreaService extends ServiceBase<InventoryAreaEntity> {
     if (sortBy === 'name') {
       query.orderBy(`entity.${sortBy}`, sortOrder);
     }
+  }
+
+  protected getChangeDetector():
+    | ChangeDetectorBase<InventoryArea, UpdateInventoryAreaDto>
+    | undefined {
+    return this.inventoryAreaChangeDetector;
   }
 }

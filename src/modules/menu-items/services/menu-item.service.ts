@@ -6,6 +6,7 @@ import {
     Repository,
     SelectQueryBuilder,
 } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
@@ -17,6 +18,7 @@ import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
+import { MenuItemChangeDetector } from '../utils/change-detectors/menu-item.change-detector';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
@@ -34,6 +36,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         @InjectRepository(OrderContainerItem)
         private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
         private readonly containerItemComposer: MenuItemContainerItemComposer,
+        private readonly menuItemChangeDetector: MenuItemChangeDetector,
     ) {
         super(repo, 'MenuItemService', requestContextService, logger, validator);
     }
@@ -113,7 +116,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerMenuItems,
                     manager,
-                    [],
+                    entity.containerMenuItems ?? [],
                     {
                         parentMenuItemId: entity.id,
                     },
@@ -186,5 +189,19 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 parentOrderMenuItem: { id: orderItem.id },
             });
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<MenuItem, UpdateMenuItemDto> | undefined {
+        return this.menuItemChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'category',
+            'sizes',
+            'containerMenuItems',
+            'containerMenuItems.containedMenuItem',
+            'containerMenuItems.containedItemSize',
+        ];
     }
 }

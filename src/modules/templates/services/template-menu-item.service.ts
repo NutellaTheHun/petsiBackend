@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     TemplateMenuItemEntity,
 } from '../entities/template-menu-item.entity';
 import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.composer';
+import { TemplateMenuItemChangeDetector } from '../utils/change-detectors/template-menu-item.change-detector';
 import { TemplateMenuItemValidator } from '../validators/template-menu-item.validator';
 
 @Injectable()
@@ -23,6 +25,7 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
         validator: TemplateMenuItemValidator,
 
         private readonly templateItemComposer: TemplateMenuItemComposer,
+        private readonly templateMenuItemChangeDetector: TemplateMenuItemChangeDetector,
     ) {
         super(
             repo,
@@ -71,5 +74,14 @@ export class TemplateMenuItemService extends ServiceBase<TemplateMenuItemEntity>
                 parentTemplates: filters.parentTemplate,
             });
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<TemplateMenuItem, UpdateTemplateMenuItemDto>
+        | undefined {
+        return this.templateMenuItemChangeDetector as unknown as ChangeDetectorBase<
+            TemplateMenuItem,
+            UpdateTemplateMenuItemDto
+        >;
     }
 }

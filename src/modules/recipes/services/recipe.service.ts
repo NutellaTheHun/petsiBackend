@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -9,9 +10,11 @@ import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.en
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe, RecipeEntity } from '../entities/recipe.entity';
 import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
+import { RecipeChangeDetector } from '../utils/change-detectors/recipe.change-detector';
 import { RecipeValidator } from '../validators/recipe.valdiator';
 
 @Injectable()
@@ -24,6 +27,7 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         validator: RecipeValidator,
 
         private readonly ingredientComposer: RecipeIngredientComposer,
+        private readonly recipeChangeDetector: RecipeChangeDetector,
     ) {
         super(repo, 'RecipeService', requestContextService, logger, validator);
     }
@@ -173,15 +177,15 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         }
 
         if (dto.ingredients && dto.ingredients.length > 0) {
-            /*const existingIngreds = await manager.find(RecipeIngredient, {
+            const existingIngreds = await manager.find(RecipeIngredient, {
                 where: { parentRecipe: { id: entity.id } },
-            });*/
+            });
 
             entity.ingredients =
                 await this.ingredientComposer.composeManyNestedEntity(
                     dto.ingredients,
                     manager,
-                    /*existingIngreds,*/[],
+                    existingIngreds,
                     { parentRecipeId: entity.id },
                 );
         }
@@ -239,5 +243,23 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
             query.leftJoinAndSelect('entity.subCategory', 'subCategory');
             query.orderBy(`subCategory.name`, sortOrder, 'NULLS LAST');
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<Recipe, UpdateRecipeDto> | undefined {
+        return this.recipeChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'producedMenuItem',
+            'batchResultUnitType',
+            'servingSizeUnitType',
+            'category',
+            'subCategory',
+            'ingredients',
+            'ingredients.ingredientInventoryItem',
+            'ingredients.ingredientRecipe',
+            'ingredients.quantityUnitType',
+        ];
     }
 }

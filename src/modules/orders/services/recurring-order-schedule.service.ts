@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { EntityManager, Repository } from "typeorm";
 import { ServiceBase } from "../../../common/base/service.base";
@@ -11,6 +12,7 @@ import { RecurringOrderScheduleComposer } from "../utils/composers/recurring-ord
 import { recurringOrderScheduleToResponseDto } from "../utils/entity-transformers/recurring-order-schedule.dto.transformer";
 import { RecurringOrderScheduleValidator } from "../validators/recurring-order-schedule.validator";
 
+@Injectable()
 export class RecurringOrderScheduleService extends ServiceBase<RecurringOrderScheduleEntity> {
     constructor(
         @InjectRepository(RecurringOrderSchedule)

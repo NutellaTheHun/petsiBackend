@@ -76,7 +76,7 @@ export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerOrderMenuItems,
                     manager,
-                    [],
+                    entity.containerOrderMenuItems ?? [],
                     {
                         parentOrderMenuItemId: entity.id,
                         parentMenuItemId: entity.menuItem.id,

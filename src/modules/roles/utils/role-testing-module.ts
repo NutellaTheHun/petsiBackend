@@ -14,9 +14,11 @@ import { RoleController } from '../controllers/role.controller';
 import { Role } from '../entities/role.entity';
 import { RoleModule } from '../role.module';
 import { RoleService } from '../services/role.service';
+import { RoleChangeDetector } from './change-detectors/role.change-detector';
 
 export async function getRoleTestingModule(opts?: {
   roleServiceClass?: new (...args: any[]) => RoleService;
+  roleChangeDetectorClass?: new (...args: any[]) => RoleChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -39,5 +41,7 @@ export async function getRoleTestingModule(opts?: {
     .useClass(TestRequestContextService)
     .overrideProvider(RoleService)
     .useClass(opts?.roleServiceClass || RoleService)
+    .overrideProvider(RoleChangeDetector)
+    .useClass(opts?.roleChangeDetectorClass || RoleChangeDetector)
     .compile();
 }

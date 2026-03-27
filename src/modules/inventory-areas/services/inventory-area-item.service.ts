@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     InventoryAreaItemEntity,
 } from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemComposer } from '../utils/composers/inventory-area-item.composer';
+import { InventoryAreaItemChangeDetector } from '../utils/change-detectors/inventory-area-item.change-detector';
 import { InventoryAreaItemValidator } from '../validators/inventory-area-item.validator';
 
 @Injectable()
@@ -24,6 +26,7 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
         validator: InventoryAreaItemValidator,
 
         private readonly areaItemComposer: InventoryAreaItemComposer,
+        private readonly areaItemChangeDetector: InventoryAreaItemChangeDetector,
     ) {
         super(
             repo,
@@ -90,5 +93,14 @@ export class InventoryAreaItemService extends ServiceBase<InventoryAreaItemEntit
                 },
             );
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<InventoryAreaItem, UpdateInventoryAreaItemDto>
+        | undefined {
+        return this.areaItemChangeDetector as unknown as ChangeDetectorBase<
+            InventoryAreaItem,
+            UpdateInventoryAreaItemDto
+        >;
     }
 }

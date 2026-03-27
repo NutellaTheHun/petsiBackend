@@ -16,7 +16,8 @@ export function parseRruleString(rruleString: string): { frequency: string; inte
     const startDate = parseDtStart(dtstartRaw);
 
     // parse RRULE part into partsMap
-    const parts = rrulePart.split(';');
+    const rrule = rrulePart.split('RRULE:')[1];
+    const parts = rrule.split(';');
     const partsMap = new Map<string, string>();
     for (const part of parts) {
         const [key, value] = part.split('=');
@@ -109,7 +110,7 @@ export function buildRruleString(dto: CreateRecurringOrderScheduleDto | UpdateRe
         parts.push(`TIMEZONE=${dto.timezone}`);
     }
 
-    return parts.join(';');
+    return `RRULE:${parts.join(';')}`;
 }
 
 /**

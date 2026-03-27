@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -11,6 +12,7 @@ import {
     RecipeIngredientEntity,
 } from '../entities/recipe-ingredient.entity';
 import { RecipeIngredientComposer } from '../utils/composers/recipe-ingredient.composer';
+import { RecipeIngredientChangeDetector } from '../utils/change-detectors/recipe-ingredient.change-detector';
 import { RecipeIngredientValidator } from '../validators/recipe-ingredient.validator';
 
 @Injectable()
@@ -23,6 +25,7 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
         validator: RecipeIngredientValidator,
 
         private readonly ingredientComposer: RecipeIngredientComposer,
+        private readonly ingredientChangeDetector: RecipeIngredientChangeDetector,
     ) {
         super(
             repo,
@@ -75,5 +78,14 @@ export class RecipeIngredientService extends ServiceBase<RecipeIngredientEntity>
                 parentRecipes: filters.parentRecipe,
             });
         }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<RecipeIngredient, UpdateRecipeIngredientDto>
+        | undefined {
+        return this.ingredientChangeDetector as unknown as ChangeDetectorBase<
+            RecipeIngredient,
+            UpdateRecipeIngredientDto
+        >;
     }
 }
