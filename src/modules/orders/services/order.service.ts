@@ -40,8 +40,15 @@ export class OrderService extends ServiceBase<OrderEntity> {
         manager: EntityManager,
     ): Promise<Order> {
 
+        const occurrenceType = dto.occurrenceType as OccurrenceType | null;
+        const recurrenceDate =
+            dto.recurrenceDate ??
+            (dto.recurrenceSchedule && occurrenceType === OCCURRENCE_TYPES.TEMPLATE
+                ? dto.fulfillmentDate
+                : null);
+
         const result = manager.create(Order, {
-            orderCategory: { id: dto.categoryId },
+            category: manager.create(OrderCategory, { id: dto.categoryId }),
             recipient: dto.recipient,
             fulfillmentDate: dto.fulfillmentDate,
             fulfillmentType: dto.fulfillmentType,
@@ -51,9 +58,9 @@ export class OrderService extends ServiceBase<OrderEntity> {
             email: dto.email ?? null,
             note: dto.note ?? null,
             isFrozen: dto.isFrozen ?? false,
-            occurenceType: dto.occurrenceType as OccurrenceType | null,
-            occurenceState: dto.occurrenceState as OccurrenceState | null,
-            reccurenceDate: dto.recurrenceDate ?? null,
+            occurrenceType,
+            occurrenceState: dto.occurrenceState as OccurrenceState | null,
+            recurrenceDate,
             templateOrderId: dto.templateOrderId ?? null,
         });
 
@@ -176,7 +183,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
                     dto.recurrenceSchedule,
                     manager,
                     {
-                        parentOrderId: entity.id,
+                        orderId: entity.id,
                     },
                 );
             }

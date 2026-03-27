@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import {
   ThrottlerGuard,
   ThrottlerModule,
@@ -33,6 +34,8 @@ import { UserModule } from './modules/users/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
+    ScheduleModule.forRoot(),
 
     selectTypeOrmModule([]),
 

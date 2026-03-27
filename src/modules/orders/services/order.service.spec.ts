@@ -286,12 +286,14 @@ describe('order service', () => {
             relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
         });
         expect(serviceResult).not.toBeNull();
-        // expect each order to have an orderedItem with a menuItem name that includes 'item'
+        // applySearch matches recipient OR menuItem name (see OrderService.applySearch)
         expect(
-            serviceResult?.items.every((o) =>
-                o.orderedItems?.some((oi) =>
-                    oi.menuItem?.name?.toLowerCase().includes('item'),
-                ),
+            serviceResult?.items.every(
+                (o) =>
+                    o.recipient.toLowerCase().includes('item') ||
+                    o.orderedItems?.some((oi) =>
+                        oi.menuItem?.name?.toLowerCase().includes('item'),
+                    ),
             ),
         ).toBe(true);
     });
@@ -496,7 +498,7 @@ describe('order service', () => {
                 }),
             ],
             recurrenceSchedule: ros_dto,
-            occurenceType: OCCURRENCE_TYPES.TEMPLATE,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
         });
 
         await dataSource.transaction(async (manager) => {
