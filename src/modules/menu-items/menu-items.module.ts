@@ -93,5 +93,3 @@ import { MenuItemValidator } from './validators/menu-item.validator';
     ],
 })
 export class MenuItemsModule { }
-
-//export { MenuItem };

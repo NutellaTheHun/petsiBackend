@@ -463,6 +463,75 @@ describe('OrderRecurrenceService', () => {
         expect(generatedOrders.length).toEqual(expected);
     });
 
+    it('generateRecurringOrders should fill horizon for all template orders like ensureGeneratedOrders', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const startDate = new Date();
+        startDate.setHours(12, 0, 0, 0);
+        const daysOfWeek = [startDate.getDay()];
+
+        const recurrenceCreateDto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek,
+            startDate,
+        });
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: 'generateRecurringOrders cron path',
+            fulfillmentDate: startDate,
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 2,
+                }),
+            ],
+            recurrenceSchedule: recurrenceCreateDto,
+        });
+        const created = await orderService.createEntityForTest(dto, dataSource.manager);
+
+        let templateOrder = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+            relations: ['recurrenceSchedule', 'orderedItems'],
+        });
+        if (!templateOrder.recurrenceSchedule) throw new Error('recurrence schedule not found');
+        await recurrenceService.handleTemplateFulfillmentDateForTest(templateOrder);
+        templateOrder = await orderRepo.findOneOrFail({
+            where: { id: created.id },
+            relations: ['recurrenceSchedule', 'orderedItems'],
+        });
+        if (!templateOrder.recurrenceSchedule) throw new Error('recurrence schedule not found');
+
+        const horizon = addDays(startOfDayLocal(new Date()), 45);
+        const rrule = templateOrder.recurrenceSchedule.rrule;
+        const rule = rrulestr(rrule);
+        const anchor = templateOrder.recurrenceDate ?? templateOrder.fulfillmentDate;
+        let expected = 0;
+        let next: Date | null = rule.after(anchor, false);
+        while (next && next.getTime() <= horizon.getTime()) {
+            const skipTemplateSlot = sameCalendarDayLocal(next, templateOrder.fulfillmentDate);
+            if (!skipTemplateSlot) {
+                expected += 1;
+            }
+            next = rule.after(next, false);
+        }
+
+        await recurrenceService.generateRecurringOrdersForTest();
+
+        const generatedOrders = await orderRepo.find({
+            where: { templateOrderId: templateOrder.id, occurrenceState: OCCURRENCE_STATES.GENERATED },
+        });
+        expect(generatedOrders.length).toEqual(expected);
+    });
+
     it('should remove future GENERATED occurences from startDate and keep MODIFIED', async () => {
         const [cat] = await categoryRepo.find({ take: 1 });
         const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
@@ -619,5 +688,11 @@ function sameCalendarDayLocal(a: Date, b: Date): boolean {
 function startOfDayLocal(d: Date): Date {
     const x = new Date(d);
     x.setHours(0, 0, 0, 0);
+    return x;
+}
+
+function addDays(d: Date, n: number): Date {
+    const x = new Date(d);
+    x.setDate(x.getDate() + n);
     return x;
 }
