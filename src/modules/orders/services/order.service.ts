@@ -10,8 +10,9 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
 import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
-import { OccurrenceState, OccurrenceType } from '../utils/occurence-types';
+import { OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
+import { OrderRecurrenceService } from './order-recurrence.service';
 
 @Injectable()
 export class OrderService extends ServiceBase<OrderEntity> {
@@ -24,6 +25,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
         private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
+        private readonly orderRecurrenceService: OrderRecurrenceService,
     ) {
         super(repo, 'OrderService', requestContextService, logger, validator);
     }
@@ -176,6 +178,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
         }
 
         await manager.save(entity);
+
+        if (entity.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
+            await this.orderRecurrenceService.handleTemplateOrderUpdate(entity.id);
+        }
     }
 
     protected applySearch(

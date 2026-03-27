@@ -20,10 +20,9 @@ export abstract class ServiceBase<
     TEntity extends EntityBase<any, any, any>,
 > {
     private databaseExceptionHandler: DataBaseExceptionHandler;
-    //private readonly dataSource: DataSource;
+
     constructor(
         private readonly entityRepo: Repository<TEntity['__Entity']>,
-        //private readonly builder: BuilderBase<TEntity['__Entity']>,
         public readonly servicePrefix: string,
         private readonly requestContextService: RequestContextService,
         private readonly logger: AppLogger,
@@ -31,7 +30,6 @@ export abstract class ServiceBase<
         private readonly validator?: ValidatorBase<TEntity, ValidatorIdentityBaseInterface>,
     ) {
         this.databaseExceptionHandler = new DataBaseExceptionHandler(logger);
-
     }
 
     /**
@@ -48,16 +46,9 @@ export abstract class ServiceBase<
             }
         }
 
-        // create entity
-        //const entity = await this.builder.buildCreateDto(createDto);
-        //let newEntityId;
         await this.entityRepo.manager.transaction(async (manager) => {
-            //const entity = await this.createEntity(createDto, manager);
             try {
                 return await this.createEntity(createDto, manager);
-                // save in DB
-                //const saved = await manager.save(entity);
-                //newEntityId = entity.id;
             } catch (err) {
                 throw this.databaseExceptionHandler.handle(
                     err,
@@ -109,21 +100,6 @@ export abstract class ServiceBase<
             );
         }
 
-        //update DTO
-        //await this.builder.buildUpdateDto(toUpdate, updateDto);
-        /**
-         * Currently mutates toUpdate, and returns the updated entity (the same entity), i dont like this
-         * Change updateEntity to return void to be more clear?
-         * Must think through how the result object is returned
-         *          - always requery the entity from the DB,
-         *          - or within the method rebuild the object throughout the process.
-         *                      - returned objects from updates would be piecemeal or have to always be fully constructed (all relations)? doesnt sound great
-         *                                  - also goes against having any query params on what to send back, which would be an ideal control of what to return
-         *
-         * CHOICE: always requery db for final result seems cleanest, as its easily uniform and would work well with relation request params
-         *          - if always requery DB, where should it be called?
-         *                  - if inside updateEntity
-         */
         await this.entityRepo.manager.transaction(async (manager) => {
             await this.updateEntity(toUpdate, updateDto, manager);
             try {
@@ -138,7 +114,6 @@ export abstract class ServiceBase<
                 );
             }
         });
-        //return await this.entityRepo.findOne({ where: { id: toUpdate.id } });
         const resultEntity = await this.entityRepo.findOne({
             where: { id: toUpdate.id },
         });
@@ -176,29 +151,11 @@ export abstract class ServiceBase<
         const query = this.entityRepo.createQueryBuilder('entity');
 
         if (options.relations && options.relations.length > 0) {
-            /*const relations: { property: string, alias: string }[] = [];
-            for (const relation of options.relations) {
-                //query.leftJoinAndSelect(`entity.${relation}`, relation as string);
-                const string = relation.split('.');
-                if (string.length === 1) {
-                    relations.push({ property: `entity.${string[0]}`, alias: string[0] });
-                } else {
-                    const rel = string.at(-1)!;
-                    const alias = string.at(-2)!;
-                    relations.push({ property: `${alias}.${rel}`, alias: rel });
-                }
-            }*/
             const relations = this.buildRelationStatements(options.relations)
             for (const relation of relations) {
                 query.leftJoinAndSelect(relation.property, relation.alias);
             }
         }
-
-        /*if (options.sortBy) {
-                query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
-            } else {
-                query.orderBy('entity.id', 'ASC');
-            }*/
 
         if (options.limit) {
             query.limit(options.limit + 1);
