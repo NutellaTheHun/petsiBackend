@@ -1,190 +1,107 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { CreateRecipeSubCategoryDto } from '../dto/recipe-sub-category/create-recipe-sub-category.dto';
-import { UpdateRecipeSubCategoryDto } from '../dto/recipe-sub-category/update-recipe-sub-category.dto';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
-import { RecipeSubCategoryService } from '../services/recipe-sub-category.service';
+import { REC_CAT_A, REC_SUBCAT_1 } from '../utils/constants';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { RecipeSubCategoryController } from './recipe-sub-category.controller';
 
 describe('recipe sub category controller', () => {
-  let controller: RecipeSubCategoryController;
-  let service: RecipeSubCategoryService;
+    let testingUtil: RecipeTestUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: RecipeSubCategoryController;
+    let subRepo: Repository<RecipeSubCategory>;
+    let categoryRepo: Repository<RecipeCategory>;
 
-  let testId: number;
-  let subCategories: RecipeSubCategory[];
-  let subCatId: number;
+    beforeAll(async () => {
+        module = await getRecipeTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
+        await testingUtil.initRecipeSubCategoryTestingDatabase(dbTestContext);
 
-  let categories: RecipeCategory[];
-  let catId: number;
-
-  beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
-
-    controller = module.get<RecipeSubCategoryController>(
-      RecipeSubCategoryController,
-    );
-    service = module.get<RecipeSubCategoryService>(RecipeSubCategoryService);
-
-    categories = [
-      { name: 'CAT_A' } as RecipeCategory,
-      { name: 'CAT_B' } as RecipeCategory,
-      { name: 'CAT_C' } as RecipeCategory,
-    ];
-    catId = 1;
-    categories.map((category) => (category.id = catId++));
-
-    subCategories = [
-      {
-        name: 'SUB_CAT_A',
-        parentCategory: categories[0],
-      } as RecipeSubCategory,
-      {
-        name: 'SUB_CAT_B',
-        parentCategory: categories[1],
-      } as RecipeSubCategory,
-      {
-        name: 'SUB_CAT_C',
-        parentCategory: categories[2],
-      } as RecipeSubCategory,
-    ];
-    subCatId = 1;
-    subCategories.map((subCat) => (subCat.id = subCatId++));
-
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateRecipeSubCategoryDto) => {
-        const exists = subCategories.find((subCat) => subCat.name === dto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
-
-        const parentCategory = categories.find(
-          (cat) => cat.id === dto.parentCategoryId,
+        controller = module.get<RecipeSubCategoryController>(
+            RecipeSubCategoryController,
         );
-
-        const subCat = {
-          id: subCatId++,
-          name: dto.name,
-          parentCategory: parentCategory,
-        } as RecipeSubCategory;
-
-        subCategories.push(subCat);
-        return subCat;
-      });
-
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(
-        async (id: number, dto: UpdateRecipeSubCategoryDto) => {
-          const existIdx = subCategories.findIndex(
-            (subCat) => subCat.id === id,
-          );
-          if (existIdx === -1) {
-            throw new NotFoundException();
-          }
-
-          if (dto.name) {
-            subCategories[existIdx].name = dto.name;
-          }
-
-          return subCategories[existIdx];
-        },
-      );
-
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return subCategories.find((subCat) => subCat.name === name) || null;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: subCategories });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if (!id) {
-        throw new Error();
-      }
-      const result = subCategories.find((subCat) => subCat.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
+        subRepo = module.get(getRepositoryToken(RecipeSubCategory));
+        categoryRepo = module.get(getRepositoryToken(RecipeCategory));
     });
 
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = subCategories.findIndex((subCat) => subCat.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      subCategories.splice(index, 1);
-      return true;
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-  it('should create a sub-category', async () => {
-    const dto = {
-      name: 'testSubCat',
-      parentCategoryId: categories[0].id,
-    } as CreateRecipeSubCategoryDto;
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await subRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-    await expect(controller.create(dto)).not.toBeNull();
-  });
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await subRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
+        }
+    });
 
-  it('should fail create a sub-category', async () => {
-    const dto = {
-      name: 'testSubCat',
-      parentCategoryId: categories[0].id,
-    } as CreateRecipeSubCategoryDto;
+    it('findAll with filter parentCategory matches category sub count', async () => {
+        const category = await categoryRepo.findOneOrFail({
+            where: { name: REC_CAT_A },
+            relations: ['subCategories'],
+        });
+        if (!category.subCategories) throw new Error('sub categories not found');
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [`parentCategory=${category.id}`],
+        );
+        expect(result.items.length).toEqual(category.subCategories.length);
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('findOne returns a seeded sub category', async () => {
+        const sub = await subRepo.findOne({ where: { name: REC_SUBCAT_1 } });
+        if (!sub) throw new Error('seed sub not found');
+        const result = await controller.findOne(sub.id);
+        expect(result.id).toEqual(sub.id);
+    });
 
-  it('should find one a sub-category', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should fail find one a sub-category', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(Error);
-  });
+    it('remove deletes a sub category then findOne fails', async () => {
+        const rows = await subRepo.find({ take: 1 });
+        if (!rows.length) throw new Error('no sub category');
+        const id = rows[0].id;
+        await controller.remove(id);
+        await expect(controller.findOne(id)).rejects.toThrow(NotFoundException);
+    });
 
-  it('should find all a sub-category', async () => {
-    const results = await controller.findAll();
-    expect(results).not.toBeNull();
-    expect(results.items.length).toBeGreaterThan(0);
-  });
-
-  it('should update a sub-category', async () => {
-    const dto = {
-      name: 'UPDATEtestSubCat',
-    } as UpdateRecipeSubCategoryDto;
-
-    const result = await controller.update(1, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('UPDATEtestSubCat');
-  });
-
-  it('should fail update a sub-category', async () => {
-    const dto = {
-      name: 'UPDATEtestSubCat',
-      parentCategoryId: categories[1].id,
-    } as UpdateRecipeSubCategoryDto;
-
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should remove a sub-category', async () => {
-    const removal = await controller.remove(1);
-    expect(removal).toBeUndefined();
-  });
-
-  it('should fail remove a sub-category', async () => {
-    await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

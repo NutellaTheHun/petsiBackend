@@ -10,6 +10,7 @@ import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { RecurringOrderSchedule } from '../../orders/entities/recurring-order-schedule.entity';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryController } from '../controllers/menu-item-category.controller';
@@ -56,6 +57,7 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderCategory,
                 OrderMenuItem,
                 OrderContainerItem,
+                RecurringOrderSchedule,
             ]),
             TypeOrmModule.forFeature([
                 MenuItemCategory,
@@ -66,6 +68,7 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderCategory,
                 OrderMenuItem,
                 OrderContainerItem,
+                RecurringOrderSchedule,
             ]),
             MenuItemsModule,
             CacheModule.register(),

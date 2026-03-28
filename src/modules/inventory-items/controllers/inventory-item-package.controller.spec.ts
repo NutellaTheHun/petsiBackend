@@ -1,180 +1,195 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemPackageDto } from '../dto/inventory-item-package/create-inventory-item-package.dto';
 import { UpdateInventoryItemPackageDto } from '../dto/inventory-item-package/update-inventory-item-package.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
-import { InventoryItemPackageService } from '../services/inventory-item-package.service';
-import {
-  BAG_PKG,
-  BOX_PKG,
-  CAN_PKG,
-  CONTAINER_PKG,
-  OTHER_PKG,
-  PACKAGE_PKG,
-} from '../utils/constants';
+import { BAG_PKG, BOX_PKG, CAN_PKG, PACKAGE_PKG } from '../utils/constants';
+import { inventoryItemPackageToUpdateDto } from '../utils/entity-transformers/inventory-item-package.dto.transformer';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
+import { InventoryItemPackageService } from '../services/inventory-item-package.service';
 import { InventoryItemPackageController } from './inventory-item-package.controller';
 
-describe('Inventory Item Packages Controller', () => {
-  let controller: InventoryItemPackageController;
-  let service: InventoryItemPackageService;
+describe('Inventory Item Package Controller', () => {
+    let testingUtil: InventoryItemTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: InventoryItemPackageController;
+    let packageRepo: Repository<InventoryItemPackage>;
 
-  let packages: InventoryItemPackage[];
-  beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
+    beforeAll(async () => {
+        module = await getInventoryItemTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        await testingUtil.initInventoryItemPackageTestDatabase(dbTestContext);
 
-    controller = module.get<InventoryItemPackageController>(
-      InventoryItemPackageController,
-    );
-    service = module.get<InventoryItemPackageService>(
-      InventoryItemPackageService,
-    );
+        controller = module.get<InventoryItemPackageController>(
+            InventoryItemPackageController,
+        );
+        packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+    });
 
-    packages = [
-      { name: BAG_PKG } as InventoryItemPackage,
-      { name: PACKAGE_PKG } as InventoryItemPackage,
-      { name: BOX_PKG } as InventoryItemPackage,
-      { name: OTHER_PKG } as InventoryItemPackage,
-      { name: CONTAINER_PKG } as InventoryItemPackage,
-      { name: CAN_PKG } as InventoryItemPackage,
-    ];
-    let id = 1;
-    packages.map((pkg) => (pkg.id = id++));
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (createDto: CreateInventoryItemPackageDto) => {
-        const exists = packages.find((unit) => unit.name === createDto.name);
-        if (exists) {
-          throw new BadRequestException();
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
+
+    it('findAll returns packages aligned with repository', async () => {
+        const repoRows = await packageRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
+
+    it('findAll with sort by name DESC', async () => {
+        const repoResult = await packageRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
         }
-
-        const unit = {
-          id: id++,
-          name: createDto.name,
-        } as InventoryItemPackage;
-
-        packages.push(unit);
-        return unit;
-      });
-
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return packages.find((unit) => unit.name === name) || null;
-      });
-
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(
-        async (id: number, updateDto: UpdateInventoryItemPackageDto) => {
-          const index = packages.findIndex((unit) => unit.id === id);
-          if (index === -1) throw new NotFoundException();
-
-          if (updateDto.name) {
-            packages[index].name = updateDto.name;
-          }
-
-          return packages[index];
-        },
-      );
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: packages });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if (!id) {
-        throw new BadRequestException();
-      }
-      const result = packages.find((unit) => unit.id === id);
-      if (!result) {
-        throw new Error();
-      }
-      return result;
     });
 
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = packages.findIndex((unit) => unit.id === id);
-      if (index === -1) return false;
-
-      packages.splice(index, 1);
-
-      return true;
+    it('findOne returns seeded package', async () => {
+        const row = await packageRepo.findOne({ where: { name: BOX_PKG } });
+        if (!row) throw new Error('package not found');
+        const result = await controller.findOne(row.id);
+        expect(result.id).toEqual(row.id);
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should create a package', async () => {
-    const dto = {
-      name: 'testpackage',
-    } as CreateInventoryItemPackageDto;
+    it('create persists package', async () => {
+        const dto = plainToInstance(CreateInventoryItemPackageDto, {
+            name: 'ControllerPackageX',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+    });
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateInventoryItemPackageDto, {
+            name: PACKAGE_PKG,
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
 
-  it('should fail to create a package (already exists)', async () => {
-    const dto = {
-      name: 'testpackage',
-    } as CreateInventoryItemPackageDto;
+    it('update throws ValidationException when name collides', async () => {
+        const pkgs = await packageRepo.find();
+        if (pkgs.length < 2) throw new Error('need 2 packages');
+        const dto = plainToInstance(UpdateInventoryItemPackageDto, {
+            name: pkgs[1].name,
+        });
+        try {
+            await controller.update(pkgs[0].id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateInventoryItemPackageDto, {
+            name: 'Nope',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should return all packages', async () => {
-    const results = await controller.findAll();
-    expect(results.items.length).toEqual(packages.length);
-  });
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
 
-  it('should return a package by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
+        beforeEach(() => {
+            spy = jest.spyOn(
+                InventoryItemPackageService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-  it('should fail to return a package (bad id, returns null)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-  });
+        afterEach(() => {
+            spy.mockRestore();
+        });
 
-  it('should update a package', async () => {
-    const toUpdate = await service.findOneByName('testpackage');
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
+        it('skips updateEntity when name unchanged', async () => {
+            const pkg = await packageRepo.findOne({ where: { name: BAG_PKG } });
+            if (!pkg) throw new Error('pkg');
+            const dto = inventoryItemPackageToUpdateDto(pkg);
+            await controller.update(pkg.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
 
-    toUpdate.name = 'UPDATED_testpackage';
-    const dto = {
-      name: 'UPDATED_testpackage',
-    } as UpdateInventoryItemPackageDto;
+        it('calls updateEntity when name changes', async () => {
+            const pkg = await packageRepo.findOne({ where: { name: CAN_PKG } });
+            if (!pkg) throw new Error('pkg');
+            const dto = inventoryItemPackageToUpdateDto(pkg, {
+                name: 'Can Pkg Ctrl Renamed',
+            });
+            await controller.update(pkg.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await packageRepo.findOne({ where: { id: pkg.id } });
+            expect(row?.name).toEqual('Can Pkg Ctrl Renamed');
+        });
+    });
 
-    const result = await controller.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('UPDATED_testpackage');
-  });
+    it('remove deletes created package then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateInventoryItemPackageDto, {
+                name: 'ControllerRemovePkg',
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should fail to update a package (doesnt exist)', async () => {
-    const toUpdate = await service.findOneByName('UPDATED_testpackage');
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
-
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
-
-  it('should remove a package', async () => {
-    const toRemove = await service.findOneByName('UPDATED_testpackage');
-    if (!toRemove) {
-      throw new Error('unit to remove not found');
-    }
-
-    const result = await controller.remove(toRemove.id);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail to remove a package (id not found, returns false)', async () => {
-    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

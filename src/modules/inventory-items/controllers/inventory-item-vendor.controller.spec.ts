@@ -1,189 +1,195 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryItemVendorDto } from '../dto/inventory-item-vendor/create-inventory-item-vendor.dto';
 import { UpdateInventoryItemVendorDto } from '../dto/inventory-item-vendor/update-inventory-item-vendor.dto';
 import { InventoryItemVendor } from '../entities/inventory-item-vendor.entity';
-import { InventoryItem } from '../entities/inventory-item.entity';
-import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 import { VENDOR_A, VENDOR_B, VENDOR_C } from '../utils/constants';
+import { inventoryItemVendorToUpdateDto } from '../utils/entity-transformers/inventory-item-vendor.dto.transformer';
 import { getInventoryItemTestingModule } from '../utils/inventory-item-testing-module';
+import { InventoryItemTestingUtil } from '../utils/inventory-item-testing.util';
+import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 import { InventoryItemVendorController } from './inventory-item-vendor.controller';
 
 describe('Inventory Item Vendor Controller', () => {
-  let controller: InventoryItemVendorController;
-  let vendorService: InventoryItemVendorService;
+    let testingUtil: InventoryItemTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: InventoryItemVendorController;
+    let vendorRepo: Repository<InventoryItemVendor>;
 
-  let vendors: InventoryItemVendor[] = [];
-  let items: InventoryItem[];
+    beforeAll(async () => {
+        module = await getInventoryItemTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryItemTestingUtil>(
+            InventoryItemTestingUtil,
+        );
+        await testingUtil.initInventoryItemVendorTestDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getInventoryItemTestingModule();
+        controller = module.get<InventoryItemVendorController>(
+            InventoryItemVendorController,
+        );
+        vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
+    });
 
-    controller = module.get<InventoryItemVendorController>(
-      InventoryItemVendorController,
-    );
-    vendorService = module.get<InventoryItemVendorService>(
-      InventoryItemVendorService,
-    );
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-    vendors = [
-      { name: VENDOR_A } as InventoryItemVendor,
-      { name: VENDOR_B } as InventoryItemVendor,
-      { name: VENDOR_C } as InventoryItemVendor,
-    ];
-    let id = 1;
-    vendors.map((vendor) => (vendor.id = id++));
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-    items = [
-      { id: 1, name: 'FOOD_A', vendor: vendors[0] } as InventoryItem,
-      { id: 2, name: 'DRY_A', vendor: vendors[0] } as InventoryItem,
-      { id: 3, name: 'OTHER_A', vendor: vendors[0] } as InventoryItem,
-      { id: 4, name: 'FOOD_B', vendor: vendors[1] } as InventoryItem,
-      { id: 5, name: 'DRY_B', vendor: vendors[1] } as InventoryItem,
-    ];
+    it('findAll returns vendors aligned with repository', async () => {
+        const repoRows = await vendorRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-    vendors[0].inventoryItems = [items[0], items[1], items[2]];
-    vendors[1].inventoryItems = [items[3], items[4]];
-
-    jest
-      .spyOn(vendorService, 'create')
-      .mockImplementation(async (createDto: CreateInventoryItemVendorDto) => {
-        const exists = vendors.find((unit) => unit.name === createDto.name);
-        if (exists) {
-          throw new BadRequestException();
+    it('findAll with sort by name DESC', async () => {
+        const repoResult = await vendorRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
         }
+    });
 
-        const unit = {
-          id: id++,
-          name: createDto.name,
-        } as InventoryItemVendor;
+    it('findOne returns seeded vendor', async () => {
+        const row = await vendorRepo.findOne({ where: { name: VENDOR_A } });
+        if (!row) throw new Error('vendor not found');
+        const result = await controller.findOne(row.id);
+        expect(result.id).toEqual(row.id);
+    });
 
-        vendors.push(unit);
-        return unit;
-      });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-    jest
-      .spyOn(vendorService, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return vendors.find((unit) => unit.name === name) || null;
-      });
+    it('create persists vendor', async () => {
+        const dto = plainToInstance(CreateInventoryItemVendorDto, {
+            name: 'ControllerVendorX',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+    });
 
-    jest
-      .spyOn(vendorService, 'update')
-      .mockImplementation(
-        async (id: number, updateDto: UpdateInventoryItemVendorDto) => {
-          const index = vendors.findIndex((unit) => unit.id === id);
-          if (index === -1) throw new BadRequestException();
-
-          if (updateDto.name) {
-            vendors[index].name = updateDto.name;
-          }
-
-          return vendors[index];
-        },
-      );
-
-    jest.spyOn(vendorService, 'findAll').mockResolvedValue({ items: vendors });
-
-    jest
-      .spyOn(vendorService, 'findOne')
-      .mockImplementation(async (id?: number) => {
-        if (!id) {
-          throw new Error();
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateInventoryItemVendorDto, {
+            name: VENDOR_A,
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
-        const result = vendors.find((unit) => unit.id === id);
-        if (!result) {
-          throw new Error();
+    });
+
+    it('update throws ValidationException when name collides', async () => {
+        const vendors = await vendorRepo.find();
+        if (vendors.length < 2) throw new Error('need 2 vendors');
+        const dto = plainToInstance(UpdateInventoryItemVendorDto, {
+            name: vendors[1].name,
+        });
+        try {
+            await controller.update(vendors[0].id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
-        return result;
-      });
+    });
 
-    jest
-      .spyOn(vendorService, 'remove')
-      .mockImplementation(async (id: number) => {
-        const index = vendors.findIndex((unit) => unit.id === id);
-        if (index === -1) {
-          throw new NotFoundException();
-        }
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateInventoryItemVendorDto, {
+            name: 'Nope',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-        vendors.splice(index, 1);
+    describe('change detector on update', () => {
+        let spy: jest.SpyInstance;
 
-        return true;
-      });
-  });
+        beforeEach(() => {
+            spy = jest.spyOn(
+                InventoryItemVendorService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+        afterEach(() => {
+            spy.mockRestore();
+        });
 
-  it('should create a vendor', async () => {
-    const dto = {
-      name: 'testVendor',
-    } as CreateInventoryItemVendorDto;
+        it('skips updateEntity when name unchanged', async () => {
+            const v = await vendorRepo.findOne({ where: { name: VENDOR_B } });
+            if (!v) throw new Error('vendor');
+            const dto = inventoryItemVendorToUpdateDto(v);
+            await controller.update(v.id, dto);
+            expect(spy).not.toHaveBeenCalled();
+        });
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
+        it('calls updateEntity when name changes', async () => {
+            const v = await vendorRepo.findOne({ where: { name: VENDOR_C } });
+            if (!v) throw new Error('vendor');
+            const dto = inventoryItemVendorToUpdateDto(v, {
+                name: 'Vendor C Ctrl Renamed',
+            });
+            await controller.update(v.id, dto);
+            expect(spy).toHaveBeenCalled();
+            const row = await vendorRepo.findOne({ where: { id: v.id } });
+            expect(row?.name).toEqual('Vendor C Ctrl Renamed');
+        });
+    });
 
-  it('should fail to create a vendor (already exists)', async () => {
-    const dto = {
-      name: 'testVendor',
-    } as CreateInventoryItemVendorDto;
+    it('remove deletes created vendor then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateInventoryItemVendorDto, {
+                name: 'ControllerRemoveVendor',
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should return all vendors', async () => {
-    const results = await controller.findAll();
-    expect(results.items.length).toEqual(vendors.length);
-  });
-
-  it('should return a vendor by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail to return a vendor (bad id, returns null)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(Error);
-  });
-
-  it('should update a vendor', async () => {
-    const toUpdate = await vendorService.findOneByName('testVendor');
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
-
-    const dto = {
-      name: 'UPDATED_testVendor',
-    } as UpdateInventoryItemVendorDto;
-
-    const result = await controller.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('UPDATED_testVendor');
-  });
-
-  it('should fail to update a vendor (doesnt exist)', async () => {
-    const toUpdate = await vendorService.findOneByName('UPDATED_testVendor');
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
-
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(
-      BadRequestException,
-    );
-  });
-
-  it('should remove a vendor', async () => {
-    const toRemove = await vendorService.findOneByName('UPDATED_testVendor');
-    if (!toRemove) {
-      throw new Error('unit to remove not found');
-    }
-
-    const result = await controller.remove(toRemove.id);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail to remove a vendor (id not found)', async () => {
-    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

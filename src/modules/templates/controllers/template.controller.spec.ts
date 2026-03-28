@@ -1,165 +1,295 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItem } from '../../menu-items/entities/menu-item.entity';
+import { NestedCreateTemplateMenuItemDto } from '../dto/template-menu-item/nested-create-template-menu-item.dto';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
-import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template } from '../entities/template.entity';
 import { TemplateService } from '../services/template.service';
-import { getTestTemplateNames } from '../utils/constants';
+import {
+    template_a,
+    template_b,
+    template_c,
+    template_d,
+} from '../utils/constants';
+import { templateToUpdateDto } from '../utils/entity-transformers/template.dto.transformer';
 import { getTemplateTestingModule } from '../utils/template-testing.module';
+import { TemplateTestingUtil } from '../utils/template-testing.util';
 import { TemplateController } from './template.controller';
 
-describe('TemplatesController', () => {
-  let controller: TemplateController;
-  let service: TemplateService;
+describe('TemplateController', () => {
+    let module: TestingModule;
+    let dbTestContext: DatabaseTestContext;
+    let testingUtil: TemplateTestingUtil;
+    let controller: TemplateController;
+    let templateRepo: Repository<Template>;
+    let menuItemRepo: Repository<MenuItem>;
 
-  let templates: Template[];
-  let templateId = 1;
+    beforeAll(async () => {
+        module = await getTemplateTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get(TemplateTestingUtil);
+        await testingUtil.initTemplateMenuItemTestDatabase(dbTestContext);
 
-  let testId: number;
+        controller = module.get(TemplateController);
+        templateRepo = module.get(getRepositoryToken(Template));
+        menuItemRepo = module.get(getRepositoryToken(MenuItem));
+    });
 
-  beforeAll(async () => {
-    const module: TestingModule = await getTemplateTestingModule();
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-    controller = module.get<TemplateController>(TemplateController);
-    service = module.get<TemplateService>(TemplateService);
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-    const templateNames = getTestTemplateNames();
-    templates = templateNames.map(
-      (name) =>
-        ({
-          id: templateId++,
-          name: name,
-        }) as Template,
-    );
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await templateRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateTemplateDto) => {
-        const exists = templates.find((temp) => temp.name === dto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
-
-        const template = {
-          id: templateId++,
-          name: dto.name,
-        } as Template;
-
-        templates.push(template);
-        return template;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: templates });
-
-    jest
-      .spyOn(service, 'findEntitiesById')
-      .mockImplementation(async (ids: number[]) => {
-        return templates.filter(
-          (temp) => ids.findIndex((id) => id === temp.id) !== -1,
+    it('findAll with relations and sortBy name DESC orders like the service', async () => {
+        const result = await controller.findAll(
+            ['templateMenuItems'],
+            100,
+            undefined,
+            'name',
+            'DESC',
         );
-      });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      const result = templates.find((temp) => temp.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
+        expect(result.items.length).toBeGreaterThan(0);
+        expect(result.items[0].name).toEqual(template_d);
     });
 
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return templates.find((temp) => temp.name === name) || null;
-      });
-
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = templates.findIndex((temp) => temp.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      templates.splice(index, 1);
-      return true;
+    it('findOne returns a seeded template', async () => {
+        const row = await templateRepo.findOne({ where: { name: template_a } });
+        if (!row) throw new Error('seed template not found');
+        const result = await controller.findOne(row.id);
+        expect(result.id).toEqual(row.id);
+        expect(result.name).toEqual(template_a);
     });
 
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(async (id: number, dto: UpdateTemplateDto) => {
-        const existIdx = templates.findIndex((temp) => temp.id === id);
-        if (existIdx === -1) {
-          throw new NotFoundException();
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('create persists a template with nested menu items', async () => {
+        const menuItems = await menuItemRepo.find({ take: 1 });
+        if (!menuItems.length) throw new Error('menu items not found');
+        const dto = plainToInstance(CreateTemplateDto, {
+            name: 'ControllerTemplateCreate',
+            templateMenuItems: [
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c1',
+                    displayName: 'CtrlItem',
+                    menuItemId: menuItems[0].id,
+                    tablePosIndex: 1,
+                }),
+            ],
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const persisted = await templateRepo.findOne({
+            where: { name: 'ControllerTemplateCreate' },
+            relations: ['templateMenuItems'],
+        });
+        expect(persisted).not.toBeNull();
+        expect(persisted!.templateMenuItems.length).toEqual(1);
+    });
+
+    it('create throws ValidationException when name already exists', async () => {
+        const menuItems = await menuItemRepo.find({ take: 1 });
+        if (!menuItems.length) throw new Error('menu items not found');
+        const dto = plainToInstance(CreateTemplateDto, {
+            name: template_a,
+            templateMenuItems: [
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'cx',
+                    displayName: 'X',
+                    menuItemId: menuItems[0].id,
+                    tablePosIndex: 9,
+                }),
+            ],
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
         }
+    });
 
-        if (dto.name) {
-          templates[existIdx].name = dto.name;
+    it('create throws ValidationException on duplicate menuItemId in nested items', async () => {
+        const menuItem = await menuItemRepo.findOne({ where: {} });
+        if (!menuItem) throw new Error('menu item not found');
+        const dto = plainToInstance(CreateTemplateDto, {
+            name: 'ControllerDupMenuTpl',
+            templateMenuItems: [
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c1',
+                    displayName: 'Item 1',
+                    menuItemId: menuItem.id,
+                    tablePosIndex: 1,
+                }),
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c2',
+                    displayName: 'Item 2',
+                    menuItemId: menuItem.id,
+                    tablePosIndex: 2,
+                }),
+            ],
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload(
+                    'DUPLICATE_ITEMS',
+                    ['c1', 'c2'],
+                    ['templateMenuItems'],
+                ),
+            );
         }
+    });
 
-        return templates[existIdx];
-      });
-  });
+    it('update throws ValidationException when name collides with another template', async () => {
+        const toUpdate = await templateRepo.findOne({
+            where: { name: template_a },
+            relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+        });
+        if (!toUpdate?.templateMenuItems?.length) {
+            throw new Error('template_a with menu items not found');
+        }
+        const dto = templateToUpdateDto(toUpdate, { name: template_b });
+        try {
+            await controller.update(toUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
+        }
+    });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const toUpdate = await templateRepo.findOne({
+            where: { name: template_a },
+            relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+        });
+        if (!toUpdate?.templateMenuItems?.length) {
+            throw new Error('template_a with menu items not found');
+        }
+        const dto = templateToUpdateDto(toUpdate, {
+            name: 'ControllerMissingIdName',
+        });
+        await expect(
+            controller.update(9_999_999, dto),
+        ).rejects.toThrow(DatabaseException);
+    });
 
-  it('should create a template', async () => {
-    const dto = {
-      name: 'testTemplate',
-    } as CreateTemplateDto;
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-    const result = await controller.create(dto);
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                TemplateService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testTemplate');
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
 
-    testId = result?.id as number;
-  });
+        it('skips updateEntity when DTO matches current entity', async () => {
+            const entity = await templateRepo.findOne({
+                where: { name: template_a },
+                relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+            });
+            if (!entity) throw new Error('template not found');
+            const dto = templateToUpdateDto(entity);
+            const result = await controller.update(entity.id, dto);
+            expect(result.name).toEqual(entity.name);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
 
-  it('should fail to create a template (already exists)', async () => {
-    const dto = {
-      name: 'testTemplate',
-    } as CreateTemplateDto;
+        it('calls updateEntity when name changes', async () => {
+            const entity = await templateRepo.findOne({
+                where: { name: template_c },
+                relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+            });
+            if (!entity?.templateMenuItems?.length) {
+                throw new Error('template_c with menu items not found');
+            }
+            const newName = 'Template C Controller Renamed';
+            const dto = templateToUpdateDto(entity, { name: newName });
+            const result = await controller.update(entity.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await templateRepo.findOne({ where: { id: entity.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('remove deletes a template then findOne fails', async () => {
+        const menuItems = await menuItemRepo.find({ take: 1 });
+        if (!menuItems.length) throw new Error('menu items not found');
+        const dto = plainToInstance(CreateTemplateDto, {
+            name: 'ControllerTemplateRemoveMe',
+            templateMenuItems: [
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'cr',
+                    displayName: 'R',
+                    menuItemId: menuItems[0].id,
+                    tablePosIndex: 1,
+                }),
+            ],
+        });
+        const created = await controller.create(dto);
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should find template by id', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail find template by id (not exist)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should update template name', async () => {
-    const dto = {
-      name: 'updateTemplateName',
-    } as UpdateTemplateDto;
-
-    const result = await controller.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('updateTemplateName');
-  });
-
-  it('should fail update template name (not exist)', async () => {
-    const dto = {
-      name: 'updateTemplateName',
-    } as UpdateTemplateDto;
-
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should remove template', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail remove template (not exist)', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

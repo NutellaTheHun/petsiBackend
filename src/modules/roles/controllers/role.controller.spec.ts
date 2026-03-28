@@ -1,142 +1,199 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { Role } from '../entities/role.entity';
 import { RoleService } from '../services/role.service';
-import { ROLE_ADMIN, ROLE_MANAGER, ROLE_STAFF } from '../utils/constants';
+import {
+    ROLE_ADMIN,
+    ROLE_MANAGER,
+    ROLE_STAFF,
+} from '../utils/constants';
 import { getRoleTestingModule } from '../utils/role-testing-module';
+import { RoleTestUtil } from '../utils/role-test.util';
 import { RoleController } from './role.controller';
 
-describe('Role Controller', () => {
-  let controller: RoleController;
-  let roleService: RoleService;
+describe('RoleController', () => {
+    let module: TestingModule;
+    let dbTestContext: DatabaseTestContext;
+    let testingUtil: RoleTestUtil;
+    let controller: RoleController;
+    let roleRepo: Repository<Role>;
 
-  let roleId = 1;
-  let roles: Role[];
+    beforeAll(async () => {
+        module = await getRoleTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get(RoleTestUtil);
+        await testingUtil.initRoleTestingDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRoleTestingModule();
-
-    controller = module.get<RoleController>(RoleController);
-    roleService = module.get<RoleService>(RoleService);
-
-    roles = [
-      { name: ROLE_ADMIN } as Role,
-      { name: ROLE_MANAGER } as Role,
-      { name: ROLE_STAFF } as Role,
-    ];
-    roles.map((role) => (role.id = roleId++));
-
-    jest
-      .spyOn(roleService, 'create')
-      .mockImplementation(async (createDto: CreateRoleDto) => {
-        const exists = roles.find((role) => role.name === createDto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
-
-        const role = {
-          id: roleId++,
-          name: createDto.name,
-        } as Role;
-
-        roles.push(role);
-
-        return role;
-      });
-
-    jest
-      .spyOn(roleService, 'update')
-      .mockImplementation(async (id: number, updateDto: UpdateRoleDto) => {
-        const index = roles.findIndex((role) => role.id === id);
-        if (index === -1) {
-          throw new NotFoundException();
-        }
-
-        if (updateDto.name) {
-          roles[index].name = updateDto.name;
-        }
-
-        return roles[index];
-      });
-
-    jest.spyOn(roleService, 'findAll').mockResolvedValue({ items: roles });
-
-    jest
-      .spyOn(roleService, 'findOne')
-      .mockImplementation(async (id?: number) => {
-        if (!id) {
-          throw new BadRequestException();
-        }
-        const result = roles.find((role) => role.id === id);
-        if (!result) {
-          throw new NotFoundException();
-        }
-        return result;
-      });
-
-    jest.spyOn(roleService, 'remove').mockImplementation(async (id: number) => {
-      const index = roles.findIndex((role) => role.id === id);
-      if (index === -1) throw new NotFoundException();
-
-      roles.splice(index, 1);
-
-      return true;
+        controller = module.get(RoleController);
+        roleRepo = module.get(getRepositoryToken(Role));
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-  it('should return all roles', async () => {
-    const result = await controller.findAll();
-    expect(result.items.length).not.toEqual(0);
-  });
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-  it('should get one role by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await roleRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-  it('should not return one role (bad id)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-  });
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await roleRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
+        }
+    });
 
-  it('should create and return a role', async () => {
-    const dto = { name: 'newRole' } as Role;
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
+    it('findOne returns a seeded role', async () => {
+        const row = await roleRepo.findOne({ where: { name: ROLE_ADMIN } });
+        if (!row) throw new Error('seed role not found');
+        const result = await controller.findOne(row.id);
+        expect(result.id).toEqual(row.id);
+        expect(result.name).toEqual(ROLE_ADMIN);
+    });
 
-  it('should fail to create a role (non-unique name)', async () => {
-    const dto = { name: 'newRole' } as Role;
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should update a role', async () => {
-    const toUpdate = await controller.findOne(4);
-    if (!toUpdate) {
-      throw new Error('role to update returned null');
-    }
+    it('create persists a new role', async () => {
+        const dto = plainToInstance(CreateRoleDto, {
+            name: 'controller_role_create',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const persisted = await roleRepo.findOne({
+            where: { name: 'controller_role_create' },
+        });
+        expect(persisted).not.toBeNull();
+    });
 
-    const dto = {
-      name: 'updatedRole',
-    } as UpdateRoleDto;
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateRoleDto, { name: ROLE_ADMIN });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
+        }
+    });
 
-    const result = await controller.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-  });
+    it('update throws ValidationException when name collides with another role', async () => {
+        const roles = await roleRepo.find();
+        if (roles.length < 2) throw new Error('not enough roles');
+        const dto = plainToInstance(UpdateRoleDto, {
+            name: roles[1].name,
+        });
+        try {
+            await controller.update(roles[0].id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
+        }
+    });
 
-  it('should remove a role', async () => {
-    const removal = await controller.remove(4);
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateRoleDto, { name: 'DoesNotMatter' });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-    await expect(removal).toBeUndefined();
-    await expect(controller.findOne(4)).rejects.toThrow(NotFoundException);
-  });
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-  it('should fail to remove a role (bad id)', async () => {
-    await expect(controller.remove(4)).rejects.toThrow(NotFoundException);
-  });
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                RoleService.prototype as any,
+                'updateEntity',
+            );
+        });
+
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches current name', async () => {
+            const role = await roleRepo.findOne({ where: { name: ROLE_STAFF } });
+            if (!role) throw new Error('staff role not found');
+            const dto = plainToInstance(UpdateRoleDto, { name: ROLE_STAFF });
+            const result = await controller.update(role.id, dto);
+            expect(result.name).toEqual(ROLE_STAFF);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when name changes', async () => {
+            const role = await roleRepo.findOne({ where: { name: ROLE_MANAGER } });
+            if (!role) throw new Error('manager role not found');
+            const newName = 'role_manager_ctrl_renamed';
+            const dto = plainToInstance(UpdateRoleDto, { name: newName });
+            const result = await controller.update(role.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await roleRepo.findOne({ where: { id: role.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
+
+    it('remove deletes a created role then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateRoleDto, { name: 'controller_role_remove' }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

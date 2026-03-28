@@ -47,29 +47,26 @@ export abstract class ServiceBase<
             }
         }
 
-        await this.entityRepo.manager.transaction(async (manager) => {
-            try {
-                return await this.createEntity(createDto, manager);
-            } catch (err) {
-                throw this.databaseExceptionHandler.handle(
-                    err,
-                    this.servicePrefix,
-                    requestId,
-                    'CREATE',
-                );
-            }
-        });
-        throw new Error('entity creation failed');
+        const created = await this.entityRepo.manager.transaction(
+            async (manager) => {
+                try {
+                    return await this.createEntity(createDto, manager);
+                } catch (err) {
+                    throw this.databaseExceptionHandler.handle(
+                        err,
+                        this.servicePrefix,
+                        requestId,
+                        'CREATE',
+                    );
+                }
+            },
+        );
 
-        /*const resultEntity = await this.entityRepo.findOne({
-          where: { id: newEntityId },
-        });
-    
-        if (resultEntity && 'password' in resultEntity) {
-          resultEntity.password = undefined;
+        if (created && 'password' in created) {
+            (created as any).password = undefined;
         }
-    
-        return resultEntity;*/
+
+        return created;
     }
 
     /**

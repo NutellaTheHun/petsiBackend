@@ -144,6 +144,12 @@ export class UnitOfMeasureController extends ControllerBase<UnitOfMeasureEntity>
         description: `Filterable fields. Use format: field=value. Available filters:\n
           - **category** (e.g., \`category=5\`)`,
     })
+    @ApiQuery({
+        name: 'search',
+        required: false,
+        type: String,
+        description: 'Search by unit of measure name',
+    })
     async findAll(
         @Query('relations') rawRelations?: string | string[],
         @Query('limit') limit?: number,
@@ -162,7 +168,7 @@ export class UnitOfMeasureController extends ControllerBase<UnitOfMeasureEntity>
             cursor,
             sortBy,
             sortOrder,
-            undefined,
+            search,
             filters,
             undefined,
             undefined,

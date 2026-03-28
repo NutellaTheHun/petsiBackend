@@ -6,6 +6,7 @@ import { OrderCategory } from '../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
 import { Order } from '../orders/entities/order.entity';
+import { RecurringOrderSchedule } from '../orders/entities/recurring-order-schedule.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
 import { MenuItemContainerItemBuilder } from './builders/menu-item-container-item.builder';
@@ -45,6 +46,7 @@ import { MenuItemValidator } from './validators/menu-item.validator';
             OrderCategory,
             OrderMenuItem,
             OrderContainerItem,
+            RecurringOrderSchedule,
         ]),
         CacheModule.register(),
         AppLoggingModule,

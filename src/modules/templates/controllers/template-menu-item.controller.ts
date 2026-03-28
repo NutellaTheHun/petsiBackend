@@ -156,6 +156,12 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
         description: 'Sort order: ASC or DESC',
     })
     @ApiQuery({
+        name: 'search',
+        required: false,
+        type: String,
+        description: 'Search by menu item name (case-insensitive partial match)',
+    })
+    @ApiQuery({
         name: 'filters',
         required: false,
         isArray: true,
@@ -181,7 +187,7 @@ export class TemplateMenuItemController extends ControllerBase<TemplateMenuItemE
             cursor,
             sortBy,
             sortOrder,
-            undefined,
+            search,
             filters,
             undefined,
             undefined,

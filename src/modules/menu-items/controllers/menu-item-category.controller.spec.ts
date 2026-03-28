@@ -1,173 +1,206 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { getRecipeTestingModule } from '../../recipes/utils/recipes-testing.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemCategoryDto } from '../dto/menu-item-category/create-menu-item-category.dto';
 import { UpdateMenuItemCategoryDto } from '../dto/menu-item-category/update-menu-item-category.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemCategoryService } from '../services/menu-item-category.service';
-import { getTestCategoryNames } from '../utils/constants';
+import {
+    CAT_BLUE,
+    CAT_ORANGE,
+    CAT_RED,
+} from '../utils/constants';
+import { menuItemCategoryToUpdateDto } from '../utils/entity-transformers/menu-item-category.dto.transfomer';
+import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
+import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
 import { MenuItemCategoryController } from './menu-item-category.controller';
 
 describe('menu item category controller', () => {
-  let controller: MenuItemCategoryController;
-  let service: MenuItemCategoryService;
-  let categories: MenuItemCategory[];
+    let testingUtil: MenuItemTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: MenuItemCategoryController;
+    let categoryRepo: Repository<MenuItemCategory>;
 
-  let testId: number;
+    beforeAll(async () => {
+        module = await getMenuItemTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        await testingUtil.initMenuItemCategoryTestDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
-
-    controller = module.get<MenuItemCategoryController>(
-      MenuItemCategoryController,
-    );
-    service = module.get<MenuItemCategoryService>(MenuItemCategoryService);
-
-    const names = getTestCategoryNames();
-    let id = 1;
-    categories = names.map(
-      (name) =>
-        ({
-          id: id++,
-          name: name,
-        }) as MenuItemCategory,
-    );
-
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateMenuItemCategoryDto) => {
-        const exists = categories.find(
-          (category) => category.name === dto.name,
+        controller = module.get<MenuItemCategoryController>(
+            MenuItemCategoryController,
         );
-        if (exists) {
-          throw new BadRequestException();
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+    });
+
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
+
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
+
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await categoryRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
+
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
         }
+    });
 
-        const category = {
-          id: id++,
-          name: dto.name,
-        } as MenuItemCategory;
+    it('findOne returns a seeded category', async () => {
+        const cat = await categoryRepo.findOne({ where: { name: CAT_RED } });
+        if (!cat) throw new Error('seed category not found');
+        const result = await controller.findOne(cat.id);
+        expect(result.id).toEqual(cat.id);
+    });
 
-        categories.push(category);
-        return category;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: categories });
-
-    jest
-      .spyOn(service, 'findEntitiesById')
-      .mockImplementation(async (ids: number[]) => {
-        return categories.filter(
-          (cat) => ids.findIndex((id) => id === cat.id) !== -1,
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
         );
-      });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if (!id) {
-        throw new BadRequestException();
-      }
-      const result = categories.find((cat) => cat.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
     });
 
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return categories.find((cat) => cat.name === name) || null;
-      });
-
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = categories.findIndex((cat) => cat.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      categories.splice(index, 1);
-      return true;
+    it('create persists a new category', async () => {
+        const dto = plainToInstance(CreateMenuItemCategoryDto, {
+            name: 'ControllerMenuItemCategoryNew',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await categoryRepo.findOne({ where: { name: dto.name } });
+        expect(row).not.toBeNull();
     });
 
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(
-        async (id: number, dto: UpdateMenuItemCategoryDto) => {
-          const existIdx = categories.findIndex((cat) => cat.id === id);
-          if (existIdx === -1) {
-            throw new NotFoundException();
-          }
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateMenuItemCategoryDto, {
+            name: CAT_RED,
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
 
-          if (dto.name) {
-            categories[existIdx].name = dto.name;
-          }
+    it('update throws ValidationException when name collides with another category', async () => {
+        const categories = await categoryRepo.find();
+        if (categories.length < 2) throw new Error('Not enough categories');
 
-          return categories[existIdx];
-        },
-      );
-  });
+        const categoryToUpdate = categories[0];
+        const existingCategory = categories[1];
+        const dto = plainToInstance(UpdateMenuItemCategoryDto, {
+            name: existingCategory.name,
+        });
+        try {
+            await controller.update(categoryToUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateMenuItemCategoryDto, {
+            name: 'DoesNotMatter',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should create a category', async () => {
-    const dto = {
-      name: 'testCategory',
-    } as CreateMenuItemCategoryDto;
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-    const result = await controller.create(dto);
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                MenuItemCategoryService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testCategory');
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
 
-    testId = result?.id as number;
-  });
+        it('skips updateEntity when DTO matches current category', async () => {
+            const cat = await categoryRepo.findOne({ where: { name: CAT_BLUE } });
+            if (!cat) throw new Error('category blue not found');
+            const dto = menuItemCategoryToUpdateDto(cat);
+            const result = await controller.update(cat.id, dto);
+            expect(result.name).toEqual(cat.name);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
 
-  it('should fail to create a category (already exists)', async () => {
-    const dto = {
-      name: 'testCategory',
-    } as CreateMenuItemCategoryDto;
+        it('calls updateEntity when name changes', async () => {
+            const cat = await categoryRepo.findOne({
+                where: { name: CAT_ORANGE },
+            });
+            if (!cat) throw new Error('category orange not found');
+            const newName = 'category orange controller renamed';
+            const dto = menuItemCategoryToUpdateDto(cat, { name: newName });
+            const result = await controller.update(cat.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await categoryRepo.findOne({ where: { id: cat.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('remove deletes a created category then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateMenuItemCategoryDto, {
+                name: 'ControllerMenuItemCategoryRemove',
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should find category by id', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail find category by id (not exist)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should update category name', async () => {
-    const dto = {
-      name: 'updateTestCategory',
-    } as UpdateMenuItemCategoryDto;
-
-    const result = await controller.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('updateTestCategory');
-  });
-
-  it('should fail update category name (not exist)', async () => {
-    const dto = {
-      name: 'updateTestCategory',
-    } as UpdateMenuItemCategoryDto;
-
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should remove category', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail remove category (not exist)', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

@@ -1,11 +1,36 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { MoreThan, Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { NestedCreateInventoryItemSizeDto } from '../../inventory-items/dto/inventory-item-size/nested-create-inventory-item-size.dto';
+import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
+import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
+import {
+    FOOD_A,
+    FOOD_B,
+    FOOD_C,
+    PACKAGE_PKG,
+} from '../../inventory-items/utils/constants';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
+import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
+import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
+import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaCountService } from '../services/inventory-area-count.service';
+import { AREA_A, AREA_B, AREA_C, AREA_D } from '../utils/constants';
+import { inventoryAreaCountToUpdateDto } from '../utils/entity-transformers/inventory-area-count.dto.transformer';
 import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaCountController } from './inventory-area-count.controller';
@@ -13,193 +38,278 @@ import { InventoryAreaCountController } from './inventory-area-count.controller'
 describe('inventory area count controller', () => {
     let testingUtil: InventoryAreaTestUtil;
     let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
     let controller: InventoryAreaCountController;
-    let countService: InventoryAreaCountService;
+    let countRepo: Repository<InventoryAreaCount>;
+    let areaRepo: Repository<InventoryArea>;
+    let itemRepo: Repository<InventoryItem>;
+    let packageRepo: Repository<InventoryItemPackage>;
+    let uomRepo: Repository<UnitOfMeasure>;
 
-    let areas: InventoryArea[];
-    let areaId = 1;
+    const getInventoryAreaCount = async (areaName: string) => {
+        return await countRepo.findOneOrFail({
+            where: {
+                inventoryArea: { name: areaName },
+                countedInventoryItems: MoreThan(0),
+            },
+            relations: [
+                'countedInventoryItems',
+                'countedInventoryItems.countedInventoryItem',
+                'countedInventoryItems.countedItemSize',
+                'inventoryArea',
+            ],
+        });
+    };
 
-    let areaCounts: InventoryAreaCount[];
-    let areaCountId = 1;
+    const findArea = async (name: string) => {
+        return await areaRepo.findOneOrFail({ where: { name } });
+    };
+
+    const findItem = async (name: string) => {
+        return await itemRepo.findOneOrFail({
+            where: { name },
+            relations: ['sizes'],
+        });
+    };
 
     beforeAll(async () => {
-        const module: TestingModule = await getInventoryAreasTestingModule();
-        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        module = await getInventoryAreasTestingModule();
         dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
+
         controller = module.get<InventoryAreaCountController>(
             InventoryAreaCountController,
         );
-        countService = module.get<InventoryAreaCountService>(
-            InventoryAreaCountService,
-        );
+        countRepo = module.get(getRepositoryToken(InventoryAreaCount));
+        areaRepo = module.get(getRepositoryToken(InventoryArea));
+        itemRepo = module.get(getRepositoryToken(InventoryItem));
+        packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
+        uomRepo = module.get(getRepositoryToken(UnitOfMeasure));
+    });
 
-        areas = await testingUtil.getTestInventoryAreaEntities(dbTestContext);
-        areas.map((area) => (area.id = areaId++));
-
-        areaCounts = [
-            { inventoryArea: areas[0], countDate: new Date() } as InventoryAreaCount,
-            { inventoryArea: areas[0], countDate: new Date() } as InventoryAreaCount,
-
-            { inventoryArea: areas[1], countDate: new Date() } as InventoryAreaCount,
-            { inventoryArea: areas[1], countDate: new Date() } as InventoryAreaCount,
-
-            { inventoryArea: areas[2], countDate: new Date() } as InventoryAreaCount,
-            { inventoryArea: areas[2], countDate: new Date() } as InventoryAreaCount,
-
-            { inventoryArea: areas[3], countDate: new Date() } as InventoryAreaCount,
-            { inventoryArea: areas[3], countDate: new Date() } as InventoryAreaCount,
-        ];
-        areaCounts.map((count) => (count.id = areaCountId++));
-
-        areas[0].inventoryCounts = [areaCounts[0], areaCounts[1]];
-        areas[1].inventoryCounts = [areaCounts[2], areaCounts[3]];
-        areas[2].inventoryCounts = [areaCounts[4], areaCounts[5]];
-        areas[3].inventoryCounts = [areaCounts[6], areaCounts[7]];
-
-        jest
-            .spyOn(countService, 'create')
-            .mockImplementation(async (createDto: CreateInventoryAreaCountDto) => {
-                const areaIndex = areas.findIndex(
-                    (area) => area.id == createDto.inventoryAreaId,
-                );
-                const newCount = {
-                    inventoryArea: areas[areaIndex],
-                } as InventoryAreaCount;
-
-                newCount.id = areaCountId++;
-                areaCounts.push(newCount);
-                if (!areas[areaIndex].inventoryCounts) {
-                    areas[areaIndex].inventoryCounts = [];
-                }
-                areas[areaIndex].inventoryCounts.push(newCount);
-                return newCount;
-            });
-
-        /*jest
-          .spyOn(countService, 'findByAreaName')
-          .mockImplementation(async (name: string) => {
-            const area = areas.find((area) => area.name === name);
-            return area?.inventoryCounts || [];
-          });*/
-
-        jest
-            .spyOn(countService, 'update')
-            .mockImplementation(
-                async (id: number, updateDto: UpdateInventoryAreaCountDto) => {
-                    const idx = areaCounts.findIndex((c) => c.id === id);
-                    if (idx === -1) {
-                        throw new NotFoundException();
-                    }
-
-                    const toUpdate = areaCounts[idx];
-                    if (updateDto.inventoryAreaId) {
-                        const oldAreaIdx = areas.findIndex(
-                            (area) => area.id === toUpdate.inventoryArea.id,
-                        );
-                        if (oldAreaIdx === -1) {
-                            throw new Error('original area not found');
-                        }
-
-                        if (areas[oldAreaIdx].inventoryCounts) {
-                            areas[oldAreaIdx].inventoryCounts = areas[
-                                oldAreaIdx
-                            ].inventoryCounts.filter((count) => count.id !== id);
-                        }
-
-                        const newAreaIdx = areas.findIndex(
-                            (area) => area.id === toUpdate.inventoryArea.id,
-                        );
-                        toUpdate.inventoryArea = areas[newAreaIdx];
-
-                        if (!areas[newAreaIdx].inventoryCounts) {
-                            areas[newAreaIdx].inventoryCounts = [];
-                        }
-                        areas[newAreaIdx].inventoryCounts.push(toUpdate);
-                    }
-
-                    return toUpdate;
-                },
-            );
-
-        jest
-            .spyOn(countService, 'findAll')
-            .mockResolvedValue({ items: areaCounts });
-
-        jest
-            .spyOn(countService, 'findOne')
-            .mockImplementation(async (id?: number) => {
-                if (!id) {
-                    throw new BadRequestException();
-                }
-                const result = areaCounts.find((count) => count.id === id);
-                if (!result) {
-                    throw new Error();
-                }
-                return result;
-            });
-
-        jest
-            .spyOn(countService, 'remove')
-            .mockImplementation(async (id: number) => {
-                const idx = areaCounts.findIndex((count) => count.id === id);
-                if (idx === -1) {
-                    throw new NotFoundException();
-                }
-
-                areaCounts.splice(idx, 1);
-                return true;
-            });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {
         expect(controller).toBeDefined();
     });
 
-    it('should create an inventory count', async () => {
-        const dto = { inventoryAreaId: 1 } as CreateInventoryAreaCountDto;
+    it('findAll returns items aligned with repository', async () => {
+        const repoCount = await countRepo.count();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoCount);
+    });
+
+    it('findOne returns a seeded count', async () => {
+        const count = await countRepo.findOne({
+            where: {},
+            relations: ['inventoryArea'],
+        });
+        if (!count) throw new Error('no count in seed');
+        const result = await controller.findOne(count.id);
+        expect(result.id).toEqual(count.id);
+    });
+
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('create persists a new count with nested items', async () => {
+        const area = await findArea(AREA_A);
+        const food_a = await findItem(FOOD_A);
+        const food_b = await findItem(FOOD_B);
+        const pkg = await packageRepo.findOneOrFail({
+            where: { name: PACKAGE_PKG },
+        });
+        const uom = await uomRepo.findOneOrFail({ where: { name: POUND } });
+
+        const dto = plainToInstance(CreateInventoryAreaCountDto, {
+            inventoryAreaId: area.id,
+            countedInventoryItems: [
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: 'c1',
+                    countedInventoryItemId: food_a.id,
+                    amount: 2,
+                    countedItemSizeId: food_a.sizes[0].id,
+                }),
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: 'c2',
+                    countedInventoryItemId: food_b.id,
+                    amount: 3,
+                    countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
+                        createId: 'c3',
+                        packageId: pkg.id,
+                        measureTypeId: uom.id,
+                        measureAmount: 1,
+                        cost: 1.99,
+                    }),
+                }),
+            ],
+        });
+
         const result = await controller.create(dto);
-        expect(result).not.toBeNull();
+        expect(result.id).toBeDefined();
+        const row = await countRepo.findOne({
+            where: { id: result.id },
+            relations: ['countedInventoryItems'],
+        });
+        expect(row?.countedInventoryItems?.length).toEqual(2);
     });
 
-    it('should return all itemCounts', async () => {
-        const results = await controller.findAll();
-        expect(results.items.length).toEqual(areaCounts.length);
-    });
+    it('create throws ValidationException when nested item amount is invalid', async () => {
+        const area = await findArea(AREA_B);
+        const food_b = await findItem(FOOD_B);
 
-    it('should return an inventory count by id', async () => {
-        const result = await controller.findOne(1);
-        expect(result).not.toBeNull();
-    });
+        const dto = plainToInstance(CreateInventoryAreaCountDto, {
+            inventoryAreaId: area.id,
+            countedInventoryItems: [
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: 'c1',
+                    countedInventoryItemId: food_b.id,
+                    amount: 0,
+                    countedItemSizeId: food_b.sizes[0].id,
+                }),
+            ],
+        });
 
-    it('should fail to return an inventory count (bad id, returns null)', async () => {
-        await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-    });
-
-    it('should update an inventory count', async () => {
-        const toUpdate = await controller.findOne(1);
-        if (!toUpdate) {
-            throw new Error('count to update not found');
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [{ prop: 'countedInventoryItems', id: 'c1' }],
+                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, [
+                    'amount',
+                ]),
+            );
         }
-
-        const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
-
-        const result = await controller.update(toUpdate.id, uDto);
-        expect(result).not.toBeNull();
     });
 
-    it('should fail to update an inventory count (doesnt exist)', async () => {
-        const uDto = { inventoryAreaId: 2 } as UpdateInventoryAreaCountDto;
-        await expect(controller.update(0, uDto)).rejects.toThrow(NotFoundException);
+    it('update throws ValidationException when nested create item has invalid size for item', async () => {
+        const countToUpdate = await getInventoryAreaCount(AREA_C);
+        const food_c = await findItem(FOOD_C);
+        const food_b = await findItem(FOOD_B);
+
+        const dto = inventoryAreaCountToUpdateDto(countToUpdate);
+        dto.countedInventoryItems.push(
+            plainToInstance(NestedCreateInventoryAreaItemDto, {
+                createId: 'c1',
+                countedInventoryItemId: food_c.id,
+                amount: 1,
+                countedItemSizeId: food_b.sizes[0].id,
+            }),
+        );
+
+        try {
+            await controller.update(countToUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [{ prop: 'countedInventoryItems', id: 'c1' }],
+                createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, [
+                    'countedItemSize',
+                ]),
+            );
+        }
     });
 
-    it('should remove an inventory count', async () => {
-        const removal = await controller.remove(1);
-        expect(removal).toBeUndefined();
-
-        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const count = await getInventoryAreaCount(AREA_A);
+        const dto = inventoryAreaCountToUpdateDto(count);
+        await expect(
+            controller.update(9_999_999, dto),
+        ).rejects.toThrow(DatabaseException);
     });
 
-    it('should fail to remove an inventory count (id not found, returns false)', async () => {
-        await expect(controller.remove(1)).rejects.toThrow(NotFoundException);
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
+
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                InventoryAreaCountService.prototype as any,
+                'updateEntity',
+            );
+        });
+
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
+
+        it('skips updateEntity when DTO matches current state', async () => {
+            const count = await getInventoryAreaCount(AREA_D);
+            const dto = inventoryAreaCountToUpdateDto(count);
+            const result = await controller.update(count.id, dto);
+            expect(result.id).toEqual(count.id);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
+
+        it('calls updateEntity when a nested item amount changes', async () => {
+            const countToUpdate = await getInventoryAreaCount(AREA_B);
+            const itemToUpdate = await findItem(FOOD_B);
+
+            const dto = inventoryAreaCountToUpdateDto(countToUpdate);
+            const areaItemToUpdate = dto.countedInventoryItems.pop();
+            const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto)
+                .id;
+            dto.countedInventoryItems.push(
+                plainToInstance(NestedUpdateInventoryAreaItemDto, {
+                    id: areaItemUpdateId,
+                    countedInventoryItemId: itemToUpdate.id,
+                    countedItemSizeId: itemToUpdate.sizes[0].id,
+                    amount: 2,
+                }),
+            );
+
+            await controller.update(countToUpdate.id, dto);
+            expect(updateEntitySpy).toHaveBeenCalled();
+
+            const row = await countRepo.findOne({
+                where: { id: countToUpdate.id },
+                relations: ['countedInventoryItems'],
+            });
+            const updatedItem = row?.countedInventoryItems.find(
+                (i) => i.id === areaItemUpdateId,
+            );
+            expect(updatedItem?.amount).toEqual(2);
+        });
+    });
+
+    it('remove deletes a count then findOne fails', async () => {
+        const area = await findArea(AREA_A);
+        const food_a = await findItem(FOOD_A);
+        const createDto = plainToInstance(CreateInventoryAreaCountDto, {
+            inventoryAreaId: area.id,
+            countedInventoryItems: [
+                plainToInstance(NestedCreateInventoryAreaItemDto, {
+                    createId: 'cRm',
+                    countedInventoryItemId: food_a.id,
+                    amount: 1,
+                    countedItemSizeId: food_a.sizes[0].id,
+                }),
+            ],
+        });
+        const created = await controller.create(createDto);
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });

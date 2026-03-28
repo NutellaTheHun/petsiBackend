@@ -110,7 +110,7 @@ export class RecipeSubCategoryController extends ControllerBase<RecipeSubCategor
     })
     @ApiNotFoundResponse({ description: 'Recipe Sub Category not found' })
     async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-        const result = super.remove(id);
+        const result = await super.remove(id);
 
         await invalidateFindAllCache('RecipeCategoryService', this.cacheManager);
 

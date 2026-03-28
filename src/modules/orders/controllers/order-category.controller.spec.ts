@@ -1,164 +1,171 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateOrderCategoryDto } from '../dto/order-category/create-order-category.dto';
 import { UpdateOrderCategoryDto } from '../dto/order-category/update-order-category.dto';
 import { OrderCategory } from '../entities/order-category.entity';
-import { OrderCategoryService } from '../services/order-category.service';
-import { getTestOrderCategoryNames } from '../utils/constants';
+import { TYPE_A, TYPE_D } from '../utils/constants';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
+import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderCategoryController } from './order-category.controller';
 
 describe('order category controller', () => {
-  let controller: OrderCategoryController;
-  let service: OrderCategoryService;
-  let types: OrderCategory[];
+    let testingUtil: OrderTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: OrderCategoryController;
+    let categoryRepo: Repository<OrderCategory>;
 
-  let testId: number;
+    beforeAll(async () => {
+        module = await getOrdersTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<OrderTestingUtil>(OrderTestingUtil);
+        await testingUtil.initOrderCategoryTestDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getOrdersTestingModule();
+        controller = module.get<OrderCategoryController>(OrderCategoryController);
+        categoryRepo = module.get(getRepositoryToken(OrderCategory));
+    });
 
-    controller = module.get<OrderCategoryController>(OrderCategoryController);
-    service = module.get<OrderCategoryService>(OrderCategoryService);
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-    const typeNames = getTestOrderCategoryNames();
-    let id = 1;
-    types = typeNames.map(
-      (name) =>
-        ({
-          id: id++,
-          name: name,
-        }) as OrderCategory,
-    );
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateOrderCategoryDto) => {
-        const exists = types.find((category) => category.name === dto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await categoryRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-        const category = {
-          id: id++,
-          name: dto.name,
-        } as OrderCategory;
-
-        types.push(category);
-        return category;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: types });
-
-    jest
-      .spyOn(service, 'findEntitiesById')
-      .mockImplementation(async (ids: number[]) => {
-        return types.filter(
-          (type) => ids.findIndex((id) => id === type.id) !== -1,
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            undefined,
+            undefined,
+            'name',
+            'DESC',
         );
-      });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id: number) => {
-      const result = types.find((type) => type.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
+        }
     });
 
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return types.find((type) => type.name === name) || null;
-      });
-
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = types.findIndex((type) => type.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      types.splice(index, 1);
-      return true;
+    it('findOne returns a seeded category', async () => {
+        const cat = await categoryRepo.findOne({ where: { name: TYPE_A } });
+        if (!cat) throw new Error('seed category not found');
+        const result = await controller.findOne(cat.id);
+        expect(result.id).toEqual(cat.id);
     });
 
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(async (id: number, dto: UpdateOrderCategoryDto) => {
-        const existIdx = types.findIndex((type) => type.id === id);
-        if (existIdx === -1) {
-          throw new NotFoundException();
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('create persists a new order category', async () => {
+        const dto = plainToInstance(CreateOrderCategoryDto, {
+            name: 'ControllerOrderCategoryNew',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await categoryRepo.findOne({ where: { name: dto.name } });
+        expect(row).not.toBeNull();
+    });
+
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateOrderCategoryDto, { name: TYPE_A });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
+    });
 
-        if (dto.name) {
-          types[existIdx].name = dto.name;
+    it('update throws ValidationException when name collides with another category', async () => {
+        const categories = await categoryRepo.find();
+        if (categories.length < 2) throw new Error('Not enough categories');
+
+        const categoryToUpdate = categories[0];
+        const existingCategory = categories[1];
+        const dto = plainToInstance(UpdateOrderCategoryDto, {
+            name: existingCategory.name,
+        });
+        try {
+            await controller.update(categoryToUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
+    });
 
-        return types[existIdx];
-      });
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateOrderCategoryDto, {
+            name: 'DoesNotMatter',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    it('update persists a name change', async () => {
+        const cat = await categoryRepo.findOne({ where: { name: TYPE_D } });
+        if (!cat) throw new Error('type d not found');
+        const newName = 'type d controller renamed';
+        const result = await controller.update(
+            cat.id,
+            plainToInstance(UpdateOrderCategoryDto, { name: newName }),
+        );
+        expect(result.name).toEqual(newName);
+        const row = await categoryRepo.findOne({ where: { id: cat.id } });
+        expect(row!.name).toEqual(newName);
+    });
 
-  it('should create a order type', async () => {
-    const dto = {
-      name: 'testType',
-    } as CreateOrderCategoryDto;
+    it('remove deletes a created category then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateOrderCategoryDto, {
+                name: 'ControllerOrderCategoryRemove',
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-    const result = await controller.create(dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testType');
-
-    testId = result?.id as number;
-  });
-
-  it('should fail to create a order type (already exists)', async () => {
-    const dto = {
-      name: 'testType',
-    } as CreateOrderCategoryDto;
-
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should find order type by id', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail find order type by id (not exist)', async () => {
-    expect(controller.findOne(0)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should update order type name', async () => {
-    const dto = {
-      name: 'updateTestType',
-    } as UpdateOrderCategoryDto;
-
-    const result = await controller.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('updateTestType');
-  });
-
-  it('should fail update order type name (not exist)', async () => {
-    const dto = {
-      name: 'updateTestType',
-    } as UpdateOrderCategoryDto;
-
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should remove order type', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail remove order type (not exist)', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

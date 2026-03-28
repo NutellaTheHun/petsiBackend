@@ -53,6 +53,7 @@ export class TemplateMenuItemValidator extends NestedValidatorBase<TemplateMenuI
                 this.repo,
                 'displayName',
                 errorMap,
+                typeof id === 'number' ? id : undefined,
             );
         }
 
