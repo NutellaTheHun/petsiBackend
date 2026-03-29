@@ -18,10 +18,10 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
 import { recurringOrderScheduleToNestedUpdateDto, recurringOrderScheduleToUpdateDto } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
-import { OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderService } from './order.service';
@@ -280,8 +280,12 @@ describe('order service', () => {
 
     // test findAll() with search by menuItem name
     it('should find all orders with search by menuItem name', async () => {
+        const [mi] = await menuItemRepo.find({ take: 1 });
+        if (!mi?.name?.length) throw new Error('menu item with name required');
+        const needle = mi.name.slice(0, Math.min(4, mi.name.length)).toLowerCase();
+
         const serviceResult = await orderService.findAll({
-            search: 'item',
+            search: needle,
             limit: 100,
             relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
         });
@@ -290,9 +294,9 @@ describe('order service', () => {
         expect(
             serviceResult?.items.every(
                 (o) =>
-                    o.recipient.toLowerCase().includes('item') ||
+                    o.recipient.toLowerCase().includes(needle) ||
                     o.orderedItems?.some((oi) =>
-                        oi.menuItem?.name?.toLowerCase().includes('item'),
+                        oi.menuItem?.name?.toLowerCase().includes(needle),
                     ),
             ),
         ).toBe(true);
@@ -506,6 +510,14 @@ describe('order service', () => {
             expect(result).not.toBeNull();
             expect(result?.id).toBeDefined();
             expect(result.recurrenceSchedule?.id).toBeDefined();
+            const occCount = await manager.count(Order, {
+                where: {
+                    templateOrderId: result.id,
+                    occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
+                    occurrenceState: OCCURRENCE_STATES.GENERATED,
+                },
+            });
+            expect(occCount).toBeGreaterThan(0);
         });
     });
 

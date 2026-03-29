@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { rrulestr } from 'rrule';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { OrderContainerItem } from '../entities/order-container-item.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
@@ -30,7 +30,7 @@ export class OrderRecurrenceService {
     constructor(
         @InjectRepository(Order)
         private readonly orderRepo: Repository<Order>,
-    ) {}
+    ) { }
 
     /**
      * Generates occurences for all template orders that have a recurrenceSchedule entity.
@@ -58,9 +58,15 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being generated from.
      * @param horizonDate The date to generate occurences up to.
      */
-    protected async ensureGeneratedOrders(templateOrder: Order, horizonDate: Date): Promise<void> {
+    protected async ensureGeneratedOrders(
+        templateOrder: Order,
+        horizonDate: Date,
+        manager?: EntityManager,
+    ): Promise<void> {
         if (!templateOrder.recurrenceSchedule?.rrule) return;
         if (!templateOrder.orderedItems?.length) return;
+
+        const repo = manager ? manager.getRepository(Order) : this.orderRepo;
 
         const anchor = templateOrder.recurrenceDate ?? templateOrder.fulfillmentDate;
         const rrule = templateOrder.recurrenceSchedule.rrule;
@@ -72,15 +78,15 @@ export class OrderRecurrenceService {
                 continue;
             }
 
-            const exists = await this.orderRepo.exist({
+            const exists = await repo.exist({
                 where: {
                     templateOrderId: templateOrder.id,
                     recurrenceDate: next,
                 },
             });
             if (!exists) {
-                const clone = this.cloneTemplateToOccurence(templateOrder, next);
-                await this.orderRepo.save(clone);
+                const clone = this.cloneTemplateToOccurence(templateOrder, next, manager);
+                await repo.save(clone);
             }
 
             next = this.nextOccurence(rrule, next);
@@ -92,8 +98,13 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being removed from.
      * @param startDate The date to remove occurences on or after (inclusive).
      */
-    protected async removeFutureGeneratedOrders(templateOrder: Order, startDate: Date): Promise<void> {
-        await this.orderRepo
+    protected async removeFutureGeneratedOrders(
+        templateOrder: Order,
+        startDate: Date,
+        manager?: EntityManager,
+    ): Promise<void> {
+        const repo = manager ? manager.getRepository(Order) : this.orderRepo;
+        await repo
             .createQueryBuilder()
             .delete()
             .from(Order)
@@ -123,8 +134,12 @@ export class OrderRecurrenceService {
      * @param templateOrder The template order that is being cloned.
      * @param occurenceDate The date to clone the order's fulfillment and recurrence dates to.
      */
-    protected cloneTemplateToOccurence(templateOrder: Order, occurenceDate: Date): Order {
-        const m = this.orderRepo.manager;
+    protected cloneTemplateToOccurence(
+        templateOrder: Order,
+        occurenceDate: Date,
+        manager?: EntityManager,
+    ): Order {
+        const m = manager ?? this.orderRepo.manager;
 
         const clone = m.create(Order, {
             recipient: templateOrder.recipient,
@@ -178,6 +193,24 @@ export class OrderRecurrenceService {
     }
 
     /**
+     * Materializes occurrences immediately after a template is created.
+     * Intended for use inside the same transaction as order creation so that
+     * downstream reads (e.g. reporting) can include occurrences right away.
+     *
+     * Does NOT advance template fulfillmentDate; it only generates occurrences.
+     */
+    public async materializeTemplateOnCreate(
+        templateOrderId: number,
+        manager?: EntityManager,
+    ): Promise<void> {
+        const templateOrder = await this.loadTemplateWithRelations(templateOrderId, manager);
+        if (!templateOrder?.recurrenceSchedule) return;
+
+        const horizon = addDays(startOfDayLocal(new Date()), RECURRENCE_HORIZON_DAYS);
+        await this.ensureGeneratedOrders(templateOrder, horizon, manager);
+    }
+
+    /**
      * If the template orders fulfillment date is before the current date, the templates fulfillment date is set to the next occurence date.
      * @param templateOrder
      */
@@ -193,8 +226,12 @@ export class OrderRecurrenceService {
         await this.orderRepo.save(templateOrder);
     }
 
-    private async loadTemplateWithRelations(id: number): Promise<Order | null> {
-        return this.orderRepo.findOne({
+    private async loadTemplateWithRelations(
+        id: number,
+        manager?: EntityManager,
+    ): Promise<Order | null> {
+        const repo = manager ? manager.getRepository(Order) : this.orderRepo;
+        return repo.findOne({
             where: { id },
             relations: [...TEMPLATE_ORDER_RELATIONS],
         });

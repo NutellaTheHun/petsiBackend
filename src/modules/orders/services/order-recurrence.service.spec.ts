@@ -600,6 +600,138 @@ describe('OrderRecurrenceService', () => {
         expect(modified?.occurrenceState).toEqual(OCCURRENCE_STATES.MODIFIED);
     });
 
+    it('materializes occurences on template create within the same transaction', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const fulfillmentDate = new Date();
+        fulfillmentDate.setHours(12, 0, 0, 0);
+        const daysOfWeek = [fulfillmentDate.getDay()];
+        const recurrenceCreateDto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek,
+            startDate: fulfillmentDate,
+        });
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: 'On-create materialize test',
+            fulfillmentDate,
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+            recurrenceSchedule: recurrenceCreateDto,
+        });
+
+        await dataSource.transaction(async (manager) => {
+            const created = await orderService.createEntityForTest(dto, manager);
+            const count = await manager.count(Order, {
+                where: {
+                    templateOrderId: created.id,
+                    occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
+                    occurrenceState: OCCURRENCE_STATES.GENERATED,
+                },
+            });
+            expect(count).toBeGreaterThan(0);
+        });
+    });
+
+    it('does not materialize when template has no recurrence schedule', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: 'No schedule template',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+            recurrenceSchedule: undefined,
+        });
+
+        const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        const childCount = await orderRepo.count({
+            where: { templateOrderId: created.id },
+        });
+        expect(childCount).toEqual(0);
+    });
+
+    it('does not materialize when template has no ordered items', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const fulfillmentDate = new Date();
+        fulfillmentDate.setHours(12, 0, 0, 0);
+        const daysOfWeek = [fulfillmentDate.getDay()];
+        const recurrenceCreateDto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek,
+            startDate: fulfillmentDate,
+        });
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: 'No items template',
+            fulfillmentDate,
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [],
+            recurrenceSchedule: recurrenceCreateDto,
+        });
+
+        const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        const childCount = await orderRepo.count({
+            where: { templateOrderId: created.id },
+        });
+        expect(childCount).toEqual(0);
+    });
+
+    it('does not create occurence rows for non-template orders', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const dto = plainToInstance(CreateOrderDto, {
+            recipient: 'Plain order',
+            fulfillmentDate: new Date(),
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+        });
+
+        const created = await orderService.createEntityForTest(dto, dataSource.manager);
+        const children = await orderRepo.find({
+            where: { templateOrderId: created.id },
+        });
+        expect(children.length).toEqual(0);
+    });
+
     it('should regenerate occurences after template update via order service', async () => {
         const [cat] = await categoryRepo.find({ take: 1 });
         const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
@@ -638,10 +770,6 @@ describe('OrderRecurrenceService', () => {
             relations: ['recurrenceSchedule', 'orderedItems'],
         });
         if (!templateOrder.recurrenceSchedule) throw new Error('recurrence schedule not found');
-
-        const horizon = new Date(fulfillmentDate);
-        horizon.setDate(horizon.getDate() + 45);
-        await recurrenceService.ensureGeneratedOrdersForTest(templateOrder, horizon);
 
         const menuItem = await menuItemRepo.findOneOrFail({ where: {}, relations: ['sizes'] });
         if (!menuItem?.sizes?.length) throw new Error('menu item sizes not found');

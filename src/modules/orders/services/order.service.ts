@@ -96,6 +96,13 @@ export class OrderService extends ServiceBase<OrderEntity> {
             await manager.save(savedResult);
         }
 
+        if (savedResult.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
+            await this.orderRecurrenceService.materializeTemplateOnCreate(
+                savedResult.id,
+                manager,
+            );
+        }
+
         return savedResult;
     }
 
