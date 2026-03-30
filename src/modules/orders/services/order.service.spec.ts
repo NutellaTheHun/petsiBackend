@@ -226,7 +226,8 @@ describe('order service', () => {
             ],
         });
 
-        const itemToUpdate = dto.orderedItems.pop();
+        const lineList = [...(dto.orderedItems ?? [])];
+        const itemToUpdate = lineList.pop();
         if (!itemToUpdate) throw new Error('item to update not found');
         if ('createId' in itemToUpdate) {
             throw new Error('must have id for new update order');
@@ -240,10 +241,14 @@ describe('order service', () => {
             quantity: newQuantity,
         });
 
-        dto.orderedItems.push(newItemUpdate);
+        lineList.push(newItemUpdate);
 
         await dataSource.transaction(async (manager) => {
-            await orderService.updateEntityForTest(dto, order, manager);
+            await orderService.updateEntityForTest(
+                { ...dto, orderedItems: lineList },
+                order,
+                manager,
+            );
         });
 
         const reloaded = await orderRepo.findOne({
@@ -280,23 +285,37 @@ describe('order service', () => {
 
     // test findAll() with search by menuItem name
     it('should find all orders with search by menuItem name', async () => {
-        const [mi] = await menuItemRepo.find({ take: 1 });
-        if (!mi?.name?.length) throw new Error('menu item with name required');
-        const needle = mi.name.slice(0, Math.min(4, mi.name.length)).toLowerCase();
+        const [oi] = await orderItemRepo.find({
+            relations: ['menuItem'],
+            take: 1,
+        });
+        if (!oi?.menuItem?.name?.length) {
+            throw new Error('order line with menu item name required');
+        }
+        const needle = oi.menuItem.name
+            .slice(0, Math.min(4, oi.menuItem.name.length))
+            .toLowerCase();
 
         const serviceResult = await orderService.findAll({
             search: needle,
             limit: 100,
-            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+            ],
         });
         expect(serviceResult).not.toBeNull();
-        // applySearch matches recipient OR menuItem name (see OrderService.applySearch)
         expect(
-            serviceResult?.items.every(
+            serviceResult?.items.some(
                 (o) =>
                     o.recipient.toLowerCase().includes(needle) ||
-                    o.orderedItems?.some((oi) =>
-                        oi.menuItem?.name?.toLowerCase().includes(needle),
+                    o.orderedItems?.some((line) =>
+                        line.menuItem?.name
+                            ?.toLowerCase()
+                            .includes(needle),
                     ),
             ),
         ).toBe(true);

@@ -33,14 +33,19 @@ export class TemplateChangeDetector extends ChangeDetectorBase<Template, UpdateT
       changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
 
-    const menuItemsPatch = this.detectTemplateMenuItems(entity.templateMenuItems ?? [], dto.templateMenuItems);
-    if (menuItemsPatch.length > 0) {
-      patch.templateMenuItems = menuItemsPatch;
-      changes.push({
-        path: 'templateMenuItems',
-        previousValue: entity.templateMenuItems?.map((item) => item.id) ?? [],
-        nextValue: menuItemsPatch,
-      });
+    if (dto.templateMenuItems !== undefined) {
+      const menuItemsPatch = this.detectTemplateMenuItems(
+        entity.templateMenuItems ?? [],
+        dto.templateMenuItems,
+      );
+      if (menuItemsPatch.length > 0) {
+        patch.templateMenuItems = menuItemsPatch;
+        changes.push({
+          path: 'templateMenuItems',
+          previousValue: entity.templateMenuItems?.map((item) => item.id) ?? [],
+          nextValue: menuItemsPatch,
+        });
+      }
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

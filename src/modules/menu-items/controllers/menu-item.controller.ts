@@ -28,6 +28,7 @@ import {
     getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
+import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
@@ -42,21 +43,26 @@ import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemService } from '../services/menu-item.service';
+import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
+import { RevisionHistoryDetailDto } from '../../revision-history/dto/revision-history-detail.dto';
+import { RevisionHistoryListItemDto } from '../../revision-history/dto/revision-history-list-item.dto';
+import { RevisionHistoryService } from '../../revision-history/revision-history.service';
 
 @ApiTags('Menu Item')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('menu-items')
-@ApiExtraModels(MenuItem)
+@ApiExtraModels(MenuItem, RevisionHistoryListItemDto, RevisionHistoryDetailDto)
 export class MenuItemController extends ControllerBase<MenuItemEntity> {
     constructor(
-        itemService: MenuItemService,
+        private readonly menuItemService: MenuItemService,
+        private readonly revisionHistoryService: RevisionHistoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
         super(
-            itemService,
+            menuItemService,
             cacheManager,
             'MenuItemController',
             requestContextService,
@@ -91,6 +97,50 @@ export class MenuItemController extends ControllerBase<MenuItemEntity> {
         @Body() dto: UpdateMenuItemDto,
     ): Promise<MenuItem> {
         return super.update(id, dto);
+    }
+
+    @Get(':id/revisions')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Lists revision history for a menu item (metadata only)' })
+    @ApiOkResponse({ type: [RevisionHistoryListItemDto] })
+    async listMenuItemRevisions(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<RevisionHistoryListItemDto[]> {
+        return this.revisionHistoryService.listRevisions(
+            REVISION_ENTITY_TYPES.MENU_ITEM,
+            id,
+        );
+    }
+
+    @Get(':id/revisions/:revisionNumber')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Gets one menu item revision including payload' })
+    @ApiOkResponse({ type: RevisionHistoryDetailDto })
+    async getMenuItemRevision(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
+    ): Promise<RevisionHistoryDetailDto> {
+        return this.revisionHistoryService.getRevisionOrThrow(
+            REVISION_ENTITY_TYPES.MENU_ITEM,
+            id,
+            revisionNumber,
+        );
+    }
+
+    @Put(':id/revisions/:revisionNumber/revert')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Reverts a menu item to a previous revision' })
+    @ApiOkResponse({ type: MenuItem })
+    async revertMenuItem(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
+    ): Promise<MenuItem> {
+        const result = await this.menuItemService.revertToRevision(
+            id,
+            revisionNumber,
+        );
+        await invalidateFindAllCache('MenuItemService', this.cacheManager);
+        return result;
     }
 
     @Delete(':id')

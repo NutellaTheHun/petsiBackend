@@ -28,6 +28,7 @@ import {
     getSchemaPath,
 } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
+import { invalidateFindAllCache } from '../../../infrastructure/cache/cache.util';
 import { ControllerBase } from '../../../common/base/controller.base';
 import { Roles } from '../../../common/decorators/PublicRole';
 import { PaginatedResult } from '../../../common/dto/paginated-result';
@@ -44,15 +45,20 @@ import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderService } from '../services/order.service';
 import { orderToResponseDto } from '../utils/entity-transformers/order.dto.transformer';
+import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
+import { RevisionHistoryDetailDto } from '../../revision-history/dto/revision-history-detail.dto';
+import { RevisionHistoryListItemDto } from '../../revision-history/dto/revision-history-list-item.dto';
+import { RevisionHistoryService } from '../../revision-history/revision-history.service';
 
 @ApiTags('Order')
 @ApiBearerAuth('access-token')
 @Roles(ROLE_STAFF, ROLE_MANAGER, ROLE_ADMIN)
 @Controller('orders')
-@ApiExtraModels(Order)
+@ApiExtraModels(Order, RevisionHistoryListItemDto, RevisionHistoryDetailDto)
 export class OrderController extends ControllerBase<OrderEntity> {
     constructor(
         private readonly orderService: OrderService,
+        private readonly revisionHistoryService: RevisionHistoryService,
         @Inject(CACHE_MANAGER) cacheManager: Cache,
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -99,6 +105,46 @@ export class OrderController extends ControllerBase<OrderEntity> {
         return orderToResponseDto(result);
     }
 
+    @Get(':id/revisions')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Lists revision history for an order (metadata only, no payload)' })
+    @ApiOkResponse({ type: [RevisionHistoryListItemDto] })
+    async listOrderRevisions(
+        @Param('id', ParseIntPipe) id: number,
+    ): Promise<RevisionHistoryListItemDto[]> {
+        return this.revisionHistoryService.listRevisions(
+            REVISION_ENTITY_TYPES.ORDER,
+            id,
+        );
+    }
+
+    @Get(':id/revisions/:revisionNumber')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Gets one revision including payload snapshot' })
+    @ApiOkResponse({ type: RevisionHistoryDetailDto })
+    async getOrderRevision(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
+    ): Promise<RevisionHistoryDetailDto> {
+        return this.revisionHistoryService.getRevisionOrThrow(
+            REVISION_ENTITY_TYPES.ORDER,
+            id,
+            revisionNumber,
+        );
+    }
+
+    @Put(':id/revisions/:revisionNumber/revert')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Reverts an order to a previous revision' })
+    @ApiOkResponse({ type: OrderResponseDto })
+    async revertOrder(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('revisionNumber', ParseIntPipe) revisionNumber: number,
+    ): Promise<OrderResponseDto> {
+        const result = await this.orderService.revertToRevision(id, revisionNumber);
+        await invalidateFindAllCache('OrderService', this.cacheManager);
+        return orderToResponseDto(result);
+    }
 
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)

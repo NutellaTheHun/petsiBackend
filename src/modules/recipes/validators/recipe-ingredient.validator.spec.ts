@@ -100,7 +100,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
@@ -123,7 +123,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
@@ -183,7 +183,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 
@@ -207,7 +207,7 @@ describe('recipe ingredient validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItemId', 'ingredientRecipeId']),
+            createValidationErrorPayload('ONLY_ONE', undefined, ['ingredientInventoryItem', 'ingredientRecipe']),
         );
     });
 

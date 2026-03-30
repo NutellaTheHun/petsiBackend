@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
@@ -8,6 +8,7 @@ import { RequestContextService } from '../../request-context/RequestContextServi
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template, TemplateEntity } from '../entities/template.entity';
+import { TemplateMenuItem } from '../entities/template-menu-item.entity';
 import { TemplateChangeDetector } from '../utils/change-detectors/template.change-detector';
 import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.composer';
 import { TemplateValidator } from '../validators/template.validator';
@@ -60,7 +61,23 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
             entity.name = dto.name;
         }
 
-        if (dto.templateMenuItems) {
+        if (dto.templateMenuItems !== undefined) {
+            const existingItems = entity.templateMenuItems ?? [];
+            const incomingIds = dto.templateMenuItems
+                .map((i: any) => ('id' in i ? i.id : undefined))
+                .filter((id: any): id is number => typeof id === 'number');
+
+            const idsToRemove = existingItems
+                .map((i) => i.id)
+                .filter((id) => !incomingIds.includes(id));
+
+            if (idsToRemove.length) {
+                await manager.delete(TemplateMenuItem, { id: In(idsToRemove) });
+                entity.templateMenuItems = existingItems.filter(
+                    (i) => !idsToRemove.includes(i.id),
+                );
+            }
+
             entity.templateMenuItems =
                 await this.tempalateItemComposer.composeManyNestedEntity(
                     dto.templateMenuItems,

@@ -343,7 +343,15 @@ describe('menu item validator', () => {
     });
 
     it('fail validate update: name already exists', async () => {
-        const items = await itemRepo.find({ relations: ['category', 'sizes', 'containerMenuItems'] });
+        const items = await itemRepo.find({
+            relations: [
+                'category',
+                'sizes',
+                'containerMenuItems',
+                'containerMenuItems.containedMenuItem',
+                'containerMenuItems.containedItemSize',
+            ],
+        });
         if (items.length < 2) {
             throw new Error('Not enough items for test');
         }

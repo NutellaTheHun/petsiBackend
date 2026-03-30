@@ -151,8 +151,8 @@ export class UpdateRecipeDto {
             },
         ],
     })
-    @IsNotEmpty()
     @IsArray()
+    @IsOptional()
     @ValidateNested({ each: true })
     @Transform(({ value }: TransformFnParams) => {
         if (!Array.isArray(value)) return value;
@@ -162,7 +162,7 @@ export class UpdateRecipeDto {
                 : plainToInstance(NestedUpdateRecipeIngredientDto, item)
         );
     })
-    readonly ingredients: (
+    readonly ingredients?: (
         | NestedCreateRecipeIngredientDto
         | NestedUpdateRecipeIngredientDto
     )[];

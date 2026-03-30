@@ -3,6 +3,7 @@ import { plainToInstance, Transform, TransformFnParams } from 'class-transformer
 import {
     IsArray,
     IsNotEmpty,
+    IsOptional,
     IsString,
     ValidateNested
 } from 'class-validator';
@@ -40,8 +41,8 @@ export class UpdateTemplateDto {
             },
         ],
     })
-    @IsNotEmpty()
     @IsArray()
+    @IsOptional()
     @ValidateNested({ each: true })
     @Transform(({ value }: TransformFnParams) => {
         if (!Array.isArray(value)) return value;
@@ -51,7 +52,7 @@ export class UpdateTemplateDto {
                 : plainToInstance(NestedUpdateTemplateMenuItemDto, item)
         );
     })
-    readonly templateMenuItems: (
+    readonly templateMenuItems?: (
         | NestedCreateTemplateMenuItemDto
         | NestedUpdateTemplateMenuItemDto
     )[];

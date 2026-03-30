@@ -27,6 +27,9 @@ import { OrderContainerItemService } from '../services/order-container-item.serv
 import { OrderMenuItemService } from '../services/order-menu-item.service';
 import { OrderRecurrenceService } from '../services/order-recurrence.service';
 import { OrderService } from '../services/order.service';
+import { RevisionHistoryService } from '../../revision-history/revision-history.service';
+import { RevisionHistory } from '../../revision-history/entities/revision-history.entity';
+import { RevisionHistoryModule } from '../../revision-history/revision-history.module';
 
 export async function getOrdersTestingModule(opts?: {
     orderMenuItemServiceClass?: new (...args: any[]) => OrderMenuItemService;
@@ -36,8 +39,11 @@ export async function getOrdersTestingModule(opts?: {
         ...args: any[]
     ) => OrderContainerItemService;
     orderRecurrenceServiceClass?: new (...args: any[]) => OrderRecurrenceService;
+    mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
-    return await Test.createTestingModule({
+    const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
+
+    const moduleBuilder = Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({ isGlobal: true }),
             TypeORMPostgresTestingModule([
@@ -49,6 +55,7 @@ export async function getOrdersTestingModule(opts?: {
                 MenuItem,
                 MenuItemSize,
                 MenuItemContainerItem,
+                ...(mockRevisionHistory ? [] : [RevisionHistory]),
             ]),
             TypeOrmModule.forFeature([
                 OrderMenuItem,
@@ -59,9 +66,11 @@ export async function getOrdersTestingModule(opts?: {
                 MenuItem,
                 MenuItemSize,
                 MenuItemContainerItem,
+                ...(mockRevisionHistory ? [] : [RevisionHistory]),
             ]),
             MenuItemsModule,
             OrdersModule,
+            ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
                 pinoHttp: { transport: { target: 'pino-pretty' } },
@@ -78,7 +87,9 @@ export async function getOrdersTestingModule(opts?: {
         ],
 
         providers: [],
-    })
+    });
+
+    const builderWithOverrides = moduleBuilder
         .overrideProvider(RequestContextService)
         .useClass(TestRequestContextService)
         .overrideProvider(OrderMenuItemService)
@@ -90,6 +101,17 @@ export async function getOrdersTestingModule(opts?: {
         .overrideProvider(OrderContainerItemService)
         .useClass(opts?.orderContainerItemServiceClass || OrderContainerItemService)
         .overrideProvider(OrderRecurrenceService)
-        .useClass(opts?.orderRecurrenceServiceClass || OrderRecurrenceService)
-        .compile();
+        .useClass(opts?.orderRecurrenceServiceClass || OrderRecurrenceService);
+
+    if (mockRevisionHistory) {
+        builderWithOverrides.overrideProvider(RevisionHistoryService).useValue({
+            appendRevision: jest.fn().mockResolvedValue({ id: 1 }),
+            listRevisions: jest.fn().mockResolvedValue([]),
+            getRevisionOrThrow: jest.fn(),
+            getRevisionRow: jest.fn().mockResolvedValue(null),
+            removeRevisionById: jest.fn(),
+        });
+    }
+
+    return await builderWithOverrides.compile();
 }

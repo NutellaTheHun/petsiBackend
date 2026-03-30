@@ -66,16 +66,17 @@ describe('OrderChangeDetector', () => {
         expect(result.patch).toEqual({ recipient: 'Sam' });
     });
 
-    it('patches only changed ordered line item', () => {
+    it('patches full orderedItems list when a line changes (authoritative)', () => {
         const entity = baseOrder();
         const li = lineItem();
+        const expectedLine = orderMenuItemToNestedUpdateDto(li, { quantity: 5 });
         const dto: UpdateOrderDto = {
             ...orderToUpdateDto(entity),
-            orderedItems: [orderMenuItemToNestedUpdateDto(li, { quantity: 5 })],
+            orderedItems: [expectedLine],
         };
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.orderedItems).toEqual([{ id: 200, quantity: 5 }]);
+        expect(result.patch.orderedItems).toEqual([expectedLine]);
     });
 
     it('returns empty nested patch when recurrence matches', () => {

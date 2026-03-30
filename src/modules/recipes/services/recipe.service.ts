@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
@@ -176,16 +176,28 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
             }
         }
 
-        if (dto.ingredients && dto.ingredients.length > 0) {
+        if (dto.ingredients !== undefined) {
             const existingIngreds = await manager.find(RecipeIngredient, {
                 where: { parentRecipe: { id: entity.id } },
             });
+
+            const incomingIds = dto.ingredients
+                .map((i: any) => ('id' in i ? i.id : undefined))
+                .filter((id: any): id is number => typeof id === 'number');
+
+            const idsToRemove = existingIngreds
+                .map((i) => i.id)
+                .filter((id) => !incomingIds.includes(id));
+
+            if (idsToRemove.length) {
+                await manager.delete(RecipeIngredient, { id: In(idsToRemove) });
+            }
 
             entity.ingredients =
                 await this.ingredientComposer.composeManyNestedEntity(
                     dto.ingredients,
                     manager,
-                    existingIngreds,
+                    existingIngreds.filter((i) => !idsToRemove.includes(i.id)),
                     { parentRecipeId: entity.id },
                 );
         }

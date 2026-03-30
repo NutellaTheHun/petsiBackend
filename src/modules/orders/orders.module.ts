@@ -7,6 +7,7 @@ import { MenuItemSize } from '../menu-items/entities/menu-item-size.entity';
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
+import { RevisionHistoryModule } from '../revision-history/revision-history.module';
 import { OrderCategoryBuilder } from './builders/order-category.builder';
 import { OrderContainerItemBuilder } from './builders/order-container-item.builder';
 import { OrderMenuItemBuilder } from './builders/order-menu-item.builder';
@@ -54,6 +55,7 @@ import { RecurringOrderScheduleValidator } from './validators/recurring-order-sc
             MenuItemContainerItem
         ]),
         MenuItemsModule,
+        RevisionHistoryModule,
         CacheModule.register(),
         AppLoggingModule,
         RequestContextModule,

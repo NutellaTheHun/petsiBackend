@@ -95,14 +95,19 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
       });
     }
 
-    const ingredientPatch = this.detectIngredients(entity.ingredients ?? [], dto.ingredients);
-    if (ingredientPatch.length > 0) {
-      patch.ingredients = ingredientPatch;
-      changes.push({
-        path: 'ingredients',
-        previousValue: entity.ingredients?.map((i) => i.id) ?? [],
-        nextValue: ingredientPatch,
-      });
+    if (dto.ingredients !== undefined) {
+      const ingredientPatch = this.detectIngredients(
+        entity.ingredients ?? [],
+        dto.ingredients,
+      );
+      if (ingredientPatch.length > 0) {
+        patch.ingredients = ingredientPatch;
+        changes.push({
+          path: 'ingredients',
+          previousValue: entity.ingredients?.map((i) => i.id) ?? [],
+          nextValue: ingredientPatch,
+        });
+      }
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

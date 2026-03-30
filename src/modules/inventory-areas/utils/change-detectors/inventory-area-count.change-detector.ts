@@ -41,17 +41,19 @@ export class InventoryAreaCountChangeDetector extends ChangeDetectorBase<
       });
     }
 
-    const countedItemsPatch = this.detectCountedItems(
-      entity.countedInventoryItems ?? [],
-      dto.countedInventoryItems,
-    );
-    if (countedItemsPatch.length > 0) {
-      patch.countedInventoryItems = countedItemsPatch;
-      changes.push({
-        path: 'countedInventoryItems',
-        previousValue: entity.countedInventoryItems?.map((i) => i.id) ?? [],
-        nextValue: countedItemsPatch,
-      });
+    if (dto.countedInventoryItems !== undefined) {
+      const countedItemsPatch = this.detectCountedItems(
+        entity.countedInventoryItems ?? [],
+        dto.countedInventoryItems,
+      );
+      if (countedItemsPatch.length > 0) {
+        patch.countedInventoryItems = countedItemsPatch;
+        changes.push({
+          path: 'countedInventoryItems',
+          previousValue: entity.countedInventoryItems?.map((i) => i.id) ?? [],
+          nextValue: countedItemsPatch,
+        });
+      }
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

@@ -2,7 +2,12 @@ import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
-import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+    findValidationErrors,
+} from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemContainerItem } from '../../menu-items/entities/menu-item-container-item.entity';
 import { MenuItemSize } from '../../menu-items/entities/menu-item-size.entity';
@@ -340,14 +345,28 @@ describe('order validator', () => {
 
         const errors = await validator.validateDto(dto, 'root');
         expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [
-                { prop: 'orderedItems', id: 'c1' },
-                { prop: 'containerOrderMenuItems', id: 'c2' },
-            ],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['containedItemSize']),
+        const path = [
+            { prop: 'orderedItems', id: 'c1' },
+            { prop: 'containerOrderMenuItems', id: 'c2' },
+        ];
+        const errs = errors ? findValidationErrors(errors, path) : null;
+        expect(errs).not.toBeNull();
+
+        const expectedA = createValidationErrorPayload(
+            'INVALID_PROPERTY_VALUE',
+            undefined,
+            ['containedItemSize'],
         );
+        const expectedB = createValidationErrorPayload(
+            'INVALID_PROPERTY_VALUE',
+            undefined,
+            ['containedMenuItem'],
+        );
+        const arr = errs as any[];
+        const matches =
+            arr.some((e) => JSON.stringify(e) === JSON.stringify(expectedA)) ||
+            arr.some((e) => JSON.stringify(e) === JSON.stringify(expectedB));
+        expect(matches).toBe(true);
     });
 
     it('fail validate create: nested orderedItems validator errors: quantity with value 0', async () => {

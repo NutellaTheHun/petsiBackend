@@ -13,7 +13,6 @@ import { NestedUpdateRecurringOrderScheduleDto } from '../../dto/recurring-order
 import { OrderMenuItem } from '../../entities/order-menu-item.entity';
 import { Order } from '../../entities/order.entity';
 import { RecurringOrderSchedule } from '../../entities/recurring-order-schedule.entity';
-import { orderMenuItemToNestedUpdateDto } from '../entity-transformers/order-menu-item.dto.transformer';
 import { OrderMenuItemChangeDetector } from './order-menu-item.change-detector';
 import { RecurringOrderScheduleChangeDetector } from './recurring-order-schedule.change-detector';
 
@@ -151,7 +150,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
             entity.orderedItems ?? [],
             dto.orderedItems,
         );
-        if (orderedItemsPatch.length > 0) {
+        if (orderedItemsPatch !== undefined) {
             patch.orderedItems = orderedItemsPatch;
             changes.push({
                 path: 'orderedItems',
@@ -180,39 +179,60 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         };
     }
 
+    /**
+     * When `incoming` is undefined, nested lines are unchanged.
+     * When present, the list is authoritative: patch is the full incoming array when anything differs.
+     */
     private detectOrderedItems(
         existingItems: OrderMenuItem[],
-        incomingDtos: NestedOrderMenuItemDto[],
-    ): NestedOrderMenuItemDto[] {
-        const patchDtos: NestedOrderMenuItemDto[] = [];
-        const existingById = new Map<number, OrderMenuItem>();
+        incoming?: NestedOrderMenuItemDto[],
+    ): NestedOrderMenuItemDto[] | undefined {
+        if (incoming === undefined) {
+            return undefined;
+        }
 
+        const existingById = new Map<number, OrderMenuItem>();
         for (const existingItem of existingItems) {
             existingById.set(existingItem.id, existingItem);
         }
 
-        for (const dto of incomingDtos) {
-            if ('createId' in dto) {
-                patchDtos.push(dto);
-                continue;
-            }
+        const prevIds = existingItems.map((i) => i.id);
+        const nextIdSet = new Set(
+            incoming
+                .filter((d): d is NestedUpdateOrderMenuItemDto => 'id' in d)
+                .map((d) => d.id),
+        );
+        const removed = prevIds.some((id) => !nextIdSet.has(id));
+        const added = incoming.some((d) => 'createId' in d);
 
-            const existingItem = existingById.get(dto.id);
-            if (!existingItem) {
-                patchDtos.push(dto);
-                continue;
-            }
-
-            const childResult = this.orderMenuItemChangeDetector.detect(
-                existingItem,
-                dto,
-            );
-            if (childResult.hasChanges) {
-                patchDtos.push(childResult.patch as NestedUpdateOrderMenuItemDto);
+        let needsFullReplace = removed || added;
+        if (!needsFullReplace) {
+            for (const dto of incoming) {
+                if ('createId' in dto) {
+                    needsFullReplace = true;
+                    break;
+                }
+                const existingItem = existingById.get(dto.id);
+                if (!existingItem) {
+                    needsFullReplace = true;
+                    break;
+                }
+                const childResult = this.orderMenuItemChangeDetector.detect(
+                    existingItem,
+                    dto,
+                );
+                if (childResult.hasChanges) {
+                    needsFullReplace = true;
+                    break;
+                }
             }
         }
 
-        return patchDtos;
+        if (!needsFullReplace) {
+            return undefined;
+        }
+
+        return incoming;
     }
 
     private detectRecurringSchedule(

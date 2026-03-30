@@ -102,6 +102,8 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
         return result;*/
     }
 
+    /* Line items are removed via parent Order update (authoritative orderedItems). */
+    /*
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Order Menu Item' })
@@ -114,6 +116,7 @@ export class OrderMenuItemController extends ControllerBase<OrderMenuItemEntity>
 
         return result;
     }
+    */
 
     @Get()
     @HttpCode(HttpStatus.OK)

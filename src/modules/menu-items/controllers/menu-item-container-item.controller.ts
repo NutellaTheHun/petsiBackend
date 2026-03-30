@@ -106,6 +106,8 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
         return result;*/
     }
 
+    /* Container lines are managed via parent MenuItem update. */
+    /*
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Menu Item Component' })
@@ -120,6 +122,7 @@ export class MenuItemContainerItemController extends ControllerBase<MenuItemCont
 
         return result;
     }
+    */
 
     @Get()
     @HttpCode(HttpStatus.OK)
