@@ -18,6 +18,9 @@ import { InventoryArea } from './entities/inventory-area.entity';
 import { InventoryAreaCountService } from './services/inventory-area-count.service';
 import { InventoryAreaItemService } from './services/inventory-area-item.service';
 import { InventoryAreaService } from './services/inventory-area.service';
+import { InventoryAreaCountChangeDetector } from './utils/change-detectors/inventory-area-count.change-detector';
+import { InventoryAreaItemChangeDetector } from './utils/change-detectors/inventory-area-item.change-detector';
+import { InventoryAreaChangeDetector } from './utils/change-detectors/inventory-area.change-detector';
 import { InventoryAreaItemComposer } from './utils/composers/inventory-area-item.composer';
 import { InventoryAreaTestUtil } from './utils/inventory-area-test.util';
 import { InventoryAreaCountValidator } from './validators/inventory-area-count.validator';
@@ -57,6 +60,9 @@ import { InventoryAreaValidator } from './validators/inventory-area.validator';
     InventoryAreaItemValidator,
 
     InventoryAreaItemComposer,
+    InventoryAreaChangeDetector,
+    InventoryAreaItemChangeDetector,
+    InventoryAreaCountChangeDetector,
 
     InventoryAreaTestUtil,
   ],

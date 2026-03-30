@@ -6,7 +6,7 @@ import { orderContainerItemToNestedUpdateDto } from "./order-container-item.dto.
 
 export function orderMenuItemToUpdateDto(orderMenuItem: OrderMenuItem, merge: Partial<UpdateOrderMenuItemDto> = {}): UpdateOrderMenuItemDto {
     const existingContainerItems = orderMenuItem.containerOrderMenuItems?.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)) ?? [];
-    const mergedContainerItems = merge.containerOrderMenuItems ? [...existingContainerItems, ...merge.containerOrderMenuItems] : existingContainerItems;
+    const mergedContainerItems = merge.containerOrderMenuItems ? [...merge.containerOrderMenuItems, ...existingContainerItems] : existingContainerItems;
 
     return plainToInstance(UpdateOrderMenuItemDto, {
         menuItemId: orderMenuItem.menuItem.id,
@@ -19,7 +19,7 @@ export function orderMenuItemToUpdateDto(orderMenuItem: OrderMenuItem, merge: Pa
 
 export function orderMenuItemToNestedUpdateDto(orderMenuItem: OrderMenuItem, merge: Partial<NestedUpdateOrderMenuItemDto> = {}): NestedUpdateOrderMenuItemDto {
     const existingContainerItems = orderMenuItem.containerOrderMenuItems?.map(containerItem => orderContainerItemToNestedUpdateDto(containerItem)) ?? [];
-    const mergedContainerItems = merge.containerOrderMenuItems ? [...existingContainerItems, ...merge.containerOrderMenuItems] : existingContainerItems;
+    const mergedContainerItems = merge.containerOrderMenuItems ? [...merge.containerOrderMenuItems, ...existingContainerItems] : existingContainerItems;
 
     return plainToInstance(NestedUpdateOrderMenuItemDto, {
         id: orderMenuItem.id,

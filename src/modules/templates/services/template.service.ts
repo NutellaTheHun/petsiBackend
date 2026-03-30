@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateTemplateDto } from '../dto/template/create-template.dto';
 import { UpdateTemplateDto } from '../dto/template/update-template.dto';
 import { Template, TemplateEntity } from '../entities/template.entity';
+import { TemplateChangeDetector } from '../utils/change-detectors/template.change-detector';
 import { TemplateMenuItemComposer } from '../utils/composers/template-menu-item.composer';
 import { TemplateValidator } from '../validators/template.validator';
 
@@ -20,6 +22,7 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
         validator: TemplateValidator,
 
         private readonly tempalateItemComposer: TemplateMenuItemComposer,
+        private readonly templateChangeDetector: TemplateChangeDetector,
     ) {
         super(repo, 'TemplateService', requestContextService, logger, validator);
     }
@@ -58,14 +61,11 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
         }
 
         if (dto.templateMenuItems) {
-            /*const existingItems = await manager.find(TemplateMenuItem, {
-                where: { parentTemplate: { id: entity.id } },
-            });*/
             entity.templateMenuItems =
                 await this.tempalateItemComposer.composeManyNestedEntity(
                     dto.templateMenuItems,
                     manager,
-                    /*existingItems,*/[],
+                    entity.templateMenuItems ?? [],
                     { parentTemplateId: entity.id },
                 );
         }
@@ -90,5 +90,13 @@ export class TemplateService extends ServiceBase<TemplateEntity> {
         if (sortBy === 'name') {
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<Template, UpdateTemplateDto> | undefined {
+        return this.templateChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return ['templateMenuItems', 'templateMenuItems.menuItem'];
     }
 }

@@ -25,6 +25,10 @@ import { RecipeCategoryService } from './services/recipe-category.service';
 import { RecipeIngredientService } from './services/recipe-ingredient.service';
 import { RecipeSubCategoryService } from './services/recipe-sub-category.service';
 import { RecipeService } from './services/recipe.service';
+import { RecipeCategoryChangeDetector } from './utils/change-detectors/recipe-category.change-detector';
+import { RecipeIngredientChangeDetector } from './utils/change-detectors/recipe-ingredient.change-detector';
+import { RecipeSubCategoryChangeDetector } from './utils/change-detectors/recipe-sub-category.change-detector';
+import { RecipeChangeDetector } from './utils/change-detectors/recipe.change-detector';
 import { RecipeIngredientComposer } from './utils/composers/recipe-ingredient.composer';
 import { RecipeSubCategoryComposer } from './utils/composers/recipe-sub-category.composer';
 import { RecipeTestUtil } from './utils/recipe-test.util';
@@ -75,6 +79,10 @@ import { RecipeValidator } from './validators/recipe.valdiator';
 
     RecipeIngredientComposer,
     RecipeSubCategoryComposer,
+    RecipeSubCategoryChangeDetector,
+    RecipeIngredientChangeDetector,
+    RecipeCategoryChangeDetector,
+    RecipeChangeDetector,
 
     RecipeTestUtil,
   ],

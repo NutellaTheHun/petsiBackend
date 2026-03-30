@@ -5,7 +5,7 @@ import { inventoryItemSizeToNestedUpdateDto } from "./inventory-item-size.dto.tr
 
 export function inventoryItemToUpdateDto(inventoryItem: InventoryItem, merge: Partial<UpdateInventoryItemDto> = {}): UpdateInventoryItemDto {
     const existingSizes = inventoryItem.sizes.map(size => inventoryItemSizeToNestedUpdateDto(size)) ?? [];
-    const mergedSizes = merge.sizes ? [...existingSizes, ...merge.sizes] : existingSizes;
+    const mergedSizes = merge.sizes ? [...merge.sizes, ...existingSizes] : existingSizes;
 
     return plainToInstance(UpdateInventoryItemDto, {
         name: inventoryItem.name,

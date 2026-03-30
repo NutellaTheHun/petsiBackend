@@ -1,4 +1,4 @@
-import { EntityManager, EntityTarget } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
 import { CreateRecipeSubCategoryDto } from '../../dto/recipe-sub-category/create-recipe-sub-category.dto';
@@ -10,7 +10,7 @@ import {
 } from '../../entities/recipe-sub-category.entity';
 
 export class RecipeSubCategoryComposer extends ComposerBase<RecipeSubCategoryEntity> {
-    protected entityClass: EntityTarget<RecipeSubCategory>;
+    protected readonly entityClass = RecipeSubCategory;
 
     protected async createInTransaction(
         dto: CreateRecipeSubCategoryDto,

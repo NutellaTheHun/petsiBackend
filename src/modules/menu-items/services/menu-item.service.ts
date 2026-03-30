@@ -6,6 +6,7 @@ import {
     Repository,
     SelectQueryBuilder,
 } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
@@ -17,6 +18,7 @@ import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
+import { MenuItemChangeDetector } from '../utils/change-detectors/menu-item.change-detector';
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
@@ -34,6 +36,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         @InjectRepository(OrderContainerItem)
         private readonly orderContainerItemRepo: Repository<OrderContainerItem>,
         private readonly containerItemComposer: MenuItemContainerItemComposer,
+        private readonly menuItemChangeDetector: MenuItemChangeDetector,
     ) {
         super(repo, 'MenuItemService', requestContextService, logger, validator);
     }
@@ -60,7 +63,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                     [],
                     {
                         parentMenuItemId:
-                            savedResult.id /*, parentItemSizeId: savedResult.sizes[0]*/,
+                            savedResult.id,
                     },
                 );
         }
@@ -93,7 +96,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             if (dto.type === MENU_ITEM_TYPES.SINGLE) {
                 entity.containerMenuItems = [];
                 entity.variableMaxAmount = null;
-                await this.syncOrderMenuItems(entity.id);
+                await this.syncOrderMenuItems(entity.id); // this triggers every time?
             }
         }
 
@@ -109,19 +112,17 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         }
 
         if (dto.containerMenuItems) {
-            /*const existingItems = await manager.find(MenuItemContainerItem, {
-                where: { parentMenuItem: { id: entity.id } },
-            });*/
             entity.containerMenuItems =
                 await this.containerItemComposer.composeManyNestedEntity(
                     dto.containerMenuItems,
                     manager,
-                    /*existingItems,*/[],
+                    entity.containerMenuItems ?? [],
                     {
-                        parentMenuItemId: entity.id /*, parentItemSizeId: entity.sizes[0]*/,
+                        parentMenuItemId: entity.id,
                     },
                 );
         }
+
         await manager.save(entity);
     }
 
@@ -141,6 +142,12 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         if (filters.category && filters.category.length > 0) {
             query.andWhere('entity.category IN (:...categories)', {
                 categories: filters.category,
+            });
+        }
+        // filter by type
+        if (filters.type && filters.type.length > 0) {
+            query.andWhere('entity.type IN (:...types)', {
+                types: filters.type,
             });
         }
     }
@@ -182,5 +189,19 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 parentOrderMenuItem: { id: orderItem.id },
             });
         }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<MenuItem, UpdateMenuItemDto> | undefined {
+        return this.menuItemChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'category',
+            'sizes',
+            'containerMenuItems',
+            'containerMenuItems.containedMenuItem',
+            'containerMenuItems.containedItemSize',
+        ];
     }
 }

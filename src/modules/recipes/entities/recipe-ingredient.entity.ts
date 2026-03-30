@@ -76,7 +76,7 @@ export class RecipeIngredient {
     @ApiProperty({
         example: '3.5',
         description:
-            'the numberical value of the quantityMeasure property of the ingredient',
+            'Returns from DB as a string, the numerical value of the quantityMeasure property of the ingredient',
     })
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     quantity: number;

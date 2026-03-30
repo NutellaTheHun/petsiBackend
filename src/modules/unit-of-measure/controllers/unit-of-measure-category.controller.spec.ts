@@ -1,183 +1,216 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/create-unit-of-measure-category.dto';
 import { UpdateUnitOfMeasureCategoryDto } from '../dto/unit-of-measure-category/update-unit-of-measure-category.dto';
 import { UnitOfMeasureCategory } from '../entities/unit-of-measure-category.entity';
 import { UnitOfMeasureCategoryService } from '../services/unit-of-measure-category.service';
 import { UNIT, VOLUME, WEIGHT } from '../utils/constants';
+import { unitOfMeasureCategoryToUpdateDto } from '../utils/entity-transformers/unit-of-measure-category.dto.transformer';
 import { getUnitOfMeasureTestingModule } from '../utils/unit-of-measure-testing-module';
+import { UnitOfMeasureTestingUtil } from '../utils/unit-of-measure-testing.util';
 import { UnitOfMeasureCategoryController } from './unit-of-measure-category.controller';
 
-describe('UnitOfMeasureCategoryController', () => {
-  let controller: UnitOfMeasureCategoryController;
-  let categoryService: UnitOfMeasureCategoryService;
-  let categories: UnitOfMeasureCategory[];
+describe('unit of measure category controller', () => {
+    let testingUtil: UnitOfMeasureTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: UnitOfMeasureCategoryController;
+    let categoryRepo: Repository<UnitOfMeasureCategory>;
 
-  beforeAll(async () => {
-    const module: TestingModule = await getUnitOfMeasureTestingModule();
-    controller = module.get<UnitOfMeasureCategoryController>(
-      UnitOfMeasureCategoryController,
-    );
-    categoryService = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
-    );
+    beforeAll(async () => {
+        module = await getUnitOfMeasureTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<UnitOfMeasureTestingUtil>(
+            UnitOfMeasureTestingUtil,
+        );
+        await testingUtil.initUnitOfMeasureTestDatabase(dbTestContext);
 
-    categories = [
-      { name: UNIT } as UnitOfMeasureCategory,
-      { name: VOLUME } as UnitOfMeasureCategory,
-      { name: WEIGHT } as UnitOfMeasureCategory,
-    ];
-    let id = 1;
-    categories.map((category) => (category.id = id++));
+        controller = module.get<UnitOfMeasureCategoryController>(
+            UnitOfMeasureCategoryController,
+        );
+        categoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
+    });
 
-    jest
-      .spyOn(categoryService, 'create')
-      .mockImplementation(async (createDto: CreateUnitOfMeasureCategoryDto) => {
-        const exists = categories.find((unit) => unit.name === createDto.name);
-        if (exists) {
-          throw new BadRequestException();
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
+
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
+
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await categoryRepo.find();
+        const result = await controller.findAll(undefined, 100);
+        expect(result.items.length).toEqual(repoRows.length);
+    });
+
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await categoryRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            'name',
+            'DESC',
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
         }
+    });
 
-        const unit = {
-          id: id++,
-          name: createDto.name,
-        } as UnitOfMeasureCategory;
+    it('findOne returns a seeded category', async () => {
+        const cat = await categoryRepo.findOne({ where: { name: UNIT } });
+        if (!cat) throw new Error('unit category not found');
+        const result = await controller.findOne(cat.id);
+        expect(result.id).toEqual(cat.id);
+    });
 
-        categories.push(unit);
-        return unit;
-      });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-    jest
-      .spyOn(categoryService, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return categories.find((unit) => unit.name === name) || null;
-      });
+    it('create persists a new category', async () => {
+        const dto = plainToInstance(CreateUnitOfMeasureCategoryDto, {
+            name: 'ControllerUomCategoryNew',
+            baseConversionUnitId: null,
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await categoryRepo.findOne({ where: { name: dto.name } });
+        expect(row).not.toBeNull();
+    });
 
-    jest
-      .spyOn(categoryService, 'update')
-      .mockImplementation(
-        async (id: number, updateDto: UpdateUnitOfMeasureCategoryDto) => {
-          const index = categories.findIndex((unit) => unit.id === id);
-          if (index === -1) {
-            throw new NotFoundException();
-          }
-
-          if (updateDto.name) {
-            categories[index].name = updateDto.name;
-          }
-
-          return categories[index];
-        },
-      );
-
-    jest
-      .spyOn(categoryService, 'findAll')
-      .mockResolvedValue({ items: categories });
-
-    jest
-      .spyOn(categoryService, 'findOne')
-      .mockImplementation(async (id?: number) => {
-        if (!id) {
-          throw new BadRequestException();
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateUnitOfMeasureCategoryDto, {
+            name: UNIT,
+            baseConversionUnitId: null,
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
-        const result = categories.find((unit) => unit.id === id);
-        if (!result) {
-          throw new NotFoundException();
+    });
+
+    it('update throws ValidationException when name collides with another category', async () => {
+        const categories = await categoryRepo.find({
+            where: {},
+            relations: ['baseConversionUnit'],
+        });
+        if (categories.length < 2) throw new Error('Not enough categories');
+
+        const categoryToUpdate = categories[0];
+        const existingCategory = categories[1];
+        const dto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
+            name: existingCategory.name,
+            baseConversionUnitId: null,
+        });
+        try {
+            await controller.update(categoryToUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
-        return result;
-      });
+    });
 
-    jest
-      .spyOn(categoryService, 'remove')
-      .mockImplementation(async (id: number) => {
-        const index = categories.findIndex((unit) => unit.id === id);
-        if (index === -1) {
-          throw new NotFoundException();
-        }
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateUnitOfMeasureCategoryDto, {
+            name: 'DoesNotMatter',
+            baseConversionUnitId: null,
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-        categories.splice(index, 1);
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-        return true;
-      });
-  });
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                UnitOfMeasureCategoryService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
 
-  it('should create a category', async () => {
-    const dto = {
-      name: 'testCategory',
-    } as CreateUnitOfMeasureCategoryDto;
+        it('skips updateEntity when DTO matches current category', async () => {
+            const cat = await categoryRepo.findOne({
+                where: { name: VOLUME },
+                relations: ['baseConversionUnit'],
+            });
+            if (!cat) throw new Error('volume category not found');
+            const dto = unitOfMeasureCategoryToUpdateDto(cat);
+            const result = await controller.update(cat.id, dto);
+            expect(result.name).toEqual(cat.name);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
+        it('calls updateEntity when name changes', async () => {
+            const cat = await categoryRepo.findOne({
+                where: { name: WEIGHT },
+                relations: ['baseConversionUnit'],
+            });
+            if (!cat) throw new Error('weight category not found');
+            const newName = 'Weight Controller Renamed';
+            const dto = unitOfMeasureCategoryToUpdateDto(cat, { name: newName });
+            const result = await controller.update(cat.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await categoryRepo.findOne({ where: { id: cat.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
 
-  it('should fail to create a category (already exists)', async () => {
-    const dto = {
-      name: 'testCategory',
-    } as CreateUnitOfMeasureCategoryDto;
+    it('remove deletes a created category then findOne fails', async () => {
+        const created = await controller.create(
+            plainToInstance(CreateUnitOfMeasureCategoryDto, {
+                name: 'ControllerUomCategoryRemove',
+                baseConversionUnitId: null,
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should return all categories', async () => {
-    const results = await controller.findAll();
-    expect(results.items.length).toEqual(categories.length);
-  });
-
-  it('should return a category by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail to return a category (bad id, returns null)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should update a category', async () => {
-    const toUpdate = await categoryService.findOneByName('testCategory');
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
-
-    //toUpdate.categoryName = "UPDATED_testCategory";
-    const dto = {
-      name: 'UPDATED_testCategory',
-    } as UpdateUnitOfMeasureCategoryDto;
-
-    const result = await controller.update(toUpdate.id, dto);
-    expect(result).not.toBeNull();
-    expect(result?.name).toEqual('UPDATED_testCategory');
-  });
-
-  it('should fail to update a category (doesnt exist)', async () => {
-    const toUpdate = await categoryService.findOneByName(
-      'UPDATED_testCategory',
-    );
-    if (!toUpdate) {
-      throw new Error('unit to update not found');
-    }
-
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
-
-  it('should remove a category', async () => {
-    const toRemove = await categoryService.findOneByName(
-      'UPDATED_testCategory',
-    );
-    if (!toRemove) {
-      throw new Error('unit to remove not found');
-    }
-
-    const result = await controller.remove(toRemove.id);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail to remove a category (id not found, returns false)', async () => {
-    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

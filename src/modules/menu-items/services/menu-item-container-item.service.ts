@@ -1,65 +1,88 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/create-menu-item-container-item.dto';
 import { UpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/update-menu-item-container-item.dto';
 import {
-  MenuItemContainerItem,
-  MenuItemContainerItemEntity,
+    MenuItemContainerItem,
+    MenuItemContainerItemEntity,
 } from '../entities/menu-item-container-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
+import { MenuItemContainerItemChangeDetector } from '../utils/change-detectors/menu-item-container-item.change-detector';
 import { MenuItemContainerItemValidator } from '../validators/menu-item-container-item.validator';
 
 @Injectable()
 export class MenuItemContainerItemService extends ServiceBase<MenuItemContainerItemEntity> {
-  constructor(
-    @InjectRepository(MenuItemContainerItem)
-    repo: Repository<MenuItemContainerItem>,
-    requestContextService: RequestContextService,
-    logger: AppLogger,
-    validator: MenuItemContainerItemValidator,
+    constructor(
+        @InjectRepository(MenuItemContainerItem)
+        repo: Repository<MenuItemContainerItem>,
+        requestContextService: RequestContextService,
+        logger: AppLogger,
+        validator: MenuItemContainerItemValidator,
 
-    private readonly containerItemComposer: MenuItemContainerItemComposer,
-  ) {
-    super(
-      repo,
-      'MenuItemContainerItemService',
-      requestContextService,
-      logger,
-      validator,
-    );
-  }
-
-  protected async createEntity(
-    dto: CreateMenuItemContainerItemDto,
-    manager: EntityManager,
-  ): Promise<MenuItemContainerItem> {
-    return await manager.save(
-      await this.containerItemComposer.composeCreate(dto, manager),
-    );
-  }
-
-  protected async updateEntity(
-    dto: UpdateMenuItemContainerItemDto,
-    manager: EntityManager,
-    entity: MenuItemContainerItem,
-  ): Promise<void> {
-    await manager.save(
-      await this.containerItemComposer.composeUpdate(dto, manager, entity),
-    );
-  }
-
-  protected applySortBy(
-    query: SelectQueryBuilder<MenuItemContainerItem>,
-    sortBy: string,
-    sortOrder: 'ASC' | 'DESC',
-  ): void {
-    if (sortBy === 'containedMenuItem') {
-      query.leftJoinAndSelect('entity.containedMenuItem', 'menuItem');
-      query.orderBy(`menuItem.name`, sortOrder);
+        private readonly containerItemComposer: MenuItemContainerItemComposer,
+        private readonly containerItemChangeDetector: MenuItemContainerItemChangeDetector,
+    ) {
+        super(
+            repo,
+            'MenuItemContainerItemService',
+            requestContextService,
+            logger,
+            validator,
+        );
     }
-  }
+
+    protected async createEntity(
+        dto: CreateMenuItemContainerItemDto,
+        manager: EntityManager,
+    ): Promise<MenuItemContainerItem> {
+        return await manager.save(
+            await this.containerItemComposer.composeCreate(dto, manager),
+        );
+    }
+
+    protected async updateEntity(
+        dto: UpdateMenuItemContainerItemDto,
+        manager: EntityManager,
+        entity: MenuItemContainerItem,
+    ): Promise<void> {
+        await this.containerItemComposer.composeUpdate(dto, manager, entity)
+        await manager.save(entity);
+    }
+
+    protected applySortBy(
+        query: SelectQueryBuilder<MenuItemContainerItem>,
+        sortBy: string,
+        sortOrder: 'ASC' | 'DESC',
+    ): void {
+        if (sortBy === 'containedMenuItem') {
+            query.leftJoinAndSelect('entity.containedMenuItem', 'menuItem');
+            query.orderBy(`menuItem.name`, sortOrder);
+        }
+    }
+
+    // filter by parentMenuItem
+    protected applyFilters(
+        query: SelectQueryBuilder<MenuItemContainerItem>,
+        filters: Record<string, string[]>,
+    ): void {
+        if (filters.parentMenuItem && filters.parentMenuItem.length > 0) {
+            query.andWhere('entity.parentMenuItem IN (:...parentMenuItems)', {
+                parentMenuItems: filters.parentMenuItem,
+            });
+        }
+    }
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<MenuItemContainerItem, UpdateMenuItemContainerItemDto>
+        | undefined {
+        return this.containerItemChangeDetector as unknown as ChangeDetectorBase<
+            MenuItemContainerItem,
+            UpdateMenuItemContainerItemDto
+        >;
+    }
 }

@@ -17,12 +17,16 @@ import { Template } from '../entities/template.entity';
 import { TemplateMenuItemService } from '../services/template-menu-item.service';
 import { TemplateService } from '../services/template.service';
 import { TemplatesModule } from '../templates.module';
+import { TemplateMenuItemChangeDetector } from './change-detectors/template-menu-item.change-detector';
+import { TemplateChangeDetector } from './change-detectors/template.change-detector';
 
 export async function getTemplateTestingModule(opts?: {
   templateServiceClass?: new (...args: any[]) => TemplateService;
   templateMenuItemServiceClass?: new (
     ...args: any[]
   ) => TemplateMenuItemService;
+  templateChangeDetectorClass?: new (...args: any[]) => TemplateChangeDetector;
+  templateMenuItemChangeDetectorClass?: new (...args: any[]) => TemplateMenuItemChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -49,5 +53,9 @@ export async function getTemplateTestingModule(opts?: {
     .useClass(opts?.templateServiceClass || TemplateService)
     .overrideProvider(TemplateMenuItemService)
     .useClass(opts?.templateMenuItemServiceClass || TemplateMenuItemService)
+    .overrideProvider(TemplateChangeDetector)
+    .useClass(opts?.templateChangeDetectorClass || TemplateChangeDetector)
+    .overrideProvider(TemplateMenuItemChangeDetector)
+    .useClass(opts?.templateMenuItemChangeDetectorClass || TemplateMenuItemChangeDetector)
     .compile();
 }

@@ -6,6 +6,7 @@ import { OrderCategory } from '../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
 import { Order } from '../orders/entities/order.entity';
+import { RecurringOrderSchedule } from '../orders/entities/recurring-order-schedule.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { MenuItemCategoryBuilder } from './builders/menu-item-category.builder';
 import { MenuItemContainerItemBuilder } from './builders/menu-item-container-item.builder';
@@ -23,6 +24,10 @@ import { MenuItemCategoryService } from './services/menu-item-category.service';
 import { MenuItemContainerItemService } from './services/menu-item-container-item.service';
 import { MenuItemSizeService } from './services/menu-item-size.service';
 import { MenuItemService } from './services/menu-item.service';
+import { MenuItemCategoryChangeDetector } from './utils/change-detectors/menu-item-category.change-detector';
+import { MenuItemContainerItemChangeDetector } from './utils/change-detectors/menu-item-container-item.change-detector';
+import { MenuItemSizeChangeDetector } from './utils/change-detectors/menu-item-size.change-detector';
+import { MenuItemChangeDetector } from './utils/change-detectors/menu-item.change-detector';
 import { MenuItemContainerItemComposer } from './utils/composers/menu-item-container-item.composer';
 import { MenuItemTestingUtil } from './utils/menu-item-testing.util';
 import { MenuItemCategoryValidator } from './validators/menu-item-category.validator';
@@ -41,6 +46,7 @@ import { MenuItemValidator } from './validators/menu-item.validator';
             OrderCategory,
             OrderMenuItem,
             OrderContainerItem,
+            RecurringOrderSchedule,
         ]),
         CacheModule.register(),
         AppLoggingModule,
@@ -71,6 +77,10 @@ import { MenuItemValidator } from './validators/menu-item.validator';
         MenuItemValidator,
 
         MenuItemContainerItemComposer,
+        MenuItemCategoryChangeDetector,
+        MenuItemSizeChangeDetector,
+        MenuItemContainerItemChangeDetector,
+        MenuItemChangeDetector,
 
         MenuItemTestingUtil,
     ],
@@ -85,5 +95,3 @@ import { MenuItemValidator } from './validators/menu-item.validator';
     ],
 })
 export class MenuItemsModule { }
-
-//export { MenuItem };

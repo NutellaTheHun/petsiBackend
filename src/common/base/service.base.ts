@@ -1,18 +1,18 @@
 import { NotFoundException } from '@nestjs/common';
 import {
-    DataSource,
     EntityManager,
     FindOptionsWhere,
     In,
     QueryBuilder,
     Repository,
-    SelectQueryBuilder,
+    SelectQueryBuilder
 } from 'typeorm';
 import { AppLogger } from '../../modules/app-logging/app-logger';
 import { RequestContextService } from '../../modules/request-context/RequestContextService';
 import { PaginatedResult } from '../dto/paginated-result';
 import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
 import { ValidationException } from '../validation/validation-exception';
+import { ChangeDetectorBase } from './change-detector.base';
 import { EntityBase } from './entity.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 import { ValidatorBase } from './validator.base';
@@ -21,10 +21,9 @@ export abstract class ServiceBase<
     TEntity extends EntityBase<any, any, any>,
 > {
     private databaseExceptionHandler: DataBaseExceptionHandler;
-    private readonly dataSource: DataSource;
+
     constructor(
         private readonly entityRepo: Repository<TEntity['__Entity']>,
-        //private readonly builder: BuilderBase<TEntity['__Entity']>,
         public readonly servicePrefix: string,
         private readonly requestContextService: RequestContextService,
         private readonly logger: AppLogger,
@@ -48,36 +47,26 @@ export abstract class ServiceBase<
             }
         }
 
-        // create entity
-        //const entity = await this.builder.buildCreateDto(createDto);
-        //let newEntityId;
-        await this.dataSource.transaction(async (manager) => {
-            //const entity = await this.createEntity(createDto, manager);
-            try {
-                return await this.createEntity(createDto, manager);
-                // save in DB
-                //const saved = await manager.save(entity);
-                //newEntityId = entity.id;
-            } catch (err) {
-                throw this.databaseExceptionHandler.handle(
-                    err,
-                    this.servicePrefix,
-                    requestId,
-                    'CREATE',
-                );
-            }
-        });
-        throw new Error('entity creation failed');
+        const created = await this.entityRepo.manager.transaction(
+            async (manager) => {
+                try {
+                    return await this.createEntity(createDto, manager);
+                } catch (err) {
+                    throw this.databaseExceptionHandler.handle(
+                        err,
+                        this.servicePrefix,
+                        requestId,
+                        'CREATE',
+                    );
+                }
+            },
+        );
 
-        /*const resultEntity = await this.entityRepo.findOne({
-          where: { id: newEntityId },
-        });
-    
-        if (resultEntity && 'password' in resultEntity) {
-          resultEntity.password = undefined;
+        if (created && 'password' in created) {
+            (created as any).password = undefined;
         }
-    
-        return resultEntity;*/
+
+        return created;
     }
 
     /**
@@ -99,7 +88,7 @@ export abstract class ServiceBase<
         // retrieve entity from DB
         let toUpdate: TEntity['__Entity'];
         try {
-            toUpdate = await this.findOne(id);
+            toUpdate = await this.findOne(id, this.getUpdateDiffRelations());
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
                 err,
@@ -109,23 +98,26 @@ export abstract class ServiceBase<
             );
         }
 
-        //update DTO
-        //await this.builder.buildUpdateDto(toUpdate, updateDto);
-        /**
-         * Currently mutates toUpdate, and returns the updated entity (the same entity), i dont like this
-         * Change updateEntity to return void to be more clear?
-         * Must think through how the result object is returned
-         *          - always requery the entity from the DB,
-         *          - or within the method rebuild the object throughout the process.
-         *                      - returned objects from updates would be piecemeal or have to always be fully constructed (all relations)? doesnt sound great
-         *                                  - also goes against having any query params on what to send back, which would be an ideal control of what to return
-         *
-         * CHOICE: always requery db for final result seems cleanest, as its easily uniform and would work well with relation request params
-         *          - if always requery DB, where should it be called?
-         *                  - if inside updateEntity
-         */
-        await this.dataSource.transaction(async (manager) => {
-            await this.updateEntity(toUpdate, updateDto, manager);
+        let effectiveUpdateDto = updateDto as TEntity['__UDto'];
+        const changeDetector = this.getChangeDetector();
+        if (changeDetector) {
+            const detectionResult = changeDetector.detect(
+                toUpdate,
+                updateDto as TEntity['__UDto'],
+            );
+
+            if (!detectionResult.hasChanges) {
+                if (toUpdate && 'password' in toUpdate) {
+                    (toUpdate as any).password = undefined;
+                }
+                return toUpdate;
+            }
+
+            effectiveUpdateDto = detectionResult.patch as TEntity['__UDto'];
+        }
+
+        await this.entityRepo.manager.transaction(async (manager) => {
+            await this.updateEntity(effectiveUpdateDto, manager, toUpdate);
             try {
                 //Save in DB
                 await manager.save(toUpdate);
@@ -138,7 +130,6 @@ export abstract class ServiceBase<
                 );
             }
         });
-        //return await this.entityRepo.findOne({ where: { id: toUpdate.id } });
         const resultEntity = await this.entityRepo.findOne({
             where: { id: toUpdate.id },
         });
@@ -175,17 +166,12 @@ export abstract class ServiceBase<
         // Start query with query builder
         const query = this.entityRepo.createQueryBuilder('entity');
 
-        if (options.relations) {
-            for (const relation of options.relations) {
-                query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+        if (options.relations && options.relations.length > 0) {
+            const relations = this.buildRelationStatements(options.relations)
+            for (const relation of relations) {
+                query.leftJoinAndSelect(relation.property, relation.alias);
             }
         }
-
-        /*if (options.sortBy) {
-                query.orderBy(`entity.${options.sortBy}`, options.sortOrder);
-            } else {
-                query.orderBy('entity.id', 'ASC');
-            }*/
 
         if (options.limit) {
             query.limit(options.limit + 1);
@@ -208,7 +194,7 @@ export abstract class ServiceBase<
 
         if (options.filters) {
             // options.filters is always an array of strings here
-            // e.g. ['inventoryArea,1', 'inventoryArea,2']
+            // e.g. ['inventoryArea=1', 'inventoryArea=2']
             const filterMap: Record<string, string[]> = {};
             for (const filter of options.filters) {
                 const [key, value] = filter.split('=');
@@ -238,12 +224,11 @@ export abstract class ServiceBase<
 
         // handle cursor
         let nextCursor: string | undefined;
-        if (options.limit) {
+        if (options.limit) { // doesnt handle if sortByValue has duplicates
             if (results.length > options.limit) {
-                const nextEntity = results.pop();
-                if (!nextEntity) {
-                    nextCursor = (nextEntity as any)[options.sortBy ?? 'id'].toString();
-                }
+                const nextEntity = results.pop()!;
+                const cursorCol = options.sortBy ?? 'id';
+                nextCursor = (nextEntity as any)[cursorCol].toString();
             }
         }
 
@@ -268,23 +253,17 @@ export abstract class ServiceBase<
      */
     async findOne(
         id: number,
-        relations?: Array<keyof TEntity['__Entity']>,
-        childRelations?: string[],
+        relations?: string[],
     ): Promise<TEntity['__Entity']> {
         // Get requestId
         const requestId = this.requestContextService.getRequestId();
 
-        const combinedRelations = [
-            ...(relations?.map((r) => r.toString()) ?? []),
-            ...(childRelations ?? []),
-        ];
-
         // run query and return
-        let result;
+        let result: TEntity['__Entity'] | null;
         try {
             result = await this.entityRepo.findOne({
                 where: { id } as unknown as FindOptionsWhere<TEntity>,
-                relations: combinedRelations,
+                relations: relations,
             });
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
@@ -334,9 +313,39 @@ export abstract class ServiceBase<
     }
 
     async remove(id: number): Promise<Boolean> {
+        /* const requestId = this.requestContextService.getRequestId();
+         try {
+             //return (await this.entityRepo.remove( }))).affected !== 0;
+             await this.dataSource.transaction(async (manager) => {
+                 await manager.remove(await this.entityRepo.findOne({ where: { id } as unknown as FindOptionsWhere<TEntity> }));
+             });
+             return true;
+         } catch (err) {
+             throw this.databaseExceptionHandler.handle(
+                 err,
+                 this.servicePrefix,
+                 requestId,
+                 'REMOVE',
+             );
+         }*/
         const requestId = this.requestContextService.getRequestId();
+
         try {
-            return (await this.entityRepo.delete(id)).affected !== 0;
+            return await this.entityRepo.manager.transaction(async (manager) => {
+                const entity = await manager.findOne(this.entityRepo.target, {
+                    where: { id } as any,
+                });
+
+                if (!entity) return false;
+
+                await this.beforeRemove(entity, manager);
+
+                await manager.remove(entity);
+
+                await this.afterRemove(entity, manager);
+
+                return true;
+            });
         } catch (err) {
             throw this.databaseExceptionHandler.handle(
                 err,
@@ -421,4 +430,40 @@ export abstract class ServiceBase<
         manager: EntityManager,
         entity: TEntity['__Entity'],
     ): Promise<void>;
+
+    protected getChangeDetector():
+        | ChangeDetectorBase<TEntity['__Entity'], TEntity['__UDto']>
+        | undefined {
+        return undefined;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [];
+    }
+
+    protected async beforeRemove(
+        _entity: TEntity['__Entity'],
+        _manager: EntityManager
+    ): Promise<void> { }
+
+    protected async afterRemove(
+        _entity: TEntity['__Entity'],
+        _manager: EntityManager
+    ): Promise<void> { }
+
+    buildRelationStatements(relations: string[]): { property: string, alias: string }[] {
+        const result: { property: string, alias: string }[] = [];
+        for (const relation of relations) {
+            //query.leftJoinAndSelect(`entity.${relation}`, relation as string);
+            const string = relation.split('.');
+            if (string.length === 1) {
+                result.push({ property: `entity.${string[0]}`, alias: string[0] });
+            } else {
+                const rel = string.at(-1)!;
+                const alias = string.at(-2)!;
+                result.push({ property: `${alias}.${rel}`, alias: rel });
+            }
+        }
+        return result;
+    }
 }

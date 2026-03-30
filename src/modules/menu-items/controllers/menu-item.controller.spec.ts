@@ -1,168 +1,340 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
-import { getRecipeTestingModule } from '../../recipes/utils/recipes-testing.module';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { MoreThan, Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
+import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemService } from '../services/menu-item.service';
-import { getTestItemNames } from '../utils/constants';
+import { item_a, item_b, item_c } from '../utils/constants';
+import { menuItemToUpdateDto } from '../utils/entity-transformers/menu-item.dto.transfomer';
+import { getMenuItemTestingModule } from '../utils/menu-item-testing.module';
+import { MenuItemTestingUtil } from '../utils/menu-item-testing.util';
+import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import { MenuItemController } from './menu-item.controller';
 
 describe('menu item controller', () => {
-  let controller: MenuItemController;
-  let service: MenuItemService;
+    let testingUtil: MenuItemTestingUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: MenuItemController;
+    let itemRepo: Repository<MenuItem>;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
 
-  let items: MenuItem[];
+    beforeAll(async () => {
+        module = await getMenuItemTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
 
-  let testId: number;
+        controller = module.get<MenuItemController>(MenuItemController);
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+    });
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-    controller = module.get<MenuItemController>(MenuItemController);
-    service = module.get<MenuItemService>(MenuItemService);
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-    const itemNames = getTestItemNames();
-    let id = 1;
-    items = itemNames.map(
-      (name) =>
-        ({
-          id: id++,
-          name: name,
-        }) as MenuItem,
-    );
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await itemRepo.find();
+        const result = await controller.findAll(undefined, 100);
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateMenuItemDto) => {
-        const exists = items.find((item) => item.name === dto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
-
-        const item = {
-          id: id++,
-          name: dto.name,
-        } as MenuItem;
-
-        items.push(item);
-        return item;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: items });
-
-    jest
-      .spyOn(service, 'findEntitiesById')
-      .mockImplementation(async (ids: number[]) => {
-        return items.filter(
-          (item) => ids.findIndex((id) => id === item.id) !== -1,
+    it('findAll with search filters by name substring', async () => {
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            'item',
+            undefined,
         );
-      });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if (!id) {
-        throw new BadRequestException();
-      }
-      const result = items.find((item) => item.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
+        expect(result.items.length).toBeGreaterThan(0);
+        expect(
+            result.items.every((i) => i.name.toLowerCase().includes('item')),
+        ).toBe(true);
     });
 
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return items.find((item) => item.name === name) || null;
-      });
-
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = items.findIndex((item) => item.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      items.splice(index, 1);
-      return true;
+    it('findAll with filter by category matches repository', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        if (!cat) throw new Error('category not found');
+        const repoResult = await itemRepo.find({
+            where: { category: { id: cat.id } },
+        });
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [`category=${cat.id}`],
+        );
+        expect(result.items.length).toEqual(repoResult.length);
     });
 
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(async (id: number, dto: UpdateMenuItemDto) => {
-        const existIdx = items.findIndex((item) => item.id === id);
-        if (existIdx === -1) {
-          throw new NotFoundException();
+    it('findAll with filter by type returns only singles', async () => {
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [`type=${MENU_ITEM_TYPES.SINGLE}`],
+        );
+        expect(result.items.length).toBeGreaterThan(0);
+        expect(
+            result.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE),
+        ).toBe(true);
+    });
+
+    it('findAll with sortBy name DESC matches repository ordering', async () => {
+        const repoResult = await itemRepo.find({ order: { name: 'DESC' } });
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            'name',
+            'DESC',
+            undefined,
+            undefined,
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        if (repoResult.length > 0) {
+            expect(result.items[0].name).toEqual(repoResult[0].name);
+        }
+    });
+
+    it('findAll with sortBy category DESC aligns first and last with repository', async () => {
+        const repoResult = await itemRepo.find({
+            relations: ['category'],
+            order: { category: { name: 'DESC' } },
+        });
+        if (!repoResult.length) throw new Error('items not found');
+
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            'category',
+            'DESC',
+            undefined,
+            undefined,
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+        expect(result.items[0]?.category?.id).toEqual(repoResult[0]?.category?.id);
+        expect(
+            result.items[result.items.length - 1]?.category?.id,
+        ).toEqual(repoResult[repoResult.length - 1]?.category?.id);
+    });
+
+    it('findOne returns a seeded item', async () => {
+        const item = await itemRepo.findOne({ where: { name: item_a } });
+        if (!item) throw new Error('seed item not found');
+        const result = await controller.findOne(item.id);
+        expect(result.id).toEqual(item.id);
+    });
+
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('create persists a new single menu item', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const sizeIds = (await sizeRepo.find({ take: 2 })).map((s) => s.id);
+        if (!cat || sizeIds.length < 2) throw new Error('fixtures not found');
+
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'ControllerMenuItemSingle',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: cat.id,
+            sizeIds,
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await itemRepo.findOne({ where: { name: dto.name } });
+        expect(row).not.toBeNull();
+    });
+
+    it('create throws ValidationException when name already exists', async () => {
+        const sizes = await sizeRepo.find();
+        if (!sizes.length) throw new Error('sizes not found');
+
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: item_a,
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: null,
+            sizeIds: [sizes[0].id],
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
+
+    it('update throws ValidationException when name collides with another item', async () => {
+        const items = await itemRepo.find({
+            relations: [
+                'category',
+                'sizes',
+                'containerMenuItems',
+                'containerMenuItems.containedMenuItem',
+                'containerMenuItems.containedItemSize',
+            ],
+        });
+        const withContainer = items.filter(
+            (i) =>
+                i.containerMenuItems &&
+                i.containerMenuItems.length > 0 &&
+                i.category &&
+                i.sizes &&
+                i.sizes.length > 0,
+        );
+        if (withContainer.length < 2) {
+            throw new Error('Not enough container menu items for collision test');
         }
 
-        if (dto.name) {
-          items[existIdx].name = dto.name;
+        const itemToUpdate = withContainer[0];
+        const existingItem = withContainer[1];
+        const dto = menuItemToUpdateDto(itemToUpdate, {
+            name: existingItem.name,
+        });
+        try {
+            await controller.update(itemToUpdate.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
         }
+    });
 
-        return items[existIdx];
-      });
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: 'DoesNotMatter',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-  it('should create a item', async () => {
-    const dto = {
-      name: 'testItem',
-    } as CreateMenuItemDto;
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                MenuItemService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-    const result = await controller.create(dto);
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
 
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testItem');
+        it('skips updateEntity when DTO matches current item', async () => {
+            const item = await itemRepo.findOne({
+                where: { name: item_b },
+                relations: [
+                    'category',
+                    'sizes',
+                    'containerMenuItems',
+                    'containerMenuItems.containedMenuItem',
+                    'containerMenuItems.containedItemSize',
+                ],
+            });
+            if (!item?.category || !item.sizes?.length) {
+                throw new Error('item b not found');
+            }
+            const dto = menuItemToUpdateDto(item);
+            const result = await controller.update(item.id, dto);
+            expect(result.name).toEqual(item.name);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
 
-    testId = result?.id as number;
-  });
+        it('calls updateEntity when name changes', async () => {
+            const item = await itemRepo.findOne({
+                where: { name: item_c },
+                relations: [
+                    'category',
+                    'sizes',
+                    'containerMenuItems',
+                    'containerMenuItems.containedMenuItem',
+                    'containerMenuItems.containedItemSize',
+                ],
+            });
+            if (!item?.category || !item.sizes?.length) {
+                throw new Error('item c not found');
+            }
+            const newName = 'item c controller renamed';
+            const dto = menuItemToUpdateDto(item, { name: newName });
+            const result = await controller.update(item.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await itemRepo.findOne({ where: { id: item.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
 
-  it('should fail to create a item (already exists)', async () => {
-    const dto = {
-      name: 'testItem',
-    } as CreateMenuItemDto;
+    it('remove deletes a created item then findOne fails', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const sizeIds = (await sizeRepo.find({ take: 2 })).map((s) => s.id);
+        if (!cat || sizeIds.length < 2) throw new Error('fixtures not found');
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+        const created = await controller.create(
+            plainToInstance(CreateMenuItemDto, {
+                name: 'ControllerMenuItemRemove',
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: cat.id,
+                sizeIds,
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should find item by id', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
-
-  it('should fail find item by id (not exist)', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(BadRequestException);
-  });
-
-  it('should update item name', async () => {
-    const dto = {
-      name: 'updateTestItem',
-    } as UpdateMenuItemDto;
-
-    const result = await controller.update(testId, dto);
-
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('updateTestItem');
-  });
-
-  it('should fail update item name (not exist)', async () => {
-    const dto = {
-      name: 'updateTestItem',
-    } as UpdateMenuItemDto;
-
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
-
-  it('should remove item', async () => {
-    const result = await controller.remove(testId);
-    expect(result).toBeUndefined();
-  });
-
-  it('should fail remove item (not exist)', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

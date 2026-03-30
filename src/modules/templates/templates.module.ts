@@ -13,6 +13,8 @@ import { TemplateMenuItem } from './entities/template-menu-item.entity';
 import { Template } from './entities/template.entity';
 import { TemplateMenuItemService } from './services/template-menu-item.service';
 import { TemplateService } from './services/template.service';
+import { TemplateMenuItemChangeDetector } from './utils/change-detectors/template-menu-item.change-detector';
+import { TemplateChangeDetector } from './utils/change-detectors/template.change-detector';
 import { TemplateMenuItemComposer } from './utils/composers/template-menu-item.composer';
 import { TemplateTestingUtil } from './utils/template-testing.util';
 import { TemplateMenuItemValidator } from './validators/template-menu-item.validator';
@@ -38,6 +40,8 @@ import { TemplateValidator } from './validators/template.validator';
     TemplateMenuItemValidator,
 
     TemplateMenuItemComposer,
+    TemplateMenuItemChangeDetector,
+    TemplateChangeDetector,
 
     TemplateTestingUtil,
   ],

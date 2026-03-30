@@ -74,6 +74,7 @@ export class InventoryAreaItemComposer extends ComposerBase<InventoryAreaItemEnt
             const itemSize = await this.itemSizeResolver.composeNestedEntity(
                 dto.countedItemSize,
                 manager,
+                { inventoryItemId: dto.countedInventoryItemId },
             );
             entity.countedItemSize = itemSize;
         }

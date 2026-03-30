@@ -1,207 +1,282 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
+import { OUNCE, POUND } from '../../unit-of-measure/utils/constants';
+import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
+import { RecipeCategory } from '../entities/recipe-category.entity';
+import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
 import { Recipe } from '../entities/recipe.entity';
 import { RecipeService } from '../services/recipe.service';
+import { REC_A } from '../utils/constants';
+import { recipeToUpdateDto } from '../utils/entity-transformers/recipe.dto.transformer';
 import { getRecipeTestingModule } from '../utils/recipes-testing.module';
+import { RecipeTestUtil } from '../utils/recipe-test.util';
 import { RecipeController } from './recipe.controller';
 
+const ING_SEARCH_RELATIONS = [
+    'ingredients',
+    'ingredients.ingredientInventoryItem',
+    'ingredients.ingredientRecipe',
+] as const;
+
 describe('recipe controller', () => {
-  let controller: RecipeController;
-  let service: RecipeService;
-  let recipes: Recipe[];
-  let id: number;
+    let testingUtil: RecipeTestUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: RecipeController;
+    let recipeRepo: Repository<Recipe>;
+    let categoryRepo: Repository<RecipeCategory>;
+    let subCategoryRepo: Repository<RecipeSubCategory>;
+    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
+    let menuItemTestUtil: MenuItemTestingUtil;
 
-  let testId: number;
+    beforeAll(async () => {
+        module = await getRecipeTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<RecipeTestUtil>(RecipeTestUtil);
+        await testingUtil.initRecipeIngredientTestingDatabase(dbTestContext);
+        menuItemTestUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        await menuItemTestUtil.initMenuItemTestDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getRecipeTestingModule();
-
-    controller = module.get<RecipeController>(RecipeController);
-    service = module.get<RecipeService>(RecipeService);
-    recipes = [
-      {
-        name: 'REC_A',
-        batchResultQuantity: 1,
-        servingSizeQuantity: 1,
-        salesPrice: '10.00',
-      } as Recipe,
-      {
-        name: 'REC_B',
-        batchResultQuantity: 2,
-        servingSizeQuantity: 2,
-        salesPrice: '15',
-      } as Recipe,
-      {
-        name: 'REC_C',
-        batchResultQuantity: 3,
-        servingSizeQuantity: 3,
-        salesPrice: '20',
-      } as Recipe,
-    ];
-    id = 1;
-    recipes.map((recipe) => (recipe.id = id++));
-
-    jest
-      .spyOn(service, 'create')
-      .mockImplementation(async (dto: CreateRecipeDto) => {
-        const exists = recipes.find((rec) => rec.name === dto.name);
-        if (exists) {
-          throw new BadRequestException();
-        }
-
-        const recipe = {
-          id: id++,
-          name: dto.name,
-          batchResultQuantity: dto.batchResultQuantity,
-          servingSizeQuantity: dto.servingSizeQuantity,
-          salesPrice: String(dto.salesPrice),
-        } as Recipe;
-
-        recipes.push(recipe);
-        return recipe;
-      });
-
-    jest
-      .spyOn(service, 'update')
-      .mockImplementation(async (id: number, dto: UpdateRecipeDto) => {
-        const existIdx = recipes.findIndex((rec) => rec.id === id);
-        if (existIdx === -1) {
-          throw new NotFoundException();
-        }
-
-        if (dto.name) {
-          recipes[existIdx].name = dto.name;
-        }
-        if (dto.batchResultQuantity) {
-          recipes[existIdx].batchResultQuantity = dto.batchResultQuantity;
-        }
-        if (dto.servingSizeQuantity) {
-          recipes[existIdx].servingSizeQuantity = dto.servingSizeQuantity;
-        }
-        if (dto.salesPrice) {
-          recipes[existIdx].salesPrice = String(dto.salesPrice);
-        }
-
-        return recipes[existIdx];
-      });
-
-    jest
-      .spyOn(service, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return recipes.find((rec) => rec.name === name) || null;
-      });
-
-    jest.spyOn(service, 'findAll').mockResolvedValue({ items: recipes });
-
-    jest.spyOn(service, 'findOne').mockImplementation(async (id?: number) => {
-      if (!id) {
-        throw new Error();
-      }
-      const result = recipes.find((rec) => rec.id === id);
-      if (!result) {
-        throw new NotFoundException();
-      }
-      return result;
+        controller = module.get<RecipeController>(RecipeController);
+        recipeRepo = module.get(getRepositoryToken(Recipe));
+        categoryRepo = module.get(getRepositoryToken(RecipeCategory));
+        subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
+        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
     });
 
-    jest.spyOn(service, 'remove').mockImplementation(async (id: number) => {
-      const index = recipes.findIndex((rec) => rec.id === id);
-      if (index === -1) {
-        return false;
-      }
-
-      recipes.splice(index, 1);
-      return true;
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    async function loadRecipeForUpdate(): Promise<Recipe> {
+        return recipeRepo.findOneOrFail({
+            where: {},
+            relations: [
+                'category',
+                'subCategory',
+                'producedMenuItem',
+                'batchResultUnitType',
+                'servingSizeUnitType',
+                'ingredients',
+                'ingredients.quantityUnitType',
+                'ingredients.ingredientInventoryItem',
+                'ingredients.ingredientRecipe',
+            ],
+        });
+    }
 
-  it('should create a recipe', async () => {
-    const dto = {
-      name: 'testRecipe',
-      batchResultQuantity: 1,
-      servingSizeQuantity: 2,
-      salesPrice: 3,
-    } as CreateRecipeDto;
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('testRecipe');
-    expect(result?.batchResultQuantity).toEqual(1);
-    expect(result?.servingSizeQuantity).toEqual(2);
-    expect(result?.salesPrice).toEqual('3');
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await recipeRepo.find();
+        const result = await controller.findAll(undefined, 100);
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-    testId = result?.id as number;
-  });
+    it('findAll with search by recipe name', async () => {
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            'recipe',
+            undefined,
+        );
+        expect(result.items.length).toBeGreaterThan(0);
+        expect(
+            result.items.every((r) => r.name.toLowerCase().includes('recipe')),
+        ).toBe(true);
+    });
 
-  it('should fail create a recipe', async () => {
-    const dto = {
-      name: 'testRecipe',
-      batchResultQuantity: 1,
-      servingSizeQuantity: 2,
-      salesPrice: 3,
-    } as CreateRecipeDto;
+    it('findAll with search by ingredient matches service ids', async () => {
+        const recipeService = module.get(RecipeService);
+        const rels = [...ING_SEARCH_RELATIONS];
+        const svcResult = await recipeService.findAll({
+            search: 'food',
+            limit: 100,
+            relations: rels as string[],
+        });
+        const ctrlResult = await controller.findAll(
+            rels,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            'food',
+            undefined,
+        );
+        expect(ctrlResult.items.length).toEqual(svcResult?.items.length ?? 0);
+        const svcIds = (svcResult?.items ?? []).map((r) => r.id).sort((a, b) => a - b);
+        const ctrlIds = ctrlResult.items.map((r) => r.id).sort((a, b) => a - b);
+        expect(ctrlIds).toEqual(svcIds);
+    });
 
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('findAll with filter by category matches repository', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        if (!cat) throw new Error('category not found');
+        const repoResult = await recipeRepo.find({
+            where: { category: { id: cat.id } },
+        });
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [`category=${cat.id}`],
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+    });
 
-  it('should find one a recipe', async () => {
-    const result = await controller.findOne(testId);
-    expect(result).not.toBeNull();
-  });
+    it('findAll with filter by subCategory matches repository', async () => {
+        const [sub] = await subCategoryRepo.find({ take: 1 });
+        if (!sub) throw new Error('sub category not found');
+        const repoResult = await recipeRepo.find({
+            where: { subCategory: { id: sub.id } },
+        });
+        const result = await controller.findAll(
+            undefined,
+            100,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [`subCategory=${sub.id}`],
+        );
+        expect(result.items.length).toEqual(repoResult.length);
+    });
 
-  it('should fail find one a recipe', async () => {
-    await expect(controller.findOne(0)).rejects.toThrow(Error);
-  });
+    it('findOne returns a seeded recipe', async () => {
+        const [r] = await recipeRepo.find({ take: 1 });
+        if (!r) throw new Error('recipe not found');
+        const result = await controller.findOne(r.id);
+        expect(result.id).toEqual(r.id);
+    });
 
-  it('should find all a recipe', async () => {
-    const results = await controller.findAll();
-    expect(results).not.toBeNull();
-    expect(results.items.length).toBeGreaterThan(0);
-  });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should update a recipe', async () => {
-    const dto = {
-      name: 'UPDATE_testRecipe',
-      batchResultQuantity: 5,
-      servingSizeQuantity: 6,
-      salesPrice: 7,
-      cost: 8,
-    } as UpdateRecipeDto;
+    it('create persists a new recipe', async () => {
+        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
+        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
+        if (!batchUom || !servingUom) throw new Error('uom not found');
 
-    const result = await controller.update(testId, dto);
-    expect(result).not.toBeNull();
-    expect(result?.id).not.toBeNull();
-    expect(result?.name).toEqual('UPDATE_testRecipe');
-    expect(result?.batchResultQuantity).toEqual(5);
-    expect(result?.servingSizeQuantity).toEqual(6);
-    expect(result?.salesPrice).toEqual('7');
-  });
+        const dto = plainToInstance(CreateRecipeDto, {
+            name: 'Controller Recipe Create',
+            batchResultQuantity: 5,
+            batchResultUnitTypeId: batchUom.id,
+            servingSizeQuantity: 2,
+            servingSizeUnitTypeId: servingUom.id,
+            isIngredient: false,
+            ingredients: [],
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await recipeRepo.findOne({ where: { name: dto.name } });
+        expect(row).not.toBeNull();
+    });
 
-  it('should fail update a recipe', async () => {
-    const dto = {
-      name: 'UPDATE_testRecipe',
-      batchResultQuantity: 5,
-      servingSizeQuantity: 6,
-      salesPrice: 7,
-      cost: 8,
-    } as UpdateRecipeDto;
+    it('create throws ValidationException when name already exists', async () => {
+        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
+        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
+        if (!batchUom || !servingUom) throw new Error('uom not found');
 
-    await expect(controller.update(0, dto)).rejects.toThrow(NotFoundException);
-  });
+        const dto = plainToInstance(CreateRecipeDto, {
+            name: REC_A,
+            batchResultQuantity: 5,
+            batchResultUnitTypeId: batchUom.id,
+            servingSizeQuantity: 2,
+            servingSizeUnitTypeId: servingUom.id,
+            isIngredient: false,
+            ingredients: [],
+        });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
+            );
+        }
+    });
 
-  it('should remove a recipe', async () => {
-    const removal = await controller.remove(testId);
-    expect(removal).toBeUndefined();
-  });
+    it('update surfaces missing entity via DatabaseException', async () => {
+        const dto = plainToInstance(UpdateRecipeDto, { name: 'DoesNotMatter' });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should fail remove a recipe', async () => {
-    await expect(controller.remove(testId)).rejects.toThrow(NotFoundException);
-  });
+    it('calls updateEntity when name changes', async () => {
+        const updateEntitySpy = jest.spyOn(
+            RecipeService.prototype as any,
+            'updateEntity',
+        );
+        try {
+            const recipe = await loadRecipeForUpdate();
+            const newName = `${recipe.name} ctrl renamed`;
+            const dto = recipeToUpdateDto(recipe, { name: newName });
+            const result = await controller.update(recipe.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await recipeRepo.findOne({ where: { id: recipe.id } });
+            expect(row!.name).toEqual(newName);
+        } finally {
+            updateEntitySpy.mockRestore();
+        }
+    });
+
+    it('remove deletes a created recipe then findOne fails', async () => {
+        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
+        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
+        if (!batchUom || !servingUom) throw new Error('uom not found');
+
+        const created = await controller.create(
+            plainToInstance(CreateRecipeDto, {
+                name: 'Controller Recipe Remove',
+                batchResultQuantity: 1,
+                batchResultUnitTypeId: batchUom.id,
+                servingSizeQuantity: 1,
+                servingSizeUnitTypeId: servingUom.id,
+                isIngredient: false,
+                ingredients: [],
+            }),
+        );
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

@@ -5,7 +5,7 @@ import { recipeIngredientToNestedUpdateDto } from "./recipe-ingredient.dto.trans
 
 export function recipeToUpdateDto(recipe: Recipe, merge: Partial<UpdateRecipeDto> = {}): UpdateRecipeDto {
     const existingIngredients = recipe.ingredients.map(ingredient => recipeIngredientToNestedUpdateDto(ingredient)) ?? [];
-    const mergedIngredients = merge.ingredients ? [...existingIngredients, ...merge.ingredients] : existingIngredients;
+    const mergedIngredients = merge.ingredients ? [...merge.ingredients, ...existingIngredients] : existingIngredients;
 
     return plainToInstance(UpdateRecipeDto, {
         name: recipe.name,

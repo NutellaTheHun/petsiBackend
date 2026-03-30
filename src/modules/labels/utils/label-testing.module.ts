@@ -17,10 +17,14 @@ import { Label } from '../entities/label.entity';
 import { LabelsModule } from '../labels.module';
 import { LabelTypeService } from '../services/label-type.service';
 import { LabelService } from '../services/label.service';
+import { LabelTypeChangeDetector } from './change-detectors/label-type.change-detector';
+import { LabelChangeDetector } from './change-detectors/label.change-detector';
 
 export async function getLabelsTestingModule(opts?: {
   labelTypeServiceClass?: new (...args: any[]) => LabelTypeService;
   labelServiceClass?: new (...args: any[]) => LabelService;
+  labelTypeChangeDetectorClass?: new (...args: any[]) => LabelTypeChangeDetector;
+  labelChangeDetectorClass?: new (...args: any[]) => LabelChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -50,5 +54,9 @@ export async function getLabelsTestingModule(opts?: {
     .useClass(opts?.labelTypeServiceClass || LabelTypeService)
     .overrideProvider(LabelService)
     .useClass(opts?.labelServiceClass || LabelService)
+    .overrideProvider(LabelTypeChangeDetector)
+    .useClass(opts?.labelTypeChangeDetectorClass || LabelTypeChangeDetector)
+    .overrideProvider(LabelChangeDetector)
+    .useClass(opts?.labelChangeDetectorClass || LabelChangeDetector)
     .compile();
 }

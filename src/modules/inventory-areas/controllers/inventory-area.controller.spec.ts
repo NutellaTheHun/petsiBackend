@@ -1,196 +1,186 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
+import { DatabaseException } from '../../../common/exceptions/database-exception';
 import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Repository } from 'typeorm';
+import {
+    createValidationErrorPayload,
+    expectValidationErrorPayload,
+    expectValidationErrorSize,
+} from '../../../common/validation/validation-error';
+import { ValidationException } from '../../../common/validation/validation-exception';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { CreateInventoryAreaDto } from '../dto/inventory-area/create-inventory-area.dto';
 import { UpdateInventoryAreaDto } from '../dto/inventory-area/update-inventory-area.dto';
-import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
 import { InventoryAreaService } from '../services/inventory-area.service';
 import { AREA_A, AREA_B, AREA_C, AREA_D } from '../utils/constants';
+import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
 import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
 import { InventoryAreaController } from './inventory-area.controller';
 
 describe('inventory area controller', () => {
-  let controller: InventoryAreaController;
-  let areaService: InventoryAreaService;
+    let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
+    let controller: InventoryAreaController;
+    let areaRepo: Repository<InventoryArea>;
 
-  let areas: InventoryArea[];
-  let areaId = 1;
-  let areaCounts: InventoryAreaCount[];
-  let countId = 1;
-  let idToRemove: number;
+    beforeAll(async () => {
+        module = await getInventoryAreasTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initInventoryAreaTestDatabase(dbTestContext);
 
-  beforeAll(async () => {
-    const module: TestingModule = await getInventoryAreasTestingModule();
-
-    controller = module.get<InventoryAreaController>(InventoryAreaController);
-    areaService = module.get<InventoryAreaService>(InventoryAreaService);
-
-    areas = [
-      { name: AREA_A } as InventoryArea,
-      { name: AREA_B } as InventoryArea,
-      { name: AREA_C } as InventoryArea,
-      { name: AREA_D } as InventoryArea,
-    ];
-    areas.map((area) => (area.id = areaId++));
-
-    areaCounts = [
-      { inventoryArea: areas[0], countDate: new Date() } as InventoryAreaCount,
-      { inventoryArea: areas[0], countDate: new Date() } as InventoryAreaCount,
-
-      { inventoryArea: areas[1], countDate: new Date() } as InventoryAreaCount,
-      { inventoryArea: areas[1], countDate: new Date() } as InventoryAreaCount,
-
-      { inventoryArea: areas[2], countDate: new Date() } as InventoryAreaCount,
-      { inventoryArea: areas[2], countDate: new Date() } as InventoryAreaCount,
-
-      { inventoryArea: areas[3], countDate: new Date() } as InventoryAreaCount,
-      { inventoryArea: areas[3], countDate: new Date() } as InventoryAreaCount,
-    ];
-    areaCounts.map((count) => (count.id = countId++));
-
-    areas[0].inventoryCounts = [areaCounts[0], areaCounts[1]];
-    areas[1].inventoryCounts = [areaCounts[2], areaCounts[3]];
-    areas[2].inventoryCounts = [areaCounts[4], areaCounts[5]];
-    areas[3].inventoryCounts = [areaCounts[6], areaCounts[7]];
-
-    jest
-      .spyOn(areaService, 'create')
-      .mockImplementation(async (createDto: CreateInventoryAreaDto) => {
-        const exists = areas.findIndex((a) => a.name === createDto.name);
-        if (exists !== -1) {
-          throw new BadRequestException();
-        }
-
-        const newArea = { name: createDto.name } as InventoryArea;
-
-        newArea.id = areaId++;
-        areas.push(newArea);
-        return newArea;
-      });
-
-    jest
-      .spyOn(areaService, 'findOneByName')
-      .mockImplementation(async (name: string) => {
-        return areas.find((a) => a.name === name) || null;
-      });
-
-    jest
-      .spyOn(areaService, 'update')
-      .mockImplementation(
-        async (id: number, updateDto: UpdateInventoryAreaDto) => {
-          const idx = areas.findIndex((a) => a.id === id);
-          if (idx === -1) {
-            throw new NotFoundException();
-          }
-
-          const toUpdate = areas[idx];
-          if (updateDto.name) {
-            toUpdate.name = updateDto.name;
-          }
-          areas[idx] = toUpdate;
-          return toUpdate;
-        },
-      );
-
-    jest.spyOn(areaService, 'findAll').mockResolvedValue({ items: areas });
-
-    jest
-      .spyOn(areaService, 'findOne')
-      .mockImplementation(async (id: number) => {
-        const result = areas.find((area) => area.id === id);
-        if (!result) {
-          throw new NotFoundException();
-        }
-        return result;
-      });
-
-    jest.spyOn(areaService, 'remove').mockImplementation(async (id: number) => {
-      const index = areas.findIndex((area) => area.id === id);
-      if (index === -1) throw new NotFoundException();
-
-      areas.splice(index, 1);
-      return true;
+        controller = module.get<InventoryAreaController>(InventoryAreaController);
+        areaRepo = module.get(getRepositoryToken(InventoryArea));
     });
-  });
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
 
-  it('should create an area', async () => {
-    const dto = { name: 'testArea' } as CreateInventoryAreaDto;
-    const result = await controller.create(dto);
-    expect(result).not.toBeNull();
-  });
+    it('should be defined', () => {
+        expect(controller).toBeDefined();
+    });
 
-  it('should fail to create an area (already exists)', async () => {
-    const dto = { name: 'testArea' } as CreateInventoryAreaDto;
-    await expect(controller.create(dto)).rejects.toThrow(BadRequestException);
-  });
+    it('findAll returns items aligned with repository', async () => {
+        const repoRows = await areaRepo.find();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoRows.length);
+    });
 
-  it('should return all areas', async () => {
-    const result = await controller.findAll();
-    expect(result.items.length).toEqual(areas.length);
-  });
+    it('findOne returns a seeded area', async () => {
+        const area = await areaRepo.findOne({ where: { name: AREA_A } });
+        if (!area) throw new Error('seed area not found');
+        const result = await controller.findOne(area.id);
+        expect(result.id).toEqual(area.id);
+        expect(result.name).toEqual(AREA_A);
+    });
 
-  it('should return an area by id', async () => {
-    const result = await controller.findOne(1);
-    expect(result).not.toBeNull();
-  });
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 
-  it('should fail to return an area (bad id, returns null)', async () => {
-    await expect(controller.remove(0)).rejects.toThrow(NotFoundException);
-  });
+    it('create persists a new area', async () => {
+        const dto = plainToInstance(CreateInventoryAreaDto, {
+            name: 'ControllerIntegrationArea',
+        });
+        const result = await controller.create(dto);
+        expect(result.id).toBeDefined();
+        const row = await areaRepo.findOne({
+            where: { name: 'ControllerIntegrationArea' },
+        });
+        expect(row).not.toBeNull();
+        expect(row!.name).toEqual('ControllerIntegrationArea');
+    });
 
-  it('should update an area', async () => {
-    const toUpdate = await areaService.findOneByName(AREA_A);
-    if (!toUpdate?.id) {
-      throw new Error('area id is null');
-    }
+    it('create throws ValidationException when name already exists', async () => {
+        const dto = plainToInstance(CreateInventoryAreaDto, { name: AREA_A });
+        try {
+            await controller.create(dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
+        }
+    });
 
-    const newCount = {
-      inventoryArea: toUpdate,
-      countDate: new Date(),
-    } as InventoryAreaCount;
-    newCount.id = countId++;
-    if (!toUpdate.inventoryCounts) {
-      toUpdate.inventoryCounts = [];
-    }
-    toUpdate?.inventoryCounts.push(newCount);
+    it('update throws ValidationException when name collides with another area', async () => {
+        const areaA = await areaRepo.findOne({ where: { name: AREA_A } });
+        if (!areaA) throw new Error('area A not found');
+        const dto = plainToInstance(UpdateInventoryAreaDto, { name: AREA_B });
+        try {
+            await controller.update(areaA.id, dto);
+            throw new Error('expected ValidationException');
+        } catch (e) {
+            expect(e).toBeInstanceOf(ValidationException);
+            const err = e as ValidationException;
+            expectValidationErrorSize(err.errors, 1);
+            expectValidationErrorPayload(
+                err.errors,
+                [],
+                createValidationErrorPayload('ALREADY_EXISTS', undefined, [
+                    'name',
+                ]),
+            );
+        }
+    });
 
-    const result = await controller.update(toUpdate?.id, toUpdate);
-    expect(result).not.toBeNull();
-    expect(result?.inventoryCounts?.length).toEqual(
-      toUpdate.inventoryCounts.length,
-    );
-  });
+    it('update surfaces missing entity via DatabaseException (findOne wrapped by handler)', async () => {
+        const dto = plainToInstance(UpdateInventoryAreaDto, {
+            name: 'DoesNotMatter',
+        });
+        await expect(controller.update(9_999_999, dto)).rejects.toThrow(
+            DatabaseException,
+        );
+    });
 
-  it('should fail to update an area (doesnt exist)', async () => {
-    const toUpdate = await areaService.findOneByName(AREA_A);
-    if (!toUpdate?.id) {
-      throw new Error('area id is null');
-    }
+    describe('change detector on update', () => {
+        let updateEntitySpy: jest.SpyInstance;
 
-    await expect(controller.update(0, toUpdate)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
+        beforeEach(() => {
+            updateEntitySpy = jest.spyOn(
+                InventoryAreaService.prototype as any,
+                'updateEntity',
+            );
+        });
 
-  it('should remove an area', async () => {
-    const toRemove = await areaService.findOneByName(AREA_A);
-    if (!toRemove) {
-      throw new Error('area to remove is null');
-    }
+        afterEach(() => {
+            updateEntitySpy.mockRestore();
+        });
 
-    const result = await controller.remove(toRemove.id);
-    expect(result).toBeUndefined();
+        it('skips updateEntity when DTO matches current name', async () => {
+            const area = await areaRepo.findOne({ where: { name: AREA_D } });
+            if (!area) throw new Error('area D not found');
+            const dto = plainToInstance(UpdateInventoryAreaDto, {
+                name: AREA_D,
+            });
+            const result = await controller.update(area.id, dto);
+            expect(result.name).toEqual(AREA_D);
+            expect(updateEntitySpy).not.toHaveBeenCalled();
+        });
 
-    idToRemove = toRemove.id;
-  });
+        it('calls updateEntity when name changes', async () => {
+            const area = await areaRepo.findOne({ where: { name: AREA_C } });
+            if (!area) throw new Error('area C not found');
+            const newName = 'Area C Controller Renamed';
+            const dto = plainToInstance(UpdateInventoryAreaDto, {
+                name: newName,
+            });
+            const result = await controller.update(area.id, dto);
+            expect(result.name).toEqual(newName);
+            expect(updateEntitySpy).toHaveBeenCalled();
+            const row = await areaRepo.findOne({ where: { id: area.id } });
+            expect(row!.name).toEqual(newName);
+        });
+    });
 
-  it('should fail to remove an area (id not found)', async () => {
-    await expect(controller.remove(idToRemove)).rejects.toThrow(
-      NotFoundException,
-    );
-  });
+    it('remove deletes an area then findOne fails', async () => {
+        const dto = plainToInstance(CreateInventoryAreaDto, {
+            name: 'ControllerRemoveMeArea',
+        });
+        const created = await controller.create(dto);
+        await controller.remove(created.id);
+        await expect(controller.findOne(created.id)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
+
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
+    });
 });

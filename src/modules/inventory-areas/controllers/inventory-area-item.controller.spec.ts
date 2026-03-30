@@ -1,88 +1,73 @@
-import { BadRequestException, NotImplementedException } from "@nestjs/common";
-import { TestingModule } from "@nestjs/testing";
-import { CreateInventoryAreaItemDto } from "../dto/inventory-area-item/create-inventory-area-item.dto";
-import { UpdateInventoryAreaItemDto } from "../dto/inventory-area-item/update-inventory-area-item.dto";
-import { InventoryAreaItem } from "../entities/inventory-area-item.entity";
-import { InventoryAreaItemService } from "../services/inventory-area-item.service";
-import { getInventoryAreasTestingModule } from "../utils/inventory-areas-testing.module";
-import { InventoryAreaItemController } from "./inventory-area-item.controller";
+import { NotFoundException } from '@nestjs/common';
+import { TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
+import { InventoryAreaTestUtil } from '../utils/inventory-area-test.util';
+import { getInventoryAreasTestingModule } from '../utils/inventory-areas-testing.module';
+import { InventoryAreaItemController } from './inventory-area-item.controller';
 
 describe('inventory area item controller', () => {
+    let testingUtil: InventoryAreaTestUtil;
+    let dbTestContext: DatabaseTestContext;
+    let module: TestingModule;
     let controller: InventoryAreaItemController;
-    let itemCountService: InventoryAreaItemService;
-
-    let itemCounts: InventoryAreaItem[];
+    let itemRepo: Repository<InventoryAreaItem>;
 
     beforeAll(async () => {
-        const module: TestingModule = await getInventoryAreasTestingModule();
+        module = await getInventoryAreasTestingModule();
+        dbTestContext = new DatabaseTestContext();
+        testingUtil = module.get<InventoryAreaTestUtil>(InventoryAreaTestUtil);
+        await testingUtil.initInventoryAreaItemCountTestDatabase(dbTestContext);
 
-        controller = module.get<InventoryAreaItemController>(InventoryAreaItemController);
-        itemCountService = module.get<InventoryAreaItemService>(InventoryAreaItemService);
+        controller = module.get<InventoryAreaItemController>(
+            InventoryAreaItemController,
+        );
+        itemRepo = module.get(getRepositoryToken(InventoryAreaItem));
+    });
 
-        itemCounts = [];
-
-        jest.spyOn(itemCountService, "create").mockImplementation(async (createDto: CreateInventoryAreaItemDto) => {
-            throw new NotImplementedException();
-        });
-
-        jest.spyOn(itemCountService, "findByItemName").mockImplementation(async (name: string) => {
-            throw new NotImplementedException();
-        });
-
-        jest.spyOn(itemCountService, "update").mockImplementation(async (id: number, updateDto: UpdateInventoryAreaItemDto) => {
-            throw new NotImplementedException();
-        });
-
-        jest.spyOn(itemCountService, "findAll").mockResolvedValue({ items: itemCounts });
-
-        jest.spyOn(itemCountService, "findOne").mockImplementation(async (id?: number) => {
-            if (!id) { throw new BadRequestException(); }
-            throw new NotImplementedException();
-        });
-
-        jest.spyOn(itemCountService, "remove").mockImplementation(async (id: number) => {
-            throw new NotImplementedException();
-        });
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
     });
 
     it('should be defined', () => {
         expect(controller).toBeDefined();
     });
 
-    it('should create an item count', async () => {
-
+    it('findAll returns items aligned with repository', async () => {
+        const repoCount = await itemRepo.count();
+        const result = await controller.findAll();
+        expect(result.items.length).toEqual(repoCount);
     });
 
-    it('should fail to create an item count (already exists)', async () => {
-
+    it('findOne returns a seeded area item', async () => {
+        const row = await itemRepo.findOne({
+            where: {},
+            relations: ['countedInventoryItem'],
+        });
+        if (!row) throw new Error('no seeded inventory area item');
+        const result = await controller.findOne(row.id);
+        expect(result.id).toEqual(row.id);
     });
 
-    it('should return all itemCounts', async () => {
-
+    it('findOne throws NotFoundException for missing id', async () => {
+        await expect(controller.findOne(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 
-    it('should return an item count by id', async () => {
-
+    it('remove deletes an item then findOne fails', async () => {
+        const row = await itemRepo.findOne({ where: {} });
+        if (!row) throw new Error('no row to remove');
+        const id = row.id;
+        await controller.remove(id);
+        await expect(controller.findOne(id)).rejects.toThrow(NotFoundException);
     });
 
-    it('should fail to return an item count (bad id, returns null)', async () => {
-
-    });
-
-    it('should update an item count', async () => {
-
-    });
-
-    it('should fail to update an item count (doesnt exist)', async () => {
-
-    });
-
-    it('should remove an item count', async () => {
-
-    });
-
-    it('should fail to remove an item count (id not found, returns false)', async () => {
-
+    it('remove throws NotFoundException when id does not exist', async () => {
+        await expect(controller.remove(9_999_999)).rejects.toThrow(
+            NotFoundException,
+        );
     });
 });
-

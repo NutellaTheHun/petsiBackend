@@ -62,7 +62,7 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
     ): CreateInventoryItemSizeDto {
         if (!context?.inventoryItemId) {
             throw new Error(
-                'InventoryItemSizeResolver: parentSizeId is required in context',
+                'InventoryItemSizeResolver: inventoryItemId is required in context',
             );
         }
 

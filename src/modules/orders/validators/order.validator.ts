@@ -10,9 +10,12 @@ import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { OrderMenuItemValidatorIdentity } from './identities/order-menu-item.validator.identity.interface';
 import { OrderValidatorIdentity } from './identities/order.validator.identity.interface';
+import { RecurringOrderScheduleValidatorIdentity } from './identities/recurring-order-schedule.identity.interface';
 import { OrderMenuItemValidator } from './order-menu-item.validator';
+import { RecurringOrderScheduleValidator } from './recurring-order-schedule.validator';
 
 @Injectable()
 export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIdentity> {
@@ -25,6 +28,8 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
 
         @InjectRepository(OrderCategory)
         private readonly orderCategoryRepo: Repository<OrderCategory>,
+
+        private readonly recurringOrderScheduleValidator: RecurringOrderScheduleValidator,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -68,36 +73,11 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
 
         //if (identity.isFrozen) { }
 
-        if (identity.isWeekly) {
-            this.helper.enforceConditionalRequired(
-                identity,
-                'isWeekly',
-                true,
-                ['weeklyFulfillment'],
-                errorMap,
-            );
-        }
-
         //if (identity.note) { }
 
         //if (identity.phoneNumber) { }
 
         //if (identity.recipient) { }
-
-        if (identity.weeklyFulfillment) {
-            const validDays = [
-                'sunday',
-                'monday',
-                'tuesday',
-                'wednesday',
-                'thursday',
-                'friday',
-                'saturday',
-            ];
-            if (!validDays.includes(identity.weeklyFulfillment)) {
-                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['weeklyFulfillment']);
-            }
-        }
 
         if (identity.orderedItems && identity.orderedItems.length > 0) {
             // Check Duplicates
@@ -118,6 +98,58 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             }
         }
 
+        if (identity.occurrenceType !== null && identity.occurrenceType !== undefined) {
+            const validOccurenceTypes = Object.values(OCCURRENCE_TYPES).map(type => type.toString());
+            if (!validOccurenceTypes.includes(identity.occurrenceType)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurenceType']);
+            }
+        }
+
+        if (identity.occurrenceState !== null && identity.occurrenceState !== undefined) {
+            const validoccurrenceStates = Object.values(OCCURRENCE_STATES).map(state => state.toString());
+            if (!validoccurrenceStates.includes(identity.occurrenceState)) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
+            }
+        }
+
+        /*if (identity.reccurenceDate !== undefined) {
+        }*/
+
+        if (identity.templateOrderId !== null && identity.templateOrderId !== undefined) {
+            await this.helper.enforceExists(
+                identity.templateOrderId,
+                this.repo,
+                'templateOrderId',
+                errorMap,
+            );
+            // occurence type must be set to OCCURENCE
+            if (identity.occurrenceType !== OCCURRENCE_TYPES.OCCURRENCE) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
+            }
+            // must have a occurence state
+            if (identity.occurrenceState === undefined) {
+                errorMap.addError('MISSING_PROPERTY', undefined, ['occurrenceState']);
+            }
+        }
+
+        if (identity.recurrenceSchedule) {
+            await this.recurringOrderScheduleValidator.validateNestedIdentity(
+                'recurrenceSchedule',
+                identity.recurrenceSchedule,
+                errorMap,
+            );
+
+            // occurence type must be set to TEMPLATE
+            if (identity.occurrenceType !== OCCURRENCE_TYPES.TEMPLATE) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
+            }
+
+            // occurence state must be null or undefined
+            if (identity.occurrenceState !== null && identity.occurrenceState !== undefined) {
+                errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['occurrenceState']);
+            }
+        }
+
         return errorMap;
     }
 
@@ -129,6 +161,13 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
                 orderedItems.push(await this.orderItemValidator.resolveIdentity(item, itemId));
             }
         }
+
+        let recurrenceSchedule: RecurringOrderScheduleValidatorIdentity | undefined;
+        if (dto.recurrenceSchedule) {
+            const id = 'id' in dto.recurrenceSchedule ? dto.recurrenceSchedule.id : dto.recurrenceSchedule.createId;
+            recurrenceSchedule = await this.recurringOrderScheduleValidator.resolveIdentity(dto.recurrenceSchedule, id);
+        }
+
         return {
             recipient: dto.recipient,
             fulfillmentDate: dto.fulfillmentDate,
@@ -143,6 +182,10 @@ export class OrderValidator extends ValidatorBase<OrderEntity, OrderValidatorIde
             weeklyFulfillment: dto.weeklyFulfillment,
             categoryId: dto.categoryId,
             orderedItems: orderedItems,
+            templateOrderId: 'templateOrderId' in dto ? dto.templateOrderId ?? undefined : undefined,
+            occurrenceType: dto.occurrenceType,
+            occurrenceState: dto.occurrenceState,
+            recurrenceSchedule,
         } as OrderValidatorIdentity;
     }
 }

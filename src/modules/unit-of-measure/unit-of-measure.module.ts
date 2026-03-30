@@ -11,6 +11,8 @@ import { UnitOfMeasureCategory } from './entities/unit-of-measure-category.entit
 import { UnitOfMeasure } from './entities/unit-of-measure.entity';
 import { UnitOfMeasureCategoryService } from './services/unit-of-measure-category.service';
 import { UnitOfMeasureService } from './services/unit-of-measure.service';
+import { UnitOfMeasureCategoryChangeDetector } from './utils/change-detectors/unit-of-measure-category.change-detector';
+import { UnitOfMeasureChangeDetector } from './utils/change-detectors/unit-of-measure.change-detector';
 import { UnitOfMeasureTestingUtil } from './utils/unit-of-measure-testing.util';
 import { UnitOfMeasureCategoryValidator } from './validators/unit-of-measure-category.validator';
 import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
@@ -32,6 +34,8 @@ import { UnitOfMeasureValidator } from './validators/unit-of-measure.validator';
 
         UnitOfMeasureCategoryValidator,
         UnitOfMeasureValidator,
+        UnitOfMeasureChangeDetector,
+        UnitOfMeasureCategoryChangeDetector,
 
         UnitOfMeasureTestingUtil,
     ],

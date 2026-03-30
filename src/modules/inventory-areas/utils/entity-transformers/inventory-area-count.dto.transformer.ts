@@ -6,7 +6,7 @@ import { inventoryAreaItemToNestedUpdateDto } from "./inventory-area-item.dto.tr
 export function inventoryAreaCountToUpdateDto(inventoryAreaCount: InventoryAreaCount, merge: Partial<UpdateInventoryAreaCountDto> = {}): UpdateInventoryAreaCountDto {
     const existingInventoryItems = inventoryAreaCount.countedInventoryItems.map(inventoryAreaItem => inventoryAreaItemToNestedUpdateDto(inventoryAreaItem)) ?? [];
 
-    const mergedInventoryItems = merge.countedInventoryItems ? [...existingInventoryItems, ...merge.countedInventoryItems] : existingInventoryItems;
+    const mergedInventoryItems = merge.countedInventoryItems ? [...merge.countedInventoryItems, ...existingInventoryItems,] : existingInventoryItems;
     return plainToInstance(UpdateInventoryAreaCountDto, {
         inventoryAreaId: inventoryAreaCount.inventoryArea.id,
         ...merge,

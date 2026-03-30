@@ -10,6 +10,7 @@ import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
 import { Order } from '../../orders/entities/order.entity';
+import { RecurringOrderSchedule } from '../../orders/entities/recurring-order-schedule.entity';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { MenuItemCategoryController } from '../controllers/menu-item-category.controller';
@@ -25,6 +26,10 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
+import { MenuItemCategoryChangeDetector } from './change-detectors/menu-item-category.change-detector';
+import { MenuItemContainerItemChangeDetector } from './change-detectors/menu-item-container-item.change-detector';
+import { MenuItemSizeChangeDetector } from './change-detectors/menu-item-size.change-detector';
+import { MenuItemChangeDetector } from './change-detectors/menu-item.change-detector';
 
 export async function getMenuItemTestingModule(opts?: {
     menuItemCategoryServiceClass?: new (
@@ -35,6 +40,10 @@ export async function getMenuItemTestingModule(opts?: {
     menuItemContainerItemServiceClass?: new (
         ...args: any[]
     ) => MenuItemContainerItemService;
+    menuItemChangeDetectorClass?: new (...args: any[]) => MenuItemChangeDetector;
+    menuItemCategoryChangeDetectorClass?: new (...args: any[]) => MenuItemCategoryChangeDetector;
+    menuItemSizeChangeDetectorClass?: new (...args: any[]) => MenuItemSizeChangeDetector;
+    menuItemContainerItemChangeDetectorClass?: new (...args: any[]) => MenuItemContainerItemChangeDetector;
 }): Promise<TestingModule> {
     return await Test.createTestingModule({
         imports: [
@@ -48,6 +57,7 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderCategory,
                 OrderMenuItem,
                 OrderContainerItem,
+                RecurringOrderSchedule,
             ]),
             TypeOrmModule.forFeature([
                 MenuItemCategory,
@@ -58,6 +68,7 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderCategory,
                 OrderMenuItem,
                 OrderContainerItem,
+                RecurringOrderSchedule,
             ]),
             MenuItemsModule,
             CacheModule.register(),
@@ -89,5 +100,13 @@ export async function getMenuItemTestingModule(opts?: {
         .useClass(
             opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
         )
+        .overrideProvider(MenuItemChangeDetector)
+        .useClass(opts?.menuItemChangeDetectorClass || MenuItemChangeDetector)
+        .overrideProvider(MenuItemCategoryChangeDetector)
+        .useClass(opts?.menuItemCategoryChangeDetectorClass || MenuItemCategoryChangeDetector)
+        .overrideProvider(MenuItemSizeChangeDetector)
+        .useClass(opts?.menuItemSizeChangeDetectorClass || MenuItemSizeChangeDetector)
+        .overrideProvider(MenuItemContainerItemChangeDetector)
+        .useClass(opts?.menuItemContainerItemChangeDetectorClass || MenuItemContainerItemChangeDetector)
         .compile();
 }

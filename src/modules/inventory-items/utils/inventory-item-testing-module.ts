@@ -25,6 +25,11 @@ import { InventoryItemPackageService } from '../services/inventory-item-package.
 import { InventoryItemSizeService } from '../services/inventory-item-size.service';
 import { InventoryItemVendorService } from '../services/inventory-item-vendor.service';
 import { InventoryItemService } from '../services/inventory-item.service';
+import { InventoryItemCategoryChangeDetector } from './change-detectors/inventory-item-category.change-detector';
+import { InventoryItemPackageChangeDetector } from './change-detectors/inventory-item-package.change-detector';
+import { InventoryItemSizeChangeDetector } from './change-detectors/inventory-item-size.change-detector';
+import { InventoryItemVendorChangeDetector } from './change-detectors/inventory-item-vendor.change-detector';
+import { InventoryItemChangeDetector } from './change-detectors/inventory-item.change-detector';
 
 export async function getInventoryItemTestingModule(opts?: {
   inventoryItemCategoryServiceClass?: new (
@@ -40,6 +45,11 @@ export async function getInventoryItemTestingModule(opts?: {
     ...args: any[]
   ) => InventoryItemVendorService;
   inventoryItemServiceClass?: new (...args: any[]) => InventoryItemService;
+  inventoryItemChangeDetectorClass?: new (...args: any[]) => InventoryItemChangeDetector;
+  inventoryItemCategoryChangeDetectorClass?: new (...args: any[]) => InventoryItemCategoryChangeDetector;
+  inventoryItemPackageChangeDetectorClass?: new (...args: any[]) => InventoryItemPackageChangeDetector;
+  inventoryItemSizeChangeDetectorClass?: new (...args: any[]) => InventoryItemSizeChangeDetector;
+  inventoryItemVendorChangeDetectorClass?: new (...args: any[]) => InventoryItemVendorChangeDetector;
 }): Promise<TestingModule> {
   return await Test.createTestingModule({
     imports: [
@@ -90,5 +100,15 @@ export async function getInventoryItemTestingModule(opts?: {
     .useClass(opts?.inventoryItemVendorServiceClass ?? InventoryItemVendorService)
     .overrideProvider(InventoryItemService)
     .useClass(opts?.inventoryItemServiceClass ?? InventoryItemService)
+    .overrideProvider(InventoryItemChangeDetector)
+    .useClass(opts?.inventoryItemChangeDetectorClass ?? InventoryItemChangeDetector)
+    .overrideProvider(InventoryItemCategoryChangeDetector)
+    .useClass(opts?.inventoryItemCategoryChangeDetectorClass ?? InventoryItemCategoryChangeDetector)
+    .overrideProvider(InventoryItemPackageChangeDetector)
+    .useClass(opts?.inventoryItemPackageChangeDetectorClass ?? InventoryItemPackageChangeDetector)
+    .overrideProvider(InventoryItemSizeChangeDetector)
+    .useClass(opts?.inventoryItemSizeChangeDetectorClass ?? InventoryItemSizeChangeDetector)
+    .overrideProvider(InventoryItemVendorChangeDetector)
+    .useClass(opts?.inventoryItemVendorChangeDetectorClass ?? InventoryItemVendorChangeDetector)
     .compile();
 }

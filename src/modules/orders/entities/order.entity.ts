@@ -5,16 +5,21 @@ import {
     Entity,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
-    UpdateDateColumn,
+    Unique,
+    UpdateDateColumn
 } from 'typeorm';
 import { EntityBase } from '../../../common/base/entity.base';
 import { orderCategoryExample } from '../../../common/swagger/examples/orders/order-category.example';
 import { orderMenuItemExample } from '../../../common/swagger/examples/orders/order-menu-item.example';
+import { recurringOrderScheduleExample } from '../../../common/swagger/examples/orders/recurring-order-schedule.example';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
 import { UpdateOrderDto } from '../dto/order/update-order.dto';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderCategory } from './order-category.entity';
 import { OrderMenuItem } from './order-menu-item.entity';
+import { RecurringOrderSchedule } from './recurring-order-schedule.entity';
 
 export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
 
@@ -22,6 +27,7 @@ export type OrderEntity = EntityBase<Order, CreateOrderDto, UpdateOrderDto>;
  * A list of {@link OrderMenuItem} and fullfilment information, facilitating the purchasing of {@link MenuItem}.
  */
 @Entity('orders')
+@Unique(['templateOrderId', 'recurrenceDate'])
 export class Order {
     @ApiProperty({
         example: 1,
@@ -88,7 +94,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    fulfillmentContactName: string | null = null;
+    fulfillmentContactName: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -100,7 +106,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    deliveryAddress: string | null = null;
+    deliveryAddress: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -112,7 +118,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    phoneNumber: string | null = null;
+    phoneNumber: string | null;
 
     /**
      * Only required for orders with fulfillment type delivery
@@ -125,7 +131,7 @@ export class Order {
         format: 'email',
     })
     @Column({ nullable: true, type: 'varchar' })
-    email: string | null = null;
+    email: string | null;
 
     /**
      * Any additional information for the order.
@@ -137,7 +143,7 @@ export class Order {
         type: 'string',
     })
     @Column({ nullable: true, type: 'varchar' })
-    note: string | null = null;
+    note: string | null;
 
     /**
      * If an order is frozen, it is not an active order,
@@ -154,34 +160,6 @@ export class Order {
     isFrozen: boolean = false;
 
     /**
-     * If an order occurs weekly (such as most wholesale orders),
-     *
-     * this flag ensures that its aggregation is calculated appropriately.
-     *
-     * Most orders will be isWeekly=false (A "one-shot" order, most orders are done after fulfillment).
-     */
-    @ApiProperty({
-        example: '',
-        description:
-            'A flag if a order occurs on a weekly basis. A traditional order has isWeekly=false (upon fulfillment the order is completed, while a wholesale standing order could occur every thursday)',
-    })
-    @Column({ default: false })
-    isWeekly: boolean = false;
-
-    /**
-     * If an order is weekly, the day of the week the order is fulfilled.
-     */
-    @ApiProperty({
-        example: 'tuesday',
-        description:
-            'If the order isWeekly is set to true, the day of the week the order is fulfilled on.',
-        nullable: true,
-        type: 'string',
-    })
-    @Column({ nullable: true, type: 'varchar' })
-    weeklyFulfillment: string | null = null;
-
-    /**
      * The category of order
      * - Example: "Wholesale", "Special", "Square", "Farmers Market"
      */
@@ -191,7 +169,7 @@ export class Order {
         type: () => OrderCategory,
     })
     @ManyToOne(() => OrderCategory, { nullable: true, onDelete: 'SET NULL' })
-    category: OrderCategory | null = null;
+    category: OrderCategory | null;
 
     /**
      * The list of {@link OrderMenuItem} that are being purchased.
@@ -205,4 +183,48 @@ export class Order {
     })
     @OneToMany(() => OrderMenuItem, (item) => item.parentOrder, { cascade: true })
     orderedItems: OrderMenuItem[];
+
+    @ApiProperty({
+        example: recurringOrderScheduleExample(new Set<string>(), false),
+        description: 'The schedule of the recurring order',
+        type: () => RecurringOrderSchedule,
+        nullable: true,
+    })
+    @OneToOne(() => RecurringOrderSchedule, (schedule) => schedule.order, {
+        nullable: true,
+        cascade: true,
+    })
+    recurrenceSchedule?: RecurringOrderSchedule | null;
+
+    @ApiProperty({
+        example: 'TEMPLATE',
+        description: 'The type of the occurence',
+        type: 'string',
+    })
+    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_TYPES), default: null })
+    occurrenceType?: OccurrenceType | null;
+
+    @ApiProperty({
+        example: 'GENERATED',
+        description: 'The state of the occurence',
+        type: 'string',
+    })
+    @Column({ nullable: true, type: 'enum', enum: Object.values(OCCURRENCE_STATES), default: null })
+    occurrenceState?: OccurrenceState | null;
+
+    @ApiProperty({
+        example: '2025-01-01',
+        description: 'The original of the occurence, used to properly regenerated orders',
+    })
+    @Column({ type: 'timestamptz', nullable: true })
+    recurrenceDate?: Date | null;
+
+    @ApiProperty({
+        example: 1,
+        description: 'The unique identifier of the template order that this occurence is based on',
+        type: 'number',
+        nullable: true,
+    })
+    @Column({ nullable: true, type: 'int' })
+    templateOrderId?: number | null;
 }

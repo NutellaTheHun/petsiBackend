@@ -10,6 +10,7 @@ import { UserBuilder } from './builders/user.builder';
 import { UserController } from './controllers/user.controller';
 import { User } from './entities/user.entities';
 import { UserService } from './services/user.service';
+import { UserChangeDetector } from './utils/change-detectors/user.change-detector';
 import { UserTestUtil } from './utils/user-test.util';
 import { UserValidator } from './validators/user.validator';
 
@@ -23,7 +24,7 @@ import { UserValidator } from './validators/user.validator';
     RequestContextModule,
   ],
   controllers: [UserController],
-  providers: [UserService, UserBuilder, UserValidator, UserTestUtil],
+  providers: [UserService, UserBuilder, UserValidator, UserTestUtil, UserChangeDetector],
   exports: [UserService, UserTestUtil],
 })
 export class UserModule {}

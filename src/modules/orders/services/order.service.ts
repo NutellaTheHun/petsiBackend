@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
@@ -9,7 +10,11 @@ import { UpdateOrderDto } from '../dto/order/update-order.dto';
 import { OrderCategory } from '../entities/order-category.entity';
 import { Order, OrderEntity } from '../entities/order.entity';
 import { OrderMenuItemComposer } from '../utils/composers/order-menu-item.composer';
+import { OrderChangeDetector } from '../utils/change-detectors/order.change-detector';
+import { RecurringOrderScheduleComposer } from '../utils/composers/recurring-order-schedule.composer';
+import { OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
+import { OrderRecurrenceService } from './order-recurrence.service';
 
 @Injectable()
 export class OrderService extends ServiceBase<OrderEntity> {
@@ -21,6 +26,11 @@ export class OrderService extends ServiceBase<OrderEntity> {
         validator: OrderValidator,
 
         private readonly orderMenuItemComposer: OrderMenuItemComposer,
+        private readonly recurringOrderScheduleComposer: RecurringOrderScheduleComposer,
+
+        @Inject(OrderRecurrenceService)
+        private readonly orderRecurrenceService: OrderRecurrenceService,
+        private readonly orderChangeDetector: OrderChangeDetector,
     ) {
         super(repo, 'OrderService', requestContextService, logger, validator);
     }
@@ -29,8 +39,16 @@ export class OrderService extends ServiceBase<OrderEntity> {
         dto: CreateOrderDto,
         manager: EntityManager,
     ): Promise<Order> {
+
+        const occurrenceType = dto.occurrenceType as OccurrenceType | null;
+        const recurrenceDate =
+            dto.recurrenceDate ??
+            (dto.recurrenceSchedule && occurrenceType === OCCURRENCE_TYPES.TEMPLATE
+                ? dto.fulfillmentDate
+                : null);
+
         const result = manager.create(Order, {
-            orderCategory: { id: dto.categoryId },
+            category: manager.create(OrderCategory, { id: dto.categoryId }),
             recipient: dto.recipient,
             fulfillmentDate: dto.fulfillmentDate,
             fulfillmentType: dto.fulfillmentType,
@@ -39,9 +57,11 @@ export class OrderService extends ServiceBase<OrderEntity> {
             phoneNumber: dto.phoneNumber ?? null,
             email: dto.email ?? null,
             note: dto.note ?? null,
-            weeklyFulfillment: dto.weeklyFulfillment ?? null,
             isFrozen: dto.isFrozen ?? false,
-            isWeekly: dto.isWeekly ?? false,
+            occurrenceType,
+            occurrenceState: dto.occurrenceState as OccurrenceState | null,
+            recurrenceDate,
+            templateOrderId: dto.templateOrderId ?? null,
         });
 
         const savedResult = await manager.save(result);
@@ -58,6 +78,29 @@ export class OrderService extends ServiceBase<OrderEntity> {
                 );
 
             await manager.save(savedResult);
+        }
+
+        if (dto.recurrenceSchedule !== undefined) {
+            if (dto.recurrenceSchedule === null) {
+                savedResult.recurrenceSchedule = null;
+            } else {
+                savedResult.recurrenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                    dto.recurrenceSchedule,
+                    manager,
+                    {
+                        orderId: savedResult.id,
+                    },
+                );
+            }
+
+            await manager.save(savedResult);
+        }
+
+        if (savedResult.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
+            await this.orderRecurrenceService.materializeTemplateOnCreate(
+                savedResult.id,
+                manager,
+            );
         }
 
         return savedResult;
@@ -104,36 +147,77 @@ export class OrderService extends ServiceBase<OrderEntity> {
             entity.isFrozen = dto.isFrozen;
         }
 
-        if (dto.isWeekly !== undefined) {
-            entity.isWeekly = dto.isWeekly;
-        }
-
-        if (dto.weeklyFulfillment !== undefined) {
-            entity.weeklyFulfillment = dto.weeklyFulfillment;
-        }
-
         if (dto.categoryId !== undefined) {
             entity.category = manager.create(OrderCategory, {
                 id: dto.categoryId,
             });
         }
 
-        if (dto.orderedItems) {
-            /*const existingItems = await manager.find(OrderMenuItem, {
-                where: { parentOrder: { id: entity.id } },
-            });*/
+        if (dto.occurrenceType !== undefined) {
+            entity.occurrenceType = dto.occurrenceType as OccurrenceType | null;
+        }
+
+        if (dto.occurrenceState !== undefined) {
+            entity.occurrenceState = dto.occurrenceState as OccurrenceState | null;
+        }
+
+        if (dto.orderedItems && dto.orderedItems.length > 0) {
             entity.orderedItems =
                 await this.orderMenuItemComposer.composeManyNestedEntity(
                     dto.orderedItems,
                     manager,
-                    /*existingItems,*/[],
+                    entity.orderedItems ?? [],
                     {
                         parentOrderId: entity.id,
                     },
                 );
         }
 
+        if (dto.recurrenceSchedule !== undefined) {
+            if (dto.recurrenceSchedule === null) {
+                const existingSchedule = entity.recurrenceSchedule;
+
+                entity.recurrenceSchedule = null;
+                entity.occurrenceType = null;
+
+                await manager.save(entity);
+
+                if (existingSchedule) {
+                    await manager.remove(existingSchedule);
+                }
+            } else {
+                entity.recurrenceSchedule = await this.recurringOrderScheduleComposer.composeNestedEntity(
+                    dto.recurrenceSchedule,
+                    manager,
+                    {
+                        orderId: entity.id,
+                    },
+                );
+            }
+        }
+
         await manager.save(entity);
+
+        if (entity.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
+            await this.orderRecurrenceService.handleTemplateOrderUpdate(entity.id);
+        }
+    }
+
+    protected getChangeDetector(): ChangeDetectorBase<Order, UpdateOrderDto> | undefined {
+        return this.orderChangeDetector;
+    }
+
+    protected getUpdateDiffRelations(): string[] {
+        return [
+            'category',
+            'orderedItems',
+            'orderedItems.menuItem',
+            'orderedItems.size',
+            'orderedItems.containerOrderMenuItems',
+            'orderedItems.containerOrderMenuItems.containedMenuItem',
+            'orderedItems.containerOrderMenuItems.containedItemSize',
+            'recurrenceSchedule',
+        ];
     }
 
     protected applySearch(
@@ -141,10 +225,10 @@ export class OrderService extends ServiceBase<OrderEntity> {
         search: string,
     ): void {
         query
-            .leftJoin('entity.orderedItems', 'orderedItem')
-            .leftJoin('orderedItem.menuItem', 'menuItem')
+            .leftJoin('entity.orderedItems', 'searchOrderedItem')
+            .leftJoin('searchOrderedItem.menuItem', 'searchMenuItem')
             .andWhere(
-                `(LOWER(entity.recipient) LIKE :search OR LOWER(menuItem.name) LIKE :search)`,
+                `(LOWER(entity.recipient) LIKE :search OR LOWER(searchMenuItem.name) LIKE :search)`,
                 { search: `%${search.toLowerCase()}%` },
             );
     }
@@ -161,7 +245,7 @@ export class OrderService extends ServiceBase<OrderEntity> {
 
         if (filters.isFrozen && filters.isFrozen.length > 0) {
             query.andWhere('entity.isFrozen IN (:...isFrozen)', {
-                isFrozens: filters.isFrozen,
+                isFrozen: filters.isFrozen,
             });
         }
 
