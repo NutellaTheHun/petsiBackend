@@ -36,7 +36,12 @@ import {
     OrderSnapshotV1,
 } from '../utils/snapshots/order-snapshot.v1';
 import { CreateOrderDto } from '../dto/order/create-order.dto';
-import { OCCURRENCE_TYPES, OccurrenceState, OccurrenceType } from '../utils/occurence-types';
+import {
+    OCCURRENCE_STATES,
+    OCCURRENCE_TYPES,
+    OccurrenceState,
+    OccurrenceType,
+} from '../utils/occurence-types';
 import { OrderValidator } from '../validators/order.validator';
 import { OrderRecurrenceService } from './order-recurrence.service';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -126,13 +131,6 @@ export class OrderService extends ServiceBase<OrderEntity> {
             }
 
             await manager.save(savedResult);
-        }
-
-        if (savedResult.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
-            await this.orderRecurrenceService.materializeTemplateOnCreate(
-                savedResult.id,
-                manager,
-            );
         }
 
         return savedResult;
@@ -243,9 +241,20 @@ export class OrderService extends ServiceBase<OrderEntity> {
             }
         }
 
+        this.promoteGeneratedOccurrenceToModifiedIfNeeded(entity);
+
         await manager.save(entity);
 
         await this.runAfterOrderPersist(entity.id);
+    }
+
+    private promoteGeneratedOccurrenceToModifiedIfNeeded(entity: Order): void {
+        if (
+            entity.occurrenceType === OCCURRENCE_TYPES.OCCURRENCE &&
+            entity.occurrenceState === OCCURRENCE_STATES.GENERATED
+        ) {
+            entity.occurrenceState = OCCURRENCE_STATES.MODIFIED;
+        }
     }
 
     /**
@@ -278,6 +287,13 @@ export class OrderService extends ServiceBase<OrderEntity> {
             changeLog: changeLog as unknown as Record<string, unknown>,
             payload: payload as unknown as Record<string, unknown>,
         });
+
+        if (full.occurrenceType === OCCURRENCE_TYPES.TEMPLATE) {
+            await this.orderRecurrenceService.materializeTemplateOnCreate(
+                full.id,
+                manager,
+            );
+        }
     }
 
     protected async afterUpdateInTransaction(

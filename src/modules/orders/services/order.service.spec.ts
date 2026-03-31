@@ -31,7 +31,9 @@ class TestableOrderService extends OrderService {
         dto: CreateOrderDto,
         manager: EntityManager,
     ): Promise<Order> {
-        return this.createEntity(dto, manager);
+        const entity = await this.createEntity(dto, manager);
+        await this.afterCreateInTransaction(manager, entity);
+        return entity;
     }
     async updateEntityForTest(
         dto: UpdateOrderDto,
@@ -259,6 +261,76 @@ describe('order service', () => {
         expect(reloaded.orderedItems!.length).toBeGreaterThanOrEqual(2);
         const updated = reloaded.orderedItems!.find((x) => x.id === itemToUpdate.id);
         expect(updated?.quantity).toEqual(newQuantity);
+    });
+
+    it('promotes OCCURRENCE GENERATED to MODIFIED on update', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const fulfillmentDate = new Date();
+        fulfillmentDate.setHours(12, 0, 0, 0);
+        const daysOfWeek = [fulfillmentDate.getDay()];
+        const recurrenceCreateDto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek,
+            startDate: fulfillmentDate,
+        });
+
+        const createDto = plainToInstance(CreateOrderDto, {
+            recipient: 'Promote gen test',
+            fulfillmentDate,
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+            recurrenceSchedule: recurrenceCreateDto,
+        });
+
+        const created = await orderService.createEntityForTest(createDto, dataSource.manager);
+        const occ = await orderRepo.findOne({
+            where: {
+                templateOrderId: created.id,
+                occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
+                occurrenceState: OCCURRENCE_STATES.GENERATED,
+            },
+        });
+        if (!occ) throw new Error('expected generated occurrence');
+
+        const occReloaded = await orderRepo.findOneOrFail({
+            where: { id: occ.id },
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.size',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+                'category',
+                'recurrenceSchedule',
+            ],
+        });
+
+        const updateDto = plainToInstance(UpdateOrderDto, {
+            note: 'edited by occurrence test',
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await orderService.updateEntityForTest(updateDto, occReloaded, manager);
+        });
+
+        const result = await orderRepo.findOne({ where: { id: occ.id } });
+        expect(result?.occurrenceState).toEqual(OCCURRENCE_STATES.MODIFIED);
+        expect(result?.note).toEqual('edited by occurrence test');
     });
 
     // test findAll()
