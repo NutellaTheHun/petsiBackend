@@ -749,16 +749,20 @@ describe('Inventory area count service', () => {
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        // repo result for areaCounts with countDate between 2025-01-01 and 2025-01-31
-        const repoResult = await inventoryAreaCountRepo.find({
-            where: {
-                countDate: Between(startOfMonth, endOfMonth),
-            },
-        });
+        // Service date filters use DATE(...) comparisons, so use date-only strings to avoid timezone edge cases.
+        const startDate = startOfMonth.toISOString().split('T')[0];
+        const endDate = endOfMonth.toISOString().split('T')[0];
+
+        const repoResult = await inventoryAreaCountRepo
+            .createQueryBuilder('entity')
+            .where('DATE(entity.countDate) >= :startDate', { startDate })
+            .andWhere('DATE(entity.countDate) <= :endDate', { endDate })
+            .getMany();
+
         const serviceResult = await countService.findAll({
             limit: 100,
-            startDate: startOfMonth.toISOString(),
-            endDate: endOfMonth.toISOString(),
+            startDate,
+            endDate,
         });
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.items.length).toEqual(repoResult.length);

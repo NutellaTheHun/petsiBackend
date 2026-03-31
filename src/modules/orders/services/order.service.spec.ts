@@ -18,10 +18,10 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
-import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
 import { recurringOrderScheduleToNestedUpdateDto, recurringOrderScheduleToUpdateDto } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderService } from './order.service';
@@ -544,14 +544,6 @@ describe('order service', () => {
         // should get order with recurring order schedule
         const order = await getOrderWithRecurrenceSchedule();
         if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
-
-        // update recurring order schedule
-        /*const ros_dto = plainToInstance(NestedUpdateRecurringOrderScheduleDto, {
-            id: order.recurrenceSchedule.id,
-            frequency: 'MONTHLY',
-            interval: 2,
-            daysOfWeek: [2],
-        });*/
 
         const ros_dto = recurringOrderScheduleToNestedUpdateDto(order.recurrenceSchedule, {
             frequency: 'MONTHLY',
