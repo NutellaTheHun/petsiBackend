@@ -41,6 +41,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.recipient, dto.recipient)) {
             patch.recipient = dto.recipient;
             changes.push({
+                op: 'scalar',
                 path: 'recipient',
                 previousValue: entity.recipient,
                 nextValue: dto.recipient,
@@ -50,6 +51,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.sameDate(entity.fulfillmentDate, dto.fulfillmentDate)) {
             patch.fulfillmentDate = dto.fulfillmentDate;
             changes.push({
+                op: 'scalar',
                 path: 'fulfillmentDate',
                 previousValue: entity.fulfillmentDate,
                 nextValue: dto.fulfillmentDate,
@@ -59,6 +61,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.fulfillmentType, dto.fulfillmentType)) {
             patch.fulfillmentType = dto.fulfillmentType;
             changes.push({
+                op: 'scalar',
                 path: 'fulfillmentType',
                 previousValue: entity.fulfillmentType,
                 nextValue: dto.fulfillmentType,
@@ -68,6 +71,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.fulfillmentContactName, dto.fulfillmentContactName)) {
             patch.fulfillmentContactName = dto.fulfillmentContactName;
             changes.push({
+                op: 'scalar',
                 path: 'fulfillmentContactName',
                 previousValue: entity.fulfillmentContactName,
                 nextValue: dto.fulfillmentContactName,
@@ -77,6 +81,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.deliveryAddress, dto.deliveryAddress)) {
             patch.deliveryAddress = dto.deliveryAddress;
             changes.push({
+                op: 'scalar',
                 path: 'deliveryAddress',
                 previousValue: entity.deliveryAddress,
                 nextValue: dto.deliveryAddress,
@@ -86,6 +91,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.phoneNumber, dto.phoneNumber)) {
             patch.phoneNumber = dto.phoneNumber;
             changes.push({
+                op: 'scalar',
                 path: 'phoneNumber',
                 previousValue: entity.phoneNumber,
                 nextValue: dto.phoneNumber,
@@ -95,6 +101,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.email, dto.email)) {
             patch.email = dto.email;
             changes.push({
+                op: 'scalar',
                 path: 'email',
                 previousValue: entity.email,
                 nextValue: dto.email,
@@ -104,6 +111,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.note, dto.note)) {
             patch.note = dto.note;
             changes.push({
+                op: 'scalar',
                 path: 'note',
                 previousValue: entity.note,
                 nextValue: dto.note,
@@ -113,6 +121,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.isFrozen, dto.isFrozen)) {
             patch.isFrozen = dto.isFrozen;
             changes.push({
+                op: 'scalar',
                 path: 'isFrozen',
                 previousValue: entity.isFrozen,
                 nextValue: dto.isFrozen,
@@ -122,6 +131,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.category?.id, dto.categoryId)) {
             patch.categoryId = dto.categoryId;
             changes.push({
+                op: 'reference',
                 path: 'categoryId',
                 previousValue: entity.category?.id,
                 nextValue: dto.categoryId,
@@ -131,6 +141,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.occurrenceType ?? null, dto.occurrenceType ?? null)) {
             patch.occurrenceType = dto.occurrenceType;
             changes.push({
+                op: 'scalar',
                 path: 'occurrenceType',
                 previousValue: entity.occurrenceType ?? null,
                 nextValue: dto.occurrenceType ?? null,
@@ -140,6 +151,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (!this.unchanged(entity.occurrenceState ?? null, dto.occurrenceState ?? null)) {
             patch.occurrenceState = dto.occurrenceState;
             changes.push({
+                op: 'scalar',
                 path: 'occurrenceState',
                 previousValue: entity.occurrenceState ?? null,
                 nextValue: dto.occurrenceState ?? null,
@@ -153,6 +165,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (orderedItemsPatch !== undefined) {
             patch.orderedItems = orderedItemsPatch;
             changes.push({
+                op: 'aggregate',
                 path: 'orderedItems',
                 previousValue: entity.orderedItems?.map((item) => item.id) ?? [],
                 nextValue: orderedItemsPatch,
@@ -166,6 +179,7 @@ export class OrderChangeDetector extends ChangeDetectorBase<Order, UpdateOrderDt
         if (recurrenceSchedulePatch !== undefined) {
             patch.recurrenceSchedule = recurrenceSchedulePatch;
             changes.push({
+                op: 'reference',
                 path: 'recurrenceSchedule',
                 previousValue: entity.recurrenceSchedule?.id ?? null,
                 nextValue: recurrenceSchedulePatch,

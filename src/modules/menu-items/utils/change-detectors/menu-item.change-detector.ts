@@ -30,15 +30,16 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
     if (!this.unchanged(entity.type, dto.type)) {
       patch.type = dto.type;
-      changes.push({ path: 'type', previousValue: entity.type, nextValue: dto.type });
+      changes.push({ op: 'scalar', path: 'type', previousValue: entity.type, nextValue: dto.type });
     }
     if (!this.unchanged(entity.category?.id ?? null, dto.categoryId)) {
       patch.categoryId = dto.categoryId;
       changes.push({
+        op: 'reference',
         path: 'categoryId',
         previousValue: entity.category?.id ?? null,
         nextValue: dto.categoryId,
@@ -50,13 +51,19 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
       const incomingSizeIds = [...dto.sizeIds].sort((a, b) => a - b);
       if (!this.sameNumberArray(existingSizeIds, incomingSizeIds)) {
         patch.sizeIds = dto.sizeIds;
-        changes.push({ path: 'sizeIds', previousValue: existingSizeIds, nextValue: dto.sizeIds });
+        changes.push({
+          op: 'aggregate',
+          path: 'sizeIds',
+          previousValue: existingSizeIds,
+          nextValue: dto.sizeIds,
+        });
       }
     }
 
     if (!this.unchanged(entity.variableMaxAmount ?? null, dto.variableMaxAmount ?? null)) {
       patch.variableMaxAmount = dto.variableMaxAmount ?? null;
       changes.push({
+        op: 'scalar',
         path: 'variableMaxAmount',
         previousValue: entity.variableMaxAmount ?? null,
         nextValue: dto.variableMaxAmount ?? null,
@@ -71,6 +78,7 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
       if (containerPatch !== undefined) {
         patch.containerMenuItems = containerPatch;
         changes.push({
+          op: 'aggregate',
           path: 'containerMenuItems',
           previousValue: entity.containerMenuItems?.map((c) => c.id) ?? [],
           nextValue: containerPatch,

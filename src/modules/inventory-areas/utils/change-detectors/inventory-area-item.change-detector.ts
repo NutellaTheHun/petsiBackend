@@ -29,6 +29,7 @@ export class InventoryAreaItemChangeDetector extends ChangeDetectorBase<
     if (!this.unchanged(existingDto.countedInventoryItemId, dto.countedInventoryItemId)) {
       patch.countedInventoryItemId = dto.countedInventoryItemId;
       changes.push({
+        op: 'reference',
         path: 'countedInventoryItemId',
         previousValue: existingDto.countedInventoryItemId,
         nextValue: dto.countedInventoryItemId,
@@ -36,11 +37,17 @@ export class InventoryAreaItemChangeDetector extends ChangeDetectorBase<
     }
     if (!this.unchanged(existingDto.amount, dto.amount)) {
       patch.amount = dto.amount;
-      changes.push({ path: 'amount', previousValue: existingDto.amount, nextValue: dto.amount });
+      changes.push({
+        op: 'scalar',
+        path: 'amount',
+        previousValue: existingDto.amount,
+        nextValue: dto.amount,
+      });
     }
     if (!this.unchanged(existingDto.countedItemSizeId ?? null, dto.countedItemSizeId ?? null)) {
       patch.countedItemSizeId = dto.countedItemSizeId;
       changes.push({
+        op: 'reference',
         path: 'countedItemSizeId',
         previousValue: existingDto.countedItemSizeId ?? null,
         nextValue: dto.countedItemSizeId ?? null,

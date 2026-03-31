@@ -28,19 +28,39 @@ export class InventoryItemSizeChangeDetector extends ChangeDetectorBase<
 
     if (!this.unchanged(existingDto.packageId, dto.packageId)) {
       patch.packageId = dto.packageId;
-      changes.push({ path: 'packageId', previousValue: existingDto.packageId, nextValue: dto.packageId });
+      changes.push({
+        op: 'reference',
+        path: 'packageId',
+        previousValue: existingDto.packageId,
+        nextValue: dto.packageId,
+      });
     }
     if (!this.unchanged(existingDto.measureTypeId, dto.measureTypeId)) {
       patch.measureTypeId = dto.measureTypeId;
-      changes.push({ path: 'measureTypeId', previousValue: existingDto.measureTypeId, nextValue: dto.measureTypeId });
+      changes.push({
+        op: 'reference',
+        path: 'measureTypeId',
+        previousValue: existingDto.measureTypeId,
+        nextValue: dto.measureTypeId,
+      });
     }
     if (!this.unchanged(existingDto.measureAmount, dto.measureAmount)) {
       patch.measureAmount = dto.measureAmount;
-      changes.push({ path: 'measureAmount', previousValue: existingDto.measureAmount, nextValue: dto.measureAmount });
+      changes.push({
+        op: 'scalar',
+        path: 'measureAmount',
+        previousValue: existingDto.measureAmount,
+        nextValue: dto.measureAmount,
+      });
     }
     if (!this.unchanged(existingDto.cost ?? null, dto.cost ?? null)) {
       patch.cost = dto.cost;
-      changes.push({ path: 'cost', previousValue: existingDto.cost ?? null, nextValue: dto.cost ?? null });
+      changes.push({
+        op: 'scalar',
+        path: 'cost',
+        previousValue: existingDto.cost ?? null,
+        nextValue: dto.cost ?? null,
+      });
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

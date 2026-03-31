@@ -17,6 +17,7 @@ export class RoleChangeDetector extends ChangeDetectorBase<Role, UpdateRoleDto> 
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;
             changes.push({
+                op: 'scalar',
                 path: 'name',
                 previousValue: entity.name,
                 nextValue: dto.name,

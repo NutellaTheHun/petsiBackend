@@ -41,7 +41,7 @@ export class AggregateChangeDto {
     removed: number;
 
     @ApiProperty()
-    modified: number;
+    modified: boolean;
 }
 
 export class ReferenceChangeDto {

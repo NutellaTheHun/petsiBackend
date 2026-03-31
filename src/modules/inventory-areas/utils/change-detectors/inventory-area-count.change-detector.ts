@@ -35,6 +35,7 @@ export class InventoryAreaCountChangeDetector extends ChangeDetectorBase<
     if (!this.unchanged(entity.inventoryArea?.id, dto.inventoryAreaId)) {
       patch.inventoryAreaId = dto.inventoryAreaId;
       changes.push({
+        op: 'reference',
         path: 'inventoryAreaId',
         previousValue: entity.inventoryArea?.id,
         nextValue: dto.inventoryAreaId,
@@ -49,6 +50,7 @@ export class InventoryAreaCountChangeDetector extends ChangeDetectorBase<
       if (countedItemsPatch.length > 0) {
         patch.countedInventoryItems = countedItemsPatch;
         changes.push({
+          op: 'aggregate',
           path: 'countedInventoryItems',
           previousValue: entity.countedInventoryItems?.map((i) => i.id) ?? [],
           nextValue: countedItemsPatch,

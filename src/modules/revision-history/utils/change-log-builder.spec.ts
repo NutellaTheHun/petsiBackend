@@ -9,6 +9,7 @@ describe('change-log-builder', () => {
     it('persists aggregate counts for orderedItems', () => {
         const changes: ChangeDetectorChange[] = [
             {
+                op: 'aggregate',
                 path: 'orderedItems',
                 previousValue: [1, 2],
                 nextValue: [
@@ -24,7 +25,7 @@ describe('change-log-builder', () => {
                 path: 'orderedItems',
                 added: 1,
                 removed: 1,
-                modified: 1,
+                modified: true,
             },
         ]);
     });

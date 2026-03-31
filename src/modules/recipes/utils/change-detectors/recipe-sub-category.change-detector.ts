@@ -26,7 +26,7 @@ export class RecipeSubCategoryChangeDetector extends ChangeDetectorBase<
 
     if (!this.unchanged(existing.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: existing.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: existing.name, nextValue: dto.name });
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

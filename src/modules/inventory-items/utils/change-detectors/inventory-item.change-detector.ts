@@ -34,11 +34,12 @@ export class InventoryItemChangeDetector extends ChangeDetectorBase<
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
     if (!this.unchanged(entity.category?.id ?? null, dto.categoryId ?? null)) {
       patch.categoryId = dto.categoryId;
       changes.push({
+        op: 'reference',
         path: 'categoryId',
         previousValue: entity.category?.id ?? null,
         nextValue: dto.categoryId ?? null,
@@ -47,6 +48,7 @@ export class InventoryItemChangeDetector extends ChangeDetectorBase<
     if (!this.unchanged(entity.vendor?.id ?? null, dto.vendorId ?? null)) {
       patch.vendorId = dto.vendorId;
       changes.push({
+        op: 'reference',
         path: 'vendorId',
         previousValue: entity.vendor?.id ?? null,
         nextValue: dto.vendorId ?? null,
@@ -57,6 +59,7 @@ export class InventoryItemChangeDetector extends ChangeDetectorBase<
     if (sizePatch.length > 0) {
       patch.sizes = sizePatch;
       changes.push({
+        op: 'aggregate',
         path: 'sizes',
         previousValue: entity.sizes?.map((s) => s.id) ?? [],
         nextValue: sizePatch,

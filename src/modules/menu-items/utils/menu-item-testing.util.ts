@@ -81,6 +81,7 @@ export class MenuItemTestingUtil {
     }
 
     public async cleanupMenuItemSizeTestDatabase(): Promise<void> {
+        this.menuItemSizeInit = false;
         await this.sizeRepo.deleteAll();
     }
 
@@ -123,6 +124,7 @@ export class MenuItemTestingUtil {
     }
 
     public async cleanupMenuItemCategoryTestDatabase(): Promise<void> {
+        this.menuItemCategoryInit = false;
         await this.categoryRepo.deleteAll();
     }
 
@@ -233,6 +235,7 @@ export class MenuItemTestingUtil {
     }
 
     public async cleanupMenuItemTestDatabase(): Promise<void> {
+        this.menuItemInit = false;
         await this.itemRepo.deleteAll();
     }
 
@@ -319,6 +322,7 @@ export class MenuItemTestingUtil {
     }
 
     public async cleanupMenuItemContainerItemTestDatabase(): Promise<void> {
+        this.menuItemContainerItemInit = false;
         await this.containerItemRepo.deleteAll();
     }
 }

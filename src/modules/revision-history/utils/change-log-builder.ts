@@ -52,7 +52,7 @@ export function persistedChangeLogToDto(raw: unknown): ChangeLogDto {
                 path: String(c.path),
                 added: Number(c.added ?? 0),
                 removed: Number(c.removed ?? 0),
-                modified: Number(c.modified ?? 0),
+                modified: Boolean(c.modified ?? false),
             } as AggregateChangeDto;
         }
         if (c.op === 'reference') {
@@ -126,37 +126,19 @@ export function detectorChangesToPersistedChanges(
 ): PersistedChangeLog['changes'] {
     const out: PersistedChangeLog['changes'] = [];
     for (const ch of changes) {
-        if (ch.path === 'orderedItems' || ch.path === 'containerMenuItems') {
-            const prevIds = Array.isArray(ch.previousValue)
-                ? (ch.previousValue as unknown[]).filter(
-                      (x): x is number => typeof x === 'number',
-                  )
-                : [];
-            const incoming = Array.isArray(ch.nextValue) ? ch.nextValue : [];
-            const nextIdSet = new Set<number>();
-            let added = 0;
-            for (const item of incoming) {
-                if (isPlainObject(item) && 'createId' in item) {
-                    added += 1;
-                } else if (isPlainObject(item) && typeof item.id === 'number') {
-                    nextIdSet.add(item.id);
-                }
-            }
-            const removed = prevIds.filter((id) => !nextIdSet.has(id)).length;
-            const modified = [...nextIdSet].filter((id) =>
-                prevIds.includes(id),
-            ).length;
+        if (ch.op === 'aggregate') {
+            const agg = computeAggregateSummary(ch.previousValue, ch.nextValue);
             out.push({
                 op: 'aggregate',
                 path: ch.path,
-                added,
-                removed,
-                modified,
+                added: agg.added,
+                removed: agg.removed,
+                modified: true,
             });
             continue;
         }
 
-        if (ch.path === 'categoryId' || ch.path.endsWith('Id')) {
+        if (ch.op === 'reference' || ch.path === 'categoryId' || ch.path.endsWith('Id')) {
             out.push({
                 op: 'reference',
                 path: ch.path,
@@ -179,6 +161,46 @@ export function detectorChangesToPersistedChanges(
 function serializeScalar(v: unknown): unknown {
     if (v instanceof Date) return v.toISOString();
     return v;
+}
+
+function computeAggregateSummary(
+    previousValue: unknown,
+    nextValue: unknown,
+): { added: number; removed: number } {
+    const prevIds =
+        Array.isArray(previousValue) &&
+        previousValue.every((x) => typeof x === 'number')
+            ? (previousValue as number[])
+            : [];
+
+    // Shape B: previousValue and nextValue are both number[] (e.g. sizeIds)
+    if (Array.isArray(nextValue) && nextValue.every((x) => typeof x === 'number')) {
+        const nextIds = nextValue as number[];
+        const prevSet = new Set(prevIds);
+        const nextSet = new Set(nextIds);
+        const added = nextIds.filter((id) => !prevSet.has(id)).length;
+        const removed = prevIds.filter((id) => !nextSet.has(id)).length;
+        return { added, removed };
+    }
+
+    // Shape A: previousValue is number[] and nextValue is array of nested DTOs with {id}|{createId}
+    if (!Array.isArray(nextValue)) {
+        return { added: 0, removed: 0 };
+    }
+
+    let added = 0;
+    const nextIdSet = new Set<number>();
+    for (const item of nextValue) {
+        if (isPlainObject(item) && 'createId' in item) {
+            added += 1;
+            continue;
+        }
+        if (isPlainObject(item) && typeof item.id === 'number') {
+            nextIdSet.add(item.id);
+        }
+    }
+    const removed = prevIds.filter((id) => !nextIdSet.has(id)).length;
+    return { added, removed };
 }
 
 export function buildUpdatedChangeLog(

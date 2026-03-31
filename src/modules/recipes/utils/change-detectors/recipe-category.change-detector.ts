@@ -34,7 +34,7 @@ export class RecipeCategoryChangeDetector extends ChangeDetectorBase<
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
 
     if (dto.subCategories !== undefined) {
@@ -42,6 +42,7 @@ export class RecipeCategoryChangeDetector extends ChangeDetectorBase<
       if (subPatch.length > 0) {
         patch.subCategories = subPatch;
         changes.push({
+          op: 'aggregate',
           path: 'subCategories',
           previousValue: entity.subCategories?.map((s) => s.id) ?? [],
           nextValue: subPatch,

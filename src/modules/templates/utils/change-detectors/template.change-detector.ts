@@ -30,7 +30,7 @@ export class TemplateChangeDetector extends ChangeDetectorBase<Template, UpdateT
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
 
     if (dto.templateMenuItems !== undefined) {
@@ -41,6 +41,7 @@ export class TemplateChangeDetector extends ChangeDetectorBase<Template, UpdateT
       if (menuItemsPatch.length > 0) {
         patch.templateMenuItems = menuItemsPatch;
         changes.push({
+          op: 'aggregate',
           path: 'templateMenuItems',
           previousValue: entity.templateMenuItems?.map((item) => item.id) ?? [],
           nextValue: menuItemsPatch,
