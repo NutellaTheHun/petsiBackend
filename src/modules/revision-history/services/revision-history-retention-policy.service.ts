@@ -30,7 +30,7 @@ export type RevisionHistoryRetentionPolicy = {
 
 @Injectable()
 export class RevisionHistoryRetentionPolicyService {
-    constructor(private readonly configService: ConfigService) {}
+    constructor(private readonly configService: ConfigService) { }
 
     /**
      * Returns the effective retention policy for a given entityType using:

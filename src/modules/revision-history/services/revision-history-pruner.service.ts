@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, LessThan, Repository } from 'typeorm';
-import { REVISION_ENTITY_TYPES, RevisionEntityType } from '../constants/revision-entity-type';
+import { REVISION_ENTITY_TYPES_ARRAY, RevisionEntityType } from '../constants/revision-entity-type';
 import { RevisionHistory } from '../entities/revision-history.entity';
 import { RevisionHistoryRetentionPolicyService } from './revision-history-retention-policy.service';
 
@@ -22,7 +22,7 @@ export class RevisionHistoryPrunerService {
         @InjectRepository(RevisionHistory)
         private readonly repo: Repository<RevisionHistory>,
         private readonly policyService: RevisionHistoryRetentionPolicyService,
-    ) {}
+    ) { }
 
     /**
      * Nightly off-peak pruning of revision_history.
@@ -58,10 +58,7 @@ export class RevisionHistoryPrunerService {
      * Exposed for tests and for potential manual invocations.
      */
     async runOnce(): Promise<PruneRunResult> {
-        const entityTypes: RevisionEntityType[] = [
-            REVISION_ENTITY_TYPES.ORDER,
-            REVISION_ENTITY_TYPES.MENU_ITEM,
-        ];
+        const entityTypes: RevisionEntityType[] = REVISION_ENTITY_TYPES_ARRAY;
 
         let scannedEntityGroups = 0;
         let candidateRows = 0;
@@ -84,10 +81,8 @@ export class RevisionHistoryPrunerService {
     }
 
     private anyEntityPruningEnabled(): boolean {
-        const entityTypes: RevisionEntityType[] = [
-            REVISION_ENTITY_TYPES.ORDER,
-            REVISION_ENTITY_TYPES.MENU_ITEM,
-        ];
+        const entityTypes: RevisionEntityType[] = REVISION_ENTITY_TYPES_ARRAY;
+
         return entityTypes.some((t) => this.policyService.getPolicy(t).enabled);
     }
 
