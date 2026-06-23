@@ -305,22 +305,27 @@ export class InventoryItemTestingUtil {
     }
 
     public async cleanupInventoryItemVendorTestDatabase(): Promise<void> {
+        this.initVendor = false;
         await this.vendorRepo.deleteAll();
     }
 
     public async cleanupInventoryItemPackageTestDatabase(): Promise<void> {
+        this.initPackage = false;
         await this.packageRepo.deleteAll();
     }
 
     public async cleanupInventoryItemCategoryTestDatabase(): Promise<void> {
+        this.initCategory = false;
         await this.categoryRepo.deleteAll();
     }
 
     public async cleanupInventoryItemSizeTestDatabase(): Promise<void> {
+        this.initSize = false;
         await this.sizeRepo.deleteAll();
     }
 
     public async cleanupInventoryItemTestDatabase(): Promise<void> {
+        this.initItem = false;
         await this.itemRepo.deleteAll();
     }
 

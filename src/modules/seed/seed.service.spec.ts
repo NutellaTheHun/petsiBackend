@@ -12,8 +12,6 @@ import { LabelTypeService } from '../labels/services/label-type.service';
 import { LabelService } from '../labels/services/label.service';
 import { MenuItemCategoryService } from '../menu-items/services/menu-item-category.service';
 import { MenuItemContainerItemService } from '../menu-items/services/menu-item-container-item.service';
-import { MenuItemContainerOptionsService } from '../menu-items/services/menu-item-container-options.service';
-import { MenuItemContainerRuleService } from '../menu-items/services/menu-item-container-rule.service';
 import { MenuItemSizeService } from '../menu-items/services/menu-item-size.service';
 import { MenuItemService } from '../menu-items/services/menu-item.service';
 import { OrderCategoryService } from '../orders/services/order-category.service';
@@ -53,8 +51,6 @@ describe('Seed Service', () => {
   let menuItemService: MenuItemService;
   let menuItemCategoryService: MenuItemCategoryService;
   let menuItemContainerItemService: MenuItemContainerItemService;
-  let menuItemContainerOptionsService: MenuItemContainerOptionsService;
-  let menuItemContainerRuleService: MenuItemContainerRuleService;
   let menuItemSizeService: MenuItemSizeService;
 
   let orderService: OrderService;
@@ -119,13 +115,6 @@ describe('Seed Service', () => {
     );
     menuItemContainerItemService = module.get<MenuItemContainerItemService>(
       MenuItemContainerItemService,
-    );
-    menuItemContainerOptionsService =
-      module.get<MenuItemContainerOptionsService>(
-        MenuItemContainerOptionsService,
-      );
-    menuItemContainerRuleService = module.get<MenuItemContainerRuleService>(
-      MenuItemContainerRuleService,
     );
     menuItemSizeService = module.get<MenuItemSizeService>(MenuItemSizeService);
 
@@ -236,11 +225,7 @@ describe('Seed Service', () => {
     const menuContainerItems = await menuItemContainerItemService.findAll();
     expect(menuContainerItems.items.length).toBeGreaterThan(0);
 
-    const containerOptions = await menuItemContainerOptionsService.findAll();
-    expect(containerOptions.items.length).toBeGreaterThan(0);
-
-    const containerRules = await menuItemContainerRuleService.findAll();
-    expect(containerRules.items.length).toBeGreaterThan(0);
+    // container options/rules are not currently seeded (legacy feature removed)
 
     const menuSizes = await menuItemSizeService.findAll();
     expect(menuSizes.items.length).toBeGreaterThan(0);

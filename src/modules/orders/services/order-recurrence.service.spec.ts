@@ -22,7 +22,9 @@ import { OrderService } from './order.service';
 
 class TestableOrderService extends OrderService {
     async createEntityForTest(dto: CreateOrderDto, manager: EntityManager): Promise<Order> {
-        return this.createEntity(dto, manager);
+        const entity = await this.createEntity(dto, manager);
+        await this.afterCreateInTransaction(manager, entity);
+        return entity;
     }
     async updateEntityForTest(dto: UpdateOrderDto, entity: Order, manager: EntityManager): Promise<void> {
         return this.updateEntity(dto, manager, entity);

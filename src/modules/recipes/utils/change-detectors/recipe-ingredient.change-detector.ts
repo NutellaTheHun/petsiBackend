@@ -27,6 +27,7 @@ export class RecipeIngredientChangeDetector extends ChangeDetectorBase<
     if (!this.unchanged(existing.ingredientInventoryItemId ?? null, dto.ingredientInventoryItemId ?? null)) {
       patch.ingredientInventoryItemId = dto.ingredientInventoryItemId;
       changes.push({
+        op: 'reference',
         path: 'ingredientInventoryItemId',
         previousValue: existing.ingredientInventoryItemId ?? null,
         nextValue: dto.ingredientInventoryItemId ?? null,
@@ -35,6 +36,7 @@ export class RecipeIngredientChangeDetector extends ChangeDetectorBase<
     if (!this.unchanged(existing.ingredientRecipeId ?? null, dto.ingredientRecipeId ?? null)) {
       patch.ingredientRecipeId = dto.ingredientRecipeId;
       changes.push({
+        op: 'reference',
         path: 'ingredientRecipeId',
         previousValue: existing.ingredientRecipeId ?? null,
         nextValue: dto.ingredientRecipeId ?? null,
@@ -42,11 +44,17 @@ export class RecipeIngredientChangeDetector extends ChangeDetectorBase<
     }
     if (!this.unchanged(existing.quantity, dto.quantity)) {
       patch.quantity = dto.quantity;
-      changes.push({ path: 'quantity', previousValue: existing.quantity, nextValue: dto.quantity });
+      changes.push({
+        op: 'scalar',
+        path: 'quantity',
+        previousValue: existing.quantity,
+        nextValue: dto.quantity,
+      });
     }
     if (!this.unchanged(existing.quantityUnitTypeId, dto.quantityUnitTypeId)) {
       patch.quantityUnitTypeId = dto.quantityUnitTypeId;
       changes.push({
+        op: 'reference',
         path: 'quantityUnitTypeId',
         previousValue: existing.quantityUnitTypeId,
         nextValue: dto.quantityUnitTypeId,

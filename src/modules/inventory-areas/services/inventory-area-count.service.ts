@@ -1,6 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, In, Repository, SelectQueryBuilder } from 'typeorm';
 import { ChangeDetectorBase } from '../../../common/base/change-detector.base';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
@@ -12,6 +12,7 @@ import {
     InventoryAreaCountEntity,
 } from '../entities/inventory-area-count.entity';
 import { InventoryArea } from '../entities/inventory-area.entity';
+import { InventoryAreaItem } from '../entities/inventory-area-item.entity';
 import { InventoryAreaItemComposer } from '../utils/composers/inventory-area-item.composer';
 import { InventoryAreaCountChangeDetector } from '../utils/change-detectors/inventory-area-count.change-detector';
 import { InventoryAreaCountValidator } from '../validators/inventory-area-count.validator';
@@ -73,7 +74,23 @@ export class InventoryAreaCountService extends ServiceBase<InventoryAreaCountEnt
             });
         }
 
-        if (dto.countedInventoryItems) {
+        if (dto.countedInventoryItems !== undefined) {
+            const existingItems = entity.countedInventoryItems ?? [];
+            const incomingIds = dto.countedInventoryItems
+                .map((i: any) => ('id' in i ? i.id : undefined))
+                .filter((id: any): id is number => typeof id === 'number');
+
+            const idsToRemove = existingItems
+                .map((i) => i.id)
+                .filter((id) => !incomingIds.includes(id));
+
+            if (idsToRemove.length) {
+                await manager.delete(InventoryAreaItem, { id: In(idsToRemove) });
+                entity.countedInventoryItems = existingItems.filter(
+                    (i) => !idsToRemove.includes(i.id),
+                );
+            }
+
             entity.countedInventoryItems =
                 await this.areaItemResolver.composeManyNestedEntity(
                     dto.countedInventoryItems,

@@ -17,6 +17,7 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;
             changes.push({
+                op: 'scalar',
                 path: 'name',
                 previousValue: entity.name,
                 nextValue: dto.name,
@@ -26,6 +27,7 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
         if (!this.unchanged(entity.email, dto.email)) {
             patch.email = dto.email;
             changes.push({
+                op: 'scalar',
                 path: 'email',
                 previousValue: entity.email,
                 nextValue: dto.email,
@@ -35,6 +37,7 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
         if (dto.password !== undefined) {
             patch.password = dto.password;
             changes.push({
+                op: 'scalar',
                 path: 'password',
                 previousValue: '***',
                 nextValue: '***',
@@ -49,6 +52,7 @@ export class UserChangeDetector extends ChangeDetectorBase<User, UpdateUserDto> 
         if (!this.sameNumberArray(existingRoleIds, incomingRoleIds)) {
             patch.roleIds = dto.roleIds;
             changes.push({
+                op: 'aggregate',
                 path: 'roleIds',
                 previousValue: existingRoleIds,
                 nextValue: dto.roleIds,

@@ -23,6 +23,7 @@ export class UnitOfMeasureCategoryChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;
             changes.push({
+                op: 'scalar',
                 path: 'name',
                 previousValue: entity.name,
                 nextValue: dto.name,
@@ -33,6 +34,7 @@ export class UnitOfMeasureCategoryChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(existingBaseUnitId, dto.baseConversionUnitId)) {
             patch.baseConversionUnitId = dto.baseConversionUnitId;
             changes.push({
+                op: 'reference',
                 path: 'baseConversionUnitId',
                 previousValue: existingBaseUnitId,
                 nextValue: dto.baseConversionUnitId,

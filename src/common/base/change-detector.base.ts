@@ -1,4 +1,12 @@
 export interface ChangeDetectorChange {
+    /**
+     * Operation type used to map changes into revision-history change_log entries.
+     *
+     * - scalar: scalar property change (strings, numbers, booleans, dates, etc.)
+     * - reference: reference/FK-like change (ids, nullable ids, or reference DTO patches)
+     * - aggregate: authoritative nested collections (nested DTO arrays or id arrays)
+     */
+    op: 'scalar' | 'reference' | 'aggregate';
     path: string;
     previousValue: unknown;
     nextValue: unknown;

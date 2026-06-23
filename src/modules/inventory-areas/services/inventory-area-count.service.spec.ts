@@ -378,6 +378,28 @@ describe('Inventory area count service', () => {
         expect(result.inventoryArea.name).toEqual(newArea.name);
     });
 
+    it('removes counted inventory items via authoritative parent update', async () => {
+        const countToUpdate = await getInventoryAreaCount(AREA_B);
+        const originalCount = countToUpdate.countedInventoryItems.length;
+        expect(originalCount).toBeGreaterThan(0);
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            inventoryAreaId: countToUpdate.inventoryArea.id,
+            countedInventoryItems: [],
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await countService.updateEntityForTest(dto, countToUpdate, manager);
+        });
+
+        const reloaded = await inventoryAreaCountRepo.findOne({
+            where: { id: countToUpdate.id },
+            relations: ['countedInventoryItems'],
+        });
+        if (!reloaded) throw new Error('reloaded count not found');
+        expect(reloaded.countedInventoryItems.length).toEqual(0);
+    });
+
     // Test updateEntity() with update areaCountItems
     it('should update area count with updated items', async () => {
         // get InventoryAreaCount that has inventoryAreaItems to update
@@ -395,9 +417,10 @@ describe('Inventory area count service', () => {
             throw new Error('item not found');
         }
 
-        const dto = inventoryAreaCountToUpdateDto(countToUpdate);
+        const transform = inventoryAreaCountToUpdateDto(countToUpdate);
+        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
 
-        const areaItemToUpdate = dto.countedInventoryItems.pop();
+        const areaItemToUpdate = countedInventoryItems.pop();
         const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto).id;
         const updateDto = plainToInstance(
             NestedUpdateInventoryAreaItemDto,
@@ -409,7 +432,12 @@ describe('Inventory area count service', () => {
             },
         );
 
-        dto.countedInventoryItems.push(updateDto);
+        countedInventoryItems.push(updateDto);
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            ...transform,
+            countedInventoryItems,
+        });
 
         // update
         await dataSource.transaction(async (manager) => {
@@ -553,10 +581,13 @@ describe('Inventory area count service', () => {
             amount: 20,
         });
 
-        const dto = inventoryAreaCountToUpdateDto(countToUpdate, { countedInventoryItems: [createdItemDto] });
+        const transform = inventoryAreaCountToUpdateDto(countToUpdate, {
+            countedInventoryItems: [createdItemDto],
+        });
+        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
 
         // get areaItem to update
-        const areaItemToUpdate = dto.countedInventoryItems.pop();
+        const areaItemToUpdate = countedInventoryItems.pop();
         if (!areaItemToUpdate) {
             throw new Error('areaItemToUpdate not found');
         }
@@ -588,7 +619,12 @@ describe('Inventory area count service', () => {
             },
         );
 
-        dto.countedInventoryItems.push(areaItemToUpdateDto);
+        countedInventoryItems.push(areaItemToUpdateDto);
+
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            ...transform,
+            countedInventoryItems,
+        });
 
         // update
         await dataSource.transaction(async (manager) => {
@@ -713,16 +749,20 @@ describe('Inventory area count service', () => {
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        // repo result for areaCounts with countDate between 2025-01-01 and 2025-01-31
-        const repoResult = await inventoryAreaCountRepo.find({
-            where: {
-                countDate: Between(startOfMonth, endOfMonth),
-            },
-        });
+        // Service date filters use DATE(...) comparisons, so use date-only strings to avoid timezone edge cases.
+        const startDate = startOfMonth.toISOString().split('T')[0];
+        const endDate = endOfMonth.toISOString().split('T')[0];
+
+        const repoResult = await inventoryAreaCountRepo
+            .createQueryBuilder('entity')
+            .where('DATE(entity.countDate) >= :startDate', { startDate })
+            .andWhere('DATE(entity.countDate) <= :endDate', { endDate })
+            .getMany();
+
         const serviceResult = await countService.findAll({
             limit: 100,
-            startDate: startOfMonth.toISOString(),
-            endDate: endOfMonth.toISOString(),
+            startDate,
+            endDate,
         });
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.items.length).toEqual(repoResult.length);

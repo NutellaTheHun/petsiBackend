@@ -27,15 +27,30 @@ export class TemplateMenuItemChangeDetector extends ChangeDetectorBase<
 
     if (!this.unchanged(existing.displayName, dto.displayName)) {
       patch.displayName = dto.displayName;
-      changes.push({ path: 'displayName', previousValue: existing.displayName, nextValue: dto.displayName });
+      changes.push({
+        op: 'scalar',
+        path: 'displayName',
+        previousValue: existing.displayName,
+        nextValue: dto.displayName,
+      });
     }
     if (!this.unchanged(existing.tablePosIndex, dto.tablePosIndex)) {
       patch.tablePosIndex = dto.tablePosIndex;
-      changes.push({ path: 'tablePosIndex', previousValue: existing.tablePosIndex, nextValue: dto.tablePosIndex });
+      changes.push({
+        op: 'scalar',
+        path: 'tablePosIndex',
+        previousValue: existing.tablePosIndex,
+        nextValue: dto.tablePosIndex,
+      });
     }
     if (!this.unchanged(existing.menuItemId, dto.menuItemId)) {
       patch.menuItemId = dto.menuItemId;
-      changes.push({ path: 'menuItemId', previousValue: existing.menuItemId, nextValue: dto.menuItemId });
+      changes.push({
+        op: 'reference',
+        path: 'menuItemId',
+        previousValue: existing.menuItemId,
+        nextValue: dto.menuItemId,
+      });
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

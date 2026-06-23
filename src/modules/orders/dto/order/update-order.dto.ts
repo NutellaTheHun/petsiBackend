@@ -137,7 +137,8 @@ export class UpdateOrderDto {
     readonly categoryId: EntityId<OrderCategory>;
 
     @ApiProperty({
-        description: 'TODO',
+        description:
+            'When present, replaces all line items for this order (authoritative). Omit to leave lines unchanged.',
         type: 'array',
         oneOf: [
             { $ref: getSchemaPath(NestedCreateOrderMenuItemDto) },
@@ -157,8 +158,9 @@ export class UpdateOrderDto {
                 quantity: 8,
             },
         ],
+        required: false,
     })
-    @IsNotEmpty()
+    @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
     @Transform(({ value }: TransformFnParams) => {
@@ -169,7 +171,7 @@ export class UpdateOrderDto {
                 : plainToInstance(NestedUpdateOrderMenuItemDto, item)
         );
     })
-    readonly orderedItems: (
+    readonly orderedItems?: (
         | NestedCreateOrderMenuItemDto
         | NestedUpdateOrderMenuItemDto
     )[];

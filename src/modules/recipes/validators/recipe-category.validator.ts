@@ -68,7 +68,21 @@ export class RecipeCategoryValidator extends ValidatorBase<RecipeCategoryEntity,
         if (dto.subCategories && dto.subCategories.length) {
             for (const subCategory of dto.subCategories) {
                 const subCategoryId = subCategory instanceof NestedCreateRecipeSubCategoryDto ? subCategory.createId : subCategory.id;
-                subCategories.push(await this.subCategoryValidator.resolveIdentity(subCategory, subCategoryId));
+                const resolved = await this.subCategoryValidator.resolveIdentity(
+                    subCategory,
+                    subCategoryId,
+                );
+                if (
+                    dto instanceof UpdateRecipeCategoryDto &&
+                    subCategory instanceof NestedCreateRecipeSubCategoryDto
+                ) {
+                    subCategories.push({
+                        ...resolved,
+                        parentCategoryId: id as number,
+                    });
+                    continue;
+                }
+                subCategories.push(resolved);
             }
         }
         return {

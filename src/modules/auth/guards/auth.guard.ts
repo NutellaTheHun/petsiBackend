@@ -8,6 +8,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../../../common/decorators/PublicLogin';
+import { getRequestNamespace } from '../../request-context/RequestContextService';
 import { AuthService } from '../services/auth.service';
 
 @Injectable()
@@ -36,6 +37,13 @@ export class AuthGuard implements CanActivate {
         secret: this.authService.getJwtSecret(),
       });
       request['user'] = payload;
+      const ns = getRequestNamespace();
+      if (ns?.active && payload?.sub != null) {
+        const userId = Number(payload.sub);
+        if (Number.isFinite(userId)) {
+          ns.set('userId', userId);
+        }
+      }
     } catch (err) {
       throw new UnauthorizedException();
     }

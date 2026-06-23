@@ -28,11 +28,12 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
     if (!this.unchanged(entity.producedMenuItem?.id ?? null, dto.producedMenuItemId ?? null)) {
       patch.producedMenuItemId = dto.producedMenuItemId;
       changes.push({
+        op: 'reference',
         path: 'producedMenuItemId',
         previousValue: entity.producedMenuItem?.id ?? null,
         nextValue: dto.producedMenuItemId ?? null,
@@ -41,6 +42,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     if (!this.unchanged(entity.batchResultQuantity ?? null, dto.batchResultQuantity ?? null)) {
       patch.batchResultQuantity = dto.batchResultQuantity;
       changes.push({
+        op: 'scalar',
         path: 'batchResultQuantity',
         previousValue: entity.batchResultQuantity ?? null,
         nextValue: dto.batchResultQuantity ?? null,
@@ -49,6 +51,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     if (!this.unchanged(entity.batchResultUnitType?.id ?? null, dto.batchResultUnitTypeId ?? null)) {
       patch.batchResultUnitTypeId = dto.batchResultUnitTypeId;
       changes.push({
+        op: 'reference',
         path: 'batchResultUnitTypeId',
         previousValue: entity.batchResultUnitType?.id ?? null,
         nextValue: dto.batchResultUnitTypeId ?? null,
@@ -57,6 +60,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     if (!this.unchanged(entity.servingSizeQuantity ?? null, dto.servingSizeQuantity ?? null)) {
       patch.servingSizeQuantity = dto.servingSizeQuantity;
       changes.push({
+        op: 'scalar',
         path: 'servingSizeQuantity',
         previousValue: entity.servingSizeQuantity ?? null,
         nextValue: dto.servingSizeQuantity ?? null,
@@ -65,6 +69,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     if (!this.unchanged(entity.servingSizeUnitType?.id ?? null, dto.servingSizeUnitTypeId ?? null)) {
       patch.servingSizeUnitTypeId = dto.servingSizeUnitTypeId;
       changes.push({
+        op: 'reference',
         path: 'servingSizeUnitTypeId',
         previousValue: entity.servingSizeUnitType?.id ?? null,
         nextValue: dto.servingSizeUnitTypeId ?? null,
@@ -73,6 +78,7 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     if (!this.unchanged(entity.salesPrice ? Number(entity.salesPrice) : null, dto.salesPrice ?? null)) {
       patch.salesPrice = dto.salesPrice;
       changes.push({
+        op: 'scalar',
         path: 'salesPrice',
         previousValue: entity.salesPrice ? Number(entity.salesPrice) : null,
         nextValue: dto.salesPrice ?? null,
@@ -80,29 +86,46 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
     }
     if (!this.unchanged(entity.isIngredient, dto.isIngredient)) {
       patch.isIngredient = dto.isIngredient;
-      changes.push({ path: 'isIngredient', previousValue: entity.isIngredient, nextValue: dto.isIngredient });
+      changes.push({
+        op: 'scalar',
+        path: 'isIngredient',
+        previousValue: entity.isIngredient,
+        nextValue: dto.isIngredient,
+      });
     }
     if (!this.unchanged(entity.category?.id ?? null, dto.categoryId ?? null)) {
       patch.categoryId = dto.categoryId;
-      changes.push({ path: 'categoryId', previousValue: entity.category?.id ?? null, nextValue: dto.categoryId ?? null });
+      changes.push({
+        op: 'reference',
+        path: 'categoryId',
+        previousValue: entity.category?.id ?? null,
+        nextValue: dto.categoryId ?? null,
+      });
     }
     if (!this.unchanged(entity.subCategory?.id ?? null, dto.subCategoryId ?? null)) {
       patch.subCategoryId = dto.subCategoryId;
       changes.push({
+        op: 'reference',
         path: 'subCategoryId',
         previousValue: entity.subCategory?.id ?? null,
         nextValue: dto.subCategoryId ?? null,
       });
     }
 
-    const ingredientPatch = this.detectIngredients(entity.ingredients ?? [], dto.ingredients);
-    if (ingredientPatch.length > 0) {
-      patch.ingredients = ingredientPatch;
-      changes.push({
-        path: 'ingredients',
-        previousValue: entity.ingredients?.map((i) => i.id) ?? [],
-        nextValue: ingredientPatch,
-      });
+    if (dto.ingredients !== undefined) {
+      const ingredientPatch = this.detectIngredients(
+        entity.ingredients ?? [],
+        dto.ingredients,
+      );
+      if (ingredientPatch.length > 0) {
+        patch.ingredients = ingredientPatch;
+        changes.push({
+          op: 'aggregate',
+          path: 'ingredients',
+          previousValue: entity.ingredients?.map((i) => i.id) ?? [],
+          nextValue: ingredientPatch,
+        });
+      }
     }
 
     return { patch, hasChanges: changes.length > 0, changes };

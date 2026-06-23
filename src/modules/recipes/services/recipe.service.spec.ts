@@ -135,7 +135,10 @@ describe('recipe service', () => {
             ],
         });
 
-        const ingredToUpdate = dto.ingredients.pop() as NestedUpdateRecipeIngredientDto;
+        const ingredList = [...(dto.ingredients ?? [])];
+        const ingredToUpdate = ingredList.pop() as
+            | NestedUpdateRecipeIngredientDto
+            | undefined;
         if (!ingredToUpdate) throw new Error('ingredient to update not found');
 
         const newQuantity = 101;
@@ -146,10 +149,14 @@ describe('recipe service', () => {
             quantity: newQuantity,
             quantityUnitTypeId: uom.id,
         });
-        dto.ingredients.push(newIngred);
+        ingredList.push(newIngred);
+        const dtoWithIngredients = plainToInstance(UpdateRecipeDto, {
+            ...dto,
+            ingredients: ingredList,
+        });
 
         await dataSource.transaction(async (manager) => {
-            await recipeService.updateEntityForTest(dto, recipe, manager);
+            await recipeService.updateEntityForTest(dtoWithIngredients, recipe, manager);
         });
 
         const reloaded = await recipeRepo.findOne({
@@ -159,6 +166,40 @@ describe('recipe service', () => {
         if (!reloaded) throw new Error('result not found');
         const up = reloaded.ingredients!.find((x) => x.id === ingredToUpdate.id);
         expect(Number(up?.quantity)).toEqual(newQuantity);
+    });
+
+    it('removes recipe ingredients via authoritative parent update', async () => {
+        const [recipe] = await recipeRepo.find({
+            relations: ['ingredients'],
+            where: {},
+            take: 1,
+        });
+        if (!recipe) throw new Error('recipe not found');
+        if (!recipe.ingredients?.length) {
+            throw new Error('expected recipe with ingredients fixture');
+        }
+
+        const dto = plainToInstance(UpdateRecipeDto, {
+            name: recipe.name,
+            isIngredient: recipe.isIngredient,
+            ingredients: [],
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await recipeService.updateEntityForTest(dto, recipe, manager);
+        });
+
+        const reloaded = await recipeRepo.findOne({
+            where: { id: recipe.id },
+            relations: ['ingredients'],
+        });
+        if (!reloaded) throw new Error('recipe not reloaded');
+        expect(reloaded.ingredients?.length ?? 0).toEqual(0);
+
+        const rows = await ingredientRepo.find({
+            where: { parentRecipe: { id: recipe.id } },
+        });
+        expect(rows.length).toEqual(0);
     });
 
     // test findAll()

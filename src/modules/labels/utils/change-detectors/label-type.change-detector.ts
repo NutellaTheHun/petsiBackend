@@ -23,6 +23,7 @@ export class LabelTypeChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(entity.name, dto.name)) {
             patch.name = dto.name;
             changes.push({
+                op: 'scalar',
                 path: 'name',
                 previousValue: entity.name,
                 nextValue: dto.name,
@@ -32,6 +33,7 @@ export class LabelTypeChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(entity.length, dto.length)) {
             patch.length = dto.length;
             changes.push({
+                op: 'scalar',
                 path: 'length',
                 previousValue: entity.length,
                 nextValue: dto.length,
@@ -41,6 +43,7 @@ export class LabelTypeChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(entity.width, dto.width)) {
             patch.width = dto.width;
             changes.push({
+                op: 'scalar',
                 path: 'width',
                 previousValue: entity.width,
                 nextValue: dto.width,

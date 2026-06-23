@@ -98,7 +98,7 @@ describe('recipe category validator', () => {
         );
     });
 
-    it('fail validate create: nested subCategories validator errors: name already exists', async () => {
+    it('successfully validate create: subCategory name may match other categories', async () => {
         const existingCategory = await categoryRepo.findOne({
             where: { name: REC_CAT_A },
             relations: ['subCategories'],
@@ -122,12 +122,7 @@ describe('recipe category validator', () => {
         });
 
         const errors = await validator.validateDto(dto, 'root');
-        expectValidationErrorSize(errors, 1);
-        expectValidationErrorPayload(
-            errors,
-            [{ prop: 'subCategories', id: 'c1' },],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['name']),
-        );
+        expect(errors).toBeNull();
     });
 
     // Update Validation Tests

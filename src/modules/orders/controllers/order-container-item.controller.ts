@@ -106,6 +106,8 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
         return super.update(id, dto);*/
     }
 
+    /* Container lines are managed via parent Order update. */
+    /*
     @Delete(':id')
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiOperation({ summary: 'Removes a Order Menu Item Component' })
@@ -120,6 +122,7 @@ export class OrderContainerItemController extends ControllerBase<OrderContainerI
 
         return result;
     }
+    */
 
     @Get()
     @HttpCode(HttpStatus.OK)

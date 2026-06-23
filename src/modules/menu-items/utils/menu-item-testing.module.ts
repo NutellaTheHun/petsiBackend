@@ -26,6 +26,9 @@ import { MenuItemCategoryService } from '../services/menu-item-category.service'
 import { MenuItemContainerItemService } from '../services/menu-item-container-item.service';
 import { MenuItemSizeService } from '../services/menu-item-size.service';
 import { MenuItemService } from '../services/menu-item.service';
+import { RevisionHistoryService } from '../../revision-history/revision-history.service';
+import { RevisionHistory } from '../../revision-history/entities/revision-history.entity';
+import { RevisionHistoryModule } from '../../revision-history/revision-history.module';
 import { MenuItemCategoryChangeDetector } from './change-detectors/menu-item-category.change-detector';
 import { MenuItemContainerItemChangeDetector } from './change-detectors/menu-item-container-item.change-detector';
 import { MenuItemSizeChangeDetector } from './change-detectors/menu-item-size.change-detector';
@@ -44,8 +47,11 @@ export async function getMenuItemTestingModule(opts?: {
     menuItemCategoryChangeDetectorClass?: new (...args: any[]) => MenuItemCategoryChangeDetector;
     menuItemSizeChangeDetectorClass?: new (...args: any[]) => MenuItemSizeChangeDetector;
     menuItemContainerItemChangeDetectorClass?: new (...args: any[]) => MenuItemContainerItemChangeDetector;
+    mockRevisionHistory?: boolean;
 }): Promise<TestingModule> {
-    return await Test.createTestingModule({
+    const mockRevisionHistory = opts?.mockRevisionHistory ?? true;
+
+    const moduleBuilder = Test.createTestingModule({
         imports: [
             ConfigModule.forRoot({ isGlobal: true }),
             TypeORMPostgresTestingModule([
@@ -58,6 +64,7 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderMenuItem,
                 OrderContainerItem,
                 RecurringOrderSchedule,
+                ...(mockRevisionHistory ? [] : [RevisionHistory]),
             ]),
             TypeOrmModule.forFeature([
                 MenuItemCategory,
@@ -69,8 +76,10 @@ export async function getMenuItemTestingModule(opts?: {
                 OrderMenuItem,
                 OrderContainerItem,
                 RecurringOrderSchedule,
+                ...(mockRevisionHistory ? [] : [RevisionHistory]),
             ]),
             MenuItemsModule,
+            ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({
                 pinoHttp: { transport: { target: 'pino-pretty' } },
@@ -87,7 +96,9 @@ export async function getMenuItemTestingModule(opts?: {
         ],
 
         providers: [],
-    })
+    });
+
+    const builderWithOverrides = moduleBuilder
         .overrideProvider(RequestContextService)
         .useClass(TestRequestContextService)
         .overrideProvider(MenuItemCategoryService)
@@ -98,15 +109,35 @@ export async function getMenuItemTestingModule(opts?: {
         .useClass(opts?.menuItemServiceClass || MenuItemService)
         .overrideProvider(MenuItemContainerItemService)
         .useClass(
-            opts?.menuItemContainerItemServiceClass || MenuItemContainerItemService,
+            opts?.menuItemContainerItemServiceClass ||
+                MenuItemContainerItemService,
         )
         .overrideProvider(MenuItemChangeDetector)
         .useClass(opts?.menuItemChangeDetectorClass || MenuItemChangeDetector)
         .overrideProvider(MenuItemCategoryChangeDetector)
-        .useClass(opts?.menuItemCategoryChangeDetectorClass || MenuItemCategoryChangeDetector)
+        .useClass(
+            opts?.menuItemCategoryChangeDetectorClass ||
+                MenuItemCategoryChangeDetector,
+        )
         .overrideProvider(MenuItemSizeChangeDetector)
-        .useClass(opts?.menuItemSizeChangeDetectorClass || MenuItemSizeChangeDetector)
+        .useClass(
+            opts?.menuItemSizeChangeDetectorClass || MenuItemSizeChangeDetector,
+        )
         .overrideProvider(MenuItemContainerItemChangeDetector)
-        .useClass(opts?.menuItemContainerItemChangeDetectorClass || MenuItemContainerItemChangeDetector)
-        .compile();
+        .useClass(
+            opts?.menuItemContainerItemChangeDetectorClass ||
+                MenuItemContainerItemChangeDetector,
+        );
+
+    if (mockRevisionHistory) {
+        builderWithOverrides.overrideProvider(RevisionHistoryService).useValue({
+            appendRevision: jest.fn().mockResolvedValue({ id: 1 }),
+            listRevisions: jest.fn().mockResolvedValue([]),
+            getRevisionOrThrow: jest.fn(),
+            getRevisionRow: jest.fn().mockResolvedValue(null),
+            removeRevisionById: jest.fn(),
+        });
+    }
+
+    return await builderWithOverrides.compile();
 }

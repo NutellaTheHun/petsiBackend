@@ -12,7 +12,10 @@ import { RequestContextService } from '../../modules/request-context/RequestCont
 import { PaginatedResult } from '../dto/paginated-result';
 import { DataBaseExceptionHandler } from '../exceptions/database-exception.handler';
 import { ValidationException } from '../validation/validation-exception';
-import { ChangeDetectorBase } from './change-detector.base';
+import {
+    ChangeDetectionResult,
+    ChangeDetectorBase,
+} from './change-detector.base';
 import { EntityBase } from './entity.base';
 import { ValidatorIdentityBaseInterface } from './validator-identity.base.interface';
 import { ValidatorBase } from './validator.base';
@@ -23,9 +26,9 @@ export abstract class ServiceBase<
     private databaseExceptionHandler: DataBaseExceptionHandler;
 
     constructor(
-        private readonly entityRepo: Repository<TEntity['__Entity']>,
+        protected readonly entityRepo: Repository<TEntity['__Entity']>,
         public readonly servicePrefix: string,
-        private readonly requestContextService: RequestContextService,
+        protected readonly requestContextService: RequestContextService,
         private readonly logger: AppLogger,
 
         private readonly validator?: ValidatorBase<TEntity, ValidatorIdentityBaseInterface>,
@@ -50,7 +53,9 @@ export abstract class ServiceBase<
         const created = await this.entityRepo.manager.transaction(
             async (manager) => {
                 try {
-                    return await this.createEntity(createDto, manager);
+                    const entity = await this.createEntity(createDto, manager);
+                    await this.afterCreateInTransaction(manager, entity);
+                    return entity;
                 } catch (err) {
                     throw this.databaseExceptionHandler.handle(
                         err,
@@ -99,9 +104,12 @@ export abstract class ServiceBase<
         }
 
         let effectiveUpdateDto = updateDto as TEntity['__UDto'];
+        let detectionResult:
+            | ChangeDetectionResult<TEntity['__UDto']>
+            | undefined;
         const changeDetector = this.getChangeDetector();
         if (changeDetector) {
-            const detectionResult = changeDetector.detect(
+            detectionResult = changeDetector.detect(
                 toUpdate,
                 updateDto as TEntity['__UDto'],
             );
@@ -121,6 +129,9 @@ export abstract class ServiceBase<
             try {
                 //Save in DB
                 await manager.save(toUpdate);
+                await this.afterUpdateInTransaction(manager, toUpdate, {
+                    detectionResult,
+                });
             } catch (err) {
                 throw this.databaseExceptionHandler.handle(
                     err,
@@ -435,6 +446,29 @@ export abstract class ServiceBase<
         | ChangeDetectorBase<TEntity['__Entity'], TEntity['__UDto']>
         | undefined {
         return undefined;
+    }
+
+    /**
+     * Optional hook after create entity persisted inside the same transaction.
+     */
+    protected async afterCreateInTransaction(
+        _manager: EntityManager,
+        _entity: TEntity['__Entity'],
+    ): Promise<void> {
+        return;
+    }
+
+    /**
+     * Optional hook after update entity saved inside the same transaction.
+     */
+    protected async afterUpdateInTransaction(
+        _manager: EntityManager,
+        _entity: TEntity['__Entity'],
+        _ctx: {
+            detectionResult?: ChangeDetectionResult<TEntity['__UDto']>;
+        },
+    ): Promise<void> {
+        return;
     }
 
     protected getUpdateDiffRelations(): string[] {

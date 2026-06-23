@@ -17,6 +17,7 @@ export class LabelChangeDetector extends ChangeDetectorBase<Label, UpdateLabelDt
         if (!this.unchanged(entity.imageUrl, dto.imageUrl)) {
             patch.imageUrl = dto.imageUrl;
             changes.push({
+                op: 'scalar',
                 path: 'imageUrl',
                 previousValue: entity.imageUrl,
                 nextValue: dto.imageUrl,
@@ -27,6 +28,7 @@ export class LabelChangeDetector extends ChangeDetectorBase<Label, UpdateLabelDt
         if (!this.unchanged(existingMenuItemId, dto.menuItemId)) {
             patch.menuItemId = dto.menuItemId;
             changes.push({
+                op: 'reference',
                 path: 'menuItemId',
                 previousValue: existingMenuItemId,
                 nextValue: dto.menuItemId,
@@ -37,6 +39,7 @@ export class LabelChangeDetector extends ChangeDetectorBase<Label, UpdateLabelDt
         if (!this.unchanged(existingLabelTypeId, dto.labelTypeId)) {
             patch.labelTypeId = dto.labelTypeId;
             changes.push({
+                op: 'reference',
                 path: 'labelTypeId',
                 previousValue: existingLabelTypeId,
                 nextValue: dto.labelTypeId,

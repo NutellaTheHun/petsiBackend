@@ -78,22 +78,21 @@ describe('MenuItemChangeDetector', () => {
         expect(result.patch.containerMenuItems).toEqual([createRow]);
     });
 
-    it('patches only changed container child', () => {
+    it('patches full containerMenuItems when a row changes (authoritative)', () => {
         const entity = baseEntity();
+        const rows = [
+            {
+                id: 100,
+                containedMenuItemId: 1,
+                containedItemSizeId: 2,
+                quantity: 99,
+            },
+        ];
         const dto = menuItemToUpdateDto(entity, {
-            containerMenuItems: [
-                {
-                    id: 100,
-                    containedMenuItemId: 1,
-                    containedItemSizeId: 2,
-                    quantity: 99,
-                },
-            ],
+            containerMenuItems: rows,
         });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch.containerMenuItems).toEqual([
-            { id: 100, quantity: 99 },
-        ]);
+        expect(result.patch.containerMenuItems).toEqual(dto.containerMenuItems);
     });
 });

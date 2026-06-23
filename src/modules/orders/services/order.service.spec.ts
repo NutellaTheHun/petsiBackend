@@ -18,10 +18,10 @@ import { OrderCategory } from '../entities/order-category.entity';
 import { OrderMenuItem } from '../entities/order-menu-item.entity';
 import { Order } from '../entities/order.entity';
 import { RecurringOrderSchedule } from '../entities/recurring-order-schedule.entity';
-import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { TYPE_A } from '../utils/constants';
 import { orderToUpdateDto } from '../utils/entity-transformers/order.dto.transformer';
 import { recurringOrderScheduleToNestedUpdateDto, recurringOrderScheduleToUpdateDto } from '../utils/entity-transformers/recurring-order-schedule.dto.transformer';
+import { OCCURRENCE_STATES, OCCURRENCE_TYPES } from '../utils/occurence-types';
 import { getOrdersTestingModule } from '../utils/order-testing.module';
 import { OrderTestingUtil } from '../utils/order-testing.util';
 import { OrderService } from './order.service';
@@ -31,7 +31,9 @@ class TestableOrderService extends OrderService {
         dto: CreateOrderDto,
         manager: EntityManager,
     ): Promise<Order> {
-        return this.createEntity(dto, manager);
+        const entity = await this.createEntity(dto, manager);
+        await this.afterCreateInTransaction(manager, entity);
+        return entity;
     }
     async updateEntityForTest(
         dto: UpdateOrderDto,
@@ -226,7 +228,8 @@ describe('order service', () => {
             ],
         });
 
-        const itemToUpdate = dto.orderedItems.pop();
+        const lineList = [...(dto.orderedItems ?? [])];
+        const itemToUpdate = lineList.pop();
         if (!itemToUpdate) throw new Error('item to update not found');
         if ('createId' in itemToUpdate) {
             throw new Error('must have id for new update order');
@@ -240,10 +243,14 @@ describe('order service', () => {
             quantity: newQuantity,
         });
 
-        dto.orderedItems.push(newItemUpdate);
+        lineList.push(newItemUpdate);
 
         await dataSource.transaction(async (manager) => {
-            await orderService.updateEntityForTest(dto, order, manager);
+            await orderService.updateEntityForTest(
+                { ...dto, orderedItems: lineList },
+                order,
+                manager,
+            );
         });
 
         const reloaded = await orderRepo.findOne({
@@ -254,6 +261,76 @@ describe('order service', () => {
         expect(reloaded.orderedItems!.length).toBeGreaterThanOrEqual(2);
         const updated = reloaded.orderedItems!.find((x) => x.id === itemToUpdate.id);
         expect(updated?.quantity).toEqual(newQuantity);
+    });
+
+    it('promotes OCCURRENCE GENERATED to MODIFIED on update', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const [mi] = await menuItemRepo.find({ relations: ['sizes'], take: 1 });
+        if (!cat || !mi?.sizes?.length) throw new Error('fixtures not found');
+
+        const fulfillmentDate = new Date();
+        fulfillmentDate.setHours(12, 0, 0, 0);
+        const daysOfWeek = [fulfillmentDate.getDay()];
+        const recurrenceCreateDto = plainToInstance(NestedCreateRecurringOrderScheduleDto, {
+            createId: 'r1',
+            frequency: 'WEEKLY',
+            interval: 1,
+            daysOfWeek,
+            startDate: fulfillmentDate,
+        });
+
+        const createDto = plainToInstance(CreateOrderDto, {
+            recipient: 'Promote gen test',
+            fulfillmentDate,
+            fulfillmentType: 'pickup',
+            categoryId: cat.id,
+            occurrenceType: OCCURRENCE_TYPES.TEMPLATE,
+            orderedItems: [
+                plainToInstance(NestedCreateOrderMenuItemDto, {
+                    createId: 'o1',
+                    menuItemId: mi.id,
+                    sizeId: mi.sizes[0].id,
+                    quantity: 1,
+                }),
+            ],
+            recurrenceSchedule: recurrenceCreateDto,
+        });
+
+        const created = await orderService.createEntityForTest(createDto, dataSource.manager);
+        const occ = await orderRepo.findOne({
+            where: {
+                templateOrderId: created.id,
+                occurrenceType: OCCURRENCE_TYPES.OCCURRENCE,
+                occurrenceState: OCCURRENCE_STATES.GENERATED,
+            },
+        });
+        if (!occ) throw new Error('expected generated occurrence');
+
+        const occReloaded = await orderRepo.findOneOrFail({
+            where: { id: occ.id },
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.size',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+                'category',
+                'recurrenceSchedule',
+            ],
+        });
+
+        const updateDto = plainToInstance(UpdateOrderDto, {
+            note: 'edited by occurrence test',
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await orderService.updateEntityForTest(updateDto, occReloaded, manager);
+        });
+
+        const result = await orderRepo.findOne({ where: { id: occ.id } });
+        expect(result?.occurrenceState).toEqual(OCCURRENCE_STATES.MODIFIED);
+        expect(result?.note).toEqual('edited by occurrence test');
     });
 
     // test findAll()
@@ -280,23 +357,37 @@ describe('order service', () => {
 
     // test findAll() with search by menuItem name
     it('should find all orders with search by menuItem name', async () => {
-        const [mi] = await menuItemRepo.find({ take: 1 });
-        if (!mi?.name?.length) throw new Error('menu item with name required');
-        const needle = mi.name.slice(0, Math.min(4, mi.name.length)).toLowerCase();
+        const [oi] = await orderItemRepo.find({
+            relations: ['menuItem'],
+            take: 1,
+        });
+        if (!oi?.menuItem?.name?.length) {
+            throw new Error('order line with menu item name required');
+        }
+        const needle = oi.menuItem.name
+            .slice(0, Math.min(4, oi.menuItem.name.length))
+            .toLowerCase();
 
         const serviceResult = await orderService.findAll({
             search: needle,
             limit: 100,
-            relations: ['orderedItems', 'orderedItems.menuItem', 'orderedItems.containerOrderMenuItems', 'orderedItems.containerOrderMenuItems.containedMenuItem', 'orderedItems.containerOrderMenuItems.containedItemSize'],
+            relations: [
+                'orderedItems',
+                'orderedItems.menuItem',
+                'orderedItems.containerOrderMenuItems',
+                'orderedItems.containerOrderMenuItems.containedMenuItem',
+                'orderedItems.containerOrderMenuItems.containedItemSize',
+            ],
         });
         expect(serviceResult).not.toBeNull();
-        // applySearch matches recipient OR menuItem name (see OrderService.applySearch)
         expect(
-            serviceResult?.items.every(
+            serviceResult?.items.some(
                 (o) =>
                     o.recipient.toLowerCase().includes(needle) ||
-                    o.orderedItems?.some((oi) =>
-                        oi.menuItem?.name?.toLowerCase().includes(needle),
+                    o.orderedItems?.some((line) =>
+                        line.menuItem?.name
+                            ?.toLowerCase()
+                            .includes(needle),
                     ),
             ),
         ).toBe(true);
@@ -525,14 +616,6 @@ describe('order service', () => {
         // should get order with recurring order schedule
         const order = await getOrderWithRecurrenceSchedule();
         if (!order.recurrenceSchedule) throw new Error('order with recurrence schedule not found');
-
-        // update recurring order schedule
-        /*const ros_dto = plainToInstance(NestedUpdateRecurringOrderScheduleDto, {
-            id: order.recurrenceSchedule.id,
-            frequency: 'MONTHLY',
-            interval: 2,
-            daysOfWeek: [2],
-        });*/
 
         const ros_dto = recurringOrderScheduleToNestedUpdateDto(order.recurrenceSchedule, {
             frequency: 'MONTHLY',

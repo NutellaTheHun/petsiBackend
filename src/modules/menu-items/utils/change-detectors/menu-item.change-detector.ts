@@ -10,7 +10,6 @@ import { NestedUpdateMenuItemContainerItemDto } from '../../dto/menu-item-contai
 import { UpdateMenuItemDto } from '../../dto/menu-item/update-menu-item.dto';
 import { MenuItemContainerItem } from '../../entities/menu-item-container-item.entity';
 import { MenuItem } from '../../entities/menu-item.entity';
-import { menuItemContainerItemToNestedUpdateDto } from '../entity-transformers/menu-item-container-item.dto.transfomer';
 import { MenuItemContainerItemChangeDetector } from './menu-item-container-item.change-detector';
 
 type NestedContainerItemDto =
@@ -31,31 +30,40 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
 
     if (!this.unchanged(entity.name, dto.name)) {
       patch.name = dto.name;
-      changes.push({ path: 'name', previousValue: entity.name, nextValue: dto.name });
+      changes.push({ op: 'scalar', path: 'name', previousValue: entity.name, nextValue: dto.name });
     }
     if (!this.unchanged(entity.type, dto.type)) {
       patch.type = dto.type;
-      changes.push({ path: 'type', previousValue: entity.type, nextValue: dto.type });
+      changes.push({ op: 'scalar', path: 'type', previousValue: entity.type, nextValue: dto.type });
     }
     if (!this.unchanged(entity.category?.id ?? null, dto.categoryId)) {
       patch.categoryId = dto.categoryId;
       changes.push({
+        op: 'reference',
         path: 'categoryId',
         previousValue: entity.category?.id ?? null,
         nextValue: dto.categoryId,
       });
     }
 
-    const existingSizeIds = (entity.sizes ?? []).map((s) => s.id).sort((a, b) => a - b);
-    const incomingSizeIds = [...dto.sizeIds].sort((a, b) => a - b);
-    if (!this.sameNumberArray(existingSizeIds, incomingSizeIds)) {
-      patch.sizeIds = dto.sizeIds;
-      changes.push({ path: 'sizeIds', previousValue: existingSizeIds, nextValue: dto.sizeIds });
+    if (dto.sizeIds !== undefined) {
+      const existingSizeIds = (entity.sizes ?? []).map((s) => s.id).sort((a, b) => a - b);
+      const incomingSizeIds = [...dto.sizeIds].sort((a, b) => a - b);
+      if (!this.sameNumberArray(existingSizeIds, incomingSizeIds)) {
+        patch.sizeIds = dto.sizeIds;
+        changes.push({
+          op: 'aggregate',
+          path: 'sizeIds',
+          previousValue: existingSizeIds,
+          nextValue: dto.sizeIds,
+        });
+      }
     }
 
     if (!this.unchanged(entity.variableMaxAmount ?? null, dto.variableMaxAmount ?? null)) {
       patch.variableMaxAmount = dto.variableMaxAmount ?? null;
       changes.push({
+        op: 'scalar',
         path: 'variableMaxAmount',
         previousValue: entity.variableMaxAmount ?? null,
         nextValue: dto.variableMaxAmount ?? null,
@@ -63,16 +71,17 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
     }
 
     if (dto.containerMenuItems !== undefined) {
-      const nestedPatch = this.detectContainerItems(
+      const containerPatch = this.detectContainerItems(
         entity.containerMenuItems ?? [],
         dto.containerMenuItems ?? [],
       );
-      if (nestedPatch.length > 0) {
-        patch.containerMenuItems = nestedPatch;
+      if (containerPatch !== undefined) {
+        patch.containerMenuItems = containerPatch;
         changes.push({
+          op: 'aggregate',
           path: 'containerMenuItems',
           previousValue: entity.containerMenuItems?.map((c) => c.id) ?? [],
-          nextValue: nestedPatch,
+          nextValue: containerPatch,
         });
       }
     }
@@ -80,34 +89,56 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
     return { patch, hasChanges: changes.length > 0, changes };
   }
 
+  /**
+   * When `incoming` is empty and existing empty, no change.
+   * Otherwise authoritative full list when structural or any line differs.
+   */
   private detectContainerItems(
     existingItems: MenuItemContainerItem[],
-    incomingDtos: NestedContainerItemDto[],
-  ): NestedContainerItemDto[] {
-    const patchDtos: NestedContainerItemDto[] = [];
+    incoming: NestedContainerItemDto[],
+  ): NestedContainerItemDto[] | undefined {
+    if (incoming.length === 0 && existingItems.length === 0) {
+      return undefined;
+    }
+
     const existingById = new Map<number, MenuItemContainerItem>();
     for (const item of existingItems) {
       existingById.set(item.id, item);
     }
 
-    for (const dto of incomingDtos) {
-      if ('createId' in dto) {
-        patchDtos.push(dto);
-        continue;
-      }
-      const existing = existingById.get(dto.id);
-      if (!existing) {
-        patchDtos.push(dto);
-        continue;
-      }
-      const child = this.containerItemChangeDetector.detect(
-        existing,
-        dto,
-      );
-      if (child.hasChanges) {
-        patchDtos.push(child.patch as NestedUpdateMenuItemContainerItemDto);
+    const prevIds = existingItems.map((i) => i.id);
+    const nextIdSet = new Set(
+      incoming
+        .filter((d): d is NestedUpdateMenuItemContainerItemDto => 'id' in d)
+        .map((d) => d.id),
+    );
+    const removed = prevIds.some((id) => !nextIdSet.has(id));
+    const added = incoming.some((d) => 'createId' in d);
+
+    let needsFullReplace = removed || added;
+    if (!needsFullReplace) {
+      for (const itemDto of incoming) {
+        if ('createId' in itemDto) {
+          needsFullReplace = true;
+          break;
+        }
+        const existing = existingById.get(itemDto.id);
+        if (!existing) {
+          needsFullReplace = true;
+          break;
+        }
+        const child = this.containerItemChangeDetector.detect(existing, itemDto);
+        if (child.hasChanges) {
+          needsFullReplace = true;
+          break;
+        }
       }
     }
-    return patchDtos;
+
+    if (!needsFullReplace) {
+      return undefined;
+    }
+
+    return incoming;
   }
 }

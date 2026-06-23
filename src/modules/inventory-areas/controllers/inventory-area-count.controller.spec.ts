@@ -198,8 +198,9 @@ describe('inventory area count controller', () => {
         const food_c = await findItem(FOOD_C);
         const food_b = await findItem(FOOD_B);
 
-        const dto = inventoryAreaCountToUpdateDto(countToUpdate);
-        dto.countedInventoryItems.push(
+        const transform = inventoryAreaCountToUpdateDto(countToUpdate);
+        const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+        countedInventoryItems.push(
             plainToInstance(NestedCreateInventoryAreaItemDto, {
                 createId: 'c1',
                 countedInventoryItemId: food_c.id,
@@ -207,6 +208,10 @@ describe('inventory area count controller', () => {
                 countedItemSizeId: food_b.sizes[0].id,
             }),
         );
+        const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+            ...transform,
+            countedInventoryItems,
+        });
 
         try {
             await controller.update(countToUpdate.id, dto);
@@ -259,11 +264,12 @@ describe('inventory area count controller', () => {
             const countToUpdate = await getInventoryAreaCount(AREA_B);
             const itemToUpdate = await findItem(FOOD_B);
 
-            const dto = inventoryAreaCountToUpdateDto(countToUpdate);
-            const areaItemToUpdate = dto.countedInventoryItems.pop();
+            const transform = inventoryAreaCountToUpdateDto(countToUpdate);
+            const countedInventoryItems = [...(transform.countedInventoryItems ?? [])];
+            const areaItemToUpdate = countedInventoryItems.pop();
             const areaItemUpdateId = (areaItemToUpdate as NestedUpdateInventoryAreaItemDto)
                 .id;
-            dto.countedInventoryItems.push(
+            countedInventoryItems.push(
                 plainToInstance(NestedUpdateInventoryAreaItemDto, {
                     id: areaItemUpdateId,
                     countedInventoryItemId: itemToUpdate.id,
@@ -271,6 +277,10 @@ describe('inventory area count controller', () => {
                     amount: 2,
                 }),
             );
+            const dto = plainToInstance(UpdateInventoryAreaCountDto, {
+                ...transform,
+                countedInventoryItems,
+            });
 
             await controller.update(countToUpdate.id, dto);
             expect(updateEntitySpy).toHaveBeenCalled();

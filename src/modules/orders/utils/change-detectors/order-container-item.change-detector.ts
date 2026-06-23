@@ -27,6 +27,7 @@ export class OrderContainerItemChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(existingDto.containedMenuItemId, dto.containedMenuItemId)) {
             patch.containedMenuItemId = dto.containedMenuItemId;
             changes.push({
+                op: 'reference',
                 path: 'containedMenuItemId',
                 previousValue: existingDto.containedMenuItemId,
                 nextValue: dto.containedMenuItemId,
@@ -36,6 +37,7 @@ export class OrderContainerItemChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(existingDto.containedItemSizeId, dto.containedItemSizeId)) {
             patch.containedItemSizeId = dto.containedItemSizeId;
             changes.push({
+                op: 'reference',
                 path: 'containedItemSizeId',
                 previousValue: existingDto.containedItemSizeId,
                 nextValue: dto.containedItemSizeId,
@@ -45,6 +47,7 @@ export class OrderContainerItemChangeDetector extends ChangeDetectorBase<
         if (!this.unchanged(existingDto.quantity, dto.quantity)) {
             patch.quantity = dto.quantity;
             changes.push({
+                op: 'scalar',
                 path: 'quantity',
                 previousValue: existingDto.quantity,
                 nextValue: dto.quantity,

@@ -7,16 +7,35 @@ import { UpdateRecurringOrderScheduleDto } from "../dto/recurring-order-schedule
  * So there is the DTSTART:... and the RRULE:...
  */
 export function parseRruleString(rruleString: string): { frequency: string; interval: number | undefined; daysOfWeek: number[] | undefined; dayOfMonth: number | undefined; monthOfYear: number | undefined; startDate: Date; endDate: Date | undefined; timezone: string | undefined; } {
-    // parse rruleString into DTSTART and RRULE parts
-    const dtstartPart = rruleString.split('\n')[0];
-    const rrulePart = rruleString.split('\n')[1];
+    if (!rruleString || !rruleString.includes('RRULE:')) {
+        return {
+            frequency: 'WEEKLY',
+            startDate: new Date(),
+            interval: undefined,
+            daysOfWeek: undefined,
+            dayOfMonth: undefined,
+            monthOfYear: undefined,
+            endDate: undefined,
+            timezone: undefined,
+        };
+    }
 
-    // parse DTSTART part into startDate
-    const dtstartRaw = dtstartPart.split(':')[1]; // "20120201T093000Z"
-    const startDate = parseDtStart(dtstartRaw);
+    const lines = (rruleString ?? '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean);
 
-    // parse RRULE part into partsMap
-    const rrule = rrulePart.split('RRULE:')[1];
+    const dtstartPart = lines.find((l) => l.startsWith('DTSTART:'));
+    const rrulePart = lines.find((l) => l.startsWith('RRULE:'));
+
+    const startDate = dtstartPart
+        ? parseDtStart(dtstartPart.split(':')[1])
+        : new Date();
+
+    const rrule = (rrulePart ?? rruleString).split('RRULE:')[1];
+    if (!rrule) {
+        throw new Error('RRULE is required');
+    }
     const parts = rrule.split(';');
     const partsMap = new Map<string, string>();
     for (const part of parts) {

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
@@ -12,13 +13,13 @@ import {
 } from '../../entities/order-menu-item.entity';
 import { OrderContainerItemComposer } from './order-container-item.composer';
 
+@Injectable()
 export class OrderMenuItemComposer extends ComposerBase<OrderMenuItemEntity> {
     protected readonly entityClass = OrderMenuItem;
 
     constructor(
         private readonly containerItemComposer: OrderContainerItemComposer,
     ) {
-        containerItemComposer = new OrderContainerItemComposer();
         super();
     }
 

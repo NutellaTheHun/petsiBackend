@@ -126,7 +126,62 @@ describe('Template Service', () => {
         if (!result) throw new Error('result not found');
         expect(result.name).toEqual(newName);
         // the template pulled to update has 0 items, so the length should be the same as the dto
-        expect(result.templateMenuItems.length).toEqual(dto.templateMenuItems.length);
+        expect(result.templateMenuItems.length).toEqual(dto.templateMenuItems?.length ?? 0);
+    });
+
+    it('removes template menu items via authoritative parent update', async () => {
+        const menuItems = await menuItemRepo.find({ take: 2 });
+        if (menuItems.length < 2) throw new Error('menu items not found');
+
+        const createDto = plainToInstance(CreateTemplateDto, {
+            name: 'Template for delete test',
+            templateMenuItems: [
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c11',
+                    displayName: 'A',
+                    menuItemId: menuItems[0].id,
+                    tablePosIndex: 1,
+                }),
+                plainToInstance(NestedCreateTemplateMenuItemDto, {
+                    createId: 'c12',
+                    displayName: 'B',
+                    menuItemId: menuItems[1].id,
+                    tablePosIndex: 2,
+                }),
+            ],
+        });
+
+        const created = await dataSource.transaction(async (manager) => {
+            return await templateService.createEntityForTest(createDto, manager);
+        });
+
+        const toUpdate = await templateRepo.findOne({
+            where: { id: created.id },
+            relations: ['templateMenuItems', 'templateMenuItems.menuItem'],
+        });
+        if (!toUpdate) throw new Error('template not found');
+        expect(toUpdate.templateMenuItems.length).toEqual(2);
+
+        const updateDto = plainToInstance(UpdateTemplateDto, {
+            name: toUpdate.name,
+            templateMenuItems: [],
+        });
+
+        await dataSource.transaction(async (manager) => {
+            await templateService.updateEntityForTest(updateDto, toUpdate, manager);
+        });
+
+        const reloaded = await templateRepo.findOne({
+            where: { id: toUpdate.id },
+            relations: ['templateMenuItems'],
+        });
+        if (!reloaded) throw new Error('reloaded template not found');
+        expect(reloaded.templateMenuItems.length).toEqual(0);
+
+        const childRows = await templateItemRepo.find({
+            where: { parentTemplate: { id: toUpdate.id } },
+        });
+        expect(childRows.length).toEqual(0);
     });
 
     // test findAll()

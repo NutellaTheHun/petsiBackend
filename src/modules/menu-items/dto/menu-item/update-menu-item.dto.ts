@@ -50,15 +50,16 @@ export class UpdateMenuItemDto {
 
     @ApiProperty({
         description:
-            'Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.',
+            'When present, replaces all sizes for this menu item. Omit to leave sizes unchanged.',
         example: [5, 6],
         type: () => [Number],
+        required: false,
     })
+    @IsOptional()
     @IsArray()
     @IsNumber({}, { each: true })
     @IsPositive({ each: true })
-    @IsNotEmpty()
-    readonly sizeIds: EntityId<MenuItemSize>[];
+    readonly sizeIds?: EntityId<MenuItemSize>[];
 
     @ApiProperty({
         description: 'TODO',

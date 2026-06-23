@@ -202,10 +202,12 @@ export class UnitOfMeasureTestingUtil {
     }
 
     private async cleanupUnitCategoryTestDatabase(): Promise<void> {
+        this.initCategory = false;
         await this.categoryRepo.deleteAll();
     }
 
     private async cleanupUnitOfMeasureTestDatabase(): Promise<void> {
+        this.initUnits = false;
         await this.unitRepo.deleteAll();
     }
 

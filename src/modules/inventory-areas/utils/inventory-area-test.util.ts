@@ -215,6 +215,7 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryArea table
      */
     public async cleanupInventoryAreaTestDatabase(): Promise<void> {
+        this.initAreas = false;
         await this.areaRepo.deleteAll();
     }
 
@@ -222,6 +223,7 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryAreaCount table
      */
     public async cleanupInventoryAreaCountTestDatabase(): Promise<void> {
+        this.initCounts = false;
         await this.areaCountRepo.deleteAll();
     }
 
@@ -229,6 +231,7 @@ export class InventoryAreaTestUtil {
      * Deletes all rows in InventoryAreaItemCount table
      */
     public async cleanupInventoryAreaItemCountTestDatabase(): Promise<void> {
+        this.initItems = false;
         await this.areaItemRepo.deleteAll();
     }
 
