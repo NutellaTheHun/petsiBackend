@@ -9,15 +9,15 @@ import {
     OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
+
 import { EntityBase } from '../../../common/base/entity.base';
 import { menuItemExample } from '../../../common/swagger/examples/menu-items/menu-item.example';
 import { recipeCategoryExample } from '../../../common/swagger/examples/recipes/recipe-category.example';
 import { recipeIngredientExample } from '../../../common/swagger/examples/recipes/recipe-ingredient.example';
 import { recipeSubCategoryExample } from '../../../common/swagger/examples/recipes/recipe-sub-category.example';
-import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
+import { AppUnit } from '../../../common/units';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from './recipe-category.entity';
@@ -76,25 +76,24 @@ export class Recipe {
     batchResultQuantity: number | null = null;
 
     /**
-     * The {@link UnitOfMeasure} that descibes the total yield the recipe produces.
+     * The unit symbol that describes the total yield the recipe produces.
      *
      * - Examples:
-     * - 5 pounds(batchResultUnitOfMeasure) of berry mix
-     * - 1 unit(batchResultUnitOfMeasure) of Blueberry Pie.
+     * - 5 lb of berry mix
+     * - 1 ea of Blueberry Pie.
      */
     @ApiProperty({
-        example: unitOfMeasureExample(new Set<string>(), true),
+        example: 'oz',
         description:
-            'The unit of measure that descibes the total yield the recipe produces.',
-        type: UnitOfMeasure,
+            'The unit symbol that describes the total yield the recipe produces.',
+        type: 'string',
         nullable: true,
     })
-    @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
-    @JoinColumn()
-    batchResultUnitType: UnitOfMeasure | null = null;
+    @Column({ nullable: true, type: 'varchar' })
+    batchResultUnit: AppUnit | null = null;
 
     /**
-     * A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.
+     * A unit amount of the servingSizeUnit property that is a subset of the batchResultQuantity property.
      *
      * When a recipe produces an item(or items) that are sold in pieces of the yield.
      *
@@ -105,7 +104,7 @@ export class Recipe {
     @ApiProperty({
         example: 4,
         description:
-            'A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.',
+            'A unit amount of the servingSizeUnit property that is a subset of the batchResultQuantity property.',
         type: 'number',
         format: 'decimal',
         nullable: true,
@@ -115,21 +114,20 @@ export class Recipe {
     servingSizeQuantity: number | null = null;
 
     /**
-     * The {@link UnitOfMeasure} that describes the total sellable portions of the recipes yield.
+     * The unit symbol that describes the total sellable portions of the recipe's yield.
      * Example:
      * - A recipe for Banana Bread produces a loaf, and is then sold by the slice.
-     * - 1 loaf could have a serving size of say 8 units(servingSizeUnitOfMeasure).
+     * - 1 loaf could have a serving size of say 8 units(servingSizeUnit).
      */
     @ApiProperty({
-        example: unitOfMeasureExample(new Set<string>(), true),
+        example: 'oz',
         description:
-            'The unit of measure that describes the total sellable portions of the recipes yield',
-        type: UnitOfMeasure,
+            'The unit symbol that describes the total sellable portions of the recipes yield',
+        type: 'string',
         nullable: true,
     })
-    @ManyToOne(() => UnitOfMeasure, { nullable: true, onDelete: 'SET NULL' })
-    @JoinColumn()
-    servingSizeUnitType: UnitOfMeasure | null = null;
+    @Column({ nullable: true, type: 'varchar' })
+    servingSizeUnit: AppUnit | null = null;
 
     /**
      * The set price per servingSizeQuantity.

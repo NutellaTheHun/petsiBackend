@@ -15,8 +15,6 @@ import {
     FOOD_C,
     PACKAGE_PKG,
 } from '../../inventory-items/utils/constants';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { UpdateInventoryAreaItemDto } from '../dto/inventory-area-item/update-inventory-area-item.dto';
 import { InventoryAreaCount } from '../entities/inventory-area-count.entity';
@@ -37,7 +35,6 @@ describe('inventory area item validator', () => {
     let itemRepo: Repository<InventoryItem>;
     let itemSizeRepo: Repository<InventoryItemSize>;
 
-    let measureRepo: Repository<UnitOfMeasure>;
     let packageRepo: Repository<InventoryItemPackage>;
 
     const findAreaItem = async (name: string) => {
@@ -50,10 +47,6 @@ describe('inventory area item validator', () => {
 
     const findPackage = async (name: string) => {
         return await packageRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findUom = async (name: string) => {
-        return await measureRepo.findOneOrFail({ where: { name } });
     }
 
     const findCount = async (name: string) => {
@@ -80,7 +73,6 @@ describe('inventory area item validator', () => {
         areaCountRepo = module.get(getRepositoryToken(InventoryAreaCount));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         itemSizeRepo = module.get(getRepositoryToken(InventoryItemSize));
-        measureRepo = module.get(getRepositoryToken(UnitOfMeasure));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
     });
 
@@ -97,7 +89,6 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
@@ -105,7 +96,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: 1.99,
             }),
@@ -140,7 +131,6 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
@@ -149,7 +139,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: 1.99,
             }),
@@ -209,7 +199,6 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
@@ -217,7 +206,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 0,
                 cost: 1.99,
             }),
@@ -237,7 +226,6 @@ describe('inventory area item validator', () => {
         const count = await findCount(AREA_A);
         const food_a = await findInventoryItem(FOOD_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: CreateInventoryAreaItemDto = plainToInstance(CreateInventoryAreaItemDto, {
             countedInventoryItemId: food_a.id,
@@ -245,7 +233,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: -1,
             }),
@@ -338,7 +326,6 @@ describe('inventory area item validator', () => {
     it('fail validate update: countedItemSizeId and countedItemSize both provided', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -347,7 +334,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: 1.99,
             }),
@@ -383,7 +370,6 @@ describe('inventory area item validator', () => {
     it('fail validate update: nestedCreateInventoryItemSizeDto errors: measureAmount with value 0', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -392,7 +378,7 @@ describe('inventory area item validator', () => {
                 createId: 'c1',
                 measureAmount: 0,
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 cost: null
             }),
         });
@@ -411,7 +397,6 @@ describe('inventory area item validator', () => {
     it('fail validate update: nestedCreateInventoryItemSizeDto errors: cost with value 0', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
         const pkg = await findPackage(PACKAGE_PKG);
-        const uom = await findUom(POUND);
 
         const dto: UpdateInventoryAreaItemDto = plainToInstance(UpdateInventoryAreaItemDto, {
             countedInventoryItemId: itemToUpdate.countedInventoryItem.id,
@@ -420,7 +405,7 @@ describe('inventory area item validator', () => {
                 createId: 'c1',
                 cost: -1,
                 packageId: pkg.id,
-                measureTypeId: uom.id,
+                unit: 'lb',
                 measureAmount: 1,
             }),
         });
@@ -439,10 +424,10 @@ describe('inventory area item validator', () => {
     it('fail validate update: nestedCreateInventoryItemSizeDto errors: already exists', async () => {
         const itemToUpdate = await findAreaItem(AREA_A);
 
-        // Find another size with the same item that has different package/measureType
+        // Find another size with the same item that has different package/unit
         const existingSizes = await itemSizeRepo.find({
             where: { inventoryItem: { id: itemToUpdate.countedInventoryItem.id } },
-            relations: ['package', 'measureType'],
+            relations: ['package'],
         });
 
         // Find a size that exists but is different from the current one
@@ -460,7 +445,7 @@ describe('inventory area item validator', () => {
             countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                 createId: 'c1',
                 packageId: targetSize.package.id,
-                measureTypeId: targetSize.measureType.id,
+                unit: targetSize.unit,
                 measureAmount: targetSize.measureAmount,
                 cost: null
             }),
@@ -473,7 +458,7 @@ describe('inventory area item validator', () => {
             [
                 { prop: 'countedItemSize', id: 'c1' },
             ],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']),
         );
     });
 });

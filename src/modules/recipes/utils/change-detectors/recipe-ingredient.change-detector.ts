@@ -51,13 +51,13 @@ export class RecipeIngredientChangeDetector extends ChangeDetectorBase<
         nextValue: dto.quantity,
       });
     }
-    if (!this.unchanged(existing.quantityUnitTypeId, dto.quantityUnitTypeId)) {
-      patch.quantityUnitTypeId = dto.quantityUnitTypeId;
+    if (!this.unchanged(existing.unit, dto.unit)) {
+      patch.unit = dto.unit;
       changes.push({
-        op: 'reference',
-        path: 'quantityUnitTypeId',
-        previousValue: existing.quantityUnitTypeId,
-        nextValue: dto.quantityUnitTypeId,
+        op: 'scalar',
+        path: 'unit',
+        previousValue: existing.unit,
+        nextValue: dto.unit,
       });
     }
 

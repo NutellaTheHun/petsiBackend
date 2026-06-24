@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
+import { AppUnit } from '../../../common/units';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
@@ -24,9 +24,6 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
 
     @InjectRepository(InventoryItem)
     private readonly itemRepo: Repository<InventoryItem>,
-
-    @InjectRepository(UnitOfMeasure)
-    private readonly unitRepo: Repository<UnitOfMeasure>,
 
     requestContextService: RequestContextService,
     logger: AppLogger,
@@ -52,8 +49,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     if (dto.ingredientRecipeId !== undefined) {
       this.ingredientRecipeById(dto.ingredientRecipeId);
     }
-    if (dto.quantityUnitTypeId !== undefined) {
-      this.quantityUnitOfMeasureById(dto.quantityUnitTypeId);
+    if (dto.unit !== undefined) {
+      this.unit(dto.unit);
     }
 
     // If the parentRecipeId is provided, use it to set the parentRecipe. (Through recipe-ingredient endpoint)
@@ -77,8 +74,8 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
       this.entity.ingredientInventoryItem = null;
       this.ingredientRecipeById(dto.ingredientRecipeId);
     }
-    if (dto.quantityUnitTypeId !== undefined) {
-      this.quantityUnitOfMeasureById(dto.quantityUnitTypeId);
+    if (dto.unit !== undefined) {
+      this.unit(dto.unit);
     }
   }
 
@@ -175,19 +172,7 @@ export class RecipeIngredientBuilder extends BuilderBase<RecipeIngredient> {
     return this.setPropByVal('quantity', amount);
   }
 
-  public quantityUnitOfMeasureById(id: number): this {
-    return this.setPropById(
-      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
-      'quantityUnitType',
-      id,
-    );
-  }
-
-  public quantityUnitOfMeasureByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
-      'quantityUnitType',
-      name,
-    );
+  public unit(value: AppUnit): this {
+    return this.setPropByVal('unit', value);
   }
 }

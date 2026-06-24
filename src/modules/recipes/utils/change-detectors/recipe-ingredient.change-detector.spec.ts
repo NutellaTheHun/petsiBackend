@@ -1,5 +1,5 @@
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { AppUnit } from '../../../../common/units';
 import { Recipe } from '../../entities/recipe.entity';
 import { RecipeIngredient } from '../../entities/recipe-ingredient.entity';
 
@@ -20,7 +20,7 @@ describe('RecipeIngredientChangeDetector', () => {
             ingredientInventoryItem: { id: 10 } as InventoryItem,
             ingredientRecipe: null,
             quantity: 2,
-            quantityUnitType: { id: 20 } as UnitOfMeasure,
+            unit: 'oz' as AppUnit,
         } as RecipeIngredient);
 
     it('returns empty patch for UpdateDto when dto matches entity', () => {
@@ -41,10 +41,10 @@ describe('RecipeIngredientChangeDetector', () => {
 
     it('detects quantity and unit changes', () => {
         const entity = baseEntity();
-        const dto = recipeIngredientToNestedUpdateDto(entity, { quantity: 5, quantityUnitTypeId: 21 });
+        const dto = recipeIngredientToNestedUpdateDto(entity, { quantity: 5, unit: 'kg' });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);
-        expect(result.patch).toEqual({ id: 1, quantity: 5, quantityUnitTypeId: 21 });
+        expect(result.patch).toEqual({ id: 1, quantity: 5, unit: 'kg' });
     });
 
     it('detects switch to recipe ingredient', () => {

@@ -35,13 +35,13 @@ export class InventoryItemSizeChangeDetector extends ChangeDetectorBase<
         nextValue: dto.packageId,
       });
     }
-    if (!this.unchanged(existingDto.measureTypeId, dto.measureTypeId)) {
-      patch.measureTypeId = dto.measureTypeId;
+    if (!this.unchanged(existingDto.unit, dto.unit)) {
+      patch.unit = dto.unit;
       changes.push({
-        op: 'reference',
-        path: 'measureTypeId',
-        previousValue: existingDto.measureTypeId,
-        nextValue: dto.measureTypeId,
+        op: 'scalar',
+        path: 'unit',
+        previousValue: existingDto.unit,
+        nextValue: dto.unit,
       });
     }
     if (!this.unchanged(existingDto.measureAmount, dto.measureAmount)) {

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
+    IsIn,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -11,9 +12,9 @@ import {
     Min,
     ValidateNested,
 } from 'class-validator';
+import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
 import { NestedCreateRecipeIngredientDto } from '../recipe-ingredient/nested-create-recipe-ingredient.dto';
@@ -39,8 +40,7 @@ export class CreateRecipeDto {
     readonly producedMenuItemId?: EntityId<MenuItem> | null;
 
     @ApiPropertyOptional({
-        description:
-            'The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.',
+        description: 'The unit amount the recipe produces.',
         example: 2,
         type: 'number',
         format: 'decimal',
@@ -52,19 +52,16 @@ export class CreateRecipeDto {
     readonly batchResultQuantity?: number | null;
 
     @ApiProperty({
-        description:
-            'Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.',
-        example: 3,
+        description: 'Unit symbol expressing the unit size of what the recipe produces.',
+        example: 'oz',
         nullable: true,
     })
-    @IsNumber()
-    @IsPositive()
+    @IsIn(Object.values(UNITS))
     @IsOptional()
-    readonly batchResultUnitTypeId?: EntityId<UnitOfMeasure> | null;
+    readonly batchResultUnit?: AppUnit | null;
 
     @ApiProperty({
-        description:
-            'The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.',
+        description: 'The unit amount of the servingSizeUnit describing the amount that is sold.',
         example: 4,
         type: 'number',
         format: 'decimal',
@@ -75,15 +72,13 @@ export class CreateRecipeDto {
     readonly servingSizeQuantity?: number | null;
 
     @ApiProperty({
-        description:
-            'Id of the UnitofMeasure used to represent the unit size of what is sold.',
-        example: 5,
+        description: 'Unit symbol representing the unit size of what is sold.',
+        example: 'oz',
         nullable: true,
     })
-    @IsNumber()
-    @IsPositive()
+    @IsIn(Object.values(UNITS))
     @IsOptional()
-    readonly servingSizeUnitTypeId?: EntityId<UnitOfMeasure> | null;
+    readonly servingSizeUnit?: AppUnit | null;
 
     @ApiProperty({
         description: 'The price of purchasing the serving size amount.',
@@ -136,13 +131,13 @@ export class CreateRecipeDto {
                 createId: 'c1',
                 ingredientInventoryItemId: 2,
                 quantity: 3,
-                quantityUnitTypeId: 4,
+                unit: 'oz',
             },
             {
                 createId: 'c5',
                 ingredientRecipeId: 5,
                 quantity: 6,
-                quantityUnitTypeId: 7,
+                unit: 'oz',
             },
         ],
     })

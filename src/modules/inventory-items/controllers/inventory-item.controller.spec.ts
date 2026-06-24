@@ -10,8 +10,6 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
@@ -42,7 +40,6 @@ describe('Inventory Item Controller', () => {
     let categoryRepo: Repository<InventoryItemCategory>;
     let packageRepo: Repository<InventoryItemPackage>;
     let vendorRepo: Repository<InventoryItemVendor>;
-    let measureRepo: Repository<UnitOfMeasure>;
 
     beforeAll(async () => {
         module = await getInventoryItemTestingModule();
@@ -57,7 +54,6 @@ describe('Inventory Item Controller', () => {
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
-        measureRepo = module.get(getRepositoryToken(UnitOfMeasure));
     });
 
     afterAll(async () => {
@@ -201,8 +197,7 @@ describe('Inventory Item Controller', () => {
         const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
         const vendor = await vendorRepo.findOne({ where: { name: VENDOR_A } });
         const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        const unit = await measureRepo.findOne({ where: { name: POUND } });
-        if (!category || !vendor || !pkg || !unit) {
+        if (!category || !vendor || !pkg) {
             throw new Error('fixture row missing');
         }
         const dto = plainToInstance(CreateInventoryItemDto, {
@@ -213,7 +208,7 @@ describe('Inventory Item Controller', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: unit.id,
+                    unit: 'lb',
                     measureAmount: 5,
                     cost: 10.99,
                 }),
@@ -289,7 +284,6 @@ describe('Inventory Item Controller', () => {
                 'vendor',
                 'sizes',
                 'sizes.package',
-                'sizes.measureType',
             ],
         });
         if (!item?.category || !item.vendor) throw new Error('item relations');
@@ -318,7 +312,6 @@ describe('Inventory Item Controller', () => {
                     'category',
                     'vendor',
                     'sizes.package',
-                    'sizes.measureType',
                 ],
             });
             if (!item?.sizes?.length) throw new Error('item sizes');
@@ -336,7 +329,6 @@ describe('Inventory Item Controller', () => {
                     'category',
                     'vendor',
                     'sizes.package',
-                    'sizes.measureType',
                 ],
             });
             if (!item?.sizes?.length) throw new Error('item sizes');
@@ -354,8 +346,7 @@ describe('Inventory Item Controller', () => {
         const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
         const vendor = await vendorRepo.findOne({ where: { name: VENDOR_A } });
         const pkg = await packageRepo.findOne({ where: { name: PACKAGE_PKG } });
-        const unit = await measureRepo.findOne({ where: { name: POUND } });
-        if (!category || !vendor || !pkg || !unit) throw new Error('fixture');
+        if (!category || !vendor || !pkg) throw new Error('fixture');
         const created = await controller.create(
             plainToInstance(CreateInventoryItemDto, {
                 name: 'ControllerRemoveMeItem',
@@ -365,7 +356,7 @@ describe('Inventory Item Controller', () => {
                     plainToInstance(NestedCreateInventoryItemSizeDto, {
                         createId: 'cRm',
                         packageId: pkg.id,
-                        measureTypeId: unit.id,
+                        unit: 'lb',
                         measureAmount: 1,
                         cost: 1,
                     }),

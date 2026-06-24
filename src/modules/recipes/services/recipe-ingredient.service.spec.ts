@@ -5,7 +5,6 @@ import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { UpdateRecipeIngredientDto } from '../dto/recipe-ingredient/update-recipe-ingedient.dto';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
@@ -40,7 +39,6 @@ describe('recipe ingredient service', () => {
     let ingredientRepo: Repository<RecipeIngredient>;
     let recipeRepo: Repository<Recipe>;
     let inventoryItemRepo: Repository<InventoryItem>;
-    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
 
     beforeAll(async () => {
         const module: TestingModule = await getRecipeTestingModule({
@@ -55,7 +53,6 @@ describe('recipe ingredient service', () => {
         ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
         recipeRepo = module.get(getRepositoryToken(Recipe));
         inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
-        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
 
         dataSource = module.get(DataSource);
     });
@@ -72,13 +69,12 @@ describe('recipe ingredient service', () => {
     it('should create recipe ingredient with ingredientInventoryItemId', async () => {
         const [parent] = await recipeRepo.find({ take: 1 });
         const [inv] = await inventoryItemRepo.find({ take: 1 });
-        const [uom] = await unitOfMeasureRepo.find({ take: 1 });
-        if (!parent || !inv || !uom) throw new Error('fixtures not found');
+        if (!parent || !inv) throw new Error('fixtures not found');
         const dto = plainToInstance(CreateRecipeIngredientDto, {
             parentRecipeId: parent.id,
             ingredientInventoryItemId: inv.id,
             quantity: 1.5,
-            quantityUnitTypeId: uom.id,
+            unit: 'kg',
         });
 
         await dataSource.transaction(async (manager) => {
@@ -86,19 +82,19 @@ describe('recipe ingredient service', () => {
             expect(result).not.toBeNull();
             expect(result?.id).toBeDefined();
             expect(result.quantity).toEqual(dto.quantity);
+            expect(result.unit).toEqual('kg');
         });
     });
 
     // test createEntity() with ingredientRecipeId
     it('should create recipe ingredient with ingredientRecipeId', async () => {
         const recipes = await recipeRepo.find({ take: 2 });
-        const [uom] = await unitOfMeasureRepo.find({ take: 1 });
-        if (recipes.length < 2 || !uom) throw new Error('fixtures not found');
+        if (recipes.length < 2) throw new Error('fixtures not found');
         const dto = plainToInstance(CreateRecipeIngredientDto, {
             parentRecipeId: recipes[0].id,
             ingredientRecipeId: recipes[1].id,
             quantity: 2,
-            quantityUnitTypeId: uom.id,
+            unit: 'cup',
         });
 
         await dataSource.transaction(async (manager) => {
@@ -106,13 +102,14 @@ describe('recipe ingredient service', () => {
             expect(result).not.toBeNull();
             expect(result?.id).toBeDefined();
             expect(result.quantity).toEqual(dto.quantity);
+            expect(result.unit).toEqual('cup');
         });
     });
 
     // test updateEntity()
     it('should update recipe ingredient', async () => {
         const newQuantity = 99;
-        const [existing] = await ingredientRepo.find({ take: 1, relations: ['quantityUnitType', 'ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe', 'ingredientRecipe'] });
+        const [existing] = await ingredientRepo.find({ take: 1, relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'] });
         if (!existing) throw new Error('ingredient not found');
 
         const dto = recipeIngredientToUpdateDto(existing, { quantity: newQuantity });
@@ -130,7 +127,7 @@ describe('recipe ingredient service', () => {
     it('should update recipe ingredient with ingredientInventoryItemId', async () => {
         const [toUpdate] = await ingredientRepo.find({
             take: 1,
-            relations: ['ingredientRecipe', 'ingredientInventoryItem', 'quantityUnitType', 'parentRecipe'],
+            relations: ['ingredientRecipe', 'ingredientInventoryItem', 'parentRecipe'],
         });
         const [inv] = await inventoryItemRepo.find({ take: 1 });
         if (!toUpdate || !inv) throw new Error('fixtures not found');
@@ -153,7 +150,7 @@ describe('recipe ingredient service', () => {
     it('should update recipe ingredient with ingredientRecipeId', async () => {
         const [toUpdate] = await ingredientRepo.find({
             take: 1,
-            relations: ['ingredientInventoryItem', 'ingredientRecipe', 'quantityUnitType', 'parentRecipe'],
+            relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'],
         });
         const [recipe] = await recipeRepo.find({ take: 1 });
         if (!toUpdate || !recipe) throw new Error('fixtures not found');
@@ -169,6 +166,22 @@ describe('recipe ingredient service', () => {
         });
         if (!result) throw new Error('result not found');
         expect(result.ingredientRecipe?.id).toEqual(recipe.id);
+    });
+
+    // test updateEntity() changing unit
+    it('should update recipe ingredient unit', async () => {
+        const [existing] = await ingredientRepo.find({ take: 1, relations: ['ingredientInventoryItem', 'ingredientRecipe', 'parentRecipe'] });
+        if (!existing) throw new Error('ingredient not found');
+
+        const dto = recipeIngredientToUpdateDto(existing, { unit: 'lb' });
+
+        await dataSource.transaction(async (manager) => {
+            await ingredientService.updateEntityForTest(dto, existing, manager);
+        });
+
+        const result = await ingredientRepo.findOne({ where: { id: existing.id } });
+        if (!result) throw new Error('result not found');
+        expect(result.unit).toEqual('lb');
     });
 
     // test findAll()
@@ -198,23 +211,7 @@ describe('recipe ingredient service', () => {
         const serviceResult = await ingredientService.findOne(ing.id);
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.id).toEqual(ing.id);
-    });
-
-    // test findOne() with relations
-    it('should find one recipe ingredient with relations', async () => {
-        const [ing] = await ingredientRepo.find({ take: 1 });
-        if (!ing) throw new Error('ingredient not found');
-
-        const serviceResult = await ingredientService.findOne(ing.id, [
-            'parentRecipe',
-            'ingredientInventoryItem',
-            'ingredientRecipe',
-            'quantityUnitType',
-        ]);
-        expect(serviceResult).not.toBeNull();
-        expect(serviceResult?.id).toEqual(ing.id);
-        expect(serviceResult?.parentRecipe).toBeDefined();
-        expect(serviceResult?.quantityUnitType).toBeDefined();
+        expect(typeof serviceResult?.unit).toEqual('string');
     });
 
     // test remove()

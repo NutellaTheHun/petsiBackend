@@ -9,7 +9,6 @@ import { RecipesModule } from '../recipes/recipes.module';
 import { Role } from '../roles/entities/role.entity';
 import { RoleModule } from '../roles/role.module';
 import { TemplatesModule } from '../templates/templates.module';
-import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 import { User } from '../users/entities/user.entities';
 import { SeedService } from './seed.service';
 
@@ -24,7 +23,6 @@ import { SeedService } from './seed.service';
     OrdersModule,
     RecipesModule,
     TemplatesModule,
-    UnitOfMeasureModule,
   ],
   providers: [SeedService],
   exports: [SeedService],

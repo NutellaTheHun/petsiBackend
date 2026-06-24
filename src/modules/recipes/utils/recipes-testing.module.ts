@@ -10,7 +10,6 @@ import { InventoryItemsModule } from '../../inventory-items/inventory-items.modu
 import { MenuItemsModule } from '../../menu-items/menu-items.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { RecipeCategory } from '../entities/recipe-category.entity';
 import { RecipeIngredient } from '../entities/recipe-ingredient.entity';
 import { RecipeSubCategory } from '../entities/recipe-sub-category.entity';
@@ -55,7 +54,6 @@ export async function getRecipeTestingModule(opts?: {
         RecipeSubCategory,
       ]),
       RecipesModule,
-      UnitOfMeasure,
       InventoryItemsModule,
       MenuItemsModule,
       CacheModule.register(),

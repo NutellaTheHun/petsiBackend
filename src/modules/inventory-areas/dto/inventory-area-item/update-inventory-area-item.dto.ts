@@ -44,7 +44,7 @@ export class UpdateInventoryAreaItemDto {
         required: false,
         example: {
             id: 5,
-            measureTypeId: 1,
+            unit: 'lb',
             measureAmount: 2,
             packageId: 3,
             cost: 4,

@@ -6,7 +6,7 @@ import { InventoryItemSize } from "../../entities/inventory-item-size.entity";
 export function inventoryItemSizeToUpdateDto(inventoryItemSize: InventoryItemSize, merge: Partial<UpdateInventoryItemSizeDto> = {}): UpdateInventoryItemSizeDto {
     return plainToInstance(UpdateInventoryItemSizeDto, {
         packageId: inventoryItemSize.package.id,
-        measureTypeId: inventoryItemSize.measureType.id,
+        unit: inventoryItemSize.unit,
         measureAmount: inventoryItemSize.measureAmount,
         cost: inventoryItemSize.cost ? parseFloat(inventoryItemSize.cost) : null,
         ...merge,
@@ -17,7 +17,7 @@ export function inventoryItemSizeToNestedUpdateDto(inventoryItemSize: InventoryI
     return plainToInstance(NestedUpdateInventoryItemSizeDto, {
         id: inventoryItemSize.id,
         packageId: inventoryItemSize.package.id,
-        measureTypeId: inventoryItemSize.measureType.id,
+        unit: inventoryItemSize.unit,
         measureAmount: inventoryItemSize.measureAmount,
         cost: inventoryItemSize.cost ? parseFloat(inventoryItemSize.cost) : null,
         ...merge,

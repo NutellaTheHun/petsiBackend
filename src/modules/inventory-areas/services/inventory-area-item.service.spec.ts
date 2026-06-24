@@ -122,15 +122,15 @@ describe('Inventory area item service', () => {
 
         const existingSize = await inventoryItemSizeRepo.findOne({
             where: {},
-            relations: ['measureType', 'package'],
+            relations: ['package'],
         });
-        if (!existingSize?.measureType || !existingSize?.package) {
-            throw new Error('size with measureType and package not found');
+        if (!existingSize?.package) {
+            throw new Error('size with package not found');
         }
 
         const sizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
             createId: 'c1',
-            measureTypeId: existingSize.measureType.id,
+            unit: 'lb',
             measureAmount: 2,
             packageId: existingSize.package.id,
             cost: 3.5,

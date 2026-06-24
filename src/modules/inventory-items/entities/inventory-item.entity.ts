@@ -13,7 +13,6 @@ import { inventoryItemVendorExample } from '../../../common/swagger/examples/inv
 import { InventoryAreaCount } from '../../inventory-areas/entities/inventory-area-count.entity';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RecipeIngredient } from '../../recipes/entities/recipe-ingredient.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
 import { UpdateInventoryItemDto } from '../dto/inventory-item/update-inventory-item.dto';
 import { InventoryItemCategory } from './inventory-item-category.entity';
@@ -83,7 +82,7 @@ export class InventoryItem {
     vendor: InventoryItemVendor | null = null;
 
     /**
-     * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, {@link UnitOfMeasure} and cost
+     * The set of sizing the item is recieved, mapping the item to a combination of {@link InventoryItemPackage}, unit symbol and cost
      * - Can be created explicitly through updating InventoryItem,
      * - can also be created on the fly during the creation of an {@link InventoryAreaItem} (which is during an {@link InventoryAreaCount} creation)
      */

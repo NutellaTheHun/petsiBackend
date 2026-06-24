@@ -20,8 +20,6 @@ import {
     FOOD_C,
     PACKAGE_PKG,
 } from '../../inventory-items/utils/constants';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
@@ -44,7 +42,6 @@ describe('inventory area count controller', () => {
     let areaRepo: Repository<InventoryArea>;
     let itemRepo: Repository<InventoryItem>;
     let packageRepo: Repository<InventoryItemPackage>;
-    let uomRepo: Repository<UnitOfMeasure>;
 
     const getInventoryAreaCount = async (areaName: string) => {
         return await countRepo.findOneOrFail({
@@ -85,7 +82,6 @@ describe('inventory area count controller', () => {
         areaRepo = module.get(getRepositoryToken(InventoryArea));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
-        uomRepo = module.get(getRepositoryToken(UnitOfMeasure));
     });
 
     afterAll(async () => {
@@ -125,7 +121,6 @@ describe('inventory area count controller', () => {
         const pkg = await packageRepo.findOneOrFail({
             where: { name: PACKAGE_PKG },
         });
-        const uom = await uomRepo.findOneOrFail({ where: { name: POUND } });
 
         const dto = plainToInstance(CreateInventoryAreaCountDto, {
             inventoryAreaId: area.id,
@@ -143,7 +138,7 @@ describe('inventory area count controller', () => {
                     countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                         createId: 'c3',
                         packageId: pkg.id,
-                        measureTypeId: uom.id,
+                        unit: 'lb',
                         measureAmount: 1,
                         cost: 1.99,
                     }),

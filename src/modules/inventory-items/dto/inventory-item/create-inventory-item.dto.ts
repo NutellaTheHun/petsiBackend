@@ -52,7 +52,7 @@ export class CreateInventoryItemDto {
         example: [
             {
                 createId: 'c1',
-                measureTypeId: 1,
+                unit: 'lb',
                 measureAmount: 2,
                 packageId: 3,
                 cost: 4.99,

@@ -7,8 +7,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { FOOD_A, FOOD_B, OTHER_B, OTHER_C } from '../../inventory-items/utils/constants';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { GRAM, OUNCE, POUND } from '../../unit-of-measure/utils/constants';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
@@ -32,12 +30,11 @@ describe('recipe validator', () => {
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let ingredientRepo: Repository<RecipeIngredient>;
-    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
     let inventoryItemRepo: Repository<InventoryItem>;
     let menuItemRepo: Repository<MenuItem>;
 
     const findRecipe = async (name: string) => {
-        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['producedMenuItem', 'batchResultUnitType', 'servingSizeUnitType', 'ingredients', 'category', 'subCategory', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe', 'ingredients.quantityUnitType'] });
+        return await recipeRepo.findOneOrFail({ where: { name }, relations: ['producedMenuItem', 'ingredients', 'category', 'subCategory', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'] });
     }
     const findCategory = async (name: string) => {
         return await categoryRepo.findOneOrFail({ where: { name }, relations: ['subCategories'] });
@@ -48,10 +45,6 @@ describe('recipe validator', () => {
 
     const findInventoryItem = async (name: string) => {
         return await inventoryItemRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findUnitOfMeasure = async (name: string) => {
-        return await unitOfMeasureRepo.findOneOrFail({ where: { name } });
     }
 
     const findMenuItem = async (name: string) => {
@@ -71,7 +64,6 @@ describe('recipe validator', () => {
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
-        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
         inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
         menuItemRepo = module.get(getRepositoryToken(MenuItem));
     });
@@ -90,15 +82,13 @@ describe('recipe validator', () => {
 
         const food_a = await findInventoryItem(FOOD_A);
         const food_b = await findInventoryItem(FOOD_B);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             salesPrice: 10.99,
             categoryId: category.id,
             subCategoryId: category.subCategories[0].id,
@@ -108,13 +98,13 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientInventoryItemId: food_a.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: food_b.id,
                     quantity: 4,
-                    quantityUnitTypeId: servingUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -124,15 +114,13 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: name already exists', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: REC_A,
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
             ingredients: [],
         });
@@ -148,15 +136,13 @@ describe('recipe validator', () => {
 
     it('fail validate create: requires category if assigning sub-category', async () => {
         const subCategory = await findSubCategory(REC_SUBCAT_1);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             subCategoryId: subCategory.id,
             isIngredient: false,
             ingredients: [],
@@ -185,16 +171,14 @@ describe('recipe validator', () => {
             throw new Error('category2 subcategories not found');
         }
 
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             categoryId: category1.id,
             subCategoryId: category2.subCategories[0].id,
             isIngredient: false,
@@ -209,16 +193,14 @@ describe('recipe validator', () => {
         );
     });
 
-    it('fail validate create: batchResultUnitTypeId and batchResultQuantity must both be populated', async () => {
-        const servingUom = await findUnitOfMeasure(OUNCE);
-        const batchUom = await findUnitOfMeasure(POUND);
+    it('fail validate create: batchResultUnit and batchResultQuantity must both be populated', async () => {
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
         });
 
@@ -227,18 +209,17 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity', 'batchResultUnitType']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['batchResultQuantity', 'batchResultUnit']),
         );
     });
 
-    it('fail validate create: servingSizeQuantity and servingSizeUnitTypeId must both be populated', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
+    it('fail validate create: servingSizeQuantity and servingSizeUnit must both be populated', async () => {
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
             isIngredient: false,
         });
@@ -248,21 +229,19 @@ describe('recipe validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity', 'servingSizeUnitType']),
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['servingSizeQuantity', 'servingSizeUnit']),
         );
     });
 
     it('fail validate create: serving size quantity cannot be 0', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 0,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
         });
 
@@ -276,16 +255,14 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: batch result quantity cannot be 0', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 0,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
         });
 
@@ -299,16 +276,14 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: sales price cannot be 0', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             ingredients: [],
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             salesPrice: -1,
             isIngredient: false,
         });
@@ -324,28 +299,26 @@ describe('recipe validator', () => {
 
     it('fail validate create: duplicate ingredients', async () => {
         const inventoryItem = await findInventoryItem(FOOD_A);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: true,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 4,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -360,21 +333,19 @@ describe('recipe validator', () => {
     });
 
     it('fail validate create: nested ingredients validator errors: missing reference for ingredient', async () => {
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: true,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -393,15 +364,13 @@ describe('recipe validator', () => {
     it('fail validate create: nested ingredients validator errors: cannot provide both an inventory item and a recipe as an ingredient', async () => {
         const inventoryItem = await findInventoryItem(FOOD_A);
         const recipe = await findRecipe(REC_B);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: true,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
@@ -409,7 +378,7 @@ describe('recipe validator', () => {
                     ingredientInventoryItemId: inventoryItem.id,
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -427,22 +396,20 @@ describe('recipe validator', () => {
         if (!recipe) {
             throw new Error('recipe not found');
         }
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: true,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -458,22 +425,20 @@ describe('recipe validator', () => {
 
     it('fail validate create: nested ingredients validator errors: quantity cannot be 0', async () => {
         const inventoryItem = await findInventoryItem(FOOD_A);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const servingUom = await findUnitOfMeasure(OUNCE);
 
         const dto: CreateRecipeDto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: true,
             ingredients: [
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 0,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -491,17 +456,14 @@ describe('recipe validator', () => {
     it('successfully validate update: no validation errors', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
         const inventoryItem = await findInventoryItem(OTHER_B);
-        const batchUom = await findUnitOfMeasure(POUND);
-        const newBatchUom = await findUnitOfMeasure(GRAM);
-        const newServingUom = await findUnitOfMeasure(OUNCE);
         const newCategory = await findCategory(REC_CAT_A);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             name: 'Updated Recipe Name',
             batchResultQuantity: 10,
-            batchResultUnitTypeId: newBatchUom.id,
+            batchResultUnit: 'g',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: newServingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
             salesPrice: 15.99,
             categoryId: newCategory.id,
@@ -512,7 +474,7 @@ describe('recipe validator', () => {
                         createId: 'c1',
                         ingredientInventoryItemId: inventoryItem.id,
                         quantity: 5,
-                        quantityUnitTypeId: batchUom.id,
+                        unit: 'oz',
                     }),
                 ]
         });
@@ -520,9 +482,9 @@ describe('recipe validator', () => {
         /*const dto: UpdateRecipeDto = plainToInstance(UpdateRecipeDto, {
             name: 'Updated Recipe Name',
             batchResultQuantity: 10,
-            batchResultUnitTypeId: newBatchUom.id,
+            batchResultUnit: 'g',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: newServingUom.id,
+            servingSizeUnit: 'oz',
             producedMenuItemId: newProducedMenuItem.id,
             isIngredient: false,
             salesPrice: 15.99,
@@ -533,13 +495,13 @@ describe('recipe validator', () => {
                     plainToInstance(UpdateRecipeIngredientDto, {
                         id: recipeToUpdate.ingredients[0].id,
                         quantity: 8,
-                        quantityUnitTypeId: recipeToUpdate.ingredients[0].quantityUnitType.id,
+                        unit: recipeToUpdate.ingredients[0].unit,
                     }),
                     plainToInstance(CreateRecipeIngredientDto, {
                         createId: 'c1',
                         ingredientInventoryItemId: inventoryItem.id,
                         quantity: 5,
-                        quantityUnitTypeId: batchUom.id,
+                        unit: 'oz',
                     }),
                 ]
         });*/
@@ -561,14 +523,14 @@ describe('recipe validator', () => {
             name: existingRecipe.name,
             producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
+            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
+            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
-                quantityUnitTypeId: ingredient.quantityUnitType.id,
+                unit: ingredient.unit,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
@@ -601,16 +563,16 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
+            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
+            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: null,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
-                quantityUnitTypeId: ingredient.quantityUnitType.id,
+                unit: ingredient.unit,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
@@ -641,15 +603,15 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
+            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
+            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
-                quantityUnitTypeId: ingredient.quantityUnitType.id,
+                unit: ingredient.unit,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
@@ -677,15 +639,15 @@ describe('recipe validator', () => {
             batchResultQuantity: 0,
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
-                quantityUnitTypeId: ingredient.quantityUnitType.id,
+                unit: ingredient.unit,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
@@ -714,14 +676,14 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             ingredients: recipeToUpdate.ingredients.map(ingredient => plainToInstance(UpdateRecipeIngredientDto, {
                 id: ingredient.id,
                 quantity: ingredient.quantity,
-                quantityUnitTypeId: ingredient.quantityUnitType.id,
+                unit: ingredient.unit,
                 ingredientInventoryItemId: ingredient.ingredientInventoryItem?.id ?? undefined,
                 ingredientRecipeId: ingredient.ingredientRecipe?.id ?? undefined,
             })),
@@ -740,7 +702,6 @@ describe('recipe validator', () => {
         const recipeToUpdate = await findRecipe(REC_A);
 
         const inventoryItem = await findInventoryItem(OTHER_C);
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -748,13 +709,13 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 4,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -763,9 +724,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
@@ -775,13 +736,13 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c2',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 4,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/
@@ -797,14 +758,13 @@ describe('recipe validator', () => {
 
     it('fail validate update: nested ingredients validator errors: missing reference for ingredient', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'c1',
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -813,9 +773,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
@@ -824,7 +784,7 @@ describe('recipe validator', () => {
                 plainToInstance(CreateRecipeIngredientDto, {
                     createId: 'c1',
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/
@@ -845,7 +805,6 @@ describe('recipe validator', () => {
 
         const inventoryItem = await findInventoryItem(FOOD_A);
         const ingredientRecipe = await findRecipe(REC_B);
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -854,7 +813,7 @@ describe('recipe validator', () => {
                     ingredientInventoryItemId: inventoryItem.id,
                     ingredientRecipeId: ingredientRecipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -863,9 +822,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
@@ -876,7 +835,7 @@ describe('recipe validator', () => {
                     ingredientInventoryItemId: inventoryItem.id,
                     ingredientRecipeId: ingredientRecipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/
@@ -893,7 +852,6 @@ describe('recipe validator', () => {
     it('fail validate update: nested ingredients validator errors: quantity cannot be 0', async () => {
         const recipeToUpdate = await findRecipe(REC_A);
         const inventoryItem = await findInventoryItem(OTHER_B);
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -901,7 +859,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 0,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -911,9 +869,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate?.producedMenuItem?.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate?.batchResultUnitType?.id ?? undefined,
+            batchResultUnit: recipeToUpdate?.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate?.servingSizeUnitType?.id ?? undefined,
+            servingSizeUnit: recipeToUpdate?.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate?.category?.id ?? undefined,
@@ -922,7 +880,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientInventoryItemId: inventoryItem.id,
                     quantity: 0,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/
@@ -944,7 +902,6 @@ describe('recipe validator', () => {
             throw new Error('recipe not found');
         }
 
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -952,7 +909,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -961,9 +918,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
@@ -973,7 +930,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientRecipeId: recipe.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/
@@ -990,7 +947,6 @@ describe('recipe validator', () => {
     it('fail validate update: nested ingredients validator errors: recipe cannot add itself as an ingredient', async () => {
         const recipeToUpdate = await findRecipe(REC_B);
 
-        const batchUom = await findUnitOfMeasure(POUND);
 
         const dto = recipeToUpdateDto(recipeToUpdate, {
             ingredients: [
@@ -998,7 +954,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientRecipeId: recipeToUpdate.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
             isIngredient: true,
@@ -1008,9 +964,9 @@ describe('recipe validator', () => {
             name: recipeToUpdate.name,
             producedMenuItemId: recipeToUpdate.producedMenuItem.id ?? undefined,
             batchResultQuantity: recipeToUpdate.batchResultQuantity,
-            batchResultUnitTypeId: recipeToUpdate.batchResultUnitType.id,
+            batchResultUnit: recipeToUpdate.batchResultUnit ?? undefined,
             servingSizeQuantity: recipeToUpdate.servingSizeQuantity,
-            servingSizeUnitTypeId: recipeToUpdate.servingSizeUnitType.id,
+            servingSizeUnit: recipeToUpdate.servingSizeUnit ?? undefined,
             isIngredient: recipeToUpdate.isIngredient,
             salesPrice: Number(recipeToUpdate.salesPrice) ?? undefined,
             categoryId: recipeToUpdate.category.id,
@@ -1020,7 +976,7 @@ describe('recipe validator', () => {
                     createId: 'c1',
                     ingredientRecipeId: recipeToUpdate.id,
                     quantity: 3,
-                    quantityUnitTypeId: batchUom.id,
+                    unit: 'oz',
                 }),
             ],
         });*/

@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [02-migrate-unit-fields.md]
 
 ---

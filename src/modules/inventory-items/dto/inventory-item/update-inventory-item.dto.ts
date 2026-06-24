@@ -56,7 +56,7 @@ export class UpdateInventoryItemDto {
         example: [
             {
                 id: 1,
-                measureTypeId: 2,
+                unit: 'lb',
                 measureAmount: 3,
                 packageId: 4,
                 cost: 5.99,
@@ -64,7 +64,7 @@ export class UpdateInventoryItemDto {
             {
                 createId: 'c6',
                 inventoryItemId: 7,
-                measureTypeId: 8,
+                unit: 'oz',
                 measureAmount: 9,
                 packageId: 10,
                 cost: 11.99,

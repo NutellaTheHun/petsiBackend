@@ -4,7 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Like, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
@@ -48,7 +47,6 @@ describe('Inventory Item Service', () => {
     let packageRepo: Repository<InventoryItemPackage>;
     let sizeRepo: Repository<InventoryItemSize>;
     let vendorRepo: Repository<InventoryItemVendor>;
-    let measureRepo: Repository<UnitOfMeasure>;
 
     beforeAll(async () => {
         module = await getInventoryItemTestingModule({
@@ -69,7 +67,6 @@ describe('Inventory Item Service', () => {
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
-        measureRepo = module.get(getRepositoryToken(UnitOfMeasure));
     });
 
     afterAll(async () => {
@@ -85,15 +82,14 @@ describe('Inventory Item Service', () => {
         const category = await categoryRepo.findOne({ where: { name: FOOD_CAT } });
         const vendor = await vendorRepo.findOne({ where: {} });
         const pkg = await packageRepo.findOne({ where: {} });
-        const unit = await measureRepo.findOne({ where: {} });
-        if (!category || !vendor || !pkg || !unit) {
-            throw new Error('category, vendor, package, or unit not found');
+        if (!category || !vendor || !pkg) {
+            throw new Error('category, vendor, or package not found');
         }
 
         const sizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
             createId: 'c1',
             packageId: pkg.id,
-            measureTypeId: unit.id,
+            unit: 'lb',
             measureAmount: 2,
             cost: 5.99,
         });
@@ -120,21 +116,17 @@ describe('Inventory Item Service', () => {
     it('should update item with nestedUpdateInventoryItemSizeDto and nestedCreateInventoryItemSizeDto', async () => {
         const item = await itemRepo.findOne({
             where: { name: FOOD_A },
-            relations: ['sizes', 'category', 'vendor', 'sizes.package', 'sizes.measureType'],
+            relations: ['sizes', 'category', 'vendor', 'sizes.package'],
         });
         if (!item?.sizes?.length) throw new Error('item with sizes not found');
 
         const pkg = await packageRepo.findOne({ where: {} });
-        const unit = await measureRepo.findOne({ where: {} });
-        if (!pkg || !unit) throw new Error('package or unit not found');
-
-        //const sizeToUpdate = item.sizes[0];
-
+        if (!pkg) throw new Error('package not found');
 
         const createSizeDto = plainToInstance(NestedCreateInventoryItemSizeDto, {
             createId: 'c2',
             packageId: pkg.id,
-            measureTypeId: unit.id,
+            unit: 'lb',
             measureAmount: 3,
             cost: 8.25,
         });
@@ -148,7 +140,7 @@ describe('Inventory Item Service', () => {
             id: sizeToUpdate.id,
             cost: 15.5,
             packageId: sizeToUpdate.packageId,
-            measureTypeId: sizeToUpdate.measureTypeId,
+            unit: sizeToUpdate.unit,
             measureAmount: sizeToUpdate.measureAmount,
         });
 

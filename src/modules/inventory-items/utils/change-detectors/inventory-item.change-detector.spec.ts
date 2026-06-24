@@ -3,7 +3,7 @@ import { InventoryItemPackage } from '../../entities/inventory-item-package.enti
 import { InventoryItemSize } from '../../entities/inventory-item-size.entity';
 import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity';
 import { InventoryItem } from '../../entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { AppUnit } from '../../../../common/units';
 import { inventoryItemToUpdateDto } from '../entity-transformers/inventory-item.dto.transformer';
 import { InventoryItemSizeChangeDetector } from './inventory-item-size.change-detector';
 import { InventoryItemChangeDetector } from './inventory-item.change-detector';
@@ -15,7 +15,7 @@ describe('InventoryItemChangeDetector', () => {
         ({
             id,
             package: { id: 100 } as InventoryItemPackage,
-            measureType: { id: 200 } as UnitOfMeasure,
+            unit: 'lb' as AppUnit,
             measureAmount: 1,
             cost: '5.00',
         } as InventoryItemSize);
@@ -51,7 +51,7 @@ describe('InventoryItemChangeDetector', () => {
         const createSize = {
             createId: 'n1',
             packageId: 100,
-            measureTypeId: 200,
+            unit: 'lb' as AppUnit,
             measureAmount: 2,
             cost: 3,
         };
@@ -64,7 +64,7 @@ describe('InventoryItemChangeDetector', () => {
     it('patches only changed size child', () => {
         const entity = baseEntity();
         const dto = inventoryItemToUpdateDto(entity, {
-            sizes: [{ id: 30, packageId: 100, measureTypeId: 200, measureAmount: 1, cost: 9 }],
+            sizes: [{ id: 30, packageId: 100, unit: 'lb' as AppUnit, measureAmount: 1, cost: 9 }],
         });
         const result = detector.detect(entity, dto);
         expect(result.hasChanges).toBe(true);

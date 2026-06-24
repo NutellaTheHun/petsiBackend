@@ -8,7 +8,7 @@ export function recipeIngredientToUpdateDto(recipeIngredient: RecipeIngredient, 
         ingredientInventoryItemId: recipeIngredient.ingredientInventoryItem?.id ?? undefined,
         ingredientRecipeId: recipeIngredient.ingredientRecipe?.id ?? undefined,
         quantity: recipeIngredient.quantity,
-        quantityUnitTypeId: recipeIngredient.quantityUnitType.id,
+        unit: recipeIngredient.unit,
         ...merge,
     });
 }
@@ -19,7 +19,7 @@ export function recipeIngredientToNestedUpdateDto(recipeIngredient: RecipeIngred
         ingredientInventoryItemId: recipeIngredient.ingredientInventoryItem?.id ?? undefined,
         ingredientRecipeId: recipeIngredient.ingredientRecipe?.id ?? undefined,
         quantity: recipeIngredient.quantity,
-        quantityUnitTypeId: recipeIngredient.quantityUnitType.id,
+        unit: recipeIngredient.unit,
         ...merge,
     });
 }

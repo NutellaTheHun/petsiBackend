@@ -12,8 +12,6 @@ import {
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { OUNCE, POUND } from '../../unit-of-measure/utils/constants';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -40,7 +38,6 @@ describe('recipe controller', () => {
     let recipeRepo: Repository<Recipe>;
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
-    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
     let menuItemTestUtil: MenuItemTestingUtil;
 
     beforeAll(async () => {
@@ -55,7 +52,6 @@ describe('recipe controller', () => {
         recipeRepo = module.get(getRepositoryToken(Recipe));
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
-        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
     });
 
     afterAll(async () => {
@@ -69,10 +65,7 @@ describe('recipe controller', () => {
                 'category',
                 'subCategory',
                 'producedMenuItem',
-                'batchResultUnitType',
-                'servingSizeUnitType',
                 'ingredients',
-                'ingredients.quantityUnitType',
                 'ingredients.ingredientInventoryItem',
                 'ingredients.ingredientRecipe',
             ],
@@ -178,16 +171,12 @@ describe('recipe controller', () => {
     });
 
     it('create persists a new recipe', async () => {
-        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
-        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
-        if (!batchUom || !servingUom) throw new Error('uom not found');
-
         const dto = plainToInstance(CreateRecipeDto, {
             name: 'Controller Recipe Create',
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
             ingredients: [],
         });
@@ -198,16 +187,12 @@ describe('recipe controller', () => {
     });
 
     it('create throws ValidationException when name already exists', async () => {
-        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
-        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
-        if (!batchUom || !servingUom) throw new Error('uom not found');
-
         const dto = plainToInstance(CreateRecipeDto, {
             name: REC_A,
             batchResultQuantity: 5,
-            batchResultUnitTypeId: batchUom.id,
+            batchResultUnit: 'lb',
             servingSizeQuantity: 2,
-            servingSizeUnitTypeId: servingUom.id,
+            servingSizeUnit: 'oz',
             isIngredient: false,
             ingredients: [],
         });
@@ -253,17 +238,13 @@ describe('recipe controller', () => {
     });
 
     it('remove deletes a created recipe then findOne fails', async () => {
-        const batchUom = await unitOfMeasureRepo.findOne({ where: { name: POUND } });
-        const servingUom = await unitOfMeasureRepo.findOne({ where: { name: OUNCE } });
-        if (!batchUom || !servingUom) throw new Error('uom not found');
-
         const created = await controller.create(
             plainToInstance(CreateRecipeDto, {
                 name: 'Controller Recipe Remove',
                 batchResultQuantity: 1,
-                batchResultUnitTypeId: batchUom.id,
+                batchResultUnit: 'lb',
                 servingSizeQuantity: 1,
-                servingSizeUnitTypeId: servingUom.id,
+                servingSizeUnit: 'oz',
                 isIngredient: false,
                 ingredients: [],
             }),

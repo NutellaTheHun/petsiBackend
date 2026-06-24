@@ -1,11 +1,11 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { AppUnit } from '../../../common/units';
 import { BuilderBase } from '../../../common/base/builder.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
@@ -29,9 +29,6 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     @InjectRepository(RecipeSubCategory)
     private readonly subCategoryRepo: Repository<RecipeSubCategory>,
 
-    @InjectRepository(UnitOfMeasure)
-    private readonly unitRepo: Repository<UnitOfMeasure>,
-
     @InjectRepository(MenuItem)
     private readonly menuItemRepo: Repository<MenuItem>,
 
@@ -48,8 +45,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.batchResultQuantity !== undefined) {
       this.batchResultQuantity(dto.batchResultQuantity);
     }
-    if (dto.batchResultUnitTypeId !== undefined) {
-      this.batchResultMeasurementById(dto.batchResultUnitTypeId);
+    if (dto.batchResultUnit !== undefined) {
+      this.batchResultUnit(dto.batchResultUnit ?? null);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);
@@ -69,8 +66,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.servingSizeQuantity !== undefined) {
       this.servingSizeQuantity(dto.servingSizeQuantity);
     }
-    if (dto.servingSizeUnitTypeId !== undefined) {
-      this.servingSizeMeasurementById(dto.servingSizeUnitTypeId);
+    if (dto.servingSizeUnit !== undefined) {
+      this.servingSizeUnit(dto.servingSizeUnit ?? null);
     }
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);
@@ -84,8 +81,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.batchResultQuantity !== undefined) {
       this.batchResultQuantity(dto.batchResultQuantity);
     }
-    if (dto.batchResultUnitTypeId !== undefined) {
-      this.batchResultMeasurementById(dto.batchResultUnitTypeId);
+    if (dto.batchResultUnit !== undefined) {
+      this.batchResultUnit(dto.batchResultUnit ?? null);
     }
     if (dto.categoryId !== undefined) {
       this.categoryById(dto.categoryId);
@@ -109,8 +106,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     if (dto.servingSizeQuantity !== undefined) {
       this.servingSizeQuantity(dto.servingSizeQuantity);
     }
-    if (dto.servingSizeUnitTypeId !== undefined) {
-      this.servingSizeMeasurementById(dto.servingSizeUnitTypeId);
+    if (dto.servingSizeUnit !== undefined) {
+      this.servingSizeUnit(dto.servingSizeUnit ?? null);
     }
     if (dto.subCategoryId !== undefined) {
       this.subCategoryById(dto.subCategoryId);
@@ -179,23 +176,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     return this.setPropByVal('batchResultQuantity', amount);
   }
 
-  public batchResultMeasurementById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('batchResultUnitType', null);
-    }
-    return this.setPropById(
-      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
-      'batchResultUnitType',
-      id,
-    );
-  }
-
-  public batchResultMeasurementByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
-      'batchResultUnitType',
-      name,
-    );
+  public batchResultUnit(unit: AppUnit | null): this {
+    return this.setPropByVal('batchResultUnit', unit);
   }
 
   public servingSizeQuantity(amount: number | null): this {
@@ -205,23 +187,8 @@ export class RecipeBuilder extends BuilderBase<Recipe> {
     return this.setPropByVal('servingSizeQuantity', amount);
   }
 
-  public servingSizeMeasurementById(id: number | null): this {
-    if (id === null) {
-      return this.setPropByVal('servingSizeUnitType', null);
-    }
-    return this.setPropById(
-      async (id: number) => await this.unitRepo.findOne({ where: { id } }),
-      'servingSizeUnitType',
-      id,
-    );
-  }
-
-  public servingSizeMeasurementByName(name: string): this {
-    return this.setPropByName(
-      async (name: string) => await this.unitRepo.findOne({ where: { name } }),
-      'servingSizeUnitType',
-      name,
-    );
+  public servingSizeUnit(unit: AppUnit | null): this {
+    return this.setPropByVal('servingSizeUnit', unit);
   }
 
   public salesPrice(amount: number | null): this {

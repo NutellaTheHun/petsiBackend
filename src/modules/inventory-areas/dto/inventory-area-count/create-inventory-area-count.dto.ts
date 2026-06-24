@@ -31,7 +31,7 @@ export class CreateInventoryAreaCountDto {
                 countedItemSizeDto: {
                     createId: 'c5325',
                     inventoryItemId: 4,
-                    measureTypeId: 5,
+                    unit: 'lb',
                     measureAmount: 6,
                     packageId: 7,
                     cost: 8.99,

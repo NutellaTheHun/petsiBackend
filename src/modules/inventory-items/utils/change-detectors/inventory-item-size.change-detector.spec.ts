@@ -1,6 +1,6 @@
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../entities/inventory-item-size.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { AppUnit } from '../../../../common/units';
 import {
     inventoryItemSizeToNestedUpdateDto,
     inventoryItemSizeToUpdateDto,
@@ -14,7 +14,7 @@ describe('InventoryItemSizeChangeDetector', () => {
         ({
             id: 1,
             package: { id: 10 } as InventoryItemPackage,
-            measureType: { id: 20 } as UnitOfMeasure,
+            unit: 'lb' as AppUnit,
             measureAmount: 5,
             cost: '12.50',
         } as InventoryItemSize);
