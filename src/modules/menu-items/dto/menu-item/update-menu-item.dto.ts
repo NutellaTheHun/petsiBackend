@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import {
     IsArray,
     IsNotEmpty,
@@ -16,6 +16,7 @@ import { MenuItemSize } from '../../entities/menu-item-size.entity';
 import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
 
+@ApiExtraModels(NestedCreateMenuItemContainerItemDto, NestedUpdateMenuItemContainerItemDto)
 export class UpdateMenuItemDto {
     @ApiProperty({
         description: 'Name of MenuItem entity.',

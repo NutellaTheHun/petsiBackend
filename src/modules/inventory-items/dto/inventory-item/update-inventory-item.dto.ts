@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
@@ -15,6 +15,7 @@ import { InventoryItemVendor } from '../../entities/inventory-item-vendor.entity
 import { NestedCreateInventoryItemSizeDto } from '../inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../inventory-item-size/nested-update-inventory-item-size.dto';
 
+@ApiExtraModels(NestedCreateInventoryItemSizeDto, NestedUpdateInventoryItemSizeDto)
 export class UpdateInventoryItemDto {
     @ApiProperty({
         description: 'Name of InventoryItem entity.',

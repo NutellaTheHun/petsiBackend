@@ -131,6 +131,27 @@
             }
           },
           {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by username (case-insensitive partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **role** (e.g., `role=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
             "name": "relations",
             "required": false,
             "in": "query",
@@ -178,7 +199,7 @@
       }
     },
     "/users/{id}": {
-      "patch": {
+      "put": {
         "operationId": "UserController_update",
         "parameters": [
           {
@@ -424,7 +445,7 @@
       }
     },
     "/roles/{id}": {
-      "patch": {
+      "put": {
         "operationId": "RoleController_update",
         "parameters": [
           {
@@ -670,7 +691,7 @@
       }
     },
     "/inventory-areas/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryAreaController_update",
         "parameters": [
           {
@@ -963,7 +984,7 @@
       }
     },
     "/inventory-area-counts/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryAreaCountController_update",
         "parameters": [
           {
@@ -1081,23 +1102,52 @@
         ]
       }
     },
-    "/inventory-area-items": {
-      "post": {
-        "operationId": "InventoryAreaItemController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInventoryAreaItemDto"
-              }
+    "/inventory-area-items/{id}": {
+      "delete": {
+        "operationId": "InventoryAreaItemController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Inventory Area Item successfully created",
+          "204": {
+            "description": "Inventory Area Item successfully removed"
+          },
+          "404": {
+            "description": "Inventory Area Item not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a Inventory Area Item",
+        "tags": [
+          "Inventory Area Item"
+        ]
+      },
+      "get": {
+        "operationId": "InventoryAreaItemController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory Area Item found",
             "content": {
               "application/json": {
                 "schema": {
@@ -1106,8 +1156,8 @@
               }
             }
           },
-          "400": {
-            "description": "Bad request: ValidationException or DatabaseException"
+          "404": {
+            "description": "Inventory Area Item not found"
           }
         },
         "security": [
@@ -1115,11 +1165,13 @@
             "access-token": []
           }
         ],
-        "summary": "Creates a Inventory Area Item",
+        "summary": "Retrieves one Inventory Area Item",
         "tags": [
           "Inventory Area Item"
         ]
-      },
+      }
+    },
+    "/inventory-area-items": {
       "get": {
         "operationId": "InventoryAreaItemController_findAll",
         "parameters": [
@@ -1224,125 +1276,6 @@
           }
         ],
         "summary": "Retrieves an array of Inventory Area Items",
-        "tags": [
-          "Inventory Area Item"
-        ]
-      }
-    },
-    "/inventory-area-items/{id}": {
-      "patch": {
-        "operationId": "InventoryAreaItemController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateInventoryAreaItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Inventory Area Item successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryAreaItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request: ValidationException or DatabaseException"
-          },
-          "404": {
-            "description": "Inventory Area Item to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Inventory Area Item",
-        "tags": [
-          "Inventory Area Item"
-        ]
-      },
-      "delete": {
-        "operationId": "InventoryAreaItemController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Inventory Area Item successfully removed"
-          },
-          "404": {
-            "description": "Inventory Area Item not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Inventory Area Item",
-        "tags": [
-          "Inventory Area Item"
-        ]
-      },
-      "get": {
-        "operationId": "InventoryAreaItemController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Inventory Area Item found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryAreaItem"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Inventory Area Item not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves one Inventory Area Item",
         "tags": [
           "Inventory Area Item"
         ]
@@ -1497,7 +1430,7 @@
       }
     },
     "/inventory-items/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryItemController_update",
         "parameters": [
           {
@@ -1743,7 +1676,7 @@
       }
     },
     "/inventory-item-categories/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryItemCategoryController_update",
         "parameters": [
           {
@@ -1989,7 +1922,7 @@
       }
     },
     "/inventory-item-packages/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryItemPackageController_update",
         "parameters": [
           {
@@ -2107,23 +2040,52 @@
         ]
       }
     },
-    "/inventory-item-sizes": {
-      "post": {
-        "operationId": "InventoryItemSizeController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateInventoryItemSizeDto"
-              }
+    "/inventory-item-sizes/{id}": {
+      "delete": {
+        "operationId": "InventoryItemSizeController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Inventory Item Size successfully created",
+          "204": {
+            "description": "Inventory Item Size successfully removed"
+          },
+          "404": {
+            "description": "Inventory Item Size not found"
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Removes a Inventory Item Size",
+        "tags": [
+          "Inventory Item Size"
+        ]
+      },
+      "get": {
+        "operationId": "InventoryItemSizeController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventory Item Size found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2132,8 +2094,8 @@
               }
             }
           },
-          "400": {
-            "description": "Bad request (validation error)"
+          "404": {
+            "description": "Inventory Item Size not found"
           }
         },
         "security": [
@@ -2141,11 +2103,13 @@
             "access-token": []
           }
         ],
-        "summary": "Creates a Inventory Item Size",
+        "summary": "Retrieves one Inventory Item Size",
         "tags": [
           "Inventory Item Size"
         ]
-      },
+      }
+    },
+    "/inventory-item-sizes": {
       "get": {
         "operationId": "InventoryItemSizeController_findAll",
         "parameters": [
@@ -2229,125 +2193,6 @@
           }
         ],
         "summary": "Retrieves an array of Inventory Item Sizes",
-        "tags": [
-          "Inventory Item Size"
-        ]
-      }
-    },
-    "/inventory-item-sizes/{id}": {
-      "patch": {
-        "operationId": "InventoryItemSizeController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMenuItemSizeDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Inventory Item Size successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryItemSize"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Inventory Item Size to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Inventory Item Size",
-        "tags": [
-          "Inventory Item Size"
-        ]
-      },
-      "delete": {
-        "operationId": "InventoryItemSizeController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Inventory Item Size successfully removed"
-          },
-          "404": {
-            "description": "Inventory Item Size not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Inventory Item Size",
-        "tags": [
-          "Inventory Item Size"
-        ]
-      },
-      "get": {
-        "operationId": "InventoryItemSizeController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Inventory Item Size found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventoryItemSize"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Inventory Item Size not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves one Inventory Item Size",
         "tags": [
           "Inventory Item Size"
         ]
@@ -2481,7 +2326,7 @@
       }
     },
     "/inventory-item-vendors/{id}": {
-      "patch": {
+      "put": {
         "operationId": "InventoryItemVendorController_update",
         "parameters": [
           {
@@ -2596,518 +2441,6 @@
         "summary": "Retrieves one Inventory Item Vendor",
         "tags": [
           "Inventory Item Vendor"
-        ]
-      }
-    },
-    "/units-of-measure": {
-      "post": {
-        "operationId": "UnitOfMeasureController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUnitOfMeasureDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Unit of Measure successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasure"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Unit of Measure",
-        "tags": [
-          "Unit of Measure"
-        ]
-      },
-      "get": {
-        "operationId": "UnitOfMeasureController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - name\n\n            - category (by name, nulls last)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "search",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "filters",
-            "required": false,
-            "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/UnitOfMeasure"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Units of Measure",
-        "tags": [
-          "Unit of Measure"
-        ]
-      }
-    },
-    "/units-of-measure/{id}": {
-      "patch": {
-        "operationId": "UnitOfMeasureController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUnitOfMeasureDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Unit of Measure successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasure"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Unit of Measure to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Unit of Measure",
-        "tags": [
-          "Unit of Measure"
-        ]
-      },
-      "delete": {
-        "operationId": "UnitOfMeasureController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Unit of Measure successfully removed"
-          },
-          "404": {
-            "description": "Unit of Measure not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Unit of Measure",
-        "tags": [
-          "Unit of Measure"
-        ]
-      },
-      "get": {
-        "operationId": "UnitOfMeasureController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Unit of Measure found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasure"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Unit of Measure not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves one Unit of Measure",
-        "tags": [
-          "Unit of Measure"
-        ]
-      }
-    },
-    "/unit-of-measure-categories": {
-      "post": {
-        "operationId": "UnitOfMeasureCategoryController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUnitOfMeasureCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Unit Category successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasureCategory"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Unit Category",
-        "tags": [
-          "Unit of Measure Category"
-        ]
-      },
-      "get": {
-        "operationId": "UnitOfMeasureCategoryController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - categoryName",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/UnitOfMeasureCategory"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Unit Categories",
-        "tags": [
-          "Unit of Measure Category"
-        ]
-      }
-    },
-    "/unit-of-measure-categories/{id}": {
-      "patch": {
-        "operationId": "UnitOfMeasureCategoryController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateUnitOfMeasureCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Unit Category successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasureCategory"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Unit Category to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Unit Category",
-        "tags": [
-          "Unit of Measure Category"
-        ]
-      },
-      "delete": {
-        "operationId": "UnitOfMeasureCategoryController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Unit Category successfully removed"
-          },
-          "404": {
-            "description": "Unit Category not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Unit Category",
-        "tags": [
-          "Unit of Measure Category"
-        ]
-      },
-      "get": {
-        "operationId": "UnitOfMeasureCategoryController_findOne",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Unit Category found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UnitOfMeasureCategory"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Unit Category not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves one Unit Category",
-        "tags": [
-          "Unit of Measure Category"
         ]
       }
     },
@@ -3260,7 +2593,7 @@
       }
     },
     "/labels/{id}": {
-      "patch": {
+      "put": {
         "operationId": "LabelController_update",
         "parameters": [
           {
@@ -3506,7 +2839,7 @@
       }
     },
     "/label-types/{id}": {
-      "patch": {
+      "put": {
         "operationId": "LabelTypeController_update",
         "parameters": [
           {
@@ -3752,7 +3085,7 @@
       }
     },
     "/menu-item-categories/{id}": {
-      "patch": {
+      "put": {
         "operationId": "MenuItemCategoryController_update",
         "parameters": [
           {
@@ -3998,7 +3331,7 @@
       }
     },
     "/menu-item-sizes/{id}": {
-      "patch": {
+      "put": {
         "operationId": "MenuItemSizeController_update",
         "parameters": [
           {
@@ -4209,7 +3542,7 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **category** (e.g., `category=5`)\n          - **type** (e.g., `type=delivery`)",
             "schema": {
               "type": "array",
               "items": {
@@ -4265,7 +3598,7 @@
       }
     },
     "/menu-items/{id}": {
-      "patch": {
+      "put": {
         "operationId": "MenuItemController_update",
         "parameters": [
           {
@@ -4383,33 +3716,32 @@
         ]
       }
     },
-    "/menu-item-container-items": {
-      "post": {
-        "operationId": "MenuItemContainerItemController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMenuItemContainerItemDto"
-              }
+    "/menu-items/{id}/revisions": {
+      "get": {
+        "operationId": "MenuItemController_listMenuItemRevisions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Menu Item Component successfully created",
+          "200": {
+            "description": "",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MenuItemContainerItem"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RevisionHistoryListItemDto"
+                  }
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
           }
         },
         "security": [
@@ -4417,11 +3749,101 @@
             "access-token": []
           }
         ],
-        "summary": "Creates a Menu Item Component",
+        "summary": "Lists revision history for a menu item (metadata only)",
         "tags": [
-          "Menu Item Container Item"
+          "Menu Item"
         ]
-      },
+      }
+    },
+    "/menu-items/{id}/revisions/{revisionNumber}": {
+      "get": {
+        "operationId": "MenuItemController_getMenuItemRevision",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "revisionNumber",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionHistoryDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Gets one menu item revision including payload",
+        "tags": [
+          "Menu Item"
+        ]
+      }
+    },
+    "/menu-items/{id}/revisions/{revisionNumber}/revert": {
+      "put": {
+        "operationId": "MenuItemController_revertMenuItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "revisionNumber",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItem"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reverts a menu item to a previous revision",
+        "tags": [
+          "Menu Item"
+        ]
+      }
+    },
+    "/menu-item-container-items": {
       "get": {
         "operationId": "MenuItemContainerItemController_findAll",
         "parameters": [
@@ -4461,6 +3883,26 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentMenuItem** (e.g., `parentMenuItem=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -4511,86 +3953,6 @@
       }
     },
     "/menu-item-container-items/{id}": {
-      "patch": {
-        "operationId": "MenuItemContainerItemController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMenuItemContainerItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Menu Item Component successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MenuItemContainerItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Menu Item Component to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Menu Item Component",
-        "tags": [
-          "Menu Item Container Item"
-        ]
-      },
-      "delete": {
-        "operationId": "MenuItemContainerItemController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Menu Item Component successfully removed"
-          },
-          "404": {
-            "description": "Menu Item Component not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Menu Item Component",
-        "tags": [
-          "Menu Item Container Item"
-        ]
-      },
       "get": {
         "operationId": "MenuItemContainerItemController_findOne",
         "parameters": [
@@ -4627,11 +3989,37 @@
         "tags": [
           "Menu Item Container Item"
         ]
+      },
+      "delete": {
+        "operationId": "MenuItemContainerItemController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "tags": [
+          "Menu Item Container Item"
+        ]
       }
     },
     "/orders": {
       "post": {
-        "operationId": "OrderController_create",
+        "operationId": "OrderController_createOrderResponse",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4649,7 +4037,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/OrderResponseDto"
                 }
               }
             }
@@ -4669,7 +4057,7 @@
         ]
       },
       "get": {
-        "operationId": "OrderController_findAll",
+        "operationId": "OrderController_findAllOrderResponses",
         "parameters": [
           {
             "name": "limit",
@@ -4780,7 +4168,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Order"
+                        "$ref": "#/components/schemas/OrderResponseDto"
                       }
                     },
                     "nextCursor": {
@@ -4805,8 +4193,8 @@
       }
     },
     "/orders/{id}": {
-      "patch": {
-        "operationId": "OrderController_update",
+      "put": {
+        "operationId": "OrderController_updateOrderResponse",
         "parameters": [
           {
             "name": "id",
@@ -4833,7 +4221,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/OrderResponseDto"
                 }
               }
             }
@@ -4886,7 +4274,7 @@
         ]
       },
       "get": {
-        "operationId": "OrderController_findOne",
+        "operationId": "OrderController_findOneOrderResponse",
         "parameters": [
           {
             "name": "id",
@@ -4903,7 +4291,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Order"
+                  "$ref": "#/components/schemas/OrderResponseDto"
                 }
               }
             }
@@ -4918,6 +4306,133 @@
           }
         ],
         "summary": "Retrieves one Order",
+        "tags": [
+          "Order"
+        ]
+      }
+    },
+    "/orders/{id}/revisions": {
+      "get": {
+        "operationId": "OrderController_listOrderRevisions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RevisionHistoryListItemDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Lists revision history for an order (metadata only, no payload)",
+        "tags": [
+          "Order"
+        ]
+      }
+    },
+    "/orders/{id}/revisions/{revisionNumber}": {
+      "get": {
+        "operationId": "OrderController_getOrderRevision",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "revisionNumber",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionHistoryDetailDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Gets one revision including payload snapshot",
+        "tags": [
+          "Order"
+        ]
+      }
+    },
+    "/orders/{id}/revisions/{revisionNumber}/revert": {
+      "put": {
+        "operationId": "OrderController_revertOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "revisionNumber",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reverts an order to a previous revision",
         "tags": [
           "Order"
         ]
@@ -5051,7 +4566,7 @@
       }
     },
     "/order-categories/{id}": {
-      "patch": {
+      "put": {
         "operationId": "OrderCategoryController_update",
         "parameters": [
           {
@@ -5170,44 +4685,6 @@
       }
     },
     "/order-menu-items": {
-      "post": {
-        "operationId": "OrderMenuItemController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrderMenuItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Order Menu Item successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderMenuItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Order Menu Item",
-        "tags": [
-          "Order Menu Item"
-        ]
-      },
       "get": {
         "operationId": "OrderMenuItemController_findAll",
         "parameters": [
@@ -5261,7 +4738,7 @@
             "name": "filters",
             "required": false,
             "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **order** (e.g., `order=5`)",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentOrder** (e.g., `parentOrder=5`)",
             "schema": {
               "type": "array",
               "items": {
@@ -5317,86 +4794,6 @@
       }
     },
     "/order-menu-items/{id}": {
-      "patch": {
-        "operationId": "OrderMenuItemController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOrderMenuItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Order Menu Item successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderMenuItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Order Menu Item to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Order Menu Item",
-        "tags": [
-          "Order Menu Item"
-        ]
-      },
-      "delete": {
-        "operationId": "OrderMenuItemController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Order Menu Item successfully removed"
-          },
-          "404": {
-            "description": "Order Menu Item not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Order Menu Item",
-        "tags": [
-          "Order Menu Item"
-        ]
-      },
       "get": {
         "operationId": "OrderMenuItemController_findOne",
         "parameters": [
@@ -5433,35 +4830,22 @@
         "tags": [
           "Order Menu Item"
         ]
-      }
-    },
-    "/order-container-items": {
-      "post": {
-        "operationId": "OrderContainerItemController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateOrderContainerItemDto"
-              }
+      },
+      "delete": {
+        "operationId": "OrderMenuItemController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
             }
           }
-        },
+        ],
         "responses": {
-          "201": {
-            "description": "Order Menu Item Component successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderContainerItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
+          "204": {
+            "description": ""
           }
         },
         "security": [
@@ -5469,11 +4853,12 @@
             "access-token": []
           }
         ],
-        "summary": "Creates a Order Menu Item Component",
         "tags": [
-          "Order Container Item"
+          "Order Menu Item"
         ]
-      },
+      }
+    },
+    "/order-container-items": {
       "get": {
         "operationId": "OrderContainerItemController_findAll",
         "parameters": [
@@ -5513,6 +4898,26 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentOrderMenuItem** (e.g., `parentOrderMenuItem=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -5563,86 +4968,6 @@
       }
     },
     "/order-container-items/{id}": {
-      "patch": {
-        "operationId": "OrderContainerItemController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateOrderContainerItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Order Menu Item Component successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrderContainerItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Order Menu Item Component to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Order Menu Item Component",
-        "tags": [
-          "Order Container Item"
-        ]
-      },
-      "delete": {
-        "operationId": "OrderContainerItemController_remove",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Order Menu Item Component successfully removed"
-          },
-          "404": {
-            "description": "Order Menu Item Component not found"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Removes a Order Menu Item Component",
-        "tags": [
-          "Order Container Item"
-        ]
-      },
       "get": {
         "operationId": "OrderContainerItemController_findOne",
         "parameters": [
@@ -5676,6 +5001,32 @@
           }
         ],
         "summary": "Retrieves one Order Menu Item Component",
+        "tags": [
+          "Order Container Item"
+        ]
+      },
+      "delete": {
+        "operationId": "OrderContainerItemController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
         "tags": [
           "Order Container Item"
         ]
@@ -5830,7 +5181,7 @@
       }
     },
     "/recipes/{id}": {
-      "patch": {
+      "put": {
         "operationId": "RecipeController_update",
         "parameters": [
           {
@@ -6078,7 +5429,7 @@
       }
     },
     "/recipe-categories/{id}": {
-      "patch": {
+      "put": {
         "operationId": "RecipeCategoryController_update",
         "parameters": [
           {
@@ -6196,184 +5547,7 @@
         ]
       }
     },
-    "/recipe-sub-categories": {
-      "post": {
-        "operationId": "RecipeSubCategoryController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRecipeSubCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Recipe Sub Category successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecipeSubCategory"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Recipe Sub Category",
-        "tags": [
-          "Recipe Sub Category"
-        ]
-      },
-      "get": {
-        "operationId": "RecipeSubCategoryController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - subCategoryName \n",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/RecipeSubCategory"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Recipe Sub Categories",
-        "tags": [
-          "Recipe Sub Category"
-        ]
-      }
-    },
     "/recipe-sub-categories/{id}": {
-      "patch": {
-        "operationId": "RecipeSubCategoryController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRecipeSubCategoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Recipe Sub Category successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecipeSubCategory"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Recipe Sub Category to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Recipe Sub Category",
-        "tags": [
-          "Recipe Sub Category"
-        ]
-      },
       "delete": {
         "operationId": "RecipeSubCategoryController_remove",
         "parameters": [
@@ -6442,47 +5616,9 @@
         ]
       }
     },
-    "/recipe-ingredients": {
-      "post": {
-        "operationId": "RecipeIngredientController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateRecipeIngredientDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Recipe Ingredient successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecipeIngredient"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Recipe Ingredient",
-        "tags": [
-          "Recipe Ingredient"
-        ]
-      },
+    "/recipe-sub-categories": {
       "get": {
-        "operationId": "RecipeIngredientController_findAll",
+        "operationId": "RecipeSubCategoryController_findAll",
         "parameters": [
           {
             "name": "limit",
@@ -6504,7 +5640,7 @@
             "name": "sortBy",
             "required": false,
             "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - ingredient (by name)",
+            "description": "Field to sort by. Available options:\n\n            - subCategoryName \n",
             "schema": {
               "type": "string"
             }
@@ -6520,6 +5656,26 @@
                 "DESC"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentCategory** (e.g., `parentCategory=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {
@@ -6545,7 +5701,7 @@
                     "items": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/RecipeIngredient"
+                        "$ref": "#/components/schemas/RecipeSubCategory"
                       }
                     },
                     "nextCursor": {
@@ -6563,63 +5719,13 @@
             "access-token": []
           }
         ],
-        "summary": "Retrieves an array of Recipe Ingredients",
+        "summary": "Retrieves an array of Recipe Sub Categories",
         "tags": [
-          "Recipe Ingredient"
+          "Recipe Sub Category"
         ]
       }
     },
     "/recipe-ingredients/{id}": {
-      "patch": {
-        "operationId": "RecipeIngredientController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateRecipeIngredientDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Recipe Ingredient successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RecipeIngredient"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Recipe Ingredient to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Recipe Ingredient",
-        "tags": [
-          "Recipe Ingredient"
-        ]
-      },
       "delete": {
         "operationId": "RecipeIngredientController_remove",
         "parameters": [
@@ -6683,6 +5789,115 @@
           }
         ],
         "summary": "Retrieves one Recipe Ingredient",
+        "tags": [
+          "Recipe Ingredient"
+        ]
+      }
+    },
+    "/recipe-ingredients": {
+      "get": {
+        "operationId": "RecipeIngredientController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - ingredient (by name)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentRecipe** (e.g., `parentRecipe=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RecipeIngredient"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Recipe Ingredients",
         "tags": [
           "Recipe Ingredient"
         ]
@@ -6816,7 +6031,7 @@
       }
     },
     "/templates/{id}": {
-      "patch": {
+      "put": {
         "operationId": "TemplateController_update",
         "parameters": [
           {
@@ -6934,204 +6149,7 @@
         ]
       }
     },
-    "/template-menu-items": {
-      "post": {
-        "operationId": "TemplateMenuItemController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTemplateMenuItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Template Menu Item successfully created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TemplateMenuItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Creates a Template Menu Item",
-        "tags": [
-          "Template Menu Item"
-        ]
-      },
-      "get": {
-        "operationId": "TemplateMenuItemController_findAll",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortBy",
-            "required": false,
-            "in": "query",
-            "description": "Field to sort by. Available options:\n\n            - tablePosIndex",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sortOrder",
-            "required": false,
-            "in": "query",
-            "description": "Sort order: ASC or DESC",
-            "schema": {
-              "enum": [
-                "ASC",
-                "DESC"
-              ],
-              "type": "string"
-            }
-          },
-          {
-            "name": "search",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "filters",
-            "required": false,
-            "in": "query",
-            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentTemplate** (e.g., `parentTemplate=5`)",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          {
-            "name": "relations",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/TemplateMenuItem"
-                      }
-                    },
-                    "nextCursor": {
-                      "type": "string",
-                      "example": "2"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Retrieves an array of Template Menu Items",
-        "tags": [
-          "Template Menu Item"
-        ]
-      }
-    },
     "/template-menu-items/{id}": {
-      "patch": {
-        "operationId": "TemplateMenuItemController_update",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTemplateMenuItemDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Template Menu Item successfully updated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TemplateMenuItem"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request (validation error)"
-          },
-          "404": {
-            "description": "Template Menu Item to update not found."
-          }
-        },
-        "security": [
-          {
-            "access-token": []
-          }
-        ],
-        "summary": "Updates a Template Menu Item",
-        "tags": [
-          "Template Menu Item"
-        ]
-      },
       "delete": {
         "operationId": "TemplateMenuItemController_remove",
         "parameters": [
@@ -7195,6 +6213,116 @@
           }
         ],
         "summary": "Retrieves one Template Menu Item",
+        "tags": [
+          "Template Menu Item"
+        ]
+      }
+    },
+    "/template-menu-items": {
+      "get": {
+        "operationId": "TemplateMenuItemController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "required": false,
+            "in": "query",
+            "description": "Field to sort by. Available options:\n\n            - tablePosIndex",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortOrder",
+            "required": false,
+            "in": "query",
+            "description": "Sort order: ASC or DESC",
+            "schema": {
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Search by menu item name (case-insensitive partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filters",
+            "required": false,
+            "in": "query",
+            "description": "Filterable fields. Use format: field=value. Available filters:\n\n          - **parentTemplate** (e.g., `parentTemplate=5`)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "relations",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TemplateMenuItem"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "example": "2"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Retrieves an array of Template Menu Items",
         "tags": [
           "Template Menu Item"
         ]
@@ -7340,8 +6468,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-01-27T21:58:50.867Z",
-                "updatedAt": "2026-01-27T21:58:50.867Z",
+                "createdAt": "2026-06-24T21:33:16.490Z",
+                "updatedAt": "2026-06-24T21:33:16.490Z",
                 "name": "jim",
                 "email": "jim@email.com",
                 "roles": [
@@ -7428,7 +6556,13 @@
               "type": "number"
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "password",
+          "email",
+          "roleIds"
+        ]
       },
       "CreateRoleDto": {
         "type": "object",
@@ -7451,7 +6585,10 @@
             "description": "Name of the Role entity.",
             "example": "manager"
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "InventoryArea": {
         "type": "object",
@@ -7469,7 +6606,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-01-27T21:58:57.346Z",
+              "countDate": "2026-06-24T21:33:16.644Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -7583,107 +6720,6 @@
           "name"
         ]
       },
-      "UnitOfMeasureCategory": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "example": 1,
-            "description": "The unique identifier of the entity"
-          },
-          "name": {
-            "type": "string",
-            "example": "Volume",
-            "description": "Name of the category"
-          },
-          "baseConversionUnit": {
-            "example": {
-              "id": 1,
-              "name": "pound",
-              "abbreviation": "lbs",
-              "conversionFactorToBase": "1.3426436",
-              "category": {}
-            },
-            "description": "The designated unit all other units under this category use for conversions.",
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasure"
-              }
-            ]
-          },
-          "units": {
-            "example": [
-              {
-                "id": 1,
-                "name": "pound",
-                "abbreviation": "lbs",
-                "conversionFactorToBase": "1.3426436",
-                "category": {}
-              }
-            ],
-            "description": "List of units of measure under the category",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UnitOfMeasure"
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "baseConversionUnit",
-          "units"
-        ]
-      },
-      "UnitOfMeasure": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number",
-            "example": 1,
-            "description": "The unique identifier of the entity"
-          },
-          "name": {
-            "type": "string",
-            "example": "",
-            "description": ""
-          },
-          "abbreviation": {
-            "type": "string",
-            "example": "",
-            "description": ""
-          },
-          "conversionFactorToBase": {
-            "type": "object",
-            "example": "",
-            "description": ""
-          },
-          "category": {
-            "example": {
-              "id": 1,
-              "name": "Weight",
-              "baseConversionUnit": {},
-              "units": [
-                {}
-              ]
-            },
-            "description": "",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasureCategory"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "abbreviation",
-          "conversionFactorToBase",
-          "category"
-        ]
-      },
       "InventoryItemSize": {
         "type": "object",
         "properties": {
@@ -7721,44 +6757,28 @@
               }
             ]
           },
-          "measureType": {
-            "example": {
-              "id": 1,
-              "name": "pound",
-              "abbreviation": "lbs",
-              "conversionFactorToBase": "1.3426436",
-              "category": {
-                "id": 1,
-                "name": "Weight",
-                "baseConversionUnit": {},
-                "units": [
-                  {}
-                ]
-              }
-            },
-            "description": "The unit of measure scaling the measureAmount property",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasure"
-              }
-            ]
+          "unit": {
+            "type": "string",
+            "example": "lb",
+            "description": "The unit symbol scaling the measureAmount property"
           },
           "measureAmount": {
             "type": "number",
             "example": "8",
-            "description": "The measure quantity of the measureUnit property"
+            "description": "The measure quantity of the unit property"
           },
           "cost": {
-            "type": "string",
+            "type": "object",
             "example": "8.49",
-            "description": "The cost for this inventory item / size combination"
+            "description": "The cost for this inventory item / size combination",
+            "nullable": true
           }
         },
         "required": [
           "id",
           "inventoryItem",
           "package",
-          "measureType",
+          "unit",
           "measureAmount",
           "cost"
         ]
@@ -7813,13 +6833,7 @@
               {
                 "id": 1,
                 "measureAmount": 2,
-                "measureType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
+                "unit": "lb",
                 "package": {
                   "id": 1,
                   "name": "box"
@@ -7877,13 +6891,7 @@
             "example": {
               "id": 1,
               "measureAmount": 2,
-              "measureType": {
-                "id": 1,
-                "name": "pound",
-                "abbreviation": "lbs",
-                "conversionFactorToBase": "1.3426436",
-                "category": {}
-              },
+              "unit": "lb",
               "package": {
                 "id": 1,
                 "name": "box"
@@ -7901,7 +6909,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-01-27T21:58:57.326Z",
+              "countDate": "2026-06-24T21:33:16.643Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -7970,13 +6978,7 @@
                 "countedItemSize": {
                   "id": 1,
                   "measureAmount": 2,
-                  "measureType": {
-                    "id": 1,
-                    "name": "pound",
-                    "abbreviation": "lbs",
-                    "conversionFactorToBase": "1.3426436",
-                    "category": {}
-                  },
+                  "unit": "lb",
                   "package": {
                     "id": 1,
                     "name": "box"
@@ -8021,7 +7023,10 @@
             "description": "Name of the inventory area.",
             "example": "Dry Storage"
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "NestedCreateInventoryItemSizeDto": {
         "type": "object",
@@ -8031,25 +7036,26 @@
             "description": "Id of InventoryItemPackage entity.",
             "example": 3
           },
-          "measureTypeId": {
-            "type": "number",
-            "description": "Id of UnitofMeasure entity.",
-            "example": 2
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for this size (e.g. \"lb\", \"oz\", \"ea\").",
+            "example": "lb"
           },
           "measureAmount": {
             "type": "number",
-            "description": "the unit quantity of the UnitofMeasure entity.",
+            "description": "the unit quantity of the unit entity.",
             "example": 10
           },
           "cost": {
-            "type": "number",
+            "type": "object",
             "description": "Price paid for the InventoryItem entity.",
-            "example": 4.99
+            "example": 4.99,
+            "nullable": true
           }
         },
         "required": [
           "packageId",
-          "measureTypeId",
+          "unit",
           "measureAmount",
           "cost"
         ]
@@ -8076,7 +7082,7 @@
             "description": "Is optional, if countedItemSize is null, countedItemSizeId must be populated.",
             "example": {
               "createId": "c1356",
-              "measureTypeId": 2,
+              "unit": "lb",
               "measureAmount": 3,
               "packageId": 4,
               "cost": 5.99
@@ -8112,7 +7118,7 @@
                 "countedItemSizeDto": {
                   "createId": "c5325",
                   "inventoryItemId": 4,
-                  "measureTypeId": 5,
+                  "unit": "lb",
                   "measureAmount": 6,
                   "packageId": 7,
                   "cost": 8.99
@@ -8128,6 +7134,46 @@
         "required": [
           "inventoryAreaId",
           "countedInventoryItems"
+        ]
+      },
+      "NestedUpdateInventoryAreaItemDto": {
+        "type": "object",
+        "properties": {
+          "countedInventoryItemId": {
+            "type": "number",
+            "description": "Id for InventoryItem entity.",
+            "example": 1
+          },
+          "amount": {
+            "type": "number",
+            "description": "The amount of InventoryItem per unit.",
+            "example": 6
+          },
+          "countedItemSizeId": {
+            "type": "number",
+            "description": "Id for InventoryItemSize entity. If countedItemSizeId is populated, countedItemSizeDto must be null/undefined.",
+            "example": 2
+          },
+          "countedItemSize": {
+            "description": "If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.",
+            "example": {
+              "createId": "c1234",
+              "unit": "lb",
+              "measureAmount": 2,
+              "packageId": 3,
+              "cost": 4
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedCreateInventoryItemSizeDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "countedInventoryItemId",
+          "amount",
+          "countedItemSizeId"
         ]
       },
       "UpdateInventoryAreaCountDto": {
@@ -8166,7 +7212,11 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "inventoryAreaId",
+          "countedInventoryItems"
+        ]
       },
       "CreateInventoryAreaItemDto": {
         "type": "object",
@@ -8190,7 +7240,7 @@
             "description": "Is optional, if countedItemSize is null, countedItemSizeId must be populated.",
             "example": {
               "createId": "c1356",
-              "measureTypeId": 2,
+              "unit": "lb",
               "measureAmount": 3,
               "packageId": 4,
               "cost": 5.99
@@ -8231,23 +7281,25 @@
           },
           "countedItemSize": {
             "description": "If countedItemSizeDto is populated, countedItemSizeId must be null/undefined.",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/NestedCreateInventoryItemSizeDto"
-              },
-              {
-                "$ref": "#/components/schemas/NestedUpdateInventoryItemSizeDto"
-              }
-            ],
             "example": {
               "id": 5,
-              "measureTypeId": 1,
+              "unit": "lb",
               "measureAmount": 2,
               "packageId": 3,
               "cost": 4
-            }
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedCreateInventoryItemSizeDto"
+              }
+            ]
           }
-        }
+        },
+        "required": [
+          "countedInventoryItemId",
+          "amount",
+          "countedItemSizeId"
+        ]
       },
       "CreateInventoryItemDto": {
         "type": "object",
@@ -8260,19 +7312,21 @@
           "categoryId": {
             "type": "number",
             "description": "Id of InventoryItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "vendorId": {
             "type": "number",
             "description": "Id of InventoryItemVendor entity.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "sizes": {
             "description": "Child dtos are used when creating/updating an entity through a parent (InventoryItem).",
             "example": [
               {
                 "createId": "c1",
-                "measureTypeId": 1,
+                "unit": "lb",
                 "measureAmount": 2,
                 "packageId": 3,
                 "cost": 4.99
@@ -8288,6 +7342,38 @@
           "name"
         ]
       },
+      "NestedUpdateInventoryItemSizeDto": {
+        "type": "object",
+        "properties": {
+          "packageId": {
+            "type": "number",
+            "description": "Id of InventoryItemPackage entity.",
+            "example": 2
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for this size (e.g. \"lb\", \"oz\", \"ea\").",
+            "example": "lb"
+          },
+          "measureAmount": {
+            "type": "number",
+            "description": "the unit quantity of the unit entity.",
+            "example": 10
+          },
+          "cost": {
+            "type": "object",
+            "description": "Price paid for the InventoryItem entity.",
+            "example": 3.99,
+            "nullable": true
+          }
+        },
+        "required": [
+          "packageId",
+          "unit",
+          "measureAmount",
+          "cost"
+        ]
+      },
       "UpdateInventoryItemDto": {
         "type": "object",
         "properties": {
@@ -8299,12 +7385,14 @@
           "categoryId": {
             "type": "number",
             "description": "Id of InventoryItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "vendorId": {
             "type": "number",
             "example": 2,
-            "description": "Id of InventoryItemVendor entity."
+            "description": "Id of InventoryItemVendor entity.",
+            "nullable": true
           },
           "sizes": {
             "type": "array",
@@ -8312,7 +7400,7 @@
             "example": [
               {
                 "id": 1,
-                "measureTypeId": 2,
+                "unit": "lb",
                 "measureAmount": 3,
                 "packageId": 4,
                 "cost": 5.99
@@ -8320,7 +7408,7 @@
               {
                 "createId": "c6",
                 "inventoryItemId": 7,
-                "measureTypeId": 8,
+                "unit": "oz",
                 "measureAmount": 9,
                 "packageId": 10,
                 "cost": 11.99
@@ -8338,7 +7426,13 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "categoryId",
+          "vendorId",
+          "sizes"
+        ]
       },
       "CreateInventoryItemCategoryDto": {
         "type": "object",
@@ -8361,7 +7455,10 @@
             "example": "Dry Goods",
             "description": "Name of InventoryItemCategory entity."
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateInventoryItemPackageDto": {
         "type": "object",
@@ -8384,7 +7481,10 @@
             "example": "Can",
             "description": "Name for InventoryItemPackage entity."
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateInventoryItemSizeDto": {
         "type": "object",
@@ -8399,38 +7499,61 @@
             "description": "Id of InventoryItemPackage entity.",
             "example": 3
           },
-          "measureTypeId": {
-            "type": "number",
-            "description": "Id of UnitofMeasure entity.",
-            "example": 2
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for this size (e.g. \"lb\", \"oz\", \"ea\").",
+            "example": "lb"
           },
           "measureAmount": {
             "type": "number",
-            "description": "the unit quantity of the UnitofMeasure entity.",
+            "description": "the unit quantity of the unit entity.",
             "example": 10
           },
           "cost": {
-            "type": "number",
+            "type": "object",
             "description": "Price paid for the InventoryItem entity.",
-            "example": 4.99
+            "example": 4.99,
+            "nullable": true
           }
         },
         "required": [
           "packageId",
-          "measureTypeId",
+          "unit",
           "measureAmount",
           "cost"
         ]
       },
-      "UpdateMenuItemSizeDto": {
+      "UpdateInventoryItemSizeDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "packageId": {
+            "type": "number",
+            "description": "Id of InventoryItemPackage entity.",
+            "example": 2
+          },
+          "unit": {
             "type": "string",
-            "description": "Name of MenuItemSize entity.",
-            "example": "medium"
+            "description": "Unit symbol for this size (e.g. \"lb\", \"oz\", \"ea\").",
+            "example": "lb"
+          },
+          "measureAmount": {
+            "type": "number",
+            "description": "the unit quantity of the unit entity.",
+            "example": 10
+          },
+          "cost": {
+            "type": "object",
+            "description": "Price paid for the InventoryItem entity.",
+            "example": 3.99,
+            "nullable": true
           }
-        }
+        },
+        "required": [
+          "packageId",
+          "unit",
+          "measureAmount",
+          "cost"
+        ]
       },
       "CreateInventoryItemVendorDto": {
         "type": "object",
@@ -8453,94 +7576,10 @@
             "description": "Name of InventoryItemVendor entity.",
             "example": "Driscols"
           }
-        }
-      },
-      "CreateUnitOfMeasureDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the UnitofMeasure entity.",
-            "example": "Pound"
-          },
-          "abbreviation": {
-            "type": "string",
-            "description": "abbrieviation of the UnitofMeasure entity's name.",
-            "example": "lb"
-          },
-          "conversionFactorToBase": {
-            "type": "string",
-            "description": "The conversion factor stored as a string to prevent rounding errors, to the base amount.",
-            "example": "3785.4080001023799014"
-          },
-          "categoryId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.",
-            "example": 1
-          }
-        },
-        "required": [
-          "name",
-          "abbreviation"
-        ]
-      },
-      "UpdateUnitOfMeasureDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the UnitofMeasure entity.",
-            "example": "Kilogram"
-          },
-          "abbreviation": {
-            "type": "string",
-            "description": "abbrieviation of the UnitofMeasure entity's name.",
-            "example": "kg"
-          },
-          "conversionFactorToBase": {
-            "type": "string",
-            "description": "The conversion factor stored as a string to prevent rounding errors, to the base amount.",
-            "example": "3785.4080001023799014"
-          },
-          "categoryId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasureCategory entity that the UnitofMeasure falls under.",
-            "example": 1
-          }
-        }
-      },
-      "CreateUnitOfMeasureCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of UnitCategory entity.",
-            "example": "Weight"
-          },
-          "baseConversionUnitId": {
-            "type": "number",
-            "description": "The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.",
-            "example": 1
-          }
         },
         "required": [
           "name"
         ]
-      },
-      "UpdateUnitOfMeasureCategoryDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of UnitCategory entity.",
-            "example": "Volume"
-          },
-          "baseConversionUnitId": {
-            "type": "number",
-            "description": "The UnitOfMeasure entity that all UnitofMeasure entities under the category convert to as part of conversions.",
-            "example": 1
-          }
-        }
       },
       "MenuItemCategory": {
         "type": "object",
@@ -8559,8 +7598,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-01-27T21:58:58.139Z",
-                "updatedAt": "2026-01-27T21:58:58.139Z",
+                "createdAt": "2026-06-24T21:33:16.658Z",
+                "updatedAt": "2026-06-24T21:33:16.658Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -8657,10 +7696,17 @@
               }
             ],
             "description": "The sizes the item is available in",
+            "nullable": true,
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MenuItemSize"
             }
+          },
+          "variableMaxAmount": {
+            "type": "number",
+            "example": 6,
+            "description": "The maximum amount of items that can be in the container",
+            "nullable": true
           }
         },
         "required": [
@@ -8669,7 +7715,8 @@
           "updatedAt",
           "name",
           "category",
-          "sizes"
+          "sizes",
+          "variableMaxAmount"
         ]
       },
       "LabelType": {
@@ -8719,8 +7766,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:58:59.424Z",
-              "updatedAt": "2026-01-27T21:58:59.424Z",
+              "createdAt": "2026-06-24T21:33:16.695Z",
+              "updatedAt": "2026-06-24T21:33:16.695Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8807,7 +7854,12 @@
             "description": "Id of LabelType entity.",
             "example": 2
           }
-        }
+        },
+        "required": [
+          "imageUrl",
+          "menuItemId",
+          "labelTypeId"
+        ]
       },
       "CreateLabelTypeDto": {
         "type": "object",
@@ -8852,7 +7904,12 @@
             "description": "The length of the label type in hundreths of an inch",
             "example": 100
           }
-        }
+        },
+        "required": [
+          "name",
+          "length",
+          "width"
+        ]
       },
       "CreateMenuItemCategoryDto": {
         "type": "object",
@@ -8875,7 +7932,10 @@
             "example": "Pie",
             "description": "Name of the MenuItemCategory."
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateMenuItemSizeDto": {
         "type": "object",
@@ -8888,6 +7948,244 @@
         },
         "required": [
           "name"
+        ]
+      },
+      "UpdateMenuItemSizeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of MenuItemSize entity.",
+            "example": "medium"
+          }
+        }
+      },
+      "ScalarChangeDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "enum": [
+              "scalar"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "from": {
+            "type": "object",
+            "nullable": true
+          },
+          "to": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "op",
+          "path"
+        ]
+      },
+      "AggregateChangeDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "enum": [
+              "aggregate"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "added": {
+            "type": "number"
+          },
+          "removed": {
+            "type": "number"
+          },
+          "modified": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "path",
+          "added",
+          "removed",
+          "modified"
+        ]
+      },
+      "ReferenceChangeDto": {
+        "type": "object",
+        "properties": {
+          "op": {
+            "type": "string",
+            "enum": [
+              "reference"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "from": {
+            "type": "object",
+            "nullable": true
+          },
+          "to": {
+            "type": "object",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "path"
+        ]
+      },
+      "ActorDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "user",
+              "system",
+              "square_webhook"
+            ]
+          },
+          "id": {
+            "type": "number",
+            "description": "User id when type is user; optional for system"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "RevertInfoDto": {
+        "type": "object",
+        "properties": {
+          "targetRevision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "targetRevision"
+        ]
+      },
+      "ChangeLogDto": {
+        "type": "object",
+        "properties": {
+          "schemaVersion": {
+            "type": "number",
+            "example": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "created",
+              "updated",
+              "reverted",
+              "deleted"
+            ]
+          },
+          "occurredAt": {
+            "type": "string",
+            "example": "2026-03-28T12:00:00.000Z"
+          },
+          "actor": {
+            "$ref": "#/components/schemas/ActorDto"
+          },
+          "revert": {
+            "$ref": "#/components/schemas/RevertInfoDto"
+          },
+          "changes": {
+            "discriminator": {
+              "propertyName": "op",
+              "mapping": {
+                "scalar": "#/components/schemas/ScalarChangeDto",
+                "aggregate": "#/components/schemas/AggregateChangeDto",
+                "reference": "#/components/schemas/ReferenceChangeDto"
+              }
+            },
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ScalarChangeDto"
+                },
+                {
+                  "$ref": "#/components/schemas/AggregateChangeDto"
+                },
+                {
+                  "$ref": "#/components/schemas/ReferenceChangeDto"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "schemaVersion",
+          "kind",
+          "occurredAt",
+          "changes"
+        ]
+      },
+      "RevisionHistoryListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "changeLog": {
+            "$ref": "#/components/schemas/ChangeLogDto"
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "createdAt",
+          "changeLog"
+        ]
+      },
+      "RevisionHistoryDetailDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "revisionNumber": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "changeLog": {
+            "$ref": "#/components/schemas/ChangeLogDto"
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Versioned aggregate snapshot (shape depends on entity type and payloadVersion)"
+          }
+        },
+        "required": [
+          "id",
+          "revisionNumber",
+          "createdAt",
+          "changeLog",
+          "payload"
         ]
       },
       "NestedCreateMenuItemContainerItemDto": {
@@ -8907,12 +8205,18 @@
             "type": "number",
             "description": "The amount of MenuItem/MenuItemSize combination",
             "example": 5
+          },
+          "parentItemSizeId": {
+            "type": "number",
+            "description": "Id of a MenuItemSize entity of the parent container",
+            "example": 6
           }
         },
         "required": [
           "containedMenuItemId",
           "containedItemSizeId",
-          "quantity"
+          "quantity",
+          "parentItemSizeId"
         ]
       },
       "CreateMenuItemDto": {
@@ -8932,7 +8236,8 @@
           "categoryId": {
             "type": "number",
             "description": "Id of MenuItemCategory entity.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "sizeIds": {
             "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
@@ -8947,6 +8252,7 @@
           },
           "containerMenuItems": {
             "description": "Array of CreateMenutItemContainerItemDtos",
+            "nullable": true,
             "example": [
               {
                 "createId": "c1",
@@ -8965,13 +8271,40 @@
           "variableMaxAmount": {
             "type": "number",
             "description": "Total size limit of item, when item is of type fixed_container or variable_container",
-            "example": 7
+            "example": 7,
+            "nullable": true
           }
         },
         "required": [
           "name",
           "type",
+          "categoryId",
           "sizeIds"
+        ]
+      },
+      "NestedUpdateMenuItemContainerItemDto": {
+        "type": "object",
+        "properties": {
+          "containedMenuItemId": {
+            "type": "number",
+            "description": "Id of a MenuItem entity. Represents the contained item.",
+            "example": 1
+          },
+          "containedItemSizeId": {
+            "type": "number",
+            "description": "Id of a MenuItemSize entity. The size of the contained item",
+            "example": 2
+          },
+          "quantity": {
+            "type": "number",
+            "description": "The amount of MenuItem/MenuItemSize combination",
+            "example": 3
+          }
+        },
+        "required": [
+          "containedMenuItemId",
+          "containedItemSizeId",
+          "quantity"
         ]
       },
       "UpdateMenuItemDto": {
@@ -8990,10 +8323,11 @@
           "categoryId": {
             "type": "number",
             "description": "Id of MenuItemCategory entity. Pass a null value to remove category",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "sizeIds": {
-            "description": "Ids of MenuItemSize entities. Represents the sizes available for the referencing MenuItem.",
+            "description": "When present, replaces all sizes for this menu item. Omit to leave sizes unchanged.",
             "example": [
               5,
               6
@@ -9022,6 +8356,7 @@
                 "parentItemSizeId": 10
               }
             ],
+            "nullable": true,
             "items": {
               "oneOf": [
                 {
@@ -9036,9 +8371,15 @@
           "variableMaxAmount": {
             "type": "number",
             "description": "Total size limit of item, when item is of type fixed_container or variable_container",
-            "example": 6
+            "example": 6,
+            "nullable": true
           }
-        }
+        },
+        "required": [
+          "name",
+          "type",
+          "categoryId"
+        ]
       },
       "MenuItemContainerItem": {
         "type": "object",
@@ -9051,8 +8392,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:58:58.177Z",
-              "updatedAt": "2026-01-27T21:58:58.177Z",
+              "createdAt": "2026-06-24T21:33:16.658Z",
+              "updatedAt": "2026-06-24T21:33:16.658Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -9094,8 +8435,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:58:58.177Z",
-              "updatedAt": "2026-01-27T21:58:58.177Z",
+              "createdAt": "2026-06-24T21:33:16.659Z",
+              "updatedAt": "2026-06-24T21:33:16.659Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -9194,7 +8535,12 @@
             "description": "The amount of MenuItem/MenuItemSize combination",
             "example": 3
           }
-        }
+        },
+        "required": [
+          "containedMenuItemId",
+          "containedItemSizeId",
+          "quantity"
+        ]
       },
       "OrderContainerItem": {
         "type": "object",
@@ -9207,8 +8553,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:58:58.389Z",
-              "updatedAt": "2026-01-27T21:58:58.389Z",
+              "createdAt": "2026-06-24T21:33:16.662Z",
+              "updatedAt": "2026-06-24T21:33:16.662Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -9253,8 +8599,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-01-27T21:58:58.389Z",
-                "updatedAt": "2026-01-27T21:58:58.389Z",
+                "createdAt": "2026-06-24T21:33:16.662Z",
+                "updatedAt": "2026-06-24T21:33:16.662Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -9305,8 +8651,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:58:58.389Z",
-              "updatedAt": "2026-01-27T21:58:58.389Z",
+              "createdAt": "2026-06-24T21:33:16.662Z",
+              "updatedAt": "2026-06-24T21:33:16.662Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -9352,8 +8698,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-01-27T21:58:58.389Z",
-                  "updatedAt": "2026-01-27T21:58:58.389Z",
+                  "createdAt": "2026-06-24T21:33:16.662Z",
+                  "updatedAt": "2026-06-24T21:33:16.662Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -9386,9 +8732,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-01-27T21:58:58.389Z",
-              "updatedAt": "2026-01-27T21:58:58.389Z",
-              "fulfillmentDate": "2026-01-27T21:58:58.389Z",
+              "createdAt": "2026-06-24T21:33:16.663Z",
+              "updatedAt": "2026-06-24T21:33:16.663Z",
+              "fulfillmentDate": "2026-06-24T21:33:16.663Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -9415,8 +8761,50 @@
           "menuItem",
           "size",
           "quantity",
-          "containerOrderMenuItems",
           "parentOrder"
+        ]
+      },
+      "RecurringOrderSchedule": {
+        "type": "object",
+        "properties": {
+          "order": {
+            "example": 1,
+            "description": "The unique identifier of the order that this schedule is for",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Order"
+              }
+            ]
+          },
+          "rrule": {
+            "type": "string",
+            "example": "DTSTART:20120201T093000Z\nRRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR;UNTIL=2025-01-01;TZID=America/New_York;",
+            "description": "The rrule string for the schedule"
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-03-17T15:58:22.212Z",
+            "description": "The start date of the schedule, maps to DTSTART in the rrule string"
+          },
+          "endDate": {
+            "type": "object",
+            "example": "2026-03-17T15:58:22.212Z",
+            "description": "The end date of the schedule, maps to UNTIL in the rrule string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "example": "America/New_York",
+            "description": "The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York"
+          }
+        },
+        "required": [
+          "order",
+          "rrule",
+          "startDate",
+          "endDate",
+          "timezone"
         ]
       },
       "Order": {
@@ -9491,17 +8879,6 @@
             "example": true,
             "description": "A flag to 'pause' or 'freeze' an order, not included in DB queries for services like aggregates for Reports."
           },
-          "isWeekly": {
-            "type": "boolean",
-            "example": "",
-            "description": "A flag if a order occurs on a weekly basis. A traditional order has isWeekly=false (upon fulfillment the order is completed, while a wholesale standing order could occur every thursday)"
-          },
-          "weeklyFulfillment": {
-            "type": "string",
-            "example": "tuesday",
-            "description": "If the order isWeekly is set to true, the day of the week the order is fulfilled on.",
-            "nullable": true
-          },
           "category": {
             "example": {
               "id": 1,
@@ -9524,8 +8901,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-01-27T21:58:58.389Z",
-                  "updatedAt": "2026-01-27T21:58:58.389Z",
+                  "createdAt": "2026-06-24T21:33:16.664Z",
+                  "updatedAt": "2026-06-24T21:33:16.664Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -9551,8 +8928,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-01-27T21:58:58.389Z",
-                      "updatedAt": "2026-01-27T21:58:58.389Z",
+                      "createdAt": "2026-06-24T21:33:16.664Z",
+                      "updatedAt": "2026-06-24T21:33:16.664Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -9581,6 +8958,43 @@
             "items": {
               "$ref": "#/components/schemas/OrderMenuItem"
             }
+          },
+          "recurrenceSchedule": {
+            "example": {
+              "id": 1,
+              "order": {},
+              "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
+              "startDate": "2026-06-24T21:33:16.664Z",
+              "endDate": "2026-06-24T21:33:16.664Z"
+            },
+            "description": "The schedule of the recurring order",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecurringOrderSchedule"
+              }
+            ]
+          },
+          "occurrenceType": {
+            "type": "string",
+            "example": "TEMPLATE",
+            "description": "The type of the occurence"
+          },
+          "occurrenceState": {
+            "type": "string",
+            "example": "GENERATED",
+            "description": "The state of the occurence"
+          },
+          "recurrenceDate": {
+            "type": "object",
+            "example": "2025-01-01",
+            "description": "The original of the occurence, used to properly regenerated orders"
+          },
+          "templateOrderId": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the template order that this occurence is based on",
+            "nullable": true
           }
         },
         "required": [
@@ -9595,10 +9009,13 @@
           "phoneNumber",
           "email",
           "isFrozen",
-          "isWeekly",
-          "weeklyFulfillment",
           "category",
-          "orderedItems"
+          "orderedItems",
+          "recurrenceSchedule",
+          "occurrenceType",
+          "occurrenceState",
+          "recurrenceDate",
+          "templateOrderId"
         ]
       },
       "OrderCategory": {
@@ -9620,9 +9037,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-01-27T21:58:58.388Z",
-                "updatedAt": "2026-01-27T21:58:58.388Z",
-                "fulfillmentDate": "2026-01-27T21:58:58.388Z",
+                "createdAt": "2026-06-24T21:33:16.664Z",
+                "updatedAt": "2026-06-24T21:33:16.664Z",
+                "fulfillmentDate": "2026-06-24T21:33:16.664Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -9667,12 +9084,24 @@
             "type": "number",
             "description": "amount of the containedMenuItem / containedItemSize being ordered",
             "example": 5
+          },
+          "parentMenuItemIdCtx": {
+            "type": "number",
+            "description": "Id of the MenuItem that is this item's container, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
+            "example": 2
+          },
+          "parentMenuItemSizeIdCtx": {
+            "type": "number",
+            "description": "Id of the MenuItemSize of the Menuitem that is this item's container, ctx denotes it is used to assist in creating the entity, but is not a mapped property",
+            "example": 2
           }
         },
         "required": [
           "containedMenuItemId",
           "containedItemSizeId",
-          "quantity"
+          "quantity",
+          "parentMenuItemIdCtx",
+          "parentMenuItemSizeIdCtx"
         ]
       },
       "NestedCreateOrderMenuItemDto": {
@@ -9724,6 +9153,78 @@
           "quantity"
         ]
       },
+      "NestedCreateRecurringOrderScheduleDto": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "description": "The frequency of the schedule",
+            "example": "WEEKLY"
+          },
+          "interval": {
+            "type": "number",
+            "description": "The interval of the schedule",
+            "example": 1,
+            "nullable": true
+          },
+          "daysOfWeek": {
+            "description": "The days of the week that the schedule is active, values between 0-6",
+            "example": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "dayOfMonth": {
+            "type": "number",
+            "description": "The day of the month that the schedule is active, values between 1-31",
+            "example": 1,
+            "nullable": true
+          },
+          "monthOfYear": {
+            "type": "number",
+            "description": "The month of the year that the schedule is active, values between 1-12",
+            "example": 1,
+            "nullable": true
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The start date of the schedule, maps to DTSTART in the rrule string",
+            "example": "2026-03-17T15:58:22.212Z"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The end date of the schedule, maps to UNTIL in the rrule string",
+            "example": "2026-03-17T15:58:22.212Z",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "description": "The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York",
+            "example": "America/New_York",
+            "nullable": true
+          }
+        },
+        "required": [
+          "frequency",
+          "interval",
+          "daysOfWeek",
+          "dayOfMonth",
+          "monthOfYear",
+          "startDate",
+          "endDate",
+          "timezone"
+        ]
+      },
       "CreateOrderDto": {
         "type": "object",
         "properties": {
@@ -9746,28 +9247,33 @@
           "fulfillmentContactName": {
             "type": "string",
             "description": "Name of who is picking up the order or reciving the delivery",
-            "example": "Jane Doe"
+            "example": "Jane Doe",
+            "nullable": true
           },
           "deliveryAddress": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "123 main st"
+            "example": "123 main st",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "1234568"
+            "example": "1234568",
+            "nullable": true
           },
           "email": {
             "type": "string",
             "description": "for delivery contact information",
             "example": "email@email.com",
-            "format": "email"
+            "format": "email",
+            "nullable": true
           },
           "note": {
             "type": "string",
             "description": "special instruction for order",
-            "example": "note information"
+            "example": "note information",
+            "nullable": true
           },
           "isFrozen": {
             "type": "boolean",
@@ -9782,7 +9288,8 @@
           "weeklyFulfillment": {
             "type": "string",
             "description": "If is weekly, is the day of the week the order is fulfilled",
-            "example": "sunday"
+            "example": "sunday",
+            "nullable": true
           },
           "categoryId": {
             "type": "number",
@@ -9817,14 +9324,380 @@
             "items": {
               "$ref": "#/components/schemas/NestedCreateOrderMenuItemDto"
             }
+          },
+          "templateOrderId": {
+            "type": "number",
+            "example": 1,
+            "description": "The unique identifier of the template order that this occurence is based on",
+            "nullable": true
+          },
+          "occurrenceType": {
+            "type": "string",
+            "example": "TEMPLATE",
+            "description": "The type of the occurence",
+            "nullable": true
+          },
+          "occurrenceState": {
+            "type": "string",
+            "example": "GENERATED",
+            "description": "The state of the occurence",
+            "nullable": true
+          },
+          "recurrenceDate": {
+            "type": "object",
+            "example": "2025-01-01",
+            "description": "The original of the occurence, used to properly regenerated orders",
+            "nullable": true
+          },
+          "recurrenceSchedule": {
+            "example": {
+              "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
+              "startDate": "2025-01-01",
+              "endDate": "2025-01-01"
+            },
+            "description": "The schedule of the recurring order",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/NestedCreateRecurringOrderScheduleDto"
+              }
+            ]
           }
         },
         "required": [
           "recipient",
           "fulfillmentDate",
           "fulfillmentType",
+          "fulfillmentContactName",
+          "deliveryAddress",
+          "phoneNumber",
+          "email",
+          "note",
+          "isFrozen",
+          "isWeekly",
+          "weeklyFulfillment",
           "categoryId",
-          "orderedItems"
+          "orderedItems",
+          "templateOrderId",
+          "occurrenceType",
+          "occurrenceState",
+          "recurrenceDate",
+          "recurrenceSchedule"
+        ]
+      },
+      "RecurringOrderScheduleResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "The unique identifier of the entity",
+            "example": 1
+          },
+          "frequency": {
+            "type": "string",
+            "description": "The frequency of the schedule",
+            "example": "WEEKLY"
+          },
+          "interval": {
+            "type": "object",
+            "description": "The interval of the schedule",
+            "example": 1,
+            "nullable": true
+          },
+          "daysOfWeek": {
+            "type": "object",
+            "description": "The days of the week that the schedule is active, values between 0-6",
+            "example": [
+              0,
+              1,
+              2,
+              3,
+              4
+            ],
+            "nullable": true
+          },
+          "dayOfMonth": {
+            "type": "number",
+            "description": "The day of the month that the schedule is active, values between 1-31",
+            "example": 1,
+            "nullable": true
+          },
+          "monthOfYear": {
+            "type": "number",
+            "description": "The month of the year that the schedule is active, values between 1-12",
+            "example": 1,
+            "nullable": true
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The start date of the schedule, maps to DTSTART in the rrule string",
+            "example": "2026-03-17T15:58:22.212Z"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string",
+            "description": "The end date of the schedule, maps to UNTIL in the rrule string",
+            "example": "2026-03-17T15:58:22.212Z",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "description": "The timezone of the schedule, maps to TZID in the rrule string, defaults to America/New_York",
+            "example": "America/New_York",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "frequency",
+          "interval",
+          "daysOfWeek",
+          "dayOfMonth",
+          "monthOfYear",
+          "startDate",
+          "endDate",
+          "timezone"
+        ]
+      },
+      "OrderResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number",
+            "description": "The unique identifier of the entity",
+            "example": 1
+          },
+          "recipient": {
+            "type": "string",
+            "description": "Name of the owner of the order",
+            "example": "John Smith"
+          },
+          "fulfillmentDate": {
+            "type": "string",
+            "description": "Date the order is to be available or delivered.",
+            "example": "2025-06-08T20:26:45.883Z"
+          },
+          "fulfillmentType": {
+            "type": "string",
+            "description": "Method of Order's dispersal.",
+            "example": "delivery"
+          },
+          "fulfillmentContactName": {
+            "type": "string",
+            "description": "Name of who is picking up the order or reciving the delivery",
+            "example": "Jane Doe",
+            "nullable": true
+          },
+          "deliveryAddress": {
+            "type": "string",
+            "description": "for delivery contact information",
+            "example": "123 main st",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "for delivery contact information",
+            "example": "1234568",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "description": "for delivery contact information",
+            "example": "email@email.com",
+            "format": "email",
+            "nullable": true
+          },
+          "note": {
+            "type": "string",
+            "description": "special instruction for order",
+            "example": "note information",
+            "nullable": true
+          },
+          "isFrozen": {
+            "type": "boolean",
+            "description": "A frozen order is inactive and is not included for typical buisness logic opeations. Not included in aggregates or reports.",
+            "example": false
+          },
+          "category": {
+            "type": "number",
+            "description": "Id of OrderType entity.",
+            "example": 1
+          },
+          "orderedItems": {
+            "description": "TODO",
+            "example": [
+              {
+                "id": 1,
+                "menuItem": {
+                  "id": 2,
+                  "name": "Test Menu Item"
+                },
+                "sizeId": 3,
+                "quantity": 4
+              },
+              {
+                "id": 5,
+                "menuItem": {
+                  "id": 6,
+                  "name": "Another test Menu Item"
+                },
+                "sizeId": 7,
+                "quantity": 8
+              }
+            ],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrderMenuItem"
+              }
+            ]
+          },
+          "occurrenceType": {
+            "type": "string",
+            "example": "TEMPLATE",
+            "description": "The type of the occurence",
+            "nullable": true
+          },
+          "occurrenceState": {
+            "type": "string",
+            "example": "GENERATED",
+            "description": "The state of the occurence",
+            "nullable": true
+          },
+          "recurrenceSchedule": {
+            "example": {
+              "frequency": "WEEKLY",
+              "interval": 1,
+              "daysOfWeek": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "dayOfMonth": 1,
+              "monthOfYear": 1,
+              "startDate": "2025-01-01T00:00:00.000Z",
+              "endDate": "2025-01-01T00:00:00.000Z",
+              "timezone": "America/New_York"
+            },
+            "description": "The schedule of the recurring order",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RecurringOrderScheduleResponseDto"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date the order was created in the DB",
+            "example": "2025-06-06T19:22:07.102Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "description": "The date the order was last modified.",
+            "example": "2025-06-06T19:22:07.102Z"
+          }
+        },
+        "required": [
+          "id",
+          "recipient",
+          "fulfillmentDate",
+          "fulfillmentType",
+          "fulfillmentContactName",
+          "deliveryAddress",
+          "phoneNumber",
+          "email",
+          "note",
+          "isFrozen",
+          "category",
+          "orderedItems",
+          "occurrenceType",
+          "occurrenceState",
+          "recurrenceSchedule",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "NestedUpdateOrderContainerItemDto": {
+        "type": "object",
+        "properties": {
+          "containedMenuItemId": {
+            "type": "number",
+            "description": "Id of the MenuItem that is being ordered, requires parentMenuItemId_ctx and parentMenuItemSizeId_ctx to be populated",
+            "example": 2
+          },
+          "containedItemSizeId": {
+            "type": "number",
+            "description": "Id of the MenuItemSize that is being ordered, must be a valid size to the containedMenuItem,  requires parentMenuItemId_ctx and parentMenuItemSizeId_ctx to be populated",
+            "example": 3
+          },
+          "quantity": {
+            "type": "number",
+            "description": "amount of the containedMenuItem / containedItemSize being ordered",
+            "example": 4
+          }
+        },
+        "required": [
+          "containedMenuItemId",
+          "containedItemSizeId",
+          "quantity"
+        ]
+      },
+      "NestedUpdateOrderMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "number",
+            "description": "Id of MenuItem entity being ordered.",
+            "example": 1
+          },
+          "sizeId": {
+            "type": "number",
+            "description": "Id of the MenuItemSize entity. Must be valid size for the MenuItem being ordered.",
+            "example": 2
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Amount being ordered.",
+            "example": 3
+          },
+          "containerOrderMenuItems": {
+            "type": "array",
+            "description": "Dtos when creating an OrderMenuItem entity that is a container for a list of MenuItem",
+            "example": [
+              {
+                "createId": "c1",
+                "containedMenuItemId": 2,
+                "containedItemSizeId": 3,
+                "quantity": 4,
+                "parentMenuItemIdCtx": 5,
+                "parentMenuItemSizeIdCtx": 6
+              },
+              {
+                "id": 7,
+                "containedMenuItemId": 8,
+                "containedItemSizeId": 9,
+                "quantity": 10,
+                "parentMenuItemIdCtx": 11,
+                "parentMenuItemSizeIdCtx": 12
+              }
+            ],
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/NestedCreateOrderContainerItemDto"
+                },
+                {
+                  "$ref": "#/components/schemas/NestedUpdateOrderContainerItemDto"
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "menuItemId",
+          "sizeId",
+          "quantity"
         ]
       },
       "UpdateOrderDto": {
@@ -9848,28 +9721,33 @@
           "fulfillmentContactName": {
             "type": "string",
             "description": "Name of who is picking up the order or reciving the delivery",
-            "example": "Jane Doe"
+            "example": "Jane Doe",
+            "nullable": true
           },
           "deliveryAddress": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "123 main st"
+            "example": "123 main st",
+            "nullable": true
           },
           "phoneNumber": {
             "type": "string",
             "description": "for delivery contact information",
-            "example": "1234568"
+            "example": "1234568",
+            "nullable": true
           },
           "email": {
             "type": "string",
             "description": "for delivery contact information",
             "example": "email@email.com",
-            "format": "email"
+            "format": "email",
+            "nullable": true
           },
           "note": {
             "type": "string",
             "description": "special instruction for order",
-            "example": "note information"
+            "example": "note information",
+            "nullable": true
           },
           "isFrozen": {
             "type": "boolean",
@@ -9884,7 +9762,8 @@
           "weeklyFulfillment": {
             "type": "string",
             "description": "If is weekly, is the day of the week the order is fulfilled",
-            "example": "sunday"
+            "example": "sunday",
+            "nullable": true
           },
           "categoryId": {
             "type": "number",
@@ -9893,7 +9772,7 @@
           },
           "orderedItems": {
             "type": "array",
-            "description": "TODO",
+            "description": "When present, replaces all line items for this order (authoritative). Omit to leave lines unchanged.",
             "example": [
               {
                 "createId": "c1",
@@ -9918,8 +9797,61 @@
                 }
               ]
             }
+          },
+          "occurrenceType": {
+            "type": "string",
+            "example": "TEMPLATE",
+            "description": "The type of the occurence",
+            "nullable": true
+          },
+          "occurrenceState": {
+            "type": "string",
+            "example": "GENERATED",
+            "description": "The state of the occurence",
+            "nullable": true
+          },
+          "recurrenceSchedule": {
+            "example": {
+              "frequency": "WEEKLY",
+              "interval": 1,
+              "daysOfWeek": [
+                0,
+                1,
+                2,
+                3,
+                4
+              ],
+              "dayOfMonth": 1,
+              "monthOfYear": 1,
+              "startDate": "2025-01-01T00:00:00.000Z",
+              "endDate": "2025-01-01T00:00:00.000Z",
+              "timezone": "America/New_York"
+            },
+            "description": "The schedule of the recurring order",
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NestedCreateRecurringOrderScheduleDto"
+            }
           }
-        }
+        },
+        "required": [
+          "recipient",
+          "fulfillmentDate",
+          "fulfillmentType",
+          "fulfillmentContactName",
+          "deliveryAddress",
+          "phoneNumber",
+          "email",
+          "note",
+          "isFrozen",
+          "isWeekly",
+          "weeklyFulfillment",
+          "categoryId",
+          "occurrenceType",
+          "occurrenceState",
+          "recurrenceSchedule"
+        ]
       },
       "CreateOrderCategoryDto": {
         "type": "object",
@@ -9942,7 +9874,10 @@
             "description": "Name of the OrderCategory entity.",
             "example": "Wholesale"
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateOrderMenuItemDto": {
         "type": "object",
@@ -10049,7 +9984,12 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "menuItemId",
+          "sizeId",
+          "quantity"
+        ]
       },
       "CreateOrderContainerItemDto": {
         "type": "object",
@@ -10100,7 +10040,12 @@
             "description": "amount of the containedMenuItem / containedItemSize being ordered",
             "example": 4
           }
-        }
+        },
+        "required": [
+          "containedMenuItemId",
+          "containedItemSizeId",
+          "quantity"
+        ]
       },
       "RecipeIngredient": {
         "type": "object",
@@ -10121,6 +10066,7 @@
               ]
             },
             "description": "The InventoryItem this ingredient uses, if this property is referenced, ingredientRecipe property must be null.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/InventoryItem"
@@ -10130,6 +10076,7 @@
           "ingredientRecipe": {
             "example": null,
             "description": "The Recipe this ingredient uses, if this property is referenced, ingredientInventoryItem must be null.",
+            "nullable": true,
             "allOf": [
               {
                 "$ref": "#/components/schemas/Recipe"
@@ -10139,29 +10086,12 @@
           "quantity": {
             "type": "number",
             "example": "3.5",
-            "description": "the numberical value of the quantityMeasure property of the ingredient"
+            "description": "Returns from DB as a string, the numerical value of the quantityMeasure property of the ingredient"
           },
-          "quantityUnitType": {
-            "example": {
-              "id": 1,
-              "name": "pound",
-              "abbreviation": "lbs",
-              "conversionFactorToBase": "1.3426436",
-              "category": {
-                "id": 1,
-                "name": "Weight",
-                "baseConversionUnit": {},
-                "units": [
-                  {}
-                ]
-              }
-            },
-            "description": "The unit of measure for the ingredient",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasure"
-              }
-            ]
+          "unit": {
+            "type": "string",
+            "example": "oz",
+            "description": "The unit of measure symbol for the ingredient quantity"
           },
           "parentRecipe": {
             "example": {
@@ -10169,8 +10099,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-01-27T21:59:01.059Z",
-                "updatedAt": "2026-01-27T21:59:01.059Z",
+                "createdAt": "2026-06-24T21:33:16.748Z",
+                "updatedAt": "2026-06-24T21:33:16.748Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -10190,21 +10120,9 @@
                 {}
               ],
               "batchResultQuantity": 2,
-              "batchResultUnitType": {
-                "id": 1,
-                "name": "pound",
-                "abbreviation": "lbs",
-                "conversionFactorToBase": "1.3426436",
-                "category": {}
-              },
+              "batchResultUnit": "oz",
               "servingSizeQuantity": 3,
-              "servingSizeUnitType": {
-                "id": 1,
-                "name": "pound",
-                "abbreviation": "lbs",
-                "conversionFactorToBase": "1.3426436",
-                "category": {}
-              },
+              "servingSizeUnit": "oz",
               "salesPrice": "3.99",
               "category": {},
               "subCategory": {}
@@ -10222,7 +10140,7 @@
           "ingredientInventoryItem",
           "ingredientRecipe",
           "quantity",
-          "quantityUnitType",
+          "unit",
           "parentRecipe"
         ]
       },
@@ -10242,8 +10160,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:59:01.059Z",
-              "updatedAt": "2026-01-27T21:59:01.059Z",
+              "createdAt": "2026-06-24T21:33:16.748Z",
+              "updatedAt": "2026-06-24T21:33:16.748Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10273,44 +10191,24 @@
             "format": "decimal",
             "nullable": true
           },
-          "batchResultUnitType": {
-            "example": {
-              "id": 1,
-              "name": "pound",
-              "abbreviation": "lbs",
-              "conversionFactorToBase": "1.3426436",
-              "category": {}
-            },
-            "description": "The unit of measure that descibes the total yield the recipe produces.",
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasure"
-              }
-            ]
+          "batchResultUnit": {
+            "type": "string",
+            "example": "oz",
+            "description": "The unit symbol that describes the total yield the recipe produces.",
+            "nullable": true
           },
           "servingSizeQuantity": {
             "type": "number",
             "example": 4,
-            "description": "A unit amount of the servingSizeUnitOfMeasure property that is a subset of the batchResultQuantity property.",
+            "description": "A unit amount of the servingSizeUnit property that is a subset of the batchResultQuantity property.",
             "format": "decimal",
             "nullable": true
           },
-          "servingSizeUnitType": {
-            "example": {
-              "id": 1,
-              "name": "pound",
-              "abbreviation": "lbs",
-              "conversionFactorToBase": "1.3426436",
-              "category": {}
-            },
-            "description": "The unit of measure that describes the total sellable portions of the recipes yield",
-            "nullable": true,
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/UnitOfMeasure"
-              }
-            ]
+          "servingSizeUnit": {
+            "type": "string",
+            "example": "oz",
+            "description": "The unit symbol that describes the total sellable portions of the recipes yield",
+            "nullable": true
           },
           "salesPrice": {
             "type": "number",
@@ -10376,20 +10274,7 @@
                 },
                 "ingredientRecipe": null,
                 "quantity": 2,
-                "quantityMeasure": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
-                "quantityUnitType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                }
+                "unit": "oz"
               }
             ],
             "description": "A list of ingredients for the recipe",
@@ -10404,8 +10289,9 @@
           "name",
           "producedMenuItem",
           "batchResultQuantity",
-          "batchResultUnitType",
+          "batchResultUnit",
           "servingSizeQuantity",
+          "servingSizeUnit",
           "salesPrice",
           "isIngredient",
           "category",
@@ -10433,8 +10319,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-01-27T21:59:01.059Z",
-                  "updatedAt": "2026-01-27T21:59:01.059Z",
+                  "createdAt": "2026-06-24T21:33:16.748Z",
+                  "updatedAt": "2026-06-24T21:33:16.748Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10454,21 +10340,9 @@
                   {}
                 ],
                 "batchResultQuantity": 2,
-                "batchResultUnitType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
+                "batchResultUnit": "oz",
                 "servingSizeQuantity": 3,
-                "servingSizeUnitType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
+                "servingSizeUnit": "oz",
                 "salesPrice": "3.99",
                 "category": {},
                 "subCategory": {}
@@ -10543,8 +10417,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-01-27T21:59:01.060Z",
-                  "updatedAt": "2026-01-27T21:59:01.060Z",
+                  "createdAt": "2026-06-24T21:33:16.748Z",
+                  "updatedAt": "2026-06-24T21:33:16.748Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10564,21 +10438,9 @@
                   {}
                 ],
                 "batchResultQuantity": 2,
-                "batchResultUnitType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
+                "batchResultUnit": "oz",
                 "servingSizeQuantity": 3,
-                "servingSizeUnitType": {
-                  "id": 1,
-                  "name": "pound",
-                  "abbreviation": "lbs",
-                  "conversionFactorToBase": "1.3426436",
-                  "category": {}
-                },
+                "servingSizeUnit": "oz",
                 "salesPrice": "3.99",
                 "category": {},
                 "subCategory": {}
@@ -10604,27 +10466,31 @@
           "ingredientInventoryItemId": {
             "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "ingredientRecipeId": {
             "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "quantity": {
             "type": "number",
-            "description": "The unit amount of the UnitofMeasure of the InventoryItem",
+            "description": "The unit amount of the unit of measure of the InventoryItem",
             "example": 4
           },
-          "quantityUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity.",
-            "example": 5
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for the ingredient quantity (e.g. \"kg\", \"cup\", \"ea\").",
+            "example": "oz"
           }
         },
         "required": [
+          "ingredientInventoryItemId",
+          "ingredientRecipeId",
           "quantity",
-          "quantityUnitTypeId"
+          "unit"
         ]
       },
       "CreateRecipeDto": {
@@ -10638,35 +10504,40 @@
           "producedMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that the recipe produces.",
-            "example": 1
+            "example": 1,
+            "nullable": true
           },
           "batchResultQuantity": {
             "type": "number",
-            "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
+            "description": "The unit amount the recipe produces.",
             "example": 2,
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
-          "batchResultUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.",
-            "example": 3
+          "batchResultUnit": {
+            "type": "object",
+            "description": "Unit symbol expressing the unit size of what the recipe produces.",
+            "example": "oz",
+            "nullable": true
           },
           "servingSizeQuantity": {
             "type": "number",
-            "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
+            "description": "The unit amount of the servingSizeUnit describing the amount that is sold.",
             "example": 4,
             "format": "decimal"
           },
-          "servingSizeUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure used to represent the unit size of what is sold.",
-            "example": 5
+          "servingSizeUnit": {
+            "type": "object",
+            "description": "Unit symbol representing the unit size of what is sold.",
+            "example": "oz",
+            "nullable": true
           },
           "salesPrice": {
             "type": "number",
             "description": "The price of purchasing the serving size amount.",
             "example": 6,
-            "format": "decimal"
+            "format": "decimal",
+            "nullable": true
           },
           "isIngredient": {
             "type": "boolean",
@@ -10676,12 +10547,14 @@
           "categoryId": {
             "type": "number",
             "description": "Id of the RecipeCategory entity",
-            "example": 7
+            "example": 7,
+            "nullable": true
           },
           "subCategoryId": {
             "type": "number",
             "description": "Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory",
-            "example": 8
+            "example": 8,
+            "nullable": true
           },
           "ingredients": {
             "description": "Array of CreateRecipeIngredientDto.",
@@ -10690,13 +10563,13 @@
                 "createId": "c1",
                 "ingredientInventoryItemId": 2,
                 "quantity": 3,
-                "quantityUnitTypeId": 4
+                "unit": "oz"
               },
               {
                 "createId": "c5",
                 "ingredientRecipeId": 5,
                 "quantity": 6,
-                "quantityUnitTypeId": 7
+                "unit": "oz"
               }
             ],
             "type": "array",
@@ -10707,7 +10580,48 @@
         },
         "required": [
           "name",
-          "batchResultUnitTypeId"
+          "producedMenuItemId",
+          "batchResultUnit",
+          "servingSizeQuantity",
+          "servingSizeUnit",
+          "salesPrice",
+          "isIngredient",
+          "categoryId",
+          "subCategoryId",
+          "ingredients"
+        ]
+      },
+      "NestedUpdateRecipeIngredientDto": {
+        "type": "object",
+        "properties": {
+          "ingredientInventoryItemId": {
+            "type": "number",
+            "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
+            "example": 3,
+            "nullable": true
+          },
+          "ingredientRecipeId": {
+            "type": "number",
+            "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
+            "example": 4,
+            "nullable": true
+          },
+          "quantity": {
+            "type": "number",
+            "description": "The unit amount of the unit of measure of the InventoryItem",
+            "example": 1
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for the ingredient quantity (e.g. \"kg\", \"cup\", \"ea\").",
+            "example": "oz"
+          }
+        },
+        "required": [
+          "ingredientInventoryItemId",
+          "ingredientRecipeId",
+          "quantity",
+          "unit"
         ]
       },
       "UpdateRecipeDto": {
@@ -10721,32 +10635,38 @@
           "producedMenuItemId": {
             "type": "number",
             "description": "Id of the MenuItem that the recipe produces.",
-            "example": "Blueberry Pie"
+            "example": "Blueberry Pie",
+            "nullable": true
           },
           "batchResultQuantity": {
             "type": "number",
-            "description": "The unit amount the recipe produces of the referenced BatchUnitOfMeasure UnitofMeasure entity.",
-            "example": 1
+            "description": "The unit amount the recipe produces.",
+            "example": 1,
+            "nullable": true
           },
-          "batchResultUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity expressing the unit size of what the recipe produces.",
-            "example": 2
+          "batchResultUnit": {
+            "type": "string",
+            "description": "Unit symbol expressing the unit size of what the recipe produces.",
+            "example": "oz",
+            "nullable": true
           },
           "servingSizeQuantity": {
             "type": "number",
-            "description": "The unit amount of the servingSizeUnitOfMeasure describing the amount that is sold.",
-            "example": 3
+            "description": "The unit amount of the servingSizeUnit describing the amount that is sold.",
+            "example": 3,
+            "nullable": true
           },
-          "servingSizeUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure used to represent the unit size of what is sold.",
-            "example": 4
+          "servingSizeUnit": {
+            "type": "string",
+            "description": "Unit symbol representing the unit size of what is sold.",
+            "example": "oz",
+            "nullable": true
           },
           "salesPrice": {
             "type": "number",
             "description": "The price of purchasing the serving size amount.",
-            "example": 5.99
+            "example": 5.99,
+            "nullable": true
           },
           "isIngredient": {
             "type": "boolean",
@@ -10756,12 +10676,14 @@
           "categoryId": {
             "type": "number",
             "description": "Id of the RecipeCategory entity",
-            "example": 6
+            "example": 6,
+            "nullable": true
           },
           "subCategoryId": {
             "type": "number",
             "description": "Id of the RecipeSubCategory entity. Must be a child subcategory to the referenced RecipeCategory",
-            "example": 7
+            "example": 7,
+            "nullable": true
           },
           "ingredients": {
             "type": "array",
@@ -10771,13 +10693,13 @@
                 "id": 1,
                 "ingredientInventoryItemId": 2,
                 "quantity": 3,
-                "quantityUnitTypeId": 4
+                "unit": "oz"
               },
               {
                 "createId": "c5",
                 "ingredientRecipeId": 5,
                 "quantity": 6,
-                "quantityUnitTypeId": 7
+                "unit": "oz"
               }
             ],
             "items": {
@@ -10791,7 +10713,20 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "producedMenuItemId",
+          "batchResultQuantity",
+          "batchResultUnit",
+          "servingSizeQuantity",
+          "servingSizeUnit",
+          "salesPrice",
+          "isIngredient",
+          "categoryId",
+          "subCategoryId",
+          "ingredients"
+        ]
       },
       "NestedCreateRecipeSubCategoryDto": {
         "type": "object",
@@ -10836,6 +10771,19 @@
           "name"
         ]
       },
+      "NestedUpdateRecipeSubCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the RecipeSubCategory entity.",
+            "example": "name"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
       "UpdateRecipeCategoryDto": {
         "type": "object",
         "properties": {
@@ -10868,7 +10816,10 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateRecipeSubCategoryDto": {
         "type": "object",
@@ -10897,7 +10848,10 @@
             "description": "Name of the RecipeSubCategory entity.",
             "example": "name"
           }
-        }
+        },
+        "required": [
+          "name"
+        ]
       },
       "CreateRecipeIngredientDto": {
         "type": "object",
@@ -10905,22 +10859,24 @@
           "ingredientInventoryItemId": {
             "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 2
+            "example": 2,
+            "nullable": true
           },
           "ingredientRecipeId": {
             "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "quantity": {
             "type": "number",
-            "description": "The unit amount of the UnitofMeasure of the InventoryItem",
+            "description": "The unit amount of the unit of measure of the InventoryItem",
             "example": 4
           },
-          "quantityUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity.",
-            "example": 5
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for the ingredient quantity (e.g. \"kg\", \"cup\", \"ea\").",
+            "example": "oz"
           },
           "parentRecipeId": {
             "type": "number",
@@ -10929,8 +10885,10 @@
           }
         },
         "required": [
+          "ingredientInventoryItemId",
+          "ingredientRecipeId",
           "quantity",
-          "quantityUnitTypeId",
+          "unit",
           "parentRecipeId"
         ]
       },
@@ -10940,24 +10898,32 @@
           "ingredientInventoryItemId": {
             "type": "number",
             "description": "Id of InventoryItem used as the ingredient, is optional. If inventoryItemId is null, subRecipeIngredientId must be populated, both cannot be populated.",
-            "example": 3
+            "example": 3,
+            "nullable": true
           },
           "ingredientRecipeId": {
             "type": "number",
             "description": "Id of Recipe entity being used as a recipe ingredient, is optional. If subRecipeIngredientId is null, inventoryItemId must be populated, both cannot be populated.",
-            "example": 4
+            "example": 4,
+            "nullable": true
           },
           "quantity": {
             "type": "number",
-            "description": "The unit amount of the UnitofMeasure of the InventoryItem",
+            "description": "The unit amount of the unit of measure of the InventoryItem",
             "example": 1
           },
-          "quantityUnitTypeId": {
-            "type": "number",
-            "description": "Id of the UnitofMeasure entity.",
-            "example": 2
+          "unit": {
+            "type": "string",
+            "description": "Unit symbol for the ingredient quantity (e.g. \"kg\", \"cup\", \"ea\").",
+            "example": "oz"
           }
-        }
+        },
+        "required": [
+          "ingredientInventoryItemId",
+          "ingredientRecipeId",
+          "quantity",
+          "unit"
+        ]
       },
       "Template": {
         "type": "object",
@@ -10972,11 +10938,6 @@
             "example": "Spring Pies",
             "description": "Name of the template"
           },
-          "isPie": {
-            "type": "boolean",
-            "example": true,
-            "description": "Differentiates whether the template is for pie products or not."
-          },
           "templateMenuItems": {
             "example": [
               {
@@ -10984,8 +10945,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-01-27T21:59:02.305Z",
-                  "updatedAt": "2026-01-27T21:59:02.305Z",
+                  "createdAt": "2026-06-24T21:33:16.777Z",
+                  "updatedAt": "2026-06-24T21:33:16.777Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -11014,7 +10975,6 @@
         "required": [
           "id",
           "name",
-          "isPie",
           "templateMenuItems"
         ]
       },
@@ -11033,14 +10993,14 @@
           },
           "tablePosIndex": {
             "type": "number",
-            "example": 0,
-            "description": "The index specifying the row order of this template item on the template (0 being the first row at the top ignoring the header row)"
+            "example": 1,
+            "description": "A 1-based index specifying the row order of this template item on the template (1 being the first row at the top ignoring the header row)"
           },
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-01-27T21:59:02.305Z",
-              "updatedAt": "2026-01-27T21:59:02.305Z",
+              "createdAt": "2026-06-24T21:33:16.777Z",
+              "updatedAt": "2026-06-24T21:33:16.777Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -11120,11 +11080,6 @@
             "description": "Name of the Template entity.",
             "example": "Summer Pies"
           },
-          "isPie": {
-            "type": "boolean",
-            "description": "If the template displays a list of pies. Templates display either Pies or Pastries.",
-            "example": false
-          },
           "templateMenuItems": {
             "description": "TODO",
             "example": [
@@ -11151,6 +11106,31 @@
           "name"
         ]
       },
+      "NestedUpdateTemplateMenuItemDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "Name to be used on the baking list representing the referenced MenuItem.",
+            "example": "POTM"
+          },
+          "tablePosIndex": {
+            "type": "number",
+            "description": "The row position of the TemplateMenuItem on the parent Template.",
+            "example": 2
+          },
+          "menuItemId": {
+            "type": "number",
+            "description": "Id of the MenuItem entity being displayed on the Template.",
+            "example": 1
+          }
+        },
+        "required": [
+          "displayName",
+          "tablePosIndex",
+          "menuItemId"
+        ]
+      },
       "UpdateTemplateDto": {
         "type": "object",
         "properties": {
@@ -11158,11 +11138,6 @@
             "type": "string",
             "description": "Name of the Template entity.",
             "example": "Spring Pastries"
-          },
-          "isPie": {
-            "type": "boolean",
-            "description": "If the template displays a list of pies. Templates display either Pies or Pastries.",
-            "example": false
           },
           "templateMenuItems": {
             "type": "array",
@@ -11192,7 +11167,11 @@
               ]
             }
           }
-        }
+        },
+        "required": [
+          "name",
+          "templateMenuItems"
+        ]
       },
       "CreateTemplateMenuItemDto": {
         "type": "object",
@@ -11243,7 +11222,12 @@
             "description": "Id of the MenuItem entity being displayed on the Template.",
             "example": 1
           }
-        }
+        },
+        "required": [
+          "displayName",
+          "tablePosIndex",
+          "menuItemId"
+        ]
       }
     }
   }

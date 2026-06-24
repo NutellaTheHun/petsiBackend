@@ -23,6 +23,7 @@ export class RecurringOrderSchedule {
     @ApiProperty({
         example: 1,
         description: 'The unique identifier of the order that this schedule is for',
+        type: () => Order,
     })
     @OneToOne(() => Order, (order) => order.recurrenceSchedule, { onDelete: 'CASCADE' })
     @JoinColumn()

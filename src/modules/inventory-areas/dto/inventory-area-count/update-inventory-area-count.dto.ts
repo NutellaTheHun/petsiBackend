@@ -1,4 +1,5 @@
 import {
+    ApiExtraModels,
     ApiProperty,
     getSchemaPath
 } from '@nestjs/swagger';
@@ -9,6 +10,7 @@ import { InventoryArea } from '../../entities/inventory-area.entity';
 import { NestedCreateInventoryAreaItemDto } from '../inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../inventory-area-item/nested-update-inventory-area-item.dto';
 
+@ApiExtraModels(NestedCreateInventoryAreaItemDto, NestedUpdateInventoryAreaItemDto)
 export class UpdateInventoryAreaCountDto {
     @ApiProperty({
         description: 'Id for Inventory-Area entity.',
