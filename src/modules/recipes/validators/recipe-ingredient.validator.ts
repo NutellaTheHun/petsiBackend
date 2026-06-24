@@ -6,7 +6,6 @@ import { ValidationErrorMap } from '../../../common/validation/validation-error'
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
@@ -30,9 +29,6 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
 
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
-
-        @InjectRepository(UnitOfMeasure)
-        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -82,15 +78,6 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             );
         }
 
-        if (identity.quantityUnitTypeId !== undefined) {
-            await this.helper.enforceExists(
-                identity.quantityUnitTypeId,
-                this.unitOfMeasureRepo,
-                'quantityUnitType',
-                errorMap,
-            );
-        }
-
         this.helper.enforceOnlyOne(
             identity,
             'ingredientInventoryItem',
@@ -121,7 +108,7 @@ export class RecipeIngredientValidator extends NestedValidatorBase<RecipeIngredi
             ingredientInventoryItem: dto.ingredientInventoryItemId,
             ingredientRecipe: dto.ingredientRecipeId,
             quantity: dto.quantity,
-            quantityUnitTypeId: dto.quantityUnitTypeId,
+            unit: dto.unit,
             parentRecipeId: parentRecipeId,
         } as RecipeIngredientValidatorIdentity;
     }

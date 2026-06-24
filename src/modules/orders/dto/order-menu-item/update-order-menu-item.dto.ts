@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsPositive, ValidateNested } from 'class-validator';
 import { EntityId } from '../../../../common/types';
@@ -7,6 +7,7 @@ import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
 import { NestedCreateOrderContainerItemDto } from '../order-container-item/nested-create-order-container-item.dto';
 import { NestedUpdateOrderContainerItemDto } from '../order-container-item/nested-update-order-container-item.dto';
 
+@ApiExtraModels(NestedCreateOrderContainerItemDto, NestedUpdateOrderContainerItemDto)
 export class UpdateOrderMenuItemDto {
     @ApiProperty({
         description: 'Id of MenuItem entity being ordered.',

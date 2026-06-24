@@ -6,7 +6,6 @@ import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
 import { RecipeCategory } from '../entities/recipe-category.entity';
@@ -49,17 +48,13 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
                 ? dto.batchResultQuantity
                 : null,
 
-            batchResultUnitType: dto.batchResultUnitTypeId
-                ? { id: dto.batchResultUnitTypeId }
-                : null,
+            batchResultUnit: dto.batchResultUnit ?? null,
 
             servingSizeQuantity: dto.servingSizeQuantity
                 ? dto.servingSizeQuantity
                 : null,
 
-            servingSizeUnitType: dto.servingSizeUnitTypeId
-                ? { id: dto.servingSizeUnitTypeId }
-                : null,
+            servingSizeUnit: dto.servingSizeUnit ?? null,
 
             salesPrice: dto.salesPrice ? dto.salesPrice.toString() : null,
 
@@ -89,14 +84,8 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
         manager: EntityManager,
         entity: Recipe,
     ): Promise<void> {
-        if (dto.batchResultUnitTypeId !== undefined) {
-            if (dto.batchResultUnitTypeId === null) {
-                entity.batchResultUnitType = null;
-            } else {
-                entity.batchResultUnitType = manager.create(UnitOfMeasure, {
-                    id: dto.batchResultUnitTypeId,
-                });
-            }
+        if (dto.batchResultUnit !== undefined) {
+            entity.batchResultUnit = dto.batchResultUnit ?? null;
         }
 
         if (dto.batchResultQuantity !== undefined) {
@@ -148,14 +137,8 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
             }
         }
 
-        if (dto.servingSizeUnitTypeId !== undefined) {
-            if (dto.servingSizeUnitTypeId === null) {
-                entity.servingSizeUnitType = null;
-            } else {
-                entity.servingSizeUnitType = manager.create(UnitOfMeasure, {
-                    id: dto.servingSizeUnitTypeId,
-                });
-            }
+        if (dto.servingSizeUnit !== undefined) {
+            entity.servingSizeUnit = dto.servingSizeUnit ?? null;
         }
 
         if (dto.servingSizeQuantity !== undefined) {
@@ -264,14 +247,11 @@ export class RecipeService extends ServiceBase<RecipeEntity> {
     protected getUpdateDiffRelations(): string[] {
         return [
             'producedMenuItem',
-            'batchResultUnitType',
-            'servingSizeUnitType',
             'category',
             'subCategory',
             'ingredients',
             'ingredients.ingredientInventoryItem',
             'ingredients.ingredientRecipe',
-            'ingredients.quantityUnitType',
         ];
     }
 }

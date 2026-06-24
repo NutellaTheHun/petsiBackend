@@ -8,7 +8,6 @@ import { TestRequestContextService } from '../../../test/mocks/test-request-cont
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
 import { RequestContextModule } from '../../request-context/request-context.module';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasureModule } from '../../unit-of-measure/unit-of-measure.module';
 import { InventoryItemCategoryController } from '../controllers/inventory-item-category.controller';
 import { InventoryItemPackageController } from '../controllers/inventory-item-package.controller';
 import { InventoryItemSizeController } from '../controllers/inventory-item-size.controller';
@@ -68,7 +67,6 @@ export async function getInventoryItemTestingModule(opts?: {
         InventoryItemSize,
         InventoryItemVendor,
       ]),
-      UnitOfMeasureModule,
       InventoryItemsModule,
       CacheModule.register(),
       LoggerModule.forRoot({

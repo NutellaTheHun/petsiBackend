@@ -1,5 +1,5 @@
 import { MenuItem } from '../../../menu-items/entities/menu-item.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
+import { AppUnit } from '../../../../common/units';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
 import { RecipeCategory } from '../../entities/recipe-category.entity';
 import { RecipeSubCategory } from '../../entities/recipe-sub-category.entity';
@@ -23,7 +23,7 @@ describe('RecipeChangeDetector', () => {
             ingredientInventoryItem: { id: 100 } as InventoryItem,
             ingredientRecipe: null,
             quantity: 1,
-            quantityUnitType: { id: 200 } as UnitOfMeasure,
+            unit: 'oz' as AppUnit,
         } as RecipeIngredient);
 
     const baseEntity = (): Recipe =>
@@ -32,9 +32,9 @@ describe('RecipeChangeDetector', () => {
             name: 'Apple pie',
             producedMenuItem: { id: 1 } as MenuItem,
             batchResultQuantity: 1,
-            batchResultUnitType: { id: 2 } as UnitOfMeasure,
+            batchResultUnit: 'oz' as AppUnit,
             servingSizeQuantity: 2,
-            servingSizeUnitType: { id: 3 } as UnitOfMeasure,
+            servingSizeUnit: 'kg' as AppUnit,
             salesPrice: '12.00',
             isIngredient: false,
             category: { id: 10 } as RecipeCategory,
@@ -65,7 +65,7 @@ describe('RecipeChangeDetector', () => {
             createId: 'c1',
             ingredientInventoryItemId: 101,
             quantity: 2,
-            quantityUnitTypeId: 200,
+            unit: 'oz' as AppUnit,
         };
         const dto = recipeToUpdateDto(entity, { ingredients: [createIng] });
         const result = detector.detect(entity, dto);

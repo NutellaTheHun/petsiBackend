@@ -1,9 +1,10 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { NestedCreateRecipeSubCategoryDto } from '../recipe-sub-category/nested-create-recipe-sub-category.dto';
 import { NestedUpdateRecipeSubCategoryDto } from '../recipe-sub-category/nested-update-recipe-sub-category.dto';
 
+@ApiExtraModels(NestedCreateRecipeSubCategoryDto, NestedUpdateRecipeSubCategoryDto)
 export class UpdateRecipeCategoryDto {
     @ApiProperty({
         description: 'Name of the RecipeCategory entity.',

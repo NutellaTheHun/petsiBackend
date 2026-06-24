@@ -7,7 +7,6 @@ import { inventoryItemExample } from '../../../common/swagger/examples/inventory
 import { InventoryItemPackage } from '../../inventory-items/entities/inventory-item-package.entity';
 import { InventoryItemSize } from '../../inventory-items/entities/inventory-item-size.entity';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryAreaItemDto } from '../dto/inventory-area-item/create-inventory-area-item.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
 import { NestedUpdateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-update-inventory-area-item.dto';
@@ -23,7 +22,7 @@ export type InventoryAreaItemEntity = NestedEntityBase<
 >;
 /**
  * A single item within the process of an {@link InventoryAreaCount},
- * representing an {@link InventoryItem}, its quantity, and the {@link InventoryItemSize} of the item (its {@link InventoryItemPackage} and {@link UnitOfMeasure})
+ * representing an {@link InventoryItem}, its quantity, and the {@link InventoryItemSize} of the item (its {@link InventoryItemPackage} and unit symbol)
  *
  * Is created along as a child to the creation of an Inventory Count, or updated as a child.
  */
@@ -67,7 +66,7 @@ export class InventoryAreaItem {
      * The size of the {@link InventoryItem } counted.
      *
      * A size consists of a {@link InventoryItemPackage}, ("box", "bag")
-     * and a {@link UnitOfMeasure} ("lbs", "oz", "liters")
+     * and a unit symbol ("lb", "oz", "l")
      *
      * Creating new InventoryItemSizes is permitted during the creation of {@link InventoryAreaCount} (selects package and unit type on the fly)
      */

@@ -11,7 +11,6 @@ import { OrderTestingUtil } from '../orders/utils/order-testing.util';
 import { RecipeTestUtil } from '../recipes/utils/recipe-test.util';
 import { Role } from '../roles/entities/role.entity';
 import { TemplateTestingUtil } from '../templates/utils/template-testing.util';
-import { UnitOfMeasureTestingUtil } from '../unit-of-measure/utils/unit-of-measure-testing.util';
 import { User } from '../users/entities/user.entities';
 
 @Injectable()
@@ -31,7 +30,6 @@ export class SeedService {
     private readonly orderTestUtil: OrderTestingUtil,
     private readonly recipeTestUtil: RecipeTestUtil,
     private readonly templateTestUtil: TemplateTestingUtil,
-    private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
   ) {}
 
   private async seedRolesAndUsers() {
@@ -122,7 +120,6 @@ export class SeedService {
     await this.seedOrdersModuleTestDb(ctx);
     await this.seedRecipeModuleTestDb(ctx);
     await this.seedTemplateModuleTestDb(ctx);
-    await this.seedUnitOfMeasureModuleTestDb(ctx);
     await this.seedRoleModuleTestDb(ctx);
     await this.seedUserModuleTestDb(ctx);
   }
@@ -282,21 +279,6 @@ export class SeedService {
 
   private async seedTemplateMenuItemTestDb(ctx: DatabaseTestContext) {
     await this.templateTestUtil.initTemplateMenuItemTestDatabase(ctx);
-  }
-
-  // unit of measure
-
-  private async seedUnitOfMeasureModuleTestDb(ctx: DatabaseTestContext) {
-    await this.seedUnitOfMeasureCategoryTestDb(ctx);
-    await this.seedUnitOfMeasureTestDb(ctx);
-  }
-
-  private async seedUnitOfMeasureTestDb(ctx: DatabaseTestContext) {
-    await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(ctx);
-  }
-
-  private async seedUnitOfMeasureCategoryTestDb(ctx: DatabaseTestContext) {
-    await this.unitOfMeasureTestUtil.initUnitCategoryTestDatabase(ctx);
   }
 
   // Role

@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 import { NestedCreateDto } from '../../../../common/base/nested-create-dto.base';
+import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 
 export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
@@ -16,16 +16,15 @@ export class NestedCreateInventoryItemSizeDto extends NestedCreateDto {
     readonly packageId: EntityId<InventoryItemPackage>;
 
     @ApiProperty({
-        description: 'Id of UnitofMeasure entity.',
-        example: 2,
+        description: 'Unit symbol for this size (e.g. "lb", "oz", "ea").',
+        example: 'lb',
     })
-    @IsNumber()
-    @IsPositive()
+    @IsIn(Object.values(UNITS))
     @IsNotEmpty()
-    readonly measureTypeId: EntityId<UnitOfMeasure>;
+    readonly unit: AppUnit;
 
     @ApiProperty({
-        description: 'the unit quantity of the UnitofMeasure entity.',
+        description: 'the unit quantity of the unit entity.',
         example: 10,
     })
     @IsNumber()

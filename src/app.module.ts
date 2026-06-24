@@ -28,7 +28,6 @@ import { RoleGuard } from './modules/roles/guards/role.guard';
 import { RoleModule } from './modules/roles/role.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { TemplatesModule } from './modules/templates/templates.module';
-import { UnitOfMeasureModule } from './modules/unit-of-measure/unit-of-measure.module';
 import { UserModule } from './modules/users/user.module';
 
 @Module({
@@ -85,7 +84,6 @@ import { UserModule } from './modules/users/user.module';
     InventoryAreasModule,
     InventoryItemsModule,
     RecipesModule,
-    UnitOfMeasureModule,
     UserModule,
     RoleModule,
   ],

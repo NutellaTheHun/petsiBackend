@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
@@ -10,6 +10,7 @@ import {
 import { NestedCreateTemplateMenuItemDto } from '../template-menu-item/nested-create-template-menu-item.dto';
 import { NestedUpdateTemplateMenuItemDto } from '../template-menu-item/nested-update-template-menu-item.dto';
 
+@ApiExtraModels(NestedCreateTemplateMenuItemDto, NestedUpdateTemplateMenuItemDto)
 export class UpdateTemplateDto {
     @ApiProperty({
         description: 'Name of the Template entity.',

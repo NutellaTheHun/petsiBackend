@@ -7,8 +7,6 @@ import { InventoryItemsModule } from '../inventory-items/inventory-items.module'
 import { MenuItem } from '../menu-items/entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items/menu-items.module';
 import { RequestContextModule } from '../request-context/request-context.module';
-import { UnitOfMeasure } from '../unit-of-measure/entities/unit-of-measure.entity';
-import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 import { RecipeCategoryBuilder } from './builders/recipe-category.builder';
 import { RecipeIngredientBuilder } from './builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from './builders/recipe-sub-category.builder';
@@ -45,10 +43,8 @@ import { RecipeValidator } from './validators/recipe.valdiator';
       RecipeSubCategory,
       RecipeIngredient,
       InventoryItem,
-      UnitOfMeasure,
       MenuItem,
     ]),
-    UnitOfMeasureModule,
     InventoryItemsModule,
     MenuItemsModule,
     CacheModule.register(),

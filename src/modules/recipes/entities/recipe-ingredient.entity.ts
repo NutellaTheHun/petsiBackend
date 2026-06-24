@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { NestedEntityBase } from '../../../common/base/entity.base';
+import { AppUnit } from '../../../common/units';
 import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
 import { recipeExample } from '../../../common/swagger/examples/recipes/recipe.example';
-import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateRecipeIngredientDto } from '../dto/recipe-ingredient/create-recipe-ingredient.dto';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
@@ -82,17 +81,15 @@ export class RecipeIngredient {
     quantity: number;
 
     /**
-     * The choice of measurement for the ingredient.
-     *
-     * Example: 3 cups({@link UnitOfMeasure}) of Flour
+     * The unit symbol for this ingredient (e.g. 'kg', 'cup', 'ea').
      */
     @ApiProperty({
-        example: unitOfMeasureExample(new Set<string>(), false),
-        description: 'The unit of measure for the ingredient',
-        type: UnitOfMeasure,
+        example: 'oz',
+        description: 'The unit of measure symbol for the ingredient quantity',
+        type: String,
     })
-    @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-    quantityUnitType: UnitOfMeasure;
+    @Column()
+    unit: AppUnit;
 
     /**
      * The parent {@link Recipe} to the ingredient.

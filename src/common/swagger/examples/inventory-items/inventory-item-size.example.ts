@@ -1,5 +1,4 @@
 import { handleSetHas, handleShallow } from '../handlers/handlers';
-import { unitOfMeasureExample } from '../unit-of-measure/unit-of-measure.example';
 import { inventoryItemPackageExample } from './inventory-item-package.example';
 import { inventoryItemExample } from './inventory-item.example';
 
@@ -10,7 +9,7 @@ export function inventoryItemSizeExample(fnSet: Set<string>, shallow: boolean) {
 
     measureAmount: 2,
 
-    measureType: handleShallow(shallow, fnSet, unitOfMeasureExample, false),
+    unit: 'lb',
 
     package: handleShallow(shallow, fnSet, inventoryItemPackageExample, false),
 

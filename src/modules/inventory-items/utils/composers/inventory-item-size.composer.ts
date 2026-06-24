@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import { ComposerBase } from '../../../../common/base/composer.base';
 import { ResolverContext } from '../../../../common/types/resolver-context.type';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../../dto/inventory-item-size/update-inventory-item-size.dto';
@@ -22,7 +21,7 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
     ): Promise<InventoryItemSize> {
         const result = manager.create(InventoryItemSize, {
             measureAmount: dto.measureAmount,
-            measureType: { id: dto.measureTypeId },
+            unit: dto.unit,
             package: { id: dto.packageId },
             inventoryItem: { id: dto.inventoryItemId },
             cost: dto.cost ? dto.cost.toString() : null,
@@ -49,10 +48,8 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
             entity.measureAmount = dto.measureAmount;
         }
 
-        if (dto.measureTypeId !== undefined) {
-            entity.measureType = manager.create(UnitOfMeasure, {
-                id: dto.measureTypeId,
-            });
+        if (dto.unit !== undefined) {
+            entity.unit = dto.unit;
         }
     }
 
@@ -68,7 +65,7 @@ export class InventoryItemSizeComposer extends ComposerBase<InventoryItemSizeEnt
 
         return {
             packageId: dto.packageId,
-            measureTypeId: dto.measureTypeId,
+            unit: dto.unit,
             measureAmount: dto.measureAmount,
             cost: dto.cost,
             inventoryItemId: context.inventoryItemId,

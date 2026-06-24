@@ -163,6 +163,6 @@ export class InventoryItemService extends ServiceBase<InventoryItemEntity> {
     }
 
     protected getUpdateDiffRelations(): string[] {
-        return ['category', 'vendor', 'sizes', 'sizes.package', 'sizes.measureType'];
+        return ['category', 'vendor', 'sizes', 'sizes.package'];
     }
 }

@@ -4,8 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
@@ -23,19 +21,14 @@ describe('inventory item size validator', () => {
     let validator: InventoryItemSizeValidator;
     let sizeRepo: Repository<InventoryItemSize>;
     let itemRepo: Repository<InventoryItem>;
-    let unitRepo: Repository<UnitOfMeasure>;
     let packageRepo: Repository<InventoryItemPackage>;
 
     const findInventoryItem = async (name: string) => {
-        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'sizes.measureType'] });
+        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package'] });
     }
 
     const findInventoryItemSize = async () => {
-        return await sizeRepo.findOneOrFail({ where: {}, relations: ['inventoryItem', 'package', 'measureType'] });
-    }
-
-    const findUnitOfMeasure = async (name: string) => {
-        return await unitRepo.findOneOrFail({ where: { name } });
+        return await sizeRepo.findOneOrFail({ where: {}, relations: ['inventoryItem', 'package'] });
     }
 
     const findInventoryItemPackage = async (name: string) => {
@@ -56,7 +49,6 @@ describe('inventory item size validator', () => {
 
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
-        unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
     });
 
@@ -72,12 +64,11 @@ describe('inventory item size validator', () => {
     it('successfully validate create: no validation errors', async () => {
         const item = await findInventoryItem(FOOD_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: item.id,
             packageId: pkg.id,
-            measureTypeId: uom.id,
+            unit: 'lb',
             measureAmount: 5,
             cost: 10.99,
         });
@@ -89,12 +80,11 @@ describe('inventory item size validator', () => {
     it('fail validate create: measureAmount with value 0', async () => {
         const item = await findInventoryItem(FOOD_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: item.id,
             packageId: pkg.id,
-            measureTypeId: uom.id,
+            unit: 'lb',
             measureAmount: 0,
             cost: 10.99,
         });
@@ -111,12 +101,11 @@ describe('inventory item size validator', () => {
     it('fail validate create: cost with value 0', async () => {
         const item = await findInventoryItem(FOOD_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: item.id,
             packageId: pkg.id,
-            measureTypeId: uom.id,
+            unit: 'lb',
             measureAmount: 5,
             cost: -1,
         });
@@ -137,7 +126,7 @@ describe('inventory item size validator', () => {
         const dto: CreateInventoryItemSizeDto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: item.id,
             packageId: existingSize.package.id,
-            measureTypeId: existingSize.measureType.id,
+            unit: existingSize.unit,
             measureAmount: existingSize.measureAmount,
             cost: 10.99,
         });
@@ -147,7 +136,7 @@ describe('inventory item size validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']),
         );
     });
 
@@ -161,15 +150,9 @@ describe('inventory item size validator', () => {
             throw new Error('new package not found');
         }
 
-        const uoms = await unitRepo.find();
-        const newUom = uoms.find((uom) => uom.id !== sizeToUpdate.measureType.id);
-        if (!newUom) {
-            throw new Error('new uom not found');
-        }
-
         const dto: UpdateInventoryItemSizeDto = plainToInstance(UpdateInventoryItemSizeDto, {
             packageId: newPkg.id,
-            measureTypeId: newUom.id,
+            unit: 'oz',
             measureAmount: 10,
             cost: 15.99,
         });
@@ -184,7 +167,7 @@ describe('inventory item size validator', () => {
         const dto: UpdateInventoryItemSizeDto = plainToInstance(UpdateInventoryItemSizeDto, {
             measureAmount: 0,
             packageId: sizeToUpdate.package.id,
-            measureTypeId: sizeToUpdate.measureType.id,
+            unit: sizeToUpdate.unit,
             cost: null,
         });
 
@@ -203,7 +186,7 @@ describe('inventory item size validator', () => {
         const dto: UpdateInventoryItemSizeDto = plainToInstance(UpdateInventoryItemSizeDto, {
             cost: -1,
             packageId: sizeToUpdate.package.id,
-            measureTypeId: sizeToUpdate.measureType.id,
+            unit: sizeToUpdate.unit,
             measureAmount: 1,
         });
 
@@ -218,7 +201,7 @@ describe('inventory item size validator', () => {
 
     it('fail validate update: itemSize already exists for inventory item.', async () => {
         const sizes = await sizeRepo.find({
-            relations: ['inventoryItem', 'package', 'measureType'],
+            relations: ['inventoryItem', 'package'],
         });
         if (sizes.length < 2) {
             throw new Error('Not enough sizes for test');
@@ -234,10 +217,10 @@ describe('inventory item size validator', () => {
             throw new Error('Could not find two sizes for same item');
         }
 
-        // Try to update size1 to match size2's package/measureType combination
+        // Try to update size1 to match size2's package/unit combination
         const dto: UpdateInventoryItemSizeDto = plainToInstance(UpdateInventoryItemSizeDto, {
             packageId: size2.package.id,
-            measureTypeId: size2.measureType.id,
+            unit: size2.unit,
             measureAmount: size2.measureAmount,
             cost: null,
         });
@@ -247,7 +230,7 @@ describe('inventory item size validator', () => {
         expectValidationErrorPayload(
             errors,
             [],
-            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']),
+            createValidationErrorPayload('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']),
         );
     });
 });

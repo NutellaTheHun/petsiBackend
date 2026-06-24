@@ -45,7 +45,7 @@ export class NestedUpdateInventoryAreaItemDto extends NestedUpdateDto {
         required: false,
         example: {
             createId: 'c1234',
-            measureTypeId: 1,
+            unit: 'lb',
             measureAmount: 2,
             packageId: 3,
             cost: 4,

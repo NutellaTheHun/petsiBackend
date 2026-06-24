@@ -4,8 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasureCategory } from '../../unit-of-measure/entities/unit-of-measure-category.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { UpdateInventoryItemSizeDto } from '../dto/inventory-item-size/update-inventory-item-size.dto';
 import { InventoryItemPackage } from '../entities/inventory-item-package.entity';
@@ -38,8 +36,6 @@ describe('Inventory Item Size Service', () => {
     let sizeService: TestableInventoryItemSizeService;
     let dataSource: DataSource;
 
-    let unitRepo: Repository<UnitOfMeasure>;
-    let unitCategoryRepo: Repository<UnitOfMeasureCategory>;
     let packageRepo: Repository<InventoryItemPackage>;
     let itemRepo: Repository<InventoryItem>;
     let sizeRepo: Repository<InventoryItemSize>;
@@ -62,9 +58,7 @@ describe('Inventory Item Size Service', () => {
         dataSource = module.get(DataSource);
 
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
-        unitCategoryRepo = module.get(getRepositoryToken(UnitOfMeasureCategory));
         itemRepo = module.get(getRepositoryToken(InventoryItem));
-        unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
         sizeRepo = module.get(getRepositoryToken(InventoryItemSize));
     });
 
@@ -80,13 +74,12 @@ describe('Inventory Item Size Service', () => {
     it('should create size', async () => {
         const item = await itemRepo.findOne({ where: {} });
         const pkg = await packageRepo.findOne({ where: {} });
-        const unit = await unitRepo.findOne({ where: {} });
-        if (!item || !pkg || !unit) throw new Error('item, package, or unit not found');
+        if (!item || !pkg) throw new Error('item or package not found');
 
         const dto = plainToInstance(CreateInventoryItemSizeDto, {
             inventoryItemId: item.id,
             packageId: pkg.id,
-            measureTypeId: unit.id,
+            unit: 'lb',
             measureAmount: 5,
             cost: 12.5,
         });
@@ -98,19 +91,20 @@ describe('Inventory Item Size Service', () => {
             expect(result?.id).not.toBeNull();
             expect(result.measureAmount).toEqual(5);
             expect(Number(result.cost)).toEqual(12.5);
+            expect(result.unit).toEqual('lb');
         });
     });
 
     // test updateEntity()
     it('should update size', async () => {
-        const size = await sizeRepo.findOne({ where: {}, relations: ['package', 'measureType'] });
+        const size = await sizeRepo.findOne({ where: {}, relations: ['package'] });
         if (!size) throw new Error('size not found');
 
         const dto = plainToInstance(UpdateInventoryItemSizeDto, {
             cost: 25.99,
             packageId: size.package.id,
-            measureTypeId: size.measureType.id,
-            measureAmount: size.measureAmount
+            unit: size.unit,
+            measureAmount: size.measureAmount,
         });
 
         await dataSource.transaction(async (manager) => {
@@ -162,20 +156,19 @@ describe('Inventory Item Size Service', () => {
     it('should find one size with relations', async () => {
         const size = await sizeRepo.find({
             take: 1,
-            relations: ['inventoryItem', 'package', 'measureType'],
+            relations: ['inventoryItem', 'package'],
         });
         if (!size.length) throw new Error('size not found');
 
         const serviceResult = await sizeService.findOne(size[0].id, [
             'inventoryItem',
             'package',
-            'measureType',
         ]);
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.id).toEqual(size[0].id);
         expect(serviceResult?.inventoryItem).toBeDefined();
         expect(serviceResult?.package).toBeDefined();
-        expect(serviceResult?.measureType).toBeDefined();
+        expect(typeof serviceResult?.unit).toEqual('string');
     });
 
     // test remove()

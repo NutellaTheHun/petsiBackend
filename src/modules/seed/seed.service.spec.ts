@@ -25,8 +25,6 @@ import { RecipeService } from '../recipes/services/recipe.service';
 import { RoleService } from '../roles/services/role.service';
 import { TemplateMenuItemService } from '../templates/services/template-menu-item.service';
 import { TemplateService } from '../templates/services/template.service';
-import { UnitOfMeasureCategoryService } from '../unit-of-measure/services/unit-of-measure-category.service';
-import { UnitOfMeasureService } from '../unit-of-measure/services/unit-of-measure.service';
 import { UserService } from '../users/services/user.service';
 import { getSeedTestingModule } from './seed-testing.module';
 import { SeedService } from './seed.service';
@@ -67,9 +65,6 @@ describe('Seed Service', () => {
 
   let templateService: TemplateService;
   let templateMenuItemService: TemplateMenuItemService;
-
-  let unitOfMeasureService: UnitOfMeasureService;
-  let unitOfMeasureCategoryService: UnitOfMeasureCategoryService;
 
   let userService: UserService;
 
@@ -147,14 +142,6 @@ describe('Seed Service', () => {
     templateService = module.get<TemplateService>(TemplateService);
     templateMenuItemService = module.get<TemplateMenuItemService>(
       TemplateMenuItemService,
-    );
-
-    // Unit of Measure
-    unitOfMeasureService =
-      module.get<UnitOfMeasureService>(UnitOfMeasureService);
-
-    unitOfMeasureCategoryService = module.get<UnitOfMeasureCategoryService>(
-      UnitOfMeasureCategoryService,
     );
 
     // user
@@ -262,13 +249,6 @@ describe('Seed Service', () => {
 
     const templateItems = await templateMenuItemService.findAll();
     expect(templateItems.items.length).toBeGreaterThan(0);
-
-    // Units of Measure
-    const unitsOfMeasure = await unitOfMeasureService.findAll();
-    expect(unitsOfMeasure.items.length).toBeGreaterThan(0);
-
-    const unitCategories = await unitOfMeasureCategoryService.findAll();
-    expect(unitCategories.items.length).toBeGreaterThan(0);
 
     // Roles
     const roles = await roleService.findAll();

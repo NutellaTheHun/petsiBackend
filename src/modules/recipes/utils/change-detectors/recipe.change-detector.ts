@@ -48,13 +48,13 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
         nextValue: dto.batchResultQuantity ?? null,
       });
     }
-    if (!this.unchanged(entity.batchResultUnitType?.id ?? null, dto.batchResultUnitTypeId ?? null)) {
-      patch.batchResultUnitTypeId = dto.batchResultUnitTypeId;
+    if (!this.unchanged(entity.batchResultUnit ?? null, dto.batchResultUnit ?? null)) {
+      patch.batchResultUnit = dto.batchResultUnit;
       changes.push({
-        op: 'reference',
-        path: 'batchResultUnitTypeId',
-        previousValue: entity.batchResultUnitType?.id ?? null,
-        nextValue: dto.batchResultUnitTypeId ?? null,
+        op: 'scalar',
+        path: 'batchResultUnit',
+        previousValue: entity.batchResultUnit ?? null,
+        nextValue: dto.batchResultUnit ?? null,
       });
     }
     if (!this.unchanged(entity.servingSizeQuantity ?? null, dto.servingSizeQuantity ?? null)) {
@@ -66,13 +66,13 @@ export class RecipeChangeDetector extends ChangeDetectorBase<Recipe, UpdateRecip
         nextValue: dto.servingSizeQuantity ?? null,
       });
     }
-    if (!this.unchanged(entity.servingSizeUnitType?.id ?? null, dto.servingSizeUnitTypeId ?? null)) {
-      patch.servingSizeUnitTypeId = dto.servingSizeUnitTypeId;
+    if (!this.unchanged(entity.servingSizeUnit ?? null, dto.servingSizeUnit ?? null)) {
+      patch.servingSizeUnit = dto.servingSizeUnit;
       changes.push({
-        op: 'reference',
-        path: 'servingSizeUnitTypeId',
-        previousValue: entity.servingSizeUnitType?.id ?? null,
-        nextValue: dto.servingSizeUnitTypeId ?? null,
+        op: 'scalar',
+        path: 'servingSizeUnit',
+        previousValue: entity.servingSizeUnit ?? null,
+        nextValue: dto.servingSizeUnit ?? null,
       });
     }
     if (!this.unchanged(entity.salesPrice ? Number(entity.salesPrice) : null, dto.salesPrice ?? null)) {

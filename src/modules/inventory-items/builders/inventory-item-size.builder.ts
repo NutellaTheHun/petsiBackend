@@ -2,10 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BuilderBase } from '../../../common/base/builder.base';
+import { AppUnit } from '../../../common/units';
 import { AppLogger } from '../../app-logging/app-logger';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
@@ -19,9 +19,6 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
     constructor(
         @InjectRepository(InventoryItem)
         private readonly itemRepo: Repository<InventoryItem>,
-
-        @InjectRepository(UnitOfMeasure)
-        private readonly unitRepo: Repository<UnitOfMeasure>,
 
         @InjectRepository(InventoryItemPackage)
         private readonly packageRepo: Repository<InventoryItemPackage>,
@@ -55,8 +52,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         if (dto.packageId !== undefined) {
             this.packageById(dto.packageId);
         }
-        if (dto.measureTypeId !== undefined) {
-            this.unitOfMeasureById(dto.measureTypeId);
+        if (dto.unit !== undefined) {
+            this.unit(dto.unit);
         }
         if (dto.cost !== undefined) {
             this.costByValue(dto.cost);
@@ -72,8 +69,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         if (dto.packageId !== undefined) {
             this.packageById(dto.packageId);
         }
-        if (dto.measureTypeId !== undefined) {
-            this.unitOfMeasureById(dto.measureTypeId);
+        if (dto.unit !== undefined) {
+            this.unit(dto.unit);
         }
         if (dto.cost !== undefined) {
             this.costByValue(dto.cost);
@@ -102,7 +99,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
                 if ('id' in dto) {
                     const size = await this.sizeRepo.findOne({
                         where: { id: dto.id },
-                        relations: ['inventoryItem', 'measureType', 'package'],
+                        relations: ['inventoryItem', 'package'],
                     });
                     if (!size) {
                         throw new Error('item size not found');
@@ -146,7 +143,7 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         if ('id' in dto) {
             const size = await this.sizeRepo.findOne({
                 where: { id: dto.id },
-                relations: ['inventoryItem', 'measureType', 'package'],
+                relations: ['inventoryItem', 'package'],
             });
             if (!size) {
                 throw new Error('item size not found');
@@ -157,20 +154,8 @@ export class InventoryItemSizeBuilder extends BuilderBase<InventoryItemSize> {
         throw new Error('invalid dto');
     }
 
-    public unitOfMeasureById(id: number): this {
-        return this.setPropById(
-            async (id: number) => await this.unitRepo.findOne({ where: { id } }),
-            'measureType',
-            id,
-        );
-    }
-
-    public unitOfMeasureByName(name: string): this {
-        return this.setPropByName(
-            async (name: string) => await this.unitRepo.findOne({ where: { name } }),
-            'measureType',
-            name,
-        );
+    public unit(value: AppUnit): this {
+        return this.setPropByVal('unit', value);
     }
 
     public packageById(id: number): this {

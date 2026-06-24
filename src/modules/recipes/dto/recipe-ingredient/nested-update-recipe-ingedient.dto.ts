@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
+import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
 import { InventoryItem } from '../../../inventory-items/entities/inventory-item.entity';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { Recipe } from '../../entities/recipe.entity';
 
 export class NestedUpdateRecipeIngredientDto extends NestedUpdateDto {
@@ -32,7 +32,7 @@ export class NestedUpdateRecipeIngredientDto extends NestedUpdateDto {
     readonly ingredientRecipeId?: EntityId<Recipe> | null;
 
     @ApiProperty({
-        description: 'The unit amount of the UnitofMeasure of the InventoryItem',
+        description: 'The unit amount of the unit of measure of the InventoryItem',
         example: 1,
     })
     @IsNumber()
@@ -41,11 +41,10 @@ export class NestedUpdateRecipeIngredientDto extends NestedUpdateDto {
     readonly quantity: number;
 
     @ApiProperty({
-        description: 'Id of the UnitofMeasure entity.',
-        example: 2,
+        description: 'Unit symbol for the ingredient quantity (e.g. "kg", "cup", "ea").',
+        example: 'oz',
     })
-    @IsNumber()
-    @IsPositive()
+    @IsIn(Object.values(UNITS))
     @IsNotEmpty()
-    readonly quantityUnitTypeId: EntityId<UnitOfMeasure>;
+    readonly unit: AppUnit;
 }

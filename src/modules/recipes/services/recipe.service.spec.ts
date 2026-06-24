@@ -7,7 +7,6 @@ import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import { InventoryItem } from '../../inventory-items/entities/inventory-item.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { MenuItemTestingUtil } from '../../menu-items/utils/menu-item-testing.util';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { NestedUpdateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-update-recipe-ingedient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
@@ -46,7 +45,6 @@ describe('recipe service', () => {
     let categoryRepo: Repository<RecipeCategory>;
     let subCategoryRepo: Repository<RecipeSubCategory>;
     let ingredientRepo: Repository<RecipeIngredient>;
-    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
     let inventoryItemRepo: Repository<InventoryItem>;
     let menuItemRepo: Repository<MenuItem>;
     let menuItemTestUtil: MenuItemTestingUtil;
@@ -70,7 +68,6 @@ describe('recipe service', () => {
         categoryRepo = module.get(getRepositoryToken(RecipeCategory));
         subCategoryRepo = module.get(getRepositoryToken(RecipeSubCategory));
         ingredientRepo = module.get(getRepositoryToken(RecipeIngredient));
-        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
         inventoryItemRepo = module.get(getRepositoryToken(InventoryItem));
     });
 
@@ -84,21 +81,20 @@ describe('recipe service', () => {
 
     // test createEntity() with NestedCreateRecipeIngredientDtos
     it('should create recipe with NestedCreateRecipeIngredientDtos', async () => {
-        const [uom] = await unitOfMeasureRepo.find({ take: 1 });
         const [inv] = await inventoryItemRepo.find({ take: 1 });
-        if (!uom || !inv) throw new Error('fixtures not found');
+        if (!inv) throw new Error('fixtures not found');
 
         const dto = plainToInstance(CreateRecipeDto, {
             name: 'New Recipe',
             isIngredient: false,
-            batchResultUnitTypeId: uom.id,
-            servingSizeUnitTypeId: uom.id,
+            batchResultUnit: 'oz',
+            servingSizeUnit: 'lb',
             ingredients: [
                 plainToInstance(NestedCreateRecipeIngredientDto, {
                     createId: 'i1',
                     ingredientInventoryItemId: inv.id,
                     quantity: 1,
-                    quantityUnitTypeId: uom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -117,12 +113,11 @@ describe('recipe service', () => {
     // test updateEntity() with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto
     it('should update recipe with NestedUpdateRecipeIngredientDto and NestedCreateRecipeIngredientDto', async () => {
         const [recipe] = await recipeRepo.find({
-            relations: ['ingredients', 'category', 'subCategory', 'ingredients.quantityUnitType', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
+            relations: ['ingredients', 'category', 'subCategory', 'ingredients.ingredientInventoryItem', 'ingredients.ingredientRecipe'],
             take: 1,
         });
         const [inv] = await inventoryItemRepo.find({ take: 1 });
-        const [uom] = await unitOfMeasureRepo.find({ take: 1 });
-        if (!recipe || !inv || !uom) throw new Error('fixtures not found');
+        if (!recipe || !inv) throw new Error('fixtures not found');
 
         const dto = recipeToUpdateDto(recipe, {
             ingredients: [
@@ -130,7 +125,7 @@ describe('recipe service', () => {
                     createId: 'c2',
                     ingredientInventoryItemId: inv.id,
                     quantity: 2,
-                    quantityUnitTypeId: uom.id,
+                    unit: 'oz',
                 }),
             ],
         });
@@ -147,7 +142,7 @@ describe('recipe service', () => {
             ingredientInventoryItemId: ingredToUpdate.ingredientInventoryItemId ?? undefined,
             ingredientRecipeId: ingredToUpdate.ingredientRecipeId ?? undefined,
             quantity: newQuantity,
-            quantityUnitTypeId: uom.id,
+            unit: ingredToUpdate.unit ?? 'oz',
         });
         ingredList.push(newIngred);
         const dtoWithIngredients = plainToInstance(UpdateRecipeDto, {

@@ -47,7 +47,7 @@ export class CreateInventoryAreaItemDto {
         required: false,
         example: {
             createId: 'c1356',
-            measureTypeId: 2,
+            unit: 'lb',
             measureAmount: 3,
             packageId: 4,
             cost: 5.99,

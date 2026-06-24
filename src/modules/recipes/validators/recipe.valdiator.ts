@@ -6,7 +6,6 @@ import { createValidationErrorPayload, ValidationErrorMap } from '../../../commo
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { NestedCreateRecipeIngredientDto } from '../dto/recipe-ingredient/nested-create-recipe-ingredient.dto';
 import { CreateRecipeDto } from '../dto/recipe/create-recipe.dto';
 import { UpdateRecipeDto } from '../dto/recipe/update-recipe-dto';
@@ -26,9 +25,6 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
         private readonly recipeCategoryRepo: Repository<RecipeCategory>,
 
         private readonly ingredientValidator: RecipeIngredientValidator,
-
-        @InjectRepository(UnitOfMeasure)
-        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
 
         @InjectRepository(MenuItem)
         private readonly menuItemRepo: Repository<MenuItem>,
@@ -59,15 +55,6 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             this.helper.enforcePositive(
                 identity.batchResultQuantity,
                 'batchResultQuantity',
-                errorMap,
-            );
-        }
-
-        if (identity.batchResultUnitType !== undefined && identity.batchResultUnitType !== null) {
-            await this.helper.enforceExists(
-                identity.batchResultUnitType,
-                this.unitOfMeasureRepo,
-                'batchResultUnitType',
                 errorMap,
             );
         }
@@ -105,15 +92,6 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
                 errorMap,
             );
         }
-        if (identity.servingSizeUnitType !== undefined && identity.servingSizeUnitType !== null) {
-            await this.helper.enforceExists(
-                identity.servingSizeUnitType,
-                this.unitOfMeasureRepo,
-                'servingSizeUnitType',
-                errorMap,
-            );
-        }
-
         if (identity.subCategoryId !== undefined && identity.subCategoryId !== null) {
             await this.helper.enforceExists(
                 identity.subCategoryId,
@@ -138,18 +116,18 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             );
         }
 
-        if (identity.batchResultQuantity || identity.batchResultUnitType) {
+        if (identity.batchResultQuantity || identity.batchResultUnit) {
             this.helper.enforceMutualRequired(
                 identity,
-                ['batchResultQuantity', 'batchResultUnitType'],
+                ['batchResultQuantity', 'batchResultUnit'],
                 errorMap,
             );
         }
 
-        if (identity.servingSizeQuantity || identity.servingSizeUnitType) {
+        if (identity.servingSizeQuantity || identity.servingSizeUnit) {
             this.helper.enforceMutualRequired(
                 identity,
-                ['servingSizeQuantity', 'servingSizeUnitType'],
+                ['servingSizeQuantity', 'servingSizeUnit'],
                 errorMap,
             );
         }
@@ -194,9 +172,9 @@ export class RecipeValidator extends ValidatorBase<RecipeEntity, RecipeValidator
             name: dto.name,
             producedMenuItemId: dto.producedMenuItemId,
             batchResultQuantity: dto.batchResultQuantity,
-            batchResultUnitType: dto.batchResultUnitTypeId,
+            batchResultUnit: dto.batchResultUnit,
             servingSizeQuantity: dto.servingSizeQuantity,
-            servingSizeUnitType: dto.servingSizeUnitTypeId,
+            servingSizeUnit: dto.servingSizeUnit,
             salesPrice: dto.salesPrice,
             isIngredient: dto.isIngredient,
             categoryId: dto.categoryId,

@@ -1,3 +1,4 @@
+import { AppUnit } from "../../../../common/units";
 import { ValidatorIdentityBaseInterface } from "../../../../common/base/validator-identity.base.interface";
 import { RecipeIngredientValidatorIdentity } from "./recipe-ingredient.validator.identity.interface";
 
@@ -5,9 +6,9 @@ export interface RecipeValidatorIdentity extends ValidatorIdentityBaseInterface 
     readonly name?: string;
     readonly producedMenuItemId?: number;
     readonly batchResultQuantity?: number;
-    readonly batchResultUnitType?: number; // id ommited to make identity -> entity mapping easier
+    readonly batchResultUnit?: AppUnit | null;
     readonly servingSizeQuantity?: number;
-    readonly servingSizeUnitType?: number; // id ommited to make identity -> entity mapping easier
+    readonly servingSizeUnit?: AppUnit | null;
     readonly salesPrice?: number;
     readonly isIngredient?: boolean;
     readonly categoryId?: number;

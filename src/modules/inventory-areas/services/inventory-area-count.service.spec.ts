@@ -14,8 +14,6 @@ import {
     FOOD_B,
     OTHER_C
 } from '../../inventory-items/utils/constants';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { CreateInventoryAreaCountDto } from '../dto/inventory-area-count/create-inventory-area-count.dto';
 import { UpdateInventoryAreaCountDto } from '../dto/inventory-area-count/update-inventory-area-count.dto';
 import { NestedCreateInventoryAreaItemDto } from '../dto/inventory-area-item/nested-create-inventory-area-item.dto';
@@ -56,8 +54,6 @@ describe('Inventory area count service', () => {
     let inventoryItemRepo: Repository<InventoryItem>;
     let inventoryItemPackageRepo: Repository<InventoryItemPackage>;
 
-    let unitOfMeasureRepo: Repository<UnitOfMeasure>;
-
     const getInventoryAreaCount = async (areaName: string) => {
         return await inventoryAreaCountRepo.findOneOrFail({ where: { inventoryArea: { name: areaName }, countedInventoryItems: MoreThan(0) }, relations: ['countedInventoryItems', 'countedInventoryItems.countedInventoryItem', 'countedInventoryItems.countedItemSize', 'inventoryArea'] });
     }
@@ -83,7 +79,6 @@ describe('Inventory area count service', () => {
         inventoryItemPackageRepo = module.get(
             getRepositoryToken(InventoryItemPackage),
         );
-        unitOfMeasureRepo = module.get(getRepositoryToken(UnitOfMeasure));
 
     });
 
@@ -184,20 +179,6 @@ describe('Inventory area count service', () => {
             throw new Error('expected 3 items, got ' + items.length);
         }
 
-        // get 3 unitOfMeasure from repo
-        const unitOfMeasures = await unitOfMeasureRepo.find({
-            where: {},
-            take: 3,
-        });
-        if (!unitOfMeasures) {
-            throw new Error('unitOfMeasures not found');
-        }
-        if (unitOfMeasures.length !== 3) {
-            throw new Error(
-                'expected 3 unitOfMeasures, got ' + unitOfMeasures.length,
-            );
-        }
-
         // get 3 inventoryItemPackages from repo
         const inventoryItemPackages = await inventoryItemPackageRepo.find({
             where: {},
@@ -222,7 +203,7 @@ describe('Inventory area count service', () => {
                 amount: 1,
                 countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: `c${4 + sizeIdx}`,
-                    measureTypeId: unitOfMeasures[sizeIdx].id,
+                    unit: 'lb',
                     measureAmount: 1,
                     packageId: inventoryItemPackages[sizeIdx++].id,
                     cost: 1,
@@ -278,20 +259,6 @@ describe('Inventory area count service', () => {
         });
 
         // build NestedCreateInventoryAreaItemDto with itemSizeDto for the last 3 items
-        // get 3 unitOfMeasure from repo
-        const unitOfMeasures = await unitOfMeasureRepo.find({
-            where: {},
-            take: 3,
-        });
-        if (!unitOfMeasures) {
-            throw new Error('unitOfMeasures not found');
-        }
-        if (unitOfMeasures.length !== 3) {
-            throw new Error(
-                'expected 3 unitOfMeasures, got ' + unitOfMeasures.length,
-            );
-        }
-
         // get 3 inventoryItemPackages from repo
         const inventoryItemPackages = await inventoryItemPackageRepo.find({
             where: {},
@@ -314,7 +281,7 @@ describe('Inventory area count service', () => {
                 amount: 1,
                 countedItemSize: plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: `c${7 + sizeIdx}`,
-                    measureTypeId: unitOfMeasures[sizeIdx].id,
+                    unit: 'lb',
                     measureAmount: 1,
                     packageId: inventoryItemPackages[sizeIdx++].id,
                     cost: 1,
@@ -553,21 +520,13 @@ describe('Inventory area count service', () => {
             throw new Error('package not found');
         }
 
-        // get unitOfMeasure from repo
-        const unitOfMeasureToCreate = await unitOfMeasureRepo.findOne({
-            where: { name: POUND },
-        });
-        if (!unitOfMeasureToCreate) {
-            throw new Error('unitOfMeasure not found');
-        }
-
         // build NestedCreateInventoryItemSizeDto for the item
         const itemSizeDto_forCreate = plainToInstance(
             NestedCreateInventoryItemSizeDto,
             {
                 createId: `c1`,
                 packageId: packageToCreate.id,
-                measureTypeId: unitOfMeasureToCreate.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: 1,
             },
@@ -602,7 +561,7 @@ describe('Inventory area count service', () => {
             {
                 createId: `c3`,
                 packageId: packageToCreate.id,
-                measureTypeId: unitOfMeasureToCreate.id,
+                unit: 'lb',
                 measureAmount: 1,
                 cost: 1,
             },
@@ -638,7 +597,6 @@ describe('Inventory area count service', () => {
                 'countedInventoryItems',
                 'countedInventoryItems.countedInventoryItem',
                 'countedInventoryItems.countedItemSize',
-                'countedInventoryItems.countedItemSize.measureType',
                 'countedInventoryItems.countedItemSize.package',
             ],
         });
@@ -656,9 +614,7 @@ describe('Inventory area count service', () => {
         expect(createdAreaItem.countedInventoryItem.id).toEqual(
             inventoryItemForCreate.id,
         );
-        expect(createdAreaItem.countedItemSize.measureType.id).toEqual(
-            itemSizeDto_forCreate.measureTypeId,
-        );
+        expect(createdAreaItem.countedItemSize.unit).toEqual(itemSizeDto_forCreate.unit);
         expect(createdAreaItem.countedItemSize.package.id).toEqual(
             itemSizeDto_forCreate.packageId,
         );
@@ -679,9 +635,7 @@ describe('Inventory area count service', () => {
         expect(updatedAreaItem.countedInventoryItem.id).toEqual(
             inventoryItemForUpdate.id,
         );
-        expect(updatedAreaItem.countedItemSize.measureType.id).toEqual(
-            itemSizeDto_forUpdate.measureTypeId,
-        );
+        expect(updatedAreaItem.countedItemSize.unit).toEqual(itemSizeDto_forUpdate.unit);
         expect(updatedAreaItem.countedItemSize.package.id).toEqual(
             itemSizeDto_forUpdate.packageId,
         );

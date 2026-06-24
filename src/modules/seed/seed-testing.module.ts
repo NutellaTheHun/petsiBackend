@@ -41,9 +41,6 @@ import { RoleModule } from '../roles/role.module';
 import { TemplateMenuItem } from '../templates/entities/template-menu-item.entity';
 import { Template } from '../templates/entities/template.entity';
 import { TemplatesModule } from '../templates/templates.module';
-import { UnitOfMeasureCategory } from '../unit-of-measure/entities/unit-of-measure-category.entity';
-import { UnitOfMeasure } from '../unit-of-measure/entities/unit-of-measure.entity';
-import { UnitOfMeasureModule } from '../unit-of-measure/unit-of-measure.module';
 import { User } from '../users/entities/user.entities';
 import { UserModule } from '../users/user.module';
 import { SeedModule } from './seed.module';
@@ -84,9 +81,6 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
         Template,
         TemplateMenuItem,
 
-        UnitOfMeasure,
-        UnitOfMeasureCategory,
-
         User,
         Role,
       ]),
@@ -122,9 +116,6 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
         Template,
         TemplateMenuItem,
 
-        UnitOfMeasure,
-        UnitOfMeasureCategory,
-
         User,
         Role,
       ]),
@@ -138,7 +129,6 @@ export async function getSeedTestingModule(): Promise<TestingModule> {
       OrdersModule,
       RecipesModule,
       TemplatesModule,
-      UnitOfMeasureModule,
       CacheModule.register(),
       LoggerModule.forRoot({
         pinoHttp: { transport: { target: 'pino-pretty' } },

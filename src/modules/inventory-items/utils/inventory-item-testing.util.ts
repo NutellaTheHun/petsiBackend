@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
+import { AppUnit, UNITS } from '../../../common/units';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import * as UNIT_CONSTANT from '../../unit-of-measure/utils/constants';
-import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
 import { InventoryItemCategoryBuilder } from '../builders/inventory-item-category.builder';
 import { InventoryItemPackageBuilder } from '../builders/inventory-item-package.builder';
 import { InventoryItemSizeBuilder } from '../builders/inventory-item-size.builder';
@@ -37,7 +36,7 @@ export class InventoryItemTestingUtil {
     private readonly dryItemNames: string[] = CONSTANT.getInventoryDryItemNames();
     private readonly otherItemNames: string[] = CONSTANT.getInventoryOtherItemNames();
 
-    private readonly measureNames: string[] = UNIT_CONSTANT.getUnitOfMeasureNames();
+    private readonly unitValues: AppUnit[] = Object.values(UNITS);
 
     private initCategory = false;
     private initPackage = false;
@@ -65,8 +64,6 @@ export class InventoryItemTestingUtil {
         @InjectRepository(InventoryItem)
         private readonly itemRepo: Repository<InventoryItem>,
         private readonly itemBuilder: InventoryItemBuilder,
-
-        private readonly unitOfMeasureTestingUtil: UnitOfMeasureTestingUtil,
     ) { }
 
     /**
@@ -158,20 +155,17 @@ export class InventoryItemTestingUtil {
     }
 
     /**
-     * Dependencies: InventoryItem, UnitOfMeasure, InventoryItemPackage
+     * Dependencies: InventoryItem, InventoryItemPackage
      * @returns 2 sizes for each inventory item (9 items)
      */
     public async getTestInventoryItemSizeEntities(
         testContext: DatabaseTestContext,
     ): Promise<InventoryItemSize[]> {
-        await this.unitOfMeasureTestingUtil.initUnitOfMeasureTestDatabase(
-            testContext,
-        );
         await this.initInventoryItemTestDatabase(testContext);
         await this.initInventoryItemPackageTestDatabase(testContext);
 
         const results: InventoryItemSize[] = [];
-        let msrIdx = 0;
+        let unitIdx = 0;
         let pkgIdx = 0;
         let costVal = 0;
         for (let i = 0; i < this.itemNames.length; i++) {
@@ -179,9 +173,7 @@ export class InventoryItemTestingUtil {
                 await this.sizeBuilder
                     .reset()
                     .inventoryItemByName(this.itemNames[i])
-                    .unitOfMeasureByName(
-                        this.measureNames[msrIdx++ % this.measureNames.length],
-                    )
+                    .unit(this.unitValues[unitIdx++ % this.unitValues.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .costByValue(costVal++)
                     .measureAmount(1)
@@ -191,9 +183,7 @@ export class InventoryItemTestingUtil {
                 await this.sizeBuilder
                     .reset()
                     .inventoryItemByName(this.itemNames[i])
-                    .unitOfMeasureByName(
-                        this.measureNames[msrIdx++ % this.measureNames.length],
-                    )
+                    .unit(this.unitValues[unitIdx++ % this.unitValues.length])
                     .packageByName(this.packageNames[pkgIdx++ % this.packageNames.length])
                     .costByValue(costVal++)
                     .measureAmount(1)
@@ -331,14 +321,14 @@ export class InventoryItemTestingUtil {
 
     /**
      * - Create's inventoryItemSize dtos for create method of an inventory item with an uneven distribution of properties.
-     * - Distribution of units of measure is normal
+     * - Distribution of units is normal
      * - Distribution of packages is not equal with the use of a second iterator
      * - Distribution of costs is not equal with the use of a second iterator
      */
     public createNestedInventoryItemSizeDtos(
         resultAmount: number,
         packageIds: number[],
-        unitIds: number[],
+        units: AppUnit[],
         costs: number[],
     ): NestedCreateInventoryItemSizeDto[] {
         const results: NestedCreateInventoryItemSizeDto[] = [];
@@ -355,7 +345,7 @@ export class InventoryItemTestingUtil {
             results.push(
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: `c${createId++}`,
-                    measureTypeId: unitIds[unitIdx++ % unitIds.length],
+                    unit: units[unitIdx++ % units.length],
                     packageId: packageIds[packageIdx++],
                     cost: costs[costIter++],
                     measureAmount: 1,

@@ -1,4 +1,4 @@
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
 import {
     IsArray,
@@ -18,6 +18,7 @@ import { NestedUpdateOrderMenuItemDto } from '../order-menu-item/nested-update-o
 import { NestedCreateRecurringOrderScheduleDto } from '../recurring-order-schedule/nested-create-recurring-order-schedule.dto';
 import { NestedUpdateRecurringOrderScheduleDto } from '../recurring-order-schedule/nested-update-recurring-order-schedule.dto';
 
+@ApiExtraModels(NestedCreateOrderMenuItemDto, NestedUpdateOrderMenuItemDto)
 export class UpdateOrderDto {
     @ApiProperty({
         description: 'Name of the owner of the order',

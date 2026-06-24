@@ -4,8 +4,6 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
-import { POUND } from '../../unit-of-measure/utils/constants';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
 import { CreateInventoryItemDto } from '../dto/inventory-item/create-inventory-item.dto';
@@ -28,11 +26,10 @@ describe('inventory item validator', () => {
 
     let categoryRepo: Repository<InventoryItemCategory>;
     let vendorRepo: Repository<InventoryItemVendor>;
-    let unitRepo: Repository<UnitOfMeasure>;
     let packageRepo: Repository<InventoryItemPackage>;
 
     const findInventoryItem = async (name: string) => {
-        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'sizes.measureType', 'category', 'vendor'] });
+        return await itemRepo.findOneOrFail({ where: { name }, relations: ['sizes', 'sizes.package', 'category', 'vendor'] });
     }
 
     const findInventoryItemCategory = async (name: string) => {
@@ -45,10 +42,6 @@ describe('inventory item validator', () => {
 
     const findInventoryItemPackage = async (name: string) => {
         return await packageRepo.findOneOrFail({ where: { name } });
-    }
-
-    const findUnitOfMeasure = async (name: string) => {
-        return await unitRepo.findOneOrFail({ where: { name } });
     }
 
     beforeAll(async () => {
@@ -64,7 +57,6 @@ describe('inventory item validator', () => {
         itemRepo = module.get(getRepositoryToken(InventoryItem));
         categoryRepo = module.get(getRepositoryToken(InventoryItemCategory));
         vendorRepo = module.get(getRepositoryToken(InventoryItemVendor));
-        unitRepo = module.get(getRepositoryToken(UnitOfMeasure));
         packageRepo = module.get(getRepositoryToken(InventoryItemPackage));
     });
 
@@ -81,7 +73,6 @@ describe('inventory item validator', () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
         const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
             name: 'New Item Name',
@@ -91,14 +82,14 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 5,
                     cost: 10.99,
                 }),
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c2',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 10,
                     cost: 20.99,
                 }),
@@ -133,7 +124,6 @@ describe('inventory item validator', () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
         const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
             name: 'New Item Name',
@@ -143,7 +133,7 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 0,
                     cost: 10.99,
                 }),
@@ -162,7 +152,6 @@ describe('inventory item validator', () => {
         const category = await findInventoryItemCategory(FOOD_CAT);
         const vendor = await findInventoryItemVendor(VENDOR_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: CreateInventoryItemDto = plainToInstance(CreateInventoryItemDto, {
             name: 'New Item Name',
@@ -172,7 +161,7 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 5,
                     cost: -1,
                 }),
@@ -192,7 +181,6 @@ describe('inventory item validator', () => {
     it('successfully validate update with no validation errors', async () => {
         const itemToUpdate = await findInventoryItem(FOOD_A);
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const categories = await categoryRepo.find();
         const newCategory = categories.find(
@@ -215,14 +203,14 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedUpdateInventoryItemSizeDto, {
                     id: itemToUpdate.sizes[0].id,
                     packageId: itemToUpdate.sizes[0].package.id,
-                    measureTypeId: itemToUpdate.sizes[0].measureType.id,
+                    unit: itemToUpdate.sizes[0].unit,
                     measureAmount: itemToUpdate.sizes[0].measureAmount,
                     cost: itemToUpdate.sizes[0].cost,
                 }),
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'oz',
                     measureAmount: 20,
                     cost: 30.99,
                 }),
@@ -336,7 +324,6 @@ describe('inventory item validator', () => {
         }
 
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
@@ -346,7 +333,7 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 0,
                     cost: 10.99,
                 }),
@@ -371,7 +358,6 @@ describe('inventory item validator', () => {
             throw new Error('item vendor not found');
         }
         const pkg = await findInventoryItemPackage(PACKAGE_PKG);
-        const uom = await findUnitOfMeasure(POUND);
 
         const dto: UpdateInventoryItemDto = plainToInstance(UpdateInventoryItemDto, {
             name: itemToUpdate.name,
@@ -381,7 +367,7 @@ describe('inventory item validator', () => {
                 plainToInstance(NestedCreateInventoryItemSizeDto, {
                     createId: 'c1',
                     packageId: pkg.id,
-                    measureTypeId: uom.id,
+                    unit: 'lb',
                     measureAmount: 5,
                     cost: -1,
                 }),

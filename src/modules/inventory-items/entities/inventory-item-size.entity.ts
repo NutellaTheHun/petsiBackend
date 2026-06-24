@@ -7,11 +7,10 @@ import {
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { NestedEntityBase } from '../../../common/base/entity.base';
+import { AppUnit } from '../../../common/units';
 import { inventoryItemPackageExample } from '../../../common/swagger/examples/inventory-items/inventory-item-package.example';
 import { inventoryItemExample } from '../../../common/swagger/examples/inventory-items/inventory-item.example';
-import { unitOfMeasureExample } from '../../../common/swagger/examples/unit-of-measure/unit-of-measure.example';
 import { InventoryAreaItem } from '../../inventory-areas/entities/inventory-area-item.entity';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
@@ -30,10 +29,10 @@ export type InventoryItemSizeEntity = NestedEntityBase<
 /**
  * The possible physical form of an {@link InventoryItem}, an item can have multiple sizes.
  *
- * Maps an {@link InventoryItem} to both an {@link InventoryItemPackage} and a {@link UnitOfMeasure}, is mapped within {@link InventoryAreaItem}
+ * Maps an {@link InventoryItem} to both an {@link InventoryItemPackage} and a unit symbol, is mapped within {@link InventoryAreaItem}
  *
  * Example:
- * - Flour(InventoryItem), Pounds(UnitOfMeasure), Box(InventoryItemPackage)
+ * - Flour(InventoryItem), lb(unit), Box(InventoryItemPackage)
  */
 @Entity()
 export class InventoryItemSize {
@@ -74,26 +73,26 @@ export class InventoryItemSize {
     package: InventoryItemPackage;
 
     /**
-     * {@link UnitOfMeasure} like "lbs", "oz", "fl oz", "ea."
-     * - example: 6 pack of 28oz(measureUnit) can of evaporated milk
-     * - Example: 10 lb(measureUnit) of flour
+     * Unit symbol like 'lb', 'oz', 'fl-oz', 'ea'.
+     * - example: 6 pack of 28(measureAmount) oz(unit) can of evaporated milk
+     * - Example: 10(measureAmount) lb(unit) of flour
      */
     @ApiProperty({
-        example: unitOfMeasureExample(new Set<string>(), false),
-        description: 'The unit of measure scaling the measureAmount property',
-        type: UnitOfMeasure,
+        example: 'lb',
+        description: 'The unit symbol scaling the measureAmount property',
+        type: String,
     })
-    @ManyToOne(() => UnitOfMeasure, { onDelete: 'CASCADE' })
-    measureType: UnitOfMeasure;
+    @Column()
+    unit: AppUnit;
 
     /**
-     * Represents the quantity associated with the measureUnit property.
+     * Represents the quantity associated with the unit property.
      * - example: 6 pack of 28(measureAmount)oz can of evaporated milk
      * - Example: 10(measureAmount) lb of flour
      */
     @ApiProperty({
         example: '8',
-        description: 'The measure quantity of the measureUnit property',
+        description: 'The measure quantity of the unit property',
     })
     @Column()
     measureAmount: number;

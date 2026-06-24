@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
+import { AppUnit } from '../../../common/units';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
 import {
     DRY_A,
@@ -13,20 +14,6 @@ import {
     OTHER_C,
 } from '../../inventory-items/utils/constants';
 import { InventoryItemTestingUtil } from '../../inventory-items/utils/inventory-item-testing.util';
-import {
-    CUP,
-    FL_OUNCE,
-    GALLON,
-    GRAM,
-    KILOGRAM,
-    LITER,
-    MILLILITER,
-    OUNCE,
-    POUND,
-    TABLESPOON,
-    TEASPOON,
-} from '../../unit-of-measure/utils/constants';
-import { UnitOfMeasureTestingUtil } from '../../unit-of-measure/utils/unit-of-measure-testing.util';
 import { RecipeCategoryBuilder } from '../builders/recipe-category.builder';
 import { RecipeIngredientBuilder } from '../builders/recipe-ingredient.builder';
 import { RecipeSubCategoryBuilder } from '../builders/recipe-sub-category.builder';
@@ -47,7 +34,6 @@ export class RecipeTestUtil {
 
     constructor(
         private readonly inventoryItemTestUtil: InventoryItemTestingUtil,
-        private readonly unitOfMeasureTestUtil: UnitOfMeasureTestingUtil,
 
         @InjectRepository(RecipeIngredient)
         private readonly ingredientRepo: Repository<RecipeIngredient>,
@@ -64,18 +50,15 @@ export class RecipeTestUtil {
         @InjectRepository(Recipe)
         private readonly recipeRepo: Repository<Recipe>,
         private readonly recipeBuilder: RecipeBuilder,
-
-        //private readonly menuItemService: MenuItemsService,
     ) { }
 
     /**
-     * Dependencies: InventoryItems, UnitOfMeasure, Recipe
+     * Dependencies: InventoryItems, Recipe
      * @returns
      */
     public async getTestRecipeIngredientEntities(
         testContext: DatabaseTestContext,
     ): Promise<RecipeIngredient[]> {
-        await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
         await this.initRecipeTestingDatabase(testContext);
 
@@ -83,98 +66,86 @@ export class RecipeTestUtil {
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(FOOD_A)
-                //.subRecipeByName()
                 .quantity(0.5)
                 .parentRecipeByName(CONSTANT.REC_A)
-                .quantityUnitOfMeasureByName(OUNCE)
+                .unit('oz')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(DRY_A)
-                //.subRecipeByName()
                 .quantity(1.0)
                 .parentRecipeByName(CONSTANT.REC_A)
-                .quantityUnitOfMeasureByName(POUND)
+                .unit('lb')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(OTHER_B)
-                //.subRecipeByName()
                 .quantity(1.5)
                 .parentRecipeByName(CONSTANT.REC_B)
-                .quantityUnitOfMeasureByName(GRAM)
+                .unit('g')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(FOOD_B)
-                //.subRecipeByName()
                 .quantity(2)
                 .parentRecipeByName(CONSTANT.REC_B)
-                .quantityUnitOfMeasureByName(FL_OUNCE)
+                .unit('fl-oz')
                 .build(),
             await this.ingredientBuilder
                 .reset()
-                //.inventoryItemByName(DRY_C)
                 .ingredientRecipeByName(CONSTANT.REC_B)
                 .quantity(2.5)
                 .parentRecipeByName(CONSTANT.REC_C)
-                .quantityUnitOfMeasureByName(LITER)
+                .unit('l')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(OTHER_C)
-                //.subRecipeByName()
                 .quantity(2.75)
                 .parentRecipeByName(CONSTANT.REC_C)
-                .quantityUnitOfMeasureByName(GALLON)
+                .unit('gal')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(FOOD_B)
-                //.subRecipeByName()
                 .quantity(3)
                 .parentRecipeByName(CONSTANT.REC_D)
-                .quantityUnitOfMeasureByName(KILOGRAM)
+                .unit('kg')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(FOOD_A)
-                //.subRecipeByName()
                 .quantity(3.5)
                 .parentRecipeByName(CONSTANT.REC_D)
-                .quantityUnitOfMeasureByName(GRAM)
+                .unit('g')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(OTHER_B)
-                //.subRecipeByName()
                 .quantity(10)
                 .parentRecipeByName(CONSTANT.REC_E)
-                .quantityUnitOfMeasureByName(POUND)
+                .unit('lb')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(OTHER_C)
-                //.subRecipeByName()
                 .quantity(10.5)
                 .parentRecipeByName(CONSTANT.REC_E)
-                .quantityUnitOfMeasureByName(CUP)
+                .unit('cup')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(DRY_C)
-                //.subRecipeByName()
                 .quantity(10.75)
                 .parentRecipeByName(CONSTANT.REC_F)
-                .quantityUnitOfMeasureByName(TABLESPOON)
+                .unit('Tbs')
                 .build(),
             await this.ingredientBuilder
                 .reset()
                 .ingredientInventoryItemByName(OTHER_A)
-                //.subRecipeByName()
                 .quantity(15)
                 .parentRecipeByName(CONSTANT.REC_F)
-                .quantityUnitOfMeasureByName(TEASPOON)
+                .unit('tsp')
                 .build(),
         ];
     }
@@ -228,13 +199,12 @@ export class RecipeTestUtil {
     }
 
     /**
-     * Dependencies: UnitOfMeasure, RecipeCategory, RecipeSubCategory
+     * Dependencies: RecipeCategory, RecipeSubCategory
      * @returns
      */
     public async getTestRecipeEntities(
         testContext: DatabaseTestContext,
     ): Promise<Recipe[]> {
-        await this.unitOfMeasureTestUtil.initUnitOfMeasureTestDatabase(testContext);
         await this.initRecipeCategoryTestingDatabase(testContext);
         await this.initRecipeSubCategoryTestingDatabase(testContext);
         await this.inventoryItemTestUtil.initInventoryItemTestDatabase(testContext);
@@ -247,8 +217,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
                 .salesPrice(4.99)
-                .servingSizeMeasurementByName(OUNCE)
-                .batchResultMeasurementByName(POUND)
+                .servingSizeUnit('oz')
+                .batchResultUnit('lb')
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_1)
                 .build(),
@@ -259,8 +229,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
                 .salesPrice(8.99)
-                .servingSizeMeasurementByName(MILLILITER)
-                .batchResultMeasurementByName(LITER)
+                .servingSizeUnit('ml')
+                .batchResultUnit('l')
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_2)
                 .build(),
@@ -271,8 +241,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
                 .salesPrice(12.99)
-                .servingSizeMeasurementByName(GRAM)
-                .batchResultMeasurementByName(KILOGRAM)
+                .servingSizeUnit('g')
+                .batchResultUnit('kg')
                 .categoryByName(CONSTANT.REC_CAT_A)
                 .build(),
             await this.recipeBuilder
@@ -282,8 +252,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(1)
                 .servingSizeQuantity(2)
                 .salesPrice(4.99)
-                .servingSizeMeasurementByName(OUNCE)
-                .batchResultMeasurementByName(POUND)
+                .servingSizeUnit('oz')
+                .batchResultUnit('lb')
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_3)
                 .build(),
@@ -294,8 +264,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(3)
                 .servingSizeQuantity(4)
                 .salesPrice(8.99)
-                .servingSizeMeasurementByName(MILLILITER)
-                .batchResultMeasurementByName(LITER)
+                .servingSizeUnit('ml')
+                .batchResultUnit('l')
                 .categoryByName(CONSTANT.REC_CAT_B)
                 .subCategoryByName(CONSTANT.REC_SUBCAT_4)
                 .build(),
@@ -306,8 +276,8 @@ export class RecipeTestUtil {
                 .batchResultQuantity(5)
                 .servingSizeQuantity(6)
                 .salesPrice(12.99)
-                .servingSizeMeasurementByName(GRAM)
-                .batchResultMeasurementByName(KILOGRAM)
+                .servingSizeUnit('g')
+                .batchResultUnit('kg')
                 .build(),
         ];
     }
@@ -315,7 +285,7 @@ export class RecipeTestUtil {
     /**
      * Inserts 12 recipe ingredients into database,
      * - with recipe C referencing recipe B as an ingredient
-     * - Depends on InventoryItems, UnitOfMeasure, and Recipe, which are initialized beforehand.
+     * - Depends on InventoryItems and Recipe, which are initialized beforehand.
      */
     public async initRecipeIngredientTestingDatabase(
         testContext: DatabaseTestContext,
@@ -413,7 +383,7 @@ export class RecipeTestUtil {
     /**
      * Inserts 6 Recipes (A-F) into the database,
      * - Recipes B is marked an Ingredient Recipe (isIngredient = true),
-     * - Depends on UnitOfMeasure, RecipeCategory, and RecipeSubCategory, which are initalized beforehand
+     * - Depends on RecipeCategory and RecipeSubCategory, which are initialized beforehand
      */
     public async initRecipeTestingDatabase(
         testContext: DatabaseTestContext,
@@ -465,7 +435,7 @@ export class RecipeTestUtil {
     public createNestedRecipeIngredientDtos(
         itemIds: number[],
         subRecipeIds: number[],
-        unitIds: number[],
+        units: AppUnit[],
         quantities: number[],
     ): NestedCreateRecipeIngredientDto[] {
         const results: NestedCreateRecipeIngredientDto[] = [];
@@ -480,7 +450,7 @@ export class RecipeTestUtil {
                     plainToInstance(NestedCreateRecipeIngredientDto, {
                         createId: `c${createId++}`,
                         ingredientInventoryItemId: itemIds[itemIndex++],
-                        quantityUnitTypeId: unitIds[i % unitIds.length],
+                        unit: units[i % units.length],
                         quantity: quantities[i],
                     }),
                 );
@@ -489,7 +459,7 @@ export class RecipeTestUtil {
                     plainToInstance(NestedCreateRecipeIngredientDto, {
                         createId: `c${createId++}`,
                         ingredientRecipeId: subRecipeIds[i - itemIds.length - 1],
-                        quantityUnitTypeId: unitIds[i % unitIds.length],
+                        unit: units[i % units.length],
                         quantity: quantities[i],
                     }),
                 );
@@ -501,7 +471,7 @@ export class RecipeTestUtil {
                     plainToInstance(NestedCreateRecipeIngredientDto, {
                         createId: `c${createId++}`,
                         ingredientInventoryItemId: itemIds[itemIndex++],
-                        quantityUnitTypeId: unitIds[i % unitIds.length],
+                        unit: units[i % units.length],
                         quantity: quantities[i],
                     }),
                 );

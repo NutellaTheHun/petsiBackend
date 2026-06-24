@@ -5,7 +5,6 @@ import { NestedValidatorBase } from '../../../common/base/nested-validator.base'
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
 import { RequestContextService } from '../../request-context/RequestContextService';
-import { UnitOfMeasure } from '../../unit-of-measure/entities/unit-of-measure.entity';
 import { CreateInventoryItemSizeDto } from '../dto/inventory-item-size/create-inventory-item-size.dto';
 import { NestedCreateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-create-inventory-item-size.dto';
 import { NestedUpdateInventoryItemSizeDto } from '../dto/inventory-item-size/nested-update-inventory-item-size.dto';
@@ -30,9 +29,6 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
 
         @InjectRepository(InventoryItemPackage)
         private readonly packageRepo: Repository<InventoryItemPackage>,
-
-        @InjectRepository(UnitOfMeasure)
-        private readonly unitOfMeasureRepo: Repository<UnitOfMeasure>,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -61,15 +57,6 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureTypeId !== undefined) {
-            this.helper.enforceExists(
-                identity.measureTypeId,
-                this.unitOfMeasureRepo,
-                'measureType',
-                errorMap,
-            );
-        }
-
         if (identity.cost !== undefined && identity.cost !== null) {
             this.helper.enforcePositive(
                 identity.cost,
@@ -86,10 +73,10 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             );
         }
 
-        if (identity.measureAmount !== undefined && identity.packageId && identity.measureTypeId && identity.inventoryItemId) {
+        if (identity.measureAmount !== undefined && identity.packageId && identity.unit && identity.inventoryItemId) {
             const exists = await this.repo.findOne({
                 where: {
-                    measureType: { id: identity.measureTypeId },
+                    unit: identity.unit,
                     package: {
                         id: identity.packageId,
                     },
@@ -98,7 +85,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
                 },
             });
             if (exists && exists.id !== id) {
-                errorMap.addError('ALREADY_EXISTS', undefined, ['measureType', 'package', 'measureAmount']);
+                errorMap.addError('ALREADY_EXISTS', undefined, ['unit', 'package', 'measureAmount']);
                 console.log("ALREADY EXISTS");
             }
 
@@ -114,7 +101,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
                 cost: dto.cost,
                 measureAmount: dto.measureAmount,
                 packageId: dto.packageId,
-                measureTypeId: dto.measureTypeId,
+                unit: dto.unit,
             } as InventoryItemSizeValidatorIdentity;
         }
 
@@ -133,7 +120,7 @@ export class InventoryItemSizeValidator extends NestedValidatorBase<InventoryIte
             cost: dto.cost,
             measureAmount: dto.measureAmount,
             packageId: dto.packageId,
-            measureTypeId: dto.measureTypeId,
+            unit: dto.unit,
             inventoryItemId: currentSize.inventoryItem.id,
         } as InventoryItemSizeValidatorIdentity;
     }

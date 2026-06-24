@@ -1,6 +1,5 @@
 import { handleSetHas, handleShallow } from '../handlers/handlers';
 import { menuItemExample } from '../menu-items/menu-item.example';
-import { unitOfMeasureExample } from '../unit-of-measure/unit-of-measure.example';
 import { recipeCategoryExample } from './recipe-category.example';
 import { recipeIngredientExample } from './recipe-ingredient.example';
 import { recipeSubCategoryExample } from './recipe-sub-category.example';
@@ -20,21 +19,11 @@ export function recipeExample(fnSet: Set<string>, shallow: boolean) {
 
     batchResultQuantity: 2,
 
-    batchResultUnitType: handleShallow(
-      shallow,
-      fnSet,
-      unitOfMeasureExample,
-      false,
-    ),
+    batchResultUnit: 'oz',
 
     servingSizeQuantity: 3,
 
-    servingSizeUnitType: handleShallow(
-      shallow,
-      fnSet,
-      unitOfMeasureExample,
-      false,
-    ),
+    servingSizeUnit: 'oz',
 
     salesPrice: '3.99',
 

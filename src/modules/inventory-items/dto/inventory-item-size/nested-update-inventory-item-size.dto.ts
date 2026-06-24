@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
+import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsPositive, Min } from 'class-validator';
 import { NestedUpdateDto } from '../../../../common/base/nested-update-dto.base';
+import { AppUnit, UNITS } from '../../../../common/units';
 import { EntityId } from '../../../../common/types';
-import { UnitOfMeasure } from '../../../unit-of-measure/entities/unit-of-measure.entity';
 import { InventoryItemPackage } from '../../entities/inventory-item-package.entity';
 
 export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
@@ -16,16 +16,15 @@ export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
     readonly packageId: EntityId<InventoryItemPackage>;
 
     @ApiProperty({
-        description: 'Id of UnitofMeasure entity.',
-        example: 1,
+        description: 'Unit symbol for this size (e.g. "lb", "oz", "ea").',
+        example: 'lb',
     })
-    @IsNumber()
-    @IsPositive()
+    @IsIn(Object.values(UNITS))
     @IsNotEmpty()
-    readonly measureTypeId: EntityId<UnitOfMeasure>;
+    readonly unit: AppUnit;
 
     @ApiProperty({
-        description: 'the unit quantity of the UnitofMeasure entity.',
+        description: 'the unit quantity of the unit entity.',
         example: 10,
     })
     @IsNumber()
@@ -34,7 +33,7 @@ export class NestedUpdateInventoryItemSizeDto extends NestedUpdateDto {
     readonly measureAmount: number;
 
     @ApiProperty({
-        description: 'Prsice paid for the InventoryItem entity.',
+        description: 'Price paid for the InventoryItem entity.',
         example: 3.99,
         nullable: true,
     })
