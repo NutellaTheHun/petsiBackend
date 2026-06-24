@@ -18,7 +18,8 @@
         "strictBindCallApply": false,
         "noFallthroughCasesInSwitch": false,
         "strict": true,
-        "strictPropertyInitialization": false
+        "strictPropertyInitialization": false,
+        "types": ["jest", "node"]
     },
     "include": [
         "src/**/*.ts",

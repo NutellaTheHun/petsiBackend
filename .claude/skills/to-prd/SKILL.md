@@ -14,7 +14,7 @@ This skill takes the current conversation context and codebase understanding and
 
 Check with the user that these seams match their expectations.
 
-3. Derive a short, kebab-case slug from this PRD's title (e.g. "Add CSV export" → `add-csv-export`). Write the PRD using the template below to `prd/<slug>.md` (create the `prd/` folder at the repo root if it doesn't exist).
+3. Derive a short, kebab-case slug from this PRD's title (e.g. "Add CSV export" → `add-csv-export`). Write the PRD using the template below to `prd/<slug>/prd.md` (create the `prd/<slug>/` folder at the repo root if it doesn't exist).
 
 If a PRD already exists at that path (same slug), update it in place — preserve any sections the user has manually edited that you aren't being asked to change. Otherwise, create the new file.
 

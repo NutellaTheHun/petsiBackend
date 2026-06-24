@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: []
 
 ---
@@ -19,11 +19,11 @@ Include unit tests for `convertUnit` covering: valid same-category conversions, 
 
 ## Acceptance criteria
 
-- [ ] `convert-units` is installed as a production dependency
-- [ ] `AppUnit` type is exported and equals `Unit | 'ea'` where `Unit` comes from `convert-units`
-- [ ] `UNITS` const object covers all units listed above and values are valid `AppUnit` symbols
-- [ ] `convertUnit` returns the correct numeric result for valid same-category conversions
-- [ ] `convertUnit` returns the input value unchanged for `ea → ea`
-- [ ] `convertUnit` throws `UnitConversionError` for cross-category conversions (e.g. `kg → cup`)
-- [ ] `convertUnit` throws `UnitConversionError` when either unit is `ea` and the other is not
-- [ ] All new unit tests pass
+- [x] `convert-units` is installed as a production dependency
+- [x] `AppUnit` type is exported and equals `Unit | 'ea'` where `Unit` comes from `convert-units`
+- [x] `UNITS` const object covers all units listed above and values are valid `AppUnit` symbols
+- [x] `convertUnit` returns the correct numeric result for valid same-category conversions
+- [x] `convertUnit` returns the input value unchanged for `ea → ea`
+- [x] `convertUnit` throws `UnitConversionError` for cross-category conversions (e.g. `kg → cup`)
+- [x] `convertUnit` throws `UnitConversionError` when either unit is `ea` and the other is not
+- [x] All new unit tests pass
