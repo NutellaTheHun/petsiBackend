@@ -37,7 +37,7 @@ for i in $(seq 1 "$MAX_ITERS"); do
   # what gives each task a genuinely fresh context, since it's a new process.
   # acceptEdits lets it write files/run tests without an interactive prompt;
   # swap for --dangerously-skip-permissions only if you trust the repo fully.
-  claude -p "/do-task ${PRD_SLUG}" --permission-mode acceptEdits
+  claude -p "/do-task ${PRD_SLUG}" --permission-mode acceptEdits --verbose
 
   echo "--- iteration $i finished ---"
 done

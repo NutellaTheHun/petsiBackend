@@ -6468,8 +6468,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-06-24T21:33:16.490Z",
-                "updatedAt": "2026-06-24T21:33:16.490Z",
+                "createdAt": "2026-06-25T22:44:45.791Z",
+                "updatedAt": "2026-06-25T22:44:45.791Z",
                 "name": "jim",
                 "email": "jim@email.com",
                 "roles": [
@@ -6606,7 +6606,7 @@
           "inventoryCounts": {
             "example": {
               "id": 1,
-              "countDate": "2026-06-24T21:33:16.644Z",
+              "countDate": "2026-06-25T22:44:46.161Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -6909,7 +6909,7 @@
           "parentInventoryCount": {
             "example": {
               "id": 1,
-              "countDate": "2026-06-24T21:33:16.643Z",
+              "countDate": "2026-06-25T22:44:46.160Z",
               "inventoryArea": {},
               "countedInventoryItems": [
                 {}
@@ -7598,8 +7598,8 @@
             "example": [
               {
                 "id": 1,
-                "createdAt": "2026-06-24T21:33:16.658Z",
-                "updatedAt": "2026-06-24T21:33:16.658Z",
+                "createdAt": "2026-06-25T22:44:46.189Z",
+                "updatedAt": "2026-06-25T22:44:46.189Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -7766,8 +7766,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.695Z",
-              "updatedAt": "2026-06-24T21:33:16.695Z",
+              "createdAt": "2026-06-25T22:44:46.248Z",
+              "updatedAt": "2026-06-25T22:44:46.248Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8392,8 +8392,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.658Z",
-              "updatedAt": "2026-06-24T21:33:16.658Z",
+              "createdAt": "2026-06-25T22:44:46.191Z",
+              "updatedAt": "2026-06-25T22:44:46.191Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8435,8 +8435,8 @@
           "parentMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.659Z",
-              "updatedAt": "2026-06-24T21:33:16.659Z",
+              "createdAt": "2026-06-25T22:44:46.191Z",
+              "updatedAt": "2026-06-25T22:44:46.191Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8553,8 +8553,8 @@
           "containedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.662Z",
-              "updatedAt": "2026-06-24T21:33:16.662Z",
+              "createdAt": "2026-06-25T22:44:46.198Z",
+              "updatedAt": "2026-06-25T22:44:46.198Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8599,8 +8599,8 @@
               "parentOrder": {},
               "menuItem": {
                 "id": 1,
-                "createdAt": "2026-06-24T21:33:16.662Z",
-                "updatedAt": "2026-06-24T21:33:16.662Z",
+                "createdAt": "2026-06-25T22:44:46.198Z",
+                "updatedAt": "2026-06-25T22:44:46.198Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -8651,8 +8651,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.662Z",
-              "updatedAt": "2026-06-24T21:33:16.662Z",
+              "createdAt": "2026-06-25T22:44:46.199Z",
+              "updatedAt": "2026-06-25T22:44:46.199Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -8698,8 +8698,8 @@
                 "parentOrderMenuItem": {},
                 "containedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-24T21:33:16.662Z",
-                  "updatedAt": "2026-06-24T21:33:16.662Z",
+                  "createdAt": "2026-06-25T22:44:46.199Z",
+                  "updatedAt": "2026-06-25T22:44:46.199Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -8732,9 +8732,9 @@
               "id": 1,
               "category": {},
               "recipient": "alberto",
-              "createdAt": "2026-06-24T21:33:16.663Z",
-              "updatedAt": "2026-06-24T21:33:16.663Z",
-              "fulfillmentDate": "2026-06-24T21:33:16.663Z",
+              "createdAt": "2026-06-25T22:44:46.199Z",
+              "updatedAt": "2026-06-25T22:44:46.199Z",
+              "fulfillmentDate": "2026-06-25T22:44:46.199Z",
               "fulfilllmentType": "delivery",
               "fulfillmentContactName": "not alberto",
               "deliveryAddress": "123 main st",
@@ -8901,8 +8901,8 @@
                 "parentOrder": {},
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-24T21:33:16.664Z",
-                  "updatedAt": "2026-06-24T21:33:16.664Z",
+                  "createdAt": "2026-06-25T22:44:46.201Z",
+                  "updatedAt": "2026-06-25T22:44:46.201Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -8928,8 +8928,8 @@
                     "parentOrderMenuItem": {},
                     "containedMenuItem": {
                       "id": 1,
-                      "createdAt": "2026-06-24T21:33:16.664Z",
-                      "updatedAt": "2026-06-24T21:33:16.664Z",
+                      "createdAt": "2026-06-25T22:44:46.201Z",
+                      "updatedAt": "2026-06-25T22:44:46.201Z",
                       "type": "container",
                       "name": "Classic Apple",
                       "category": {},
@@ -8964,8 +8964,8 @@
               "id": 1,
               "order": {},
               "rrule": "RRULE:FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR",
-              "startDate": "2026-06-24T21:33:16.664Z",
-              "endDate": "2026-06-24T21:33:16.664Z"
+              "startDate": "2026-06-25T22:44:46.201Z",
+              "endDate": "2026-06-25T22:44:46.201Z"
             },
             "description": "The schedule of the recurring order",
             "nullable": true,
@@ -9037,9 +9037,9 @@
                 "id": 1,
                 "category": {},
                 "recipient": "alberto",
-                "createdAt": "2026-06-24T21:33:16.664Z",
-                "updatedAt": "2026-06-24T21:33:16.664Z",
-                "fulfillmentDate": "2026-06-24T21:33:16.664Z",
+                "createdAt": "2026-06-25T22:44:46.202Z",
+                "updatedAt": "2026-06-25T22:44:46.202Z",
+                "fulfillmentDate": "2026-06-25T22:44:46.202Z",
                 "fulfilllmentType": "delivery",
                 "fulfillmentContactName": "not alberto",
                 "deliveryAddress": "123 main st",
@@ -10099,8 +10099,8 @@
               "name": "Classic Apple Pie",
               "producedMenuItem": {
                 "id": 1,
-                "createdAt": "2026-06-24T21:33:16.748Z",
-                "updatedAt": "2026-06-24T21:33:16.748Z",
+                "createdAt": "2026-06-25T22:44:46.337Z",
+                "updatedAt": "2026-06-25T22:44:46.337Z",
                 "type": "container",
                 "name": "Classic Apple",
                 "category": {},
@@ -10160,8 +10160,8 @@
           "producedMenuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.748Z",
-              "updatedAt": "2026-06-24T21:33:16.748Z",
+              "createdAt": "2026-06-25T22:44:46.337Z",
+              "updatedAt": "2026-06-25T22:44:46.337Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
@@ -10319,8 +10319,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-24T21:33:16.748Z",
-                  "updatedAt": "2026-06-24T21:33:16.748Z",
+                  "createdAt": "2026-06-25T22:44:46.338Z",
+                  "updatedAt": "2026-06-25T22:44:46.338Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10417,8 +10417,8 @@
                 "name": "Classic Apple Pie",
                 "producedMenuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-24T21:33:16.748Z",
-                  "updatedAt": "2026-06-24T21:33:16.748Z",
+                  "createdAt": "2026-06-25T22:44:46.338Z",
+                  "updatedAt": "2026-06-25T22:44:46.338Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10945,8 +10945,8 @@
                 "displayName": "CLAPPLE",
                 "menuItem": {
                   "id": 1,
-                  "createdAt": "2026-06-24T21:33:16.777Z",
-                  "updatedAt": "2026-06-24T21:33:16.777Z",
+                  "createdAt": "2026-06-25T22:44:46.389Z",
+                  "updatedAt": "2026-06-25T22:44:46.389Z",
                   "type": "container",
                   "name": "Classic Apple",
                   "category": {},
@@ -10999,8 +10999,8 @@
           "menuItem": {
             "example": {
               "id": 1,
-              "createdAt": "2026-06-24T21:33:16.777Z",
-              "updatedAt": "2026-06-24T21:33:16.777Z",
+              "createdAt": "2026-06-25T22:44:46.389Z",
+              "updatedAt": "2026-06-25T22:44:46.389Z",
               "type": "container",
               "name": "Classic Apple",
               "category": {},
