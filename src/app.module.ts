@@ -17,6 +17,7 @@ import { selectTypeOrmModule } from './infrastructure/database/typeorm/typeorm.m
 import { AppLoggingModule } from './modules/app-logging/app-logging.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
+import { DynamicPropertiesModule } from './modules/dynamic-properties/dynamic-properties.module';
 import { InventoryAreasModule } from './modules/inventory-areas/inventory-areas.module';
 import { InventoryItemsModule } from './modules/inventory-items/inventory-items.module';
 import { LabelsModule } from './modules/labels/labels.module';
@@ -86,6 +87,7 @@ import { UserModule } from './modules/users/user.module';
     RecipesModule,
     UserModule,
     RoleModule,
+    DynamicPropertiesModule,
   ],
 
   controllers: [AppController],
