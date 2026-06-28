@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
@@ -19,6 +20,8 @@ export class DynamicPropertyConfigService extends ServiceBase<DynamicPropertyCon
     constructor(
         @InjectRepository(DynamicPropertyConfig)
         repo: Repository<DynamicPropertyConfig>,
+        @InjectRepository(MenuItemDynamicPropertyValue)
+        private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
         requestContextService: RequestContextService,
         logger: AppLogger,
         validator: DynamicPropertyConfigValidator,
@@ -100,5 +103,19 @@ export class DynamicPropertyConfigService extends ServiceBase<DynamicPropertyCon
         if (sortBy === 'propertyName') {
             query.orderBy(`entity.${sortBy}`, sortOrder);
         }
+    }
+
+    async findConfigById(id: number): Promise<DynamicPropertyConfig | null> {
+        return this.entityRepo.findOne({ where: { id } });
+    }
+
+    async hasStaleDynamicPropertyValues(menuItemId: number, newCategoryId: number | null): Promise<boolean> {
+        const rows = await this.dynPropValueRepo.find({
+            where: { menuItem: { id: menuItemId } },
+        });
+        return rows.some(row => {
+            if (row.config.holderCategory === null) return false;
+            return newCategoryId === null || row.config.holderCategory.id !== newCategoryId;
+        });
     }
 }

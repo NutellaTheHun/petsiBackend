@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { DynamicPropertyConfigService } from '../../dynamic-properties/services/dynamic-property-config.service';
+import { HolderEntityType, ValueType } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
@@ -30,6 +32,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
 
         @InjectRepository(MenuItemCategory)
         private readonly categoryRepo: Repository<MenuItemCategory>,
+
+        private readonly configService: DynamicPropertyConfigService,
 
         logger: AppLogger,
         requestContextService: RequestContextService,
@@ -111,6 +115,67 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             }
         }
 
+        if (identity.dynamicProperties && identity.dynamicProperties.length > 0) {
+            const effectiveCategoryId = identity.categoryId !== undefined
+                ? identity.categoryId
+                : identity.existingCategoryId;
+
+            for (const dp of identity.dynamicProperties) {
+                const childErrorMap = new ValidationErrorMap(dp.configId);
+
+                const config = await this.configService.findConfigById(dp.configId);
+                if (!config) {
+                    childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['configId']);
+                    errorMap.addChild('dynamicProperties', childErrorMap);
+                    continue;
+                }
+
+                if (config.holderEntityType !== HolderEntityType.MenuItem) {
+                    childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['configId']);
+                    errorMap.addChild('dynamicProperties', childErrorMap);
+                    continue;
+                }
+
+                if (config.holderCategory !== null) {
+                    if (effectiveCategoryId == null || config.holderCategory.id !== effectiveCategoryId) {
+                        childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['configId']);
+                        errorMap.addChild('dynamicProperties', childErrorMap);
+                        continue;
+                    }
+                }
+
+                if (config.valueType === ValueType.EntityReference && dp.value !== null) {
+                    const valueEntityId = parseInt(dp.value, 10);
+                    const valueEntity = await this.repo.findOne({ where: { id: valueEntityId } });
+
+                    if (!valueEntity) {
+                        childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['value']);
+                        errorMap.addChild('dynamicProperties', childErrorMap);
+                        continue;
+                    }
+
+                    if (config.valueEntityCategory !== null) {
+                        if (!valueEntity.category || valueEntity.category.id !== config.valueEntityCategory.id) {
+                            childErrorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['value']);
+                            errorMap.addChild('dynamicProperties', childErrorMap);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (id !== 'root' && identity.categoryId !== undefined) {
+            if (identity.categoryId !== identity.existingCategoryId) {
+                const hasStale = await this.configService.hasStaleDynamicPropertyValues(
+                    id as number,
+                    identity.categoryId ?? null,
+                );
+                if (hasStale) {
+                    errorMap.addError('INVALID_PROPERTY_VALUE', undefined, ['categoryId']);
+                }
+            }
+        }
+
         return errorMap;
     }
 
@@ -122,6 +187,13 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
                 containerItemIdentities.push(await this.menuItemContainerValidator.resolveIdentity(containerItem, itemId));
             }
         }
+
+        let existingCategoryId: number | null | undefined = undefined;
+        if (id !== 'root') {
+            const existing = await this.repo.findOne({ where: { id: id as number } });
+            existingCategoryId = existing?.category?.id ?? null;
+        }
+
         return {
             name: dto.name,
             type: dto.type,
@@ -129,6 +201,8 @@ export class MenuItemValidator extends ValidatorBase<MenuItemEntity, MenuItemVal
             sizeIds: dto.sizeIds,
             containerMenuItems: containerItemIdentities,
             variableMaxAmount: dto.variableMaxAmount,
+            dynamicProperties: dto.dynamicProperties,
+            existingCategoryId,
         } as MenuItemValidatorIdentity;
 
     }

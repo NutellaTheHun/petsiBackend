@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [01-dynamic-property-config-crud.md, 02-menu-item-dynamic-property-value-write-path.md]
 
 ---

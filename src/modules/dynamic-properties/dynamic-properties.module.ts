@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { MenuItemDynamicPropertyValue } from '../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../menu-items/entities/menu-item-category.entity';
 import { RequestContextModule } from '../request-context/request-context.module';
 import { DynamicPropertyConfigBuilder } from './builders/dynamic-property-config.builder';
@@ -12,7 +13,7 @@ import { DynamicPropertyConfigValidator } from './validators/dynamic-property-co
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([DynamicPropertyConfig, MenuItemCategory]),
+        TypeOrmModule.forFeature([DynamicPropertyConfig, MenuItemCategory, MenuItemDynamicPropertyValue]),
         CacheModule.register(),
         AppLoggingModule,
         RequestContextModule,

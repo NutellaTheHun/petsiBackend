@@ -4,11 +4,13 @@ import { plainToInstance } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { createValidationErrorPayload, expectValidationErrorPayload, expectValidationErrorSize } from '../../../common/validation/validation-error';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import { DynamicPropertyConfig, HolderEntityType, ValueType } from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { item_a, item_b, item_container_a, item_container_b, item_var_max_container_c, item_var_max_container_d } from '../utils/constants';
@@ -26,6 +28,8 @@ describe('menu item validator', () => {
     let itemRepo: Repository<MenuItem>;
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
+    let configRepo: Repository<DynamicPropertyConfig>;
+    let dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>;
 
     let findCategory = async () => {
         return await categoryRepo.findOneOrFail({ where: {} });
@@ -50,6 +54,11 @@ describe('menu item validator', () => {
         itemRepo = module.get(getRepositoryToken(MenuItem));
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
+        dynPropValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+
+        dbTestContext.addCleanupFunction(async () => { await dynPropValueRepo.deleteAll(); });
+        dbTestContext.addCleanupFunction(async () => { await configRepo.deleteAll(); });
     });
 
     afterAll(async () => {
@@ -692,6 +701,160 @@ describe('menu item validator', () => {
             errors,
             [{ prop: 'containerMenuItems', id: 'c1' }],
             createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['quantity']),
+        );
+    });
+
+    // Dynamic Property Validation Tests
+    it('successfully validate create: valid dynamicProperties entry passes validation', async () => {
+        const config = await configRepo.save({
+            holderEntityType: HolderEntityType.MenuItem,
+            holderCategory: null,
+            propertyName: 'test-filepath-prop',
+            valueType: ValueType.Filepath,
+            valueEntityType: null,
+            valueEntityCategory: null,
+        });
+
+        const sizes = await sizeRepo.find();
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'New Item With Dynamic Prop',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: null,
+            sizeIds: [sizes[0].id],
+            dynamicProperties: [{ configId: config.id, value: '/path/to/file' }],
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expect(errors).toBeNull();
+    });
+
+    it('fail validate create: dynamicProperties unknown configId returns validation error', async () => {
+        const sizes = await sizeRepo.find();
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'New Item Unknown Config',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: null,
+            sizeIds: [sizes[0].id],
+            dynamicProperties: [{ configId: 999999, value: null }],
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'dynamicProperties', id: 999999 }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['configId']),
+        );
+    });
+
+    it('fail validate create: config holderCategoryId does not match menuItem category', async () => {
+        const categories = await categoryRepo.find();
+        if (categories.length < 2) throw new Error('not enough categories for test');
+        const catA = categories[0];
+        const catB = categories[1];
+
+        const config = await configRepo.save({
+            holderEntityType: HolderEntityType.MenuItem,
+            holderCategory: catA,
+            propertyName: 'test-category-scoped-prop',
+            valueType: ValueType.Filepath,
+            valueEntityType: null,
+            valueEntityCategory: null,
+        });
+
+        const sizes = await sizeRepo.find();
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'New Item Category Mismatch',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: catB.id,
+            sizeIds: [sizes[0].id],
+            dynamicProperties: [{ configId: config.id, value: '/path/file' }],
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'dynamicProperties', id: config.id }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['configId']),
+        );
+    });
+
+    it('fail validate create: value entity does not belong to required valueEntityCategoryId', async () => {
+        const categories = await categoryRepo.find();
+        if (categories.length < 2) throw new Error('not enough categories for test');
+        const catA = categories[0];
+        const catB = categories[1];
+
+        const valueItem = await itemRepo.findOneOrFail({ where: { category: { id: catB.id } } });
+
+        const config = await configRepo.save({
+            holderEntityType: HolderEntityType.MenuItem,
+            holderCategory: null,
+            propertyName: 'test-entity-ref-prop',
+            valueType: ValueType.EntityReference,
+            valueEntityType: 'menuItem',
+            valueEntityCategory: catA,
+        });
+
+        const sizes = await sizeRepo.find();
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'New Item Value Category Mismatch',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: null,
+            sizeIds: [sizes[0].id],
+            dynamicProperties: [{ configId: config.id, value: String(valueItem.id) }],
+        });
+
+        const errors = await validator.validateDto(dto, 'root');
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [{ prop: 'dynamicProperties', id: config.id }],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['value']),
+        );
+    });
+
+    it('fail validate update: changing categoryId when stale dynamic property value rows exist', async () => {
+        const categories = await categoryRepo.find();
+        if (categories.length < 2) throw new Error('not enough categories for test');
+        const catA = categories[0];
+        const catB = categories[1];
+
+        const menuItem = await itemRepo.findOneOrFail({
+            where: { category: { id: catA.id }, type: MENU_ITEM_TYPES.SINGLE },
+        });
+
+        const config = await configRepo.save({
+            holderEntityType: HolderEntityType.MenuItem,
+            holderCategory: catA,
+            propertyName: 'test-stale-guard-prop',
+            valueType: ValueType.Filepath,
+            valueEntityType: null,
+            valueEntityCategory: null,
+        });
+
+        await dynPropValueRepo.save({
+            menuItem: { id: menuItem.id },
+            config: { id: config.id },
+            valueText: '/some/file',
+            valueEntity: null,
+        });
+
+        const sizes = await sizeRepo.find();
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: menuItem.name,
+            type: menuItem.type,
+            categoryId: catB.id,
+            sizeIds: [sizes[0].id],
+        });
+
+        const errors = await validator.validateDto(dto, menuItem.id);
+        expectValidationErrorSize(errors, 1);
+        expectValidationErrorPayload(
+            errors,
+            [],
+            createValidationErrorPayload('INVALID_PROPERTY_VALUE', undefined, ['categoryId']),
         );
     });
 });
