@@ -9,6 +9,7 @@ import { NestedCreateMenuItemContainerItemDto } from '../../dto/menu-item-contai
 import { NestedUpdateMenuItemContainerItemDto } from '../../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { UpdateMenuItemDto } from '../../dto/menu-item/update-menu-item.dto';
 import { MenuItemContainerItem } from '../../entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from '../../entities/menu-item-dynamic-property-value.entity';
 import { MenuItem } from '../../entities/menu-item.entity';
 import { MenuItemContainerItemChangeDetector } from './menu-item-container-item.change-detector';
 
@@ -86,7 +87,46 @@ export class MenuItemChangeDetector extends ChangeDetectorBase<MenuItem, UpdateM
       }
     }
 
+    if (dto.dynamicProperties !== undefined) {
+      if (this.hasDynamicPropertyChanges(entity.dynamicPropertyValues ?? [], dto.dynamicProperties)) {
+        patch.dynamicProperties = dto.dynamicProperties;
+        changes.push({
+          op: 'aggregate',
+          path: 'dynamicProperties',
+          previousValue: (entity.dynamicPropertyValues ?? []).map((dpv) => ({
+            configId: dpv.config.id,
+            valueText: dpv.valueText,
+            valueEntityId: dpv.valueEntityId ?? null,
+          })),
+          nextValue: dto.dynamicProperties,
+        });
+      }
+    }
+
     return { patch, hasChanges: changes.length > 0, changes };
+  }
+
+  private hasDynamicPropertyChanges(
+    existing: MenuItemDynamicPropertyValue[],
+    incoming: { configId: number; value: string | null }[],
+  ): boolean {
+    const existingByConfigId = new Map(
+      existing.map((dpv) => [
+        dpv.config.id,
+        dpv.valueText ?? (dpv.valueEntityId != null ? String(dpv.valueEntityId) : null),
+      ]),
+    );
+
+    for (const dp of incoming) {
+      const currentValue = existingByConfigId.get(dp.configId);
+      if (dp.value === null) {
+        if (currentValue !== undefined) return true;
+      } else {
+        if (currentValue !== dp.value) return true;
+      }
+    }
+
+    return false;
   }
 
   /**

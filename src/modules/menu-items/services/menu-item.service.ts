@@ -10,6 +10,11 @@ import {
     Repository,
     SelectQueryBuilder,
 } from 'typeorm';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
+import {
+    DynamicPropertyConfig,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import {
     ChangeDetectionResult,
     ChangeDetectorBase,
@@ -31,6 +36,7 @@ import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
@@ -38,9 +44,13 @@ import { MenuItemChangeDetector } from '../utils/change-detectors/menu-item.chan
 import { MENU_ITEM_TYPES } from '../utils/menu-item-type';
 import {
     isMenuItemSnapshotV1,
-    menuItemToSnapshotV1,
     MenuItemSnapshotV1,
 } from '../utils/snapshots/menu-item-snapshot.v1';
+import {
+    isMenuItemSnapshotV2,
+    menuItemToSnapshotV2,
+    MenuItemSnapshotV2,
+} from '../utils/snapshots/menu-item-snapshot.v2';
 import { MenuItemValidator } from '../validators/menu-item.validator';
 
 @Injectable()
@@ -98,7 +108,18 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 );
         }
 
-        return await manager.save(savedResult);
+        const saved = await manager.save(savedResult);
+
+        if (dto.dynamicProperties?.length) {
+            await this.persistDynamicPropertyValues(
+                manager,
+                saved.id,
+                dto.dynamicProperties,
+                'create',
+            );
+        }
+
+        return saved;
     }
 
     protected async updateEntity(
@@ -162,7 +183,64 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             entity.containerMenuItems = newItems;
         }
 
+        if (dto.dynamicProperties !== undefined) {
+            await this.persistDynamicPropertyValues(
+                manager,
+                entity.id,
+                dto.dynamicProperties,
+                'update',
+            );
+        }
+
         await manager.save(entity);
+    }
+
+    private async persistDynamicPropertyValues(
+        manager: EntityManager,
+        menuItemId: number,
+        entries: { configId: number; value: string | null }[],
+        mode: 'create' | 'update',
+    ): Promise<void> {
+        for (const dp of entries) {
+            if (dp.value === null) {
+                if (mode === 'update') {
+                    await manager.delete(MenuItemDynamicPropertyValue, {
+                        menuItem: { id: menuItemId },
+                        config: { id: dp.configId },
+                    });
+                }
+                continue;
+            }
+
+            const config = await manager.findOne(DynamicPropertyConfig, {
+                where: { id: dp.configId },
+            });
+            if (!config) continue;
+
+            let row = await manager.findOne(MenuItemDynamicPropertyValue, {
+                where: {
+                    menuItem: { id: menuItemId },
+                    config: { id: dp.configId },
+                },
+            });
+
+            if (!row) {
+                row = manager.create(MenuItemDynamicPropertyValue, {
+                    menuItem: manager.create(MenuItem, { id: menuItemId }),
+                    config: manager.create(DynamicPropertyConfig, { id: dp.configId }),
+                });
+            }
+
+            if (config.valueType === ValueType.EntityReference) {
+                row.valueText = null;
+                row.valueEntity = manager.create(MenuItem, { id: parseInt(dp.value, 10) });
+            } else {
+                row.valueText = dp.value;
+                row.valueEntity = null;
+            }
+
+            await manager.save(row);
+        }
     }
 
     private async syncOrderMenuItems(id: number) {
@@ -198,7 +276,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         const changeLog = buildCreatedChangeLog(
             getRevisionActor(this.requestContextService),
         );
-        const payload = menuItemToSnapshotV1(full);
+        const payload = menuItemToSnapshotV2(full);
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
             entityId: full.id,
@@ -228,7 +306,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             ctx.detectionResult.changes,
             getRevisionActor(this.requestContextService),
         );
-        const payload = menuItemToSnapshotV1(full);
+        const payload = menuItemToSnapshotV2(full);
         await this.revisionHistoryService.appendRevision(manager, {
             entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
             entityId: full.id,
@@ -292,6 +370,34 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
         await manager.save(entity);
     }
 
+    async applyMenuItemSnapshotV2(
+        manager: EntityManager,
+        entity: MenuItem,
+        snap: MenuItemSnapshotV2,
+    ): Promise<void> {
+        await this.applyMenuItemSnapshotV1(manager, entity, snap as unknown as MenuItemSnapshotV1);
+
+        const existing = await manager.find(MenuItemDynamicPropertyValue, {
+            where: { menuItem: { id: entity.id } },
+        });
+        for (const row of existing) {
+            await manager.remove(row);
+        }
+
+        for (const dp of snap.dynamicProperties) {
+            const row = manager.create(MenuItemDynamicPropertyValue, {
+                menuItem: manager.create(MenuItem, { id: entity.id }),
+                config: manager.create(DynamicPropertyConfig, { id: dp.configId }),
+                valueText: dp.valueText,
+                valueEntity:
+                    dp.valueEntityId != null
+                        ? manager.create(MenuItem, { id: dp.valueEntityId })
+                        : null,
+            });
+            await manager.save(row);
+        }
+    }
+
     async revertToRevision(
         menuItemId: number,
         targetRevisionNumber: number,
@@ -307,7 +413,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             );
         }
         const payload = row.payload;
-        if (!isMenuItemSnapshotV1(payload)) {
+        if (!isMenuItemSnapshotV1(payload) && !isMenuItemSnapshotV2(payload)) {
             throw new BadRequestException(
                 'Unsupported or invalid menu item snapshot payload',
             );
@@ -328,7 +434,11 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             if (!entity) {
                 throw new NotFoundException();
             }
-            await this.applyMenuItemSnapshotV1(manager, entity, payload);
+            if (isMenuItemSnapshotV1(payload)) {
+                await this.applyMenuItemSnapshotV1(manager, entity, payload);
+            } else {
+                await this.applyMenuItemSnapshotV2(manager, entity, payload as MenuItemSnapshotV2);
+            }
             const changeLog = buildRevertedChangeLog(
                 targetRevisionNumber,
                 getRevisionActor(this.requestContextService),
@@ -344,7 +454,7 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
                 entityId: menuItemId,
                 changeLog: changeLog as unknown as Record<string, unknown>,
-                payload: menuItemToSnapshotV1(full) as unknown as Record<
+                payload: menuItemToSnapshotV2(full) as unknown as Record<
                     string,
                     unknown
                 >,
@@ -412,6 +522,31 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             'containerMenuItems.containedMenuItem',
             'containerMenuItems.containedItemSize',
             'containerMenuItems.parentItemSize',
+            'dynamicPropertyValues',
+            'dynamicPropertyValues.config',
         ];
+    }
+
+    async findAll(options?: {
+        relations?: string[];
+        limit?: number;
+        cursor?: string;
+        sortBy?: string;
+        sortOrder?: 'ASC' | 'DESC';
+        search?: string;
+        filters?: string[];
+        dateBy?: string;
+        startDate?: string;
+        endDate?: string;
+    }): Promise<PaginatedResult<MenuItem>> {
+        return super.findAll({
+            ...options,
+            relations: [
+                'dynamicPropertyValues',
+                'dynamicPropertyValues.config',
+                'dynamicPropertyValues.config.valueEntityCategory',
+                ...(options?.relations ?? []),
+            ],
+        });
     }
 }

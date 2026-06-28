@@ -4,12 +4,21 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, MoreThan, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import {
+    DynamicPropertyConfig,
+    HolderEntityType,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
+import { RevisionHistory } from '../../revision-history/entities/revision-history.entity';
+import { REVISION_ENTITY_TYPES } from '../../revision-history/constants/revision-entity-type';
+import { MenuItemSnapshotV2, MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION } from '../utils/snapshots/menu-item-snapshot.v2';
 import { NestedCreateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../dto/menu-item-container-item/nested-update-menu-item-container-item.dto';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { item_a } from '../utils/constants';
@@ -44,6 +53,8 @@ describe('menu item service', () => {
     let categoryRepo: Repository<MenuItemCategory>;
     let sizeRepo: Repository<MenuItemSize>;
     let containerItemRepo: Repository<MenuItemContainerItem>;
+    let valueRepo: Repository<MenuItemDynamicPropertyValue>;
+    let configRepo: Repository<DynamicPropertyConfig>;
 
     beforeAll(async () => {
         const module: TestingModule = await getMenuItemTestingModule({
@@ -58,6 +69,8 @@ describe('menu item service', () => {
         categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
         sizeRepo = module.get(getRepositoryToken(MenuItemSize));
         containerItemRepo = module.get(getRepositoryToken(MenuItemContainerItem));
+        valueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+        configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
     });
 
     afterAll(async () => {
@@ -323,5 +336,355 @@ describe('menu item service', () => {
         expect(serviceResult).not.toBeNull();
         expect(serviceResult?.items.length).toBeGreaterThan(0);
         expect(serviceResult?.items.every((i) => i.type === MENU_ITEM_TYPES.SINGLE)).toBe(true);
+    });
+
+    describe('dynamic property value write path', () => {
+        let testFilepathConfig: DynamicPropertyConfig;
+        let testEntityRefConfig: DynamicPropertyConfig;
+
+        beforeAll(async () => {
+            testFilepathConfig = await configRepo.save(
+                configRepo.create({
+                    holderEntityType: HolderEntityType.MenuItem,
+                    propertyName: 'service-spec-filepath',
+                    valueType: ValueType.Filepath,
+                }),
+            );
+            testEntityRefConfig = await configRepo.save(
+                configRepo.create({
+                    holderEntityType: HolderEntityType.MenuItem,
+                    propertyName: 'service-spec-entity-ref',
+                    valueType: ValueType.EntityReference,
+                    valueEntityType: 'menuItem',
+                }),
+            );
+
+            dbTestContext.addCleanupFunction(async () => {
+                await configRepo.delete([testFilepathConfig.id, testEntityRefConfig.id]);
+            });
+        });
+
+        it('should persist value rows when creating MenuItem with dynamicProperties', async () => {
+            const [cat] = await categoryRepo.find({ take: 1 });
+            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
+
+            const dto = plainToInstance(CreateMenuItemDto, {
+                name: 'Dynamic Prop Create Test',
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: cat?.id ?? null,
+                sizeIds,
+                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/images/test.jpg' }],
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await itemService.createEntityForTest(dto, manager);
+            });
+
+            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
+            const row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: item.id },
+                    config: { id: testFilepathConfig.id },
+                },
+            });
+            expect(row).not.toBeNull();
+            expect(row!.valueText).toBe('/images/test.jpg');
+        });
+
+        it('should upsert value row when updating with a new value', async () => {
+            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
+            const full = await itemRepo.findOneOrFail({
+                where: { id: item.id },
+                relations: ['category', 'sizes', 'containerMenuItems'],
+            });
+
+            // Omit `type` to avoid triggering syncOrderMenuItems for SINGLE-type items
+            const dto = plainToInstance(UpdateMenuItemDto, {
+                name: full.name,
+                categoryId: full.category?.id ?? null,
+                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/images/updated.jpg' }],
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await itemService.updateEntityForTest(dto, full, manager);
+            });
+
+            const row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: item.id },
+                    config: { id: testFilepathConfig.id },
+                },
+            });
+            expect(row).not.toBeNull();
+            expect(row!.valueText).toBe('/images/updated.jpg');
+        });
+
+        it('should delete value row when updating with value: null', async () => {
+            const item = await itemRepo.findOneOrFail({ where: { name: 'Dynamic Prop Create Test' } });
+            const full = await itemRepo.findOneOrFail({
+                where: { id: item.id },
+                relations: ['category', 'sizes', 'containerMenuItems'],
+            });
+
+            // Omit `type` to avoid triggering syncOrderMenuItems for SINGLE-type items
+            const dto = plainToInstance(UpdateMenuItemDto, {
+                name: full.name,
+                categoryId: full.category?.id ?? null,
+                dynamicProperties: [{ configId: testFilepathConfig.id, value: null }],
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await itemService.updateEntityForTest(dto, full, manager);
+            });
+
+            const row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: item.id },
+                    config: { id: testFilepathConfig.id },
+                },
+            });
+            expect(row).toBeNull();
+        });
+
+        it('should leave existing value row unchanged when config is omitted from update', async () => {
+            const [cat] = await categoryRepo.find({ take: 1 });
+            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
+
+            const createDto = plainToInstance(CreateMenuItemDto, {
+                name: 'Dynamic Prop Omit Test',
+                type: MENU_ITEM_TYPES.SINGLE,
+                categoryId: cat?.id ?? null,
+                sizeIds,
+                dynamicProperties: [{ configId: testFilepathConfig.id, value: '/keep/this.jpg' }],
+            });
+
+            let createdId!: number;
+            await dataSource.transaction(async (manager) => {
+                const result = await itemService.createEntityForTest(createDto, manager);
+                createdId = result.id;
+            });
+
+            const full = await itemRepo.findOneOrFail({
+                where: { id: createdId },
+                relations: ['category', 'sizes', 'containerMenuItems'],
+            });
+
+            // Omit `type` to avoid triggering syncOrderMenuItems; omit dynamicProperties to verify no-op
+            const updateDto = plainToInstance(UpdateMenuItemDto, {
+                name: full.name,
+                categoryId: full.category?.id ?? null,
+            });
+
+            await dataSource.transaction(async (manager) => {
+                await itemService.updateEntityForTest(updateDto, full, manager);
+            });
+
+            const row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: createdId },
+                    config: { id: testFilepathConfig.id },
+                },
+            });
+            expect(row).not.toBeNull();
+            expect(row!.valueText).toBe('/keep/this.jpg');
+        });
+
+        it('should SET NULL on valueEntity when the referenced MenuItem is deleted', async () => {
+            const [cat] = await categoryRepo.find({ take: 1 });
+            const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
+
+            let refItemId!: number;
+            await dataSource.transaction(async (manager) => {
+                const ref = await itemService.createEntityForTest(
+                    plainToInstance(CreateMenuItemDto, {
+                        name: 'Referenced Item For SET NULL',
+                        type: MENU_ITEM_TYPES.SINGLE,
+                        categoryId: cat?.id ?? null,
+                        sizeIds,
+                    }),
+                    manager,
+                );
+                refItemId = ref.id;
+            });
+
+            let holderItemId!: number;
+            await dataSource.transaction(async (manager) => {
+                const holder = await itemService.createEntityForTest(
+                    plainToInstance(CreateMenuItemDto, {
+                        name: 'Holder Item For SET NULL',
+                        type: MENU_ITEM_TYPES.SINGLE,
+                        categoryId: cat?.id ?? null,
+                        sizeIds,
+                        dynamicProperties: [
+                            { configId: testEntityRefConfig.id, value: String(refItemId) },
+                        ],
+                    }),
+                    manager,
+                );
+                holderItemId = holder.id;
+            });
+
+            let row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: holderItemId },
+                    config: { id: testEntityRefConfig.id },
+                },
+                relations: ['valueEntity'],
+            });
+            expect(row).not.toBeNull();
+            expect(row!.valueEntity?.id).toBe(refItemId);
+
+            await itemService.remove(refItemId);
+
+            row = await valueRepo.findOne({
+                where: {
+                    menuItem: { id: holderItemId },
+                    config: { id: testEntityRefConfig.id },
+                },
+                relations: ['valueEntity'],
+            });
+            expect(row).not.toBeNull();
+            expect(row!.valueEntity).toBeNull();
+        });
+    });
+});
+
+describe('menu item service – revision history snapshots', () => {
+    let itemService: MenuItemService;
+    let dbTestContext: DatabaseTestContext;
+    let categoryRepo: Repository<MenuItemCategory>;
+    let sizeRepo: Repository<MenuItemSize>;
+    let configRepo: Repository<DynamicPropertyConfig>;
+    let revisionRepo: Repository<RevisionHistory>;
+    let itemRepo: Repository<MenuItem>;
+
+    beforeAll(async () => {
+        const module: TestingModule = await getMenuItemTestingModule({
+            mockRevisionHistory: false,
+        });
+        dbTestContext = new DatabaseTestContext();
+        itemService = module.get(MenuItemService);
+        categoryRepo = module.get(getRepositoryToken(MenuItemCategory));
+        sizeRepo = module.get(getRepositoryToken(MenuItemSize));
+        configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
+        revisionRepo = module.get(getRepositoryToken(RevisionHistory));
+        itemRepo = module.get(getRepositoryToken(MenuItem));
+
+        const testingUtil = module.get<MenuItemTestingUtil>(MenuItemTestingUtil);
+        await testingUtil.initMenuItemContainerItemTestDatabase(dbTestContext);
+    });
+
+    afterAll(async () => {
+        await dbTestContext.executeCleanupFunctions();
+    });
+
+    it('should store a v2 snapshot with dynamicProperties on create', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
+
+        const config = await configRepo.save(
+            configRepo.create({
+                holderEntityType: HolderEntityType.MenuItem,
+                propertyName: 'rev-spec-filepath',
+                valueType: ValueType.Filepath,
+            }),
+        );
+        dbTestContext.addCleanupFunction(async () => {
+            await configRepo.delete(config.id);
+        });
+
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'Rev History Create Test',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: cat?.id ?? null,
+            sizeIds,
+            dynamicProperties: [{ configId: config.id, value: '/images/snap.jpg' }],
+        });
+
+        const created = await itemService.create(dto);
+        dbTestContext.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
+
+        const revision = await revisionRepo.findOne({
+            where: {
+                entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
+                entityId: created.id,
+                revisionNumber: 1,
+            },
+        });
+
+        expect(revision).not.toBeNull();
+        const snap = revision!.payload as unknown as MenuItemSnapshotV2;
+        expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+        expect(Array.isArray(snap.dynamicProperties)).toBe(true);
+        expect(snap.dynamicProperties).toHaveLength(1);
+        expect(snap.dynamicProperties[0].configId).toBe(config.id);
+        expect(snap.dynamicProperties[0].valueText).toBe('/images/snap.jpg');
+        expect(snap.dynamicProperties[0].valueEntityId).toBeNull();
+    });
+
+    it('should store a v2 snapshot with updated dynamicProperties on update', async () => {
+        const item = await itemRepo.findOneOrFail({
+            where: { name: 'Rev History Create Test' },
+            relations: ['category', 'sizes'],
+        });
+
+        const config = await configRepo.findOneOrFail({
+            where: { propertyName: 'rev-spec-filepath' },
+        });
+
+        const dto = plainToInstance(UpdateMenuItemDto, {
+            name: item.name,
+            dynamicProperties: [{ configId: config.id, value: '/images/updated-snap.jpg' }],
+        });
+
+        await itemService.update(item.id, dto);
+
+        const revision = await revisionRepo.findOne({
+            where: {
+                entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
+                entityId: item.id,
+                revisionNumber: 2,
+            },
+        });
+
+        expect(revision).not.toBeNull();
+        const snap = revision!.payload as unknown as MenuItemSnapshotV2;
+        expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+        expect(Array.isArray(snap.dynamicProperties)).toBe(true);
+        expect(snap.dynamicProperties).toHaveLength(1);
+        expect(snap.dynamicProperties[0].configId).toBe(config.id);
+        expect(snap.dynamicProperties[0].valueText).toBe('/images/updated-snap.jpg');
+    });
+
+    it('should store dynamicProperties: [] for an item with no dynamic property values', async () => {
+        const [cat] = await categoryRepo.find({ take: 1 });
+        const sizeIds = (await sizeRepo.find({ take: 1 })).map((s) => s.id);
+
+        const dto = plainToInstance(CreateMenuItemDto, {
+            name: 'Rev History No Props Test',
+            type: MENU_ITEM_TYPES.SINGLE,
+            categoryId: cat?.id ?? null,
+            sizeIds,
+        });
+
+        const created = await itemService.create(dto);
+        dbTestContext.addCleanupFunction(async () => {
+            await itemRepo.delete(created.id);
+        });
+
+        const revision = await revisionRepo.findOne({
+            where: {
+                entityType: REVISION_ENTITY_TYPES.MENU_ITEM,
+                entityId: created.id,
+                revisionNumber: 1,
+            },
+        });
+
+        expect(revision).not.toBeNull();
+        const snap = revision!.payload as unknown as MenuItemSnapshotV2;
+        expect(snap.payloadVersion).toBe(MENU_ITEM_SNAPSHOT_V2_PAYLOAD_VERSION);
+        expect(snap.dynamicProperties).toEqual([]);
     });
 });
