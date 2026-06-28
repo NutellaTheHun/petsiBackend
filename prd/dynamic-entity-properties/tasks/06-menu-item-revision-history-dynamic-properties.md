@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [04-menu-item-dynamic-property-read-path.md]
 
 ---
@@ -36,9 +36,9 @@ Update `getSnapshotRelations` / `getUpdateDiffRelations` to include `dynamicProp
 
 ## Acceptance criteria
 
-- [ ] Creating a MenuItem with `dynamicProperties` stores a v2 snapshot in the revision history table that includes the `dynamicProperties` array.
-- [ ] Updating a MenuItem's dynamic property value writes a new v2 revision entry with the updated array.
-- [ ] The stored snapshot's `payloadVersion` is `2`.
-- [ ] Old v1 revisions (payloadVersion 1) can still be read back; `revertToRevision` continues to handle them without error.
-- [ ] A MenuItem with no dynamic property values stores `dynamicProperties: []` in the snapshot (not absent).
-- [ ] Revision-history service spec test verifies the snapshot field is present and correctly populated after a create and after an update.
+- [x] Creating a MenuItem with `dynamicProperties` stores a v2 snapshot in the revision history table that includes the `dynamicProperties` array.
+- [x] Updating a MenuItem's dynamic property value writes a new v2 revision entry with the updated array.
+- [x] The stored snapshot's `payloadVersion` is `2`.
+- [x] Old v1 revisions (payloadVersion 1) can still be read back; `revertToRevision` continues to handle them without error.
+- [x] A MenuItem with no dynamic property values stores `dynamicProperties: []` in the snapshot (not absent).
+- [x] Revision-history service spec test verifies the snapshot field is present and correctly populated after a create and after an update.
