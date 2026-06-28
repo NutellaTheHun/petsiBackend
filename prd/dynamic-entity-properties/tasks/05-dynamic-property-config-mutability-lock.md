@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [01-dynamic-property-config-crud.md, 02-menu-item-dynamic-property-value-write-path.md]
 
 ---
@@ -22,7 +22,7 @@ The check is: query whether any `MenuItemDynamicPropertyValue` with `configId = 
 
 ## Acceptance criteria
 
-- [ ] `PATCH /dynamic-property-configs/:id` renaming `propertyName` succeeds even when value rows exist.
-- [ ] `PATCH /dynamic-property-configs/:id` changing any locked field when at least one value row exists returns HTTP 409.
-- [ ] `PATCH /dynamic-property-configs/:id` changing a structural field when no value rows exist succeeds.
-- [ ] Service spec tests cover all three cases above.
+- [x] `PATCH /dynamic-property-configs/:id` renaming `propertyName` succeeds even when value rows exist.
+- [x] `PATCH /dynamic-property-configs/:id` changing any locked field when at least one value row exists returns HTTP 409.
+- [x] `PATCH /dynamic-property-configs/:id` changing a structural field when no value rows exist succeeds.
+- [x] Service spec tests cover all three cases above.
