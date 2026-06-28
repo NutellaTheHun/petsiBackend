@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppLoggingModule } from '../app-logging/app-logging.module';
+import { DynamicPropertiesModule } from '../dynamic-properties/dynamic-properties.module';
 import { OrderCategory } from '../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../orders/entities/order-menu-item.entity';
@@ -19,6 +20,7 @@ import { MenuItemSizeController } from './controllers/menu-item-size.controller'
 import { MenuItemController } from './controllers/menu-item.controller';
 import { MenuItemCategory } from './entities/menu-item-category.entity';
 import { MenuItemContainerItem } from './entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from './entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from './entities/menu-item-size.entity';
 import { MenuItem } from './entities/menu-item.entity';
 import { MenuItemCategoryService } from './services/menu-item-category.service';
@@ -43,6 +45,7 @@ import { MenuItemValidator } from './validators/menu-item.validator';
             MenuItemSize,
             MenuItem,
             MenuItemContainerItem,
+            MenuItemDynamicPropertyValue,
             Order,
             OrderCategory,
             OrderMenuItem,
@@ -53,6 +56,7 @@ import { MenuItemValidator } from './validators/menu-item.validator';
         AppLoggingModule,
         RequestContextModule,
         RevisionHistoryModule,
+        DynamicPropertiesModule,
     ],
 
     controllers: [

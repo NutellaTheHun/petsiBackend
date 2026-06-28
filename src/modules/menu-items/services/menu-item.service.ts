@@ -11,6 +11,10 @@ import {
     SelectQueryBuilder,
 } from 'typeorm';
 import {
+    DynamicPropertyConfig,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
+import {
     ChangeDetectionResult,
     ChangeDetectorBase,
 } from '../../../common/base/change-detector.base';
@@ -31,6 +35,7 @@ import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem, MenuItemEntity } from '../entities/menu-item.entity';
 import { MenuItemContainerItemComposer } from '../utils/composers/menu-item-container-item.composer';
@@ -98,7 +103,18 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
                 );
         }
 
-        return await manager.save(savedResult);
+        const saved = await manager.save(savedResult);
+
+        if (dto.dynamicProperties?.length) {
+            await this.persistDynamicPropertyValues(
+                manager,
+                saved.id,
+                dto.dynamicProperties,
+                'create',
+            );
+        }
+
+        return saved;
     }
 
     protected async updateEntity(
@@ -162,7 +178,64 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             entity.containerMenuItems = newItems;
         }
 
+        if (dto.dynamicProperties !== undefined) {
+            await this.persistDynamicPropertyValues(
+                manager,
+                entity.id,
+                dto.dynamicProperties,
+                'update',
+            );
+        }
+
         await manager.save(entity);
+    }
+
+    private async persistDynamicPropertyValues(
+        manager: EntityManager,
+        menuItemId: number,
+        entries: { configId: number; value: string | null }[],
+        mode: 'create' | 'update',
+    ): Promise<void> {
+        for (const dp of entries) {
+            if (dp.value === null) {
+                if (mode === 'update') {
+                    await manager.delete(MenuItemDynamicPropertyValue, {
+                        menuItem: { id: menuItemId },
+                        config: { id: dp.configId },
+                    });
+                }
+                continue;
+            }
+
+            const config = await manager.findOne(DynamicPropertyConfig, {
+                where: { id: dp.configId },
+            });
+            if (!config) continue;
+
+            let row = await manager.findOne(MenuItemDynamicPropertyValue, {
+                where: {
+                    menuItem: { id: menuItemId },
+                    config: { id: dp.configId },
+                },
+            });
+
+            if (!row) {
+                row = manager.create(MenuItemDynamicPropertyValue, {
+                    menuItem: manager.create(MenuItem, { id: menuItemId }),
+                    config: manager.create(DynamicPropertyConfig, { id: dp.configId }),
+                });
+            }
+
+            if (config.valueType === ValueType.EntityReference) {
+                row.valueText = null;
+                row.valueEntity = manager.create(MenuItem, { id: parseInt(dp.value, 10) });
+            } else {
+                row.valueText = dp.value;
+                row.valueEntity = null;
+            }
+
+            await manager.save(row);
+        }
     }
 
     private async syncOrderMenuItems(id: number) {

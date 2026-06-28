@@ -6,6 +6,8 @@ import { LoggerModule } from 'nestjs-pino';
 import { TypeORMPostgresTestingModule } from '../../../infrastructure/database/typeorm/configs/TypeORMPostgresTesting';
 import { TestRequestContextService } from '../../../test/mocks/test-request-context.service';
 import { AppLoggingModule } from '../../app-logging/app-logging.module';
+import { DynamicPropertyConfig } from '../../dynamic-properties/entities/dynamic-property-config.entity';
+import { DynamicPropertiesModule } from '../../dynamic-properties/dynamic-properties.module';
 import { OrderCategory } from '../../orders/entities/order-category.entity';
 import { OrderContainerItem } from '../../orders/entities/order-container-item.entity';
 import { OrderMenuItem } from '../../orders/entities/order-menu-item.entity';
@@ -19,6 +21,7 @@ import { MenuItemSizeController } from '../controllers/menu-item-size.controller
 import { MenuItemController } from '../controllers/menu-item.controller';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
 import { MenuItemContainerItem } from '../entities/menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemsModule } from '../menu-items.module';
@@ -59,6 +62,8 @@ export async function getMenuItemTestingModule(opts?: {
                 MenuItemSize,
                 MenuItem,
                 MenuItemContainerItem,
+                MenuItemDynamicPropertyValue,
+                DynamicPropertyConfig,
                 Order,
                 OrderCategory,
                 OrderMenuItem,
@@ -71,6 +76,8 @@ export async function getMenuItemTestingModule(opts?: {
                 MenuItemSize,
                 MenuItem,
                 MenuItemContainerItem,
+                MenuItemDynamicPropertyValue,
+                DynamicPropertyConfig,
                 Order,
                 OrderCategory,
                 OrderMenuItem,
@@ -79,6 +86,7 @@ export async function getMenuItemTestingModule(opts?: {
                 ...(mockRevisionHistory ? [] : [RevisionHistory]),
             ]),
             MenuItemsModule,
+            DynamicPropertiesModule,
             ...(mockRevisionHistory ? [] : [RevisionHistoryModule]),
             CacheModule.register(),
             LoggerModule.forRoot({

@@ -13,6 +13,7 @@ import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
 import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-item/nested-create-menu-item-container-item.dto';
+import { DynamicPropertyValueDto } from './dynamic-property-value.dto';
 
 export class CreateMenuItemDto {
     @ApiProperty({
@@ -92,4 +93,15 @@ export class CreateMenuItemDto {
     @IsNumber()
     @IsPositive()
     readonly variableMaxAmount?: number | null;
+
+    @ApiProperty({
+        description: 'Dynamic property values to persist with this menu item',
+        type: () => [DynamicPropertyValueDto],
+        required: false,
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => DynamicPropertyValueDto)
+    readonly dynamicProperties?: DynamicPropertyValueDto[];
 }

@@ -9,12 +9,13 @@ import {
     ValidateNested
 } from 'class-validator';
 
-import { plainToInstance, Transform, TransformFnParams } from 'class-transformer';
+import { plainToInstance, Transform, TransformFnParams, Type } from 'class-transformer';
 import { EntityId } from '../../../../common/types';
 import { MenuItemCategory } from '../../entities/menu-item-category.entity';
 import { MenuItemSize } from '../../entities/menu-item-size.entity';
 import { NestedCreateMenuItemContainerItemDto } from '../menu-item-container-item/nested-create-menu-item-container-item.dto';
 import { NestedUpdateMenuItemContainerItemDto } from '../menu-item-container-item/nested-update-menu-item-container-item.dto';
+import { DynamicPropertyValueDto } from './dynamic-property-value.dto';
 
 @ApiExtraModels(NestedCreateMenuItemContainerItemDto, NestedUpdateMenuItemContainerItemDto)
 export class UpdateMenuItemDto {
@@ -116,4 +117,15 @@ export class UpdateMenuItemDto {
     @IsNumber()
     @IsPositive()
     readonly variableMaxAmount?: number | null;
+
+    @ApiProperty({
+        description: 'Dynamic property values to upsert or clear. Omit a configId to leave that value unchanged.',
+        type: () => [DynamicPropertyValueDto],
+        required: false,
+    })
+    @IsOptional()
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => DynamicPropertyValueDto)
+    readonly dynamicProperties?: DynamicPropertyValueDto[];
 }

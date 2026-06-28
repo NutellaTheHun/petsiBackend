@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [01-dynamic-property-config-crud.md]
 
 ---
