@@ -1,10 +1,9 @@
-import { HttpStatus, NotFoundException } from '@nestjs/common';
+import { NotFoundException } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { DataSource, EntityManager, Repository } from 'typeorm';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
-import { AppHttpException } from '../../../common/exceptions/app-http-exception';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItem } from '../../menu-items/entities/menu-item.entity';
@@ -204,7 +203,7 @@ describe('DynamicPropertyConfigService', () => {
         expect(updated.propertyName).toEqual('Lock Test Rename Prop Updated');
     });
 
-    it('returns 409 when changing a locked field with existing value rows', async () => {
+    it('returns IMMUTABLE_FIELD validation error when changing a locked field with existing value rows', async () => {
         const config = await service.create(
             plainToInstance(CreateDynamicPropertyConfigDto, {
                 holderEntityType: HolderEntityType.MenuItem,
@@ -222,8 +221,18 @@ describe('DynamicPropertyConfigService', () => {
             valueEntityType: 'menuItem',
         });
 
-        await expect(service.update(config.id, updateDto)).rejects.toThrow(
-            expect.objectContaining({ status: HttpStatus.CONFLICT }),
+        let caught: ValidationException | undefined;
+        try {
+            await service.update(config.id, updateDto);
+        } catch (e) {
+            caught = e as ValidationException;
+        }
+
+        expect(caught).toBeInstanceOf(ValidationException);
+        expect(caught!.errors.errorPayload).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({ errorCode: 'IMMUTABLE_FIELD', fields: ['valueType'] }),
+            ]),
         );
     });
 

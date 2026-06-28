@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { ValidatorBase } from '../../../common/base/validator.base';
 import { ValidationErrorMap } from '../../../common/validation/validation-error';
 import { AppLogger } from '../../app-logging/app-logger';
+import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { RequestContextService } from '../../request-context/RequestContextService';
 import { CreateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/create-dynamic-property-config.dto';
 import { UpdateDynamicPropertyConfigDto } from '../dto/dynamic-property-config/update-dynamic-property-config.dto';
@@ -22,6 +23,8 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
     constructor(
         @InjectRepository(DynamicPropertyConfig)
         private readonly repo: Repository<DynamicPropertyConfig>,
+        @InjectRepository(MenuItemDynamicPropertyValue)
+        private readonly dynPropValueRepo: Repository<MenuItemDynamicPropertyValue>,
         logger: AppLogger,
         requestContextService: RequestContextService,
     ) {
@@ -53,6 +56,35 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
             errorMap.addError('MISSING_PROPERTY', undefined, ['valueEntityType']);
         }
 
+        if (identity.existingHolderEntityType !== undefined) {
+            const changedFields: string[] = [];
+
+            if (identity.holderEntityType !== undefined && identity.holderEntityType !== identity.existingHolderEntityType) {
+                changedFields.push('holderEntityType');
+            }
+            if (identity.holderCategoryId !== undefined && identity.holderCategoryId !== identity.existingHolderCategoryId) {
+                changedFields.push('holderCategoryId');
+            }
+            if (identity.valueType !== undefined && identity.valueType !== identity.existingValueType) {
+                changedFields.push('valueType');
+            }
+            if ('valueEntityType' in identity && identity.valueEntityType !== identity.existingValueEntityType) {
+                changedFields.push('valueEntityType');
+            }
+            if (identity.valueEntityCategoryId !== undefined && identity.valueEntityCategoryId !== identity.existingValueEntityCategoryId) {
+                changedFields.push('valueEntityCategoryId');
+            }
+
+            if (changedFields.length > 0) {
+                const hasValues = await this.dynPropValueRepo.exists({ where: { config: { id: id as number } } });
+                if (hasValues) {
+                    for (const field of changedFields) {
+                        errorMap.addError('IMMUTABLE_FIELD', undefined, [field]);
+                    }
+                }
+            }
+        }
+
         return errorMap;
     }
 
@@ -60,11 +92,25 @@ export class DynamicPropertyConfigValidator extends ValidatorBase<
         dto: CreateDynamicPropertyConfigDto | UpdateDynamicPropertyConfigDto,
         id: number | string,
     ): Promise<DynamicPropertyConfigValidatorIdentity> {
+        let existing: DynamicPropertyConfig | null = null;
+        if (id !== 'root') {
+            existing = await this.repo.findOne({ where: { id: id as number }, relations: ['holderCategory', 'valueEntityCategory'] });
+        }
+
         return {
             holderEntityType: dto.holderEntityType,
+            holderCategoryId: dto.holderCategoryId,
             propertyName: dto.propertyName,
             valueType: dto.valueType,
-            valueEntityType: dto.valueEntityType,
+            ...('valueEntityType' in dto && { valueEntityType: dto.valueEntityType }),
+            valueEntityCategoryId: dto.valueEntityCategoryId,
+            ...(existing != null && {
+                existingHolderEntityType: existing.holderEntityType,
+                existingHolderCategoryId: existing.holderCategory?.id ?? null,
+                existingValueType: existing.valueType,
+                existingValueEntityType: existing.valueEntityType ?? null,
+                existingValueEntityCategoryId: existing.valueEntityCategory?.id ?? null,
+            }),
         };
     }
 }

@@ -1,8 +1,7 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { ServiceBase } from '../../../common/base/service.base';
-import { AppHttpException } from '../../../common/exceptions/app-http-exception';
 import { AppLogger } from '../../app-logging/app-logger';
 import { MenuItemDynamicPropertyValue } from '../../menu-items/entities/menu-item-dynamic-property-value.entity';
 import { MenuItemCategory } from '../../menu-items/entities/menu-item-category.entity';
@@ -63,24 +62,6 @@ export class DynamicPropertyConfigService extends ServiceBase<DynamicPropertyCon
         manager: EntityManager,
         entity: DynamicPropertyConfig,
     ): Promise<void> {
-        const hasValues = await this.dynPropValueRepo.exists({ where: { config: { id: entity.id } } });
-        if (hasValues) {
-            const lockedFieldChanged =
-                (dto.holderEntityType !== undefined && dto.holderEntityType !== entity.holderEntityType) ||
-                (dto.holderCategoryId !== undefined && dto.holderCategoryId !== (entity.holderCategory?.id ?? null)) ||
-                (dto.valueType !== undefined && dto.valueType !== entity.valueType) ||
-                ('valueEntityType' in dto && dto.valueEntityType !== entity.valueEntityType) ||
-                (dto.valueEntityCategoryId !== undefined && dto.valueEntityCategoryId !== (entity.valueEntityCategory?.id ?? null));
-
-            if (lockedFieldChanged) {
-                throw new AppHttpException(
-                    'Cannot change structural fields of a config that has existing value rows.',
-                    HttpStatus.CONFLICT,
-                    'LOCKED_STRUCTURAL_FIELD',
-                );
-            }
-        }
-
         if (dto.holderEntityType !== undefined) {
             entity.holderEntityType = dto.holderEntityType;
         }
