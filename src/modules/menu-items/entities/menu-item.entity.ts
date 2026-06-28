@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+    AfterLoad,
     Column,
     CreateDateColumn,
     Entity,
@@ -13,12 +14,28 @@ import {
 import { EntityBase } from '../../../common/base/entity.base';
 import { menuItemCategoryExample } from '../../../common/swagger/examples/menu-items/menu-item-category.example';
 import { menuItemSizeExample } from '../../../common/swagger/examples/menu-items/menu-item-size.example';
+import {
+    deriveFieldRenderType,
+    FieldRenderType,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MENU_ITEM_TYPES, MenuItemType } from '../utils/menu-item-type';
 import { MenuItemCategory } from './menu-item-category.entity';
 import { MenuItemContainerItem } from './menu-item-container-item.entity';
+import { MenuItemDynamicPropertyValue } from './menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from './menu-item-size.entity';
+
+export interface DynamicPropertyResponseItem {
+    configId: number;
+    propertyName: string;
+    fieldRenderType: FieldRenderType;
+    valueType: ValueType;
+    valueEntityType: string | null;
+    valueEntityCategoryId: number | null;
+    value: string | null;
+}
 
 export type MenuItemEntity = EntityBase<
     MenuItem,
@@ -129,4 +146,27 @@ export class MenuItem {
     })
     @Column({ type: 'integer', nullable: true })
     variableMaxAmount: number | null = null;
+
+    @OneToMany(() => MenuItemDynamicPropertyValue, (dpv) => dpv.menuItem, { eager: true })
+    dynamicPropertyValues: MenuItemDynamicPropertyValue[];
+
+    dynamicProperties: DynamicPropertyResponseItem[] = [];
+
+    @AfterLoad()
+    computeDynamicProperties(): void {
+        this.dynamicProperties = (this.dynamicPropertyValues ?? [])
+            .filter((v) => v.config != null)
+            .map((v) => ({
+                configId: v.config.id,
+                propertyName: v.config.propertyName,
+                fieldRenderType: deriveFieldRenderType(v.config.valueType),
+                valueType: v.config.valueType,
+                valueEntityType: v.config.valueEntityType,
+                valueEntityCategoryId: v.config.valueEntityCategory?.id ?? null,
+                value:
+                    v.config.valueType === ValueType.EntityReference
+                        ? (v.valueEntityId?.toString() ?? null)
+                        : v.valueText,
+            }));
+    }
 }

@@ -11,9 +11,15 @@ import {
 } from '../../../common/validation/validation-error';
 import { ValidationException } from '../../../common/validation/validation-exception';
 import { DatabaseTestContext } from '../../../test/DatabaseTestContext';
+import {
+    DynamicPropertyConfig,
+    HolderEntityType,
+    ValueType,
+} from '../../dynamic-properties/entities/dynamic-property-config.entity';
 import { CreateMenuItemDto } from '../dto/menu-item/create-menu-item.dto';
 import { UpdateMenuItemDto } from '../dto/menu-item/update-menu-item.dto';
 import { MenuItemCategory } from '../entities/menu-item-category.entity';
+import { MenuItemDynamicPropertyValue } from '../entities/menu-item-dynamic-property-value.entity';
 import { MenuItemSize } from '../entities/menu-item-size.entity';
 import { MenuItem } from '../entities/menu-item.entity';
 import { MenuItemService } from '../services/menu-item.service';
@@ -336,5 +342,101 @@ describe('menu item controller', () => {
         await expect(controller.remove(9_999_999)).rejects.toThrow(
             NotFoundException,
         );
+    });
+
+    describe('dynamicProperties on read responses', () => {
+        let dpTestContext: DatabaseTestContext;
+        let configRepo: Repository<DynamicPropertyConfig>;
+        let dpValueRepo: Repository<MenuItemDynamicPropertyValue>;
+        let testItem: MenuItem;
+        let valueItem: MenuItem;
+        let config: DynamicPropertyConfig;
+
+        beforeAll(async () => {
+            dpTestContext = new DatabaseTestContext();
+            configRepo = module.get(getRepositoryToken(DynamicPropertyConfig));
+            dpValueRepo = module.get(getRepositoryToken(MenuItemDynamicPropertyValue));
+
+            const [cat] = await categoryRepo.find({ take: 1 });
+            const [size] = await sizeRepo.find({ take: 1 });
+            if (!cat || !size) throw new Error('fixtures not found');
+
+            // Create a config with entityReference value type
+            config = configRepo.create({
+                holderEntityType: HolderEntityType.MenuItem,
+                holderCategory: null,
+                propertyName: 'ControllerSpecVeganCounterpart',
+                valueType: ValueType.EntityReference,
+                valueEntityType: 'menuItem',
+                valueEntityCategory: null,
+            });
+            config = await configRepo.save(config);
+            dpTestContext.addCleanupFunction(async () => { await configRepo.delete(config.id); });
+
+            // Create two items: one will hold the value, one will be the referenced value
+            valueItem = itemRepo.create({
+                name: 'ControllerSpecValueItem',
+                type: MENU_ITEM_TYPES.SINGLE,
+                category: cat,
+                sizes: [size],
+            });
+            valueItem = await itemRepo.save(valueItem);
+            dpTestContext.addCleanupFunction(async () => { await itemRepo.delete(valueItem.id); });
+
+            testItem = itemRepo.create({
+                name: 'ControllerSpecHolderItem',
+                type: MENU_ITEM_TYPES.SINGLE,
+                category: cat,
+                sizes: [size],
+            });
+            testItem = await itemRepo.save(testItem);
+            dpTestContext.addCleanupFunction(async () => { await itemRepo.delete(testItem.id); });
+
+            // Save the dynamic property value row
+            const dpValue = dpValueRepo.create({
+                menuItem: testItem,
+                config,
+                valueEntity: valueItem,
+                valueText: null,
+            });
+            await dpValueRepo.save(dpValue);
+            dpTestContext.addCleanupFunction(async () => {
+                await dpValueRepo.delete({ menuItem: { id: testItem.id }, config: { id: config.id } });
+            });
+        });
+
+        afterAll(async () => {
+            await dpTestContext.executeCleanupFunctions();
+        });
+
+        it('findOne includes dynamicProperties with full config metadata', async () => {
+            const result = await controller.findOne(testItem.id);
+            expect(result.dynamicProperties).toBeDefined();
+            expect(result.dynamicProperties.length).toBe(1);
+            const dp = result.dynamicProperties[0];
+            expect(dp.configId).toBe(config.id);
+            expect(dp.propertyName).toBe(config.propertyName);
+            expect(dp.fieldRenderType).toBe('entity-select');
+            expect(dp.valueType).toBe(ValueType.EntityReference);
+            expect(dp.valueEntityType).toBe('menuItem');
+            expect(dp.valueEntityCategoryId).toBeNull();
+            expect(dp.value).toBe(valueItem.id.toString());
+        });
+
+        it('findAll includes dynamicProperties on each item', async () => {
+            const result = await controller.findAll(undefined, 100);
+            const found = result.items.find((i) => i.id === testItem.id);
+            expect(found).toBeDefined();
+            expect(found!.dynamicProperties.length).toBe(1);
+            expect(found!.dynamicProperties[0].configId).toBe(config.id);
+            expect(found!.dynamicProperties[0].value).toBe(valueItem.id.toString());
+        });
+
+        it('item with no dynamic property values returns empty dynamicProperties array', async () => {
+            const plainItem = await itemRepo.findOne({ where: { name: item_a } });
+            if (!plainItem) throw new Error('item a not found');
+            const result = await controller.findOne(plainItem.id);
+            expect(result.dynamicProperties).toEqual([]);
+        });
     });
 });

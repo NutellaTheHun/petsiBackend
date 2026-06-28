@@ -27,7 +27,10 @@ describe('MenuItemChangeDetector', () => {
             sizes: [{ id: 10 }, { id: 11 }] as MenuItemSize[],
             variableMaxAmount: null,
             containerMenuItems: [containerChild()],
-        } as MenuItem);
+            dynamicPropertyValues: [],
+            dynamicProperties: [],
+            computeDynamicProperties: () => {},
+        } as unknown as MenuItem);
 
     it('returns empty patch when dto matches entity', () => {
         const entity = baseEntity();
@@ -64,7 +67,7 @@ describe('MenuItemChangeDetector', () => {
     });
 
     it('includes create container rows in nested patch', () => {
-        const entity = { ...baseEntity(), containerMenuItems: [] };
+        const entity = { ...baseEntity(), containerMenuItems: [], computeDynamicProperties: () => {} } as unknown as MenuItem;
         const createRow = {
             createId: 'c1',
             containedMenuItemId: 9,

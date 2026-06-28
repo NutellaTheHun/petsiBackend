@@ -1,4 +1,4 @@
-status: todo
+status: done
 blocked-by: [02-menu-item-dynamic-property-value-write-path.md]
 
 ---
@@ -34,8 +34,8 @@ The `fieldRenderType` derivation mirrors the rule in slice 1: `"entityReference"
 
 ## Acceptance criteria
 
-- [ ] `GET /menu-items/:id` response includes a `dynamicProperties` array with all fields above for each value row that exists.
-- [ ] `GET /menu-items` response includes `dynamicProperties` on each item in the list.
-- [ ] A MenuItem with no value rows (or no applicable configs) returns `dynamicProperties: []`.
-- [ ] `value` is `null` when `valueEntityId` is null (SET NULL case from slice 2) rather than omitted.
-- [ ] Controller spec tests cover `findOne` with populated values, `findAll` with populated values, and the empty-array case.
+- [x] `GET /menu-items/:id` response includes a `dynamicProperties` array with all fields above for each value row that exists.
+- [x] `GET /menu-items` response includes `dynamicProperties` on each item in the list.
+- [x] A MenuItem with no value rows (or no applicable configs) returns `dynamicProperties: []`.
+- [x] `value` is `null` when `valueEntityId` is null (SET NULL case from slice 2) rather than omitted.
+- [x] Controller spec tests cover `findOne` with populated values, `findAll` with populated values, and the empty-array case.

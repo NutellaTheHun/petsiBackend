@@ -10,6 +10,7 @@ import {
     Repository,
     SelectQueryBuilder,
 } from 'typeorm';
+import { PaginatedResult } from '../../../common/dto/paginated-result';
 import {
     DynamicPropertyConfig,
     ValueType,
@@ -485,6 +486,31 @@ export class MenuItemService extends ServiceBase<MenuItemEntity> {
             'containerMenuItems.containedMenuItem',
             'containerMenuItems.containedItemSize',
             'containerMenuItems.parentItemSize',
+            'dynamicPropertyValues',
+            'dynamicPropertyValues.config',
         ];
+    }
+
+    async findAll(options?: {
+        relations?: string[];
+        limit?: number;
+        cursor?: string;
+        sortBy?: string;
+        sortOrder?: 'ASC' | 'DESC';
+        search?: string;
+        filters?: string[];
+        dateBy?: string;
+        startDate?: string;
+        endDate?: string;
+    }): Promise<PaginatedResult<MenuItem>> {
+        return super.findAll({
+            ...options,
+            relations: [
+                'dynamicPropertyValues',
+                'dynamicPropertyValues.config',
+                'dynamicPropertyValues.config.valueEntityCategory',
+                ...(options?.relations ?? []),
+            ],
+        });
     }
 }

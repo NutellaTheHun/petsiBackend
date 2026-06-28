@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, RelationId, Unique } from 'typeorm';
 import {
     DynamicPropertyConfig,
 } from '../../dynamic-properties/entities/dynamic-property-config.entity';
@@ -25,4 +25,7 @@ export class MenuItemDynamicPropertyValue {
 
     @ManyToOne(() => MenuItem, { nullable: true, onDelete: 'SET NULL' })
     valueEntity: MenuItem | null = null;
+
+    @RelationId((dpv: MenuItemDynamicPropertyValue) => dpv.valueEntity)
+    valueEntityId: number | null;
 }
